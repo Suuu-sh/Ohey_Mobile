@@ -1,0 +1,34 @@
+name: TestFlight Distribute Existing Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: Optional build number to target. Leave blank to use the latest uploaded build.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  distribute:
+    name: Assign existing TestFlight build to testers
+    runs-on: ubuntu-latest
+    environment: testflight
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Assign build and notify testers via Shared action
+        uses: Suuu-sh/Shared/actions/testflight-distribute-existing-build@main
+        with:
+          app-bundle-id: app.nomo.nomo
+          app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          app-store-connect-issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          app-store-connect-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          build-number: ${{ github.event.inputs.build_number }}
+          testflight-internal-group-name: ${{ vars.TESTFLIGHT_INTERNAL_GROUP_NAME }}
+          testflight-internal-tester-emails: ${{ secrets.TESTFLIGHT_INTERNAL_TESTER_EMAILS }}
+          testflight-notify-assigned-testers: 'true'
