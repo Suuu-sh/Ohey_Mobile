@@ -15,9 +15,7 @@ import '../../../core/widgets/nomo_toast.dart';
 import '../../logs/application/drink_log_controller.dart';
 
 class AddNomiTomoScreen extends ConsumerStatefulWidget {
-  const AddNomiTomoScreen({super.key, this.initialScan = false});
-
-  final bool initialScan;
+  const AddNomiTomoScreen({super.key});
 
   @override
   ConsumerState<AddNomiTomoScreen> createState() => _AddNomiTomoScreenState();
@@ -26,16 +24,6 @@ class AddNomiTomoScreen extends ConsumerStatefulWidget {
 class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
   final _userIdController = TextEditingController();
   bool _busy = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.initialScan) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _scanQr();
-      });
-    }
-  }
 
   @override
   void dispose() {
@@ -97,9 +85,9 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
   }
 
   Future<void> _scanQr() async {
-    final payload = await Navigator.of(
-      context,
-    ).push<String>(CupertinoPageRoute(builder: (_) => const QrScannerScreen()));
+    final payload = await Navigator.of(context).push<String>(
+      CupertinoPageRoute(builder: (_) => const NomiTomoQrScannerScreen()),
+    );
     if (!mounted || payload == null) return;
     final userId = parseFriendQrPayload(payload);
     if (userId == null) {
@@ -141,7 +129,8 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
     if (currentUser == null) {
       throw StateError('友達追加にはログインが必要です。');
     }
-    final normalized = userId.trim().replaceFirst(RegExp(r'^@'), '');
+    final normalized = _normalizeFriendSearchId(userId);
+    if (normalized.isEmpty) return null;
     final row = await Supabase.instance.client
         .from('profiles')
         .select('id, display_name, user_id, avatar_url')
@@ -179,6 +168,14 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
 }
 
 String _friendQrPayload(String userId) => 'nomo://friend/$userId';
+
+String _normalizeFriendSearchId(String raw) {
+  final withoutAt = raw.trim().replaceFirst(RegExp(r'^@'), '');
+  final localPart = withoutAt.contains('@')
+      ? withoutAt.split('@').first
+      : withoutAt;
+  return localPart.replaceAll('-', '_').toLowerCase();
+}
 
 String? parseFriendQrPayload(String raw) {
   final value = raw.trim();
@@ -253,14 +250,15 @@ class _ExchangeHeader extends StatelessWidget {
   );
 }
 
-class QrScannerScreen extends StatefulWidget {
-  const QrScannerScreen({super.key});
+class NomiTomoQrScannerScreen extends StatefulWidget {
+  const NomiTomoQrScannerScreen({super.key});
 
   @override
-  State<QrScannerScreen> createState() => _QrScannerScreenState();
+  State<NomiTomoQrScannerScreen> createState() => _QrScannerScreenState();
 }
 
-class _QrScannerScreenState extends State<QrScannerScreen> {
+class _QrScannerScreenState extends State<NomiTomoQrScannerScreen> {
+  final MobileScannerController _controller = MobileScannerController();
   bool _returned = false;
 
   @override

@@ -24,7 +24,20 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  late final PageController _feedPageController;
   _FeedSection _selectedSection = _FeedSection.feed;
+
+  @override
+  void initState() {
+    super.initState();
+    _feedPageController = PageController(initialPage: _selectedSection.index);
+  }
+
+  @override
+  void dispose() {
+    _feedPageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +50,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .currentUser
         ?.id;
     final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
-    final selectedItems = _itemsForSection(
-      _selectedSection,
-      logs,
-      user: user,
-      currentUserId: currentUserId,
-    );
+    final sectionItems = {
+      for (final section in _FeedSection.values)
+        section: _itemsForSection(
+          section,
+          logs,
+          user: user,
+          currentUserId: currentUserId,
+        ),
+    };
 
     return const _FeedBackground(child: SizedBox.expand()).copyWith(
       child: SafeArea(
@@ -69,38 +85,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 22),
               _FeedTabs(
                 selected: _selectedSection,
-                onChanged: (section) =>
-                    setState(() => _selectedSection = section),
+                onChanged: (section) => _onFeedSectionChanged(section),
               ),
               const SizedBox(height: 18),
               Expanded(
-                child: ListView(
+                child: PageView(
+                  controller: _feedPageController,
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 124),
+                  onPageChanged: (page) {
+                    final next = _FeedSection.values[page];
+                    if (_selectedSection != next) {
+                      setState(() => _selectedSection = next);
+                    }
+                  },
                   children: [
-                    if (logsAsync.isLoading && logs.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(36),
-                        child: Center(child: CupertinoActivityIndicator()),
-                      )
-                    else if (selectedItems.isEmpty)
-                      _FeedSectionEmptyState(
-                        section: _selectedSection,
+                    for (final section in _FeedSection.values)
+                      _buildFeedSectionPage(
+                        section: section,
+                        items: sectionItems[section] ?? const <_FeedItem>[],
                         isWhite: isWhite,
-                      )
-                    else
-                      ...selectedItems.map(
-                        (item) => _FeedPostCard(
-                          item: item,
-                          onLike: item.isLikeable
-                              ? () => ref
-                                    .read(drinkLogControllerProvider.notifier)
-                                    .toggleLike(item.id)
-                              : null,
-                          onMore: item.id.isEmpty
-                              ? null
-                              : () => _showFeedPostActions(context, ref, item),
-                        ),
+                        logsAsync: logsAsync,
+                        onLikePressed: (item) => ref
+                            .read(drinkLogControllerProvider.notifier)
+                            .toggleLike(item.id),
+                        onMorePressed: (item) =>
+                            _showFeedPostActions(context, ref, item),
                       ),
                   ],
                 ),
@@ -111,14 +120,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+
+  void _onFeedSectionChanged(_FeedSection section) {
+    setState(() => _selectedSection = section);
+    if (_feedPageController.hasClients) {
+      _feedPageController.animateToPage(
+        section.index,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
 }
+
+Widget _buildFeedSectionPage({
+  required _FeedSection section,
+  required List<_FeedItem> items,
+  required bool isWhite,
+  required AsyncValue<List<DrinkLog>> logsAsync,
+  required ValueChanged<_FeedItem> onLikePressed,
+  required ValueChanged<_FeedItem> onMorePressed,
+}) => ListView(
+  physics: const BouncingScrollPhysics(),
+  padding: const EdgeInsets.only(bottom: 124),
+  children: [
+    if (logsAsync.isLoading && items.isEmpty)
+      const Padding(
+        padding: EdgeInsets.all(36),
+        child: Center(child: CupertinoActivityIndicator()),
+      )
+    else if (items.isEmpty)
+      _FeedSectionEmptyState(section: section, isWhite: isWhite)
+    else
+      ...items.map(
+        (item) => _FeedPostCard(
+          item: item,
+          onLike: item.isLikeable ? () => onLikePressed(item) : null,
+          onMore: item.id.isEmpty ? null : () => onMorePressed(item),
+        ),
+      ),
+  ],
+);
 
 enum _FeedSection { feed, following, official }
 
 extension _FeedSectionView on _FeedSection {
   String get label => switch (this) {
-    _FeedSection.feed => 'フィード',
-    _FeedSection.following => 'フォロー中',
+    _FeedSection.feed => 'おすすめ',
+    _FeedSection.following => 'フレンズ',
     _FeedSection.official => '公式',
   };
 
@@ -349,7 +398,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = switch (section) {
       _FeedSection.feed => 'まだ投稿がありません',
-      _FeedSection.following => 'フォロー中の投稿はまだありません',
+      _FeedSection.following => 'フレンズの投稿はまだありません',
       _FeedSection.official => '公式のお知らせはまだありません',
     };
     final message = switch (section) {
