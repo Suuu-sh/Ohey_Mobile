@@ -65,7 +65,7 @@ class ProfileScreen extends ConsumerWidget {
                       const SizedBox(height: 14),
                       _SimpleHero(
                         isWhite: isWhite,
-                        handle: user == null ? '@NOMO_USER' : '@${user.userId}',
+                        name: user?.name ?? 'ユーザー名',
                         avatar: user?.avatar,
                       ),
                     ],
@@ -457,17 +457,18 @@ class _ProfileTopSheet extends StatelessWidget {
 class _SimpleHero extends StatelessWidget {
   const _SimpleHero({
     required this.isWhite,
-    required this.handle,
+    required this.name,
     required this.avatar,
   });
 
   final bool isWhite;
-  final String handle;
+  final String name;
   final NomoAvatar? avatar;
 
   @override
   Widget build(BuildContext context) {
-    final joinedYear = DateTime.now().year;
+    final now = DateTime.now();
+    final joinedMonth = '${now.year}/${now.month.toString().padLeft(2, '0')}';
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -502,23 +503,18 @@ class _SimpleHero extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(18, 13, 18, 14),
             color: isWhite ? Colors.white : const Color(0xFF101D25),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '$handle ・ $joinedYear年に参加',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: isWhite
-                          ? const Color(0xFF59636E)
-                          : _ProfileColors.sub,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.4,
-                    ),
-                  ),
+            child: Center(
+              child: Text(
+                '$name ・ $joinedMonth 参加',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: isWhite ? const Color(0xFF59636E) : _ProfileColors.sub,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.4,
                 ),
-              ],
+              ),
             ),
           ),
         ],
