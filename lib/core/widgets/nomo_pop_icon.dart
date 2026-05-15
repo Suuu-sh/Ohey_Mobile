@@ -946,12 +946,7 @@ class _CuteGlyphPainter extends CustomPainter {
   }
 
   void _drawGear(Canvas canvas, Size s, Paint p, Paint stroke) {
-    final cut = Paint()..color = Colors.black.withValues(alpha: .26);
-    canvas.drawCircle(
-      Offset(s.width * .54, s.height * .57),
-      s.width * .32,
-      Paint()..color = const Color(0xFF06111D).withValues(alpha: .62),
-    );
+    canvas.saveLayer(Offset.zero & s, Paint());
     for (var i = 0; i < 8; i++) {
       final a = i * math.pi / 4;
       canvas.drawCircle(
@@ -967,13 +962,9 @@ class _CuteGlyphPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(s.width * .50, s.height * .50),
       s.width * .115,
-      cut,
+      Paint()..blendMode = BlendMode.clear,
     );
-    canvas.drawCircle(
-      Offset(s.width * .39, s.height * .33),
-      s.width * .035,
-      Paint()..color = Colors.white.withValues(alpha: .55),
-    );
+    canvas.restore();
   }
 
   void _drawQr(Canvas canvas, Size s, Paint p, Paint stroke) {
