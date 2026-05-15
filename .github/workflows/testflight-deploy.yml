@@ -1,0 +1,143 @@
+name: TestFlight Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'lib/**'
+      - 'assets/**'
+      - 'ios/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - '.github/workflows/testflight-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: Optional iOS build number override. Leave blank to use the Shared action timestamp.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testflight-deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and upload to TestFlight
+    runs-on: macos-15
+    timeout-minutes: 90
+    environment: testflight
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Validate Nomo production environment
+        env:
+          DOTENV_PRODUCTION: ${{ secrets.DOTENV_PRODUCTION }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DOTENV_PRODUCTION:-}" ]; then
+            echo "::error::DOTENV_PRODUCTION secret is required for TestFlight builds."
+            exit 1
+          fi
+
+      - name: Prepare production dart defines
+        env:
+          DOTENV_PRODUCTION: ${{ secrets.DOTENV_PRODUCTION }}
+        run: |
+          set -euo pipefail
+          printf '%s\n' "$DOTENV_PRODUCTION" > .env.production
+
+          dart_define_args=()
+          while IFS= read -r line || [ -n "$line" ]; do
+            case "$line" in
+              ''|'#'*) continue ;;
+            esac
+            key="${line%%=*}"
+            value="${line#*=}"
+            if [ -z "$key" ] || [ "$key" = "$line" ]; then
+              continue
+            fi
+            dart_define_args+=("--dart-define=$key=$value")
+          done < .env.production
+
+          if [ ${#dart_define_args[@]} -eq 0 ]; then
+            echo "::error::DOTENV_PRODUCTION did not contain any KEY=value lines."
+            exit 1
+          fi
+
+          printf '%s\n' "${dart_define_args[@]}" > "$RUNNER_TEMP/nomo_dart_defines.args"
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods dependencies
+        working-directory: ios
+        run: pod install
+
+      - name: Resolve TestFlight build number
+        id: build-number
+        env:
+          INPUT_BUILD_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.build_number || '' }}
+        run: |
+          set -euo pipefail
+          build_number="$INPUT_BUILD_NUMBER"
+          if [ -n "$build_number" ] && ! [[ "$build_number" =~ ^[0-9]+$ ]]; then
+            echo "::error::Build number must be numeric: $build_number"
+            exit 1
+          fi
+          if [ -z "$build_number" ]; then
+            build_number="$(TZ=Asia/Tokyo date +%Y%m%d%H%M%S)"
+          fi
+          echo "build-number=$build_number" >> "$GITHUB_OUTPUT"
+
+      - name: Generate Flutter iOS release config
+        run: |
+          set -euo pipefail
+          build_number="${{ steps.build-number.outputs.build-number }}"
+
+          args=(--release --config-only --dart-define=NOMO_ENV=production --build-number "$build_number")
+          while IFS= read -r define_arg || [ -n "$define_arg" ]; do
+            args+=("$define_arg")
+          done < "$RUNNER_TEMP/nomo_dart_defines.args"
+
+          flutter build ios "${args[@]}"
+
+      - name: Build and distribute via Shared action
+        uses: Suuu-sh/Shared/actions/testflight-deploy@main
+        with:
+          project-path: ios/Runner.xcodeproj
+          workspace-path: ios/Runner.xcworkspace
+          scheme: Runner
+          configuration: Release
+          app-bundle-id: app.nomo.nomo
+          team-id: 83J5SB3ZPX
+          build-number: ${{ steps.build-number.outputs.build-number }}
+          app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          app-store-connect-issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          app-store-connect-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          ios-distribution-certificate-p12-base64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_P12_BASE64 }}
+          ios-distribution-certificate-password: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          ios-app-store-provisioning-profile-base64: ${{ secrets.IOS_APP_STORE_PROVISIONING_PROFILE_BASE64 }}
+          testflight-internal-group-name: ${{ vars.TESTFLIGHT_INTERNAL_GROUP_NAME }}
+          testflight-internal-tester-emails: ${{ secrets.TESTFLIGHT_INTERNAL_TESTER_EMAILS }}
+          testflight-notify-assigned-testers: 'true'
+
+      - name: Clean up signing assets
+        if: always()
+        run: |
+          security delete-keychain "$KEYCHAIN_PATH" || true
+          if [ -n "${PROVISIONING_PROFILE_UUID:-}" ]; then
+            rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/$PROVISIONING_PROFILE_UUID.mobileprovision" || true
+          fi

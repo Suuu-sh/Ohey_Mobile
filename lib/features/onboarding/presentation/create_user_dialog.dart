@@ -277,29 +277,25 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
               ? null
               : () => setState(() => _step = _OnboardingStep.intro),
         ),
-        const SizedBox(height: 18),
-        TextField(
+        const SizedBox(height: 22),
+        _AuthTextField(
           controller: _emailController,
           enabled: !_isBusy,
+          icon: CupertinoIcons.mail,
+          hintText: 'メールアドレス',
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
           autofillHints: const [AutofillHints.email],
-          decoration: const InputDecoration(
-            hintText: 'メールアドレス',
-            prefixIcon: NomoGeneratedIcon(CupertinoIcons.mail),
-          ),
         ),
         const SizedBox(height: 12),
-        TextField(
+        _AuthTextField(
           controller: _passwordController,
           enabled: !_isBusy,
+          icon: CupertinoIcons.lock_fill,
+          hintText: 'パスワード（6文字以上）',
           obscureText: true,
           textInputAction: TextInputAction.done,
           autofillHints: const [AutofillHints.password],
-          decoration: const InputDecoration(
-            hintText: 'パスワード（6文字以上）',
-            prefixIcon: NomoGeneratedIcon(CupertinoIcons.lock),
-          ),
         ),
         if (_error != null) ...[
           const SizedBox(height: 12),
@@ -313,7 +309,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
         _PrimaryButton(
           label: _isLogin ? 'ログイン' : '新規登録して続ける',
           icon: _isLogin
-              ? CupertinoIcons.person_crop_circle_badge_checkmark
+              ? CupertinoIcons.arrow_right_circle_fill
               : CupertinoIcons.person_add_solid,
           busy: _isBusy,
           onPressed: _submitAuth,
@@ -371,14 +367,24 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
         TextField(
           controller: _nameController,
           enabled: !_isBusy,
+          style: const TextStyle(
+            color: AppColors.ink,
+            fontWeight: FontWeight.w800,
+          ),
+          cursorColor: AppColors.ink,
           textInputAction: TextInputAction.done,
           onChanged: (_) {
             if (!_nameTouched) setState(() => _nameTouched = true);
           },
           decoration: InputDecoration(
             hintText: '名前（必須）',
+            hintStyle: const TextStyle(
+              color: AppColors.mutedInk,
+              fontWeight: FontWeight.w800,
+            ),
             prefixIcon: const NomoGeneratedIcon(
               CupertinoIcons.person_crop_circle,
+              color: AppColors.ink,
             ),
             errorText: _nameTouched && _nameController.text.trim().isEmpty
                 ? '名前を入力してください'
@@ -934,6 +940,81 @@ class _Header extends StatelessWidget {
       ],
     );
   }
+}
+
+class _AuthTextField extends StatelessWidget {
+  const _AuthTextField({
+    required this.controller,
+    required this.enabled,
+    required this.icon,
+    required this.hintText,
+    this.keyboardType,
+    this.textInputAction,
+    this.autofillHints,
+    this.obscureText = false,
+  });
+
+  final TextEditingController controller;
+  final bool enabled;
+  final IconData icon;
+  final String hintText;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final Iterable<String>? autofillHints;
+  final bool obscureText;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 58,
+    decoration: BoxDecoration(
+      color: const Color(0xFFF7F8FB),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: const Color(0xFFE4E8F0), width: 1.6),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.navy.withValues(alpha: .04),
+          blurRadius: 16,
+          offset: const Offset(0, 7),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        const SizedBox(width: 16),
+        NomoGeneratedIcon(icon, color: AppColors.navy, size: 25),
+        const SizedBox(width: 12),
+        Expanded(
+          child: TextField(
+            controller: controller,
+            enabled: enabled,
+            style: const TextStyle(
+              color: AppColors.ink,
+              fontWeight: FontWeight.w900,
+              fontSize: 15,
+            ),
+            cursorColor: AppColors.navy,
+            keyboardType: keyboardType,
+            textInputAction: textInputAction,
+            autofillHints: autofillHints,
+            obscureText: obscureText,
+            decoration: InputDecoration(
+              isCollapsed: true,
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              hintText: hintText,
+              hintStyle: const TextStyle(
+                color: AppColors.mutedInk,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+      ],
+    ),
+  );
 }
 
 class _PrimaryButton extends StatelessWidget {
