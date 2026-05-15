@@ -397,7 +397,7 @@ class _ProfileSettingsButton extends StatelessWidget {
           child: Center(
             child: NomoGeneratedIcon(
               CupertinoIcons.gear_alt,
-              color: _ProfileColors.lime,
+              color: Colors.black,
               size: 38,
             ),
           ),
