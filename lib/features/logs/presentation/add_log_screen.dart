@@ -78,6 +78,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                         children: [
                           _InputBox(
                             icon: CupertinoIcons.location_solid,
+                            iconColor: _AddLogColors.placeIcon,
                             hint: 'お店・エリア',
                             controller: _placeController,
                             maxLines: 1,
@@ -87,6 +88,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                           _FriendSelectCard(
                             search: _InputBox(
                               icon: CupertinoIcons.search,
+                              iconColor: _AddLogColors.searchIcon,
                               hint: 'フレンズを検索',
                               controller: _friendSearchController,
                               maxLines: 1,
@@ -103,7 +105,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                                       }),
                                       icon: const NomoGeneratedIcon(
                                         CupertinoIcons.xmark_circle_fill,
-                                        color: _AddLogColors.muted,
+                                        color: _AddLogColors.clearIcon,
                                       ),
                                     ),
                             ),
@@ -130,6 +132,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                           const SizedBox(height: 14),
                           _DateTimeBox(
                             icon: CupertinoIcons.calendar,
+                            iconColor: _AddLogColors.calendarIcon,
                             label: _dateLabel(_selectedDate),
                             onTap: _pickDate,
                           ),
@@ -279,6 +282,7 @@ class _InputBox extends StatelessWidget {
     required this.controller,
     required this.maxLines,
     this.icon,
+    this.iconColor = _AddLogColors.lime,
     this.suffix,
     this.showCounter = false,
     this.maxLength = 100,
@@ -287,6 +291,7 @@ class _InputBox extends StatelessWidget {
   });
 
   final IconData? icon;
+  final Color iconColor;
   final String hint;
   final TextEditingController controller;
   final int maxLines;
@@ -311,7 +316,7 @@ class _InputBox extends StatelessWidget {
         if (icon != null) ...[
           NomoPopIcon(
             icon: icon!,
-            color: _AddLogColors.lime,
+            color: iconColor,
             size: 34,
             iconSize: 19,
             shadow: false,
@@ -444,7 +449,7 @@ class _FriendChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: selected
-              ? _AddLogColors.lime
+              ? _AddLogColors.friendRemoveIcon
               : Colors.white.withValues(alpha: .06),
           width: selected ? 1.4 : 1,
         ),
@@ -477,7 +482,9 @@ class _FriendChip extends StatelessWidget {
           const SizedBox(width: 8),
           NomoPopIcon(
             icon: selected ? CupertinoIcons.xmark : CupertinoIcons.plus,
-            color: selected ? const Color(0xFFFF5F8F) : _AddLogColors.lime,
+            color: selected
+                ? _AddLogColors.friendRemoveIcon
+                : _AddLogColors.friendAddIcon,
             size: 26,
             iconSize: 15,
             shadow: false,
@@ -491,11 +498,13 @@ class _FriendChip extends StatelessWidget {
 class _DateTimeBox extends StatelessWidget {
   const _DateTimeBox({
     required this.icon,
+    required this.iconColor,
     required this.label,
     required this.onTap,
   });
 
   final IconData icon;
+  final Color iconColor;
   final String label;
   final VoidCallback onTap;
 
@@ -508,7 +517,7 @@ class _DateTimeBox extends StatelessWidget {
         children: [
           NomoPopIcon(
             icon: icon,
-            color: _AddLogColors.lime,
+            color: iconColor,
             size: 32,
             iconSize: 18,
             shadow: false,
@@ -616,5 +625,11 @@ class _AddLogColors {
   static const surface = Color(0xFF14212B);
   static const muted = Color(0xFF99A3AE);
   static const lime = Color(0xFFB8FF00);
+  static const placeIcon = Color(0xFF7DF1FF);
+  static const searchIcon = Color(0xFFFFD166);
+  static const clearIcon = Color(0xFFFF8AB3);
+  static const calendarIcon = Color(0xFF9F7BFF);
+  static const friendAddIcon = Color(0xFF4CD964);
+  static const friendRemoveIcon = Color(0xFFFF5F8F);
   static const line = Color(0xFF243542);
 }

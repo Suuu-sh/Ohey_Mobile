@@ -805,7 +805,6 @@ class _FeedNotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final unreadCount = notifications.where((n) => n.unread).length;
 
     return Scaffold(
       backgroundColor: isWhite ? Colors.white : const Color(0xFF07131F),
@@ -823,7 +822,7 @@ class _FeedNotificationsScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(22, 12, 22, 124),
                   sliver: SliverList.list(
                     children: [
-                      Row(
+                      Stack(
                         children: [
                           CupertinoButton(
                             minimumSize: const Size(44, 44),
@@ -854,20 +853,28 @@ class _FeedNotificationsScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'お知らせ',
-                            style: TextStyle(
-                              color: isWhite
-                                  ? const Color(0xFF27313B)
-                                  : Colors.white,
-                              fontSize: 23,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -.8,
+                          Positioned.fill(
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 56,
+                                ),
+                                child: Text(
+                                  'お知らせ',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: isWhite
+                                        ? const Color(0xFF27313B)
+                                        : Colors.white,
+                                    fontSize: 23,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -.8,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                          const Spacer(),
-                          _UnreadPill(count: unreadCount, isWhite: isWhite),
                         ],
                       ),
                       const SizedBox(height: 18),
@@ -891,40 +898,6 @@ class _FeedNotificationsScreen extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _UnreadPill extends StatelessWidget {
-  const _UnreadPill({required this.count, required this.isWhite});
-
-  final int count;
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    final bgColor = isWhite
-        ? _FeedColors.teal.withValues(alpha: .16)
-        : _FeedColors.teal.withValues(alpha: .16);
-    final borderColor = isWhite
-        ? _FeedColors.teal.withValues(alpha: .24)
-        : _FeedColors.teal.withValues(alpha: .24);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: borderColor),
-      ),
-      child: Text(
-        count == 0 ? '既読' : '未読 $count',
-        style: const TextStyle(
-          color: _FeedColors.teal,
-          fontSize: 11,
-          fontWeight: FontWeight.w900,
         ),
       ),
     );
