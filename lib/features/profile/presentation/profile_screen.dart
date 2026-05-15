@@ -419,7 +419,7 @@ class _ProfileSettingsButton extends StatelessWidget {
           child: Center(
             child: NomoGeneratedIcon(
               CupertinoIcons.gear_alt,
-              color: Colors.black,
+              color: isWhite ? Colors.white : Colors.black,
               size: 38,
             ),
           ),
@@ -1623,6 +1623,7 @@ Future<void> _showEditProfileSheet(
   NomoUser? user,
 ) async {
   final controller = TextEditingController(text: user?.name ?? '');
+  final userIdController = TextEditingController(text: user?.userId ?? '');
   final userController = ref.read(nomoUserProvider.notifier);
   var avatar = user?.avatar ?? NomoAvatar.defaultAvatar;
   var saving = false;
@@ -1633,11 +1634,11 @@ Future<void> _showEditProfileSheet(
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (sheetContext) => StatefulBuilder(
-      builder: (context, setState) => _SheetShell(
+      builder: (sheetBuildContext, setState) => _SheetShell(
         title: 'プロフィール編集',
         child: Padding(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
+            bottom: MediaQuery.of(sheetBuildContext).viewInsets.bottom,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1651,6 +1652,27 @@ Future<void> _showEditProfileSheet(
                   fontWeight: FontWeight.w800,
                 ),
                 decoration: _darkInputDecoration('表示名'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: userIdController,
+                enabled: !saving,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+                decoration: _darkInputDecoration('ユーザーID').copyWith(
+                  prefixText: '@',
+                  prefixStyle: const TextStyle(
+                    color: _ProfileColors.sub,
+                    fontWeight: FontWeight.w900,
+                  ),
+                  helperText: '半角英数字と_で3〜24文字',
+                  helperStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: .45),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               _AvatarEditCard(
@@ -1687,8 +1709,13 @@ Future<void> _showEditProfileSheet(
                 busy: saving,
                 onTap: () async {
                   final name = controller.text.trim();
+                  final userId = userIdController.text.trim();
                   if (name.isEmpty) {
                     setState(() => error = '表示名を入力してください。');
+                    return;
+                  }
+                  if (!RegExp(r'^[a-zA-Z0-9_]{3,24}$').hasMatch(userId)) {
+                    setState(() => error = 'ユーザーIDは半角英数字と_で3〜24文字にしてください。');
                     return;
                   }
                   setState(() {
@@ -1698,6 +1725,7 @@ Future<void> _showEditProfileSheet(
                   try {
                     await userController.updateProfile(
                       name: name,
+                      userId: userId,
                       avatar: avatar,
                     );
                     if (sheetContext.mounted) {
@@ -1722,6 +1750,7 @@ Future<void> _showEditProfileSheet(
     ),
   );
   controller.dispose();
+  userIdController.dispose();
 }
 
 Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
@@ -1757,7 +1786,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               ),
               _SettingsTile(
                 icon: CupertinoIcons.person_crop_circle,
-                label: '名前・アバターを編集',
+                label: 'プロフィールを編集',
                 onTap: () async {
                   if (sheetContext.mounted) {
                     Navigator.of(sheetContext).pop();

@@ -38,153 +38,124 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
   Widget build(BuildContext context) {
     final friendsAsync = ref.watch(friendsProvider);
     final keyboardBottom = MediaQuery.viewInsetsOf(context).bottom;
+    final maxSheetHeight = MediaQuery.sizeOf(context).height * .86;
 
     return AnimatedPadding(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOutCubic,
       padding: EdgeInsets.only(bottom: keyboardBottom),
-      child: FractionallySizedBox(
-        heightFactor: .88,
-        alignment: Alignment.bottomCenter,
-        child: DecoratedBox(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF172637), Color(0xFF101B28), Color(0xFF0B1420)],
-            ),
-          ),
-          child: SafeArea(
-            top: false,
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(34),
-                ),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: _AddLogColors.panel,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: .08),
-                    ),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(34),
-                    ),
+      child: SafeArea(
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxSheetHeight),
+            child: Container(
+              margin: const EdgeInsets.all(14),
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+              decoration: BoxDecoration(
+                color: _AddLogColors.panel,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: _AddLogColors.line),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: .24),
+                    blurRadius: 30,
+                    offset: const Offset(0, 16),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
-                    child: Column(
-                      children: [
-                        _Header(
-                          onClose: () => Navigator.of(context).maybePop(),
-                        ),
-                        const SizedBox(height: 10),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            physics: const BouncingScrollPhysics(),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _SectionLabel('どこ？'),
-                                const SizedBox(height: 7),
-                                _InputBox(
-                                  icon: CupertinoIcons.location_solid,
-                                  hint: 'お店・エリア',
-                                  controller: _placeController,
-                                  maxLines: 1,
-                                  compact: true,
-                                  onChanged: (_) => setState(() {}),
-                                ),
-                                const SizedBox(height: 12),
-                                _SectionLabel('誰と飲んだ？'),
-                                const SizedBox(height: 7),
-                                _InputBox(
-                                  icon: CupertinoIcons.search,
-                                  hint: 'フレンズを検索',
-                                  controller: _friendSearchController,
-                                  maxLines: 1,
-                                  compact: true,
-                                  onChanged: (value) => setState(
-                                    () => _friendSearchQuery = value,
-                                  ),
-                                  suffix: _friendSearchQuery.isEmpty
-                                      ? null
-                                      : IconButton(
-                                          visualDensity: VisualDensity.compact,
-                                          onPressed: () => setState(() {
-                                            _friendSearchController.clear();
-                                            _friendSearchQuery = '';
-                                          }),
-                                          icon: const NomoGeneratedIcon(
-                                            CupertinoIcons.xmark_circle_fill,
-                                            color: _AddLogColors.muted,
-                                          ),
-                                        ),
-                                ),
-                                const SizedBox(height: 8),
-                                SizedBox(
-                                  height: 54,
-                                  child: friendsAsync.when(
-                                    data: (friends) => _FriendChips(
-                                      friends: _filteredFriends(friends),
-                                      selectedIds: _selectedFriendIds,
-                                      onChanged: _toggleFriend,
-                                      emptyMessage:
-                                          _friendSearchQuery.trim().isEmpty
-                                          ? 'まだフレンズがいません'
-                                          : '該当するフレンズがいません',
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _Header(onClose: () => Navigator.of(context).maybePop()),
+                  const SizedBox(height: 16),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _InputBox(
+                            icon: CupertinoIcons.location_solid,
+                            hint: 'お店・エリア',
+                            controller: _placeController,
+                            maxLines: 1,
+                            onChanged: (_) => setState(() {}),
+                          ),
+                          const SizedBox(height: 14),
+                          _FriendSelectCard(
+                            search: _InputBox(
+                              icon: CupertinoIcons.search,
+                              hint: 'フレンズを検索',
+                              controller: _friendSearchController,
+                              maxLines: 1,
+                              borderless: true,
+                              onChanged: (value) =>
+                                  setState(() => _friendSearchQuery = value),
+                              suffix: _friendSearchQuery.isEmpty
+                                  ? null
+                                  : IconButton(
+                                      visualDensity: VisualDensity.compact,
+                                      onPressed: () => setState(() {
+                                        _friendSearchController.clear();
+                                        _friendSearchQuery = '';
+                                      }),
+                                      icon: const NomoGeneratedIcon(
+                                        CupertinoIcons.xmark_circle_fill,
+                                        color: _AddLogColors.muted,
+                                      ),
                                     ),
-                                    loading: () =>
-                                        const _LoadingBox(compact: true),
-                                    error: (error, stackTrace) =>
-                                        const _ErrorBox(
-                                          message: '友達を読み込めませんでした',
-                                          compact: true,
-                                        ),
-                                  ),
+                            ),
+                            chips: SizedBox(
+                              height: 58,
+                              child: friendsAsync.when(
+                                data: (friends) => _FriendChips(
+                                  friends: _filteredFriends(friends),
+                                  selectedIds: _selectedFriendIds,
+                                  onChanged: _toggleFriend,
+                                  emptyMessage:
+                                      _friendSearchQuery.trim().isEmpty
+                                      ? 'まだフレンズがいません'
+                                      : '該当するフレンズがいません',
                                 ),
-                                const SizedBox(height: 12),
-                                _SectionLabel('いつ？'),
-                                const SizedBox(height: 7),
-                                _DateTimeBox(
-                                  icon: CupertinoIcons.calendar,
-                                  label: _dateLabel(_selectedDate),
-                                  onTap: _pickDate,
+                                loading: () => const _LoadingBox(compact: true),
+                                error: (error, stackTrace) => const _ErrorBox(
+                                  message: '友達を読み込めませんでした',
                                   compact: true,
                                 ),
-                                const SizedBox(height: 12),
-                                _SectionLabel('一言'),
-                                const SizedBox(height: 7),
-                                _InputBox(
-                                  hint: '最高の一杯',
-                                  controller: _memoController,
-                                  maxLines: 1,
-                                  showCounter: true,
-                                  maxLength: 15,
-                                  compact: true,
-                                  onChanged: (_) => setState(() {}),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        friendsAsync.maybeWhen(
-                          data: (friends) => _SaveButton(
-                            isSaving: _isSaving,
-                            onPressed: () => _save(friends),
+                          const SizedBox(height: 14),
+                          _DateTimeBox(
+                            icon: CupertinoIcons.calendar,
+                            label: _dateLabel(_selectedDate),
+                            onTap: _pickDate,
                           ),
-                          orElse: () => const _SaveButton(
-                            isSaving: true,
-                            onPressed: null,
+                          const SizedBox(height: 14),
+                          _InputBox(
+                            hint: '15文字で感想',
+                            controller: _memoController,
+                            maxLines: 1,
+                            showCounter: true,
+                            maxLength: 15,
+                            onChanged: (_) => setState(() {}),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 18),
+                  friendsAsync.maybeWhen(
+                    data: (friends) => _SaveButton(
+                      isSaving: _isSaving,
+                      onPressed: () => _save(friends),
+                    ),
+                    orElse: () =>
+                        const _SaveButton(isSaving: true, onPressed: null),
+                  ),
+                ],
               ),
             ),
           ),
@@ -278,44 +249,27 @@ class _Header extends StatelessWidget {
   final VoidCallback onClose;
 
   @override
-  Widget build(BuildContext context) => Stack(
-    alignment: Alignment.center,
+  Widget build(BuildContext context) => Row(
     children: [
-      Align(
-        alignment: Alignment.centerLeft,
-        child: _RoundIconButton(icon: CupertinoIcons.xmark, onTap: onClose),
+      const Text(
+        '飲み記録',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -1.1,
+        ),
       ),
-      Column(
-        children: [
-          const Text(
-            '飲み記録',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -1.0,
-            ),
-          ),
-        ],
+      const Spacer(),
+      IconButton(
+        onPressed: onClose,
+        icon: const NomoGeneratedIcon(
+          CupertinoIcons.xmark,
+          color: Colors.white,
+          size: 28,
+        ),
       ),
     ],
-  );
-}
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.label);
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Text(
-    label,
-    style: const TextStyle(
-      color: Colors.white,
-      fontSize: 16,
-      fontWeight: FontWeight.w900,
-      letterSpacing: -.2,
-    ),
   );
 }
 
@@ -328,7 +282,7 @@ class _InputBox extends StatelessWidget {
     this.suffix,
     this.showCounter = false,
     this.maxLength = 100,
-    this.compact = false,
+    this.borderless = false,
     this.onChanged,
   });
 
@@ -339,14 +293,15 @@ class _InputBox extends StatelessWidget {
   final Widget? suffix;
   final bool showCounter;
   final int maxLength;
-  final bool compact;
+  final bool borderless;
   final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) => _DarkShell(
+    borderless: borderless,
     padding: EdgeInsets.symmetric(
-      horizontal: compact ? 12 : 16,
-      vertical: compact ? 9 : 13,
+      horizontal: borderless ? 0 : 16,
+      vertical: borderless ? 0 : 13,
     ),
     child: Row(
       crossAxisAlignment: maxLines > 1
@@ -357,11 +312,11 @@ class _InputBox extends StatelessWidget {
           NomoPopIcon(
             icon: icon!,
             color: _AddLogColors.lime,
-            size: compact ? 28 : 34,
-            iconSize: compact ? 16 : 19,
+            size: 34,
+            iconSize: 19,
             shadow: false,
           ),
-          SizedBox(width: compact ? 8 : 12),
+          const SizedBox(width: 12),
         ],
         Expanded(
           child: TextField(
@@ -382,14 +337,14 @@ class _InputBox extends StatelessWidget {
             ),
             style: TextStyle(
               color: Colors.white,
-              fontSize: compact ? 14 : 16,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
         ),
         if (showCounter)
           Padding(
-            padding: EdgeInsets.only(left: 8, top: compact ? 26 : 48),
+            padding: const EdgeInsets.only(left: 8, top: 48),
             child: Text(
               '${controller.text.length}/$maxLength',
               style: TextStyle(
@@ -402,6 +357,19 @@ class _InputBox extends StatelessWidget {
         ?suffix,
       ],
     ),
+  );
+}
+
+class _FriendSelectCard extends StatelessWidget {
+  const _FriendSelectCard({required this.search, required this.chips});
+
+  final Widget search;
+  final Widget chips;
+
+  @override
+  Widget build(BuildContext context) => _DarkShell(
+    padding: const EdgeInsets.fromLTRB(16, 15, 16, 14),
+    child: Column(children: [search, const SizedBox(height: 14), chips]),
   );
 }
 
@@ -525,29 +493,24 @@ class _DateTimeBox extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
-    this.compact = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) => GestureDetector(
     onTap: onTap,
     child: _DarkShell(
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 11 : 14,
-        vertical: compact ? 10 : 15,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 15),
       child: Row(
         children: [
           NomoPopIcon(
             icon: icon,
             color: _AddLogColors.lime,
-            size: compact ? 28 : 32,
-            iconSize: compact ? 16 : 18,
+            size: 32,
+            iconSize: 18,
             shadow: false,
           ),
           const SizedBox(width: 10),
@@ -558,7 +521,7 @@ class _DateTimeBox extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: compact ? 12 : 14,
+                fontSize: 14,
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -578,21 +541,26 @@ class _DarkShell extends StatelessWidget {
   const _DarkShell({
     required this.child,
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+    this.borderless = false,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
+  final bool borderless;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: padding,
-    decoration: BoxDecoration(
-      color: _AddLogColors.surface,
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: Colors.white.withValues(alpha: .08)),
-    ),
-    child: child,
-  );
+  Widget build(BuildContext context) {
+    if (borderless) return Padding(padding: padding, child: child);
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: _AddLogColors.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: _AddLogColors.line),
+      ),
+      child: child,
+    );
+  }
 }
 
 class _SaveButton extends StatelessWidget {
@@ -647,33 +615,6 @@ class _ErrorBox extends StatelessWidget {
   );
 }
 
-class _RoundIconButton extends StatelessWidget {
-  const _RoundIconButton({required this.icon, required this.onTap});
-
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      width: 52,
-      height: 52,
-      decoration: const BoxDecoration(
-        color: _AddLogColors.surface,
-        shape: BoxShape.circle,
-      ),
-      child: NomoPopIcon(
-        icon: icon,
-        color: _AddLogColors.lime,
-        size: 36,
-        iconSize: 21,
-        shadow: false,
-      ),
-    ),
-  );
-}
-
 class _AddLogColors {
   const _AddLogColors._();
 
@@ -681,4 +622,5 @@ class _AddLogColors {
   static const surface = Color(0xFF14212B);
   static const muted = Color(0xFF99A3AE);
   static const lime = Color(0xFFB8FF00);
+  static const line = Color(0xFF243542);
 }
