@@ -185,16 +185,6 @@ Future<void> showMyQrDialog(
     }
   }
 
-  void scanQr(BuildContext dialogContext) {
-    Navigator.of(dialogContext).pop();
-    Navigator.of(context).push(
-      CupertinoPageRoute<void>(
-        fullscreenDialog: true,
-        builder: (_) => const AddNomiTomoScreen(initialScan: true),
-      ),
-    );
-  }
-
   Future<void> searchAndAddByUserId(
     BuildContext dialogContext,
     String rawUserId,
@@ -243,6 +233,20 @@ Future<void> showMyQrDialog(
       if (!dialogContext.mounted) return;
       NomoToast.show(dialogContext, '検索できませんでした: $e');
     }
+  }
+
+  Future<void> scanQr(BuildContext dialogContext) async {
+    final payload = await Navigator.of(dialogContext).push<String>(
+      CupertinoPageRoute<String>(builder: (_) => const QrScannerScreen()),
+    );
+    if (!dialogContext.mounted) return;
+    if (payload == null) return;
+    final userId = parseFriendQrPayload(payload);
+    if (userId == null) {
+      NomoToast.show(dialogContext, 'Nomoの友達QRではありません。');
+      return;
+    }
+    await searchAndAddByUserId(dialogContext, userId);
   }
 
   await showDialog<void>(
@@ -1107,10 +1111,7 @@ class _QrActionButton extends StatelessWidget {
                   colors: [Colors.white, Color.lerp(color, Colors.white, .88)!],
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: const Color(0xFFE3E4E6),
-                  width: 2,
-                ),
+                border: Border.all(color: const Color(0xFFE3E4E6), width: 2),
                 boxShadow: [
                   BoxShadow(
                     color: color.withValues(alpha: .16),
