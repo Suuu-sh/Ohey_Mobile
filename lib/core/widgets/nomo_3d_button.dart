@@ -67,8 +67,21 @@ class Nomo3DButton extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color.lerp(base, Colors.white, .14)!, base],
+                  colors: [
+                    Color.lerp(base, Colors.white, .22)!,
+                    Color.lerp(base, Colors.white, .10)!,
+                    base,
+                  ],
+                  stops: const [0, .55, 1],
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: base.withValues(alpha: .22),
+                    blurRadius: 18,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 0),
+                  ),
+                ],
                 borderRadius: BorderRadius.circular(radius),
                 border: Border.all(color: Colors.white.withValues(alpha: .18)),
               ),

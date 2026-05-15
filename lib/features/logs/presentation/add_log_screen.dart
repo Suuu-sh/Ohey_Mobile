@@ -567,7 +567,6 @@ class _SaveButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Nomo3DButton(
     label: '記録する',
-    icon: CupertinoIcons.checkmark_alt,
     isLoading: isSaving,
     enabled: onPressed != null,
     onTap: onPressed,
