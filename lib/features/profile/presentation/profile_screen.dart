@@ -1,5 +1,7 @@
 // ignore_for_file: unused_element
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -118,6 +120,29 @@ class ProfileScreen extends ConsumerWidget {
 
 String _profileQrPayload(String userId) => 'nomo://friend/$userId';
 
+const _qrSaverChannel = MethodChannel('nomo/qr_saver');
+
+Future<Uint8List> _createQrPngBytes(String payload) async {
+  final painter = QrPainter(
+    data: payload,
+    version: QrVersions.auto,
+    eyeStyle: const QrEyeStyle(
+      eyeShape: QrEyeShape.square,
+      color: Color(0xFF4B5056),
+    ),
+    dataModuleStyle: const QrDataModuleStyle(
+      dataModuleShape: QrDataModuleShape.circle,
+      color: Color(0xFF4B5056),
+    ),
+  );
+  final image = await painter.toImage(1024);
+  final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+  if (byteData == null) {
+    throw StateError('QR画像を生成できませんでした');
+  }
+  return byteData.buffer.asUint8List();
+}
+
 Future<void> showMyQrDialog(
   BuildContext context,
   NomoUser? user,
@@ -142,6 +167,27 @@ Future<void> showMyQrDialog(
     await Clipboard.setData(ClipboardData(text: user.userId));
     if (!dialogContext.mounted) return;
     NomoToast.show(dialogContext, 'ユーザーIDをコピーしました');
+  }
+
+  Future<void> saveQrImage(BuildContext dialogContext) async {
+    try {
+      final pngBytes = await _createQrPngBytes(payload);
+      await _qrSaverChannel.invokeMethod<void>('savePngToPhotos', pngBytes);
+      if (!dialogContext.mounted) return;
+      NomoToast.show(dialogContext, 'QR画像を保存しました');
+    } on PlatformException catch (error) {
+      if (!dialogContext.mounted) return;
+      final message = error.code == 'permission_denied'
+          ? '写真への保存が許可されていません'
+          : 'QR画像を保存できませんでした';
+      NomoToast.show(dialogContext, message);
+    } on MissingPluginException {
+      if (!dialogContext.mounted) return;
+      NomoToast.show(dialogContext, 'この端末ではQR保存に未対応です');
+    } catch (_) {
+      if (!dialogContext.mounted) return;
+      NomoToast.show(dialogContext, 'QR画像を保存できませんでした');
+    }
   }
 
   void scanQr(BuildContext dialogContext) {
@@ -223,6 +269,7 @@ Future<void> showMyQrDialog(
           onClose: () => Navigator.of(dialogContext).pop(),
           onCopy: () => copyLink(dialogContext),
           onCopyUserId: () => copyUserId(dialogContext),
+          onSaveQr: () => saveQrImage(dialogContext),
           onScan: () => scanQr(dialogContext),
           onSearchUserId: (value) => searchAndAddByUserId(dialogContext, value),
         ),
@@ -884,6 +931,7 @@ class _MyQrCard extends StatelessWidget {
     required this.onClose,
     required this.onCopy,
     required this.onCopyUserId,
+    required this.onSaveQr,
     required this.onScan,
     required this.onSearchUserId,
   });
@@ -896,6 +944,7 @@ class _MyQrCard extends StatelessWidget {
   final VoidCallback onClose;
   final VoidCallback onCopy;
   final VoidCallback onCopyUserId;
+  final VoidCallback onSaveQr;
   final VoidCallback onScan;
   final Future<void> Function(String value) onSearchUserId;
 
@@ -1036,10 +1085,10 @@ class _MyQrCard extends StatelessWidget {
             children: [
               _QrActionButton(
                 isWhite: isWhite,
-                icon: CupertinoIcons.square_arrow_up,
-                label: 'シェア',
+                icon: CupertinoIcons.arrow_down_to_line_alt,
+                label: 'QR保存',
                 color: const Color(0xFF22D7C5),
-                onTap: onCopy,
+                onTap: onSaveQr,
               ),
               _QrActionButton(
                 isWhite: isWhite,
