@@ -665,11 +665,11 @@ class _ProfileSocialSection extends StatelessWidget {
             isWhite: false,
           ),
           const Spacer(),
-          _FlatStat(value: '$monthlyLogs', label: '今月'),
+          _FlatStat(value: '$monthlyLogs', label: '今月', isWhite: false),
           const SizedBox(width: 34),
-          _FlatStat(value: '$friends', label: 'フレンズ'),
+          _FlatStat(value: '$friends', label: 'フレンズ', isWhite: false),
           const SizedBox(width: 34),
-          _FlatStat(value: '$streak', label: '連続'),
+          _FlatStat(value: '$streak', label: '連続', isWhite: false),
         ],
       ),
       const SizedBox(height: 18),
@@ -738,79 +738,226 @@ class _ProfileDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          decoration: BoxDecoration(
+    final cardColor = isWhite
+        ? Colors.white.withValues(alpha: .92)
+        : const Color(0xFF13202B);
+    final borderColor = isWhite
+        ? const Color(0xFFE2E7EE)
+        : Colors.white.withValues(alpha: .09);
+    final labelColor = isWhite ? const Color(0xFF66717D) : _ProfileColors.sub;
+    final titleColor = isWhite ? const Color(0xFF111C26) : Colors.white;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
             color: isWhite
-                ? Colors.white.withValues(alpha: .78)
-                : Colors.white.withValues(alpha: .035),
-            borderRadius: BorderRadius.circular(26),
-            border: Border.all(
-              color: isWhite
-                  ? const Color(0xFFE1E6EC)
-                  : Colors.white.withValues(alpha: .08),
-            ),
-            boxShadow: isWhite
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: .05),
-                      blurRadius: 22,
-                      offset: const Offset(0, 10),
-                    ),
-                  ]
-                : null,
+                ? Colors.black.withValues(alpha: .06)
+                : Colors.black.withValues(alpha: .18),
+            blurRadius: 26,
+            offset: const Offset(0, 14),
           ),
-          child: Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _LeagueBadge(
-                    icon: CupertinoIcons.person_2_fill,
-                    label: 'フレンズ',
-                    color: _ProfileColors.lime,
-                    isWhite: isWhite,
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        _ProfileColors.lime.withValues(alpha: .95),
+                        const Color(0xFF5FEF7A),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _ProfileColors.lime.withValues(alpha: .20),
+                        blurRadius: 18,
+                        offset: const Offset(0, 9),
+                      ),
+                    ],
                   ),
-                  const Spacer(),
-                  _FlatStat(value: '$friends', label: '友達', isWhite: isWhite),
-                  const SizedBox(width: 24),
-                  _FlatStat(
+                  child: const Center(
+                    child: NomoPopIcon(
+                      icon: CupertinoIcons.person_2_fill,
+                      color: Color(0xFF0F2612),
+                      foregroundColor: Color(0xFF0F2612),
+                      size: 31,
+                      showBubble: false,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'フレンズ',
+                        style: TextStyle(
+                          color: titleColor,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                          letterSpacing: -.4,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '一緒に飲める仲間を増やそう',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: labelColor,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _StatTile(
+                    isWhite: isWhite,
+                    value: '$friends',
+                    label: '友達',
+                    icon: CupertinoIcons.person_2_fill,
+                    accent: _ProfileColors.lime,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _StatTile(
+                    isWhite: isWhite,
                     value: '$monthlyLogs',
                     label: '今月',
+                    icon: CupertinoIcons.calendar,
+                    accent: const Color(0xFF49D7FF),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _StatTile(
                     isWhite: isWhite,
+                    value: '$streak',
+                    label: '連続',
+                    icon: CupertinoIcons.flame_fill,
+                    accent: const Color(0xFFFFB74A),
                   ),
-                  const SizedBox(width: 24),
-                  _FlatStat(value: '$streak', label: '連続', isWhite: isWhite),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: _DashboardButton(
-                      isWhite: isWhite,
-                      icon: CupertinoIcons.person_badge_plus_fill,
-                      label: '友達を追加',
-                      onTap: onAddFriend,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  _IconDashboardButton(
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _DashboardButton(
                     isWhite: isWhite,
-                    icon: CupertinoIcons.qrcode_viewfinder,
-                    onTap: onShowQr,
+                    icon: CupertinoIcons.person_badge_plus_fill,
+                    label: '友達を追加',
+                    onTap: onAddFriend,
                   ),
-                ],
+                ),
+                const SizedBox(width: 10),
+                _IconDashboardButton(
+                  isWhite: isWhite,
+                  icon: CupertinoIcons.qrcode_viewfinder,
+                  onTap: onShowQr,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  const _StatTile({
+    required this.isWhite,
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.accent,
+  });
+
+  final bool isWhite;
+  final String value;
+  final String label;
+  final IconData icon;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 78,
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+    decoration: BoxDecoration(
+      color: isWhite
+          ? const Color(0xFFF6F8FA)
+          : Colors.white.withValues(alpha: .035),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(
+        color: isWhite
+            ? const Color(0xFFE4E9EF)
+            : Colors.white.withValues(alpha: .08),
+      ),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            NomoPopIcon(
+              icon: icon,
+              color: accent,
+              foregroundColor: accent,
+              size: 23,
+              iconSize: 20,
+              showBubble: false,
+            ),
+            const Spacer(),
+            Text(
+              value,
+              style: TextStyle(
+                color: isWhite ? const Color(0xFF101A24) : Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.6,
               ),
-            ],
+            ),
+          ],
+        ),
+        const Spacer(),
+        Text(
+          label,
+          style: TextStyle(
+            color: isWhite ? const Color(0xFF6F7A86) : _ProfileColors.sub,
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
 }
 
 class _DashboardButton extends StatelessWidget {
