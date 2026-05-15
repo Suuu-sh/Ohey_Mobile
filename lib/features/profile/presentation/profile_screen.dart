@@ -467,7 +467,8 @@ class _SimpleHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final joinedYear = DateTime.now().year;
+    final now = DateTime.now();
+    final joinedMonth = '${now.year}/${now.month.toString().padLeft(2, '0')}';
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -504,7 +505,7 @@ class _SimpleHero extends StatelessWidget {
             color: isWhite ? Colors.white : const Color(0xFF101D25),
             child: Center(
               child: Text(
-                '$name ・ $joinedYear年に参加',
+                '$name ・ $joinedMonthに参加',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
