@@ -135,7 +135,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                           ),
                           const SizedBox(height: 14),
                           _InputBox(
-                            hint: '15文字で感想',
+                            hint: '15文字以内で感想',
                             controller: _memoController,
                             maxLines: 1,
                             showCounter: true,
@@ -525,11 +525,6 @@ class _DateTimeBox extends StatelessWidget {
                 fontWeight: FontWeight.w900,
               ),
             ),
-          ),
-          const NomoGeneratedIcon(
-            CupertinoIcons.chevron_down,
-            color: _AddLogColors.muted,
-            size: 18,
           ),
         ],
       ),
