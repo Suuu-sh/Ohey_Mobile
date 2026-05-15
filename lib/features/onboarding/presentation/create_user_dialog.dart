@@ -281,24 +281,48 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
         TextField(
           controller: _emailController,
           enabled: !_isBusy,
+          style: const TextStyle(
+            color: AppColors.ink,
+            fontWeight: FontWeight.w800,
+          ),
+          cursorColor: AppColors.ink,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
           autofillHints: const [AutofillHints.email],
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'メールアドレス',
-            prefixIcon: NomoGeneratedIcon(CupertinoIcons.mail),
+            hintStyle: const TextStyle(
+              color: AppColors.mutedInk,
+              fontWeight: FontWeight.w800,
+            ),
+            prefixIcon: const NomoGeneratedIcon(
+              CupertinoIcons.mail,
+              color: AppColors.ink,
+            ),
           ),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: _passwordController,
           enabled: !_isBusy,
+          style: const TextStyle(
+            color: AppColors.ink,
+            fontWeight: FontWeight.w800,
+          ),
+          cursorColor: AppColors.ink,
           obscureText: true,
           textInputAction: TextInputAction.done,
           autofillHints: const [AutofillHints.password],
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'パスワード（6文字以上）',
-            prefixIcon: NomoGeneratedIcon(CupertinoIcons.lock),
+            hintStyle: const TextStyle(
+              color: AppColors.mutedInk,
+              fontWeight: FontWeight.w800,
+            ),
+            prefixIcon: const NomoGeneratedIcon(
+              CupertinoIcons.lock,
+              color: AppColors.ink,
+            ),
           ),
         ),
         if (_error != null) ...[
@@ -371,14 +395,24 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
         TextField(
           controller: _nameController,
           enabled: !_isBusy,
+          style: const TextStyle(
+            color: AppColors.ink,
+            fontWeight: FontWeight.w800,
+          ),
+          cursorColor: AppColors.ink,
           textInputAction: TextInputAction.done,
           onChanged: (_) {
             if (!_nameTouched) setState(() => _nameTouched = true);
           },
           decoration: InputDecoration(
             hintText: '名前（必須）',
+            hintStyle: const TextStyle(
+              color: AppColors.mutedInk,
+              fontWeight: FontWeight.w800,
+            ),
             prefixIcon: const NomoGeneratedIcon(
               CupertinoIcons.person_crop_circle,
+              color: AppColors.ink,
             ),
             errorText: _nameTouched && _nameController.text.trim().isEmpty
                 ? '名前を入力してください'
