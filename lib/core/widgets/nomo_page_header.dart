@@ -85,27 +85,9 @@ class NomoHeaderIconButton extends StatelessWidget {
         minimumSize: const Size(48, 48),
         padding: EdgeInsets.zero,
         borderRadius: BorderRadius.circular(18),
-        child: Container(
+        child: SizedBox(
           width: 48,
           height: 48,
-          decoration: BoxDecoration(
-            color: isWhite ? Colors.white : Colors.white.withValues(alpha: .08),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: isWhite
-                  ? const Color(0xFFDCE4EC)
-                  : Colors.white.withValues(alpha: .10),
-            ),
-            boxShadow: isWhite
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: .05),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ]
-                : null,
-          ),
           child: Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.center,

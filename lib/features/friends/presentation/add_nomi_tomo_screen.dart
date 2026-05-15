@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -95,11 +97,11 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
   }
 
   Future<void> _scanQr() async {
-    final payload = await Navigator.of(context).push<String>(
-      CupertinoPageRoute(builder: (_) => const _QrScannerScreen()),
-    );
+    final payload = await Navigator.of(
+      context,
+    ).push<String>(CupertinoPageRoute(builder: (_) => const QrScannerScreen()));
     if (!mounted || payload == null) return;
-    final userId = _parseFriendQrPayload(payload);
+    final userId = parseFriendQrPayload(payload);
     if (userId == null) {
       NomoToast.show(context, 'Nomoの友達QRではありません。');
       return;
@@ -178,7 +180,7 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
 
 String _friendQrPayload(String userId) => 'nomo://friend/$userId';
 
-String? _parseFriendQrPayload(String raw) {
+String? parseFriendQrPayload(String raw) {
   final value = raw.trim();
   final uri = Uri.tryParse(value);
   if (uri != null && uri.scheme == 'nomo' && uri.host == 'friend') {
@@ -251,15 +253,61 @@ class _ExchangeHeader extends StatelessWidget {
   );
 }
 
-class _QrScannerScreen extends StatefulWidget {
-  const _QrScannerScreen();
+class QrScannerScreen extends StatefulWidget {
+  const QrScannerScreen({super.key});
 
   @override
-  State<_QrScannerScreen> createState() => _QrScannerScreenState();
+  State<QrScannerScreen> createState() => _QrScannerScreenState();
 }
 
-class _QrScannerScreenState extends State<_QrScannerScreen> {
+class _QrScannerScreenState extends State<QrScannerScreen> {
   bool _returned = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onDetect(BarcodeCapture capture) {
+    if (_returned) return;
+    final code = capture.barcodes.isEmpty
+        ? null
+        : capture.barcodes.first.rawValue;
+    if (code == null || code.isEmpty) return;
+    _returned = true;
+    Navigator.of(context).pop(code);
+  }
+
+  Future<void> _scanFromImage() async {
+    if (kIsWeb) {
+      NomoToast.show(context, 'Web では画像読み込みからのスキャンは未対応です。');
+      return;
+    }
+
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image == null || !mounted) return;
+
+    try {
+      final barcodes = await _controller.analyzeImage(image.path);
+      if (!mounted || _returned) return;
+      if (barcodes == null || barcodes.barcodes.isEmpty) {
+        NomoToast.show(context, 'QRコードが見つかりませんでした');
+        return;
+      }
+      final code = barcodes.barcodes.first.rawValue;
+      if (code == null || code.isEmpty) {
+        NomoToast.show(context, 'QRコードが見つかりませんでした');
+        return;
+      }
+      _returned = true;
+      Navigator.of(context).pop(code);
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(context, '画像の読み込みに失敗しました');
+    }
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -271,17 +319,7 @@ class _QrScannerScreenState extends State<_QrScannerScreen> {
     ),
     body: Stack(
       children: [
-        MobileScanner(
-          onDetect: (capture) {
-            if (_returned) return;
-            final code = capture.barcodes.isEmpty
-                ? null
-                : capture.barcodes.first.rawValue;
-            if (code == null || code.isEmpty) return;
-            _returned = true;
-            Navigator.of(context).pop(code);
-          },
-        ),
+        MobileScanner(controller: _controller, onDetect: _onDetect),
         Center(
           child: Container(
             width: 240,
@@ -295,6 +333,20 @@ class _QrScannerScreenState extends State<_QrScannerScreen> {
                   blurRadius: 28,
                 ),
               ],
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 20,
+          left: 20,
+          right: 20,
+          child: SafeArea(
+            top: false,
+            child: _MiniPopButton(
+              label: '画像から読み取り',
+              icon: CupertinoIcons.photo,
+              color: _ExchangeColors.teal,
+              onTap: _scanFromImage,
             ),
           ),
         ),
@@ -415,7 +467,7 @@ class _ScanQrCard extends StatelessWidget {
   Widget build(BuildContext context) => _ExchangeActionCard(
     icon: CupertinoIcons.qrcode_viewfinder,
     title: 'QRを読み取る',
-    subtitle: 'カメラで相手のNomo QRを読み取る',
+    subtitle: 'カメラまたは画像から相手のNomo QRを読み取る',
     accent: _ExchangeColors.lime,
     onTap: onScan,
   );
