@@ -387,13 +387,13 @@ class _ProfileSettingsButton extends StatelessWidget {
         minimumSize: const Size(48, 48),
         padding: EdgeInsets.zero,
         borderRadius: BorderRadius.circular(18),
-        child: const SizedBox(
+        child: SizedBox(
           width: 48,
           height: 48,
           child: Center(
             child: NomoGeneratedIcon(
               CupertinoIcons.gear_alt,
-              color: _ProfileColors.lime,
+              color: isWhite ? Colors.white : _ProfileColors.lime,
               size: 38,
             ),
           ),
@@ -1107,10 +1107,7 @@ class _QrActionButton extends StatelessWidget {
                   colors: [Colors.white, Color.lerp(color, Colors.white, .88)!],
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: const Color(0xFFE3E4E6),
-                  width: 2,
-                ),
+                border: Border.all(color: const Color(0xFFE3E4E6), width: 2),
                 boxShadow: [
                   BoxShadow(
                     color: color.withValues(alpha: .16),
