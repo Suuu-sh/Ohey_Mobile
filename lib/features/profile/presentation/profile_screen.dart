@@ -78,7 +78,9 @@ class ProfileScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         ColoredBox(
-                          color: const Color(0xFF0B1420),
+                          color: isWhite
+                              ? Colors.white
+                              : const Color(0xFF0B1420),
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(24, 16, 24, 18),
                             child: _ProfileMoodCta(
