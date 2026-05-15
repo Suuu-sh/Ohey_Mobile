@@ -741,187 +741,232 @@ class _FeedNotificationsScreen extends StatelessWidget {
   final List<_FeedNotification> notifications;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFF07131F),
-    body: MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: const TextScaler.linear(1.0)),
-      child: _FeedBackground(
-        child: SafeArea(
-          bottom: false,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(22, 12, 22, 124),
-                sliver: SliverList.list(
-                  children: [
-                    Row(
-                      children: [
-                        CupertinoButton(
-                          minimumSize: const Size(44, 44),
-                          padding: EdgeInsets.zero,
-                          borderRadius: BorderRadius.circular(16),
-                          onPressed: () => Navigator.of(context).maybePop(),
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: .06),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: .09),
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final unreadCount = notifications.where((n) => n.unread).length;
+
+    return Scaffold(
+      backgroundColor: isWhite ? Colors.white : const Color(0xFF07131F),
+      body: MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(textScaler: const TextScaler.linear(1.0)),
+        child: _FeedBackground(
+          child: SafeArea(
+            bottom: false,
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(22, 12, 22, 124),
+                  sliver: SliverList.list(
+                    children: [
+                      Row(
+                        children: [
+                          CupertinoButton(
+                            minimumSize: const Size(44, 44),
+                            padding: EdgeInsets.zero,
+                            borderRadius: BorderRadius.circular(16),
+                            onPressed: () => Navigator.of(context).maybePop(),
+                            child: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: isWhite
+                                    ? const Color(0xFFF2F4F6)
+                                    : Colors.white.withValues(alpha: .06),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isWhite
+                                      ? const Color(0xFFD7DEE7)
+                                      : Colors.white.withValues(alpha: .09),
+                                ),
+                              ),
+                              child: NomoPopIcon(
+                                icon: CupertinoIcons.chevron_left,
+                                color: isWhite
+                                    ? const Color(0xFF27313B)
+                                    : Colors.white,
+                                size: 24,
+                                showBubble: false,
                               ),
                             ),
-                            child: NomoPopIcon(
-                              icon: CupertinoIcons.chevron_left,
-                              color: Colors.white,
-                              size: 24,
-                              showBubble: false,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'お知らせ',
+                            style: TextStyle(
+                              color: isWhite
+                                  ? const Color(0xFF27313B)
+                                  : Colors.white,
+                              fontSize: 23,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -.8,
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          'お知らせ',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 23,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -.8,
+                          const Spacer(),
+                          _UnreadPill(count: unreadCount, isWhite: isWhite),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      if (notifications.isEmpty)
+                        _FeedEmptyState(
+                          icon: CupertinoIcons.bell,
+                          isWhite: isWhite,
+                          title: 'まだお知らせはありません',
+                          message: 'フレンズの反応がここに届きます。',
+                        )
+                      else
+                        ...notifications.map(
+                          (notification) => _NotificationTile(
+                            notification: notification,
+                            isWhite: isWhite,
                           ),
                         ),
-                        const Spacer(),
-                        _UnreadPill(
-                          count: notifications.where((n) => n.unread).length,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    if (notifications.isEmpty)
-                      const _FeedEmptyState(
-                        icon: CupertinoIcons.bell,
-                        title: 'まだお知らせはありません',
-                        message: 'フレンズの反応がここに届きます。',
-                      )
-                    else
-                      ...notifications.map(_NotificationTile.new),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _UnreadPill extends StatelessWidget {
-  const _UnreadPill({required this.count});
+  const _UnreadPill({required this.count, required this.isWhite});
 
   final int count;
+  final bool isWhite;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-    decoration: BoxDecoration(
-      color: _FeedColors.teal.withValues(alpha: .16),
-      borderRadius: BorderRadius.circular(999),
-      border: Border.all(color: _FeedColors.teal.withValues(alpha: .24)),
-    ),
-    child: Text(
-      count == 0 ? '既読' : '未読 $count',
-      style: const TextStyle(
-        color: _FeedColors.teal,
-        fontSize: 11,
-        fontWeight: FontWeight.w900,
+  Widget build(BuildContext context) {
+    final bgColor = isWhite
+        ? _FeedColors.teal.withValues(alpha: .16)
+        : _FeedColors.teal.withValues(alpha: .16);
+    final borderColor = isWhite
+        ? _FeedColors.teal.withValues(alpha: .24)
+        : _FeedColors.teal.withValues(alpha: .24);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: borderColor),
       ),
-    ),
-  );
+      child: Text(
+        count == 0 ? '既読' : '未読 $count',
+        style: const TextStyle(
+          color: _FeedColors.teal,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
 }
 
 class _NotificationTile extends StatelessWidget {
-  const _NotificationTile(this.notification);
+  const _NotificationTile({required this.notification, required this.isWhite});
 
   final _FeedNotification notification;
+  final bool isWhite;
 
   @override
-  Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.all(12),
-    decoration: _feedCardDecoration(radius: 22).copyWith(
-      color: notification.unread
-          ? _FeedColors.card.withValues(alpha: .86)
-          : _FeedColors.card.withValues(alpha: .52),
-    ),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        NomoPopIcon(
-          icon: notification.icon,
-          color: notification.accent,
-          size: 38,
-          iconSize: 21,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      notification.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                  if (notification.unread)
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: _FeedColors.teal,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Text(
-                notification.message,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: .64),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  height: 1.35,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                notification.timeAgo,
-                style: const TextStyle(
-                  color: _FeedColors.sub,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
+  Widget build(BuildContext context) {
+    final cardColor = isWhite
+        ? (notification.unread
+              ? const Color(0xFFEBF5F5)
+              : const Color(0xFFEEF3FA))
+        : notification.unread
+        ? _FeedColors.card.withValues(alpha: .86)
+        : _FeedColors.card.withValues(alpha: .52);
+    final cardBorderColor = isWhite
+        ? const Color(0xFFE1E8F1)
+        : Colors.white.withValues(alpha: .11);
+    final messageColor = isWhite
+        ? const Color(0xFF617281)
+        : Colors.white.withValues(alpha: .64);
+    final titleColor = isWhite ? const Color(0xFF27313B) : Colors.white;
+    final timeColor = isWhite ? const Color(0xFF8B96A3) : _FeedColors.sub;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: _feedCardDecoration(radius: 22).copyWith(
+        color: cardColor,
+        border: Border.all(color: cardBorderColor, width: 1.2),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NomoPopIcon(
+            icon: notification.icon,
+            color: notification.accent,
+            size: 38,
+            iconSize: 21,
           ),
-        ),
-      ],
-    ),
-  );
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        notification.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: titleColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    if (notification.unread)
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: _FeedColors.teal,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  notification.message,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: messageColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  notification.timeAgo,
+                  style: TextStyle(
+                    color: timeColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _FeedEmptyState extends StatelessWidget {
@@ -929,12 +974,14 @@ class _FeedEmptyState extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.message,
+    this.isWhite = false,
     this.accent = _FeedColors.teal,
   });
 
   final IconData icon;
   final String title;
   final String message;
+  final bool isWhite;
   final Color accent;
 
   @override
@@ -949,8 +996,8 @@ class _FeedEmptyState extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: isWhite ? const Color(0xFF27313B) : Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.w900,
             ),
@@ -960,7 +1007,9 @@ class _FeedEmptyState extends StatelessWidget {
             message,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: .55),
+              color: isWhite
+                  ? const Color(0xFF6E7783)
+                  : Colors.white.withValues(alpha: .55),
               fontWeight: FontWeight.w800,
               height: 1.45,
             ),
