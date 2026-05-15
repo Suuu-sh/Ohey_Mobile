@@ -22,9 +22,6 @@ extension NomoFriendMoodX on NomoFriendMood {
     NomoFriendMood.tired => 'たくさん遊んだね。今日はふわっと休もう。',
     NomoFriendMood.sleep => '夢の中でも楽しいログを整理中。おやすみ。',
   };
-
-  String get assetPath =>
-      'assets/characters/edamame/edamame_standing_smile.png';
 }
 
 NomoFriendMood moodForMonthlyDrinkCount(int count) {

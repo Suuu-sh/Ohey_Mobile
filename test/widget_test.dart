@@ -7,8 +7,8 @@ void main() {
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     await Supabase.initialize(
-      url: 'https://wwyaftonswgxnjcceyfb.supabase.co',
-      anonKey: 'sb_publishable_pPvKPrOvVmkKQIXKVWj2Rw_DlYkm0Ty',
+      url: 'http://localhost',
+      anonKey: 'test_publishable_key',
       authOptions: const FlutterAuthClientOptions(
         localStorage: EmptyLocalStorage(),
         pkceAsyncStorage: _MemoryAsyncStorage(),
@@ -22,10 +22,9 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: NomoApp()));
     await tester.pump(const Duration(milliseconds: 250));
 
-    expect(find.text('Nomo'), findsOneWidget);
-    expect(find.text('今月の飲みに行った回数'), findsOneWidget);
-    expect(find.text('飲みに行った！'), findsOneWidget);
-    expect(find.text('ホーム'), findsOneWidget);
+    expect(find.text('公式'), findsOneWidget);
+    expect(find.text('フォロー中'), findsOneWidget);
+    expect(find.text('フィード'), findsWidgets);
     expect(find.text('マイページ'), findsOneWidget);
   });
 }

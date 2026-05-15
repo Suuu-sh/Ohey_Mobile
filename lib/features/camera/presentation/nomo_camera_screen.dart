@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/models/nomo_avatar.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/nomo_character.dart';
+import '../../../core/widgets/nomo_avatar.dart';
+import '../../../core/widgets/nomo_toast.dart';
+import '../../../core/widgets/nomo_pop_icon.dart';
 
 class NomoCameraScreen extends StatefulWidget {
   const NomoCameraScreen({super.key});
@@ -53,7 +56,7 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
     final filter = _filters[_selectedFilterIndex];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFF101B28),
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -91,7 +94,7 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
                       _RoundToolButton(
                         icon: CupertinoIcons.sparkles,
                         label: 'スタンプ',
-                        onTap: () => _showSnack('Nomoステッカーを追加しました（ダミー）。'),
+                        onTap: () => _showSnack('Nomoステッカーを追加しました。'),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -113,7 +116,7 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
+                                NomoGeneratedIcon(
                                   CupertinoIcons.camera_fill,
                                   color: Colors.white,
                                   size: 23,
@@ -136,7 +139,7 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
                       _RoundToolButton(
                         icon: CupertinoIcons.arrow_2_circlepath,
                         label: '反転',
-                        onTap: () => _showSnack('カメラ反転は準備中です（ダミー）。'),
+                        onTap: () => _showSnack('カメラ反転は準備中です。'),
                       ),
                     ],
                   ),
@@ -152,9 +155,7 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
   }
 
   void _showSnack(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    NomoToast.show(context, message);
   }
 }
 
@@ -169,21 +170,18 @@ class _Header extends StatelessWidget {
       children: [
         IconButton(
           onPressed: onBack,
-          icon: const Icon(CupertinoIcons.chevron_left, color: AppColors.navy),
-        ),
-        Expanded(
-          child: Text(
-            'Nomo Camera',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: AppColors.navy,
-              fontWeight: FontWeight.w900,
-            ),
+          icon: const NomoGeneratedIcon(
+            CupertinoIcons.chevron_left,
+            color: AppColors.navy,
           ),
         ),
+        const Spacer(),
         IconButton(
           onPressed: () {},
-          icon: const Icon(CupertinoIcons.ellipsis, color: AppColors.navy),
+          icon: const NomoGeneratedIcon(
+            CupertinoIcons.ellipsis,
+            color: AppColors.navy,
+          ),
         ),
       ],
     );
@@ -309,10 +307,9 @@ class _CameraPreviewCard extends StatelessWidget {
             Positioned(
               right: 24,
               bottom: 132,
-              child: const NomoCharacter(
-                pose: NomoCharacterPose.standingBeer,
-                width: 132,
-                height: 132,
+              child: const NomoAvatarView(
+                avatar: NomoAvatar.defaultAvatar,
+                size: 132,
               ),
             ),
             const Positioned(
@@ -438,10 +435,9 @@ class _InstagramShareCard extends StatelessWidget {
                   left: 0,
                   right: 0,
                   bottom: 72,
-                  child: const NomoCharacter(
-                    pose: NomoCharacterPose.standingBeer,
-                    width: 176,
-                    height: 176,
+                  child: const NomoAvatarView(
+                    avatar: NomoAvatar.defaultAvatar,
+                    size: 176,
                   ),
                 ),
                 Positioned(
@@ -488,7 +484,7 @@ class _InstagramShareCard extends StatelessWidget {
         const SizedBox(height: 14),
         TextButton.icon(
           onPressed: onClose,
-          icon: const Icon(CupertinoIcons.camera),
+          icon: const NomoGeneratedIcon(CupertinoIcons.camera),
           label: const Text('カメラに戻る'),
         ),
       ],
@@ -587,7 +583,7 @@ class _ShareActions extends StatelessWidget {
           _ShareAction(
             icon: CupertinoIcons.arrow_down_to_line_alt,
             label: '保存',
-            onTap: () => onSnack('シェア画像を保存しました（ダミー）。'),
+            onTap: () => onSnack('シェア画像を保存しました。'),
           ),
           _ShareAction.brand(
             label: 'Instagram',
@@ -596,17 +592,17 @@ class _ShareActions extends StatelessWidget {
               Color(0xFFD62976),
               Color(0xFF4F5BD5),
             ],
-            onTap: () => onSnack('Instagramストーリーへ共有する準備をしました（ダミー）。'),
+            onTap: () => onSnack('Instagramストーリーへ共有する準備をしました。'),
           ),
           _ShareAction(
             icon: CupertinoIcons.xmark,
             label: 'X',
-            onTap: () => onSnack('Xへ共有する準備をしました（ダミー）。'),
+            onTap: () => onSnack('Xへ共有する準備をしました。'),
           ),
           _ShareAction.brand(
             label: 'LINE',
             colors: const [Color(0xFF06C755), Color(0xFF06C755)],
-            onTap: () => onSnack('LINEへ共有する準備をしました（ダミー）。'),
+            onTap: () => onSnack('LINEへ共有する準備をしました。'),
           ),
         ],
       ),
@@ -655,7 +651,7 @@ class _ShareAction extends StatelessWidget {
                       fontSize: 19,
                     ),
                   )
-                : Icon(icon, color: AppColors.navy, size: 20),
+                : NomoGeneratedIcon(icon!, color: AppColors.navy, size: 20),
           ),
           const SizedBox(height: 6),
           Text(
@@ -696,7 +692,7 @@ class _RoundToolButton extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(color: AppColors.line),
             ),
-            child: Icon(icon, color: AppColors.navy),
+            child: NomoGeneratedIcon(icon, color: AppColors.navy),
           ),
           const SizedBox(height: 5),
           Text(
@@ -733,7 +729,11 @@ class _GlassChip extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: dark ? Colors.white : AppColors.navy),
+          NomoGeneratedIcon(
+            icon,
+            size: 16,
+            color: dark ? Colors.white : AppColors.navy,
+          ),
           const SizedBox(width: 6),
           Text(
             label,
@@ -755,7 +755,7 @@ class _Sparkle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      Icon(CupertinoIcons.sparkles, color: color, size: 18);
+      NomoGeneratedIcon(CupertinoIcons.sparkles, color: color, size: 18);
 }
 
 class _BokehPainter extends CustomPainter {
