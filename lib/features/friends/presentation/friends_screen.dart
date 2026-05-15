@@ -47,6 +47,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   Widget build(BuildContext context) {
     final logsAsync = ref.watch(drinkLogControllerProvider);
     final friendsAsync = ref.watch(friendsProvider);
+    final user = ref.watch(nomoUserProvider);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
 
     return DecoratedBox(
@@ -102,6 +103,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                     data: (friends) => _FriendsList(
                       logs: logs,
                       friends: friends,
+                      userAvatar: user?.avatar ?? NomoAvatar.defaultAvatar,
                       selectedFilter: _selectedFilter,
                       onFavoriteToggle: (friend, isFavorite) =>
                           _onToggleFavorite(context, friend, isFavorite),
@@ -260,12 +262,14 @@ class _FriendsList extends StatelessWidget {
   const _FriendsList({
     required this.logs,
     required this.friends,
+    required this.userAvatar,
     required this.selectedFilter,
     required this.onFavoriteToggle,
   });
 
   final List<DrinkLog> logs;
   final List<NomoFriend> friends;
+  final NomoAvatar userAvatar;
   final _FriendFilterType selectedFilter;
   final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
 
@@ -289,10 +293,10 @@ class _FriendsList extends StatelessWidget {
     }).toList()..sort((a, b) => b.count.compareTo(a.count));
 
     if (filtered.isEmpty) {
-      return const SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
-        padding: EdgeInsets.only(bottom: 116),
-        child: _EmptyFilterState(),
+      return _EmptyFriendsState(
+        avatar: userAvatar,
+        message: friends.isEmpty ? 'フレンズがいません' : 'この条件のフレンズはいません',
+        subtitle: friends.isEmpty ? '右上の＋からフレンズを追加しよう' : '別の条件を選ぶと見つかるかも',
       );
     }
 
@@ -327,25 +331,125 @@ class _DecoratedFriend {
   final int count;
 }
 
-class _EmptyFilterState extends StatelessWidget {
-  const _EmptyFilterState();
+class _EmptyFriendsState extends StatelessWidget {
+  const _EmptyFriendsState({
+    required this.avatar,
+    required this.message,
+    required this.subtitle,
+  });
+
+  final NomoAvatar avatar;
+  final String message;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .05),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.white.withValues(alpha: .1)),
-      ),
-      child: Text(
-        'この条件のフレンズはいません',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: Colors.white.withValues(alpha: .7),
-          fontWeight: FontWeight.w900,
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF1B2633) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF6D7784)
+        : Colors.white.withValues(alpha: .58);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 116),
+      child: Center(
+        child: Transform.translate(
+          offset: const Offset(0, -42),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 132,
+                height: 124,
+                child: Stack(
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 108,
+                      height: 108,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            _FriendsColors.lime.withValues(alpha: .26),
+                            _FriendsColors.lime.withValues(alpha: .04),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 86,
+                      height: 86,
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isWhite
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: .07),
+                        border: Border.all(
+                          color: _FriendsColors.lime.withValues(alpha: .45),
+                          width: 1.4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _FriendsColors.lime.withValues(alpha: .18),
+                            blurRadius: 26,
+                            offset: const Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      child: NomoAvatarView(avatar: avatar, size: 76),
+                    ),
+                    Positioned(
+                      right: 14,
+                      bottom: 18,
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: _FriendsColors.lime,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isWhite ? Colors.white : _FriendsColors.bg,
+                            width: 3,
+                          ),
+                        ),
+                        child: const Center(
+                          child: NomoGeneratedIcon(
+                            CupertinoIcons.plus,
+                            color: _FriendsColors.bg,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: ink,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: sub,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
