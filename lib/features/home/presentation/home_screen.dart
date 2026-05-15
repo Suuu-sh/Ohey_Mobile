@@ -30,6 +30,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final logsAsync = ref.watch(drinkLogControllerProvider);
     final user = ref.watch(nomoUserProvider);
+    final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     final currentUserId = ref
         .watch(supabaseClientProvider)
         .auth
@@ -83,7 +84,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: Center(child: CupertinoActivityIndicator()),
                       )
                     else if (selectedItems.isEmpty)
-                      _FeedSectionEmptyState(section: _selectedSection)
+                      _FeedSectionEmptyState(
+                        section: _selectedSection,
+                        isWhite: isWhite,
+                      )
                     else
                       ...selectedItems.map(
                         (item) => _FeedPostCard(
@@ -337,9 +341,10 @@ class _FeedTab extends StatelessWidget {
 }
 
 class _FeedSectionEmptyState extends StatelessWidget {
-  const _FeedSectionEmptyState({required this.section});
+  const _FeedSectionEmptyState({required this.section, required this.isWhite});
 
   final _FeedSection section;
+  final bool isWhite;
 
   @override
   Widget build(BuildContext context) {
@@ -357,6 +362,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
       padding: const EdgeInsets.only(top: 28),
       child: _FeedEmptyState(
         icon: section.icon,
+        isWhite: isWhite,
         title: title,
         message: message,
         accent: section.accent,
