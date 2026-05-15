@@ -1,7 +1,8 @@
 /// Supabase environment configuration for Nomo.
 ///
-/// Local debug runs intentionally default to the `dev-nomo` Supabase project.
-/// Override these values for production/release builds with `--dart-define`.
+/// Values must be supplied for real app runs with `--dart-define`.
+/// Placeholder defaults are intentionally non-secret and only keep widget tests
+/// bootable when the app does not talk to the network.
 class SupabaseConfig {
   const SupabaseConfig._();
 
@@ -12,12 +13,12 @@ class SupabaseConfig {
 
   static const url = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://wwyaftonswgxnjcceyfb.supabase.co',
+    defaultValue: 'http://localhost',
   );
 
   static const publishableKey = String.fromEnvironment(
     'SUPABASE_PUBLISHABLE_KEY',
-    defaultValue: 'sb_publishable_pPvKPrOvVmkKQIXKVWj2Rw_DlYkm0Ty',
+    defaultValue: 'test_publishable_key',
   );
 
   static const authRedirectUrl = String.fromEnvironment(

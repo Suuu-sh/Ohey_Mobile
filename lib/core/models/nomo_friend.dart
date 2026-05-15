@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'nomo_avatar.dart';
 
 enum NomiTomoKind { bunny, cat, bear, penguin, puppy, cloud }
 
@@ -15,6 +16,11 @@ class NomoFriend {
     required this.characterAssetPath,
     required this.kind,
     required this.palette,
+    this.avatar,
+    this.monthlyCount,
+    this.statusKey,
+    this.isOnline,
+    this.isFavorite = false,
   });
 
   final String id;
@@ -24,6 +30,11 @@ class NomoFriend {
   final String characterAssetPath;
   final NomiTomoKind kind;
   final NomiTomoPalette palette;
+  final NomoAvatar? avatar;
+  final int? monthlyCount;
+  final String? statusKey;
+  final bool? isOnline;
+  final bool isFavorite;
 
   Color get accentColor => switch (palette) {
     NomiTomoPalette.peach => AppColors.peach,

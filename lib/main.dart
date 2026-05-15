@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/config/supabase_config.dart';
 import 'core/data/auth_session_guard.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/nomo_theme_mode.dart';
 import 'core/widgets/nomo_tab_shell.dart';
 
 Future<void> main() async {
@@ -24,15 +25,18 @@ Future<void> main() async {
   runApp(const ProviderScope(child: NomoApp()));
 }
 
-class NomoApp extends StatelessWidget {
+class NomoApp extends ConsumerWidget {
   const NomoApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(nomoThemeModeProvider);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Nomo',
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: mode.isWhite ? ThemeMode.light : ThemeMode.dark,
       builder: (context, child) {
         final mediaQuery = MediaQuery.of(context);
         return MediaQuery(

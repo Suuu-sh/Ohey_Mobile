@@ -19,6 +19,61 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
     return ref.watch(drinkLogRepositoryProvider).fetchLogs();
   }
 
+  Future<void> toggleLike(String logId) async {
+    final previous = state.asData?.value ?? const <DrinkLog>[];
+    final index = previous.indexWhere((log) => log.id == logId);
+    if (index == -1) return;
+
+    final current = previous[index];
+    final nextLiked = !current.likedByMe;
+    final optimistic = current.copyWith(
+      likedByMe: nextLiked,
+      likeCount: (current.likeCount + (nextLiked ? 1 : -1)).clamp(0, 1 << 31),
+    );
+    state = AsyncValue.data([
+      for (var i = 0; i < previous.length; i++)
+        i == index ? optimistic : previous[i],
+    ]);
+
+    try {
+      final likeState = await ref
+          .read(drinkLogRepositoryProvider)
+          .setLike(logId, liked: nextLiked);
+      final latest = state.asData?.value ?? previous;
+      state = AsyncValue.data([
+        for (final log in latest)
+          if (log.id == logId)
+            log.copyWith(
+              likeCount: likeState.likeCount,
+              likedByMe: likeState.likedByMe,
+            )
+          else
+            log,
+      ]);
+    } catch (error, stackTrace) {
+      state = AsyncValue.data(previous);
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+  }
+
+  Future<void> deleteLog(String logId) async {
+    final previous = state.asData?.value ?? const <DrinkLog>[];
+    state = AsyncValue.data([
+      for (final log in previous)
+        if (log.id != logId) log,
+    ]);
+    try {
+      await ref.read(drinkLogRepositoryProvider).deleteLog(logId);
+    } catch (error, stackTrace) {
+      state = AsyncValue.data(previous);
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+  }
+
+  Future<void> reportLog(String logId) async {
+    await ref.read(drinkLogRepositoryProvider).reportLog(logId);
+  }
+
   Future<void> addLog({
     required DateTime date,
     required List<NomoFriend> friends,
@@ -27,12 +82,14 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
   }) async {
     final repository = ref.read(drinkLogRepositoryProvider);
     final previous = state.asData?.value ?? const <DrinkLog>[];
+    final now = DateTime.now();
     final log = DrinkLog(
-      id: 'log_${DateTime.now().microsecondsSinceEpoch}',
+      id: 'log_${now.microsecondsSinceEpoch}',
       date: date,
       friends: friends,
       place: place.trim(),
       memo: memo.trim(),
+      photoAssetPath: null,
     );
 
     try {

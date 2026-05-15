@@ -1,0 +1,142 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+import 'nomo_pop_icon.dart';
+
+class NomoPageHeader extends StatelessWidget {
+  const NomoPageHeader({
+    super.key,
+    required this.title,
+    this.trailing,
+    this.titleColor,
+  });
+
+  static const double height = 52;
+  static const double titleSize = 34;
+  static const double topPadding = 16;
+  static const double horizontalPadding = 22;
+
+  final String title;
+  final Widget? trailing;
+  final Color? titleColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final color =
+        titleColor ?? (isWhite ? const Color(0xFF27313B) : Colors.white);
+    return SizedBox(
+      height: height,
+      width: double.infinity,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              textAlign: TextAlign.left,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              strutStyle: const StrutStyle(
+                fontSize: titleSize,
+                height: 1,
+                forceStrutHeight: true,
+              ),
+              style: TextStyle(
+                color: color,
+                fontSize: titleSize,
+                height: 1,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1.2,
+              ),
+            ),
+          ),
+          if (trailing != null) ...[const SizedBox(width: 12), trailing!],
+        ],
+      ),
+    );
+  }
+}
+
+class NomoHeaderIconButton extends StatelessWidget {
+  const NomoHeaderIconButton({
+    super.key,
+    required this.icon,
+    required this.onTap,
+    this.semanticLabel,
+    this.color = const Color(0xFF2DE3D2),
+    this.hasDot = false,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+  final String? semanticLabel;
+  final Color color;
+  final bool hasDot;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: CupertinoButton(
+        onPressed: onTap,
+        minimumSize: const Size(48, 48),
+        padding: EdgeInsets.zero,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: isWhite ? Colors.white : Colors.white.withValues(alpha: .08),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: isWhite
+                  ? const Color(0xFFDCE4EC)
+                  : Colors.white.withValues(alpha: .10),
+            ),
+            boxShadow: isWhite
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: .05),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              NomoPopIcon(
+                icon: icon,
+                color: color,
+                size: 34,
+                showBubble: false,
+              ),
+              if (hasDot)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isWhite ? Colors.white : const Color(0xFF0C1724),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

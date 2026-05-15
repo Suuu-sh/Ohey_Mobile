@@ -1,3 +1,4 @@
+import 'nomo_avatar.dart';
 import 'nomo_friend.dart';
 
 class DrinkLog {
@@ -8,6 +9,11 @@ class DrinkLog {
     required this.place,
     required this.memo,
     this.photoAssetPath,
+    this.likeCount = 0,
+    this.likedByMe = false,
+    this.ownerUserId = '',
+    this.ownerDisplayName = '',
+    this.ownerAvatar,
   });
 
   final String id;
@@ -16,6 +22,25 @@ class DrinkLog {
   final String place;
   final String memo;
   final String? photoAssetPath;
+  final int likeCount;
+  final bool likedByMe;
+  final String ownerUserId;
+  final String ownerDisplayName;
+  final NomoAvatar? ownerAvatar;
+
+  DrinkLog copyWith({int? likeCount, bool? likedByMe}) => DrinkLog(
+    id: id,
+    date: date,
+    friends: friends,
+    place: place,
+    memo: memo,
+    photoAssetPath: photoAssetPath,
+    likeCount: likeCount ?? this.likeCount,
+    likedByMe: likedByMe ?? this.likedByMe,
+    ownerUserId: ownerUserId,
+    ownerDisplayName: ownerDisplayName,
+    ownerAvatar: ownerAvatar,
+  );
 
   bool isInMonth(DateTime month) =>
       date.year == month.year && date.month == month.month;
