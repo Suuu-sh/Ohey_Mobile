@@ -78,7 +78,9 @@ class ProfileScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         ColoredBox(
-                          color: const Color(0xFF0B1420),
+                          color: isWhite
+                              ? Colors.white
+                              : const Color(0xFF0B1420),
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(24, 16, 24, 18),
                             child: _ProfileMoodCta(
@@ -155,12 +157,6 @@ Future<void> showMyQrDialog(
 
   final payload = _profileQrPayload(user.userId);
   final name = user.name.trim().isEmpty ? 'nomo_user' : user.name.trim();
-
-  Future<void> copyLink(BuildContext dialogContext) async {
-    await Clipboard.setData(ClipboardData(text: payload));
-    if (!dialogContext.mounted) return;
-    NomoToast.show(dialogContext, 'リンクをコピーしました');
-  }
 
   Future<void> copyUserId(BuildContext dialogContext) async {
     await Clipboard.setData(ClipboardData(text: user.userId));
@@ -265,7 +261,6 @@ Future<void> showMyQrDialog(
           avatar: user.avatar,
           payload: payload,
           onClose: () => Navigator.of(dialogContext).pop(),
-          onCopy: () => copyLink(dialogContext),
           onCopyUserId: () => copyUserId(dialogContext),
           onSaveQr: () => saveQrImage(dialogContext),
           onScan: () => scanQr(dialogContext),
@@ -384,12 +379,6 @@ class _ProfileSettingsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final buttonColor = isWhite
-        ? Colors.white.withValues(alpha: .09)
-        : const Color(0xFFF7F9FB);
-    final borderColor = isWhite
-        ? Colors.white.withValues(alpha: .14)
-        : const Color(0xFFD8DEE6);
     return Semantics(
       button: true,
       label: '設定',
@@ -398,28 +387,14 @@ class _ProfileSettingsButton extends StatelessWidget {
         minimumSize: const Size(48, 48),
         padding: EdgeInsets.zero,
         borderRadius: BorderRadius.circular(18),
-        child: Container(
+        child: const SizedBox(
           width: 48,
           height: 48,
-          decoration: BoxDecoration(
-            color: buttonColor,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: borderColor),
-            boxShadow: [
-              BoxShadow(
-                color: _ProfileColors.lime.withValues(
-                  alpha: isWhite ? .16 : .10,
-                ),
-                blurRadius: 14,
-                offset: const Offset(0, 7),
-              ),
-            ],
-          ),
-          child: const Center(
+          child: Center(
             child: NomoGeneratedIcon(
               CupertinoIcons.gear_alt,
               color: _ProfileColors.lime,
-              size: 34,
+              size: 38,
             ),
           ),
         ),
@@ -926,7 +901,6 @@ class _MyQrCard extends StatelessWidget {
     required this.avatar,
     required this.payload,
     required this.onClose,
-    required this.onCopy,
     required this.onCopyUserId,
     required this.onSaveQr,
     required this.onScan,
@@ -938,7 +912,6 @@ class _MyQrCard extends StatelessWidget {
   final NomoAvatar? avatar;
   final String payload;
   final VoidCallback onClose;
-  final VoidCallback onCopy;
   final VoidCallback onCopyUserId;
   final VoidCallback onSaveQr;
   final VoidCallback onScan;
@@ -946,29 +919,22 @@ class _MyQrCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final cardColor = isWhite ? Colors.white : const Color(0xFF08131A);
-    final titleColor = isWhite ? const Color(0xFF33373C) : Colors.white;
-    final subColor = isWhite
-        ? const Color(0xFF7D858E)
-        : const Color(0xFF9AA7B7);
-    final qrColor = isWhite ? const Color(0xFF4B5056) : const Color(0xFFEAF1F6);
-    final logoBg = isWhite ? const Color(0xFFF4F2EE) : const Color(0xFF14212B);
-    final logoBorder = isWhite ? Colors.white : const Color(0xFF243240);
+    const cardColor = Colors.white;
+    const titleColor = Color(0xFF33373C);
+    const subColor = Color(0xFF7D858E);
+    const qrColor = Color(0xFF4B5056);
+    const logoBg = Color(0xFFF4F2EE);
+    const logoBorder = Colors.white;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(22, 18, 22, 26),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: isWhite
-              ? Colors.transparent
-              : Colors.white.withValues(alpha: .10),
-        ),
+        border: Border.all(color: Colors.transparent),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .28 : .46),
+            color: Colors.black.withValues(alpha: .22),
             blurRadius: 28,
             offset: const Offset(0, 18),
           ),
@@ -1087,12 +1053,6 @@ class _MyQrCard extends StatelessWidget {
                 onTap: onSaveQr,
               ),
               _QrActionButton(
-                icon: CupertinoIcons.link,
-                label: 'リンクコピー',
-                color: const Color(0xFF4A7DFF),
-                onTap: onCopy,
-              ),
-              _QrActionButton(
                 icon: CupertinoIcons.qrcode_viewfinder,
                 label: 'QR読取',
                 color: const Color(0xFFB188FF),
@@ -1129,7 +1089,6 @@ class _QrActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -1145,15 +1104,11 @@ class _QrActionButton extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: isWhite
-                      ? [Colors.white, Color.lerp(color, Colors.white, .88)!]
-                      : [const Color(0xFF172637), const Color(0xFF101B28)],
+                  colors: [Colors.white, Color.lerp(color, Colors.white, .88)!],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isWhite
-                      ? const Color(0xFFE3E4E6)
-                      : Colors.white.withValues(alpha: .10),
+                  color: const Color(0xFFE3E4E6),
                   width: 2,
                 ),
                 boxShadow: [
@@ -1199,9 +1154,7 @@ class _QrActionButton extends StatelessWidget {
               maxLines: 1,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: isWhite
-                    ? const Color(0xFF9BA1A8)
-                    : const Color(0xFF9AA7B7),
+                color: const Color(0xFF9BA1A8),
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.2,
               ),
@@ -1647,6 +1600,7 @@ Future<void> _showEditProfileSheet(
   NomoUser? user,
 ) async {
   final controller = TextEditingController(text: user?.name ?? '');
+  final userController = ref.read(nomoUserProvider.notifier);
   var avatar = user?.avatar ?? NomoAvatar.defaultAvatar;
   var saving = false;
   String? error;
@@ -1719,9 +1673,10 @@ Future<void> _showEditProfileSheet(
                     error = null;
                   });
                   try {
-                    await ref
-                        .read(nomoUserProvider.notifier)
-                        .updateProfile(name: name, avatar: avatar);
+                    await userController.updateProfile(
+                      name: name,
+                      avatar: avatar,
+                    );
                     if (sheetContext.mounted) {
                       Navigator.of(sheetContext).pop();
                     }
@@ -1729,6 +1684,7 @@ Future<void> _showEditProfileSheet(
                       _showSnack(context, 'プロフィールを更新しました。');
                     }
                   } catch (e) {
+                    if (!sheetContext.mounted) return;
                     setState(() {
                       saving = false;
                       error = '保存できませんでした: $e';

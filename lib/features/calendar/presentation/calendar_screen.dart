@@ -363,30 +363,33 @@ class _DayTile extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            Positioned(
-              top: 8,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  width: isToday ? 40 : null,
-                  height: isToday ? 40 : null,
-                  alignment: Alignment.center,
-                  decoration: isToday
-                      ? BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFFB7F51A),
-                            width: 3,
-                          ),
-                        )
-                      : null,
-                  child: Text(
-                    '$day',
-                    style: TextStyle(
-                      color: isToday && !isWhite ? Colors.white : dayColor,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
+            Positioned.fill(
+              child: Align(
+                alignment: marker == null
+                    ? Alignment.center
+                    : Alignment.topCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(top: marker == null ? 0 : 8),
+                  child: Container(
+                    width: isToday ? 36 : null,
+                    height: isToday ? 36 : null,
+                    alignment: Alignment.center,
+                    decoration: isToday
+                        ? BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFB7F51A),
+                              width: 3,
+                            ),
+                          )
+                        : null,
+                    child: Text(
+                      '$day',
+                      style: TextStyle(
+                        color: isToday && !isWhite ? Colors.white : dayColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
                 ),

@@ -86,7 +86,8 @@ jobs:
         working-directory: ios
         run: pod install
 
-      - name: Generate Flutter iOS release config
+      - name: Resolve TestFlight build number
+        id: build-number
         env:
           INPUT_BUILD_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.build_number || '' }}
         run: |
@@ -96,11 +97,17 @@ jobs:
             echo "::error::Build number must be numeric: $build_number"
             exit 1
           fi
-
-          args=(--release --config-only --dart-define=NOMO_ENV=production)
-          if [ -n "$build_number" ]; then
-            args+=(--build-number "$build_number")
+          if [ -z "$build_number" ]; then
+            build_number="$(TZ=Asia/Tokyo date +%Y%m%d%H%M%S)"
           fi
+          echo "build-number=$build_number" >> "$GITHUB_OUTPUT"
+
+      - name: Generate Flutter iOS release config
+        run: |
+          set -euo pipefail
+          build_number="${{ steps.build-number.outputs.build-number }}"
+
+          args=(--release --config-only --dart-define=NOMO_ENV=production --build-number "$build_number")
           while IFS= read -r define_arg || [ -n "$define_arg" ]; do
             args+=("$define_arg")
           done < "$RUNNER_TEMP/nomo_dart_defines.args"
@@ -116,7 +123,7 @@ jobs:
           configuration: Release
           app-bundle-id: app.nomo.nomo
           team-id: 83J5SB3ZPX
-          build-number: ${{ github.event_name == 'workflow_dispatch' && inputs.build_number || '' }}
+          build-number: ${{ steps.build-number.outputs.build-number }}
           app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           app-store-connect-issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           app-store-connect-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
