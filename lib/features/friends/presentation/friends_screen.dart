@@ -47,6 +47,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   Widget build(BuildContext context) {
     final logsAsync = ref.watch(drinkLogControllerProvider);
     final friendsAsync = ref.watch(friendsProvider);
+    final user = ref.watch(nomoUserProvider);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
 
     return DecoratedBox(
@@ -84,12 +85,30 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                   onTap: _openAddFriend,
                 ),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 18),
+              friendsAsync.when(
+                loading: () => const _FriendsSummaryCard.loading(),
+                error: (error, stackTrace) => _FriendsSummaryCard(
+                  friendsCount: 0,
+                  monthlyCount: 0,
+                  streak: _currentStreak(logsAsync.asData?.value ?? const []),
+                  onAddFriend: _openAddFriend,
+                ),
+                data: (friends) => _FriendsSummaryCard(
+                  friendsCount: friends.length,
+                  monthlyCount: _monthlyDrinksWithFriends(
+                    logsAsync.asData?.value ?? const [],
+                  ),
+                  streak: _currentStreak(logsAsync.asData?.value ?? const []),
+                  onAddFriend: _openAddFriend,
+                ),
+              ),
+              const SizedBox(height: 16),
               _FilterBar(
                 selected: _selectedFilter,
                 onChanged: (filter) => setState(() => _selectedFilter = filter),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
               Expanded(
                 child: logsAsync.when(
                   loading: () => const _LoadingState(label: 'ログを読み込み中...'),
@@ -102,6 +121,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                     data: (friends) => _FriendsList(
                       logs: logs,
                       friends: friends,
+                      userAvatar: user?.avatar ?? NomoAvatar.defaultAvatar,
                       selectedFilter: _selectedFilter,
                       onFavoriteToggle: (friend, isFavorite) =>
                           _onToggleFavorite(context, friend, isFavorite),
@@ -118,6 +138,212 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 }
 
 enum _FriendFilterType { all, drinkable, favorite }
+
+class _FriendsSummaryCard extends StatelessWidget {
+  const _FriendsSummaryCard({
+    required this.friendsCount,
+    required this.monthlyCount,
+    required this.streak,
+    required this.onAddFriend,
+  }) : loading = false;
+
+  const _FriendsSummaryCard.loading()
+    : friendsCount = 0,
+      monthlyCount = 0,
+      streak = 0,
+      onAddFriend = null,
+      loading = true;
+
+  final int friendsCount;
+  final int monthlyCount;
+  final int streak;
+  final VoidCallback? onAddFriend;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final bg = isWhite ? Colors.white : const Color(0xFF101D25);
+    final border = isWhite
+        ? const Color(0xFFDDE7EF)
+        : Colors.white.withValues(alpha: .09);
+    final text = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF6B7683)
+        : Colors.white.withValues(alpha: .55);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: border, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isWhite ? .06 : .18),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: _FriendsColors.lime.withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(17),
+                ),
+                child: const Center(
+                  child: NomoPopIcon(
+                    icon: CupertinoIcons.person_2_fill,
+                    color: _FriendsColors.lime,
+                    size: 34,
+                    shadow: false,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'フレンズ',
+                      style: TextStyle(
+                        color: text,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.4,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      loading ? '読み込み中...' : '飲み友とのつながり',
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _SummaryStat(value: friendsCount, label: '友達', color: text),
+              const SizedBox(width: 18),
+              _SummaryStat(value: monthlyCount, label: '今月', color: text),
+              const SizedBox(width: 18),
+              _SummaryStat(value: streak, label: '連続', color: text),
+            ],
+          ),
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: loading ? null : onAddFriend,
+                  child: Container(
+                    height: 54,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(
+                        colors: isWhite
+                            ? const [Color(0xFFF7FBFF), Color(0xFFEFF6FB)]
+                            : const [Color(0xFF172636), Color(0xFF111C2A)],
+                      ),
+                      border: Border.all(color: border, width: 1.2),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const NomoPopIcon(
+                          icon: CupertinoIcons.person_badge_plus_fill,
+                          color: _FriendsColors.lime,
+                          size: 31,
+                          shadow: false,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          '友達を追加',
+                          style: TextStyle(
+                            color: text,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 56,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF16A8FF).withValues(alpha: .10),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFF16A8FF).withValues(alpha: .24),
+                  ),
+                ),
+                child: const Center(
+                  child: NomoPopIcon(
+                    icon: CupertinoIcons.qrcode_viewfinder,
+                    color: Color(0xFF16A8FF),
+                    size: 34,
+                    shadow: false,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryStat extends StatelessWidget {
+  const _SummaryStat({
+    required this.value,
+    required this.label,
+    required this.color,
+  });
+
+  final int value;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      Text(
+        '$value',
+        style: TextStyle(
+          color: color,
+          fontSize: 23,
+          fontWeight: FontWeight.w900,
+          height: .95,
+        ),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        label,
+        style: TextStyle(
+          color: color.withValues(alpha: .56),
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    ],
+  );
+}
 
 class _FilterBar extends StatelessWidget {
   const _FilterBar({required this.selected, required this.onChanged});
@@ -260,12 +486,14 @@ class _FriendsList extends StatelessWidget {
   const _FriendsList({
     required this.logs,
     required this.friends,
+    required this.userAvatar,
     required this.selectedFilter,
     required this.onFavoriteToggle,
   });
 
   final List<DrinkLog> logs;
   final List<NomoFriend> friends;
+  final NomoAvatar userAvatar;
   final _FriendFilterType selectedFilter;
   final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
 
@@ -289,10 +517,10 @@ class _FriendsList extends StatelessWidget {
     }).toList()..sort((a, b) => b.count.compareTo(a.count));
 
     if (filtered.isEmpty) {
-      return const SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
-        padding: EdgeInsets.only(bottom: 116),
-        child: _EmptyFilterState(),
+      return _EmptyFriendsState(
+        avatar: userAvatar,
+        message: friends.isEmpty ? 'フレンズがいません' : 'この条件のフレンズはいません',
+        subtitle: friends.isEmpty ? '右上の＋からフレンズを追加しよう' : '別の条件を選ぶと見つかるかも',
       );
     }
 
@@ -327,25 +555,125 @@ class _DecoratedFriend {
   final int count;
 }
 
-class _EmptyFilterState extends StatelessWidget {
-  const _EmptyFilterState();
+class _EmptyFriendsState extends StatelessWidget {
+  const _EmptyFriendsState({
+    required this.avatar,
+    required this.message,
+    required this.subtitle,
+  });
+
+  final NomoAvatar avatar;
+  final String message;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .05),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.white.withValues(alpha: .1)),
-      ),
-      child: Text(
-        'この条件のフレンズはいません',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: Colors.white.withValues(alpha: .7),
-          fontWeight: FontWeight.w900,
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF1B2633) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF6D7784)
+        : Colors.white.withValues(alpha: .58);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 116),
+      child: Center(
+        child: Transform.translate(
+          offset: const Offset(0, -42),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 132,
+                height: 124,
+                child: Stack(
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 108,
+                      height: 108,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            _FriendsColors.lime.withValues(alpha: .26),
+                            _FriendsColors.lime.withValues(alpha: .04),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 86,
+                      height: 86,
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isWhite
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: .07),
+                        border: Border.all(
+                          color: _FriendsColors.lime.withValues(alpha: .45),
+                          width: 1.4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _FriendsColors.lime.withValues(alpha: .18),
+                            blurRadius: 26,
+                            offset: const Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      child: NomoAvatarView(avatar: avatar, size: 76),
+                    ),
+                    Positioned(
+                      right: 14,
+                      bottom: 18,
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: _FriendsColors.lime,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isWhite ? Colors.white : _FriendsColors.bg,
+                            width: 3,
+                          ),
+                        ),
+                        child: const Center(
+                          child: NomoGeneratedIcon(
+                            CupertinoIcons.plus,
+                            color: _FriendsColors.bg,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: ink,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: sub,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -944,6 +1272,40 @@ int _displayCount(NomoFriend friend, Map<String, int> counts) {
   final realCount = counts[friend.id] ?? 0;
   if (realCount > 0) return realCount;
   return friend.monthlyCount ?? 0;
+}
+
+int _monthlyDrinksWithFriends(List<DrinkLog> logs) {
+  final now = DateTime.now();
+  return logs.where((log) {
+    return log.date.year == now.year &&
+        log.date.month == now.month &&
+        log.friends.isNotEmpty;
+  }).length;
+}
+
+int _currentStreak(List<DrinkLog> logs) {
+  if (logs.isEmpty) return 0;
+  final days =
+      logs
+          .map((log) => DateTime(log.date.year, log.date.month, log.date.day))
+          .toSet()
+          .toList()
+        ..sort((a, b) => b.compareTo(a));
+  var streak = 0;
+  var cursor = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    DateTime.now().day,
+  );
+  for (final day in days) {
+    if (day == cursor) {
+      streak++;
+      cursor = cursor.subtract(const Duration(days: 1));
+    } else if (day.isBefore(cursor)) {
+      break;
+    }
+  }
+  return streak;
 }
 
 Map<String, int> _monthlyFriendCounts(
