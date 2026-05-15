@@ -1,0 +1,378 @@
+-- Rich seed data for the dev-nomo Supabase project only.
+-- Do not run this against production.
+--
+-- Usage in Supabase SQL editor or psql:
+--   select set_config('app.seed_password', '<local-dev-password>', false);
+--   \i supabase/dev/seed_dev_rich_data.sql
+
+create or replace function public.raise_exception(message text)
+returns text
+language plpgsql
+as $$
+begin
+  raise exception '%', message;
+end;
+$$;
+
+create extension if not exists pgcrypto;
+
+-- Some dev projects may not have the latest feed migrations yet. Create the
+-- feed helper tables here so this seed can populate likes/reports safely.
+create table if not exists public.drink_log_likes (
+  drink_log_id uuid not null references public.drink_logs(id) on delete cascade,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (drink_log_id, user_id)
+);
+
+create index if not exists drink_log_likes_user_id_idx
+  on public.drink_log_likes(user_id);
+
+create table if not exists public.drink_log_reports (
+  id uuid primary key default gen_random_uuid(),
+  drink_log_id uuid not null references public.drink_logs(id) on delete cascade,
+  reporter_user_id uuid not null references public.profiles(id) on delete cascade,
+  reason text not null default 'other',
+  created_at timestamptz not null default now(),
+  unique (drink_log_id, reporter_user_id)
+);
+
+create index if not exists drink_logs_owner_drank_at_idx
+  on public.drink_logs(owner_user_id, drank_at desc);
+
+alter table public.drink_log_likes enable row level security;
+
+drop policy if exists "drink_log_likes_select_authenticated" on public.drink_log_likes;
+create policy "drink_log_likes_select_authenticated"
+  on public.drink_log_likes
+  for select
+  to authenticated
+  using (true);
+
+drop policy if exists "drink_log_likes_insert_own" on public.drink_log_likes;
+create policy "drink_log_likes_insert_own"
+  on public.drink_log_likes
+  for insert
+  to authenticated
+  with check (auth.uid() = user_id);
+
+drop policy if exists "drink_log_likes_delete_own" on public.drink_log_likes;
+create policy "drink_log_likes_delete_own"
+  on public.drink_log_likes
+  for delete
+  to authenticated
+  using (auth.uid() = user_id);
+
+alter table public.drink_log_reports enable row level security;
+
+drop policy if exists "drink_log_reports_insert_own" on public.drink_log_reports;
+create policy "drink_log_reports_insert_own"
+  on public.drink_log_reports
+  for insert
+  to authenticated
+  with check (auth.uid() = reporter_user_id);
+
+drop policy if exists "drink_log_reports_select_own" on public.drink_log_reports;
+create policy "drink_log_reports_select_own"
+  on public.drink_log_reports
+  for select
+  to authenticated
+  using (auth.uid() = reporter_user_id);
+
+grant select, insert on public.drink_log_reports to authenticated;
+grant select, insert, delete on public.drink_log_likes to authenticated;
+
+drop policy if exists "drink_logs_select_feed_visible" on public.drink_logs;
+create policy "drink_logs_select_feed_visible"
+  on public.drink_logs
+  for select
+  to authenticated
+  using (
+    owner_user_id = auth.uid()
+    or exists (
+      select 1
+      from public.friendships f
+      where (f.user_a_id = auth.uid() and f.user_b_id = drink_logs.owner_user_id)
+         or (f.user_b_id = auth.uid() and f.user_a_id = drink_logs.owner_user_id)
+    )
+  );
+
+drop policy if exists "drink_logs_delete_own" on public.drink_logs;
+create policy "drink_logs_delete_own"
+  on public.drink_logs
+  for delete
+  to authenticated
+  using (owner_user_id = auth.uid());
+
+grant select, delete on public.drink_logs to authenticated;
+grant select on public.drink_log_friends to authenticated;
+
+-- Some dev projects may still have the original 3-value status constraint.
+alter table public.daily_statuses drop constraint if exists daily_statuses_status_check;
+alter table public.daily_statuses add constraint daily_statuses_status_check
+  check (status in (
+    'unselected',
+    'want_drink',
+    'busy',
+    'can_drink_today',
+    'light_drink',
+    'want_drink_hard',
+    'non_alcohol',
+    'liver_rest',
+    'waiting_invite',
+    'has_plans'
+  ));
+
+-- Confirmed dev auth users. Fixed UUIDs make this seed idempotent.
+with seed_password(value) as (
+  select nullif(current_setting('app.seed_password', true), '')
+), seed(id, email, password, display_name, user_id, character_key, avatar_url, is_plus) as (
+  values
+    ('00000000-0000-4000-8000-000000000101'::uuid, 'dev-yuta@nomo.app',   (select value from seed_password), 'ユウタ', 'dev_yuta',   'avatar', 'nomo_avatar:v1:0:1:2:0:0:3', true),
+    ('00000000-0000-4000-8000-000000000102'::uuid, 'dev-ken@nomo.app',    (select value from seed_password), 'ケン',   'dev_ken',    'avatar', 'nomo_avatar:v1:5:2:5:2:1:0', false),
+    ('00000000-0000-4000-8000-000000000103'::uuid, 'dev-ryo@nomo.app',    (select value from seed_password), 'リョウ', 'dev_ryo',    'avatar', 'nomo_avatar:v1:2:6:0:3:0:1', false),
+    ('00000000-0000-4000-8000-000000000104'::uuid, 'dev-haru@nomo.app',   (select value from seed_password), 'ハル',   'dev_haru',   'avatar', 'nomo_avatar:v1:1:4:3:1:2:3', false),
+    ('00000000-0000-4000-8000-000000000105'::uuid, 'dev-takumi@nomo.app', (select value from seed_password), 'タクミ', 'dev_takumi', 'avatar', 'nomo_avatar:v1:3:5:6:0:1:0', false),
+    ('00000000-0000-4000-8000-000000000106'::uuid, 'dev-mika@nomo.app',   (select value from seed_password), 'ミカ',   'dev_mika',   'avatar', 'nomo_avatar:v1:4:3:1:4:2:2', false),
+    ('00000000-0000-4000-8000-000000000107'::uuid, 'dev-ren@nomo.app',    (select value from seed_password), 'レン',   'dev_ren',    'avatar', 'nomo_avatar:v1:6:0:4:5:3:1', false),
+    ('00000000-0000-4000-8000-000000000108'::uuid, 'dev-saki@nomo.app',   (select value from seed_password), 'サキ',   'dev_saki',   'avatar', 'nomo_avatar:v1:7:7:3:6:4:0', false),
+    ('00000000-0000-4000-8000-000000000109'::uuid, 'dev-ana@nomo.app',    (select value from seed_password), 'Ana',    'dev_ana',    'avatar', 'nomo_avatar:v1:8:8:7:1:1:3', false),
+    ('00000000-0000-4000-8000-000000000110'::uuid, 'dev-kai@nomo.app',    (select value from seed_password), 'Kai',    'dev_kai',    'avatar', 'nomo_avatar:v1:9:9:8:2:2:2', false)
+)
+insert into auth.users (
+  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  confirmation_token, recovery_token, email_change_token_new, email_change,
+  is_sso_user, is_anonymous
+)
+select
+  '00000000-0000-0000-0000-000000000000'::uuid,
+  id,
+  'authenticated',
+  'authenticated',
+  email,
+  case
+    when password is null then raise_exception('Set app.seed_password before running dev rich seed')
+    else crypt(password, gen_salt('bf'))
+  end,
+  now(),
+  jsonb_build_object('provider', 'email', 'providers', array['email']),
+  '{}'::jsonb,
+  now(),
+  now(),
+  '',
+  '',
+  '',
+  '',
+  false,
+  false
+from seed
+on conflict (id) do update set
+  email = excluded.email,
+  encrypted_password = excluded.encrypted_password,
+  email_confirmed_at = excluded.email_confirmed_at,
+  updated_at = now();
+
+with seed(id, email) as (
+  values
+    ('00000000-0000-4000-8000-000000000101'::uuid, 'dev-yuta@nomo.app'),
+    ('00000000-0000-4000-8000-000000000102'::uuid, 'dev-ken@nomo.app'),
+    ('00000000-0000-4000-8000-000000000103'::uuid, 'dev-ryo@nomo.app'),
+    ('00000000-0000-4000-8000-000000000104'::uuid, 'dev-haru@nomo.app'),
+    ('00000000-0000-4000-8000-000000000105'::uuid, 'dev-takumi@nomo.app'),
+    ('00000000-0000-4000-8000-000000000106'::uuid, 'dev-mika@nomo.app'),
+    ('00000000-0000-4000-8000-000000000107'::uuid, 'dev-ren@nomo.app'),
+    ('00000000-0000-4000-8000-000000000108'::uuid, 'dev-saki@nomo.app'),
+    ('00000000-0000-4000-8000-000000000109'::uuid, 'dev-ana@nomo.app'),
+    ('00000000-0000-4000-8000-000000000110'::uuid, 'dev-kai@nomo.app')
+)
+insert into auth.identities (
+  id, provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at
+)
+select
+  id,
+  id::text,
+  id,
+  jsonb_build_object('sub', id::text, 'email', email, 'email_verified', true, 'phone_verified', false),
+  'email',
+  now(),
+  now(),
+  now()
+from seed
+on conflict (provider, provider_id) do update set
+  identity_data = excluded.identity_data,
+  updated_at = now();
+
+insert into public.profiles (id, display_name, user_id, character_key, avatar_url, is_plus)
+values
+  ('00000000-0000-4000-8000-000000000101', 'ユウタ', 'dev_yuta',   'avatar', 'nomo_avatar:v1:0:1:2:0:0:3', true),
+  ('00000000-0000-4000-8000-000000000102', 'ケン',   'dev_ken',    'avatar', 'nomo_avatar:v1:5:2:5:2:1:0', false),
+  ('00000000-0000-4000-8000-000000000103', 'リョウ', 'dev_ryo',    'avatar', 'nomo_avatar:v1:2:6:0:3:0:1', false),
+  ('00000000-0000-4000-8000-000000000104', 'ハル',   'dev_haru',   'avatar', 'nomo_avatar:v1:1:4:3:1:2:3', false),
+  ('00000000-0000-4000-8000-000000000105', 'タクミ', 'dev_takumi', 'avatar', 'nomo_avatar:v1:3:5:6:0:1:0', false),
+  ('00000000-0000-4000-8000-000000000106', 'ミカ',   'dev_mika',   'avatar', 'nomo_avatar:v1:4:3:1:4:2:2', false),
+  ('00000000-0000-4000-8000-000000000107', 'レン',   'dev_ren',    'avatar', 'nomo_avatar:v1:6:0:4:5:3:1', false),
+  ('00000000-0000-4000-8000-000000000108', 'サキ',   'dev_saki',   'avatar', 'nomo_avatar:v1:7:7:3:6:4:0', false),
+  ('00000000-0000-4000-8000-000000000109', 'Ana',    'dev_ana',    'avatar', 'nomo_avatar:v1:8:8:7:1:1:3', false),
+  ('00000000-0000-4000-8000-000000000110', 'Kai',    'dev_kai',    'avatar', 'nomo_avatar:v1:9:9:8:2:2:2', false)
+on conflict (id) do update set
+  display_name = excluded.display_name,
+  user_id = excluded.user_id,
+  character_key = excluded.character_key,
+  avatar_url = excluded.avatar_url,
+  is_plus = excluded.is_plus,
+  updated_at = now();
+
+-- Reset deterministic seed-only social data without touching real dev users.
+delete from public.drink_log_reports
+where drink_log_id in (select id from public.drink_logs where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
+
+delete from public.drink_log_likes
+where drink_log_id in (select id from public.drink_logs where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
+
+delete from public.drink_log_friends
+where drink_log_id in (select id from public.drink_logs where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
+
+delete from public.drink_logs
+where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110';
+
+delete from public.daily_statuses
+where user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110';
+
+delete from public.friend_requests
+where from_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110'
+   or to_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110';
+
+-- Friend graph: ユウタ can see many patterns; others have a few cross-links.
+insert into public.friendships (user_a_id, user_b_id, created_at)
+values
+  ('00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000102', now() - interval '28 days'),
+  ('00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000103', now() - interval '23 days'),
+  ('00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000104', now() - interval '20 days'),
+  ('00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000105', now() - interval '17 days'),
+  ('00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000106', now() - interval '15 days'),
+  ('00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000107', now() - interval '12 days'),
+  ('00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000108', now() - interval '10 days'),
+  ('00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000000103', now() - interval '9 days'),
+  ('00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000000104', now() - interval '7 days'),
+  ('00000000-0000-4000-8000-000000000103', '00000000-0000-4000-8000-000000000106', now() - interval '6 days'),
+  ('00000000-0000-4000-8000-000000000104', '00000000-0000-4000-8000-000000000107', now() - interval '5 days'),
+  ('00000000-0000-4000-8000-000000000105', '00000000-0000-4000-8000-000000000108', now() - interval '4 days')
+on conflict (user_a_id, user_b_id) do update set created_at = excluded.created_at;
+
+insert into public.friend_requests (id, from_user_id, to_user_id, status, created_at, responded_at)
+values
+  ('20000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000109', '00000000-0000-4000-8000-000000000101', 'pending',   now() - interval '2 days', null),
+  ('20000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000110', '00000000-0000-4000-8000-000000000101', 'pending',   now() - interval '1 day', null),
+  ('20000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000106', '00000000-0000-4000-8000-000000000109', 'rejected',  now() - interval '9 days', now() - interval '8 days'),
+  ('20000000-0000-4000-8000-000000000004', '00000000-0000-4000-8000-000000000108', '00000000-0000-4000-8000-000000000110', 'cancelled', now() - interval '6 days', now() - interval '6 days')
+on conflict (id) do update set
+  from_user_id = excluded.from_user_id,
+  to_user_id = excluded.to_user_id,
+  status = excluded.status,
+  created_at = excluded.created_at,
+  responded_at = excluded.responded_at;
+
+-- Today's statuses cover every UI filter/state.
+insert into public.daily_statuses (user_id, status_date, status, updated_at)
+values
+  ('00000000-0000-4000-8000-000000000101', current_date, 'can_drink_today', now() - interval '15 minutes'),
+  ('00000000-0000-4000-8000-000000000102', current_date, 'light_drink',      now() - interval '20 minutes'),
+  ('00000000-0000-4000-8000-000000000103', current_date, 'want_drink_hard',  now() - interval '35 minutes'),
+  ('00000000-0000-4000-8000-000000000104', current_date, 'non_alcohol',      now() - interval '50 minutes'),
+  ('00000000-0000-4000-8000-000000000105', current_date, 'liver_rest',       now() - interval '1 hour'),
+  ('00000000-0000-4000-8000-000000000106', current_date, 'waiting_invite',   now() - interval '90 minutes'),
+  ('00000000-0000-4000-8000-000000000107', current_date, 'has_plans',        now() - interval '2 hours'),
+  ('00000000-0000-4000-8000-000000000108', current_date, 'unselected',       now() - interval '3 hours'),
+  ('00000000-0000-4000-8000-000000000109', current_date, 'can_drink_today', now() - interval '4 hours'),
+  ('00000000-0000-4000-8000-000000000110', current_date, 'liver_rest',      now() - interval '5 hours'),
+  ('00000000-0000-4000-8000-000000000101', current_date - 1, 'has_plans',    now() - interval '1 day'),
+  ('00000000-0000-4000-8000-000000000102', current_date - 1, 'liver_rest',   now() - interval '1 day')
+on conflict (user_id, status_date) do update set
+  status = excluded.status,
+  updated_at = excluded.updated_at;
+
+with logs(id, owner_user_id, days_ago, hour_text, place_name, memo, photo_path, place_lat, place_lng) as (
+  values
+    ('10000000-0000-4000-8000-000000000001'::uuid, '00000000-0000-4000-8000-000000000101'::uuid, 0,  '20:30', '渋谷・のものも横丁',   'カレンダー確認用のタグ',       'seed/feed_shibuya.png', 35.6595, 139.7005),
+    ('10000000-0000-4000-8000-000000000002'::uuid, '00000000-0000-4000-8000-000000000101'::uuid, 2,  '19:45', '恵比寿・泡酒場',       '軽めに一杯だけ',               null, 35.6467, 139.7101),
+    ('10000000-0000-4000-8000-000000000003'::uuid, '00000000-0000-4000-8000-000000000101'::uuid, 5,  '21:10', '新宿・きむら屋',       '急に集まれて最高だった',       null, 35.6909, 139.7003),
+    ('10000000-0000-4000-8000-000000000004'::uuid, '00000000-0000-4000-8000-000000000101'::uuid, 12, '18:50', '下北沢・夜風スタンド', 'ノンアルもおいしい日',         null, 35.6618, 139.6661),
+    ('10000000-0000-4000-8000-000000000005'::uuid, '00000000-0000-4000-8000-000000000101'::uuid, 26, '20:00', '中目黒・川沿いバル',   '今月最初の乾杯',               null, 35.6440, 139.6993),
+    ('10000000-0000-4000-8000-000000000006'::uuid, '00000000-0000-4000-8000-000000000102'::uuid, 1,  '22:00', '渋谷・立ち飲み星',     '終電までならいける',           null, 35.6580, 139.7016),
+    ('10000000-0000-4000-8000-000000000007'::uuid, '00000000-0000-4000-8000-000000000102'::uuid, 3,  '20:00', '三軒茶屋・月あかり',   'ビールがおいしかった',         null, 35.6434, 139.6690),
+    ('10000000-0000-4000-8000-000000000008'::uuid, '00000000-0000-4000-8000-000000000102'::uuid, 8,  '19:30', '目黒・小さな酒場',     'よく飲むチーム集合',           null, 35.6339, 139.7156),
+    ('10000000-0000-4000-8000-000000000009'::uuid, '00000000-0000-4000-8000-000000000102'::uuid, 15, '21:30', '高円寺・ネオン食堂',   'ハイテンションな夜',           null, 35.7056, 139.6497),
+    ('10000000-0000-4000-8000-000000000010'::uuid, '00000000-0000-4000-8000-000000000103'::uuid, 4,  '20:20', '代々木・やさしい酒場', '誰か誘って〜！',               null, 35.6830, 139.7020),
+    ('10000000-0000-4000-8000-000000000011'::uuid, '00000000-0000-4000-8000-000000000103'::uuid, 6,  '18:40', '中野・クラフト横丁',   '写真なしパターン',             null, 35.7060, 139.6657),
+    ('10000000-0000-4000-8000-000000000012'::uuid, '00000000-0000-4000-8000-000000000103'::uuid, 9,  '23:00', '池袋・終電前',         '遅めスタート',                 null, 35.7295, 139.7109),
+    ('10000000-0000-4000-8000-000000000013'::uuid, '00000000-0000-4000-8000-000000000104'::uuid, 7,  '19:00', '吉祥寺・森のバル',     '今日はノンアルで参加',         null, 35.7038, 139.5797),
+    ('10000000-0000-4000-8000-000000000014'::uuid, '00000000-0000-4000-8000-000000000105'::uuid, 10, '20:10', '神楽坂・静かな店',     '休肝日明けの一杯',             null, 35.7009, 139.7400),
+    ('10000000-0000-4000-8000-000000000015'::uuid, '00000000-0000-4000-8000-000000000106'::uuid, 14, '18:30', '品川・駅前ビア',       '誘われ待ちから参加',           null, 35.6285, 139.7388),
+    ('10000000-0000-4000-8000-000000000016'::uuid, '00000000-0000-4000-8000-000000000107'::uuid, 18, '20:45', '上野・路地裏',         '予定ありの日',                 null, 35.7138, 139.7770),
+    ('10000000-0000-4000-8000-000000000017'::uuid, '00000000-0000-4000-8000-000000000108'::uuid, 33, '19:20', '浅草・ホッピー通り',   '先月の記録も表示確認',         null, 35.7148, 139.7967),
+    ('10000000-0000-4000-8000-000000000018'::uuid, '00000000-0000-4000-8000-000000000101'::uuid, 42, '20:00', '銀座・ワインバー',     '前月比較用の思い出',           null, 35.6719, 139.7648)
+)
+insert into public.drink_logs (id, owner_user_id, drank_at, place_name, memo, photo_path, place_lat, place_lng, created_at, updated_at)
+select
+  id,
+  owner_user_id,
+  ((current_date - days_ago)::timestamp + hour_text::time) at time zone 'Asia/Tokyo',
+  place_name,
+  memo,
+  photo_path,
+  place_lat,
+  place_lng,
+  now() - make_interval(days => days_ago),
+  now() - make_interval(days => days_ago)
+from logs;
+
+insert into public.drink_log_friends (drink_log_id, friend_user_id)
+values
+  ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000102'),
+  ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000103'),
+  ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000104'),
+  ('10000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000104'),
+  ('10000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000105'),
+  ('10000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000106'),
+  ('10000000-0000-4000-8000-000000000004', '00000000-0000-4000-8000-000000000107'),
+  ('10000000-0000-4000-8000-000000000005', '00000000-0000-4000-8000-000000000108'),
+  ('10000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000101'),
+  ('10000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000103'),
+  ('10000000-0000-4000-8000-000000000007', '00000000-0000-4000-8000-000000000101'),
+  ('10000000-0000-4000-8000-000000000008', '00000000-0000-4000-8000-000000000104'),
+  ('10000000-0000-4000-8000-000000000009', '00000000-0000-4000-8000-000000000105'),
+  ('10000000-0000-4000-8000-000000000010', '00000000-0000-4000-8000-000000000101'),
+  ('10000000-0000-4000-8000-000000000011', '00000000-0000-4000-8000-000000000106'),
+  ('10000000-0000-4000-8000-000000000012', '00000000-0000-4000-8000-000000000107'),
+  ('10000000-0000-4000-8000-000000000013', '00000000-0000-4000-8000-000000000101'),
+  ('10000000-0000-4000-8000-000000000014', '00000000-0000-4000-8000-000000000108'),
+  ('10000000-0000-4000-8000-000000000015', '00000000-0000-4000-8000-000000000103'),
+  ('10000000-0000-4000-8000-000000000016', '00000000-0000-4000-8000-000000000104'),
+  ('10000000-0000-4000-8000-000000000017', '00000000-0000-4000-8000-000000000105'),
+  ('10000000-0000-4000-8000-000000000018', '00000000-0000-4000-8000-000000000102')
+on conflict (drink_log_id, friend_user_id) do nothing;
+
+insert into public.drink_log_likes (drink_log_id, user_id)
+values
+  ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000102'),
+  ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000103'),
+  ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000104'),
+  ('10000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000101'),
+  ('10000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000101'),
+  ('10000000-0000-4000-8000-000000000010', '00000000-0000-4000-8000-000000000101'),
+  ('10000000-0000-4000-8000-000000000013', '00000000-0000-4000-8000-000000000102')
+on conflict (drink_log_id, user_id) do nothing;
+
+insert into public.drink_log_reports (id, drink_log_id, reporter_user_id, reason, created_at)
+values
+  ('30000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000017', '00000000-0000-4000-8000-000000000101', 'dev_seed_report_sample', now() - interval '1 day')
+on conflict (drink_log_id, reporter_user_id) do update set reason = excluded.reason;
+
+select
+  (select count(*) from public.profiles where user_id like 'dev_%') as dev_profiles,
+  (select count(*) from public.friendships where user_a_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_friendships,
+  (select count(*) from public.daily_statuses where user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_statuses,
+  (select count(*) from public.drink_logs where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_drink_logs,
+  (select count(*) from public.drink_log_friends where drink_log_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_drink_log_friends,
+  (select count(*) from public.drink_log_likes where drink_log_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_likes;
