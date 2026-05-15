@@ -65,6 +65,7 @@ class ProfileScreen extends ConsumerWidget {
                       const SizedBox(height: 14),
                       _SimpleHero(
                         isWhite: isWhite,
+                        name: user?.name ?? 'ユーザー名',
                         handle: user == null ? '@NOMO_USER' : '@${user.userId}',
                         avatar: user?.avatar,
                       ),
@@ -457,17 +458,18 @@ class _ProfileTopSheet extends StatelessWidget {
 class _SimpleHero extends StatelessWidget {
   const _SimpleHero({
     required this.isWhite,
+    required this.name,
     required this.handle,
     required this.avatar,
   });
 
   final bool isWhite;
+  final String name;
   final String handle;
   final NomoAvatar? avatar;
 
   @override
   Widget build(BuildContext context) {
-    final joinedYear = DateTime.now().year;
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -502,23 +504,18 @@ class _SimpleHero extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(18, 13, 18, 14),
             color: isWhite ? Colors.white : const Color(0xFF101D25),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '$handle ・ $joinedYear年に参加',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: isWhite
-                          ? const Color(0xFF59636E)
-                          : _ProfileColors.sub,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.4,
-                    ),
-                  ),
+            child: Center(
+              child: Text(
+                '$name$handle',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: isWhite ? const Color(0xFF59636E) : _ProfileColors.sub,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.4,
                 ),
-              ],
+              ),
             ),
           ),
         ],
