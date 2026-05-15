@@ -32,14 +32,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     });
   }
 
-  void _moveToToday() {
-    final now = DateTime.now();
-    setState(() {
-      _month = DateTime(now.year, now.month);
-      _selectedDay = DateTime(now.year, now.month, now.day);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final logsAsync = ref.watch(drinkLogControllerProvider);
@@ -77,11 +69,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 children: [
                   const NomoPageHeader(title: 'カレンダー'),
                   const SizedBox(height: 18),
-                  _MonthHeader(
-                    month: _month,
-                    onMove: _moveMonth,
-                    onToday: _moveToToday,
-                  ),
+                  _MonthHeader(month: _month, onMove: _moveMonth),
                 ],
               ),
             ),
@@ -121,15 +109,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 }
 
 class _MonthHeader extends StatelessWidget {
-  const _MonthHeader({
-    required this.month,
-    required this.onMove,
-    required this.onToday,
-  });
+  const _MonthHeader({required this.month, required this.onMove});
 
   final DateTime month;
   final ValueChanged<int> onMove;
-  final VoidCallback onToday;
 
   @override
   Widget build(BuildContext context) {
@@ -149,44 +132,8 @@ class _MonthHeader extends StatelessWidget {
             ),
           ),
         ),
-        _TodayButton(onTap: onToday),
-        const SizedBox(width: 6),
         _ArrowButton(label: '>', onTap: () => onMove(1)),
       ],
-    );
-  }
-}
-
-class _TodayButton extends StatelessWidget {
-  const _TodayButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 34,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: isWhite
-              ? const Color(0xFFF3F6F8)
-              : Colors.white.withValues(alpha: .12),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-          child: Text(
-            '今日',
-            style: TextStyle(
-              color: isWhite ? const Color(0xFF101820) : Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
