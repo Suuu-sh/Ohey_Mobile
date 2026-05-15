@@ -85,9 +85,9 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
   }
 
   Future<void> _scanQr() async {
-    final payload = await Navigator.of(
-      context,
-    ).push<String>(CupertinoPageRoute(builder: (_) => const NomiTomoQrScannerScreen()));
+    final payload = await Navigator.of(context).push<String>(
+      CupertinoPageRoute(builder: (_) => const NomiTomoQrScannerScreen()),
+    );
     if (!mounted || payload == null) return;
     final userId = parseFriendQrPayload(payload);
     if (userId == null) {

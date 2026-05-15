@@ -122,6 +122,26 @@ class ProfileScreen extends ConsumerWidget {
 
 String _profileQrPayload(String userId) => 'nomo://friend/$userId';
 
+String? _parseProfileFriendQrPayload(String raw) {
+  final value = raw.trim();
+  final uri = Uri.tryParse(value);
+  if (uri != null && uri.scheme == 'nomo' && uri.host == 'friend') {
+    final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
+    return id?.isEmpty == false ? id : null;
+  }
+  if (value.startsWith('@')) return value.substring(1);
+  if (RegExp(r'^[A-Za-z0-9_\-]{3,}$').hasMatch(value)) return value;
+  return null;
+}
+
+String _normalizeProfileFriendSearchId(String raw) {
+  final withoutAt = raw.trim().replaceFirst(RegExp(r'^@'), '');
+  final localPart = withoutAt.contains('@')
+      ? withoutAt.split('@').first
+      : withoutAt;
+  return localPart.replaceAll('-', '_').toLowerCase();
+}
+
 const _qrSaverChannel = MethodChannel('nomo/qr_saver');
 
 Future<Uint8List> _createQrPngBytes(String payload) async {
@@ -189,7 +209,7 @@ Future<void> showMyQrDialog(
     BuildContext dialogContext,
     String rawUserId,
   ) async {
-    final query = rawUserId.trim().replaceFirst(RegExp(r'^@'), '');
+    final query = _normalizeProfileFriendSearchId(rawUserId);
     if (query.isEmpty) {
       NomoToast.show(dialogContext, 'ユーザーIDを入力してください');
       return;
@@ -237,13 +257,15 @@ Future<void> showMyQrDialog(
 
   Future<void> scanQr(BuildContext dialogContext) async {
     final payload = await Navigator.of(dialogContext).push<String>(
-      CupertinoPageRoute<String>(builder: (_) => const QrScannerScreen()),
+      CupertinoPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const NomiTomoQrScannerScreen(),
+      ),
     );
-    if (!dialogContext.mounted) return;
-    if (payload == null) return;
-    final userId = parseFriendQrPayload(payload);
+    if (!dialogContext.mounted || payload == null) return;
+    final userId = _parseProfileFriendQrPayload(payload);
     if (userId == null) {
-      NomoToast.show(dialogContext, 'Nomoの友達QRではありません。');
+      NomoToast.show(dialogContext, 'Nomoの友達QRではありません');
       return;
     }
     await searchAndAddByUserId(dialogContext, userId);
