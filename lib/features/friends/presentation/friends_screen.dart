@@ -85,12 +85,30 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                   onTap: _openAddFriend,
                 ),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 18),
+              friendsAsync.when(
+                loading: () => const _FriendsSummaryCard.loading(),
+                error: (error, stackTrace) => _FriendsSummaryCard(
+                  friendsCount: 0,
+                  monthlyCount: 0,
+                  streak: _currentStreak(logsAsync.asData?.value ?? const []),
+                  onAddFriend: _openAddFriend,
+                ),
+                data: (friends) => _FriendsSummaryCard(
+                  friendsCount: friends.length,
+                  monthlyCount: _monthlyDrinksWithFriends(
+                    logsAsync.asData?.value ?? const [],
+                  ),
+                  streak: _currentStreak(logsAsync.asData?.value ?? const []),
+                  onAddFriend: _openAddFriend,
+                ),
+              ),
+              const SizedBox(height: 16),
               _FilterBar(
                 selected: _selectedFilter,
                 onChanged: (filter) => setState(() => _selectedFilter = filter),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
               Expanded(
                 child: logsAsync.when(
                   loading: () => const _LoadingState(label: 'ログを読み込み中...'),
@@ -120,6 +138,212 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 }
 
 enum _FriendFilterType { all, drinkable, favorite }
+
+class _FriendsSummaryCard extends StatelessWidget {
+  const _FriendsSummaryCard({
+    required this.friendsCount,
+    required this.monthlyCount,
+    required this.streak,
+    required this.onAddFriend,
+  }) : loading = false;
+
+  const _FriendsSummaryCard.loading()
+    : friendsCount = 0,
+      monthlyCount = 0,
+      streak = 0,
+      onAddFriend = null,
+      loading = true;
+
+  final int friendsCount;
+  final int monthlyCount;
+  final int streak;
+  final VoidCallback? onAddFriend;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final bg = isWhite ? Colors.white : const Color(0xFF101D25);
+    final border = isWhite
+        ? const Color(0xFFDDE7EF)
+        : Colors.white.withValues(alpha: .09);
+    final text = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF6B7683)
+        : Colors.white.withValues(alpha: .55);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: border, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isWhite ? .06 : .18),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: _FriendsColors.lime.withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(17),
+                ),
+                child: const Center(
+                  child: NomoPopIcon(
+                    icon: CupertinoIcons.person_2_fill,
+                    color: _FriendsColors.lime,
+                    size: 34,
+                    shadow: false,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'フレンズ',
+                      style: TextStyle(
+                        color: text,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.4,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      loading ? '読み込み中...' : '飲み友とのつながり',
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _SummaryStat(value: friendsCount, label: '友達', color: text),
+              const SizedBox(width: 18),
+              _SummaryStat(value: monthlyCount, label: '今月', color: text),
+              const SizedBox(width: 18),
+              _SummaryStat(value: streak, label: '連続', color: text),
+            ],
+          ),
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: loading ? null : onAddFriend,
+                  child: Container(
+                    height: 54,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(
+                        colors: isWhite
+                            ? const [Color(0xFFF7FBFF), Color(0xFFEFF6FB)]
+                            : const [Color(0xFF172636), Color(0xFF111C2A)],
+                      ),
+                      border: Border.all(color: border, width: 1.2),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const NomoPopIcon(
+                          icon: CupertinoIcons.person_badge_plus_fill,
+                          color: _FriendsColors.lime,
+                          size: 31,
+                          shadow: false,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          '友達を追加',
+                          style: TextStyle(
+                            color: text,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 56,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF16A8FF).withValues(alpha: .10),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFF16A8FF).withValues(alpha: .24),
+                  ),
+                ),
+                child: const Center(
+                  child: NomoPopIcon(
+                    icon: CupertinoIcons.qrcode_viewfinder,
+                    color: Color(0xFF16A8FF),
+                    size: 34,
+                    shadow: false,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryStat extends StatelessWidget {
+  const _SummaryStat({
+    required this.value,
+    required this.label,
+    required this.color,
+  });
+
+  final int value;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      Text(
+        '$value',
+        style: TextStyle(
+          color: color,
+          fontSize: 23,
+          fontWeight: FontWeight.w900,
+          height: .95,
+        ),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        label,
+        style: TextStyle(
+          color: color.withValues(alpha: .56),
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    ],
+  );
+}
 
 class _FilterBar extends StatelessWidget {
   const _FilterBar({required this.selected, required this.onChanged});
@@ -1048,6 +1272,40 @@ int _displayCount(NomoFriend friend, Map<String, int> counts) {
   final realCount = counts[friend.id] ?? 0;
   if (realCount > 0) return realCount;
   return friend.monthlyCount ?? 0;
+}
+
+int _monthlyDrinksWithFriends(List<DrinkLog> logs) {
+  final now = DateTime.now();
+  return logs.where((log) {
+    return log.date.year == now.year &&
+        log.date.month == now.month &&
+        log.friends.isNotEmpty;
+  }).length;
+}
+
+int _currentStreak(List<DrinkLog> logs) {
+  if (logs.isEmpty) return 0;
+  final days =
+      logs
+          .map((log) => DateTime(log.date.year, log.date.month, log.date.day))
+          .toSet()
+          .toList()
+        ..sort((a, b) => b.compareTo(a));
+  var streak = 0;
+  var cursor = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    DateTime.now().day,
+  );
+  for (final day in days) {
+    if (day == cursor) {
+      streak++;
+      cursor = cursor.subtract(const Duration(days: 1));
+    } else if (day.isBefore(cursor)) {
+      break;
+    }
+  }
+  return streak;
 }
 
 Map<String, int> _monthlyFriendCounts(
