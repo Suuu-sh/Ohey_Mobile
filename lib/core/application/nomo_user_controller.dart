@@ -43,7 +43,11 @@ class NomoUserController extends Notifier<NomoUser?> {
     return true;
   }
 
-  Future<void> createUser({required String name, NomoAvatar? avatar}) async {
+  Future<void> createUser({
+    required String name,
+    String? userId,
+    NomoAvatar? avatar,
+  }) async {
     final supabase = Supabase.instance.client;
     final authUser = supabase.auth.currentUser;
     if (authUser == null) {
@@ -51,35 +55,45 @@ class NomoUserController extends Notifier<NomoUser?> {
     }
 
     final trimmed = name.trim();
+    final normalizedUserId = _normalizeUserId(
+      userId?.trim().isNotEmpty == true ? userId! : _defaultUserId(authUser.id),
+    );
     if (trimmed.isEmpty) {
       throw ArgumentError.value(name, 'name', 'Profile name is required.');
     }
-    final existing = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('id', authUser.id)
-        .maybeSingle();
+    if (!_isValidUserId(normalizedUserId)) {
+      throw ArgumentError.value(
+        userId,
+        'userId',
+        'User ID must be 3-24 letters, numbers, or underscores.',
+      );
+    }
+    await _ensureUserIdAvailable(
+      supabase,
+      userId: normalizedUserId,
+      currentAuthUserId: authUser.id,
+    );
 
     await supabase
         .from('profiles')
         .upsert(
           {
             'id': authUser.id,
-            'user_id': existing?['user_id'] ?? _defaultUserId(authUser.id),
+            'user_id': normalizedUserId,
             'display_name': trimmed,
             'character_key': 'avatar',
             'avatar_url': avatar?.encode(),
           }..removeWhere((_, value) => value == null),
         );
 
-    state = NomoUser(
-      name: trimmed,
-      avatar: avatar,
-      userId: (existing?['user_id'] as String?) ?? _defaultUserId(authUser.id),
-    );
+    state = NomoUser(name: trimmed, avatar: avatar, userId: normalizedUserId);
   }
 
-  Future<void> updateProfile({required String name, NomoAvatar? avatar}) async {
+  Future<void> updateProfile({
+    required String name,
+    required String userId,
+    NomoAvatar? avatar,
+  }) async {
     final supabase = Supabase.instance.client;
     final authUser = supabase.auth.currentUser;
     if (authUser == null) {
@@ -87,13 +101,27 @@ class NomoUserController extends Notifier<NomoUser?> {
     }
 
     final trimmed = name.trim();
+    final normalizedUserId = _normalizeUserId(userId);
     if (trimmed.isEmpty) {
       throw ArgumentError.value(name, 'name', 'Profile name is required.');
     }
+    if (!_isValidUserId(normalizedUserId)) {
+      throw ArgumentError.value(
+        userId,
+        'userId',
+        'User ID must be 3-24 letters, numbers, or underscores.',
+      );
+    }
+    await _ensureUserIdAvailable(
+      supabase,
+      userId: normalizedUserId,
+      currentAuthUserId: authUser.id,
+    );
 
     await supabase
         .from('profiles')
         .update({
+          'user_id': normalizedUserId,
           'display_name': trimmed,
           'character_key': 'avatar',
           'avatar_url': avatar?.encode(),
@@ -108,7 +136,7 @@ class NomoUserController extends Notifier<NomoUser?> {
                   avatar: avatar,
                   userId: _defaultUserId(authUser.id),
                 ))
-            .copyWith(name: trimmed, avatar: avatar);
+            .copyWith(name: trimmed, userId: normalizedUserId, avatar: avatar);
   }
 
   Future<void> updateDailyStatus(NomoDailyStatus status) async {
@@ -147,6 +175,27 @@ class NomoUserController extends Notifier<NomoUser?> {
       // ローカルセッション削除が例外になっても、UI上は必ず未ログイン状態へ戻す。
       state = null;
     }
+  }
+}
+
+String _normalizeUserId(String userId) => userId.trim().toLowerCase();
+
+bool _isValidUserId(String userId) =>
+    RegExp(r'^[a-z0-9_]{3,24}$').hasMatch(userId);
+
+Future<void> _ensureUserIdAvailable(
+  SupabaseClient supabase, {
+  required String userId,
+  required String currentAuthUserId,
+}) async {
+  final existing = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', userId)
+      .neq('id', currentAuthUserId)
+      .maybeSingle();
+  if (existing != null) {
+    throw StateError('このユーザーIDはすでに使われています。');
   }
 }
 

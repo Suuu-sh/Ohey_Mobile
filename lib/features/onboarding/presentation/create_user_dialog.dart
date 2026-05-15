@@ -133,6 +133,7 @@ class _NomoDemoScreenState extends State<NomoDemoScreen> {
 class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _userIdController = TextEditingController();
   final _nameController = TextEditingController();
   final _demoController = PageController();
   NomoAvatar _avatar = NomoAvatar.defaultAvatar;
@@ -140,6 +141,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   int _demoPage = 0;
   bool _isLogin = true;
   bool _isBusy = false;
+  bool _userIdTouched = false;
   bool _nameTouched = false;
   String? _error;
   String? _notice;
@@ -151,6 +153,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     if (session != null) {
       _step = _OnboardingStep.profile;
       _emailController.text = session.user.email ?? '';
+      _hydrateProfileFromAuthMetadata(session.user);
     }
   }
 
@@ -158,6 +161,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _userIdController.dispose();
     _nameController.dispose();
     _demoController.dispose();
     super.dispose();
@@ -297,6 +301,24 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
           textInputAction: TextInputAction.done,
           autofillHints: const [AutofillHints.password],
         ),
+        if (!_isLogin) ...[
+          const SizedBox(height: 16),
+          _RegistrationProfileFields(
+            userIdController: _userIdController,
+            nameController: _nameController,
+            avatar: _avatar,
+            enabled: !_isBusy,
+            userIdTouched: _userIdTouched,
+            nameTouched: _nameTouched,
+            onUserIdChanged: (_) {
+              if (!_userIdTouched) setState(() => _userIdTouched = true);
+            },
+            onNameChanged: (_) {
+              if (!_nameTouched) setState(() => _nameTouched = true);
+            },
+            onAvatarTap: _openAvatarBuilder,
+          ),
+        ],
         if (_error != null) ...[
           const SizedBox(height: 12),
           _MessageText(_error!, isError: true),
@@ -364,6 +386,20 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
           label: const Text('アバターを作る'),
         ),
         const SizedBox(height: 18),
+        _ProfileTextField(
+          controller: _userIdController,
+          enabled: !_isBusy,
+          icon: CupertinoIcons.at,
+          hintText: 'ユーザーID（必須）',
+          errorText:
+              _userIdTouched && !_isValidUserId(_userIdController.text.trim())
+              ? '3〜24文字の英数字と_のみ使えます'
+              : null,
+          onChanged: (_) {
+            if (!_userIdTouched) setState(() => _userIdTouched = true);
+          },
+        ),
+        const SizedBox(height: 12),
         TextField(
           controller: _nameController,
           enabled: !_isBusy,
@@ -423,6 +459,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       if (email.isEmpty || password.length < 6) {
         throw const AuthException('メールアドレスと6文字以上のパスワードを入力してください。');
       }
+      if (!_isLogin && !_validateRegistrationProfile()) return;
 
       if (_isLogin) {
         await supabase.auth.signInWithPassword(
@@ -436,12 +473,28 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
           Navigator.of(context).pop();
           return;
         }
+        _hydrateProfileFromAuthMetadata(supabase.auth.currentUser);
       } else {
+        final userId = _userIdController.text.trim();
+        final name = _nameController.text.trim();
         final res = await supabase.auth.signUp(
           email: email,
           password: password,
           emailRedirectTo: SupabaseConfig.authRedirectUrl,
+          data: {
+            'user_id': userId,
+            'display_name': name,
+            'character_key': 'avatar',
+            'avatar_url': _avatar.encode(),
+          },
         );
+        if (res.session != null) {
+          await ref
+              .read(nomoUserProvider.notifier)
+              .createUser(name: name, userId: userId, avatar: _avatar);
+          if (mounted) Navigator.of(context).pop();
+          return;
+        }
         if (res.session == null) {
           if (mounted) {
             setState(() {
@@ -468,15 +521,9 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   }
 
   Future<void> _submitProfile() async {
+    if (!_validateRegistrationProfile()) return;
+    final userId = _userIdController.text.trim();
     final name = _nameController.text.trim();
-    if (name.isEmpty) {
-      setState(() {
-        _nameTouched = true;
-        _error = 'プロフィールの名前を入力してください。';
-        _notice = null;
-      });
-      return;
-    }
 
     setState(() {
       _isBusy = true;
@@ -486,7 +533,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     try {
       await ref
           .read(nomoUserProvider.notifier)
-          .createUser(name: name, avatar: _avatar);
+          .createUser(name: name, userId: userId, avatar: _avatar);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -495,6 +542,44 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     } finally {
       if (mounted) setState(() => _isBusy = false);
     }
+  }
+
+  bool _validateRegistrationProfile() {
+    final userId = _userIdController.text.trim();
+    final name = _nameController.text.trim();
+    if (!_isValidUserId(userId)) {
+      setState(() {
+        _userIdTouched = true;
+        _error = 'ユーザーIDは3〜24文字の英数字と_のみ使えます。';
+        _notice = null;
+      });
+      return false;
+    }
+    if (name.isEmpty) {
+      setState(() {
+        _nameTouched = true;
+        _error = 'ユーザー名を入力してください。';
+        _notice = null;
+      });
+      return false;
+    }
+    return true;
+  }
+
+  void _hydrateProfileFromAuthMetadata(User? user) {
+    final metadata = user?.userMetadata;
+    if (metadata == null) return;
+    final userId = metadata['user_id'] as String?;
+    final displayName = metadata['display_name'] as String?;
+    final avatarUrl = metadata['avatar_url'] as String?;
+    if (userId != null && _userIdController.text.trim().isEmpty) {
+      _userIdController.text = userId;
+    }
+    if (displayName != null && _nameController.text.trim().isEmpty) {
+      _nameController.text = displayName;
+    }
+    final avatar = NomoAvatar.decode(avatarUrl);
+    if (avatar != null) _avatar = avatar;
   }
 
   Future<void> _openAvatarBuilder() async {
@@ -942,6 +1027,161 @@ class _Header extends StatelessWidget {
   }
 }
 
+bool _isValidUserId(String value) =>
+    RegExp(r'^[a-zA-Z0-9_]{3,24}$').hasMatch(value);
+
+class _RegistrationProfileFields extends StatelessWidget {
+  const _RegistrationProfileFields({
+    required this.userIdController,
+    required this.nameController,
+    required this.avatar,
+    required this.enabled,
+    required this.userIdTouched,
+    required this.nameTouched,
+    required this.onUserIdChanged,
+    required this.onNameChanged,
+    required this.onAvatarTap,
+  });
+
+  final TextEditingController userIdController;
+  final TextEditingController nameController;
+  final NomoAvatar avatar;
+  final bool enabled;
+  final bool userIdTouched;
+  final bool nameTouched;
+  final ValueChanged<String> onUserIdChanged;
+  final ValueChanged<String> onNameChanged;
+  final VoidCallback onAvatarTap;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: .78),
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(color: const Color(0xFFE4E8F0), width: 1.4),
+    ),
+    child: Column(
+      children: [
+        Row(
+          children: [
+            GestureDetector(
+              onTap: enabled ? onAvatarTap : null,
+              child: Container(
+                width: 64,
+                height: 64,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [AppColors.peach, AppColors.sky],
+                  ),
+                  border: Border.all(color: Colors.white, width: 2.5),
+                ),
+                child: NomoAvatarView(avatar: avatar),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'プロフィール',
+                    style: TextStyle(
+                      color: AppColors.ink,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '登録と同時に作成します',
+                    style: TextStyle(
+                      color: AppColors.mutedInk,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _ProfileTextField(
+          controller: userIdController,
+          enabled: enabled,
+          icon: CupertinoIcons.at,
+          hintText: 'ユーザーID（必須）',
+          errorText:
+              userIdTouched && !_isValidUserId(userIdController.text.trim())
+              ? '3〜24文字の英数字と_のみ使えます'
+              : null,
+          onChanged: onUserIdChanged,
+        ),
+        const SizedBox(height: 10),
+        _ProfileTextField(
+          controller: nameController,
+          enabled: enabled,
+          icon: CupertinoIcons.person_crop_circle,
+          hintText: '名前（必須）',
+          errorText: nameTouched && nameController.text.trim().isEmpty
+              ? '名前を入力してください'
+              : null,
+          onChanged: onNameChanged,
+        ),
+      ],
+    ),
+  );
+}
+
+class _ProfileTextField extends StatelessWidget {
+  const _ProfileTextField({
+    required this.controller,
+    required this.enabled,
+    required this.icon,
+    required this.hintText,
+    required this.onChanged,
+    this.errorText,
+  });
+
+  final TextEditingController controller;
+  final bool enabled;
+  final IconData icon;
+  final String hintText;
+  final ValueChanged<String> onChanged;
+  final String? errorText;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _AuthTextField(
+        controller: controller,
+        enabled: enabled,
+        icon: icon,
+        hintText: hintText,
+        textInputAction: TextInputAction.next,
+        onChanged: onChanged,
+      ),
+      if (errorText != null) ...[
+        const SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: Text(
+            errorText!,
+            style: const TextStyle(
+              color: AppColors.coral,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
 class _AuthTextField extends StatelessWidget {
   const _AuthTextField({
     required this.controller,
@@ -952,6 +1192,7 @@ class _AuthTextField extends StatelessWidget {
     this.textInputAction,
     this.autofillHints,
     this.obscureText = false,
+    this.onChanged,
   });
 
   final TextEditingController controller;
@@ -962,6 +1203,7 @@ class _AuthTextField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final Iterable<String>? autofillHints;
   final bool obscureText;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -997,6 +1239,7 @@ class _AuthTextField extends StatelessWidget {
             textInputAction: textInputAction,
             autofillHints: autofillHints,
             obscureText: obscureText,
+            onChanged: onChanged,
             decoration: InputDecoration(
               isCollapsed: true,
               border: InputBorder.none,
