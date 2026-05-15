@@ -148,26 +148,11 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                                 const SizedBox(height: 12),
                                 _SectionLabel('いつ？'),
                                 const SizedBox(height: 7),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _DateTimeBox(
-                                        icon: CupertinoIcons.calendar,
-                                        label: _dateLabel(_selectedDate),
-                                        onTap: _pickDate,
-                                        compact: true,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: _DateTimeBox(
-                                        icon: CupertinoIcons.clock,
-                                        label: _timeLabel(_selectedDate),
-                                        onTap: _pickTime,
-                                        compact: true,
-                                      ),
-                                    ),
-                                  ],
+                                _DateTimeBox(
+                                  icon: CupertinoIcons.calendar,
+                                  label: _dateLabel(_selectedDate),
+                                  onTap: _pickDate,
+                                  compact: true,
                                 ),
                                 const SizedBox(height: 12),
                                 _SectionLabel('一言'),
@@ -247,39 +232,8 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
     );
     if (picked == null) return;
     setState(
-      () => _selectedDate = DateTime(
-        picked.year,
-        picked.month,
-        picked.day,
-        _selectedDate.hour,
-        _selectedDate.minute,
-      ),
-    );
-  }
-
-  Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(_selectedDate),
-      builder: (context, child) => Theme(
-        data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: _AddLogColors.lime,
-            surface: _AddLogColors.surface,
-          ),
-        ),
-        child: child!,
-      ),
-    );
-    if (picked == null) return;
-    setState(
-      () => _selectedDate = DateTime(
-        _selectedDate.year,
-        _selectedDate.month,
-        _selectedDate.day,
-        picked.hour,
-        picked.minute,
-      ),
+      () =>
+          _selectedDate = DateTime(picked.year, picked.month, picked.day, 0, 0),
     );
   }
 
@@ -313,9 +267,6 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
 
   static String _dateLabel(DateTime date) =>
       '${date.year}年${date.month}月${date.day}日（${_weekday(date)}）';
-
-  static String _timeLabel(DateTime date) =>
-      '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}頃';
 
   static String _weekday(DateTime date) =>
       const ['月', '火', '水', '木', '金', '土', '日'][date.weekday - 1];
