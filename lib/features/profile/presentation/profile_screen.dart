@@ -65,7 +65,7 @@ class ProfileScreen extends ConsumerWidget {
                       const SizedBox(height: 14),
                       _SimpleHero(
                         isWhite: isWhite,
-                        handle: user == null ? '@NOMO_USER' : '@${user.userId}',
+                        name: user?.name ?? 'ユーザー名',
                         avatar: user?.avatar,
                       ),
                     ],
@@ -121,6 +121,17 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 String _profileQrPayload(String userId) => 'nomo://friend/$userId';
+
+String? _parseProfileFriendQrPayload(String raw) {
+  final value = raw.trim();
+  final uri = Uri.tryParse(value);
+  if (uri != null && uri.scheme == 'nomo' && uri.host == 'friend') {
+    final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
+    return id?.isEmpty == false ? id : null;
+  }
+  if (RegExp(r'^[A-Za-z0-9_\-]{3,}$').hasMatch(value)) return value;
+  return null;
+}
 
 const _qrSaverChannel = MethodChannel('nomo/qr_saver');
 
@@ -237,13 +248,15 @@ Future<void> showMyQrDialog(
 
   Future<void> scanQr(BuildContext dialogContext) async {
     final payload = await Navigator.of(dialogContext).push<String>(
-      CupertinoPageRoute<String>(builder: (_) => const QrScannerScreen()),
+      CupertinoPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const NomiTomoQrScannerScreen(),
+      ),
     );
-    if (!dialogContext.mounted) return;
-    if (payload == null) return;
-    final userId = parseFriendQrPayload(payload);
+    if (!dialogContext.mounted || payload == null) return;
+    final userId = _parseProfileFriendQrPayload(payload);
     if (userId == null) {
-      NomoToast.show(dialogContext, 'Nomoの友達QRではありません。');
+      NomoToast.show(dialogContext, 'Nomoの友達QRではありません');
       return;
     }
     await searchAndAddByUserId(dialogContext, userId);
@@ -391,13 +404,13 @@ class _ProfileSettingsButton extends StatelessWidget {
         minimumSize: const Size(48, 48),
         padding: EdgeInsets.zero,
         borderRadius: BorderRadius.circular(18),
-        child: const SizedBox(
+        child: SizedBox(
           width: 48,
           height: 48,
           child: Center(
             child: NomoGeneratedIcon(
               CupertinoIcons.gear_alt,
-              color: Colors.black,
+              color: isWhite ? Colors.white : Colors.black,
               size: 38,
             ),
           ),
@@ -435,17 +448,18 @@ class _ProfileTopSheet extends StatelessWidget {
 class _SimpleHero extends StatelessWidget {
   const _SimpleHero({
     required this.isWhite,
-    required this.handle,
+    required this.name,
     required this.avatar,
   });
 
   final bool isWhite;
-  final String handle;
+  final String name;
   final NomoAvatar? avatar;
 
   @override
   Widget build(BuildContext context) {
-    final joinedYear = DateTime.now().year;
+    final now = DateTime.now();
+    final joinedMonth = '${now.year}/${now.month.toString().padLeft(2, '0')}';
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -480,23 +494,18 @@ class _SimpleHero extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(18, 13, 18, 14),
             color: isWhite ? Colors.white : const Color(0xFF101D25),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '$handle ・ $joinedYear年に参加',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: isWhite
-                          ? const Color(0xFF59636E)
-                          : _ProfileColors.sub,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.4,
-                    ),
-                  ),
+            child: Center(
+              child: Text(
+                '$name ・ $joinedMonth 参加',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: isWhite ? const Color(0xFF59636E) : _ProfileColors.sub,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.4,
                 ),
-              ],
+              ),
             ),
           ),
         ],
@@ -1601,6 +1610,7 @@ Future<void> _showEditProfileSheet(
   NomoUser? user,
 ) async {
   final controller = TextEditingController(text: user?.name ?? '');
+  final userIdController = TextEditingController(text: user?.userId ?? '');
   final userController = ref.read(nomoUserProvider.notifier);
   var avatar = user?.avatar ?? NomoAvatar.defaultAvatar;
   var saving = false;
@@ -1611,11 +1621,11 @@ Future<void> _showEditProfileSheet(
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (sheetContext) => StatefulBuilder(
-      builder: (context, setState) => _SheetShell(
+      builder: (sheetBuildContext, setState) => _SheetShell(
         title: 'プロフィール編集',
         child: Padding(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
+            bottom: MediaQuery.of(sheetBuildContext).viewInsets.bottom,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1629,6 +1639,27 @@ Future<void> _showEditProfileSheet(
                   fontWeight: FontWeight.w800,
                 ),
                 decoration: _darkInputDecoration('表示名'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: userIdController,
+                enabled: !saving,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+                decoration: _darkInputDecoration('ユーザーID').copyWith(
+                  prefixText: '@',
+                  prefixStyle: const TextStyle(
+                    color: _ProfileColors.sub,
+                    fontWeight: FontWeight.w900,
+                  ),
+                  helperText: '半角英数字と_で3〜24文字',
+                  helperStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: .45),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               _AvatarEditCard(
@@ -1665,8 +1696,13 @@ Future<void> _showEditProfileSheet(
                 busy: saving,
                 onTap: () async {
                   final name = controller.text.trim();
+                  final userId = userIdController.text.trim();
                   if (name.isEmpty) {
                     setState(() => error = '表示名を入力してください。');
+                    return;
+                  }
+                  if (!RegExp(r'^[a-zA-Z0-9_]{3,24}$').hasMatch(userId)) {
+                    setState(() => error = 'ユーザーIDは半角英数字と_で3〜24文字にしてください。');
                     return;
                   }
                   setState(() {
@@ -1676,6 +1712,7 @@ Future<void> _showEditProfileSheet(
                   try {
                     await userController.updateProfile(
                       name: name,
+                      userId: userId,
                       avatar: avatar,
                     );
                     if (sheetContext.mounted) {
@@ -1700,6 +1737,7 @@ Future<void> _showEditProfileSheet(
     ),
   );
   controller.dispose();
+  userIdController.dispose();
 }
 
 Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
@@ -1735,7 +1773,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               ),
               _SettingsTile(
                 icon: CupertinoIcons.person_crop_circle,
-                label: '名前・アバターを編集',
+                label: 'プロフィールを編集',
                 onTap: () async {
                   if (sheetContext.mounted) {
                     Navigator.of(sheetContext).pop();

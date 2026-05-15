@@ -22,6 +22,8 @@ class NomoTabShell extends ConsumerStatefulWidget {
 class _NomoTabShellState extends ConsumerState<NomoTabShell> {
   int _selectedIndex = 0;
   bool _didScheduleOnboarding = false;
+  bool _didScheduleProfileRestore = false;
+  bool _didAttemptProfileRestore = false;
   bool _isOnboardingSeen = false;
   bool _onboardingPrefLoaded = false;
 
@@ -61,11 +63,44 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
     final user = ref.watch(nomoUserProvider);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     ref.watch(supabaseAuthStateProvider);
+    final hasSession =
+        ref.watch(supabaseClientProvider).auth.currentSession != null;
+
+    if (user != null) {
+      _didAttemptProfileRestore = false;
+      _didScheduleProfileRestore = false;
+    }
 
     if (user != null && _didScheduleOnboarding) {
       // 初回ログイン後もこのフラグを立てっぱなしにすると、ログアウト後に
       // 再ログインダイアログが表示されない。ログイン済みに戻った時点で解除する。
       _didScheduleOnboarding = false;
+    }
+
+    if (user == null &&
+        hasSession &&
+        !_didAttemptProfileRestore &&
+        !_didScheduleProfileRestore) {
+      _didScheduleProfileRestore = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        try {
+          await ref.read(nomoUserProvider.notifier).loadFromSupabaseProfile();
+        } finally {
+          if (mounted) {
+            setState(() {
+              _didAttemptProfileRestore = true;
+              _didScheduleProfileRestore = false;
+            });
+          }
+        }
+      });
+    }
+
+    if (user == null && hasSession && !_didAttemptProfileRestore) {
+      return Scaffold(
+        backgroundColor: isWhite ? Colors.white : const Color(0xFF0B1420),
+        body: const SizedBox.expand(),
+      );
     }
 
     if (user == null &&
@@ -75,9 +110,9 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
       _didScheduleOnboarding = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted || ref.read(nomoUserProvider) != null) return;
-        final hasSession =
+        final hasActiveSession =
             ref.read(supabaseClientProvider).auth.currentSession != null;
-        if (hasSession) {
+        if (hasActiveSession) {
           try {
             final loaded = await ref
                 .read(nomoUserProvider.notifier)
