@@ -97,11 +97,11 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
   }
 
   Future<void> _scanQr() async {
-    final payload = await Navigator.of(context).push<String>(
-      CupertinoPageRoute(builder: (_) => const _QrScannerScreen()),
-    );
+    final payload = await Navigator.of(
+      context,
+    ).push<String>(CupertinoPageRoute(builder: (_) => const QrScannerScreen()));
     if (!mounted || payload == null) return;
-    final userId = _parseFriendQrPayload(payload);
+    final userId = parseFriendQrPayload(payload);
     if (userId == null) {
       NomoToast.show(context, 'Nomoの友達QRではありません。');
       return;
@@ -180,7 +180,7 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
 
 String _friendQrPayload(String userId) => 'nomo://friend/$userId';
 
-String? _parseFriendQrPayload(String raw) {
+String? parseFriendQrPayload(String raw) {
   final value = raw.trim();
   final uri = Uri.tryParse(value);
   if (uri != null && uri.scheme == 'nomo' && uri.host == 'friend') {
@@ -253,15 +253,14 @@ class _ExchangeHeader extends StatelessWidget {
   );
 }
 
-class _QrScannerScreen extends StatefulWidget {
-  const _QrScannerScreen();
+class QrScannerScreen extends StatefulWidget {
+  const QrScannerScreen({super.key});
 
   @override
-  State<_QrScannerScreen> createState() => _QrScannerScreenState();
+  State<QrScannerScreen> createState() => _QrScannerScreenState();
 }
 
-class _QrScannerScreenState extends State<_QrScannerScreen> {
-  final MobileScannerController _controller = MobileScannerController();
+class _QrScannerScreenState extends State<QrScannerScreen> {
   bool _returned = false;
 
   @override

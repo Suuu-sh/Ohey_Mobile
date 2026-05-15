@@ -29,6 +29,20 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     showMyQrDialog(context, ref.read(nomoUserProvider), ref);
   }
 
+  void _onToggleFavorite(
+    BuildContext context,
+    NomoFriend friend,
+    bool isFavorite,
+  ) {
+    ref
+        .read(friendsControllerProvider)
+        .toggleFavorite(friendId: friend.id, isFavorite: isFavorite)
+        .catchError((error) {
+          if (!context.mounted) return;
+          NomoToast.show(context, 'お気に入り設定に失敗しました: $error');
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     final logsAsync = ref.watch(drinkLogControllerProvider);
@@ -63,6 +77,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             children: [
               NomoPageHeader(
                 title: 'フレンズ',
+                titleColor: _FriendsColors.lime,
                 trailing: NomoHeaderIconButton(
                   icon: CupertinoIcons.plus,
                   color: _FriendsColors.lime,
@@ -88,6 +103,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                       logs: logs,
                       friends: friends,
                       selectedFilter: _selectedFilter,
+                      onFavoriteToggle: (friend, isFavorite) =>
+                          _onToggleFavorite(context, friend, isFavorite),
                     ),
                   ),
                 ),
@@ -100,7 +117,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   }
 }
 
-enum _FriendFilterType { all, available, frequent, drinkable }
+enum _FriendFilterType { all, drinkable, favorite }
 
 class _FilterBar extends StatelessWidget {
   const _FilterBar({required this.selected, required this.onChanged});
@@ -136,9 +153,8 @@ class _FilterBar extends StatelessWidget {
 
 const _filters = [
   _FriendFilter('みんな', _FriendFilterType.all, Color(0xFFB8FF00)),
-  _FriendFilter('今ヒマ', _FriendFilterType.available, Color(0xFF23D6C8)),
-  _FriendFilter('よく飲む', _FriendFilterType.frequent, Color(0xFF26B8FF)),
-  _FriendFilter('飲める', _FriendFilterType.drinkable, Color(0xFFFF5AA6)),
+  _FriendFilter('今日飲める', _FriendFilterType.drinkable, Color(0xFFFF5AA6)),
+  _FriendFilter('お気に入り', _FriendFilterType.favorite, Color(0xFFFFA700)),
 ];
 
 class _FriendFilter {
@@ -245,11 +261,13 @@ class _FriendsList extends StatelessWidget {
     required this.logs,
     required this.friends,
     required this.selectedFilter,
+    required this.onFavoriteToggle,
   });
 
   final List<DrinkLog> logs;
   final List<NomoFriend> friends;
   final _FriendFilterType selectedFilter;
+  final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -265,9 +283,8 @@ class _FriendsList extends StatelessWidget {
     final filtered = decorated.where((item) {
       return switch (selectedFilter) {
         _FriendFilterType.all => true,
-        _FriendFilterType.available => item.status.label == '今ヒマ',
-        _FriendFilterType.frequent => item.count >= 8,
         _FriendFilterType.drinkable => _isDrinkableStatus(item.status),
+        _FriendFilterType.favorite => item.friend.isFavorite,
       };
     }).toList()..sort((a, b) => b.count.compareTo(a.count));
 
@@ -290,6 +307,8 @@ class _FriendsList extends StatelessWidget {
           friend: item.friend,
           status: item.status,
           count: item.count,
+          onFavoriteToggle: () =>
+              onFavoriteToggle(item.friend, !item.friend.isFavorite),
         );
       },
     );
@@ -352,11 +371,13 @@ class _FriendCard extends StatelessWidget {
     required this.friend,
     required this.status,
     required this.count,
+    required this.onFavoriteToggle,
   });
 
   final NomoFriend friend;
   final _FriendStatus status;
   final int count;
+  final VoidCallback onFavoriteToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -410,6 +431,32 @@ class _FriendCard extends StatelessWidget {
                           fontWeight: FontWeight.w900,
                           fontSize: 22,
                           letterSpacing: -.4,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 9),
+                    GestureDetector(
+                      onTap: onFavoriteToggle,
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: friend.isFavorite
+                              ? const Color(0xFFFFE39B).withValues(alpha: .22)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        child: Icon(
+                          friend.isFavorite
+                              ? CupertinoIcons.star_fill
+                              : CupertinoIcons.star,
+                          size: 20,
+                          color: friend.isFavorite
+                              ? const Color(0xFFFFC700)
+                              : (isWhite
+                                    ? const Color(0xFF8C9CAB)
+                                    : _FriendsColors.muted),
                         ),
                       ),
                     ),
