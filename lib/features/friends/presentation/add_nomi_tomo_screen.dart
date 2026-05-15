@@ -129,12 +129,12 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
     if (currentUser == null) {
       throw StateError('友達追加にはログインが必要です。');
     }
-    final normalized = _normalizeFriendSearchId(userId);
-    if (normalized.isEmpty) return null;
+    final exactUserId = userId.trim();
+    if (exactUserId.isEmpty) return null;
     final row = await Supabase.instance.client
         .from('profiles')
         .select('id, display_name, user_id, avatar_url')
-        .eq('user_id', normalized)
+        .eq('user_id', exactUserId)
         .maybeSingle();
     if (row == null) return null;
     return _FriendProfile.fromRow(Map<String, dynamic>.from(row));
@@ -169,14 +169,6 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
 
 String _friendQrPayload(String userId) => 'nomo://friend/$userId';
 
-String _normalizeFriendSearchId(String raw) {
-  final withoutAt = raw.trim().replaceFirst(RegExp(r'^@'), '');
-  final localPart = withoutAt.contains('@')
-      ? withoutAt.split('@').first
-      : withoutAt;
-  return localPart.replaceAll('-', '_').toLowerCase();
-}
-
 String? parseFriendQrPayload(String raw) {
   final value = raw.trim();
   final uri = Uri.tryParse(value);
@@ -184,7 +176,6 @@ String? parseFriendQrPayload(String raw) {
     final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
     return id?.isEmpty == false ? id : null;
   }
-  if (value.startsWith('@')) return value.substring(1);
   if (RegExp(r'^[A-Za-z0-9_\-]{3,}$').hasMatch(value)) return value;
   return null;
 }
