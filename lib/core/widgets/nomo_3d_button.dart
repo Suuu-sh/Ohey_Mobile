@@ -18,6 +18,7 @@ class Nomo3DButton extends StatelessWidget {
     this.enabled = true,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
+    this.useGradient = true,
   });
 
   final String label;
@@ -33,6 +34,7 @@ class Nomo3DButton extends StatelessWidget {
   final bool enabled;
   final EdgeInsetsGeometry padding;
   final double fontSize;
+  final bool useGradient;
 
   @override
   Widget build(BuildContext context) {
@@ -61,19 +63,23 @@ class Nomo3DButton extends StatelessWidget {
             alignment: Alignment.topCenter,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 140),
+              width: double.infinity,
               height: height,
               padding: padding,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color.lerp(base, Colors.white, .22)!,
-                    Color.lerp(base, Colors.white, .10)!,
-                    base,
-                  ],
-                  stops: const [0, .55, 1],
-                ),
+                color: useGradient ? null : base,
+                gradient: useGradient
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color.lerp(base, Colors.white, .22)!,
+                          Color.lerp(base, Colors.white, .10)!,
+                          base,
+                        ],
+                        stops: const [0, .55, 1],
+                      )
+                    : null,
                 boxShadow: [
                   BoxShadow(
                     color: base.withValues(alpha: .22),
