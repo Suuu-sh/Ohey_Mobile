@@ -796,9 +796,9 @@ class _FeedNotificationsScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Center(
-                            child: SizedBox(
-                              width: double.infinity,
+                          Positioned.fill(
+                            child: Align(
+                              alignment: Alignment.center,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 56,
