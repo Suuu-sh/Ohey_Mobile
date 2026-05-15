@@ -1624,7 +1624,6 @@ Future<void> _showEditProfileSheet(
 ) async {
   final controller = TextEditingController(text: user?.name ?? '');
   final userIdController = TextEditingController(text: user?.userId ?? '');
-  final userIdFocusNode = FocusNode();
   final userController = ref.read(nomoUserProvider.notifier);
   var avatar = user?.avatar ?? NomoAvatar.defaultAvatar;
   var saving = false;
@@ -1655,36 +1654,24 @@ Future<void> _showEditProfileSheet(
                 decoration: _darkInputDecoration('表示名'),
               ),
               const SizedBox(height: 12),
-              Focus(
-                onFocusChange: (_) => setState(() {}),
-                child: TextField(
-                  controller: userIdController,
-                  focusNode: userIdFocusNode,
-                  enabled: !saving,
-                  onChanged: (_) => setState(() {}),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
+              TextField(
+                controller: userIdController,
+                enabled: !saving,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+                decoration: _darkInputDecoration('ユーザーID').copyWith(
+                  prefixText: '@',
+                  prefixStyle: const TextStyle(
+                    color: _ProfileColors.sub,
+                    fontWeight: FontWeight.w900,
                   ),
-                  decoration:
-                      _darkInputDecoration(
-                        userIdFocusNode.hasFocus ? '' : '@ユーザーID',
-                      ).copyWith(
-                        prefixText:
-                            userIdFocusNode.hasFocus ||
-                                userIdController.text.isNotEmpty
-                            ? '@'
-                            : null,
-                        prefixStyle: const TextStyle(
-                          color: _ProfileColors.sub,
-                          fontWeight: FontWeight.w900,
-                        ),
-                        helperText: '半角英数字と_で3〜24文字',
-                        helperStyle: TextStyle(
-                          color: Colors.white.withValues(alpha: .45),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                  helperText: '半角英数字と_で3〜24文字',
+                  helperStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: .45),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1764,7 +1751,6 @@ Future<void> _showEditProfileSheet(
   );
   controller.dispose();
   userIdController.dispose();
-  userIdFocusNode.dispose();
 }
 
 Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
