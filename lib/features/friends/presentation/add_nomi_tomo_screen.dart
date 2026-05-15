@@ -139,7 +139,8 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
     if (currentUser == null) {
       throw StateError('友達追加にはログインが必要です。');
     }
-    final normalized = userId.trim().replaceFirst(RegExp(r'^@'), '');
+    final normalized = _normalizeFriendSearchId(userId);
+    if (normalized.isEmpty) return null;
     final row = await Supabase.instance.client
         .from('profiles')
         .select('id, display_name, user_id, avatar_url')
@@ -177,6 +178,14 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
 }
 
 String _friendQrPayload(String userId) => 'nomo://friend/$userId';
+
+String _normalizeFriendSearchId(String raw) {
+  final withoutAt = raw.trim().replaceFirst(RegExp(r'^@'), '');
+  final localPart = withoutAt.contains('@')
+      ? withoutAt.split('@').first
+      : withoutAt;
+  return localPart.replaceAll('-', '_').toLowerCase();
+}
 
 String? _parseFriendQrPayload(String raw) {
   final value = raw.trim();
