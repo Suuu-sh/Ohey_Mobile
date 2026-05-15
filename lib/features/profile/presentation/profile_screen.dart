@@ -156,12 +156,6 @@ Future<void> showMyQrDialog(
   final payload = _profileQrPayload(user.userId);
   final name = user.name.trim().isEmpty ? 'nomo_user' : user.name.trim();
 
-  Future<void> copyLink(BuildContext dialogContext) async {
-    await Clipboard.setData(ClipboardData(text: payload));
-    if (!dialogContext.mounted) return;
-    NomoToast.show(dialogContext, 'リンクをコピーしました');
-  }
-
   Future<void> copyUserId(BuildContext dialogContext) async {
     await Clipboard.setData(ClipboardData(text: user.userId));
     if (!dialogContext.mounted) return;
@@ -265,7 +259,6 @@ Future<void> showMyQrDialog(
           avatar: user.avatar,
           payload: payload,
           onClose: () => Navigator.of(dialogContext).pop(),
-          onCopy: () => copyLink(dialogContext),
           onCopyUserId: () => copyUserId(dialogContext),
           onSaveQr: () => saveQrImage(dialogContext),
           onScan: () => scanQr(dialogContext),
@@ -926,7 +919,6 @@ class _MyQrCard extends StatelessWidget {
     required this.avatar,
     required this.payload,
     required this.onClose,
-    required this.onCopy,
     required this.onCopyUserId,
     required this.onSaveQr,
     required this.onScan,
@@ -938,7 +930,6 @@ class _MyQrCard extends StatelessWidget {
   final NomoAvatar? avatar;
   final String payload;
   final VoidCallback onClose;
-  final VoidCallback onCopy;
   final VoidCallback onCopyUserId;
   final VoidCallback onSaveQr;
   final VoidCallback onScan;
@@ -946,29 +937,22 @@ class _MyQrCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final cardColor = isWhite ? Colors.white : const Color(0xFF08131A);
-    final titleColor = isWhite ? const Color(0xFF33373C) : Colors.white;
-    final subColor = isWhite
-        ? const Color(0xFF7D858E)
-        : const Color(0xFF9AA7B7);
-    final qrColor = isWhite ? const Color(0xFF4B5056) : const Color(0xFFEAF1F6);
-    final logoBg = isWhite ? const Color(0xFFF4F2EE) : const Color(0xFF14212B);
-    final logoBorder = isWhite ? Colors.white : const Color(0xFF243240);
+    const cardColor = Colors.white;
+    const titleColor = Color(0xFF33373C);
+    const subColor = Color(0xFF7D858E);
+    const qrColor = Color(0xFF4B5056);
+    const logoBg = Color(0xFFF4F2EE);
+    const logoBorder = Colors.white;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(22, 18, 22, 26),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: isWhite
-              ? Colors.transparent
-              : Colors.white.withValues(alpha: .10),
-        ),
+        border: Border.all(color: Colors.transparent),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .28 : .46),
+            color: Colors.black.withValues(alpha: .22),
             blurRadius: 28,
             offset: const Offset(0, 18),
           ),
@@ -1087,12 +1071,6 @@ class _MyQrCard extends StatelessWidget {
                 onTap: onSaveQr,
               ),
               _QrActionButton(
-                icon: CupertinoIcons.link,
-                label: 'リンクコピー',
-                color: const Color(0xFF4A7DFF),
-                onTap: onCopy,
-              ),
-              _QrActionButton(
                 icon: CupertinoIcons.qrcode_viewfinder,
                 label: 'QR読取',
                 color: const Color(0xFFB188FF),
@@ -1129,7 +1107,6 @@ class _QrActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -1145,15 +1122,11 @@ class _QrActionButton extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: isWhite
-                      ? [Colors.white, Color.lerp(color, Colors.white, .88)!]
-                      : [const Color(0xFF172637), const Color(0xFF101B28)],
+                  colors: [Colors.white, Color.lerp(color, Colors.white, .88)!],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isWhite
-                      ? const Color(0xFFE3E4E6)
-                      : Colors.white.withValues(alpha: .10),
+                  color: const Color(0xFFE3E4E6),
                   width: 2,
                 ),
                 boxShadow: [
@@ -1199,9 +1172,7 @@ class _QrActionButton extends StatelessWidget {
               maxLines: 1,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: isWhite
-                    ? const Color(0xFF9BA1A8)
-                    : const Color(0xFF9AA7B7),
+                color: const Color(0xFF9BA1A8),
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.2,
               ),
