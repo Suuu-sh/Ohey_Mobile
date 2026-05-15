@@ -13,9 +13,7 @@ import '../../../core/widgets/nomo_toast.dart';
 import '../../logs/application/drink_log_controller.dart';
 
 class AddNomiTomoScreen extends ConsumerStatefulWidget {
-  const AddNomiTomoScreen({super.key, this.initialScan = false});
-
-  final bool initialScan;
+  const AddNomiTomoScreen({super.key});
 
   @override
   ConsumerState<AddNomiTomoScreen> createState() => _AddNomiTomoScreenState();
@@ -24,16 +22,6 @@ class AddNomiTomoScreen extends ConsumerStatefulWidget {
 class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
   final _userIdController = TextEditingController();
   bool _busy = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.initialScan) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _scanQr();
-      });
-    }
-  }
 
   @override
   void dispose() {
@@ -96,7 +84,7 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
 
   Future<void> _scanQr() async {
     final payload = await Navigator.of(context).push<String>(
-      CupertinoPageRoute(builder: (_) => const _QrScannerScreen()),
+      CupertinoPageRoute(builder: (_) => const NomiTomoQrScannerScreen()),
     );
     if (!mounted || payload == null) return;
     final userId = _parseFriendQrPayload(payload);
@@ -260,14 +248,14 @@ class _ExchangeHeader extends StatelessWidget {
   );
 }
 
-class _QrScannerScreen extends StatefulWidget {
-  const _QrScannerScreen();
+class NomiTomoQrScannerScreen extends StatefulWidget {
+  const NomiTomoQrScannerScreen({super.key});
 
   @override
-  State<_QrScannerScreen> createState() => _QrScannerScreenState();
+  State<NomiTomoQrScannerScreen> createState() => _QrScannerScreenState();
 }
 
-class _QrScannerScreenState extends State<_QrScannerScreen> {
+class _QrScannerScreenState extends State<NomiTomoQrScannerScreen> {
   bool _returned = false;
 
   @override

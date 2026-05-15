@@ -122,6 +122,26 @@ class ProfileScreen extends ConsumerWidget {
 
 String _profileQrPayload(String userId) => 'nomo://friend/$userId';
 
+String? _parseProfileFriendQrPayload(String raw) {
+  final value = raw.trim();
+  final uri = Uri.tryParse(value);
+  if (uri != null && uri.scheme == 'nomo' && uri.host == 'friend') {
+    final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
+    return id?.isEmpty == false ? id : null;
+  }
+  if (value.startsWith('@')) return value.substring(1);
+  if (RegExp(r'^[A-Za-z0-9_\-]{3,}$').hasMatch(value)) return value;
+  return null;
+}
+
+String _normalizeProfileFriendSearchId(String raw) {
+  final withoutAt = raw.trim().replaceFirst(RegExp(r'^@'), '');
+  final localPart = withoutAt.contains('@')
+      ? withoutAt.split('@').first
+      : withoutAt;
+  return localPart.replaceAll('-', '_').toLowerCase();
+}
+
 const _qrSaverChannel = MethodChannel('nomo/qr_saver');
 
 Future<Uint8List> _createQrPngBytes(String payload) async {
@@ -185,21 +205,11 @@ Future<void> showMyQrDialog(
     }
   }
 
-  void scanQr(BuildContext dialogContext) {
-    Navigator.of(dialogContext).pop();
-    Navigator.of(context).push(
-      CupertinoPageRoute<void>(
-        fullscreenDialog: true,
-        builder: (_) => const AddNomiTomoScreen(initialScan: true),
-      ),
-    );
-  }
-
   Future<void> searchAndAddByUserId(
     BuildContext dialogContext,
     String rawUserId,
   ) async {
-    final query = rawUserId.trim().replaceFirst(RegExp(r'^@'), '');
+    final query = _normalizeProfileFriendSearchId(rawUserId);
     if (query.isEmpty) {
       NomoToast.show(dialogContext, 'ユーザーIDを入力してください');
       return;
@@ -243,6 +253,22 @@ Future<void> showMyQrDialog(
       if (!dialogContext.mounted) return;
       NomoToast.show(dialogContext, '検索できませんでした: $e');
     }
+  }
+
+  Future<void> scanQr(BuildContext dialogContext) async {
+    final payload = await Navigator.of(dialogContext).push<String>(
+      CupertinoPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const NomiTomoQrScannerScreen(),
+      ),
+    );
+    if (!dialogContext.mounted || payload == null) return;
+    final userId = _parseProfileFriendQrPayload(payload);
+    if (userId == null) {
+      NomoToast.show(dialogContext, 'Nomoの友達QRではありません');
+      return;
+    }
+    await searchAndAddByUserId(dialogContext, userId);
   }
 
   await showDialog<void>(
@@ -1107,10 +1133,7 @@ class _QrActionButton extends StatelessWidget {
                   colors: [Colors.white, Color.lerp(color, Colors.white, .88)!],
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: const Color(0xFFE3E4E6),
-                  width: 2,
-                ),
+                border: Border.all(color: const Color(0xFFE3E4E6), width: 2),
                 boxShadow: [
                   BoxShadow(
                     color: color.withValues(alpha: .16),
