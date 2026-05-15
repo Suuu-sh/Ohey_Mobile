@@ -42,6 +42,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final logsAsync = ref.watch(drinkLogControllerProvider);
+    final friendsAsync = ref.watch(friendsProvider);
     final user = ref.watch(nomoUserProvider);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     final currentUserId = ref
@@ -50,6 +51,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .currentUser
         ?.id;
     final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
+    final friendUserIds =
+        friendsAsync.asData?.value
+            .map((friend) => friend.id)
+            .where((id) => id.isNotEmpty)
+            .toSet() ??
+        const <String>{};
     final sectionItems = {
       for (final section in _FeedSection.values)
         section: _itemsForSection(
@@ -57,6 +64,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           logs,
           user: user,
           currentUserId: currentUserId,
+          friendUserIds: friendUserIds,
         ),
     };
 
@@ -1120,6 +1128,7 @@ List<_FeedItem> _itemsForSection(
   List<DrinkLog> logs, {
   NomoUser? user,
   String? currentUserId,
+  Set<String> friendUserIds = const <String>{},
 }) {
   final following = logs
       .map(
@@ -1129,7 +1138,10 @@ List<_FeedItem> _itemsForSection(
       .toList();
   return switch (section) {
     _FeedSection.feed => following,
-    _FeedSection.following => following,
+    _FeedSection.following =>
+      following
+          .where((item) => friendUserIds.contains(item.ownerUserId))
+          .toList(growable: false),
     _FeedSection.official => const <_FeedItem>[],
   };
 }
@@ -1156,6 +1168,7 @@ class _FeedItem {
     required this.liked,
     required this.prop,
     required this.tilt,
+    this.ownerUserId = '',
     this.ownedByMe = false,
     required this.sparkles,
   });
@@ -1190,6 +1203,7 @@ class _FeedItem {
       liked: log.likedByMe,
       prop: _PostProp.beer,
       tilt: (log.id.hashCode.isEven ? -.08 : .08),
+      ownerUserId: log.ownerUserId,
       ownedByMe: log.ownerUserId.isNotEmpty && log.ownerUserId == currentUserId,
       sparkles: const [
         Offset(12, 18),
@@ -1220,6 +1234,7 @@ class _FeedItem {
   final int likes;
   final bool saved;
   final bool liked;
+  final String ownerUserId;
   final _PostProp prop;
   final double tilt;
   final bool ownedByMe;
