@@ -1627,6 +1627,7 @@ Future<void> _showEditProfileSheet(
   NomoUser? user,
 ) async {
   final controller = TextEditingController(text: user?.name ?? '');
+  final userController = ref.read(nomoUserProvider.notifier);
   var avatar = user?.avatar ?? NomoAvatar.defaultAvatar;
   var saving = false;
   String? error;
@@ -1710,6 +1711,7 @@ Future<void> _showEditProfileSheet(
                       _showSnack(context, 'プロフィールを更新しました。');
                     }
                   } catch (e) {
+                    if (!sheetContext.mounted) return;
                     setState(() {
                       saving = false;
                       error = '保存できませんでした: $e';
