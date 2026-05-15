@@ -111,6 +111,7 @@ jobs:
         uses: Suuu-sh/Shared/actions/testflight-deploy@main
         with:
           project-path: ios/Runner.xcodeproj
+          workspace-path: ios/Runner.xcworkspace
           scheme: Runner
           configuration: Release
           app-bundle-id: app.nomo.nomo
