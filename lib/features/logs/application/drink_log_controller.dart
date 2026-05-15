@@ -9,6 +9,10 @@ final drinkLogControllerProvider =
       DrinkLogController.new,
     );
 
+final friendsControllerProvider = Provider<FriendsController>((ref) {
+  return FriendsController(ref);
+});
+
 final friendsProvider = FutureProvider<List<NomoFriend>>((ref) async {
   return ref.watch(drinkLogRepositoryProvider).fetchFriends();
 });
@@ -99,5 +103,21 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
       state = AsyncValue.error(error, stackTrace);
       Error.throwWithStackTrace(error, stackTrace);
     }
+  }
+}
+
+class FriendsController {
+  FriendsController(this._ref);
+
+  final Ref _ref;
+
+  Future<void> toggleFavorite({
+    required String friendId,
+    required bool isFavorite,
+  }) async {
+    await _ref
+        .read(drinkLogRepositoryProvider)
+        .setFriendFavorite(friendId, isFavorite: isFavorite);
+    _ref.invalidate(friendsProvider);
   }
 }
