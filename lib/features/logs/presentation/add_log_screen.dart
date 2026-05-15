@@ -150,13 +150,11 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  friendsAsync.maybeWhen(
-                    data: (friends) => _SaveButton(
-                      isSaving: _isSaving,
-                      onPressed: () => _save(friends),
+                  _SaveButton(
+                    isSaving: _isSaving,
+                    onPressed: () => _save(
+                      friendsAsync.asData?.value ?? const <NomoFriend>[],
                     ),
-                    orElse: () =>
-                        const _SaveButton(isSaving: true, onPressed: null),
                   ),
                 ],
               ),
