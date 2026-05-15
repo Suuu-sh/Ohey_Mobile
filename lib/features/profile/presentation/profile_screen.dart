@@ -189,7 +189,7 @@ Future<void> showMyQrDialog(
     BuildContext dialogContext,
     String rawUserId,
   ) async {
-    final query = rawUserId.trim().replaceFirst(RegExp(r'^@'), '');
+    final query = rawUserId.trim();
     if (query.isEmpty) {
       NomoToast.show(dialogContext, 'ユーザーIDを入力してください');
       return;
