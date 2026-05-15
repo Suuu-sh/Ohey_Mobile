@@ -176,7 +176,7 @@ String? parseFriendQrPayload(String raw) {
     final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
     return id?.isEmpty == false ? id : null;
   }
-  if (RegExp(r'^[A-Za-z0-9_\-]{3,}$').hasMatch(value)) return value;
+  if (RegExp(r'^[A-Za-z0-9_]{3,24}$').hasMatch(value)) return value;
   return null;
 }
 
