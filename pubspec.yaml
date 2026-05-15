@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^3.3.1
   supabase_flutter: ^2.12.4
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^7.2.0
 
 dev_dependencies:
   flutter_test:
@@ -59,14 +61,20 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  assets:
-    - assets/characters/
-    - assets/characters/nomo/
-    - assets/characters/edamame/
-    - assets/characters/saigou/
-    - assets/characters/chi/
-    - assets/characters/uo/
-    - assets/characters/aren/
+  fonts:
+    - family: MPLUSRounded1c
+      fonts:
+        - asset: assets/fonts/MPLUSRounded1c-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/MPLUSRounded1c-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/MPLUSRounded1c-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/MPLUSRounded1c-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/MPLUSRounded1c-Black.ttf
+          weight: 900
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:

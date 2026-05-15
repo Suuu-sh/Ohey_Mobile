@@ -49,6 +49,10 @@ class BackendApiClient {
     return _send('PUT', path, body: body);
   }
 
+  Future<dynamic> delete(String path) {
+    return _send('DELETE', path);
+  }
+
   Future<dynamic> _send(
     String method,
     String path, {

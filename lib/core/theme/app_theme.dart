@@ -6,6 +6,38 @@ import 'app_colors.dart';
 class AppTheme {
   const AppTheme._();
 
+  static const _fontFamily = 'MPLUSRounded1c';
+
+  static ThemeData get dark {
+    final base = ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF22D7C5),
+        brightness: Brightness.dark,
+      ),
+      scaffoldBackgroundColor: const Color(0xFF0B1420),
+    );
+
+    return base.copyWith(
+      textTheme: base.textTheme.apply(
+        fontFamily: _fontFamily,
+        bodyColor: Colors.white,
+        displayColor: Colors.white,
+      ),
+      cupertinoOverrideTheme: const CupertinoThemeData(
+        brightness: Brightness.dark,
+        primaryColor: Color(0xFF22D7C5),
+        scaffoldBackgroundColor: Color(0xFF0B1420),
+        textTheme: CupertinoTextThemeData(
+          primaryColor: Colors.white,
+          textStyle: TextStyle(fontFamily: _fontFamily),
+        ),
+      ),
+      scaffoldBackgroundColor: const Color(0xFF0B1420),
+    );
+  }
+
   static ThemeData get light {
     final base = ThemeData(
       useMaterial3: true,
@@ -19,7 +51,7 @@ class AppTheme {
 
     return base.copyWith(
       textTheme: base.textTheme.apply(
-        fontFamily: '.SF Pro Text',
+        fontFamily: _fontFamily,
         bodyColor: AppColors.ink,
         displayColor: AppColors.ink,
       ),
@@ -28,7 +60,7 @@ class AppTheme {
         scaffoldBackgroundColor: AppColors.background,
         textTheme: CupertinoTextThemeData(
           primaryColor: AppColors.ink,
-          textStyle: TextStyle(fontFamily: '.SF Pro Text'),
+          textStyle: TextStyle(fontFamily: _fontFamily),
         ),
       ),
       appBarTheme: const AppBarTheme(
@@ -41,7 +73,7 @@ class AppTheme {
           fontSize: 26,
           fontWeight: FontWeight.w800,
           letterSpacing: -1.1,
-          fontFamily: '.SF Pro Display',
+          fontFamily: _fontFamily,
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -68,6 +100,25 @@ class AppTheme {
                 : AppColors.mutedInk,
           ),
         ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        backgroundColor: const Color(0xFF102331).withValues(alpha: .96),
+        contentTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w800,
+          height: 1.35,
+          fontFamily: _fontFamily,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: BorderSide(color: AppColors.lemon.withValues(alpha: .22)),
+        ),
+        insetPadding: const EdgeInsets.fromLTRB(18, 0, 18, 104),
+        actionTextColor: AppColors.lemon,
+        closeIconColor: Colors.white,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,

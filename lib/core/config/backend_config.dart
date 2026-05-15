@@ -8,6 +8,6 @@ class BackendConfig {
 
   static const baseUrl = String.fromEnvironment(
     'NOMO_BACKEND_URL',
-    defaultValue: 'https://dev-nomo-backend.onrender.com',
+    defaultValue: 'http://localhost:8080',
   );
 }

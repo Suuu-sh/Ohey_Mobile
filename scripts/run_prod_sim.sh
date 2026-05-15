@@ -2,13 +2,22 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# Run Nomo on the iOS Simulator against the deployed Render backend.
-# The Supabase project must match the backend's SUPABASE_URL, otherwise
-# PostgREST returns PGRST301 (JWT key mismatch).
+if [[ -f .env.local ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env.local
+  set +a
+fi
+
+: "${SUPABASE_URL:?SUPABASE_URL is required. Put it in .env.local or export it.}"
+: "${SUPABASE_PUBLISHABLE_KEY:?SUPABASE_PUBLISHABLE_KEY is required. Put it in .env.local or export it.}"
+SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-app.nomo.nomo://login-callback/}"
+
+# Run Nomo on the iOS Simulator against the production Supabase/Render backend.
 flutter run \
   --dart-define=NOMO_ENV=production \
-  --dart-define=SUPABASE_URL=https://pwifgddolctqghygwxwj.supabase.co \
-  --dart-define=SUPABASE_PUBLISHABLE_KEY=sb_publishable_pezjPt7pYRECNFdydlon8A_RpSjNulk \
-  --dart-define=SUPABASE_AUTH_REDIRECT_URL=app.nomo.nomo://login-callback/ \
-  --dart-define=NOMO_BACKEND_URL=https://nomo-backend-nezf.onrender.com \
+  --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+  --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
+  --dart-define=SUPABASE_AUTH_REDIRECT_URL="$SUPABASE_AUTH_REDIRECT_URL" \
+  --dart-define=NOMO_BACKEND_URL="${NOMO_BACKEND_URL:-https://nomo-backend-nezf.onrender.com}" \
   "$@"

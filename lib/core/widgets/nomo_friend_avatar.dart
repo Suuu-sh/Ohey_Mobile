@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../models/nomo_friend_mood.dart';
 import '../theme/app_colors.dart';
-import 'nomo_character.dart';
+import '../models/nomo_avatar.dart';
+import 'nomo_avatar.dart';
 
 class NomoFriendAvatar extends StatefulWidget {
   const NomoFriendAvatar({
@@ -77,11 +78,10 @@ class _NomoFriendAvatarState extends State<NomoFriendAvatar>
               duration: const Duration(milliseconds: 360),
               switchInCurve: Curves.easeOutBack,
               switchOutCurve: Curves.easeIn,
-              child: NomoCharacter(
+              child: NomoAvatarView(
                 key: ValueKey(widget.mood),
-                pose: _poseForMood(widget.mood),
-                width: widget.size * 0.86,
-                height: widget.size * 0.86,
+                avatar: NomoAvatar.defaultAvatar,
+                size: widget.size * 0.86,
               ),
             ),
           ],
@@ -90,17 +90,6 @@ class _NomoFriendAvatarState extends State<NomoFriendAvatar>
     );
   }
 }
-
-NomoCharacterPose _poseForMood(NomoFriendMood mood) => switch (mood) {
-  NomoFriendMood.lonely => NomoCharacterPose.standingSmile,
-  NomoFriendMood.sober => NomoCharacterPose.standingSmile,
-  NomoFriendMood.smile => NomoCharacterPose.standingWave,
-  NomoFriendMood.fun => NomoCharacterPose.standingBeer,
-  NomoFriendMood.tipsy => NomoCharacterPose.sittingBeer,
-  NomoFriendMood.hype => NomoCharacterPose.reactionCool,
-  NomoFriendMood.tired => NomoCharacterPose.sleepingSide,
-  NomoFriendMood.sleep => NomoCharacterPose.sleepingBlanket,
-};
 
 class _GlowBubble extends StatelessWidget {
   const _GlowBubble({required this.size, required this.mood});
