@@ -1,5 +1,8 @@
 // ignore_for_file: unused_element
 
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -118,6 +121,29 @@ class ProfileScreen extends ConsumerWidget {
 
 String _profileQrPayload(String userId) => 'nomo://friend/$userId';
 
+const _qrSaverChannel = MethodChannel('nomo/qr_saver');
+
+Future<Uint8List> _createQrPngBytes(String payload) async {
+  final painter = QrPainter(
+    data: payload,
+    version: QrVersions.auto,
+    gapless: false,
+    eyeStyle: const QrEyeStyle(
+      eyeShape: QrEyeShape.square,
+      color: Color(0xFF4B5056),
+    ),
+    dataModuleStyle: const QrDataModuleStyle(
+      dataModuleShape: QrDataModuleShape.circle,
+      color: Color(0xFF4B5056),
+    ),
+  );
+  final data = await painter.toImageData(1024, format: ui.ImageByteFormat.png);
+  if (data == null) {
+    throw StateError('QR画像を生成できませんでした');
+  }
+  return data.buffer.asUint8List();
+}
+
 Future<void> showMyQrDialog(
   BuildContext context,
   NomoUser? user,
@@ -141,6 +167,27 @@ Future<void> showMyQrDialog(
     await Clipboard.setData(ClipboardData(text: user.userId));
     if (!dialogContext.mounted) return;
     NomoToast.show(dialogContext, 'ユーザーIDをコピーしました');
+  }
+
+  Future<void> saveQrImage(BuildContext dialogContext) async {
+    try {
+      final pngBytes = await _createQrPngBytes(payload);
+      await _qrSaverChannel.invokeMethod<void>('savePngToPhotos', pngBytes);
+      if (!dialogContext.mounted) return;
+      NomoToast.show(dialogContext, 'QR画像を保存しました');
+    } on PlatformException catch (error) {
+      if (!dialogContext.mounted) return;
+      final message = error.code == 'permission_denied'
+          ? '写真への保存が許可されていません'
+          : 'QR画像を保存できませんでした';
+      NomoToast.show(dialogContext, message);
+    } on MissingPluginException {
+      if (!dialogContext.mounted) return;
+      NomoToast.show(dialogContext, 'この端末ではQR保存に未対応です');
+    } catch (_) {
+      if (!dialogContext.mounted) return;
+      NomoToast.show(dialogContext, 'QR画像を保存できませんでした');
+    }
   }
 
   void scanQr(BuildContext dialogContext) {
@@ -221,6 +268,7 @@ Future<void> showMyQrDialog(
           onClose: () => Navigator.of(dialogContext).pop(),
           onCopy: () => copyLink(dialogContext),
           onCopyUserId: () => copyUserId(dialogContext),
+          onSaveQr: () => saveQrImage(dialogContext),
           onScan: () => scanQr(dialogContext),
           onSearchUserId: (value) => searchAndAddByUserId(dialogContext, value),
         ),
@@ -881,6 +929,7 @@ class _MyQrCard extends StatelessWidget {
     required this.onClose,
     required this.onCopy,
     required this.onCopyUserId,
+    required this.onSaveQr,
     required this.onScan,
     required this.onSearchUserId,
   });
@@ -892,160 +941,178 @@ class _MyQrCard extends StatelessWidget {
   final VoidCallback onClose;
   final VoidCallback onCopy;
   final VoidCallback onCopyUserId;
+  final VoidCallback onSaveQr;
   final VoidCallback onScan;
   final Future<void> Function(String value) onSearchUserId;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.fromLTRB(22, 18, 22, 26),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(28),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: .28),
-          blurRadius: 28,
-          offset: const Offset(0, 18),
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final cardColor = isWhite ? Colors.white : const Color(0xFF08131A);
+    final titleColor = isWhite ? const Color(0xFF33373C) : Colors.white;
+    final subColor = isWhite
+        ? const Color(0xFF7D858E)
+        : const Color(0xFF9AA7B7);
+    final qrColor = isWhite ? const Color(0xFF4B5056) : const Color(0xFFEAF1F6);
+    final logoBg = isWhite ? const Color(0xFFF4F2EE) : const Color(0xFF14212B);
+    final logoBorder = isWhite ? Colors.white : const Color(0xFF243240);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(22, 18, 22, 26),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: isWhite
+              ? Colors.transparent
+              : Colors.white.withValues(alpha: .10),
         ),
-      ],
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: GestureDetector(
-                onTap: onClose,
-                behavior: HitTestBehavior.opaque,
-                child: const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: NomoGeneratedIcon(
-                    CupertinoIcons.xmark,
-                    color: Color(0xFF4B5056),
-                    size: 30,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isWhite ? .28 : .46),
+            blurRadius: 28,
+            offset: const Offset(0, 18),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: GestureDetector(
+                  onTap: onClose,
+                  behavior: HitTestBehavior.opaque,
+                  child: const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: NomoGeneratedIcon(
+                      CupertinoIcons.xmark,
+                      color: Color(0xFF4B5056),
+                      size: 30,
+                    ),
                   ),
                 ),
               ),
-            ),
-            Column(
-              children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: const Color(0xFF33373C),
-                    fontWeight: FontWeight.w900,
-                    height: 1,
+              Column(
+                children: [
+                  Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: titleColor,
+                      fontWeight: FontWeight.w900,
+                      height: 1,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  handle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: const Color(0xFF7D858E),
-                    fontWeight: FontWeight.w900,
-                    height: 1,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 18),
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            QrImageView(
-              data: payload,
-              version: QrVersions.auto,
-              size: 284,
-              padding: EdgeInsets.zero,
-              backgroundColor: Colors.white,
-              eyeStyle: const QrEyeStyle(
-                eyeShape: QrEyeShape.square,
-                color: Color(0xFF4B5056),
-              ),
-              dataModuleStyle: const QrDataModuleStyle(
-                dataModuleShape: QrDataModuleShape.circle,
-                color: Color(0xFF4B5056),
-              ),
-            ),
-            Container(
-              width: 96,
-              height: 96,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF4F2EE),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white, width: 6),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: .10),
-                    blurRadius: 14,
-                    offset: const Offset(0, 8),
+                  const SizedBox(height: 4),
+                  Text(
+                    handle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: subColor,
+                      fontWeight: FontWeight.w900,
+                      height: 1,
+                    ),
                   ),
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(17),
-                child: NomoAvatarView(
-                  avatar: avatar ?? NomoAvatar.defaultAvatar,
-                  size: 78,
+            ],
+          ),
+          const SizedBox(height: 18),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              QrImageView(
+                data: payload,
+                version: QrVersions.auto,
+                size: 284,
+                padding: EdgeInsets.zero,
+                backgroundColor: Colors.white,
+                eyeStyle: QrEyeStyle(
+                  eyeShape: QrEyeShape.square,
+                  color: qrColor,
+                ),
+                dataModuleStyle: QrDataModuleStyle(
+                  dataModuleShape: QrDataModuleShape.circle,
+                  color: qrColor,
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Text(
-          'nomo',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            color: const Color(0xFF22D7C5),
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.8,
+              Container(
+                width: 96,
+                height: 96,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: logoBg,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: logoBorder, width: 6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: .10),
+                      blurRadius: 14,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(17),
+                  child: NomoAvatarView(
+                    avatar: avatar ?? NomoAvatar.defaultAvatar,
+                    size: 78,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _QrActionButton(
-              icon: CupertinoIcons.square_arrow_up,
-              label: 'シェア',
+          const SizedBox(height: 10),
+          Text(
+            'nomo',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: const Color(0xFF22D7C5),
-              onTap: onCopy,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.8,
             ),
-            _QrActionButton(
-              icon: CupertinoIcons.link,
-              label: 'リンクコピー',
-              color: const Color(0xFF4A7DFF),
-              onTap: onCopy,
-            ),
-            _QrActionButton(
-              icon: CupertinoIcons.qrcode_viewfinder,
-              label: 'QR読取',
-              color: const Color(0xFFB188FF),
-              onTap: onScan,
-            ),
-            _QrActionButton(
-              icon: CupertinoIcons.at,
-              label: 'IDコピー',
-              color: const Color(0xFFFF8A3D),
-              onTap: onCopyUserId,
-            ),
-          ],
-        ),
-        const SizedBox(height: 18),
-        _QrIdSearchInput(onSearch: onSearchUserId),
-      ],
-    ),
-  );
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _QrActionButton(
+                icon: CupertinoIcons.arrow_down_to_line_alt,
+                label: 'QR保存',
+                color: const Color(0xFF22D7C5),
+                onTap: onSaveQr,
+              ),
+              _QrActionButton(
+                icon: CupertinoIcons.link,
+                label: 'リンクコピー',
+                color: const Color(0xFF4A7DFF),
+                onTap: onCopy,
+              ),
+              _QrActionButton(
+                icon: CupertinoIcons.qrcode_viewfinder,
+                label: 'QR読取',
+                color: const Color(0xFFB188FF),
+                onTap: onScan,
+              ),
+              _QrActionButton(
+                icon: CupertinoIcons.at,
+                label: 'IDコピー',
+                color: const Color(0xFFFF8A3D),
+                onTap: onCopyUserId,
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          _QrIdSearchInput(onSearch: onSearchUserId),
+        ],
+      ),
+    );
+  }
 }
 
 class _QrActionButton extends StatelessWidget {
@@ -1062,77 +1129,89 @@ class _QrActionButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    behavior: HitTestBehavior.opaque,
-    child: SizedBox(
-      width: 74,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.white, Color.lerp(color, Colors.white, .88)!],
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 74,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isWhite
+                      ? [Colors.white, Color.lerp(color, Colors.white, .88)!]
+                      : [const Color(0xFF172637), const Color(0xFF101B28)],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isWhite
+                      ? const Color(0xFFE3E4E6)
+                      : Colors.white.withValues(alpha: .10),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: .16),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: .05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE3E4E6), width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: .16),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                ),
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: .05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned(
-                  left: 12,
-                  top: 11,
-                  child: Container(
-                    width: 9,
-                    height: 9,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .95),
-                      shape: BoxShape.circle,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Positioned(
+                    left: 12,
+                    top: 11,
+                    child: Container(
+                      width: 9,
+                      height: 9,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: .95),
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
-                ),
-                NomoPopIcon(
-                  icon: icon,
-                  color: color,
-                  size: 39,
-                  showBubble: false,
-                ),
-              ],
+                  NomoPopIcon(
+                    icon: icon,
+                    color: color,
+                    size: 39,
+                    showBubble: false,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            maxLines: 1,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: const Color(0xFF9BA1A8),
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.2,
+            const SizedBox(height: 8),
+            Text(
+              label,
+              maxLines: 1,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: isWhite
+                    ? const Color(0xFF9BA1A8)
+                    : const Color(0xFF9AA7B7),
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.2,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _QrIdSearchInput extends StatefulWidget {
@@ -1165,76 +1244,86 @@ class _QrIdSearchInputState extends State<_QrIdSearchInput> {
   }
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: 58,
-    padding: const EdgeInsets.only(left: 16, right: 8),
-    decoration: BoxDecoration(
-      color: const Color(0xFFF5F7F8),
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: const Color(0xFFE1E4E7), width: 2),
-    ),
-    child: Row(
-      children: [
-        const NomoGeneratedIcon(
-          CupertinoIcons.at,
-          color: Color(0xFF4B5056),
-          size: 22,
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return Container(
+      height: 58,
+      padding: const EdgeInsets.only(left: 16, right: 8),
+      decoration: BoxDecoration(
+        color: isWhite ? const Color(0xFFF5F7F8) : const Color(0xFF14212B),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: isWhite
+              ? const Color(0xFFE1E4E7)
+              : Colors.white.withValues(alpha: .10),
+          width: 2,
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: TextField(
-            controller: _controller,
-            textInputAction: TextInputAction.search,
-            onSubmitted: (_) => _submit(),
-            decoration: const InputDecoration(
-              isDense: true,
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              filled: false,
-              hintText: 'ユーザーIDで検索',
-              hintStyle: TextStyle(
-                color: Color(0xFF9BA1A8),
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            style: const TextStyle(
-              color: Color(0xFF33373C),
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
-            ),
+      ),
+      child: Row(
+        children: [
+          NomoGeneratedIcon(
+            CupertinoIcons.at,
+            color: isWhite ? const Color(0xFF4B5056) : Colors.white,
+            size: 22,
           ),
-        ),
-        GestureDetector(
-          onTap: _busy ? null : _submit,
-          child: Container(
-            height: 42,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF22D7C5),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF22D7C5).withValues(alpha: .25),
-                  blurRadius: 14,
-                  offset: const Offset(0, 7),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                _busy ? '検索中' : '検索',
-                style: const TextStyle(
-                  color: Colors.white,
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              textInputAction: TextInputAction.search,
+              onSubmitted: (_) => _submit(),
+              decoration: InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
+                hintText: 'ユーザーIDで検索',
+                hintStyle: TextStyle(
+                  color: isWhite
+                      ? const Color(0xFF9BA1A8)
+                      : const Color(0xFF9AA7B7),
                   fontWeight: FontWeight.w900,
                 ),
               ),
+              style: TextStyle(
+                color: isWhite ? const Color(0xFF33373C) : Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
+          GestureDetector(
+            onTap: _busy ? null : _submit,
+            child: Container(
+              height: 42,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF22D7C5),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF22D7C5).withValues(alpha: .25),
+                    blurRadius: 14,
+                    offset: const Offset(0, 7),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  _busy ? '検索中' : '検索',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _LeagueBadge extends StatelessWidget {
@@ -1741,9 +1830,16 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 label: 'ログアウト',
                 destructive: true,
                 onTap: () async {
-                  await ref.read(nomoUserProvider.notifier).signOut();
-                  if (sheetContext.mounted) {
-                    Navigator.of(sheetContext).pop();
+                  try {
+                    await ref.read(nomoUserProvider.notifier).signOut();
+                  } catch (e) {
+                    if (context.mounted) {
+                      _showSnack(context, 'ログアウト処理を完了しました。再度ログインしてください。');
+                    }
+                  } finally {
+                    if (sheetContext.mounted) {
+                      Navigator.of(sheetContext).pop();
+                    }
                   }
                 },
               ),
