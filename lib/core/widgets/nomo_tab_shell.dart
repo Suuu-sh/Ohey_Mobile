@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/friends/presentation/friends_screen.dart';
@@ -21,6 +22,32 @@ class NomoTabShell extends ConsumerStatefulWidget {
 class _NomoTabShellState extends ConsumerState<NomoTabShell> {
   int _selectedIndex = 0;
   bool _didScheduleOnboarding = false;
+  bool _isOnboardingSeen = false;
+  bool _onboardingPrefLoaded = false;
+
+  static const String _onboardingSeenKey = 'nomo_onboarding_seen';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOnboardingPref();
+  }
+
+  Future<void> _loadOnboardingPref() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _onboardingPrefLoaded = true;
+      _isOnboardingSeen = prefs.getBool(_onboardingSeenKey) ?? false;
+    });
+  }
+
+  Future<void> _setOnboardingSeen() async {
+    _isOnboardingSeen = true;
+    await SharedPreferences.getInstance().then(
+      (prefs) => prefs.setBool(_onboardingSeenKey, true),
+    );
+  }
 
   static const _pages = [
     HomeScreen(),
@@ -41,7 +68,10 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
       _didScheduleOnboarding = false;
     }
 
-    if (user == null && !_didScheduleOnboarding) {
+    if (user == null &&
+        !_didScheduleOnboarding &&
+        _onboardingPrefLoaded &&
+        !_isOnboardingSeen) {
       _didScheduleOnboarding = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted || ref.read(nomoUserProvider) != null) return;
@@ -63,6 +93,8 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
           barrierDismissible: false,
           builder: (_) => const CreateUserDialog(),
         );
+        await _setOnboardingSeen();
+        setState(() => _isOnboardingSeen = true);
         if (mounted && ref.read(nomoUserProvider) == null) {
           _didScheduleOnboarding = false;
           setState(() {});
