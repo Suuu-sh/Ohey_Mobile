@@ -8,7 +8,7 @@ NomoのDBスキーマ変更は必ず `supabase/migrations/*.sql` に追加しま
 
 ## Required GitHub secret
 
-Mobile repository or `production` environmentに以下を設定してください。
+Mobile repositoryのActions secretに以下を設定してください。
 
 - `SUPABASE_PRODUCTION_DATABASE_URL`
   - Supabase production project `nomo` のPostgreSQL connection string
