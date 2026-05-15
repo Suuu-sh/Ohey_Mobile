@@ -171,10 +171,9 @@ class _FeedHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
     return NomoPageHeader(
       title: 'フィード',
-      titleColor: isWhite ? const Color(0xFF27313B) : Colors.white,
+      titleColor: _FeedColors.teal,
       trailing: NomoHeaderIconButton(
         icon: CupertinoIcons.bell,
         semanticLabel: 'お知らせを開く',
