@@ -180,6 +180,8 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       photoAssetPath: row['photo_path'] as String?,
       likeCount: 0,
       likedByMe: false,
+      ownerUserId:
+          (row['owner_user_id'] as String?) ?? _client.currentUserId ?? '',
     );
   }
 

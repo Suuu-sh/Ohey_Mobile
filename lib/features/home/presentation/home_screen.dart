@@ -405,12 +405,36 @@ Future<void> _showFeedPostActions(
       await Clipboard.setData(ClipboardData(text: item.body));
       if (context.mounted) NomoToast.show(context, '投稿内容をコピーしました');
     case _FeedPostAction.delete:
+      final confirmed = await _confirmDeleteFeedPost(context);
+      if (!confirmed || !context.mounted) return;
       await ref.read(drinkLogControllerProvider.notifier).deleteLog(item.id);
       if (context.mounted) NomoToast.show(context, '投稿を削除しました');
     case _FeedPostAction.report:
       await ref.read(drinkLogControllerProvider.notifier).reportLog(item.id);
       if (context.mounted) NomoToast.show(context, '投稿を報告しました');
   }
+}
+
+Future<bool> _confirmDeleteFeedPost(BuildContext context) async {
+  final result = await showCupertinoDialog<bool>(
+    context: context,
+    builder: (context) => CupertinoAlertDialog(
+      title: const Text('投稿を削除しますか？'),
+      content: const Text('削除した投稿は元に戻せません。'),
+      actions: [
+        CupertinoDialogAction(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('キャンセル'),
+        ),
+        CupertinoDialogAction(
+          isDestructiveAction: true,
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('削除'),
+        ),
+      ],
+    ),
+  );
+  return result ?? false;
 }
 
 enum _FeedPostAction { copy, delete, report }
