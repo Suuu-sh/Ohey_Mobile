@@ -384,12 +384,6 @@ class _ProfileSettingsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final buttonColor = isWhite
-        ? Colors.white.withValues(alpha: .09)
-        : const Color(0xFFF7F9FB);
-    final borderColor = isWhite
-        ? Colors.white.withValues(alpha: .14)
-        : const Color(0xFFD8DEE6);
     return Semantics(
       button: true,
       label: '設定',
@@ -398,28 +392,14 @@ class _ProfileSettingsButton extends StatelessWidget {
         minimumSize: const Size(48, 48),
         padding: EdgeInsets.zero,
         borderRadius: BorderRadius.circular(18),
-        child: Container(
+        child: const SizedBox(
           width: 48,
           height: 48,
-          decoration: BoxDecoration(
-            color: buttonColor,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: borderColor),
-            boxShadow: [
-              BoxShadow(
-                color: _ProfileColors.lime.withValues(
-                  alpha: isWhite ? .16 : .10,
-                ),
-                blurRadius: 14,
-                offset: const Offset(0, 7),
-              ),
-            ],
-          ),
-          child: const Center(
+          child: Center(
             child: NomoGeneratedIcon(
               CupertinoIcons.gear_alt,
               color: _ProfileColors.lime,
-              size: 34,
+              size: 38,
             ),
           ),
         ),
@@ -1719,9 +1699,10 @@ Future<void> _showEditProfileSheet(
                     error = null;
                   });
                   try {
-                    await ref
-                        .read(nomoUserProvider.notifier)
-                        .updateProfile(name: name, avatar: avatar);
+                    await userController.updateProfile(
+                      name: name,
+                      avatar: avatar,
+                    );
                     if (sheetContext.mounted) {
                       Navigator.of(sheetContext).pop();
                     }
