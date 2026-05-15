@@ -843,13 +843,17 @@ class _FeedNotificationsScreen extends StatelessWidget {
                                       : Colors.white.withValues(alpha: .09),
                                 ),
                               ),
-                              child: NomoPopIcon(
-                                icon: CupertinoIcons.chevron_left,
-                                color: isWhite
-                                    ? const Color(0xFF27313B)
-                                    : Colors.white,
-                                size: 24,
-                                showBubble: false,
+                              child: Text(
+                                '＜',
+                                style: TextStyle(
+                                  color: isWhite
+                                      ? const Color(0xFF27313B)
+                                      : Colors.white,
+                                  fontSize: 23,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -2,
+                                  height: .9,
+                                ),
                               ),
                             ),
                           ),
