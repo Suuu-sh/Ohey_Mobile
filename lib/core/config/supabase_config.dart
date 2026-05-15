@@ -1,23 +1,24 @@
 /// Supabase environment configuration for Nomo.
 ///
-/// Production-safe defaults are embedded so Xcode/TestFlight builds work even
-/// when `--dart-define` is not passed. Override with `--dart-define` for dev.
+/// Development-safe defaults are embedded so local `flutter run` never touches
+/// production accidentally. TestFlight/production builds must pass explicit
+/// production values via `--dart-define`.
 class SupabaseConfig {
   const SupabaseConfig._();
 
   static const environment = String.fromEnvironment(
     'NOMO_ENV',
-    defaultValue: 'production',
+    defaultValue: 'dev',
   );
 
   static const url = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://pwifgddolctqghygwxwj.supabase.co',
+    defaultValue: 'https://wwyaftonswgxnjcceyfb.supabase.co',
   );
 
   static const publishableKey = String.fromEnvironment(
     'SUPABASE_PUBLISHABLE_KEY',
-    defaultValue: 'sb_publishable_pezjPt7pYRECNFdydlon8A_RpSjNulk',
+    defaultValue: 'sb_publishable_pPvKPrOvVmkKQIXKVWj2Rw_DlYkm0Ty',
   );
 
   static const authRedirectUrl = String.fromEnvironment(
