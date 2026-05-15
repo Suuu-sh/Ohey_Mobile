@@ -505,7 +505,7 @@ class _SimpleHero extends StatelessWidget {
             color: isWhite ? Colors.white : const Color(0xFF101D25),
             child: Center(
               child: Text(
-                '$name ・ $joinedMonthに参加',
+                '$name ・ $joinedMonth 参加',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
