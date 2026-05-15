@@ -66,7 +66,6 @@ class ProfileScreen extends ConsumerWidget {
                       _SimpleHero(
                         isWhite: isWhite,
                         name: user?.name ?? 'ユーザー名',
-                        handle: user == null ? '@NOMO_USER' : '@${user.userId}',
                         avatar: user?.avatar,
                       ),
                     ],
@@ -459,17 +458,16 @@ class _SimpleHero extends StatelessWidget {
   const _SimpleHero({
     required this.isWhite,
     required this.name,
-    required this.handle,
     required this.avatar,
   });
 
   final bool isWhite;
   final String name;
-  final String handle;
   final NomoAvatar? avatar;
 
   @override
   Widget build(BuildContext context) {
+    final joinedYear = DateTime.now().year;
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -506,7 +504,7 @@ class _SimpleHero extends StatelessWidget {
             color: isWhite ? Colors.white : const Color(0xFF101D25),
             child: Center(
               child: Text(
-                '$name$handle',
+                '$name ・ $joinedYear年に参加',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
