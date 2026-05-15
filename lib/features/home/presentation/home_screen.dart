@@ -166,7 +166,7 @@ enum _FeedSection { feed, following, official }
 
 extension _FeedSectionView on _FeedSection {
   String get label => switch (this) {
-    _FeedSection.feed => 'フィード',
+    _FeedSection.feed => 'おすすめ',
     _FeedSection.following => 'フレンズ',
     _FeedSection.official => '公式',
   };
