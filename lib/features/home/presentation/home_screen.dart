@@ -118,7 +118,7 @@ enum _FeedSection { feed, following, official }
 extension _FeedSectionView on _FeedSection {
   String get label => switch (this) {
     _FeedSection.feed => 'フィード',
-    _FeedSection.following => 'フォロー中',
+    _FeedSection.following => 'フレンズ',
     _FeedSection.official => '公式',
   };
 
@@ -349,7 +349,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = switch (section) {
       _FeedSection.feed => 'まだ投稿がありません',
-      _FeedSection.following => 'フォロー中の投稿はまだありません',
+      _FeedSection.following => 'フレンズの投稿はまだありません',
       _FeedSection.official => '公式のお知らせはまだありません',
     };
     final message = switch (section) {
