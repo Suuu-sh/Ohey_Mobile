@@ -24,12 +24,38 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     DateTime.now().month,
     DateTime.now().day,
   );
+  double _monthDragOffset = 0;
 
   void _moveMonth(int offset) {
     setState(() {
       _month = DateTime(_month.year, _month.month + offset);
       _selectedDay = DateTime(_month.year, _month.month);
     });
+  }
+
+  void _handleMonthDragStart(DragStartDetails details) {
+    _monthDragOffset = 0;
+  }
+
+  void _handleMonthDragUpdate(DragUpdateDetails details) {
+    _monthDragOffset += details.delta.dx;
+  }
+
+  void _handleMonthDragEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    final distance = _monthDragOffset.abs();
+    if (distance < 80 && velocity.abs() < 300) {
+      _monthDragOffset = 0;
+      return;
+    }
+
+    final isRightSwipe = velocity > 0 || _monthDragOffset > 0;
+    if (isRightSwipe) {
+      _moveMonth(-1);
+    } else {
+      _moveMonth(1);
+    }
+    _monthDragOffset = 0;
   }
 
   @override
@@ -74,30 +100,35 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               ),
             ),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  NomoPageHeader.horizontalPadding,
-                  14,
-                  NomoPageHeader.horizontalPadding,
-                  148,
-                ),
-                child: Column(
-                  children: [
-                    _PlayfulMonthGrid(
-                      month: _month,
-                      logs: monthlyLogs,
-                      selectedDay: _selectedDay,
-                      onDaySelected: (day) =>
-                          setState(() => _selectedDay = day),
-                    ),
-                    const SizedBox(height: 14),
-                    Expanded(
-                      child: _SelectedDayPosts(
-                        day: _selectedDay,
-                        logs: selectedLogs,
+              child: GestureDetector(
+                onHorizontalDragStart: _handleMonthDragStart,
+                onHorizontalDragUpdate: _handleMonthDragUpdate,
+                onHorizontalDragEnd: _handleMonthDragEnd,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    NomoPageHeader.horizontalPadding,
+                    14,
+                    NomoPageHeader.horizontalPadding,
+                    148,
+                  ),
+                  child: Column(
+                    children: [
+                      _PlayfulMonthGrid(
+                        month: _month,
+                        logs: monthlyLogs,
+                        selectedDay: _selectedDay,
+                        onDaySelected: (day) =>
+                            setState(() => _selectedDay = day),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 14),
+                      Expanded(
+                        child: _SelectedDayPosts(
+                          day: _selectedDay,
+                          logs: selectedLogs,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
