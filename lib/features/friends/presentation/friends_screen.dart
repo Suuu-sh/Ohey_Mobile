@@ -77,6 +77,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             children: [
               NomoPageHeader(
                 title: 'フレンズ',
+                titleColor: _FriendsColors.lime,
                 trailing: NomoHeaderIconButton(
                   icon: CupertinoIcons.plus,
                   color: _FriendsColors.lime,
