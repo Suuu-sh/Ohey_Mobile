@@ -141,8 +141,12 @@ class NomoUserController extends Notifier<NomoUser?> {
   }
 
   Future<void> signOut() async {
-    await Supabase.instance.client.auth.signOut(scope: SignOutScope.local);
-    state = null;
+    try {
+      await Supabase.instance.client.auth.signOut(scope: SignOutScope.local);
+    } finally {
+      // ローカルセッション削除が例外になっても、UI上は必ず未ログイン状態へ戻す。
+      state = null;
+    }
   }
 }
 

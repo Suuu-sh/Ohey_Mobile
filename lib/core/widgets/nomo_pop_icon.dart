@@ -250,7 +250,9 @@ _CuteGlyphKind? _cuteGlyphKindFromIcon(IconData icon) {
   if (code == CupertinoIcons.scissors.codePoint) return _CuteGlyphKind.pencil;
   if (code == CupertinoIcons.chevron_right.codePoint ||
       code == CupertinoIcons.chevron_left.codePoint ||
-      code == CupertinoIcons.chevron_forward.codePoint) {
+      code == CupertinoIcons.chevron_forward.codePoint ||
+      code == CupertinoIcons.arrow_right.codePoint ||
+      code == CupertinoIcons.arrow_left.codePoint) {
     return _CuteGlyphKind.chevron;
   }
   return null;

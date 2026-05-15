@@ -34,6 +34,13 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
     final user = ref.watch(nomoUserProvider);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     ref.watch(supabaseAuthStateProvider);
+
+    if (user != null && _didScheduleOnboarding) {
+      // 初回ログイン後もこのフラグを立てっぱなしにすると、ログアウト後に
+      // 再ログインダイアログが表示されない。ログイン済みに戻った時点で解除する。
+      _didScheduleOnboarding = false;
+    }
+
     if (user == null && !_didScheduleOnboarding) {
       _didScheduleOnboarding = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
