@@ -45,7 +45,7 @@ class NomoUserController extends Notifier<NomoUser?> {
 
   Future<void> createUser({
     required String name,
-    String? userId,
+    required String userId,
     NomoAvatar? avatar,
   }) async {
     final supabase = Supabase.instance.client;
@@ -55,9 +55,7 @@ class NomoUserController extends Notifier<NomoUser?> {
     }
 
     final trimmed = name.trim();
-    final normalizedUserId = _normalizeUserId(
-      userId?.trim().isNotEmpty == true ? userId! : _defaultUserId(authUser.id),
-    );
+    final normalizedUserId = userId.trim();
     if (trimmed.isEmpty) {
       throw ArgumentError.value(name, 'name', 'Profile name is required.');
     }
@@ -101,7 +99,7 @@ class NomoUserController extends Notifier<NomoUser?> {
     }
 
     final trimmed = name.trim();
-    final normalizedUserId = _normalizeUserId(userId);
+    final normalizedUserId = userId.trim();
     if (trimmed.isEmpty) {
       throw ArgumentError.value(name, 'name', 'Profile name is required.');
     }
@@ -178,10 +176,8 @@ class NomoUserController extends Notifier<NomoUser?> {
   }
 }
 
-String _normalizeUserId(String userId) => userId.trim().toLowerCase();
-
 bool _isValidUserId(String userId) =>
-    RegExp(r'^[a-z0-9_]{3,24}$').hasMatch(userId);
+    RegExp(r'^[a-zA-Z0-9_]{3,24}$').hasMatch(userId);
 
 Future<void> _ensureUserIdAvailable(
   SupabaseClient supabase, {

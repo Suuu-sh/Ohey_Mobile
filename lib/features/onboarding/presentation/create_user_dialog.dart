@@ -390,7 +390,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
           controller: _userIdController,
           enabled: !_isBusy,
           icon: CupertinoIcons.at,
-          hintText: 'ユーザーID（必須）',
+          hintText: 'ユーザーID（必須・完全一致検索用）',
           errorText:
               _userIdTouched && !_isValidUserId(_userIdController.text.trim())
               ? '3〜24文字の英数字と_のみ使えます'
@@ -413,7 +413,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
             if (!_nameTouched) setState(() => _nameTouched = true);
           },
           decoration: InputDecoration(
-            hintText: '名前（必須）',
+            hintText: 'ユーザー名（必須）',
             hintStyle: const TextStyle(
               color: AppColors.mutedInk,
               fontWeight: FontWeight.w800,
@@ -423,7 +423,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
               color: AppColors.ink,
             ),
             errorText: _nameTouched && _nameController.text.trim().isEmpty
-                ? '名前を入力してください'
+                ? 'ユーザー名を入力してください'
                 : null,
           ),
         ),
@@ -1112,7 +1112,7 @@ class _RegistrationProfileFields extends StatelessWidget {
           controller: userIdController,
           enabled: enabled,
           icon: CupertinoIcons.at,
-          hintText: 'ユーザーID（必須）',
+          hintText: 'ユーザーID（必須・完全一致検索用）',
           errorText:
               userIdTouched && !_isValidUserId(userIdController.text.trim())
               ? '3〜24文字の英数字と_のみ使えます'
@@ -1124,9 +1124,9 @@ class _RegistrationProfileFields extends StatelessWidget {
           controller: nameController,
           enabled: enabled,
           icon: CupertinoIcons.person_crop_circle,
-          hintText: '名前（必須）',
+          hintText: 'ユーザー名（必須）',
           errorText: nameTouched && nameController.text.trim().isEmpty
-              ? '名前を入力してください'
+              ? 'ユーザー名を入力してください'
               : null,
           onChanged: onNameChanged,
         ),
