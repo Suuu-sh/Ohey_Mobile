@@ -135,7 +135,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                           ),
                           const SizedBox(height: 14),
                           _InputBox(
-                            hint: '最高の一杯',
+                            hint: '15文字で感想',
                             controller: _memoController,
                             maxLines: 1,
                             showCounter: true,
