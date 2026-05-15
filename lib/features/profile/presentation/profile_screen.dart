@@ -129,17 +129,8 @@ String? _parseProfileFriendQrPayload(String raw) {
     final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
     return id?.isEmpty == false ? id : null;
   }
-  if (value.startsWith('@')) return value.substring(1);
   if (RegExp(r'^[A-Za-z0-9_\-]{3,}$').hasMatch(value)) return value;
   return null;
-}
-
-String _normalizeProfileFriendSearchId(String raw) {
-  final withoutAt = raw.trim().replaceFirst(RegExp(r'^@'), '');
-  final localPart = withoutAt.contains('@')
-      ? withoutAt.split('@').first
-      : withoutAt;
-  return localPart.replaceAll('-', '_').toLowerCase();
 }
 
 const _qrSaverChannel = MethodChannel('nomo/qr_saver');
@@ -209,7 +200,7 @@ Future<void> showMyQrDialog(
     BuildContext dialogContext,
     String rawUserId,
   ) async {
-    final query = _normalizeProfileFriendSearchId(rawUserId);
+    final query = rawUserId.trim();
     if (query.isEmpty) {
       NomoToast.show(dialogContext, 'ユーザーIDを入力してください');
       return;
