@@ -21,6 +21,7 @@ abstract interface class DrinkLogRepository {
   Future<void> deleteLog(String logId);
   Future<void> reportLog(String logId, {String reason = 'other'});
   Future<DrinkLogLikeState> setLike(String logId, {required bool liked});
+  Future<void> setFriendFavorite(String friendId, {required bool isFavorite});
 }
 
 class DrinkLogLikeState {
@@ -92,6 +93,18 @@ class ResilientDrinkLogRepository implements DrinkLogRepository {
       return fallback.setLike(logId, liked: liked);
     }
   }
+
+  @override
+  Future<void> setFriendFavorite(
+    String friendId, {
+    required bool isFavorite,
+  }) async {
+    try {
+      return await backend.setFriendFavorite(friendId, isFavorite: isFavorite);
+    } catch (_) {
+      return fallback.setFriendFavorite(friendId, isFavorite: isFavorite);
+    }
+  }
 }
 
 class BackendDrinkLogRepository implements DrinkLogRepository {
@@ -153,7 +166,10 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
           if (other is! Map) {
             throw const FormatException('友達データの形式が不正です。');
           }
-          return _friendFromProfile(Map<String, dynamic>.from(other));
+          return _friendFromProfile(
+            Map<String, dynamic>.from(other),
+            isFavorite: (row['is_favorite'] as bool?) ?? false,
+          );
         })
         .toList(growable: false);
   }
@@ -185,6 +201,16 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
     );
   }
 
+  @override
+  Future<void> setFriendFavorite(
+    String friendId, {
+    required bool isFavorite,
+  }) async {
+    await _client.put('/v1/friends/$friendId/favorite', {
+      'is_favorite': isFavorite,
+    });
+  }
+
   DrinkLog _drinkLogFromRow(Map<String, dynamic> row) {
     final rawFriends = row['drink_log_friends'] as List<dynamic>? ?? const [];
     final friends = rawFriends
@@ -214,8 +240,11 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
     );
   }
 
-  NomoFriend _friendFromProfile(Map<String, dynamic> profile) {
-    return _friendFromProfileRow(profile);
+  NomoFriend _friendFromProfile(
+    Map<String, dynamic> profile, {
+    bool isFavorite = false,
+  }) {
+    return _friendFromProfileRow(profile, isFavorite: isFavorite);
   }
 }
 
@@ -274,6 +303,7 @@ class SupabaseDrinkLogRepository implements DrinkLogRepository {
         .select('''
           user_a_id,
           user_b_id,
+          is_favorite,
           user_a:profiles!friendships_user_a_id_fkey(
             id,
             display_name,
@@ -297,7 +327,11 @@ class SupabaseDrinkLogRepository implements DrinkLogRepository {
           final other = row['user_a_id'] == userId
               ? row['user_b']
               : row['user_a'];
-          return _friendFromProfileRow(Map<String, dynamic>.from(other as Map));
+          final isFavorite = (row['is_favorite'] as bool?) ?? false;
+          return _friendFromProfileRow(
+            Map<String, dynamic>.from(other as Map),
+            isFavorite: isFavorite,
+          );
         })
         .toList(growable: false);
   }
@@ -341,6 +375,27 @@ class SupabaseDrinkLogRepository implements DrinkLogRepository {
         .delete()
         .eq('id', logId)
         .eq('owner_user_id', userId);
+  }
+
+  @override
+  Future<void> setFriendFavorite(
+    String friendId, {
+    required bool isFavorite,
+  }) async {
+    final userId = _userId;
+    if (userId == null) {
+      throw StateError('お気に入り設定にはログインが必要です。');
+    }
+
+    final filter =
+        '(and(user_a_id.eq.$userId,user_b_id.eq.$friendId),and(user_b_id.eq.$userId,user_a_id.eq.$friendId))';
+    final rows = await _client
+        .from('friendships')
+        .update({'is_favorite': isFavorite})
+        .or(filter);
+    if (rows.isEmpty) {
+      throw StateError('フレンズの関係が見つかりませんでした。');
+    }
   }
 
   @override
@@ -455,7 +510,10 @@ bool _likedByMeFromRow(Map<String, dynamic> row, String? userId) {
   return rawLikes.whereType<Map>().any((like) => like['user_id'] == userId);
 }
 
-NomoFriend _friendFromProfileRow(Map<String, dynamic> profile) {
+NomoFriend _friendFromProfileRow(
+  Map<String, dynamic> profile, {
+  bool isFavorite = false,
+}) {
   return NomoFriend(
     id: profile['id'] as String,
     name: (profile['display_name'] as String?) ?? 'Nomo friend',
@@ -465,6 +523,7 @@ NomoFriend _friendFromProfileRow(Map<String, dynamic> profile) {
     kind: NomiTomoKind.cloud,
     palette: _paletteFromKey(profile['palette'] as String?),
     avatar: NomoAvatar.decode(profile['avatar_url'] as String?),
+    isFavorite: isFavorite,
   );
 }
 
