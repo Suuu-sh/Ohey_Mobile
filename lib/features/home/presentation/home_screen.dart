@@ -774,11 +774,10 @@ class _FeedNotificationsScreen extends StatelessWidget {
                                 color: Colors.white.withValues(alpha: .09),
                               ),
                             ),
-                            child: NomoPopIcon(
-                              icon: CupertinoIcons.chevron_left,
+                            child: const Icon(
+                              CupertinoIcons.chevron_left,
                               color: Colors.white,
-                              size: 24,
-                              showBubble: false,
+                              size: 28,
                             ),
                           ),
                         ),
@@ -793,9 +792,6 @@ class _FeedNotificationsScreen extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        _UnreadPill(
-                          count: notifications.where((n) => n.unread).length,
-                        ),
                       ],
                     ),
                     const SizedBox(height: 18),
@@ -813,30 +809,6 @@ class _FeedNotificationsScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    ),
-  );
-}
-
-class _UnreadPill extends StatelessWidget {
-  const _UnreadPill({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-    decoration: BoxDecoration(
-      color: _FeedColors.teal.withValues(alpha: .16),
-      borderRadius: BorderRadius.circular(999),
-      border: Border.all(color: _FeedColors.teal.withValues(alpha: .24)),
-    ),
-    child: Text(
-      count == 0 ? '既読' : '未読 $count',
-      style: const TextStyle(
-        color: _FeedColors.teal,
-        fontSize: 11,
-        fontWeight: FontWeight.w900,
       ),
     ),
   );
