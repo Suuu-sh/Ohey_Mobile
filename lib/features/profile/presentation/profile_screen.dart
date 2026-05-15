@@ -738,155 +738,63 @@ class _ProfileDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = isWhite
-        ? Colors.white.withValues(alpha: .92)
-        : const Color(0xFF13202B);
-    final borderColor = isWhite
-        ? const Color(0xFFE2E7EE)
-        : Colors.white.withValues(alpha: .09);
-    final labelColor = isWhite ? const Color(0xFF66717D) : _ProfileColors.sub;
-    final titleColor = isWhite ? const Color(0xFF111C26) : Colors.white;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: isWhite
-                ? Colors.black.withValues(alpha: .06)
-                : Colors.black.withValues(alpha: .18),
-            blurRadius: 26,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        _ProfileColors.lime.withValues(alpha: .95),
-                        const Color(0xFF5FEF7A),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _ProfileColors.lime.withValues(alpha: .20),
-                        blurRadius: 18,
-                        offset: const Offset(0, 9),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: NomoPopIcon(
-                      icon: CupertinoIcons.person_2_fill,
-                      color: Color(0xFF0F2612),
-                      foregroundColor: Color(0xFF0F2612),
-                      size: 31,
-                      showBubble: false,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'フレンズ',
-                        style: TextStyle(
-                          color: titleColor,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                          letterSpacing: -.4,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '一緒に飲める仲間を増やそう',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: labelColor,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            Expanded(
+              child: _StatTile(
+                isWhite: isWhite,
+                value: '$friends',
+                label: '友達',
+                icon: CupertinoIcons.person_2_fill,
+                accent: _ProfileColors.lime,
+              ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _StatTile(
-                    isWhite: isWhite,
-                    value: '$friends',
-                    label: '友達',
-                    icon: CupertinoIcons.person_2_fill,
-                    accent: _ProfileColors.lime,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _StatTile(
-                    isWhite: isWhite,
-                    value: '$monthlyLogs',
-                    label: '今月',
-                    icon: CupertinoIcons.calendar,
-                    accent: const Color(0xFF49D7FF),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _StatTile(
-                    isWhite: isWhite,
-                    value: '$streak',
-                    label: '連続',
-                    icon: CupertinoIcons.flame_fill,
-                    accent: const Color(0xFFFFB74A),
-                  ),
-                ),
-              ],
+            const SizedBox(width: 10),
+            Expanded(
+              child: _StatTile(
+                isWhite: isWhite,
+                value: '$monthlyLogs',
+                label: '今月',
+                icon: CupertinoIcons.calendar,
+                accent: const Color(0xFF49D7FF),
+              ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _DashboardButton(
-                    isWhite: isWhite,
-                    icon: CupertinoIcons.person_badge_plus_fill,
-                    label: '友達を追加',
-                    onTap: onAddFriend,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                _IconDashboardButton(
-                  isWhite: isWhite,
-                  icon: CupertinoIcons.qrcode_viewfinder,
-                  onTap: onShowQr,
-                ),
-              ],
+            const SizedBox(width: 10),
+            Expanded(
+              child: _StatTile(
+                isWhite: isWhite,
+                value: '$streak',
+                label: '連続',
+                icon: CupertinoIcons.flame_fill,
+                accent: const Color(0xFFFFB74A),
+              ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _DashboardButton(
+                isWhite: isWhite,
+                icon: CupertinoIcons.person_badge_plus_fill,
+                label: '友達を追加',
+                onTap: onAddFriend,
+              ),
+            ),
+            const SizedBox(width: 10),
+            _IconDashboardButton(
+              isWhite: isWhite,
+              icon: CupertinoIcons.qrcode_viewfinder,
+              onTap: onShowQr,
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
