@@ -83,12 +83,21 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          _DateTimeBox(
+                            icon: CupertinoIcons.calendar,
+                            iconColor: _AddLogColors.calendarIcon,
+                            label: _dateLabel(_selectedDate),
+                            onTap: _pickDate,
+                          ),
+                          const SizedBox(height: 14),
                           _InputBox(
-                            icon: CupertinoIcons.location_solid,
-                            iconColor: _AddLogColors.placeIcon,
-                            hint: 'どこで？（任意）',
-                            controller: _placeController,
+                            icon: CupertinoIcons.text_quote,
+                            iconColor: _AddLogColors.impressionIcon,
+                            hint: 'コメント（15文字以内）',
+                            controller: _memoController,
                             maxLines: 1,
+                            showCounter: true,
+                            maxLength: 15,
                             onChanged: (_) => setState(() {}),
                           ),
                           const SizedBox(height: 14),
@@ -137,11 +146,13 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                             ),
                           ),
                           const SizedBox(height: 14),
-                          _DateTimeBox(
-                            icon: CupertinoIcons.calendar,
-                            iconColor: _AddLogColors.calendarIcon,
-                            label: _dateLabel(_selectedDate),
-                            onTap: _pickDate,
+                          _InputBox(
+                            icon: CupertinoIcons.location_solid,
+                            iconColor: _AddLogColors.placeIcon,
+                            hint: 'どこで？（任意）',
+                            controller: _placeController,
+                            maxLines: 1,
+                            onChanged: (_) => setState(() {}),
                           ),
                           const SizedBox(height: 14),
                           _PhotoPickerCard(
@@ -152,22 +163,8 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                             onRemove: () => setState(() {
                               _photoPath = null;
                               _photoFilterName = null;
-                              _memoController.clear();
                             }),
                           ),
-                          if (_hasPhoto) ...[
-                            const SizedBox(height: 14),
-                            _InputBox(
-                              icon: CupertinoIcons.text_quote,
-                              iconColor: _AddLogColors.impressionIcon,
-                              hint: '写真に重ねる感想（15文字以内）',
-                              controller: _memoController,
-                              maxLines: 1,
-                              showCounter: true,
-                              maxLength: 15,
-                              onChanged: (_) => setState(() {}),
-                            ),
-                          ],
                         ],
                       ),
                     ),
@@ -187,8 +184,6 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
       ),
     );
   }
-
-  bool get _hasPhoto => _photoPath != null && _photoPath!.isNotEmpty;
 
   List<NomoFriend> _filteredFriends(List<NomoFriend> friends) {
     final query = _friendSearchQuery.trim().toLowerCase();
@@ -274,7 +269,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
             date: _selectedDate,
             friends: selectedFriends,
             place: _placeController.text,
-            memo: _hasPhoto ? _memoController.text : '',
+            memo: _memoController.text,
             photoAssetPath: photoPath,
           );
       if (!mounted) return;
