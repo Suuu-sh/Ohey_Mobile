@@ -148,6 +148,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _nameTouched = false;
   bool _isLastAccountLoaded = false;
   bool _showAuthForm = false;
+  bool _obscurePlainLoginPassword = true;
   NomoLastAccount? _lastAccount;
   String? _error;
   String? _notice;
@@ -298,6 +299,10 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       }
     }
 
+    if (_isLogin) {
+      return _buildPlainLogin(context);
+    }
+
     return _FullScreenStep(
       child: _AuthSurfaceCard(
         child: Column(
@@ -394,6 +399,123 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
         ),
       ),
     );
+  }
+
+  Widget _buildPlainLogin(BuildContext context) {
+    final canGoBack = !widget.startAtLogin || _lastAccount != null;
+    final canSubmit =
+        _emailController.text.trim().isNotEmpty &&
+        _passwordController.text.length >= 6 &&
+        !_isBusy;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 700;
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight - 42),
+            child: Column(
+              children: [
+                _PlainLoginHeader(
+                  canGoBack: canGoBack,
+                  onBack: _isBusy ? null : _handleAuthBack,
+                ),
+                SizedBox(height: compact ? 24 : 30),
+                _PlainLoginFields(
+                  emailController: _emailController,
+                  passwordController: _passwordController,
+                  obscurePassword: _obscurePlainLoginPassword,
+                  enabled: !_isBusy,
+                  onChanged: (_) => setState(() {}),
+                  onPasswordVisibilityTap: () => setState(
+                    () => _obscurePlainLoginPassword =
+                        !_obscurePlainLoginPassword,
+                  ),
+                  onSubmitted: canSubmit ? _submitAuth : null,
+                ),
+                const SizedBox(height: 28),
+                _PlainLoginButton(
+                  busy: _isBusy,
+                  enabled: canSubmit,
+                  onTap: canSubmit ? _submitAuth : null,
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 14),
+                  _DarkMessageText(_error!, isError: true),
+                ],
+                if (_notice != null) ...[
+                  const SizedBox(height: 14),
+                  _DarkMessageText(_notice!),
+                ],
+                const SizedBox(height: 28),
+                TextButton(
+                  onPressed: _isBusy
+                      ? null
+                      : () => _showComingSoonSnack('パスワード再設定は今後対応予定です。'),
+                  child: const Text(
+                    'パスワードをお忘れですか？',
+                    style: TextStyle(
+                      color: Color(0xFF55D6FF),
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                SizedBox(height: compact ? 150 : 260),
+                _SocialLoginButton(
+                  label: 'GOOGLEでログイン',
+                  mark: const _GoogleMark(),
+                  onTap: () => _showComingSoonSnack('Googleログインは今後対応予定です。'),
+                ),
+                const SizedBox(height: 14),
+                _SocialLoginButton(
+                  label: 'FACEBOOKでログイン',
+                  mark: const _FacebookMark(),
+                  onTap: () => _showComingSoonSnack('Facebookログインは今後対応予定です。'),
+                ),
+                const SizedBox(height: 14),
+                _SocialLoginButton(
+                  label: 'APPLEでログイン',
+                  mark: const _AppleMark(),
+                  onTap: () => _showComingSoonSnack('Appleログインは今後対応予定です。'),
+                ),
+                const SizedBox(height: 28),
+                Text(
+                  'ログインするとNomoの利用規約とプライバシー\nポリシーに同意したことになります。',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .82),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _handleAuthBack() {
+    setState(() {
+      if (widget.startAtLogin && _lastAccount != null) {
+        _showAuthForm = false;
+        _isLogin = true;
+        _error = null;
+        _notice = null;
+        return;
+      }
+      _step = _OnboardingStep.intro;
+    });
+  }
+
+  void _showComingSoonSnack(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Widget _buildReLogin(BuildContext context, NomoLastAccount account) {
@@ -1382,6 +1504,351 @@ class _ReLoginAccountCard extends StatelessWidget {
       ],
     ),
   );
+}
+
+class _PlainLoginHeader extends StatelessWidget {
+  const _PlainLoginHeader({required this.canGoBack, required this.onBack});
+
+  final bool canGoBack;
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: 48,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: canGoBack
+              ? IconButton(
+                  onPressed: onBack,
+                  icon: Icon(
+                    CupertinoIcons.arrow_left,
+                    color: Colors.white.withValues(alpha: .72),
+                    size: 31,
+                  ),
+                )
+              : const SizedBox(width: 48),
+        ),
+        Text(
+          'ログイン',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: .34),
+            fontSize: 25,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.2,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _PlainLoginFields extends StatelessWidget {
+  const _PlainLoginFields({
+    required this.emailController,
+    required this.passwordController,
+    required this.obscurePassword,
+    required this.enabled,
+    required this.onChanged,
+    required this.onPasswordVisibilityTap,
+    required this.onSubmitted,
+  });
+
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final bool obscurePassword;
+  final bool enabled;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onPasswordVisibilityTap;
+  final VoidCallback? onSubmitted;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    clipBehavior: Clip.antiAlias,
+    decoration: BoxDecoration(
+      color: const Color(0xFF132630).withValues(alpha: .74),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: Colors.white.withValues(alpha: .18), width: 2),
+    ),
+    child: Column(
+      children: [
+        _PlainLoginTextField(
+          controller: emailController,
+          enabled: enabled,
+          hintText: 'Eメール/電話番号/ユーザー名',
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.email, AutofillHints.username],
+          onChanged: onChanged,
+        ),
+        Divider(height: 1, color: Colors.white.withValues(alpha: .14)),
+        _PlainLoginTextField(
+          controller: passwordController,
+          enabled: enabled,
+          hintText: 'パスワード',
+          obscureText: obscurePassword,
+          textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.password],
+          onChanged: onChanged,
+          onSubmitted: (_) => onSubmitted?.call(),
+          trailing: IconButton(
+            onPressed: enabled ? onPasswordVisibilityTap : null,
+            icon: Icon(
+              obscurePassword
+                  ? CupertinoIcons.eye_slash_fill
+                  : CupertinoIcons.eye_fill,
+              color: const Color(0xFF18A7D5).withValues(alpha: .78),
+              size: 28,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _PlainLoginTextField extends StatelessWidget {
+  const _PlainLoginTextField({
+    required this.controller,
+    required this.enabled,
+    required this.hintText,
+    required this.onChanged,
+    this.keyboardType,
+    this.textInputAction,
+    this.autofillHints,
+    this.obscureText = false,
+    this.onSubmitted,
+    this.trailing,
+  });
+
+  final TextEditingController controller;
+  final bool enabled;
+  final String hintText;
+  final ValueChanged<String> onChanged;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final Iterable<String>? autofillHints;
+  final bool obscureText;
+  final ValueChanged<String>? onSubmitted;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: 64,
+    child: Row(
+      children: [
+        const SizedBox(width: 26),
+        Expanded(
+          child: TextField(
+            controller: controller,
+            enabled: enabled,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 19,
+              fontWeight: FontWeight.w800,
+            ),
+            cursorColor: const Color(0xFF55D6FF),
+            keyboardType: keyboardType,
+            textInputAction: textInputAction,
+            autofillHints: autofillHints,
+            obscureText: obscureText,
+            onChanged: onChanged,
+            onSubmitted: onSubmitted,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              hintText: hintText,
+              hintStyle: TextStyle(
+                color: Colors.white.withValues(alpha: .29),
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+        if (trailing != null) ...[
+          const SizedBox(width: 8),
+          trailing!,
+          const SizedBox(width: 14),
+        ] else
+          const SizedBox(width: 26),
+      ],
+    ),
+  );
+}
+
+class _PlainLoginButton extends StatelessWidget {
+  const _PlainLoginButton({
+    required this.busy,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final bool busy;
+  final bool enabled;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: enabled ? onTap : null,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 160),
+      width: double.infinity,
+      height: 60,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: enabled
+            ? const Color(0xFF55D6FF)
+            : const Color(0xFF526671).withValues(alpha: .62),
+        borderRadius: BorderRadius.circular(17),
+      ),
+      child: busy
+          ? const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.8,
+                color: Colors.white,
+              ),
+            )
+          : Text(
+              'ログイン',
+              style: TextStyle(
+                color: enabled
+                    ? const Color(0xFF0D1A22)
+                    : Colors.white.withValues(alpha: .26),
+                fontSize: 19,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+    ),
+  );
+}
+
+class _SocialLoginButton extends StatelessWidget {
+  const _SocialLoginButton({
+    required this.label,
+    required this.mark,
+    required this.onTap,
+  });
+
+  final String label;
+  final Widget mark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: double.infinity,
+      height: 64,
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: .20),
+          width: 2.4,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(width: 34, child: Center(child: mark)),
+          const SizedBox(width: 14),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              letterSpacing: .6,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _GoogleMark extends StatelessWidget {
+  const _GoogleMark();
+
+  @override
+  Widget build(BuildContext context) => const Text(
+    'G',
+    style: TextStyle(
+      color: Color(0xFF4285F4),
+      fontSize: 27,
+      fontWeight: FontWeight.w900,
+    ),
+  );
+}
+
+class _FacebookMark extends StatelessWidget {
+  const _FacebookMark();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 30,
+    height: 30,
+    decoration: const BoxDecoration(
+      color: Color(0xFF2E89FF),
+      shape: BoxShape.circle,
+    ),
+    alignment: Alignment.center,
+    child: const Text(
+      'f',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 25,
+        height: .9,
+        fontWeight: FontWeight.w900,
+      ),
+    ),
+  );
+}
+
+class _AppleMark extends StatelessWidget {
+  const _AppleMark();
+
+  @override
+  Widget build(BuildContext context) =>
+      const Icon(Icons.apple, color: Colors.white, size: 35);
+}
+
+class _DarkMessageText extends StatelessWidget {
+  const _DarkMessageText(this.text, {this.isError = false});
+
+  final String text;
+  final bool isError;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isError ? AppColors.coral : const Color(0xFF55D6FF);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: .12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: .24)),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+          height: 1.45,
+        ),
+      ),
+    );
+  }
 }
 
 class _AuthHeroCard extends StatelessWidget {
