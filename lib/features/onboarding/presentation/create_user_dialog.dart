@@ -16,7 +16,9 @@ import '../../profile/presentation/avatar_builder_screen.dart';
 enum _OnboardingStep { intro, auth, profile }
 
 class CreateUserDialog extends ConsumerStatefulWidget {
-  const CreateUserDialog({super.key});
+  const CreateUserDialog({super.key, this.startAtLogin = false});
+
+  final bool startAtLogin;
 
   @override
   ConsumerState<CreateUserDialog> createState() => _CreateUserDialogState();
@@ -154,6 +156,8 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _step = _OnboardingStep.profile;
       _emailController.text = session.user.email ?? '';
       _hydrateProfileFromAuthMetadata(session.user);
+    } else if (widget.startAtLogin) {
+      _step = _OnboardingStep.auth;
     }
   }
 
@@ -275,13 +279,18 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _Header(
-          title: _isLogin ? 'ログイン' : '新規登録',
-          subtitle: '飲みログを保存するためにアカウントが必要です。',
+          title: _isLogin ? 'おかえりログイン' : 'Nomoをはじめる',
+          subtitle: _isLogin
+              ? '飲みログと飲み友リストの続きを開きましょう。'
+              : '飲みログを保存するためにアカウントが必要です。',
+          showBackButton: !widget.startAtLogin,
           onBack: _isBusy
               ? null
               : () => setState(() => _step = _OnboardingStep.intro),
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 16),
+        _AuthHeroCard(isLogin: _isLogin),
+        const SizedBox(height: 16),
         _AuthTextField(
           controller: _emailController,
           enabled: !_isBusy,
@@ -980,11 +989,241 @@ class _DemoDots extends StatelessWidget {
   );
 }
 
+class _AuthHeroCard extends StatelessWidget {
+  const _AuthHeroCard({required this.isLogin});
+
+  final bool isLogin;
+
+  @override
+  Widget build(BuildContext context) {
+    final height = isLogin ? 142.0 : 118.0;
+    return Container(
+      width: double.infinity,
+      height: height,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFFEEF5), Color(0xFFE8F6FF), Color(0xFFEDE7FF)],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: Colors.white.withValues(alpha: .86)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.rose.withValues(alpha: .16),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          const Positioned(
+            right: -8,
+            top: -10,
+            child: _AuthDecorativeIcon(
+              icon: CupertinoIcons.sparkles,
+              color: AppColors.orange,
+              size: 60,
+              angle: .16,
+            ),
+          ),
+          const Positioned(
+            left: -10,
+            bottom: -12,
+            child: _AuthDecorativeIcon(
+              icon: Icons.local_bar_rounded,
+              color: AppColors.beer,
+              size: 64,
+              angle: -.12,
+            ),
+          ),
+          Positioned(
+            right: isLogin ? 14 : 18,
+            bottom: isLogin ? 12 : 14,
+            child: const _AuthDecorativeIcon(
+              icon: CupertinoIcons.heart_fill,
+              color: AppColors.rose,
+              size: 42,
+              angle: -.08,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+            child: Row(
+              children: [
+                _AuthAvatarBadge(size: isLogin ? 82 : 68),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isLogin ? 'また乾杯を記録しよう' : '可愛いプロフィールで参加',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.navy,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
+                          height: 1.18,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        isLogin
+                            ? 'アイコン・カレンダー・飲み友を、ログインして続きから。'
+                            : '飲み友に見える名前とアイコンを一緒に作ります。',
+                        maxLines: isLogin ? 2 : 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.mutedInk,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          height: 1.35,
+                        ),
+                      ),
+                      if (isLogin) ...[
+                        const SizedBox(height: 10),
+                        const Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            _AuthMiniBadge(
+                              icon: Icons.local_bar_rounded,
+                              label: '飲みログ',
+                            ),
+                            _AuthMiniBadge(
+                              icon: CupertinoIcons.person_2_fill,
+                              label: '飲み友',
+                            ),
+                            _AuthMiniBadge(
+                              icon: CupertinoIcons.calendar,
+                              label: '予定',
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AuthAvatarBadge extends StatelessWidget {
+  const _AuthAvatarBadge({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: size,
+    height: size,
+    padding: EdgeInsets.all(size * .075),
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: const LinearGradient(colors: [AppColors.peach, AppColors.sky]),
+      border: Border.all(color: Colors.white, width: 3),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.navy.withValues(alpha: .10),
+          blurRadius: 16,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: const NomoAvatarView(avatar: NomoAvatar.defaultAvatar),
+  );
+}
+
+class _AuthDecorativeIcon extends StatelessWidget {
+  const _AuthDecorativeIcon({
+    required this.icon,
+    required this.color,
+    required this.size,
+    this.angle = 0,
+  });
+
+  final IconData icon;
+  final Color color;
+  final double size;
+  final double angle;
+
+  @override
+  Widget build(BuildContext context) => Transform.rotate(
+    angle: angle,
+    child: Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .76),
+        shape: BoxShape.circle,
+        border: Border.all(color: color.withValues(alpha: .28)),
+      ),
+      child: Center(
+        child: NomoPopIcon(
+          icon: icon,
+          color: color,
+          size: size * .58,
+          showBubble: false,
+        ),
+      ),
+    ),
+  );
+}
+
+class _AuthMiniBadge extends StatelessWidget {
+  const _AuthMiniBadge({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: .72),
+      borderRadius: BorderRadius.circular(99),
+      border: Border.all(color: AppColors.navy.withValues(alpha: .08)),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        NomoGeneratedIcon(icon, color: AppColors.navy, size: 14),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.navy,
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 class _Header extends StatelessWidget {
-  const _Header({required this.title, required this.subtitle, this.onBack});
+  const _Header({
+    required this.title,
+    required this.subtitle,
+    this.onBack,
+    this.showBackButton = true,
+  });
+
   final String title;
   final String subtitle;
   final VoidCallback? onBack;
+  final bool showBackButton;
 
   @override
   Widget build(BuildContext context) {
@@ -992,12 +1231,17 @@ class _Header extends StatelessWidget {
       children: [
         Row(
           children: [
-            IconButton(
-              onPressed: onBack,
-              icon: const NomoGeneratedIcon(
-                CupertinoIcons.chevron_left,
-                size: 20,
-              ),
+            SizedBox(
+              width: 48,
+              child: showBackButton
+                  ? IconButton(
+                      onPressed: onBack,
+                      icon: const NomoGeneratedIcon(
+                        CupertinoIcons.chevron_left,
+                        size: 20,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
             Expanded(
               child: Text(

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nomo/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
@@ -16,16 +17,18 @@ void main() {
     );
   });
 
-  testWidgets('Nomo home renders the redesigned core experience', (
+  testWidgets('signed out returning users land on the login page', (
     tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: NomoApp()));
-    await tester.pump(const Duration(milliseconds: 250));
+    SharedPreferences.setMockInitialValues({'nomo_onboarding_seen': true});
 
-    expect(find.text('公式'), findsOneWidget);
-    expect(find.text('フォロー中'), findsOneWidget);
-    expect(find.text('フィード'), findsWidgets);
-    expect(find.text('マイページ'), findsOneWidget);
+    await tester.pumpWidget(const ProviderScope(child: NomoApp()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('おかえりログイン'), findsOneWidget);
+    expect(find.text('また乾杯を記録しよう'), findsOneWidget);
+    expect(find.text('飲みログ'), findsOneWidget);
+    expect(find.text('ログイン'), findsOneWidget);
   });
 }
 
