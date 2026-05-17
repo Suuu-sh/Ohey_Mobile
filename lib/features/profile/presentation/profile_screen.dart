@@ -1262,25 +1262,26 @@ class _QrIdSearchInputState extends State<_QrIdSearchInput> {
 
   @override
   Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
     return Container(
       height: 58,
       padding: const EdgeInsets.only(left: 16, right: 8),
       decoration: BoxDecoration(
-        color: isWhite ? const Color(0xFFF5F7F8) : const Color(0xFF14212B),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: isWhite
-              ? const Color(0xFFE1E4E7)
-              : Colors.white.withValues(alpha: .10),
-          width: 2,
-        ),
+        border: Border.all(color: const Color(0xFFE0E4E8), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .06),
+            blurRadius: 14,
+            offset: const Offset(0, 7),
+          ),
+        ],
       ),
       child: Row(
         children: [
           NomoGeneratedIcon(
             CupertinoIcons.at,
-            color: isWhite ? const Color(0xFF4B5056) : Colors.white,
+            color: Color(0xFF5F6872),
             size: 22,
           ),
           const SizedBox(width: 8),
@@ -1296,15 +1297,13 @@ class _QrIdSearchInputState extends State<_QrIdSearchInput> {
                 focusedBorder: InputBorder.none,
                 filled: false,
                 hintText: 'ユーザーIDで検索',
-                hintStyle: TextStyle(
-                  color: isWhite
-                      ? const Color(0xFF9BA1A8)
-                      : const Color(0xFF9AA7B7),
+                hintStyle: const TextStyle(
+                  color: Color(0xFF8D97A2),
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              style: TextStyle(
-                color: isWhite ? const Color(0xFF33373C) : Colors.white,
+              style: const TextStyle(
+                color: Color(0xFF202832),
                 fontSize: 15,
                 fontWeight: FontWeight.w900,
               ),
