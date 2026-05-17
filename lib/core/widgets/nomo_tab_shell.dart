@@ -9,6 +9,7 @@ import '../../features/logs/presentation/add_log_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/onboarding/presentation/create_user_dialog.dart';
 import '../application/nomo_user_controller.dart';
+import '../data/nomo_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
 import '../theme/nomo_theme_mode.dart';
 
@@ -21,13 +22,10 @@ class NomoTabShell extends ConsumerStatefulWidget {
 
 class _NomoTabShellState extends ConsumerState<NomoTabShell> {
   int _selectedIndex = 0;
-  bool _didScheduleOnboarding = false;
   bool _didScheduleProfileRestore = false;
   bool _didAttemptProfileRestore = false;
   bool _isOnboardingSeen = false;
   bool _onboardingPrefLoaded = false;
-
-  static const String _onboardingSeenKey = 'nomo_onboarding_seen';
 
   @override
   void initState() {
@@ -40,14 +38,15 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
     if (!mounted) return;
     setState(() {
       _onboardingPrefLoaded = true;
-      _isOnboardingSeen = prefs.getBool(_onboardingSeenKey) ?? false;
+      _isOnboardingSeen =
+          prefs.getBool(NomoLastAccountStore.onboardingSeenKey) ?? false;
     });
   }
 
   Future<void> _setOnboardingSeen() async {
     _isOnboardingSeen = true;
     await SharedPreferences.getInstance().then(
-      (prefs) => prefs.setBool(_onboardingSeenKey, true),
+      (prefs) => prefs.setBool(NomoLastAccountStore.onboardingSeenKey, true),
     );
   }
 
@@ -69,12 +68,13 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
     if (user != null) {
       _didAttemptProfileRestore = false;
       _didScheduleProfileRestore = false;
-    }
-
-    if (user != null && _didScheduleOnboarding) {
-      // 初回ログイン後もこのフラグを立てっぱなしにすると、ログアウト後に
-      // 再ログインダイアログが表示されない。ログイン済みに戻った時点で解除する。
-      _didScheduleOnboarding = false;
+      if (_onboardingPrefLoaded && !_isOnboardingSeen) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!mounted || _isOnboardingSeen) return;
+          await _setOnboardingSeen();
+          if (mounted) setState(() => _isOnboardingSeen = true);
+        });
+      }
     }
 
     if (user == null &&
@@ -103,35 +103,15 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
       );
     }
 
-    if (user == null && !_didScheduleOnboarding && _onboardingPrefLoaded) {
-      _didScheduleOnboarding = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (!mounted || ref.read(nomoUserProvider) != null) return;
-        final hasActiveSession =
-            ref.read(supabaseClientProvider).auth.currentSession != null;
-        if (hasActiveSession) {
-          try {
-            final loaded = await ref
-                .read(nomoUserProvider.notifier)
-                .loadFromSupabaseProfile();
-            if (!mounted || loaded) return;
-          } catch (_) {
-            // Fall through to onboarding so the user can repair the profile.
-          }
-        }
-        if (!context.mounted) return;
-        await showDialog<void>(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => CreateUserDialog(startAtLogin: _isOnboardingSeen),
-        );
-        await _setOnboardingSeen();
-        setState(() => _isOnboardingSeen = true);
-        if (mounted && ref.read(nomoUserProvider) == null) {
-          _didScheduleOnboarding = false;
-          setState(() {});
-        }
-      });
+    if (user == null && !_onboardingPrefLoaded) {
+      return Scaffold(
+        backgroundColor: isWhite ? Colors.white : const Color(0xFF0B1420),
+        body: const SizedBox.expand(),
+      );
+    }
+
+    if (user == null) {
+      return CreateUserDialog(startAtLogin: _isOnboardingSeen);
     }
 
     return Scaffold(
