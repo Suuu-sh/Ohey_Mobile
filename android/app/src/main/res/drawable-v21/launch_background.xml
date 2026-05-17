@@ -6,10 +6,4 @@
             <solid android:color="#FF0A8D" />
         </shape>
     </item>
-
-    <item>
-        <bitmap
-            android:gravity="fill"
-            android:src="@drawable/launch_image" />
-    </item>
 </layer-list>
