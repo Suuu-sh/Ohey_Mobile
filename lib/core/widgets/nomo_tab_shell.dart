@@ -103,10 +103,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
       );
     }
 
-    if (user == null &&
-        !_didScheduleOnboarding &&
-        _onboardingPrefLoaded &&
-        !_isOnboardingSeen) {
+    if (user == null && !_didScheduleOnboarding && _onboardingPrefLoaded) {
       _didScheduleOnboarding = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted || ref.read(nomoUserProvider) != null) return;
@@ -126,7 +123,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
         await showDialog<void>(
           context: context,
           barrierDismissible: false,
-          builder: (_) => const CreateUserDialog(),
+          builder: (_) => CreateUserDialog(startAtLogin: _isOnboardingSeen),
         );
         await _setOnboardingSeen();
         setState(() => _isOnboardingSeen = true);
