@@ -159,7 +159,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _obscurePlainLoginPassword = true;
   bool _obscureSignupPassword = true;
   _RegistrationStep _registrationStep = _RegistrationStep.email;
-  NomoLastAccount? _lastAccount;
+  List<NomoLastAccount> _lastAccounts = const <NomoLastAccount>[];
   String? _error;
   String? _notice;
 
@@ -179,12 +179,12 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   }
 
   Future<void> _loadLastAccount() async {
-    final account = await NomoLastAccountStore.load();
+    final accounts = await NomoLastAccountStore.loadAccounts();
     if (!mounted) return;
     setState(() {
-      _lastAccount = account;
+      _lastAccounts = accounts;
       _isLastAccountLoaded = true;
-      if (widget.startAtLogin && account == null) {
+      if (widget.startAtLogin && accounts.isEmpty) {
         _showAuthForm = true;
       }
     });
@@ -315,7 +315,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                 onBack: _isBusy
                     ? null
                     : () => setState(() {
-                        if (widget.startAtLogin && _lastAccount != null) {
+                        if (widget.startAtLogin && _lastAccounts.isNotEmpty) {
                           _step = _OnboardingStep.auth;
                           _showAuthForm = false;
                           _isLogin = true;
@@ -380,9 +380,8 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       if (!_isLastAccountLoaded) {
         return const _FullScreenStep(child: _ReLoginLoading());
       }
-      final account = _lastAccount;
-      if (account != null) {
-        return _buildReLogin(context, account);
+      if (_lastAccounts.isNotEmpty) {
+        return _buildReLogin(context, _lastAccounts);
       }
     }
 
@@ -525,7 +524,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   }
 
   Widget _buildPlainLogin(BuildContext context) {
-    final canGoBack = !widget.startAtLogin || _lastAccount != null;
+    final canGoBack = !widget.startAtLogin || _lastAccounts.isNotEmpty;
     final canSubmit =
         _emailController.text.trim().isNotEmpty &&
         _passwordController.text.length >= 6 &&
@@ -626,7 +625,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
 
   void _handleAuthBack() {
     setState(() {
-      if (widget.startAtLogin && _lastAccount != null) {
+      if (widget.startAtLogin && _lastAccounts.isNotEmpty) {
         _showAuthForm = false;
         _isLogin = true;
         _error = null;
@@ -697,18 +696,20 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Widget _buildReLogin(BuildContext context, NomoLastAccount account) {
+  Widget _buildReLogin(BuildContext context, List<NomoLastAccount> accounts) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final compact = constraints.maxHeight < 640;
+        final compact =
+            constraints.maxHeight < 720 ||
+            accounts.length >= NomoLastAccountStore.maxAccounts;
         return _fixedAuthPage(
           constraints: constraints,
           padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
           child: Column(
             children: [
-              const Spacer(flex: 2),
-              _ReLoginMascot(size: compact ? 104 : 150),
-              SizedBox(height: compact ? 14 : 28),
+              Spacer(flex: compact ? 1 : 2),
+              _ReLoginMascot(size: compact ? 92 : 150),
+              SizedBox(height: compact ? 10 : 28),
               Text(
                 '再ログイン',
                 style: TextStyle(
@@ -718,12 +719,13 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                   letterSpacing: -.8,
                 ),
               ),
-              SizedBox(height: compact ? 22 : 42),
+              SizedBox(height: compact ? 16 : 42),
               _ReLoginAccountCard(
-                account: account,
+                accounts: accounts,
                 compact: compact,
-                onTap: () {
+                onAccountTap: (account) {
                   _emailController.text = account.email;
+                  _passwordController.clear();
                   setState(() {
                     _showAuthForm = true;
                     _isLogin = true;
@@ -743,7 +745,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                   });
                 },
               ),
-              SizedBox(height: compact ? 12 : 34),
+              SizedBox(height: compact ? 8 : 34),
               SizedBox(
                 height: compact ? 40 : 48,
                 child: TextButton(
@@ -762,7 +764,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                   ),
                 ),
               ),
-              const Spacer(flex: 3),
+              Spacer(flex: compact ? 2 : 3),
             ],
           ),
         );
@@ -1707,131 +1709,160 @@ class _ReLoginMascotPainter extends CustomPainter {
 
 class _ReLoginAccountCard extends StatelessWidget {
   const _ReLoginAccountCard({
-    required this.account,
-    required this.onTap,
+    required this.accounts,
+    required this.onAccountTap,
     required this.onAddAccount,
     this.compact = false,
   });
 
-  final NomoLastAccount account;
-  final VoidCallback onTap;
+  final List<NomoLastAccount> accounts;
+  final ValueChanged<NomoLastAccount> onAccountTap;
   final VoidCallback onAddAccount;
   final bool compact;
 
   @override
-  Widget build(BuildContext context) => Container(
-    clipBehavior: Clip.antiAlias,
-    decoration: BoxDecoration(
-      color: const Color(0xFF101F28).withValues(alpha: .82),
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: Colors.white.withValues(alpha: .20), width: 2),
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: compact
-                ? const EdgeInsets.fromLTRB(18, 14, 16, 12)
-                : const EdgeInsets.fromLTRB(20, 18, 18, 16),
-            child: Row(
-              children: [
-                Container(
-                  width: compact ? 52 : 58,
-                  height: compact ? 52 : 58,
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [AppColors.peach, AppColors.lavender],
-                    ),
-                  ),
-                  child: NomoAvatarView(
-                    avatar: account.avatar ?? NomoAvatar.defaultAvatar,
-                    size: compact ? 44 : 50,
-                  ),
-                ),
-                SizedBox(width: compact ? 14 : 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        account.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: compact ? 18 : 19,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.2,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        account.email,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: .36),
-                          fontSize: compact ? 13 : 14,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                NomoGeneratedIcon(
-                  CupertinoIcons.chevron_right,
-                  color: Colors.white.withValues(alpha: .68),
-                  size: compact ? 26 : 28,
-                ),
-              ],
-            ),
-          ),
+  Widget build(BuildContext context) {
+    final visibleAccounts = accounts
+        .take(NomoLastAccountStore.maxAccounts)
+        .toList(growable: false);
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: const Color(0xFF101F28).withValues(alpha: .82),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: .20),
+          width: 2,
         ),
-        Divider(height: 1, color: Colors.white.withValues(alpha: .16)),
-        InkWell(
-          onTap: onAddAccount,
-          child: Padding(
-            padding: compact
-                ? const EdgeInsets.fromLTRB(18, 16, 18, 16)
-                : const EdgeInsets.fromLTRB(20, 22, 20, 22),
-            child: Row(
-              children: [
-                Container(
-                  width: compact ? 50 : 56,
-                  height: compact ? 50 : 56,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: .34),
-                      width: 2,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var index = 0; index < visibleAccounts.length; index++) ...[
+            _ReLoginAccountRow(
+              account: visibleAccounts[index],
+              compact: compact,
+              onTap: () => onAccountTap(visibleAccounts[index]),
+            ),
+            Divider(height: 1, color: Colors.white.withValues(alpha: .16)),
+          ],
+          InkWell(
+            onTap: onAddAccount,
+            child: Padding(
+              padding: compact
+                  ? const EdgeInsets.fromLTRB(18, 14, 18, 14)
+                  : const EdgeInsets.fromLTRB(20, 18, 20, 18),
+              child: Row(
+                children: [
+                  Container(
+                    width: compact ? 46 : 52,
+                    height: compact ? 46 : 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: .34),
+                        width: 2,
+                      ),
+                    ),
+                    child: Center(
+                      child: NomoGeneratedIcon(
+                        CupertinoIcons.plus,
+                        color: Colors.white.withValues(alpha: .44),
+                        size: compact ? 24 : 26,
+                      ),
                     ),
                   ),
-                  child: Center(
-                    child: NomoGeneratedIcon(
-                      CupertinoIcons.plus,
+                  SizedBox(width: compact ? 14 : 16),
+                  Text(
+                    '別のアカウントを追加',
+                    style: TextStyle(
                       color: Colors.white.withValues(alpha: .44),
-                      size: compact ? 25 : 27,
+                      fontSize: compact ? 16 : 17,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
-                ),
-                SizedBox(width: compact ? 16 : 18),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReLoginAccountRow extends StatelessWidget {
+  const _ReLoginAccountRow({
+    required this.account,
+    required this.onTap,
+    required this.compact,
+  });
+
+  final NomoLastAccount account;
+  final VoidCallback onTap;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    child: Padding(
+      padding: compact
+          ? const EdgeInsets.fromLTRB(18, 12, 16, 10)
+          : const EdgeInsets.fromLTRB(20, 16, 18, 14),
+      child: Row(
+        children: [
+          Container(
+            width: compact ? 48 : 56,
+            height: compact ? 48 : 56,
+            padding: const EdgeInsets.all(4),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [AppColors.peach, AppColors.lavender],
+              ),
+            ),
+            child: NomoAvatarView(
+              avatar: account.avatar ?? NomoAvatar.defaultAvatar,
+              size: compact ? 40 : 48,
+            ),
+          ),
+          SizedBox(width: compact ? 14 : 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  '別のアカウントを追加',
+                  account.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: .44),
-                    fontSize: compact ? 16 : 17,
+                    color: Colors.white,
+                    fontSize: compact ? 17 : 19,
                     fontWeight: FontWeight.w900,
+                    letterSpacing: -.2,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  account.email,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .36),
+                    fontSize: compact ? 12 : 14,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
             ),
           ),
-        ),
-      ],
+          NomoGeneratedIcon(
+            CupertinoIcons.chevron_right,
+            color: Colors.white.withValues(alpha: .68),
+            size: compact ? 25 : 28,
+          ),
+        ],
+      ),
     ),
   );
 }
