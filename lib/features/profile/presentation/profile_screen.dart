@@ -18,6 +18,8 @@ import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_toast.dart';
+import '../../admin/application/admin_controller.dart';
+import '../../admin/presentation/admin_screen.dart';
 import '../../friends/presentation/add_nomi_tomo_screen.dart';
 import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
@@ -2100,6 +2102,8 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
     builder: (sheetContext) => Consumer(
       builder: (context, ref, _) {
         final themeMode = ref.watch(nomoThemeModeProvider);
+        final canOpenAdmin =
+            ref.watch(adminAccessProvider).asData?.value ?? false;
         return _SheetShell(
           title: '設定',
           child: Column(
@@ -2155,6 +2159,23 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                   }
                 },
               ),
+              if (canOpenAdmin)
+                _SettingsTile(
+                  icon: CupertinoIcons.lock_shield_fill,
+                  label: '管理画面',
+                  onTap: () async {
+                    if (sheetContext.mounted) {
+                      Navigator.of(sheetContext).pop();
+                    }
+                    if (!context.mounted) return;
+                    await Navigator.of(context).push<void>(
+                      CupertinoPageRoute(
+                        fullscreenDialog: true,
+                        builder: (_) => const AdminScreen(),
+                      ),
+                    );
+                  },
+                ),
               _SettingsTile(
                 icon: CupertinoIcons.play_circle_fill,
                 label: 'はじめてのデモを見る',
