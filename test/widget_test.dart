@@ -19,6 +19,22 @@ void main() {
     );
   });
 
+  testWidgets('first demo exits to account choice screen', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+
+    await tester.pumpWidget(const ProviderScope(child: NomoApp()));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('スキップ'));
+    await tester.tap(find.text('スキップ'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('すでにアカウントをお持ち\nですか？'), findsOneWidget);
+    expect(find.text('ログイン'), findsOneWidget);
+    expect(find.text('Nomoは初めてですか？'), findsOneWidget);
+    expect(find.text('スタート'), findsOneWidget);
+  });
+
   testWidgets('signed out returning users land on the login page', (
     tester,
   ) async {
