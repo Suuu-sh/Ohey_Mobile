@@ -2205,39 +2205,18 @@ class _PlainLoginButton extends StatelessWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: enabled ? onTap : null,
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
-      width: double.infinity,
-      height: height,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: enabled
-            ? _authPink
-            : const Color(0xFF526671).withValues(alpha: .62),
-        borderRadius: BorderRadius.circular(17),
-      ),
-      child: busy
-          ? const SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.8,
-                color: Colors.white,
-              ),
-            )
-          : Text(
-              'ログイン',
-              style: TextStyle(
-                color: enabled
-                    ? _authPinkInk
-                    : Colors.white.withValues(alpha: .26),
-                fontSize: 19,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-    ),
+  Widget build(BuildContext context) => Nomo3DButton(
+    label: 'ログイン',
+    isLoading: busy,
+    enabled: enabled,
+    onTap: onTap,
+    height: height,
+    radius: 18,
+    color: _authPink,
+    foregroundColor: _authPinkInk,
+    shadowColor: _authPinkShadow,
+    fontSize: 19,
+    useGradient: true,
   );
 }
 
@@ -2255,35 +2234,19 @@ class _SocialLoginButton extends StatelessWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      width: double.infinity,
+  Widget build(BuildContext context) => SizedBox(
+    height: height + 7,
+    child: Nomo3DButton(
+      label: label,
+      onTap: onTap,
       height: height,
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: .20),
-          width: 2.4,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(width: 34, child: Center(child: mark)),
-          const SizedBox(width: 14),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              letterSpacing: .6,
-            ),
-          ),
-        ],
-      ),
+      radius: 18,
+      color: Colors.white,
+      foregroundColor: const Color(0xFF182330),
+      shadowColor: const Color(0xFFC7CFD9),
+      fontSize: 16,
+      useGradient: true,
+      trailing: mark,
     ),
   );
 }
