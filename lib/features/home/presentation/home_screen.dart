@@ -843,16 +843,27 @@ class _FeedNotificationsScreen extends StatelessWidget {
                                       : Colors.white.withValues(alpha: .09),
                                 ),
                               ),
-                              child: Text(
-                                '＜',
-                                style: TextStyle(
-                                  color: isWhite
-                                      ? const Color(0xFF27313B)
-                                      : Colors.white,
-                                  fontSize: 23,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -2,
-                                  height: .9,
+                              child: Center(
+                                child: Transform.translate(
+                                  offset: const Offset(-1, -1),
+                                  child: Text(
+                                    '＜',
+                                    textAlign: TextAlign.center,
+                                    strutStyle: const StrutStyle(
+                                      fontSize: 23,
+                                      height: 1,
+                                      forceStrutHeight: true,
+                                    ),
+                                    style: TextStyle(
+                                      color: isWhite
+                                          ? const Color(0xFF27313B)
+                                          : Colors.white,
+                                      fontSize: 23,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -2,
+                                      height: 1,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
