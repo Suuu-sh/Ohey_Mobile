@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -121,6 +122,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         onLikePressed: (item) => ref
                             .read(drinkLogControllerProvider.notifier)
                             .toggleLike(item.id),
+                        onSharePressed: (item) =>
+                            _shareFeedItemToInstagram(context, item),
                         onMorePressed: (item) =>
                             _showFeedPostActions(context, ref, item),
                       ),
@@ -171,6 +174,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (mounted) setState(() => _isRefreshingFeed = false);
     }
   }
+
+  Future<void> _shareFeedItemToInstagram(
+    BuildContext context,
+    _FeedItem item,
+  ) async {
+    try {
+      final imagePath = await _createStoryShareImage(item);
+      const channel = MethodChannel('nomo/instagram_story');
+      final shared = await channel.invokeMethod<bool>('shareImage', {
+        'path': imagePath,
+      });
+      if (!context.mounted) return;
+      NomoToast.show(
+        context,
+        shared == true ? 'Instagramストーリーに共有します。' : 'Instagramアプリが見つかりませんでした。',
+        icon: CupertinoIcons.share_up,
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      NomoToast.show(
+        context,
+        '共有を開始できませんでした: $error',
+        icon: CupertinoIcons.share_up,
+      );
+    }
+  }
 }
 
 Widget _buildFeedSectionPage({
@@ -179,6 +208,7 @@ Widget _buildFeedSectionPage({
   required bool isWhite,
   required AsyncValue<List<DrinkLog>> logsAsync,
   required ValueChanged<_FeedItem> onLikePressed,
+  required ValueChanged<_FeedItem> onSharePressed,
   required ValueChanged<_FeedItem> onMorePressed,
 }) => ListView(
   physics: const BouncingScrollPhysics(),
@@ -196,6 +226,7 @@ Widget _buildFeedSectionPage({
         (item) => _FeedPostCard(
           item: item,
           onLike: item.isLikeable ? () => onLikePressed(item) : null,
+          onShare: item.id.isEmpty ? null : () => onSharePressed(item),
           onMore: item.id.isEmpty ? null : () => onMorePressed(item),
         ),
       ),
@@ -565,10 +596,16 @@ Future<bool> _confirmDeleteFeedPost(BuildContext context) async {
 enum _FeedPostAction { copy, delete, report }
 
 class _FeedPostCard extends StatelessWidget {
-  const _FeedPostCard({required this.item, this.onLike, this.onMore});
+  const _FeedPostCard({
+    required this.item,
+    this.onLike,
+    this.onShare,
+    this.onMore,
+  });
 
   final _FeedItem item;
   final VoidCallback? onLike;
+  final VoidCallback? onShare;
   final VoidCallback? onMore;
 
   bool get _isOfficial => item.userName.contains('公式');
@@ -673,6 +710,13 @@ class _FeedPostCard extends StatelessWidget {
                 _WithFriendsPill(friends: item.friends),
               ],
               const SizedBox(width: 10),
+              _DuoFeedButton(
+                icon: CupertinoIcons.share_up,
+                label: '',
+                color: _FeedColors.teal,
+                onTap: onShare,
+              ),
+              const SizedBox(width: 10),
               if (_isOfficial)
                 const _DuoFeedButton(
                   icon: CupertinoIcons.arrow_right_circle_fill,
@@ -741,16 +785,18 @@ class _DuoFeedButton extends StatelessWidget {
               size: 27,
               showBubble: false,
             ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: isWhite
-                    ? const Color(0xFF101820)
-                    : Colors.white.withValues(alpha: .90),
-                fontWeight: FontWeight.w900,
+            if (label.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: isWhite
+                      ? const Color(0xFF101820)
+                      : Colors.white.withValues(alpha: .90),
+                  fontWeight: FontWeight.w900,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -1328,6 +1374,170 @@ class _FeedNotification {
   final IconData icon;
   final Color accent;
   final bool unread;
+}
+
+Future<String> _createStoryShareImage(_FeedItem item) async {
+  const width = 1080.0;
+  const height = 1920.0;
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  final rect = Rect.fromLTWH(0, 0, width, height);
+
+  final background = Paint()
+    ..shader = const LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color(0xFF07131E), Color(0xFF112D3F), Color(0xFF21D6C4)],
+    ).createShader(rect);
+  canvas.drawRect(rect, background);
+
+  final photoPath = item.photoAssetPath;
+  if (photoPath != null && photoPath.startsWith('/')) {
+    final file = File(photoPath);
+    if (await file.exists()) {
+      final bytes = await file.readAsBytes();
+      final codec = await ui.instantiateImageCodec(bytes);
+      final frame = await codec.getNextFrame();
+      final image = frame.image;
+      final source = Rect.fromLTWH(
+        0,
+        0,
+        image.width.toDouble(),
+        image.height.toDouble(),
+      );
+      final imageAspect = image.width / image.height;
+      final targetAspect = width / height;
+      Rect target;
+      if (imageAspect > targetAspect) {
+        final targetWidth = height * imageAspect;
+        target = Rect.fromLTWH(
+          (width - targetWidth) / 2,
+          0,
+          targetWidth,
+          height,
+        );
+      } else {
+        final targetHeight = width / imageAspect;
+        target = Rect.fromLTWH(
+          0,
+          (height - targetHeight) / 2,
+          width,
+          targetHeight,
+        );
+      }
+      canvas.drawImageRect(image, source, target, Paint());
+      canvas.drawRect(
+        rect,
+        Paint()..color = Colors.black.withValues(alpha: .38),
+      );
+      image.dispose();
+    }
+  }
+
+  final cardRect = RRect.fromRectAndRadius(
+    const Rect.fromLTWH(86, 1130, 908, 480),
+    const Radius.circular(52),
+  );
+  canvas.drawRRect(
+    cardRect,
+    Paint()..color = const Color(0xFF07131E).withValues(alpha: .78),
+  );
+  canvas.drawRRect(
+    cardRect,
+    Paint()
+      ..color = Colors.white.withValues(alpha: .18)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3,
+  );
+
+  void paintText(
+    String text, {
+    required double x,
+    required double y,
+    required double maxWidth,
+    required double size,
+    required FontWeight weight,
+    Color color = Colors.white,
+    int? maxLines,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: color,
+          fontSize: size,
+          fontWeight: weight,
+          height: 1.22,
+          letterSpacing: -0.8,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: maxLines,
+      ellipsis: '…',
+    )..layout(maxWidth: maxWidth);
+    painter.paint(canvas, Offset(x, y));
+  }
+
+  paintText(
+    'Nomo',
+    x: 116,
+    y: 120,
+    maxWidth: 500,
+    size: 64,
+    weight: FontWeight.w900,
+    color: _FeedColors.teal,
+  );
+  paintText(
+    '飲みログ',
+    x: 116,
+    y: 1212,
+    maxWidth: 820,
+    size: 44,
+    weight: FontWeight.w900,
+    color: _FeedColors.teal,
+  );
+  paintText(
+    item.userName,
+    x: 116,
+    y: 1284,
+    maxWidth: 820,
+    size: 58,
+    weight: FontWeight.w900,
+  );
+  final body = item.body.trim();
+  if (body.isNotEmpty) {
+    paintText(
+      body,
+      x: 116,
+      y: 1390,
+      maxWidth: 820,
+      size: 54,
+      weight: FontWeight.w900,
+      maxLines: 3,
+    );
+  }
+  paintText(
+    item.timeAgo,
+    x: 116,
+    y: 1532,
+    maxWidth: 820,
+    size: 34,
+    weight: FontWeight.w800,
+    color: Colors.white.withValues(alpha: .68),
+  );
+
+  final picture = recorder.endRecording();
+  final output = await picture.toImage(width.toInt(), height.toInt());
+  final byteData = await output.toByteData(format: ui.ImageByteFormat.png);
+  if (byteData == null) {
+    throw StateError('共有画像を作成できませんでした。');
+  }
+  final path =
+      '${Directory.systemTemp.path}/nomo_story_${DateTime.now().microsecondsSinceEpoch}.png';
+  await File(path).writeAsBytes(byteData.buffer.asUint8List());
+  output.dispose();
+  picture.dispose();
+  return path;
 }
 
 class _FeedColors {
