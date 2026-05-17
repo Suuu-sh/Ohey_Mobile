@@ -303,7 +303,6 @@ class SupabaseDrinkLogRepository implements DrinkLogRepository {
         .select('''
           user_a_id,
           user_b_id,
-          is_favorite,
           user_a:profiles!friendships_user_a_id_fkey(
             id,
             display_name,
@@ -327,11 +326,7 @@ class SupabaseDrinkLogRepository implements DrinkLogRepository {
           final other = row['user_a_id'] == userId
               ? row['user_b']
               : row['user_a'];
-          final isFavorite = (row['is_favorite'] as bool?) ?? false;
-          return _friendFromProfileRow(
-            Map<String, dynamic>.from(other as Map),
-            isFavorite: isFavorite,
-          );
+          return _friendFromProfileRow(Map<String, dynamic>.from(other as Map));
         })
         .toList(growable: false);
   }
