@@ -767,7 +767,7 @@ String _duoStyleBody(_FeedItem item) {
       _ => item.body,
     };
   }
-  return '${item.userName}さんが「${item.body}」の飲みログを残したよ！';
+  return item.body;
 }
 
 class _PostPhoto extends StatelessWidget {
@@ -1209,13 +1209,6 @@ List<_FeedItem> _itemsForSection(
   };
 }
 
-String _oneLineMemo(String memo, {required String fallback}) {
-  final compact = memo.trim().replaceAll(RegExp(r'\s+'), '');
-  final value = compact.isEmpty ? fallback.trim() : compact;
-  if (value.characters.length <= 15) return value;
-  return value.characters.take(15).toString();
-}
-
 class _FeedItem {
   const _FeedItem({
     this.id = '',
@@ -1253,10 +1246,7 @@ class _FeedItem {
       id: log.id,
       userName: authorName,
       timeAgo: _relativeTime(log.date),
-      body: _oneLineMemo(
-        log.memo,
-        fallback: log.place.isEmpty ? '乾杯したよ' : log.place,
-      ),
+      body: '飲みログを追加しました。',
       avatar: log.ownerAvatar ?? user?.avatar ?? NomoAvatar.defaultAvatar,
       accent: accent,
       photoAssetPath: log.photoAssetPath,
