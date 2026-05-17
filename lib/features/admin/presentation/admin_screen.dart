@@ -1,0 +1,1205 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/config/supabase_config.dart';
+import '../../../core/data/backend_api_client.dart';
+import '../../../core/widgets/nomo_pop_icon.dart';
+import '../../../core/widgets/nomo_toast.dart';
+import '../application/admin_controller.dart';
+
+enum _AdminSection { users, posts }
+
+class AdminScreen extends ConsumerStatefulWidget {
+  const AdminScreen({super.key});
+
+  @override
+  ConsumerState<AdminScreen> createState() => _AdminScreenState();
+}
+
+class _AdminScreenState extends ConsumerState<AdminScreen> {
+  _AdminSection _section = _AdminSection.users;
+
+  @override
+  Widget build(BuildContext context) {
+    final access = ref.watch(adminAccessProvider);
+
+    return Scaffold(
+      backgroundColor: _AdminColors.bg,
+      body: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+          child: Column(
+            children: [
+              _AdminHeader(onClose: () => Navigator.of(context).pop()),
+              const SizedBox(height: 16),
+              access.when(
+                data: (allowed) => allowed
+                    ? _AdminSegmentedControl(
+                        section: _section,
+                        onChanged: (section) =>
+                            setState(() => _section = section),
+                      )
+                    : const SizedBox.shrink(),
+                loading: () => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: access.when(
+                  data: (allowed) {
+                    if (!allowed) return const _AdminDeniedState();
+                    return _section == _AdminSection.users
+                        ? _AdminUsersPane(ref: ref)
+                        : _AdminPostsPane(ref: ref);
+                  },
+                  loading: () => const Center(
+                    child: CupertinoActivityIndicator(color: _AdminColors.lime),
+                  ),
+                  error: (error, _) => _AdminErrorState(
+                    message: '管理者確認に失敗しました: $error',
+                    onRetry: () => ref.invalidate(adminAccessProvider),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AdminHeader extends StatelessWidget {
+  const _AdminHeader({required this.onClose});
+
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: _AdminColors.lime.withValues(alpha: .16),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: const NomoGeneratedIcon(
+            CupertinoIcons.lock_shield_fill,
+            color: _AdminColors.lime,
+            size: 30,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '管理画面',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 26,
+                  letterSpacing: -.8,
+                ),
+              ),
+              Text(
+                'Nomo ${SupabaseConfig.environment} admin',
+                style: const TextStyle(
+                  color: _AdminColors.sub,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+        IconButton(
+          onPressed: onClose,
+          icon: const NomoGeneratedIcon(
+            CupertinoIcons.xmark,
+            color: Colors.white,
+            size: 26,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AdminSegmentedControl extends StatelessWidget {
+  const _AdminSegmentedControl({
+    required this.section,
+    required this.onChanged,
+  });
+
+  final _AdminSection section;
+  final ValueChanged<_AdminSection> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .06),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: _AdminColors.line),
+      ),
+      child: Row(
+        children: [
+          _AdminSegmentButton(
+            label: 'ユーザー',
+            selected: section == _AdminSection.users,
+            onTap: () => onChanged(_AdminSection.users),
+          ),
+          _AdminSegmentButton(
+            label: '投稿',
+            selected: section == _AdminSection.posts,
+            onTap: () => onChanged(_AdminSection.posts),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminSegmentButton extends StatelessWidget {
+  const _AdminSegmentButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        height: 42,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected ? _AdminColors.lime : Colors.transparent,
+          borderRadius: BorderRadius.circular(17),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? const Color(0xFF101820) : _AdminColors.sub,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _AdminUsersPane extends StatelessWidget {
+  const _AdminUsersPane({required this.ref});
+
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final usersAsync = ref.watch(adminUsersProvider);
+    return Column(
+      children: [
+        _AdminPaneToolbar(
+          title: 'ユーザー管理',
+          actionLabel: '追加',
+          onAction: () => _showUserSheet(context, ref),
+          onRefresh: () => ref.invalidate(adminUsersProvider),
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: usersAsync.when(
+            data: (users) {
+              if (users.isEmpty) {
+                return const _AdminEmptyState(message: 'ユーザーがまだいません。');
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.only(bottom: 120),
+                itemBuilder: (context, index) => _AdminUserCard(
+                  user: users[index],
+                  onEdit: () =>
+                      _showUserSheet(context, ref, user: users[index]),
+                  onDelete: () =>
+                      _confirmDeleteUser(context, ref, users[index]),
+                ),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemCount: users.length,
+              );
+            },
+            loading: () => const Center(
+              child: CupertinoActivityIndicator(color: _AdminColors.lime),
+            ),
+            error: (error, _) => _AdminErrorState(
+              message: '$error',
+              onRetry: () => ref.invalidate(adminUsersProvider),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AdminPostsPane extends StatelessWidget {
+  const _AdminPostsPane({required this.ref});
+
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final logsAsync = ref.watch(adminDrinkLogsProvider);
+    return Column(
+      children: [
+        _AdminPaneToolbar(
+          title: '投稿管理',
+          actionLabel: '作成',
+          onAction: () => _showPostSheet(context, ref),
+          onRefresh: () => ref.invalidate(adminDrinkLogsProvider),
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: logsAsync.when(
+            data: (logs) {
+              if (logs.isEmpty) {
+                return const _AdminEmptyState(message: '投稿がまだありません。');
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.only(bottom: 120),
+                itemBuilder: (context, index) => _AdminPostCard(
+                  log: logs[index],
+                  onEdit: () => _showPostSheet(context, ref, log: logs[index]),
+                  onDelete: () => _confirmDeletePost(context, ref, logs[index]),
+                ),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemCount: logs.length,
+              );
+            },
+            loading: () => const Center(
+              child: CupertinoActivityIndicator(color: _AdminColors.lime),
+            ),
+            error: (error, _) => _AdminErrorState(
+              message: '$error',
+              onRetry: () => ref.invalidate(adminDrinkLogsProvider),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AdminPaneToolbar extends StatelessWidget {
+  const _AdminPaneToolbar({
+    required this.title,
+    required this.actionLabel,
+    required this.onAction,
+    required this.onRefresh,
+  });
+
+  final String title;
+  final String actionLabel;
+  final VoidCallback onAction;
+  final VoidCallback onRefresh;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 20,
+        ),
+      ),
+      const Spacer(),
+      IconButton(
+        onPressed: onRefresh,
+        icon: const NomoGeneratedIcon(
+          CupertinoIcons.arrow_clockwise,
+          color: _AdminColors.sub,
+          size: 22,
+        ),
+      ),
+      _AdminSmallButton(label: actionLabel, onTap: onAction),
+    ],
+  );
+}
+
+class _AdminUserCard extends StatelessWidget {
+  const _AdminUserCard({
+    required this.user,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final AdminUserProfile user;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) => _AdminCard(
+    child: Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      user.displayName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  if (user.isPlus) ...[
+                    const SizedBox(width: 8),
+                    const _AdminBadge(label: 'PLUS'),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 5),
+              Text(
+                '@${user.userId}',
+                style: const TextStyle(
+                  color: _AdminColors.lime,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                user.id,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: _AdminColors.sub,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+        ),
+        _AdminIconButton(icon: CupertinoIcons.pencil, onTap: onEdit),
+        const SizedBox(width: 8),
+        _AdminIconButton(
+          icon: CupertinoIcons.trash,
+          destructive: true,
+          onTap: onDelete,
+        ),
+      ],
+    ),
+  );
+}
+
+class _AdminPostCard extends StatelessWidget {
+  const _AdminPostCard({
+    required this.log,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final AdminDrinkLog log;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) => _AdminCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                log.placeName.isEmpty ? '場所未設定の投稿' : log.placeName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            _AdminIconButton(icon: CupertinoIcons.pencil, onTap: onEdit),
+            const SizedBox(width: 8),
+            _AdminIconButton(
+              icon: CupertinoIcons.trash,
+              destructive: true,
+              onTap: onDelete,
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '${log.ownerDisplayName} @${log.ownerHandle}',
+          style: const TextStyle(
+            color: _AdminColors.lime,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        if (log.memo.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            log.memo,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: _AdminColors.sub,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+        const SizedBox(height: 8),
+        Text(
+          _dateLabel(log.drankAt),
+          style: const TextStyle(
+            color: _AdminColors.sub,
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> _showUserSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  AdminUserProfile? user,
+}) async {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final userIdController = TextEditingController(text: user?.userId ?? '');
+  final displayNameController = TextEditingController(
+    text: user?.displayName ?? '',
+  );
+  var isPlus = user?.isPlus ?? false;
+  var saving = false;
+  String? error;
+
+  try {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setState) => _AdminSheet(
+          title: user == null ? 'ユーザー追加' : 'ユーザー編集',
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (user == null)
+                  _AdminInput(
+                    controller: emailController,
+                    label: 'メールアドレス',
+                    keyboardType: TextInputType.emailAddress,
+                  )
+                else
+                  _AdminInput(
+                    controller: emailController,
+                    label: 'メールアドレス（変更時のみ）',
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                const SizedBox(height: 10),
+                _AdminInput(
+                  controller: passwordController,
+                  label: user == null ? '初期パスワード' : '新しいパスワード（任意）',
+                  obscureText: true,
+                ),
+                const SizedBox(height: 10),
+                _AdminInput(controller: userIdController, label: 'ユーザーID'),
+                const SizedBox(height: 10),
+                _AdminInput(controller: displayNameController, label: '表示名'),
+                const SizedBox(height: 10),
+                _AdminSwitchRow(
+                  label: 'Nomo Plus',
+                  value: isPlus,
+                  onChanged: (value) => setState(() => isPlus = value),
+                ),
+                if (error != null) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    error!,
+                    style: const TextStyle(
+                      color: _AdminColors.pink,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                _AdminPrimaryButton(
+                  label: user == null ? '追加する' : '保存する',
+                  busy: saving,
+                  onTap: () async {
+                    setState(() {
+                      saving = true;
+                      error = null;
+                    });
+                    try {
+                      if (user == null) {
+                        await ref
+                            .read(adminControllerProvider)
+                            .createUser(
+                              email: emailController.text.trim(),
+                              password: passwordController.text.trim(),
+                              userId: userIdController.text.trim(),
+                              displayName: displayNameController.text.trim(),
+                              isPlus: isPlus,
+                            );
+                      } else {
+                        await ref
+                            .read(adminControllerProvider)
+                            .updateUser(
+                              id: user.id,
+                              email: emailController.text.trim().isEmpty
+                                  ? null
+                                  : emailController.text.trim(),
+                              password: passwordController.text.trim().isEmpty
+                                  ? null
+                                  : passwordController.text.trim(),
+                              userId: userIdController.text.trim(),
+                              displayName: displayNameController.text.trim(),
+                              isPlus: isPlus,
+                            );
+                      }
+                      ref.invalidate(adminUsersProvider);
+                      if (sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop();
+                      }
+                      if (context.mounted) {
+                        NomoToast.show(context, 'ユーザーを保存しました。');
+                      }
+                    } on BackendApiException catch (e) {
+                      setState(() {
+                        saving = false;
+                        error = e.message;
+                      });
+                    } catch (e) {
+                      setState(() {
+                        saving = false;
+                        error = '$e';
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  } finally {
+    emailController.dispose();
+    passwordController.dispose();
+    userIdController.dispose();
+    displayNameController.dispose();
+  }
+}
+
+Future<void> _showPostSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  AdminDrinkLog? log,
+}) async {
+  final users =
+      ref.read(adminUsersProvider).asData?.value ?? const <AdminUserProfile>[];
+  final placeController = TextEditingController(text: log?.placeName ?? '');
+  final memoController = TextEditingController(text: log?.memo ?? '');
+  final ownerController = TextEditingController(text: log?.ownerUserId ?? '');
+  var ownerUserId =
+      log?.ownerUserId ?? (users.isNotEmpty ? users.first.id : '');
+  var saving = false;
+  String? error;
+
+  try {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setState) => _AdminSheet(
+          title: log == null ? '投稿作成' : '投稿編集',
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (users.isEmpty)
+                  _AdminInput(
+                    label: 'owner_user_id',
+                    controller: ownerController,
+                    onChanged: (value) => ownerUserId = value,
+                  )
+                else
+                  _AdminDropdown(
+                    value: ownerUserId,
+                    users: users,
+                    onChanged: (value) {
+                      if (value != null) setState(() => ownerUserId = value);
+                    },
+                  ),
+                const SizedBox(height: 10),
+                _AdminInput(controller: placeController, label: '場所'),
+                const SizedBox(height: 10),
+                _AdminInput(
+                  controller: memoController,
+                  label: 'メモ',
+                  maxLines: 3,
+                ),
+                if (error != null) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    error!,
+                    style: const TextStyle(
+                      color: _AdminColors.pink,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                _AdminPrimaryButton(
+                  label: log == null ? '作成する' : '保存する',
+                  busy: saving,
+                  onTap: () async {
+                    setState(() {
+                      saving = true;
+                      error = null;
+                    });
+                    try {
+                      if (log == null) {
+                        await ref
+                            .read(adminControllerProvider)
+                            .createDrinkLog(
+                              ownerUserId: ownerUserId,
+                              placeName: placeController.text.trim(),
+                              memo: memoController.text.trim(),
+                            );
+                      } else {
+                        await ref
+                            .read(adminControllerProvider)
+                            .updateDrinkLog(
+                              id: log.id,
+                              ownerUserId: ownerUserId,
+                              placeName: placeController.text.trim(),
+                              memo: memoController.text.trim(),
+                            );
+                      }
+                      ref.invalidate(adminDrinkLogsProvider);
+                      if (sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop();
+                      }
+                      if (context.mounted) {
+                        NomoToast.show(context, '投稿を保存しました。');
+                      }
+                    } on BackendApiException catch (e) {
+                      setState(() {
+                        saving = false;
+                        error = e.message;
+                      });
+                    } catch (e) {
+                      setState(() {
+                        saving = false;
+                        error = '$e';
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  } finally {
+    ownerController.dispose();
+    placeController.dispose();
+    memoController.dispose();
+  }
+}
+
+Future<void> _confirmDeleteUser(
+  BuildContext context,
+  WidgetRef ref,
+  AdminUserProfile user,
+) async {
+  final ok = await _confirmDestructive(
+    context,
+    title: 'ユーザーを削除しますか？',
+    message: '${user.displayName} と関連データが削除されます。',
+  );
+  if (ok != true) return;
+  try {
+    await ref.read(adminControllerProvider).deleteUser(user.id);
+    ref.invalidate(adminUsersProvider);
+    ref.invalidate(adminDrinkLogsProvider);
+    if (context.mounted) NomoToast.show(context, 'ユーザーを削除しました。');
+  } catch (e) {
+    if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
+  }
+}
+
+Future<void> _confirmDeletePost(
+  BuildContext context,
+  WidgetRef ref,
+  AdminDrinkLog log,
+) async {
+  final ok = await _confirmDestructive(
+    context,
+    title: '投稿を削除しますか？',
+    message: log.placeName.isEmpty ? log.id : log.placeName,
+  );
+  if (ok != true) return;
+  try {
+    await ref.read(adminControllerProvider).deleteDrinkLog(log.id);
+    ref.invalidate(adminDrinkLogsProvider);
+    if (context.mounted) NomoToast.show(context, '投稿を削除しました。');
+  } catch (e) {
+    if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
+  }
+}
+
+Future<bool?> _confirmDestructive(
+  BuildContext context, {
+  required String title,
+  required String message,
+}) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      backgroundColor: const Color(0xFF101B28),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      content: Text(message, style: const TextStyle(color: _AdminColors.sub)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('キャンセル'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('削除', style: TextStyle(color: _AdminColors.pink)),
+        ),
+      ],
+    ),
+  );
+}
+
+class _AdminSheet extends StatelessWidget {
+  const _AdminSheet({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    child: Container(
+      margin: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF071622),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: _AdminColors.line),
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const NomoGeneratedIcon(
+                    CupertinoIcons.xmark,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            child,
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _AdminInput extends StatelessWidget {
+  const _AdminInput({
+    required this.controller,
+    required this.label,
+    this.keyboardType,
+    this.obscureText = false,
+    this.maxLines = 1,
+    this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final TextInputType? keyboardType;
+  final bool obscureText;
+  final int maxLines;
+  final ValueChanged<String>? onChanged;
+
+  @override
+  Widget build(BuildContext context) => TextField(
+    controller: controller,
+    keyboardType: keyboardType,
+    obscureText: obscureText,
+    maxLines: maxLines,
+    onChanged: onChanged,
+    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+    decoration: InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(
+        color: _AdminColors.sub,
+        fontWeight: FontWeight.w800,
+      ),
+      filled: true,
+      fillColor: Colors.white.withValues(alpha: .06),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(color: _AdminColors.line),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(color: _AdminColors.line),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(color: _AdminColors.lime),
+      ),
+    ),
+  );
+}
+
+class _AdminDropdown extends StatelessWidget {
+  const _AdminDropdown({
+    required this.value,
+    required this.users,
+    required this.onChanged,
+  });
+
+  final String value;
+  final List<AdminUserProfile> users;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) => DropdownButtonFormField<String>(
+    initialValue: value.isEmpty ? null : value,
+    dropdownColor: const Color(0xFF101B28),
+    decoration: InputDecoration(
+      labelText: '投稿ユーザー',
+      labelStyle: const TextStyle(color: _AdminColors.sub),
+      filled: true,
+      fillColor: Colors.white.withValues(alpha: .06),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
+    ),
+    items: [
+      for (final user in users)
+        DropdownMenuItem(
+          value: user.id,
+          child: Text(
+            '${user.displayName} @${user.userId}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+    ],
+    onChanged: onChanged,
+  );
+}
+
+class _AdminSwitchRow extends StatelessWidget {
+  const _AdminSwitchRow({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: .06),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: _AdminColors.line),
+    ),
+    child: Row(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const Spacer(),
+        CupertinoSwitch(
+          value: value,
+          activeTrackColor: _AdminColors.lime,
+          onChanged: onChanged,
+        ),
+      ],
+    ),
+  );
+}
+
+class _AdminCard extends StatelessWidget {
+  const _AdminCard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: _AdminColors.panel,
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(color: _AdminColors.line),
+    ),
+    child: child,
+  );
+}
+
+class _AdminBadge extends StatelessWidget {
+  const _AdminBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: _AdminColors.lime.withValues(alpha: .16),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Text(
+      label,
+      style: const TextStyle(
+        color: _AdminColors.lime,
+        fontWeight: FontWeight.w900,
+        fontSize: 10,
+      ),
+    ),
+  );
+}
+
+class _AdminSmallButton extends StatelessWidget {
+  const _AdminSmallButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      height: 38,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: _AdminColors.lime,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Color(0xFF101820),
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    ),
+  );
+}
+
+class _AdminIconButton extends StatelessWidget {
+  const _AdminIconButton({
+    required this.icon,
+    required this.onTap,
+    this.destructive = false,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: (destructive ? _AdminColors.pink : _AdminColors.lime).withValues(
+          alpha: .14,
+        ),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: NomoGeneratedIcon(
+        icon,
+        color: destructive ? _AdminColors.pink : _AdminColors.lime,
+        size: 22,
+      ),
+    ),
+  );
+}
+
+class _AdminPrimaryButton extends StatelessWidget {
+  const _AdminPrimaryButton({
+    required this.label,
+    required this.busy,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool busy;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: busy ? null : onTap,
+    child: Container(
+      height: 54,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: _AdminColors.lime,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF5D8B00),
+            offset: Offset(0, 7),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: busy
+          ? const CupertinoActivityIndicator(color: Color(0xFF101820))
+          : Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF101820),
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+              ),
+            ),
+    ),
+  );
+}
+
+class _AdminDeniedState extends StatelessWidget {
+  const _AdminDeniedState();
+
+  @override
+  Widget build(BuildContext context) => const Center(
+    child: Text(
+      'このアカウントでは管理画面を開けません。',
+      textAlign: TextAlign.center,
+      style: TextStyle(color: _AdminColors.sub, fontWeight: FontWeight.w800),
+    ),
+  );
+}
+
+class _AdminEmptyState extends StatelessWidget {
+  const _AdminEmptyState({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Text(
+      message,
+      style: const TextStyle(
+        color: _AdminColors.sub,
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+  );
+}
+
+class _AdminErrorState extends StatelessWidget {
+  const _AdminErrorState({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: _AdminColors.pink,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _AdminSmallButton(label: '再読み込み', onTap: onRetry),
+      ],
+    ),
+  );
+}
+
+String _dateLabel(DateTime date) {
+  final local = date.toLocal();
+  return '${local.year}/${local.month.toString().padLeft(2, '0')}/${local.day.toString().padLeft(2, '0')} ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
+}
+
+class _AdminColors {
+  const _AdminColors._();
+
+  static const bg = Color(0xFF06111D);
+  static const panel = Color(0xFF101B28);
+  static const line = Color(0x1EFFFFFF);
+  static const sub = Color(0xFF8F9BAB);
+  static const lime = Color(0xFFB8FF00);
+  static const pink = Color(0xFFFF5EA8);
+}
