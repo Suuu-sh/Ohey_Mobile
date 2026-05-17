@@ -12,12 +12,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
+import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../friends/presentation/add_nomi_tomo_screen.dart';
+import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../onboarding/presentation/create_user_dialog.dart';
 import 'avatar_builder_screen.dart';
@@ -31,6 +33,13 @@ class ProfileScreen extends ConsumerWidget {
     final logsAsync = ref.watch(drinkLogControllerProvider);
     final friendsAsync = ref.watch(friendsProvider);
     final user = ref.watch(nomoUserProvider);
+    final currentAuthUserId = Supabase.instance.client.auth.currentUser?.id;
+    final reservationsAsync = ref.watch(todayReservationsProvider);
+    final incomingInvitesAsync = ref.watch(incomingDrinkInvitesProvider);
+    final reservations =
+        reservationsAsync.asData?.value ?? const <NomoDrinkInvite>[];
+    final incomingInvites =
+        incomingInvitesAsync.asData?.value ?? const <NomoDrinkInvite>[];
     final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
     final friendsCount = friendsAsync.asData?.value.length ?? 0;
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
@@ -83,12 +92,39 @@ class ProfileScreen extends ConsumerWidget {
                               : const Color(0xFF0B1420),
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(24, 16, 24, 18),
-                            child: _ProfileMoodCta(
-                              status:
-                                  user?.dailyStatus ??
-                                  NomoDailyStatus.unselected,
-                              onTap: () =>
-                                  _showProfileStatusSheet(context, ref),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (reservations.isNotEmpty ||
+                                    incomingInvites.isNotEmpty) ...[
+                                  _ProfileReservationStrip(
+                                    userAvatar: user?.avatar,
+                                    currentUserId: currentAuthUserId,
+                                    reservations: reservations,
+                                    incomingInvites: incomingInvites,
+                                    onAccept: (invite) => _respondDrinkInvite(
+                                      context,
+                                      ref,
+                                      invite,
+                                      accept: true,
+                                    ),
+                                    onReject: (invite) => _respondDrinkInvite(
+                                      context,
+                                      ref,
+                                      invite,
+                                      accept: false,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                                _ProfileMoodCta(
+                                  status:
+                                      user?.dailyStatus ??
+                                      NomoDailyStatus.unselected,
+                                  onTap: () =>
+                                      _showProfileStatusSheet(context, ref),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -357,6 +393,27 @@ IconData _statusIcon(NomoDailyStatus status) => switch (status) {
   NomoDailyStatus.unselected => CupertinoIcons.circle,
 };
 
+Future<void> _respondDrinkInvite(
+  BuildContext context,
+  WidgetRef ref,
+  NomoDrinkInvite invite, {
+  required bool accept,
+}) async {
+  try {
+    final controller = ref.read(drinkInviteControllerProvider);
+    if (accept) {
+      await controller.accept(invite.id);
+    } else {
+      await controller.reject(invite.id);
+    }
+    if (!context.mounted) return;
+    NomoToast.show(context, accept ? '飲み予約が成立しました。' : '招待を見送りました。');
+  } catch (error) {
+    if (!context.mounted) return;
+    NomoToast.show(context, '返信できませんでした: $error');
+  }
+}
+
 const _selectableDailyStatuses = <NomoDailyStatus>[
   NomoDailyStatus.canDrinkToday,
   NomoDailyStatus.lightDrink,
@@ -507,6 +564,208 @@ class _SimpleHero extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ProfileReservationStrip extends StatelessWidget {
+  const _ProfileReservationStrip({
+    required this.userAvatar,
+    required this.currentUserId,
+    required this.reservations,
+    required this.incomingInvites,
+    required this.onAccept,
+    required this.onReject,
+  });
+
+  final NomoAvatar? userAvatar;
+  final String? currentUserId;
+  final List<NomoDrinkInvite> reservations;
+  final List<NomoDrinkInvite> incomingInvites;
+  final ValueChanged<NomoDrinkInvite> onAccept;
+  final ValueChanged<NomoDrinkInvite> onReject;
+
+  @override
+  Widget build(BuildContext context) {
+    if (incomingInvites.isNotEmpty) {
+      final invite = incomingInvites.first;
+      return _IncomingInviteCard(
+        invite: invite,
+        currentUserId: currentUserId,
+        onAccept: () => onAccept(invite),
+        onReject: () => onReject(invite),
+      );
+    }
+    if (reservations.isEmpty || currentUserId == null) {
+      return const SizedBox.shrink();
+    }
+
+    final reservedFriends = reservations
+        .map((invite) => invite.otherUser(currentUserId!))
+        .toList(growable: false);
+    return Container(
+      height: 72,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .045),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: .10)),
+      ),
+      child: Row(
+        children: [
+          _ReservedAvatar(avatar: userAvatar, label: '自分'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Icon(
+              CupertinoIcons.checkmark_seal_fill,
+              color: _ProfileColors.lime,
+              size: 22,
+            ),
+          ),
+          Expanded(
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                for (var i = 0; i < reservedFriends.length.clamp(0, 4); i++)
+                  Positioned(
+                    left: i * 34,
+                    top: 10,
+                    child: _ReservedAvatar(
+                      avatar: reservedFriends[i].avatar,
+                      label: reservedFriends[i].name,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const Text(
+            '予約成立',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IncomingInviteCard extends StatelessWidget {
+  const _IncomingInviteCard({
+    required this.invite,
+    required this.currentUserId,
+    required this.onAccept,
+    required this.onReject,
+  });
+
+  final NomoDrinkInvite invite;
+  final String? currentUserId;
+  final VoidCallback onAccept;
+  final VoidCallback onReject;
+
+  @override
+  Widget build(BuildContext context) {
+    final from = currentUserId == null
+        ? invite.fromUser
+        : invite.otherUser(currentUserId!);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF102336),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _ProfileColors.lime.withValues(alpha: .22)),
+      ),
+      child: Row(
+        children: [
+          _ReservedAvatar(avatar: from.avatar, label: from.name),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '${from.name}から飲み招待',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          _InviteResponseButton(
+            label: 'OK',
+            color: _ProfileColors.lime,
+            onTap: onAccept,
+          ),
+          const SizedBox(width: 8),
+          _InviteResponseButton(
+            label: 'あとで',
+            color: Colors.white.withValues(alpha: .10),
+            textColor: Colors.white.withValues(alpha: .70),
+            onTap: onReject,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReservedAvatar extends StatelessWidget {
+  const _ReservedAvatar({required this.avatar, required this.label});
+
+  final NomoAvatar? avatar;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: label,
+    child: Container(
+      width: 52,
+      height: 52,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: const Color(0xFF12283A),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
+      ),
+      child: ClipOval(
+        child: NomoAvatarView(avatar: avatar ?? NomoAvatar.defaultAvatar),
+      ),
+    ),
+  );
+}
+
+class _InviteResponseButton extends StatelessWidget {
+  const _InviteResponseButton({
+    required this.label,
+    required this.color,
+    required this.onTap,
+    this.textColor = const Color(0xFF06111D),
+  });
+
+  final String label;
+  final Color color;
+  final Color textColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: textColor,
+          fontWeight: FontWeight.w900,
+          fontSize: 12,
+        ),
+      ),
+    ),
+  );
 }
 
 class _ProfileMoodCta extends StatelessWidget {
