@@ -16,6 +16,7 @@ import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
+import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../admin/presentation/admin_screen.dart';
@@ -171,6 +172,42 @@ String? _parseProfileFriendQrPayload(String raw) {
   return null;
 }
 
+Future<bool> _isAlreadyFriend(String currentUserId, String friendId) async {
+  final rows = await Supabase.instance.client
+      .from('friendships')
+      .select('id')
+      .or(
+        'and(user_a_id.eq.$currentUserId,user_b_id.eq.$friendId),and(user_a_id.eq.$friendId,user_b_id.eq.$currentUserId)',
+      )
+      .limit(1);
+  return rows.isNotEmpty;
+}
+
+class _NomoSearchProfile {
+  const _NomoSearchProfile({
+    required this.id,
+    required this.displayName,
+    required this.userId,
+    this.avatar,
+  });
+
+  factory _NomoSearchProfile.fromRow(Map<String, dynamic> row) {
+    return _NomoSearchProfile(
+      id: row['id'] as String,
+      displayName: (row['display_name'] as String?)?.trim().isNotEmpty == true
+          ? (row['display_name'] as String).trim()
+          : 'Nomo friend',
+      userId: (row['user_id'] as String?) ?? '',
+      avatar: NomoAvatar.decode(row['avatar_url'] as String?),
+    );
+  }
+
+  final String id;
+  final String displayName;
+  final String userId;
+  final NomoAvatar? avatar;
+}
+
 const _qrSaverChannel = MethodChannel('nomo/qr_saver');
 
 Future<Uint8List> _createQrPngBytes(String payload) async {
@@ -234,7 +271,38 @@ Future<void> showMyQrDialog(
     }
   }
 
-  Future<void> searchAndAddByUserId(
+  Future<void> addProfileAsFriend(
+    BuildContext sheetContext,
+    _NomoSearchProfile profile,
+  ) async {
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    if (currentUser == null) {
+      NomoToast.show(sheetContext, '友達追加にはログインが必要です');
+      return;
+    }
+    if (profile.id == currentUser.id) {
+      NomoToast.show(sheetContext, '自分自身は追加できません');
+      return;
+    }
+
+    try {
+      final ids = [currentUser.id, profile.id]..sort();
+      await Supabase.instance.client.from('friendships').upsert({
+        'user_a_id': ids[0],
+        'user_b_id': ids[1],
+      }, onConflict: 'user_a_id,user_b_id');
+      ref.invalidate(friendsProvider);
+      if (!sheetContext.mounted) return;
+      Navigator.of(sheetContext).pop();
+      if (!context.mounted) return;
+      NomoToast.show(context, '${profile.displayName}をフレンズに追加しました');
+    } catch (e) {
+      if (!sheetContext.mounted) return;
+      NomoToast.show(sheetContext, '友達追加に失敗しました: $e');
+    }
+  }
+
+  Future<void> searchAndShowProfileByUserId(
     BuildContext dialogContext,
     String rawUserId,
   ) async {
@@ -253,7 +321,7 @@ Future<void> showMyQrDialog(
     try {
       final row = await Supabase.instance.client
           .from('profiles')
-          .select('id, display_name, user_id')
+          .select('id, display_name, user_id, avatar_url')
           .eq('user_id', query)
           .maybeSingle();
       if (!dialogContext.mounted) return;
@@ -262,22 +330,28 @@ Future<void> showMyQrDialog(
         return;
       }
 
-      final profile = Map<String, dynamic>.from(row);
-      final friendId = profile['id'] as String;
-      if (friendId == currentUser.id) {
+      final profile = _NomoSearchProfile.fromRow(
+        Map<String, dynamic>.from(row),
+      );
+      if (profile.id == currentUser.id) {
         NomoToast.show(dialogContext, '自分自身は追加できません');
         return;
       }
 
-      final ids = [currentUser.id, friendId]..sort();
-      await Supabase.instance.client.from('friendships').upsert({
-        'user_a_id': ids[0],
-        'user_b_id': ids[1],
-      }, onConflict: 'user_a_id,user_b_id');
-      ref.invalidate(friendsProvider);
+      final alreadyFriend = await _isAlreadyFriend(currentUser.id, profile.id);
       if (!dialogContext.mounted) return;
-      final displayName = (profile['display_name'] as String?) ?? '@$query';
-      NomoToast.show(dialogContext, '$displayNameをフレンズに追加しました');
+      await showModalBottomSheet<void>(
+        context: dialogContext,
+        useSafeArea: true,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        barrierColor: Colors.black.withValues(alpha: .62),
+        builder: (sheetContext) => _NomoProfilePreviewSheet(
+          profile: profile,
+          alreadyFriend: alreadyFriend,
+          onAdd: () => addProfileAsFriend(sheetContext, profile),
+        ),
+      );
     } catch (e) {
       if (!dialogContext.mounted) return;
       NomoToast.show(dialogContext, '検索できませんでした: $e');
@@ -297,7 +371,7 @@ Future<void> showMyQrDialog(
       NomoToast.show(dialogContext, 'Nomoの友達QRではありません');
       return;
     }
-    await searchAndAddByUserId(dialogContext, userId);
+    await searchAndShowProfileByUserId(dialogContext, userId);
   }
 
   await showDialog<void>(
@@ -319,7 +393,8 @@ Future<void> showMyQrDialog(
           onCopyUserId: () => copyUserId(dialogContext),
           onSaveQr: () => saveQrImage(dialogContext),
           onScan: () => scanQr(dialogContext),
-          onSearchUserId: (value) => searchAndAddByUserId(dialogContext, value),
+          onSearchUserId: (value) =>
+              searchAndShowProfileByUserId(dialogContext, value),
         ),
       ),
     ),
@@ -1152,6 +1227,214 @@ class _StatTile extends StatelessWidget {
       ],
     ),
   );
+}
+
+class _NomoProfilePreviewSheet extends StatefulWidget {
+  const _NomoProfilePreviewSheet({
+    required this.profile,
+    required this.alreadyFriend,
+    required this.onAdd,
+  });
+
+  final _NomoSearchProfile profile;
+  final bool alreadyFriend;
+  final Future<void> Function() onAdd;
+
+  @override
+  State<_NomoProfilePreviewSheet> createState() =>
+      _NomoProfilePreviewSheetState();
+}
+
+class _NomoProfilePreviewSheetState extends State<_NomoProfilePreviewSheet> {
+  bool _busy = false;
+
+  Future<void> _add() async {
+    if (_busy || widget.alreadyFriend) return;
+    setState(() => _busy = true);
+    try {
+      await widget.onAdd();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+        decoration: BoxDecoration(
+          color: const Color(0xFF071622),
+          borderRadius: BorderRadius.circular(34),
+          border: Border.all(color: Colors.white.withValues(alpha: .10)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .32),
+              blurRadius: 30,
+              offset: const Offset(0, 18),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 44,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .22),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Align(
+              alignment: Alignment.centerRight,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: .08),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const NomoGeneratedIcon(
+                    CupertinoIcons.xmark,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 156,
+                  height: 156,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF22D7C5), Color(0xFFFFD166)],
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 146,
+                  height: 146,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F2EE),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 5),
+                  ),
+                  child: ClipOval(
+                    child: NomoAvatarView(
+                      avatar: widget.profile.avatar ?? NomoAvatar.defaultAvatar,
+                      size: 126,
+                    ),
+                  ),
+                ),
+                const Positioned(
+                  right: 16,
+                  top: 18,
+                  child: NomoGeneratedIcon(
+                    CupertinoIcons.sparkles,
+                    color: Color(0xFFFFD166),
+                    size: 28,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              widget.profile.displayName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.8,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .08),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: Colors.white.withValues(alpha: .10)),
+              ),
+              child: Text(
+                '@${widget.profile.userId}',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: .68),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .045),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: Colors.white.withValues(alpha: .08)),
+              ),
+              child: Row(
+                children: [
+                  NomoPopIcon(
+                    icon: widget.alreadyFriend
+                        ? CupertinoIcons.checkmark_seal_fill
+                        : CupertinoIcons.person_badge_plus_fill,
+                    color: widget.alreadyFriend
+                        ? const Color(0xFF9AF21A)
+                        : const Color(0xFF22D7C5),
+                    size: 38,
+                    showBubble: false,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      widget.alreadyFriend
+                          ? 'すでにフレンズです。飲みログに一緒に残せます。'
+                          : 'この人をフレンズに追加して、飲みログや予約でつながろう。',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: .74),
+                        fontWeight: FontWeight.w800,
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            Nomo3DButton(
+              label: widget.alreadyFriend ? '追加済み' : 'フレンズに追加',
+              icon: widget.alreadyFriend
+                  ? CupertinoIcons.checkmark_alt
+                  : CupertinoIcons.person_badge_plus_fill,
+              onTap: widget.alreadyFriend ? null : _add,
+              isLoading: _busy,
+              enabled: !widget.alreadyFriend,
+              height: 54,
+              radius: 22,
+              color: const Color(0xFF22D7C5),
+              shadowColor: const Color(0xFF109F91),
+              fontSize: 15,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _MyQrCard extends StatelessWidget {
