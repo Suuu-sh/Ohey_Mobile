@@ -303,6 +303,7 @@ class SupabaseDrinkLogRepository implements DrinkLogRepository {
         .select('''
           user_a_id,
           user_b_id,
+          is_favorite,
           user_a:profiles!friendships_user_a_id_fkey(
             id,
             display_name,
@@ -326,7 +327,10 @@ class SupabaseDrinkLogRepository implements DrinkLogRepository {
           final other = row['user_a_id'] == userId
               ? row['user_b']
               : row['user_a'];
-          return _friendFromProfileRow(Map<String, dynamic>.from(other as Map));
+          return _friendFromProfileRow(
+            Map<String, dynamic>.from(other as Map),
+            isFavorite: (row['is_favorite'] as bool?) ?? false,
+          );
         })
         .toList(growable: false);
   }
@@ -387,7 +391,8 @@ class SupabaseDrinkLogRepository implements DrinkLogRepository {
     final rows = await _client
         .from('friendships')
         .update({'is_favorite': isFavorite})
-        .or(filter);
+        .or(filter)
+        .select('id');
     if (rows.isEmpty) {
       throw StateError('フレンズの関係が見つかりませんでした。');
     }
