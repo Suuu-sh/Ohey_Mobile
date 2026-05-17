@@ -37,6 +37,16 @@ void main() {
     expect(find.text('yisshiki39@gmail.com'), findsOneWidget);
     expect(find.text('別のアカウントを追加'), findsOneWidget);
     expect(find.text('アカウント管理'), findsOneWidget);
+
+    await tester.tap(find.text('別のアカウントを追加'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Eメール/電話番号/ユーザー名'), findsOneWidget);
+    expect(find.text('パスワード'), findsOneWidget);
+    expect(find.text('パスワードをお忘れですか？'), findsOneWidget);
+    expect(find.text('GOOGLEでログイン'), findsOneWidget);
+    expect(find.text('FACEBOOKでログイン'), findsOneWidget);
+    expect(find.text('APPLEでログイン'), findsOneWidget);
   });
 }
 
