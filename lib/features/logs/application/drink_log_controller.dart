@@ -83,6 +83,7 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
     required List<NomoFriend> friends,
     required String place,
     required String memo,
+    String? photoAssetPath,
   }) async {
     final repository = ref.read(drinkLogRepositoryProvider);
     final previous = state.asData?.value ?? const <DrinkLog>[];
@@ -93,7 +94,7 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
       friends: friends,
       place: place.trim(),
       memo: memo.trim(),
-      photoAssetPath: null,
+      photoAssetPath: photoAssetPath,
     );
 
     try {

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/theme/app_colors.dart';
@@ -7,8 +8,17 @@ import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 
+class NomoCameraResult {
+  const NomoCameraResult({required this.path, required this.filterName});
+
+  final String path;
+  final String filterName;
+}
+
 class NomoCameraScreen extends StatefulWidget {
-  const NomoCameraScreen({super.key});
+  const NomoCameraScreen({super.key, this.returnPhoto = false});
+
+  final bool returnPhoto;
 
   @override
   State<NomoCameraScreen> createState() => _NomoCameraScreenState();
@@ -99,7 +109,7 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => setState(() => _showShareCard = true),
+                          onTap: _captureOrPreviewShare,
                           child: Container(
                             height: 62,
                             decoration: BoxDecoration(
@@ -113,18 +123,18 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
                                 ),
                               ],
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                NomoGeneratedIcon(
+                                const NomoGeneratedIcon(
                                   CupertinoIcons.camera_fill,
                                   color: Colors.white,
                                   size: 23,
                                 ),
-                                SizedBox(width: 10),
+                                const SizedBox(width: 10),
                                 Text(
-                                  '撮ってシェア',
-                                  style: TextStyle(
+                                  widget.returnPhoto ? 'フィルターで撮る' : '撮ってシェア',
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w900,
                                     fontSize: 15,
@@ -152,6 +162,24 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _captureOrPreviewShare() async {
+    final filter = _filters[_selectedFilterIndex];
+    if (!widget.returnPhoto) {
+      setState(() => _showShareCard = true);
+      return;
+    }
+
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+      imageQuality: 88,
+      maxWidth: 1600,
+    );
+    if (picked == null || !mounted) return;
+    Navigator.of(
+      context,
+    ).pop(NomoCameraResult(path: picked.path, filterName: filter.name));
   }
 
   void _showSnack(String message) {
