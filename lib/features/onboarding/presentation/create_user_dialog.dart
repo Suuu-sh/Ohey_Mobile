@@ -507,13 +507,6 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                 ),
                 SizedBox(height: compact ? 10 : 14),
                 _SocialLoginButton(
-                  label: 'FACEBOOKで登録',
-                  height: socialHeight,
-                  mark: const _FacebookMark(),
-                  onTap: () => _showComingSoonSnack('Facebook登録は今後対応予定です。'),
-                ),
-                SizedBox(height: compact ? 10 : 14),
-                _SocialLoginButton(
                   label: 'APPLEで登録',
                   height: socialHeight,
                   mark: const _AppleMark(),

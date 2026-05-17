@@ -40,6 +40,8 @@ void main() {
     expect(find.text('メールアドレスを入力して\nください'), findsOneWidget);
     expect(find.text('次へ'), findsOneWidget);
     expect(find.text('GOOGLEで登録'), findsOneWidget);
+    expect(find.text('FACEBOOKで登録'), findsNothing);
+    expect(find.text('APPLEで登録'), findsOneWidget);
     expect(find.byType(SingleChildScrollView), findsNothing);
 
     await tester.enterText(find.byType(TextField).first, 'yaujt@gmail.com');
