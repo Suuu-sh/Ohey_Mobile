@@ -100,10 +100,6 @@ class ProfileScreen extends ConsumerWidget {
                               monthlyLogs: monthlyLogs.length,
                               friends: friendsCount,
                               streak: streak,
-                              onAddFriend: () =>
-                                  showMyQrDialog(context, user, ref),
-                              onShowQr: () =>
-                                  showMyQrDialog(context, user, ref),
                             ),
                           ),
                         ),
@@ -336,7 +332,6 @@ class _ProfileColors {
   static const line = Color(0x1EFFFFFF);
   static const sub = Color(0xFF8F9BAB);
   static const lime = Color(0xFF9AF21A);
-  static const blue = Color(0xFF16A8FF);
   static const pink = Color(0xFFFF5EA8);
 }
 
@@ -725,16 +720,12 @@ class _ProfileDashboard extends StatelessWidget {
     required this.monthlyLogs,
     required this.friends,
     required this.streak,
-    required this.onAddFriend,
-    required this.onShowQr,
   });
 
   final bool isWhite;
   final int monthlyLogs;
   final int friends;
   final int streak;
-  final VoidCallback onAddFriend;
-  final VoidCallback onShowQr;
 
   @override
   Widget build(BuildContext context) {
@@ -772,25 +763,6 @@ class _ProfileDashboard extends StatelessWidget {
                 icon: CupertinoIcons.flame_fill,
                 accent: const Color(0xFFFFB74A),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _DashboardButton(
-                isWhite: isWhite,
-                icon: CupertinoIcons.person_badge_plus_fill,
-                label: '友達を追加',
-                onTap: onAddFriend,
-              ),
-            ),
-            const SizedBox(width: 10),
-            _IconDashboardButton(
-              isWhite: isWhite,
-              icon: CupertinoIcons.qrcode_viewfinder,
-              onTap: onShowQr,
             ),
           ],
         ),
@@ -864,100 +836,6 @@ class _StatTile extends StatelessWidget {
           ),
         ),
       ],
-    ),
-  );
-}
-
-class _DashboardButton extends StatelessWidget {
-  const _DashboardButton({
-    required this.isWhite,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final bool isWhite;
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      height: 46,
-      decoration: BoxDecoration(
-        color: isWhite
-            ? const Color(0xFFF7F9FB)
-            : Colors.white.withValues(alpha: .035),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isWhite
-              ? const Color(0xFFD8DEE6)
-              : Colors.white.withValues(alpha: .16),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          NomoPopIcon(
-            icon: icon,
-            color: _ProfileColors.lime,
-            size: 30,
-            showBubble: false,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: isWhite ? const Color(0xFF27313B) : Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 14,
-              letterSpacing: -.2,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _IconDashboardButton extends StatelessWidget {
-  const _IconDashboardButton({
-    required this.isWhite,
-    required this.icon,
-    required this.onTap,
-  });
-
-  final bool isWhite;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      width: 56,
-      height: 46,
-      decoration: BoxDecoration(
-        color: isWhite
-            ? const Color(0xFFF7F9FB)
-            : Colors.white.withValues(alpha: .035),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isWhite
-              ? const Color(0xFFD8DEE6)
-              : Colors.white.withValues(alpha: .16),
-        ),
-      ),
-      child: Center(
-        child: NomoPopIcon(
-          icon: icon,
-          color: _ProfileColors.blue,
-          size: 34,
-          showBubble: false,
-        ),
-      ),
     ),
   );
 }
