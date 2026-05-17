@@ -1979,6 +1979,8 @@ class _SignupStepButton extends StatelessWidget {
     radius: 18,
     color: _authPink,
     shadowColor: _authPinkShadow,
+    disabledColor: _authPink,
+    disabledOpacity: 1,
     foregroundColor: _authPinkInk,
     fontSize: 19,
   );
@@ -2327,10 +2329,10 @@ class _SocialLoginButton extends StatelessWidget {
     onTap: onTap,
     height: height,
     radius: 18,
-    topColor: Colors.white,
-    bottomColor: const Color(0xFFD4DEE5),
-    borderColor: Colors.white.withValues(alpha: .82),
-    glowColor: Colors.white.withValues(alpha: .20),
+    topColor: const Color(0xFF52606B),
+    bottomColor: const Color(0xFF35434D),
+    borderColor: Colors.white.withValues(alpha: .18),
+    glowColor: const Color(0xFF52606B).withValues(alpha: .18),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -2338,8 +2340,8 @@ class _SocialLoginButton extends StatelessWidget {
         const SizedBox(width: 14),
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF152433),
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: .88),
             fontSize: 16,
             fontWeight: FontWeight.w900,
             letterSpacing: .6,
@@ -2438,7 +2440,7 @@ class _AppleMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      const Icon(Icons.apple, color: Color(0xFF152433), size: 35);
+      const Icon(Icons.apple, color: Colors.white, size: 35);
 }
 
 class _DarkMessageText extends StatelessWidget {
