@@ -183,6 +183,27 @@ Future<bool> _isAlreadyFriend(String currentUserId, String friendId) async {
   return rows.isNotEmpty;
 }
 
+enum _FriendRequestState { none, outgoing, incoming }
+
+Future<_FriendRequestState> _friendRequestState(
+  String currentUserId,
+  String friendId,
+) async {
+  final rows = await Supabase.instance.client
+      .from('friend_requests')
+      .select('from_user_id,to_user_id')
+      .eq('status', 'pending')
+      .or(
+        'and(from_user_id.eq.$currentUserId,to_user_id.eq.$friendId),and(from_user_id.eq.$friendId,to_user_id.eq.$currentUserId)',
+      )
+      .limit(1);
+  if (rows.isEmpty) return _FriendRequestState.none;
+  final row = Map<String, dynamic>.from(rows.first as Map);
+  return row['from_user_id'] == currentUserId
+      ? _FriendRequestState.outgoing
+      : _FriendRequestState.incoming;
+}
+
 class _NomoSearchProfile {
   const _NomoSearchProfile({
     required this.id,
@@ -271,34 +292,40 @@ Future<void> showMyQrDialog(
     }
   }
 
-  Future<void> addProfileAsFriend(
+  Future<void> sendFriendRequest(
     BuildContext sheetContext,
     _NomoSearchProfile profile,
   ) async {
     final currentUser = Supabase.instance.client.auth.currentUser;
     if (currentUser == null) {
-      NomoToast.show(sheetContext, '友達追加にはログインが必要です');
+      NomoToast.show(sheetContext, 'フレンズ申請にはログインが必要です');
       return;
     }
     if (profile.id == currentUser.id) {
-      NomoToast.show(sheetContext, '自分自身は追加できません');
+      NomoToast.show(sheetContext, '自分自身には申請できません');
       return;
     }
 
     try {
-      final ids = [currentUser.id, profile.id]..sort();
-      await Supabase.instance.client.from('friendships').upsert({
-        'user_a_id': ids[0],
-        'user_b_id': ids[1],
-      }, onConflict: 'user_a_id,user_b_id');
-      ref.invalidate(friendsProvider);
+      await Supabase.instance.client.from('friend_requests').insert({
+        'from_user_id': currentUser.id,
+        'to_user_id': profile.id,
+        'status': 'pending',
+      });
       if (!sheetContext.mounted) return;
       Navigator.of(sheetContext).pop();
       if (!context.mounted) return;
-      NomoToast.show(context, '${profile.displayName}をフレンズに追加しました');
+      NomoToast.show(context, '${profile.displayName}にフレンズ申請を送りました');
+    } on PostgrestException catch (e) {
+      if (!sheetContext.mounted) return;
+      if (e.code == '23505') {
+        NomoToast.show(sheetContext, 'すでに申請済みです');
+      } else {
+        NomoToast.show(sheetContext, '申請を送れませんでした: ${e.message}');
+      }
     } catch (e) {
       if (!sheetContext.mounted) return;
-      NomoToast.show(sheetContext, '友達追加に失敗しました: $e');
+      NomoToast.show(sheetContext, '申請を送れませんでした: $e');
     }
   }
 
@@ -339,6 +366,9 @@ Future<void> showMyQrDialog(
       }
 
       final alreadyFriend = await _isAlreadyFriend(currentUser.id, profile.id);
+      final requestState = alreadyFriend
+          ? _FriendRequestState.none
+          : await _friendRequestState(currentUser.id, profile.id);
       if (!dialogContext.mounted) return;
       await showModalBottomSheet<void>(
         context: dialogContext,
@@ -349,7 +379,8 @@ Future<void> showMyQrDialog(
         builder: (sheetContext) => _NomoProfilePreviewSheet(
           profile: profile,
           alreadyFriend: alreadyFriend,
-          onAdd: () => addProfileAsFriend(sheetContext, profile),
+          requestState: requestState,
+          onRequest: () => sendFriendRequest(sheetContext, profile),
         ),
       );
     } catch (e) {
@@ -1233,12 +1264,14 @@ class _NomoProfilePreviewSheet extends StatefulWidget {
   const _NomoProfilePreviewSheet({
     required this.profile,
     required this.alreadyFriend,
-    required this.onAdd,
+    required this.requestState,
+    required this.onRequest,
   });
 
   final _NomoSearchProfile profile;
   final bool alreadyFriend;
-  final Future<void> Function() onAdd;
+  final _FriendRequestState requestState;
+  final Future<void> Function() onRequest;
 
   @override
   State<_NomoProfilePreviewSheet> createState() =>
@@ -1248,11 +1281,53 @@ class _NomoProfilePreviewSheet extends StatefulWidget {
 class _NomoProfilePreviewSheetState extends State<_NomoProfilePreviewSheet> {
   bool _busy = false;
 
-  Future<void> _add() async {
-    if (_busy || widget.alreadyFriend) return;
+  bool get _canRequest =>
+      !widget.alreadyFriend && widget.requestState == _FriendRequestState.none;
+
+  String get _statusMessage {
+    if (widget.alreadyFriend) {
+      return 'すでにフレンズです。飲みログに一緒に残せます。';
+    }
+    return switch (widget.requestState) {
+      _FriendRequestState.outgoing => 'フレンズ申請を送信済みです。相手の承認を待っています。',
+      _FriendRequestState.incoming => 'この人からフレンズ申請が届いています。承認するとフレンズになります。',
+      _FriendRequestState.none => 'フレンズ申請を送って、承認されたら飲みログや予約でつながれます。',
+    };
+  }
+
+  String get _buttonLabel {
+    if (widget.alreadyFriend) return 'フレンズです';
+    return switch (widget.requestState) {
+      _FriendRequestState.outgoing => '申請済み',
+      _FriendRequestState.incoming => '申請が届いています',
+      _FriendRequestState.none => 'フレンズ申請を送る',
+    };
+  }
+
+  IconData get _statusIcon {
+    if (widget.alreadyFriend) return CupertinoIcons.checkmark_seal_fill;
+    return switch (widget.requestState) {
+      _FriendRequestState.none => CupertinoIcons.paperplane_fill,
+      _FriendRequestState.outgoing => CupertinoIcons.clock_fill,
+      _FriendRequestState.incoming =>
+        CupertinoIcons.person_crop_circle_badge_checkmark,
+    };
+  }
+
+  Color get _statusColor {
+    if (widget.alreadyFriend) return const Color(0xFF9AF21A);
+    return switch (widget.requestState) {
+      _FriendRequestState.none => const Color(0xFF22D7C5),
+      _FriendRequestState.outgoing => const Color(0xFFFFD166),
+      _FriendRequestState.incoming => const Color(0xFFC08BFF),
+    };
+  }
+
+  Future<void> _sendRequest() async {
+    if (_busy || !_canRequest) return;
     setState(() => _busy = true);
     try {
-      await widget.onAdd();
+      await widget.onRequest();
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -1390,21 +1465,15 @@ class _NomoProfilePreviewSheetState extends State<_NomoProfilePreviewSheet> {
               child: Row(
                 children: [
                   NomoPopIcon(
-                    icon: widget.alreadyFriend
-                        ? CupertinoIcons.checkmark_seal_fill
-                        : CupertinoIcons.person_badge_plus_fill,
-                    color: widget.alreadyFriend
-                        ? const Color(0xFF9AF21A)
-                        : const Color(0xFF22D7C5),
+                    icon: _statusIcon,
+                    color: _statusColor,
                     size: 38,
                     showBubble: false,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      widget.alreadyFriend
-                          ? 'すでにフレンズです。飲みログに一緒に残せます。'
-                          : 'この人をフレンズに追加して、飲みログや予約でつながろう。',
+                      _statusMessage,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: .74),
                         fontWeight: FontWeight.w800,
@@ -1417,17 +1486,17 @@ class _NomoProfilePreviewSheetState extends State<_NomoProfilePreviewSheet> {
             ),
             const SizedBox(height: 18),
             Nomo3DButton(
-              label: widget.alreadyFriend ? '追加済み' : 'フレンズに追加',
-              icon: widget.alreadyFriend
-                  ? CupertinoIcons.checkmark_alt
-                  : CupertinoIcons.person_badge_plus_fill,
-              onTap: widget.alreadyFriend ? null : _add,
+              label: _buttonLabel,
+              icon: _canRequest ? CupertinoIcons.paperplane_fill : _statusIcon,
+              onTap: _canRequest ? _sendRequest : null,
               isLoading: _busy,
-              enabled: !widget.alreadyFriend,
+              enabled: _canRequest,
               height: 54,
               radius: 22,
-              color: const Color(0xFF22D7C5),
-              shadowColor: const Color(0xFF109F91),
+              color: _canRequest ? const Color(0xFF22D7C5) : _statusColor,
+              shadowColor: _canRequest
+                  ? const Color(0xFF109F91)
+                  : _statusColor.withValues(alpha: .62),
               fontSize: 15,
             ),
           ],
