@@ -44,6 +44,9 @@ class ProfileScreen extends ConsumerWidget {
     final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
     final friendsCount = friendsAsync.asData?.value.length ?? 0;
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
+    final canOpenAdmin =
+        Supabase.instance.client.auth.currentUser?.email?.toLowerCase() ==
+        'yisshiki39@gmail.com';
     final monthlyLogs = logs
         .where((log) => log.isInMonth(DateTime.now()))
         .toList();
@@ -70,7 +73,9 @@ class ProfileScreen extends ConsumerWidget {
                     children: [
                       _PageHeader(
                         isWhite: isWhite,
+                        canOpenAdmin: canOpenAdmin,
                         onSettings: () => _showSettingsSheet(context, ref),
+                        onAdmin: () => _openAdminScreen(context),
                       ),
                       const SizedBox(height: 14),
                       _SimpleHero(
@@ -426,9 +431,17 @@ const _selectableDailyStatuses = <NomoDailyStatus>[
 ];
 
 class _PageHeader extends StatelessWidget {
-  const _PageHeader({required this.isWhite, required this.onSettings});
+  const _PageHeader({
+    required this.isWhite,
+    required this.canOpenAdmin,
+    required this.onSettings,
+    required this.onAdmin,
+  });
+
   final bool isWhite;
+  final bool canOpenAdmin;
   final VoidCallback onSettings;
+  final VoidCallback onAdmin;
 
   @override
   Widget build(BuildContext context) {
@@ -436,7 +449,48 @@ class _PageHeader extends StatelessWidget {
     return NomoPageHeader(
       title: 'マイページ',
       titleColor: headerColor,
-      trailing: _ProfileSettingsButton(isWhite: isWhite, onTap: onSettings),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (canOpenAdmin) ...[
+            _ProfileAdminButton(isWhite: isWhite, onTap: onAdmin),
+            const SizedBox(width: 2),
+          ],
+          _ProfileSettingsButton(isWhite: isWhite, onTap: onSettings),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileAdminButton extends StatelessWidget {
+  const _ProfileAdminButton({required this.isWhite, required this.onTap});
+
+  final bool isWhite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '管理画面',
+      child: CupertinoButton(
+        onPressed: onTap,
+        minimumSize: const Size(48, 48),
+        padding: EdgeInsets.zero,
+        borderRadius: BorderRadius.circular(18),
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: Center(
+            child: NomoGeneratedIcon(
+              CupertinoIcons.lock_shield_fill,
+              color: isWhite ? Colors.white : Colors.black,
+              size: 36,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -2093,6 +2147,15 @@ class _UnsavedProfileButton extends StatelessWidget {
   );
 }
 
+Future<void> _openAdminScreen(BuildContext context) async {
+  await Navigator.of(context).push<void>(
+    CupertinoPageRoute(
+      fullscreenDialog: true,
+      builder: (_) => const AdminScreen(),
+    ),
+  );
+}
+
 Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
   final user = ref.read(nomoUserProvider);
   await showModalBottomSheet<void>(
@@ -2101,9 +2164,6 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
     builder: (sheetContext) => Consumer(
       builder: (context, ref, _) {
         final themeMode = ref.watch(nomoThemeModeProvider);
-        final canOpenAdmin =
-            Supabase.instance.client.auth.currentUser?.email?.toLowerCase() ==
-            'yisshiki39@gmail.com';
         return _SheetShell(
           title: '設定',
           child: Column(
@@ -2138,44 +2198,6 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                   await _showEditProfileSheet(context, ref, user);
                 },
               ),
-              _SettingsTile(
-                icon: CupertinoIcons.arrow_clockwise,
-                label: 'プロフィールを再読み込み',
-                onTap: () async {
-                  try {
-                    await ref
-                        .read(nomoUserProvider.notifier)
-                        .loadFromSupabaseProfile();
-                    if (sheetContext.mounted) {
-                      Navigator.of(sheetContext).pop();
-                    }
-                    if (context.mounted) {
-                      _showSnack(context, 'プロフィールを再読み込みしました。');
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      _showSnack(context, '再読み込みできませんでした: $e');
-                    }
-                  }
-                },
-              ),
-              if (canOpenAdmin)
-                _SettingsTile(
-                  icon: CupertinoIcons.lock_shield_fill,
-                  label: '管理画面',
-                  onTap: () async {
-                    if (sheetContext.mounted) {
-                      Navigator.of(sheetContext).pop();
-                    }
-                    if (!context.mounted) return;
-                    await Navigator.of(context).push<void>(
-                      CupertinoPageRoute(
-                        fullscreenDialog: true,
-                        builder: (_) => const AdminScreen(),
-                      ),
-                    );
-                  },
-                ),
               _SettingsTile(
                 icon: CupertinoIcons.play_circle_fill,
                 label: 'はじめてのデモを見る',
