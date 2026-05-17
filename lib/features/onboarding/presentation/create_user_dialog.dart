@@ -308,7 +308,17 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
               _AccountChoiceHeader(
                 onBack: _isBusy
                     ? null
-                    : () => setState(() => _step = _OnboardingStep.intro),
+                    : () => setState(() {
+                        if (widget.startAtLogin && _lastAccount != null) {
+                          _step = _OnboardingStep.auth;
+                          _showAuthForm = false;
+                          _isLogin = true;
+                        } else {
+                          _step = _OnboardingStep.intro;
+                        }
+                        _error = null;
+                        _notice = null;
+                      }),
               ),
               const Spacer(flex: 5),
               Text(
@@ -735,7 +745,8 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                   _emailController.clear();
                   _passwordController.clear();
                   setState(() {
-                    _showAuthForm = true;
+                    _step = _OnboardingStep.accountChoice;
+                    _showAuthForm = false;
                     _isLogin = true;
                     _error = null;
                     _notice = null;

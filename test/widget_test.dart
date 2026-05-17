@@ -75,6 +75,15 @@ void main() {
     await tester.tap(find.text('別のアカウントを追加'));
     await tester.pumpAndSettle();
 
+    expect(find.text('すでにアカウントをお持ち\nですか？'), findsOneWidget);
+    expect(find.text('ログイン'), findsOneWidget);
+    expect(find.text('Nomoは初めてですか？'), findsOneWidget);
+    expect(find.text('スタート'), findsOneWidget);
+    expect(find.byType(SingleChildScrollView), findsNothing);
+
+    await tester.tap(find.text('ログイン'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Eメール/電話番号/ユーザー名'), findsOneWidget);
     expect(find.text('パスワード'), findsOneWidget);
     expect(find.text('パスワードをお忘れですか？'), findsOneWidget);
