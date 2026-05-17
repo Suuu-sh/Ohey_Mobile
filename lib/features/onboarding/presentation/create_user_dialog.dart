@@ -2141,22 +2141,56 @@ class _PlainLoginButton extends StatelessWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    height: height + 7,
-    child: Nomo3DButton(
-      label: 'ログイン',
-      isLoading: busy,
-      enabled: enabled,
-      onTap: onTap,
-      height: height,
-      radius: 18,
-      color: _authPink,
-      foregroundColor: _authPinkInk,
-      shadowColor: _authPinkShadow,
-      fontSize: 19,
-      useGradient: false,
-    ),
-  );
+  Widget build(BuildContext context) {
+    final canTap = enabled && onTap != null && !busy;
+    return GestureDetector(
+      onTap: canTap ? onTap : null,
+      child: Opacity(
+        opacity: enabled || busy ? 1 : .78,
+        child: Container(
+          width: double.infinity,
+          height: height + 7,
+          decoration: BoxDecoration(
+            color: _authPinkShadow,
+            borderRadius: BorderRadius.circular(19),
+            boxShadow: [
+              BoxShadow(
+                color: _authPink.withValues(alpha: .22),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              width: double.infinity,
+              height: height,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: _authPink,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.white.withValues(alpha: .18)),
+              ),
+              child: busy
+                  ? const CupertinoActivityIndicator(color: _authPinkInk)
+                  : Text(
+                      'ログイン',
+                      style: TextStyle(
+                        color: _authPinkInk.withValues(
+                          alpha: enabled ? 1 : .58,
+                        ),
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _SocialLoginButton extends StatelessWidget {
