@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/supabase_config.dart';
@@ -10,9 +12,30 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/nomo_theme_mode.dart';
 import 'core/widgets/nomo_tab_shell.dart';
 
+const _openingNomoAsset = 'assets/images/opening_nomo.png';
+
+ui.Image? _openingNomoImage;
+
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  binding.deferFirstFrame();
+
+  try {
+    await _loadOpeningNomoImage().timeout(const Duration(seconds: 3));
+  } on Object {
+    // If decoding ever fails, fall back to the regular asset image below.
+  }
+
   runApp(const ProviderScope(child: NomoApp()));
+  binding.allowFirstFrame();
+}
+
+Future<void> _loadOpeningNomoImage() async {
+  final data = await rootBundle.load(_openingNomoAsset);
+  final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  final codec = await ui.instantiateImageCodec(bytes);
+  final frame = await codec.getNextFrame();
+  _openingNomoImage = frame.image;
 }
 
 final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
@@ -63,10 +86,7 @@ class _StartupScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          const Image(
-            image: AssetImage('assets/images/opening_nomo.png'),
-            fit: BoxFit.cover,
-          ),
+          const _OpeningNomoArtwork(),
           if (hasError)
             SafeArea(
               child: Align(
@@ -132,6 +152,19 @@ class _StartupScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _OpeningNomoArtwork extends StatelessWidget {
+  const _OpeningNomoArtwork();
+
+  @override
+  Widget build(BuildContext context) {
+    final image = _openingNomoImage;
+    if (image == null) {
+      return Image.asset(_openingNomoAsset, fit: BoxFit.cover);
+    }
+    return RawImage(image: image, fit: BoxFit.cover);
   }
 }
 
