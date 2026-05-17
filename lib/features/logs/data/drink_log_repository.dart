@@ -387,7 +387,7 @@ class SupabaseDrinkLogRepository implements DrinkLogRepository {
     }
 
     final filter =
-        '(and(user_a_id.eq.$userId,user_b_id.eq.$friendId),and(user_b_id.eq.$userId,user_a_id.eq.$friendId))';
+        'and(user_a_id.eq.$userId,user_b_id.eq.$friendId),and(user_b_id.eq.$userId,user_a_id.eq.$friendId)';
     final rows = await _client
         .from('friendships')
         .update({'is_favorite': isFavorite})
