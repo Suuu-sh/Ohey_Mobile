@@ -274,7 +274,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
             date: _selectedDate,
             friends: selectedFriends,
             place: _placeController.text,
-            memo: '',
+            memo: _hasPhoto ? _memoController.text : '',
             photoAssetPath: photoPath,
           );
       if (!mounted) return;

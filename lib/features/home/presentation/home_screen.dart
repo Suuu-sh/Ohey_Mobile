@@ -480,16 +480,18 @@ Future<void> _showFeedPostActions(
   WidgetRef ref,
   _FeedItem item,
 ) async {
+  final body = item.body.trim();
   final action = await showCupertinoModalPopup<_FeedPostAction>(
     context: context,
     builder: (context) => CupertinoActionSheet(
       title: Text(item.userName),
-      message: Text(item.body),
+      message: body.isEmpty ? null : Text(body),
       actions: [
-        CupertinoActionSheetAction(
-          onPressed: () => Navigator.of(context).pop(_FeedPostAction.copy),
-          child: const Text('飲みログをコピー'),
-        ),
+        if (body.isNotEmpty)
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.of(context).pop(_FeedPostAction.copy),
+            child: const Text('コメントをコピー'),
+          ),
         if (item.ownedByMe)
           CupertinoActionSheetAction(
             isDestructiveAction: true,
@@ -512,8 +514,8 @@ Future<void> _showFeedPostActions(
 
   switch (action) {
     case _FeedPostAction.copy:
-      await Clipboard.setData(ClipboardData(text: item.body));
-      if (context.mounted) NomoToast.show(context, '飲みログをコピーしました');
+      await Clipboard.setData(ClipboardData(text: body));
+      if (context.mounted) NomoToast.show(context, 'コメントをコピーしました');
     case _FeedPostAction.delete:
       final confirmed = await _confirmDeleteFeedPost(context);
       if (!confirmed || !context.mounted) return;
@@ -580,6 +582,7 @@ class _FeedPostCard extends StatelessWidget {
     final line = isWhite
         ? Colors.black.withValues(alpha: .10)
         : Colors.white.withValues(alpha: .09);
+    final body = _duoStyleBody(item).trim();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 0),
@@ -641,19 +644,20 @@ class _FeedPostCard extends StatelessWidget {
           if (hasPhoto) ...[
             const SizedBox(height: 12),
             _PostPhoto(path: photoPath!),
-            const SizedBox(height: 12),
-          ] else
+            if (body.isNotEmpty) const SizedBox(height: 12),
+          ] else if (body.isNotEmpty)
             const SizedBox(height: 10),
-          Text(
-            _duoStyleBody(item),
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: ink.withValues(alpha: .88),
-              fontWeight: FontWeight.w800,
-              height: 1.35,
-              letterSpacing: -.35,
+          if (body.isNotEmpty)
+            Text(
+              body,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: ink.withValues(alpha: .88),
+                fontWeight: FontWeight.w800,
+                height: 1.35,
+                letterSpacing: -.35,
+              ),
             ),
-          ),
-          const SizedBox(height: 18),
+          SizedBox(height: body.isEmpty ? 12 : 18),
           Row(
             children: [
               _DuoFeedButton(
@@ -1246,7 +1250,7 @@ class _FeedItem {
       id: log.id,
       userName: authorName,
       timeAgo: _relativeTime(log.date),
-      body: '飲みログを追加しました。',
+      body: log.memo.trim(),
       avatar: log.ownerAvatar ?? user?.avatar ?? NomoAvatar.defaultAvatar,
       accent: accent,
       photoAssetPath: log.photoAssetPath,
