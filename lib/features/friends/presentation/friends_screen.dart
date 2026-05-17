@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/drink_log.dart';
@@ -25,9 +26,37 @@ class FriendsScreen extends ConsumerStatefulWidget {
 
 class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   _FriendFilterType _selectedFilter = _FriendFilterType.all;
+  bool _isRefreshingFriends = false;
 
   void _openAddFriend() {
     showMyQrDialog(context, ref.read(nomoUserProvider), ref);
+  }
+
+  Future<void> _refreshFriends() async {
+    if (_isRefreshingFriends) return;
+    HapticFeedback.selectionClick();
+    setState(() => _isRefreshingFriends = true);
+    try {
+      await Future.wait([
+        ref.refresh(friendsProvider.future),
+        ref.refresh(drinkLogControllerProvider.future),
+      ]);
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        'フレンズを更新しました',
+        icon: CupertinoIcons.arrow_clockwise,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        'フレンズを更新できませんでした',
+        icon: CupertinoIcons.arrow_clockwise,
+      );
+    } finally {
+      if (mounted) setState(() => _isRefreshingFriends = false);
+    }
   }
 
   void _onToggleFavorite(
@@ -91,10 +120,25 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               NomoPageHeader(
                 title: 'フレンズ',
                 titleColor: _FriendsColors.lime,
-                trailing: NomoHeaderIconButton(
-                  icon: CupertinoIcons.plus,
-                  color: _FriendsColors.lime,
-                  onTap: _openAddFriend,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    NomoHeaderIconButton(
+                      icon: CupertinoIcons.arrow_clockwise,
+                      semanticLabel: 'フレンズを更新',
+                      color: _isRefreshingFriends
+                          ? _FriendsColors.muted
+                          : _FriendsColors.lime,
+                      onTap: _isRefreshingFriends ? () {} : _refreshFriends,
+                    ),
+                    const SizedBox(width: 8),
+                    NomoHeaderIconButton(
+                      icon: CupertinoIcons.plus,
+                      semanticLabel: 'フレンズを追加',
+                      color: _FriendsColors.lime,
+                      onTap: _openAddFriend,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 18),
