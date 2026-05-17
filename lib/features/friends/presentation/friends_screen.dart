@@ -733,24 +733,27 @@ class _InviteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = status.enabled;
-    return Nomo3DButton(
-      label: '誘う',
-      icon: CupertinoIcons.paperplane_fill,
-      onTap: enabled
-          ? () => _showInviteSheet(
-              context: context,
-              name: name,
-              accent: accent,
-              onTodayInvite: onInvite,
-            )
-          : null,
-      enabled: enabled,
-      height: 36,
-      radius: 18,
-      color: const Color(0xFF12C9A4),
-      shadowColor: const Color(0xFF079078),
-      padding: const EdgeInsets.symmetric(horizontal: 13),
-      fontSize: 12,
+    return SizedBox(
+      width: 92,
+      child: Nomo3DButton(
+        label: '誘う',
+        icon: CupertinoIcons.paperplane_fill,
+        onTap: enabled
+            ? () => _showInviteSheet(
+                context: context,
+                name: name,
+                accent: accent,
+                onTodayInvite: onInvite,
+              )
+            : null,
+        enabled: enabled,
+        height: 36,
+        radius: 18,
+        color: const Color(0xFF12C9A4),
+        shadowColor: const Color(0xFF079078),
+        padding: const EdgeInsets.symmetric(horizontal: 13),
+        fontSize: 12,
+      ),
     );
   }
 }
