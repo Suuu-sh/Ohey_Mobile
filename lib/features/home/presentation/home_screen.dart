@@ -28,6 +28,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   late final PageController _feedPageController;
   _FeedSection _selectedSection = _FeedSection.feed;
+  bool _isRefreshingFeed = false;
 
   @override
   void initState() {
@@ -84,6 +85,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               _FeedHeader(
                 hasUnreadNotifications: false,
+                isRefreshing: _isRefreshingFeed,
+                onRefresh: _refreshFeed,
                 onNotifications: () => Navigator.of(context).push(
                   CupertinoPageRoute<void>(
                     builder: (_) => _FeedNotificationsScreen(
@@ -139,6 +142,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         duration: const Duration(milliseconds: 260),
         curve: Curves.easeOutCubic,
       );
+    }
+  }
+
+  Future<void> _refreshFeed() async {
+    if (_isRefreshingFeed) return;
+    HapticFeedback.selectionClick();
+    setState(() => _isRefreshingFeed = true);
+    try {
+      await Future.wait([
+        ref.refresh(drinkLogControllerProvider.future),
+        ref.refresh(friendsProvider.future),
+      ]);
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        'フィードを更新しました',
+        icon: CupertinoIcons.arrow_clockwise,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        'フィードを更新できませんでした',
+        icon: CupertinoIcons.arrow_clockwise,
+      );
+    } finally {
+      if (mounted) setState(() => _isRefreshingFeed = false);
     }
   }
 }
@@ -221,24 +251,40 @@ class _FeedBackground extends ConsumerWidget {
 
 class _FeedHeader extends StatelessWidget {
   const _FeedHeader({
+    required this.onRefresh,
     required this.onNotifications,
     required this.hasUnreadNotifications,
+    required this.isRefreshing,
   });
 
+  final VoidCallback onRefresh;
   final VoidCallback onNotifications;
   final bool hasUnreadNotifications;
+  final bool isRefreshing;
 
   @override
   Widget build(BuildContext context) {
     return NomoPageHeader(
       title: 'フィード',
       titleColor: _FeedColors.teal,
-      trailing: NomoHeaderIconButton(
-        icon: CupertinoIcons.bell,
-        semanticLabel: 'お知らせを開く',
-        hasDot: hasUnreadNotifications,
-        color: _FeedColors.teal,
-        onTap: onNotifications,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          NomoHeaderIconButton(
+            icon: CupertinoIcons.arrow_clockwise,
+            semanticLabel: 'フィードを更新',
+            color: isRefreshing ? _FeedColors.sub : _FeedColors.teal,
+            onTap: isRefreshing ? () {} : onRefresh,
+          ),
+          const SizedBox(width: 8),
+          NomoHeaderIconButton(
+            icon: CupertinoIcons.bell,
+            semanticLabel: 'お知らせを開く',
+            hasDot: hasUnreadNotifications,
+            color: _FeedColors.teal,
+            onTap: onNotifications,
+          ),
+        ],
       ),
     );
   }
