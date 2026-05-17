@@ -11,14 +11,10 @@ final adminAccessProvider = FutureProvider.autoDispose<bool>((ref) async {
     await ref.watch(adminControllerProvider).checkAccess();
     return true;
   } on BackendApiException catch (error) {
-    if (error.statusCode == 403 ||
-        error.statusCode == 404 ||
-        error.statusCode == 503) {
+    if (error.statusCode == 403) {
       return false;
     }
-    return false;
-  } catch (_) {
-    return false;
+    rethrow;
   }
 });
 

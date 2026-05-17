@@ -18,7 +18,6 @@ import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_toast.dart';
-import '../../admin/application/admin_controller.dart';
 import '../../admin/presentation/admin_screen.dart';
 import '../../friends/presentation/add_nomi_tomo_screen.dart';
 import '../../friends/application/drink_invite_controller.dart';
@@ -2103,7 +2102,8 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
       builder: (context, ref, _) {
         final themeMode = ref.watch(nomoThemeModeProvider);
         final canOpenAdmin =
-            ref.watch(adminAccessProvider).asData?.value ?? false;
+            Supabase.instance.client.auth.currentUser?.email?.toLowerCase() ==
+            'yisshiki39@gmail.com';
         return _SheetShell(
           title: '設定',
           child: Column(
