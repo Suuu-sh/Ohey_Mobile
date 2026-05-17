@@ -557,45 +557,30 @@ class _FriendCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 9),
-                    GestureDetector(
-                      onTap: onFavoriteToggle,
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: friend.isFavorite
-                              ? const Color(0xFFFFE39B).withValues(alpha: .22)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(9),
+                    Semantics(
+                      button: true,
+                      label: friend.isFavorite ? 'お気に入りを解除' : 'お気に入りに追加',
+                      child: GestureDetector(
+                        onTap: onFavoriteToggle,
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: friend.isFavorite
+                                ? const Color(0xFFFFE39B).withValues(alpha: .22)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: _FavoriteStarIcon(
+                            filled: friend.isFavorite,
+                            color: friend.isFavorite
+                                ? const Color(0xFFFFC700)
+                                : (isWhite
+                                      ? const Color(0xFF8C9CAB)
+                                      : _FriendsColors.muted),
+                          ),
                         ),
-                        child: Icon(
-                          friend.isFavorite
-                              ? CupertinoIcons.star_fill
-                              : CupertinoIcons.star,
-                          size: 20,
-                          color: friend.isFavorite
-                              ? const Color(0xFFFFC700)
-                              : (isWhite
-                                    ? const Color(0xFF8C9CAB)
-                                    : _FriendsColors.muted),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 9),
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: status.enabled ? accent : _FriendsColors.muted,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          if (status.enabled)
-                            BoxShadow(
-                              color: accent.withValues(alpha: .5),
-                              blurRadius: 12,
-                            ),
-                        ],
                       ),
                     ),
                   ],
@@ -661,6 +646,88 @@ class _StatusPill extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _FavoriteStarIcon extends StatelessWidget {
+  const _FavoriteStarIcon({required this.filled, required this.color});
+
+  final bool filled;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 21,
+    height: 21,
+    child: CustomPaint(
+      painter: _FavoriteStarPainter(filled: filled, color: color),
+    ),
+  );
+}
+
+class _FavoriteStarPainter extends CustomPainter {
+  const _FavoriteStarPainter({required this.filled, required this.color});
+
+  final bool filled;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final star = _starPath(size);
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * .12
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    if (filled) {
+      canvas.drawPath(
+        star.shift(Offset(size.width * .045, size.height * .055)),
+        Paint()
+          ..color = const Color(0xFF06111D).withValues(alpha: .26)
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawPath(star, Paint()..color = color);
+      canvas.drawPath(
+        star,
+        stroke..color = Colors.white.withValues(alpha: .38),
+      );
+      canvas.drawCircle(
+        Offset(size.width * .39, size.height * .35),
+        size.width * .045,
+        Paint()..color = Colors.white.withValues(alpha: .62),
+      );
+      return;
+    }
+
+    canvas.drawPath(star, stroke);
+  }
+
+  Path _starPath(Size size) {
+    final points = <Offset>[
+      Offset(size.width * .50, size.height * .08),
+      Offset(size.width * .61, size.height * .36),
+      Offset(size.width * .91, size.height * .36),
+      Offset(size.width * .67, size.height * .55),
+      Offset(size.width * .76, size.height * .85),
+      Offset(size.width * .50, size.height * .68),
+      Offset(size.width * .24, size.height * .85),
+      Offset(size.width * .33, size.height * .55),
+      Offset(size.width * .09, size.height * .36),
+      Offset(size.width * .39, size.height * .36),
+    ];
+
+    final path = Path()..moveTo(points.first.dx, points.first.dy);
+    for (final point in points.skip(1)) {
+      path.lineTo(point.dx, point.dy);
+    }
+    return path..close();
+  }
+
+  @override
+  bool shouldRepaint(covariant _FavoriteStarPainter oldDelegate) {
+    return oldDelegate.filled != filled || oldDelegate.color != color;
   }
 }
 
