@@ -59,65 +59,77 @@ class _StartupScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasError = message != null;
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1420),
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 74,
-                  height: 74,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF12C9A4).withValues(alpha: .16),
-                    shape: BoxShape.circle,
-                  ),
-                  child: hasError
-                      ? const Icon(
-                          Icons.warning_rounded,
-                          color: Color(0xFFFF5EA8),
-                          size: 34,
-                        )
-                      : const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF12C9A4),
-                            strokeWidth: 4,
+      backgroundColor: const Color(0xFF020312),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const Image(
+            image: AssetImage('assets/images/nomo_opening.png'),
+            fit: BoxFit.cover,
+          ),
+          if (hasError)
+            SafeArea(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 36),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF08091F).withValues(alpha: .78),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: const Color(0xFFFF5EA8).withValues(alpha: .28),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.warning_rounded,
+                            color: Color(0xFFFF5EA8),
+                            size: 32,
                           ),
-                        ),
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  message ?? 'Nomoを起動中...',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                if (detail != null) ...[
-                  const SizedBox(height: 10),
-                  Text(
-                    detail!,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .58),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                          const SizedBox(height: 10),
+                          Text(
+                            message!,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                          ),
+                          if (detail != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              detail!,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: .64),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                          if (onRetry != null) ...[
+                            const SizedBox(height: 14),
+                            FilledButton(
+                              onPressed: onRetry,
+                              child: const Text('もう一度試す'),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ),
-                ],
-                if (onRetry != null) ...[
-                  const SizedBox(height: 18),
-                  FilledButton(onPressed: onRetry, child: const Text('もう一度試す')),
-                ],
-              ],
+                ),
+              ),
             ),
-          ),
-        ),
+        ],
       ),
     );
   }
