@@ -996,7 +996,7 @@ class _AuthHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = isLogin ? 142.0 : 118.0;
+    final height = isLogin ? 154.0 : 118.0;
     return Container(
       width: double.infinity,
       height: height,
