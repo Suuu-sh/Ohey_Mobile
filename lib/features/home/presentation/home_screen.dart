@@ -469,11 +469,24 @@ Future<void> _showFeedPostActions(
     case _FeedPostAction.delete:
       final confirmed = await _confirmDeleteFeedPost(context);
       if (!confirmed || !context.mounted) return;
-      await ref.read(drinkLogControllerProvider.notifier).deleteLog(item.id);
-      if (context.mounted) NomoToast.show(context, '投稿を削除しました');
+      try {
+        await ref.read(drinkLogControllerProvider.notifier).deleteLog(item.id);
+        ref.invalidate(drinkLogControllerProvider);
+        if (context.mounted) NomoToast.show(context, '投稿を削除しました');
+      } catch (error) {
+        if (context.mounted) {
+          NomoToast.show(context, '投稿を削除できませんでした: $error');
+        }
+      }
     case _FeedPostAction.report:
-      await ref.read(drinkLogControllerProvider.notifier).reportLog(item.id);
-      if (context.mounted) NomoToast.show(context, '投稿を報告しました');
+      try {
+        await ref.read(drinkLogControllerProvider.notifier).reportLog(item.id);
+        if (context.mounted) NomoToast.show(context, '投稿を報告しました');
+      } catch (error) {
+        if (context.mounted) {
+          NomoToast.show(context, '投稿を報告できませんでした: $error');
+        }
+      }
   }
 }
 
