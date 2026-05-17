@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -85,7 +86,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                           _InputBox(
                             icon: CupertinoIcons.location_solid,
                             iconColor: _AddLogColors.placeIcon,
-                            hint: 'お店・エリア',
+                            hint: 'どこで？（任意）',
                             controller: _placeController,
                             maxLines: 1,
                             onChanged: (_) => setState(() {}),
@@ -95,7 +96,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                             search: _InputBox(
                               icon: CupertinoIcons.search,
                               iconColor: _AddLogColors.searchIcon,
-                              hint: 'フレンズを検索',
+                              hint: '誰と？（任意）',
                               controller: _friendSearchController,
                               maxLines: 1,
                               borderless: true,
@@ -151,17 +152,22 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                             onRemove: () => setState(() {
                               _photoPath = null;
                               _photoFilterName = null;
+                              _memoController.clear();
                             }),
                           ),
-                          const SizedBox(height: 14),
-                          _InputBox(
-                            hint: '15文字以内で感想',
-                            controller: _memoController,
-                            maxLines: 1,
-                            showCounter: true,
-                            maxLength: 15,
-                            onChanged: (_) => setState(() {}),
-                          ),
+                          if (_hasPhoto) ...[
+                            const SizedBox(height: 14),
+                            _InputBox(
+                              icon: CupertinoIcons.text_quote,
+                              iconColor: _AddLogColors.impressionIcon,
+                              hint: '写真に重ねる感想（15文字以内）',
+                              controller: _memoController,
+                              maxLines: 1,
+                              showCounter: true,
+                              maxLength: 15,
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -181,6 +187,8 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
       ),
     );
   }
+
+  bool get _hasPhoto => _photoPath != null && _photoPath!.isNotEmpty;
 
   List<NomoFriend> _filteredFriends(List<NomoFriend> friends) {
     final query = _friendSearchQuery.trim().toLowerCase();
@@ -254,23 +262,20 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
   }
 
   Future<void> _save(List<NomoFriend> friends) async {
-    if (_selectedFriendIds.isEmpty) {
-      NomoToast.show(context, '一緒に飲んだ友達を1人以上選んでください。');
-      return;
-    }
     setState(() => _isSaving = true);
     final selectedFriends = friends
         .where((friend) => _selectedFriendIds.contains(friend.id))
         .toList(growable: false);
     try {
+      final photoPath = await _photoPathForSave();
       await ref
           .read(drinkLogControllerProvider.notifier)
           .addLog(
             date: _selectedDate,
             friends: selectedFriends,
             place: _placeController.text,
-            memo: _memoController.text,
-            photoAssetPath: _photoPath,
+            memo: '',
+            photoAssetPath: photoPath,
           );
       if (!mounted) return;
       setState(() => _isSaving = false);
@@ -280,6 +285,94 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
       setState(() => _isSaving = false);
       NomoToast.show(context, '飲みログを保存できませんでした: $error');
     }
+  }
+
+  Future<String?> _photoPathForSave() async {
+    final path = _photoPath;
+    if (path == null || path.isEmpty) return null;
+
+    final impression = _memoController.text.trim();
+    if (impression.isEmpty) return path;
+    return _writeImpressionOnPhoto(path, impression);
+  }
+
+  Future<String> _writeImpressionOnPhoto(String path, String impression) async {
+    final source = File(path);
+    final bytes = await source.readAsBytes();
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    final image = frame.image;
+    final width = image.width.toDouble();
+    final height = image.height.toDouble();
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final imageRect = Rect.fromLTWH(0, 0, width, height);
+    canvas.drawImageRect(image, imageRect, imageRect, Paint());
+
+    final safePadding = (width * .055).clamp(28.0, 72.0).toDouble();
+    final fontSize = (width * .060).clamp(34.0, 70.0).toDouble();
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: impression,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: fontSize,
+          fontWeight: FontWeight.w900,
+          height: 1.12,
+          letterSpacing: -1.0,
+          shadows: [
+            Shadow(
+              color: Colors.black.withValues(alpha: .55),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+      ),
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+      maxLines: 2,
+      ellipsis: '…',
+    )..layout(maxWidth: width - safePadding * 2);
+
+    final top = safePadding * .62;
+    final backgroundHeight = textPainter.height + safePadding * .78;
+    final backgroundRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        safePadding * .55,
+        top,
+        width - safePadding * 1.1,
+        backgroundHeight,
+      ),
+      Radius.circular(safePadding * .45),
+    );
+    canvas.drawRRect(
+      backgroundRect,
+      Paint()..color = Colors.black.withValues(alpha: .38),
+    );
+    textPainter.paint(
+      canvas,
+      Offset(
+        (width - textPainter.width) / 2,
+        top + (backgroundHeight - textPainter.height) / 2,
+      ),
+    );
+
+    final picture = recorder.endRecording();
+    final output = await picture.toImage(image.width, image.height);
+    final byteData = await output.toByteData(format: ui.ImageByteFormat.png);
+    if (byteData == null) {
+      throw StateError('写真に感想を書き込めませんでした。');
+    }
+
+    final outputPath =
+        '${source.parent.path}/nomo_impression_${DateTime.now().microsecondsSinceEpoch}.png';
+    await File(outputPath).writeAsBytes(byteData.buffer.asUint8List());
+    image.dispose();
+    output.dispose();
+    picture.dispose();
+    return outputPath;
   }
 
   static String _dateLabel(DateTime date) =>
@@ -610,8 +703,8 @@ class _PhotoPickerCard extends StatelessWidget {
                 Expanded(
                   child: _PhotoActionButton(
                     icon: CupertinoIcons.camera_fill,
-                    label: 'Nomoカメラ',
-                    subtitle: 'かわいいフィルター',
+                    label: 'カメラ（任意）',
+                    subtitle: '感想を画像に重ねられます',
                     color: _AddLogColors.cameraIcon,
                     onTap: onCamera,
                   ),
@@ -621,7 +714,7 @@ class _PhotoPickerCard extends StatelessWidget {
                   child: _PhotoActionButton(
                     icon: CupertinoIcons.photo_fill_on_rectangle_fill,
                     label: '写真を選ぶ',
-                    subtitle: '1枚まで',
+                    subtitle: '任意・1枚まで',
                     color: _AddLogColors.photoIcon,
                     onTap: onGallery,
                   ),
@@ -841,6 +934,7 @@ class _AddLogColors {
   static const calendarIcon = Color(0xFF9F7BFF);
   static const cameraIcon = Color(0xFF35DCC4);
   static const photoIcon = Color(0xFFFFD166);
+  static const impressionIcon = Color(0xFFFF8AB3);
   static const friendAddIcon = Color(0xFF4CD964);
   static const friendRemoveIcon = Color(0xFFFF5F8F);
   static const line = Color(0xFF243542);

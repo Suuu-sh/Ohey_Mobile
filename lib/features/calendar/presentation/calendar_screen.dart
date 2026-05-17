@@ -660,12 +660,8 @@ class _CalendarPostIcon extends StatelessWidget {
   }
 }
 
-String _calendarPostBody(DrinkLog log) {
-  final memo = log.memo.trim();
-  if (memo.isNotEmpty) return '飲みログを残したよ！ $memo';
-  final place = log.place.trim();
-  if (place.isNotEmpty) return '飲みログを残したよ！ $place';
-  return '飲みログを残したよ！';
+String _calendarPostBody(DrinkLog _) {
+  return '飲みログを追加しました。';
 }
 
 class _Marker {
