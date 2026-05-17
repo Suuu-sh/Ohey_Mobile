@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/config/supabase_config.dart';
+import '../../../core/data/nomo_last_account_store.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/theme/app_colors.dart';
@@ -145,6 +146,9 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _isBusy = false;
   bool _userIdTouched = false;
   bool _nameTouched = false;
+  bool _isLastAccountLoaded = false;
+  bool _showAuthForm = false;
+  NomoLastAccount? _lastAccount;
   String? _error;
   String? _notice;
 
@@ -159,6 +163,20 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     } else if (widget.startAtLogin) {
       _step = _OnboardingStep.auth;
     }
+    _showAuthForm = !widget.startAtLogin;
+    _loadLastAccount();
+  }
+
+  Future<void> _loadLastAccount() async {
+    final account = await NomoLastAccountStore.load();
+    if (!mounted) return;
+    setState(() {
+      _lastAccount = account;
+      _isLastAccountLoaded = true;
+      if (widget.startAtLogin && account == null) {
+        _showAuthForm = true;
+      }
+    });
   }
 
   @override
@@ -175,30 +193,25 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      child: Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 22),
-        backgroundColor: Colors.transparent,
-        child: AnimatedSize(
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(32),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.ink.withValues(alpha: .14),
-                  blurRadius: 32,
-                  offset: const Offset(0, 18),
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0D1A22),
+        body: SafeArea(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 240),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeOutCubic,
+            child: KeyedSubtree(
+              key: ValueKey('$_step-$_showAuthForm-$_isLogin'),
+              child: switch (_step) {
+                _OnboardingStep.intro => _FullScreenStep(
+                  child: _IntroCard(child: _buildIntro(context)),
                 ),
-              ],
+                _OnboardingStep.auth => _buildAuth(context),
+                _OnboardingStep.profile => _FullScreenStep(
+                  child: _AuthSurfaceCard(child: _buildProfile(context)),
+                ),
+              },
             ),
-            child: switch (_step) {
-              _OnboardingStep.intro => _buildIntro(context),
-              _OnboardingStep.auth => _buildAuth(context),
-              _OnboardingStep.profile => _buildProfile(context),
-            },
           ),
         ),
       ),
@@ -275,88 +288,180 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   }
 
   Widget _buildAuth(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _Header(
-          title: _isLogin ? 'おかえりログイン' : 'Nomoをはじめる',
-          subtitle: _isLogin
-              ? '飲みログと飲み友リストの続きを開きましょう。'
-              : '飲みログを保存するためにアカウントが必要です。',
-          showBackButton: !widget.startAtLogin,
-          onBack: _isBusy
-              ? null
-              : () => setState(() => _step = _OnboardingStep.intro),
+    if (widget.startAtLogin && !_showAuthForm && _isLogin) {
+      if (!_isLastAccountLoaded) {
+        return const _FullScreenStep(child: _ReLoginLoading());
+      }
+      final account = _lastAccount;
+      if (account != null) {
+        return _buildReLogin(context, account);
+      }
+    }
+
+    return _FullScreenStep(
+      child: _AuthSurfaceCard(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _Header(
+              title: _isLogin ? 'おかえりログイン' : 'Nomoをはじめる',
+              subtitle: _isLogin
+                  ? '飲みログと飲み友リストの続きを開きましょう。'
+                  : '飲みログを保存するためにアカウントが必要です。',
+              showBackButton: !widget.startAtLogin || _lastAccount != null,
+              onBack: _isBusy
+                  ? null
+                  : () => setState(() {
+                      if (widget.startAtLogin && _lastAccount != null) {
+                        _showAuthForm = false;
+                        _isLogin = true;
+                        _error = null;
+                        _notice = null;
+                        return;
+                      }
+                      _step = _OnboardingStep.intro;
+                    }),
+            ),
+            const SizedBox(height: 16),
+            _AuthHeroCard(isLogin: _isLogin),
+            const SizedBox(height: 16),
+            _AuthTextField(
+              controller: _emailController,
+              enabled: !_isBusy,
+              icon: CupertinoIcons.mail,
+              hintText: 'メールアドレス',
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              autofillHints: const [AutofillHints.email],
+            ),
+            const SizedBox(height: 12),
+            _AuthTextField(
+              controller: _passwordController,
+              enabled: !_isBusy,
+              icon: CupertinoIcons.lock_fill,
+              hintText: 'パスワード（6文字以上）',
+              obscureText: true,
+              textInputAction: TextInputAction.done,
+              autofillHints: const [AutofillHints.password],
+            ),
+            if (!_isLogin) ...[
+              const SizedBox(height: 16),
+              _RegistrationProfileFields(
+                userIdController: _userIdController,
+                nameController: _nameController,
+                avatar: _avatar,
+                enabled: !_isBusy,
+                userIdTouched: _userIdTouched,
+                nameTouched: _nameTouched,
+                onUserIdChanged: (_) {
+                  if (!_userIdTouched) setState(() => _userIdTouched = true);
+                },
+                onNameChanged: (_) {
+                  if (!_nameTouched) setState(() => _nameTouched = true);
+                },
+                onAvatarTap: _openAvatarBuilder,
+              ),
+            ],
+            if (_error != null) ...[
+              const SizedBox(height: 12),
+              _MessageText(_error!, isError: true),
+            ],
+            if (_notice != null) ...[
+              const SizedBox(height: 12),
+              _MessageText(_notice!),
+            ],
+            const SizedBox(height: 18),
+            _PrimaryButton(
+              label: _isLogin ? 'ログイン' : '新規登録して続ける',
+              icon: _isLogin
+                  ? CupertinoIcons.arrow_right_circle_fill
+                  : CupertinoIcons.person_add_solid,
+              busy: _isBusy,
+              onPressed: _submitAuth,
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: _isBusy
+                  ? null
+                  : () => setState(() {
+                      _isLogin = !_isLogin;
+                      _error = null;
+                      _notice = null;
+                    }),
+              child: Text(_isLogin ? 'アカウントがない方はこちら' : 'すでにアカウントがある方はこちら'),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
-        _AuthHeroCard(isLogin: _isLogin),
-        const SizedBox(height: 16),
-        _AuthTextField(
-          controller: _emailController,
-          enabled: !_isBusy,
-          icon: CupertinoIcons.mail,
-          hintText: 'メールアドレス',
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          autofillHints: const [AutofillHints.email],
-        ),
-        const SizedBox(height: 12),
-        _AuthTextField(
-          controller: _passwordController,
-          enabled: !_isBusy,
-          icon: CupertinoIcons.lock_fill,
-          hintText: 'パスワード（6文字以上）',
-          obscureText: true,
-          textInputAction: TextInputAction.done,
-          autofillHints: const [AutofillHints.password],
-        ),
-        if (!_isLogin) ...[
-          const SizedBox(height: 16),
-          _RegistrationProfileFields(
-            userIdController: _userIdController,
-            nameController: _nameController,
-            avatar: _avatar,
-            enabled: !_isBusy,
-            userIdTouched: _userIdTouched,
-            nameTouched: _nameTouched,
-            onUserIdChanged: (_) {
-              if (!_userIdTouched) setState(() => _userIdTouched = true);
-            },
-            onNameChanged: (_) {
-              if (!_nameTouched) setState(() => _nameTouched = true);
-            },
-            onAvatarTap: _openAvatarBuilder,
+      ),
+    );
+  }
+
+  Widget _buildReLogin(BuildContext context, NomoLastAccount account) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 680;
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight - 46),
+            child: Column(
+              children: [
+                SizedBox(height: compact ? 12 : 42),
+                _ReLoginMascot(size: compact ? 108 : 150),
+                SizedBox(height: compact ? 16 : 28),
+                Text(
+                  '再ログイン',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: compact ? 28 : 32,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.8,
+                  ),
+                ),
+                SizedBox(height: compact ? 24 : 42),
+                _ReLoginAccountCard(
+                  account: account,
+                  onTap: () {
+                    _emailController.text = account.email;
+                    setState(() {
+                      _showAuthForm = true;
+                      _isLogin = true;
+                      _error = null;
+                      _notice = null;
+                    });
+                  },
+                  onAddAccount: () {
+                    _emailController.clear();
+                    _passwordController.clear();
+                    setState(() {
+                      _showAuthForm = true;
+                      _isLogin = true;
+                      _error = null;
+                      _notice = null;
+                    });
+                  },
+                ),
+                SizedBox(height: compact ? 22 : 46),
+                TextButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('アカウント管理は今後対応予定です。')),
+                    );
+                  },
+                  child: Text(
+                    'アカウント管理',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: .42),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-        if (_error != null) ...[
-          const SizedBox(height: 12),
-          _MessageText(_error!, isError: true),
-        ],
-        if (_notice != null) ...[
-          const SizedBox(height: 12),
-          _MessageText(_notice!),
-        ],
-        const SizedBox(height: 18),
-        _PrimaryButton(
-          label: _isLogin ? 'ログイン' : '新規登録して続ける',
-          icon: _isLogin
-              ? CupertinoIcons.arrow_right_circle_fill
-              : CupertinoIcons.person_add_solid,
-          busy: _isBusy,
-          onPressed: _submitAuth,
-        ),
-        const SizedBox(height: 12),
-        TextButton(
-          onPressed: _isBusy
-              ? null
-              : () => setState(() {
-                  _isLogin = !_isLogin;
-                  _error = null;
-                  _notice = null;
-                }),
-          child: Text(_isLogin ? 'アカウントがない方はこちら' : 'すでにアカウントがある方はこちら'),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -479,7 +584,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
             .read(nomoUserProvider.notifier)
             .loadFromSupabaseProfile();
         if (loaded && mounted) {
-          Navigator.of(context).pop();
+          await _saveLastAccount(email);
           return;
         }
         _hydrateProfileFromAuthMetadata(supabase.auth.currentUser);
@@ -501,7 +606,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
           await ref
               .read(nomoUserProvider.notifier)
               .createUser(name: name, userId: userId, avatar: _avatar);
-          if (mounted) Navigator.of(context).pop();
+          await _saveLastAccount(email);
           return;
         }
         if (res.session == null) {
@@ -543,7 +648,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       await ref
           .read(nomoUserProvider.notifier)
           .createUser(name: name, userId: userId, avatar: _avatar);
-      if (mounted) Navigator.of(context).pop();
+      await _saveLastAccount(_emailController.text.trim());
     } catch (e) {
       if (mounted) {
         setState(() => _error = 'プロフィール作成に失敗しました: $e');
@@ -589,6 +694,15 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     }
     final avatar = NomoAvatar.decode(avatarUrl);
     if (avatar != null) _avatar = avatar;
+  }
+
+  Future<void> _saveLastAccount(String email) async {
+    final user = ref.read(nomoUserProvider);
+    await NomoLastAccountStore.save(
+      name: user?.name ?? _nameController.text,
+      email: email,
+      avatar: user?.avatar ?? _avatar,
+    );
   }
 
   Future<void> _openAvatarBuilder() async {
@@ -986,6 +1100,287 @@ class _DemoDots extends StatelessWidget {
         if (i != count - 1) const SizedBox(width: 8),
       ],
     ],
+  );
+}
+
+class _FullScreenStep extends StatelessWidget {
+  const _FullScreenStep({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight - 42),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 430),
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _IntroCard extends StatelessWidget {
+  const _IntroCard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => child;
+}
+
+class _AuthSurfaceCard extends StatelessWidget {
+  const _AuthSurfaceCard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(32),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: .24),
+          blurRadius: 32,
+          offset: const Offset(0, 18),
+        ),
+      ],
+    ),
+    child: child,
+  );
+}
+
+class _ReLoginLoading extends StatelessWidget {
+  const _ReLoginLoading();
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const _ReLoginMascot(size: 112),
+        const SizedBox(height: 24),
+        CircularProgressIndicator(
+          color: const Color(0xFF8BDB00),
+          backgroundColor: Colors.white.withValues(alpha: .10),
+        ),
+      ],
+    ),
+  );
+}
+
+class _ReLoginMascot extends StatelessWidget {
+  const _ReLoginMascot({this.size = 150});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: size,
+    height: size * 1.12,
+    child: CustomPaint(painter: _ReLoginMascotPainter()),
+  );
+}
+
+class _ReLoginMascotPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final green = Paint()..color = const Color(0xFF7ED300);
+    final light = Paint()..color = const Color(0xFF98EA12);
+    final dark = Paint()..color = const Color(0xFF31424B);
+    final white = Paint()..color = Colors.white;
+    final orange = Paint()..color = const Color(0xFFFF9E1B);
+    final shadow = Paint()
+      ..color = Colors.white.withValues(alpha: .86)
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = w * .05;
+
+    final body = Path()
+      ..moveTo(w * .30, h * .30)
+      ..cubicTo(w * .18, h * .29, w * .14, h * .42, w * .21, h * .53)
+      ..lineTo(w * .18, h * .75)
+      ..cubicTo(w * .29, h * .70, w * .37, h * .67, w * .48, h * .70)
+      ..cubicTo(w * .69, h * .75, w * .85, h * .58, w * .78, h * .36)
+      ..cubicTo(w * .86, h * .20, w * .73, h * .08, w * .63, h * .27)
+      ..cubicTo(w * .55, h * .20, w * .44, h * .28, w * .30, h * .30)
+      ..close();
+    canvas.drawPath(body, green);
+
+    final belly = Path()
+      ..moveTo(w * .34, h * .48)
+      ..cubicTo(w * .45, h * .66, w * .65, h * .62, w * .67, h * .43)
+      ..cubicTo(w * .58, h * .56, w * .45, h * .58, w * .34, h * .48)
+      ..close();
+    canvas.drawPath(belly, light);
+
+    canvas.drawCircle(Offset(w * .37, h * .38), w * .13, white);
+    canvas.drawCircle(Offset(w * .59, h * .34), w * .13, white);
+    canvas.drawCircle(Offset(w * .40, h * .40), w * .055, dark);
+    canvas.drawCircle(Offset(w * .57, h * .34), w * .055, dark);
+    canvas.drawCircle(Offset(w * .43, h * .37), w * .022, white);
+    canvas.drawCircle(Offset(w * .60, h * .31), w * .022, white);
+
+    final beak = Path()
+      ..moveTo(w * .47, h * .46)
+      ..lineTo(w * .57, h * .42)
+      ..lineTo(w * .52, h * .51)
+      ..close();
+    canvas.drawPath(beak, orange);
+
+    for (final offset in [
+      Offset(w * .47, h * .58),
+      Offset(w * .56, h * .57),
+      Offset(w * .53, h * .65),
+    ]) {
+      canvas.drawOval(
+        Rect.fromCenter(center: offset, width: w * .08, height: h * .035),
+        light,
+      );
+    }
+
+    canvas.drawOval(Rect.fromLTWH(w * .42, h * .77, w * .16, h * .07), orange);
+    canvas.drawOval(Rect.fromLTWH(w * .65, h * .76, w * .16, h * .07), orange);
+    canvas.drawLine(Offset(w * .30, h * .89), Offset(w * .82, h * .89), shadow);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _ReLoginAccountCard extends StatelessWidget {
+  const _ReLoginAccountCard({
+    required this.account,
+    required this.onTap,
+    required this.onAddAccount,
+  });
+
+  final NomoLastAccount account;
+  final VoidCallback onTap;
+  final VoidCallback onAddAccount;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    clipBehavior: Clip.antiAlias,
+    decoration: BoxDecoration(
+      color: const Color(0xFF101F28).withValues(alpha: .82),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Colors.white.withValues(alpha: .20), width: 2),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 18, 16),
+            child: Row(
+              children: [
+                Container(
+                  width: 58,
+                  height: 58,
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [AppColors.peach, AppColors.lavender],
+                    ),
+                  ),
+                  child: NomoAvatarView(
+                    avatar: account.avatar ?? NomoAvatar.defaultAvatar,
+                    size: 50,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        account.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.2,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        account.email,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: .36),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                NomoGeneratedIcon(
+                  CupertinoIcons.chevron_right,
+                  color: Colors.white.withValues(alpha: .68),
+                  size: 28,
+                ),
+              ],
+            ),
+          ),
+        ),
+        Divider(height: 1, color: Colors.white.withValues(alpha: .16)),
+        InkWell(
+          onTap: onAddAccount,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: .34),
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: NomoGeneratedIcon(
+                      CupertinoIcons.plus,
+                      color: Colors.white.withValues(alpha: .44),
+                      size: 27,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 18),
+                Text(
+                  '別のアカウントを追加',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .44),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
   );
 }
 

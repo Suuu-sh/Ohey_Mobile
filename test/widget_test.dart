@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nomo/core/data/nomo_last_account_store.dart';
 import 'package:nomo/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -20,15 +22,21 @@ void main() {
   testWidgets('signed out returning users land on the login page', (
     tester,
   ) async {
-    SharedPreferences.setMockInitialValues({'nomo_onboarding_seen': true});
+    SharedPreferences.setMockInitialValues({
+      NomoLastAccountStore.onboardingSeenKey: true,
+      NomoLastAccountStore.nameKey: 'Suu',
+      NomoLastAccountStore.emailKey: 'yisshiki39@gmail.com',
+    });
 
     await tester.pumpWidget(const ProviderScope(child: NomoApp()));
     await tester.pumpAndSettle();
 
-    expect(find.text('おかえりログイン'), findsOneWidget);
-    expect(find.text('また乾杯を記録しよう'), findsOneWidget);
-    expect(find.text('飲みログ'), findsOneWidget);
-    expect(find.text('ログイン'), findsOneWidget);
+    expect(find.byType(Dialog), findsNothing);
+    expect(find.text('再ログイン'), findsOneWidget);
+    expect(find.text('Suu'), findsOneWidget);
+    expect(find.text('yisshiki39@gmail.com'), findsOneWidget);
+    expect(find.text('別のアカウントを追加'), findsOneWidget);
+    expect(find.text('アカウント管理'), findsOneWidget);
   });
 }
 
