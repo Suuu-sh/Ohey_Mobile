@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1557,12 +1559,150 @@ class _ReLoginMascot extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
     width: size,
-    height: size,
-    child: Image.asset(
-      'assets/images/nomo_relogin_mascot.png',
-      fit: BoxFit.contain,
-    ),
+    height: size * 1.06,
+    child: CustomPaint(painter: _ReLoginMascotPainter()),
   );
+}
+
+class _ReLoginMascotPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    final body = Paint()..color = const Color(0xFFFF4FA3);
+    final bodyDark = Paint()..color = const Color(0xFFE52B83);
+    final bodyLight = Paint()..color = const Color(0xFFFF86C7);
+    final outline = Paint()
+      ..color = const Color(0xFFFFA4D6)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = w * .018
+      ..strokeCap = StrokeCap.round;
+    final eye = Paint()..color = const Color(0xFF101827);
+    final white = Paint()..color = Colors.white;
+    final mouth = Paint()..color = const Color(0xFF251225);
+    final tongue = Paint()..color = const Color(0xFFFF6AAE);
+    final leaf = Paint()..color = const Color(0xFF84E817);
+    final leafDark = Paint()..color = const Color(0xFF58C80A);
+    final sparkle = Paint()..color = const Color(0xFFFF4FAB);
+
+    void rotatedOval(
+      Offset center,
+      double width,
+      double height,
+      double radians,
+      Paint paint,
+    ) {
+      canvas
+        ..save()
+        ..translate(center.dx, center.dy)
+        ..rotate(radians)
+        ..drawOval(
+          Rect.fromCenter(center: Offset.zero, width: width, height: height),
+          paint,
+        )
+        ..restore();
+    }
+
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * .50, h * .86),
+        width: w * .48,
+        height: h * .075,
+      ),
+      Paint()..color = const Color(0xFFFF4FAB).withValues(alpha: .16),
+    );
+
+    rotatedOval(Offset(w * .33, h * .76), w * .20, h * .17, -.58, bodyDark);
+    rotatedOval(Offset(w * .57, h * .79), w * .18, h * .22, -.12, bodyDark);
+    rotatedOval(Offset(w * .18, h * .49), w * .18, h * .27, -.58, bodyDark);
+    rotatedOval(Offset(w * .82, h * .56), w * .18, h * .24, .18, bodyDark);
+
+    final bodyRect = Rect.fromCenter(
+      center: Offset(w * .50, h * .54),
+      width: w * .66,
+      height: h * .58,
+    );
+    canvas.drawOval(bodyRect, body);
+    canvas.drawOval(bodyRect, outline);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * .38, h * .39),
+        width: w * .30,
+        height: h * .13,
+      ),
+      bodyLight..color = const Color(0xFFFF86C7).withValues(alpha: .36),
+    );
+
+    final stem = Path()
+      ..moveTo(w * .50, h * .26)
+      ..cubicTo(w * .52, h * .20, w * .58, h * .21, w * .59, h * .29)
+      ..cubicTo(w * .56, h * .31, w * .52, h * .31, w * .49, h * .29)
+      ..close();
+    canvas.drawPath(stem, leafDark);
+
+    final leafPath = Path()
+      ..moveTo(w * .52, h * .20)
+      ..cubicTo(w * .58, h * .07, w * .83, h * .08, w * .83, h * .23)
+      ..cubicTo(w * .81, h * .36, w * .60, h * .36, w * .52, h * .20)
+      ..close();
+    canvas.drawPath(leafPath, leaf);
+    canvas.drawPath(
+      leafPath,
+      Paint()
+        ..color = Colors.white.withValues(alpha: .28)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w * .012,
+    );
+
+    rotatedOval(Offset(w * .38, h * .48), w * .17, h * .27, .17, eye);
+    rotatedOval(Offset(w * .60, h * .50), w * .17, h * .27, -.08, eye);
+    canvas.drawCircle(Offset(w * .41, h * .42), w * .035, white);
+    canvas.drawCircle(Offset(w * .62, h * .44), w * .035, white);
+
+    final smile = Path()
+      ..moveTo(w * .43, h * .61)
+      ..cubicTo(w * .46, h * .70, w * .58, h * .70, w * .61, h * .61)
+      ..cubicTo(w * .57, h * .64, w * .48, h * .64, w * .43, h * .61)
+      ..close();
+    canvas.drawPath(smile, mouth);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * .52, h * .66),
+        width: w * .11,
+        height: h * .045,
+      ),
+      tongue,
+    );
+
+    final starCenter = Offset(w * .88, h * .33);
+    final star = Path();
+    for (var i = 0; i < 8; i++) {
+      final radius = i.isEven ? w * .08 : w * .028;
+      final angle = -math.pi / 2 + i * math.pi / 4;
+      final point = Offset(
+        starCenter.dx + math.cos(angle) * radius,
+        starCenter.dy + math.sin(angle) * radius,
+      );
+      if (i == 0) {
+        star.moveTo(point.dx, point.dy);
+      } else {
+        star.lineTo(point.dx, point.dy);
+      }
+    }
+    star.close();
+    canvas.drawPath(star, sparkle);
+    canvas.drawPath(
+      star,
+      Paint()
+        ..color = const Color(0xFFFF9BD0)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w * .012,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _ReLoginAccountCard extends StatelessWidget {
