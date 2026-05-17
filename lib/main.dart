@@ -140,7 +140,7 @@ class NomoApp extends ConsumerWidget {
         return MediaQuery(
           data: mediaQuery.copyWith(
             textScaler: mediaQuery.textScaler.clamp(
-              minScaleFactor: 0.86,
+              minScaleFactor: 0.92,
               maxScaleFactor: 0.92,
             ),
           ),
