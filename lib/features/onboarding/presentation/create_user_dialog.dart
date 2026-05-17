@@ -1970,49 +1970,17 @@ class _SignupStepButton extends StatelessWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => Nomo3DButton(
+    label: label,
     onTap: enabled ? onTap : null,
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
-      width: double.infinity,
-      height: height,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: enabled
-            ? _authPink
-            : const Color(0xFF526671).withValues(alpha: .62),
-        borderRadius: BorderRadius.circular(17),
-        boxShadow: enabled
-            ? const [
-                BoxShadow(
-                  color: _authPinkShadow,
-                  blurRadius: 0,
-                  offset: Offset(0, 6),
-                ),
-              ]
-            : null,
-      ),
-      child: busy
-          ? const SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.8,
-                color: Colors.white,
-              ),
-            )
-          : Text(
-              label,
-              style: TextStyle(
-                color: enabled
-                    ? _authPinkInk
-                    : Colors.white.withValues(alpha: .26),
-                fontSize: 19,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.2,
-              ),
-            ),
-    ),
+    isLoading: busy,
+    enabled: enabled,
+    height: height,
+    radius: 18,
+    color: _authPink,
+    shadowColor: _authPinkShadow,
+    foregroundColor: _authPinkInk,
+    fontSize: 19,
   );
 }
 
@@ -2050,33 +2018,15 @@ class _AccountChoicePrimaryButton extends StatelessWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => Nomo3DButton(
+    label: label,
     onTap: onTap,
-    child: Container(
-      width: double.infinity,
-      height: height,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: _authPink,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: const [
-          BoxShadow(
-            color: _authPinkShadow,
-            blurRadius: 0,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: _authPinkInk,
-          fontSize: 20,
-          fontWeight: FontWeight.w900,
-          letterSpacing: -.3,
-        ),
-      ),
-    ),
+    height: height,
+    radius: 18,
+    color: _authPink,
+    shadowColor: _authPinkShadow,
+    foregroundColor: _authPinkInk,
+    fontSize: 20,
   );
 }
 
@@ -2092,28 +2042,21 @@ class _AccountChoiceOutlineButton extends StatelessWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => _Auth3DPanelButton(
     onTap: onTap,
-    child: Container(
-      width: double.infinity,
-      height: height,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: .20),
-          width: 2.4,
-        ),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: _authPink,
-          fontSize: 20,
-          fontWeight: FontWeight.w900,
-          letterSpacing: -.2,
-        ),
+    height: height,
+    radius: 18,
+    topColor: const Color(0xFF10242F).withValues(alpha: .98),
+    bottomColor: const Color(0xFF384B55),
+    borderColor: Colors.white.withValues(alpha: .22),
+    glowColor: _authPink.withValues(alpha: .12),
+    child: Text(
+      label,
+      style: const TextStyle(
+        color: _authPink,
+        fontSize: 20,
+        fontWeight: FontWeight.w900,
+        letterSpacing: -.2,
       ),
     ),
   );
@@ -2380,34 +2323,97 @@ class _SocialLoginButton extends StatelessWidget {
   final double height;
 
   @override
+  Widget build(BuildContext context) => _Auth3DPanelButton(
+    onTap: onTap,
+    height: height,
+    radius: 18,
+    topColor: Colors.white,
+    bottomColor: const Color(0xFFD4DEE5),
+    borderColor: Colors.white.withValues(alpha: .82),
+    glowColor: Colors.white.withValues(alpha: .20),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(width: 34, child: Center(child: mark)),
+        const SizedBox(width: 14),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF152433),
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: .6,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _Auth3DPanelButton extends StatelessWidget {
+  const _Auth3DPanelButton({
+    required this.child,
+    required this.onTap,
+    required this.height,
+    required this.radius,
+    required this.topColor,
+    required this.bottomColor,
+    required this.borderColor,
+    required this.glowColor,
+  });
+
+  final Widget child;
+  final VoidCallback onTap;
+  final double height;
+  final double radius;
+  final Color topColor;
+  final Color bottomColor;
+  final Color borderColor;
+  final Color glowColor;
+
+  @override
   Widget build(BuildContext context) => GestureDetector(
     onTap: onTap,
     child: Container(
       width: double.infinity,
-      height: height,
+      height: height + 7,
       decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: .20),
-          width: 2.4,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(width: 34, child: Center(child: mark)),
-          const SizedBox(width: 14),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              letterSpacing: .6,
-            ),
+        color: bottomColor,
+        borderRadius: BorderRadius.circular(radius + 1),
+        boxShadow: [
+          BoxShadow(
+            color: glowColor,
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .16),
+            blurRadius: 18,
+            offset: const Offset(0, 9),
           ),
         ],
+      ),
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+          width: double.infinity,
+          height: height,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: topColor,
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(color: borderColor, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withValues(alpha: .08),
+                blurRadius: 0,
+                spreadRadius: -4,
+                offset: const Offset(0, -5),
+              ),
+            ],
+          ),
+          child: child,
+        ),
       ),
     ),
   );
@@ -2432,7 +2438,7 @@ class _AppleMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      const Icon(Icons.apple, color: Colors.white, size: 35);
+      const Icon(Icons.apple, color: Color(0xFF152433), size: 35);
 }
 
 class _DarkMessageText extends StatelessWidget {
