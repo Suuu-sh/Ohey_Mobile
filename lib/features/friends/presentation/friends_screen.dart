@@ -611,9 +611,7 @@ class _FriendCard extends StatelessWidget {
                           height: 28,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: friend.isFavorite
-                                ? const Color(0xFFFFE39B).withValues(alpha: .22)
-                                : Colors.transparent,
+                            color: Colors.transparent,
                             borderRadius: BorderRadius.circular(9),
                           ),
                           child: _FavoriteStarIcon(
