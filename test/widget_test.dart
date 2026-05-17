@@ -25,7 +25,6 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: NomoApp()));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('スキップ'));
     await tester.tap(find.text('スキップ'));
     await tester.pumpAndSettle();
 
@@ -33,14 +32,15 @@ void main() {
     expect(find.text('ログイン'), findsOneWidget);
     expect(find.text('Nomoは初めてですか？'), findsOneWidget);
     expect(find.text('スタート'), findsOneWidget);
+    expect(find.byType(SingleChildScrollView), findsNothing);
 
-    await tester.ensureVisible(find.text('スタート'));
     await tester.tap(find.text('スタート'));
     await tester.pumpAndSettle();
 
     expect(find.text('メールアドレスを入力して\nください'), findsOneWidget);
     expect(find.text('次へ'), findsOneWidget);
     expect(find.text('GOOGLEで登録'), findsOneWidget);
+    expect(find.byType(SingleChildScrollView), findsNothing);
 
     await tester.enterText(find.byType(TextField).first, 'yaujt@gmail.com');
     await tester.pumpAndSettle();
@@ -49,6 +49,7 @@ void main() {
 
     expect(find.text('パスワードを入力してください'), findsOneWidget);
     expect(find.text('アカウントを登録（無料）'), findsOneWidget);
+    expect(find.byType(SingleChildScrollView), findsNothing);
   });
 
   testWidgets('signed out returning users land on the login page', (
@@ -69,6 +70,7 @@ void main() {
     expect(find.text('yisshiki39@gmail.com'), findsOneWidget);
     expect(find.text('別のアカウントを追加'), findsOneWidget);
     expect(find.text('アカウント管理'), findsOneWidget);
+    expect(find.byType(SingleChildScrollView), findsNothing);
 
     await tester.tap(find.text('別のアカウントを追加'));
     await tester.pumpAndSettle();
@@ -79,6 +81,7 @@ void main() {
     expect(find.text('GOOGLEでログイン'), findsOneWidget);
     expect(find.text('FACEBOOKでログイン'), findsOneWidget);
     expect(find.text('APPLEでログイン'), findsOneWidget);
+    expect(find.byType(SingleChildScrollView), findsNothing);
   });
 }
 
