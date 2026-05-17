@@ -599,13 +599,6 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
               ),
               SizedBox(height: compact ? 10 : 14),
               _SocialLoginButton(
-                label: 'FACEBOOKでログイン',
-                height: socialHeight,
-                mark: const _FacebookMark(),
-                onTap: () => _showComingSoonSnack('Facebookログインは今後対応予定です。'),
-              ),
-              SizedBox(height: compact ? 10 : 14),
-              _SocialLoginButton(
                 label: 'APPLEでログイン',
                 height: socialHeight,
                 mark: const _AppleMark(),
@@ -2305,30 +2298,6 @@ class _GoogleMark extends StatelessWidget {
       color: Color(0xFF4285F4),
       fontSize: 27,
       fontWeight: FontWeight.w900,
-    ),
-  );
-}
-
-class _FacebookMark extends StatelessWidget {
-  const _FacebookMark();
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 30,
-    height: 30,
-    decoration: const BoxDecoration(
-      color: Color(0xFF2E89FF),
-      shape: BoxShape.circle,
-    ),
-    alignment: Alignment.center,
-    child: const Text(
-      'f',
-      style: TextStyle(
-        color: Colors.white,
-        fontSize: 25,
-        height: .9,
-        fontWeight: FontWeight.w900,
-      ),
     ),
   );
 }

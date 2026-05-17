@@ -90,7 +90,7 @@ void main() {
     expect(find.text('パスワード'), findsOneWidget);
     expect(find.text('パスワードをお忘れですか？'), findsOneWidget);
     expect(find.text('GOOGLEでログイン'), findsOneWidget);
-    expect(find.text('FACEBOOKでログイン'), findsOneWidget);
+    expect(find.text('FACEBOOKでログイン'), findsNothing);
     expect(find.text('APPLEでログイン'), findsOneWidget);
     expect(find.byType(SingleChildScrollView), findsNothing);
   });
