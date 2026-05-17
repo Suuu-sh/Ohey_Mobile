@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -728,15 +730,29 @@ class _PostPhoto extends StatelessWidget {
   final String path;
 
   @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(22),
-    child: Image.asset(
-      path,
-      height: 150,
-      width: double.infinity,
-      fit: BoxFit.cover,
-    ),
-  );
+  Widget build(BuildContext context) {
+    final image = path.startsWith('http')
+        ? Image.network(
+            path,
+            height: 150,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          )
+        : path.startsWith('/')
+        ? Image.file(
+            File(path),
+            height: 150,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          )
+        : Image.asset(
+            path,
+            height: 150,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          );
+    return ClipRRect(borderRadius: BorderRadius.circular(22), child: image);
+  }
 }
 
 class _FriendAvatarStack extends StatelessWidget {
