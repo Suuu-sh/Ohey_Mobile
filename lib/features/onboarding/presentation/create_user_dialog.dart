@@ -1557,76 +1557,12 @@ class _ReLoginMascot extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
     width: size,
-    height: size * 1.12,
-    child: CustomPaint(painter: _ReLoginMascotPainter()),
+    height: size,
+    child: Image.asset(
+      'assets/images/nomo_relogin_mascot.png',
+      fit: BoxFit.contain,
+    ),
   );
-}
-
-class _ReLoginMascotPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final green = Paint()..color = const Color(0xFF7ED300);
-    final light = Paint()..color = const Color(0xFF98EA12);
-    final dark = Paint()..color = const Color(0xFF31424B);
-    final white = Paint()..color = Colors.white;
-    final orange = Paint()..color = const Color(0xFFFF9E1B);
-    final shadow = Paint()
-      ..color = Colors.white.withValues(alpha: .86)
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = w * .05;
-
-    final body = Path()
-      ..moveTo(w * .30, h * .30)
-      ..cubicTo(w * .18, h * .29, w * .14, h * .42, w * .21, h * .53)
-      ..lineTo(w * .18, h * .75)
-      ..cubicTo(w * .29, h * .70, w * .37, h * .67, w * .48, h * .70)
-      ..cubicTo(w * .69, h * .75, w * .85, h * .58, w * .78, h * .36)
-      ..cubicTo(w * .86, h * .20, w * .73, h * .08, w * .63, h * .27)
-      ..cubicTo(w * .55, h * .20, w * .44, h * .28, w * .30, h * .30)
-      ..close();
-    canvas.drawPath(body, green);
-
-    final belly = Path()
-      ..moveTo(w * .34, h * .48)
-      ..cubicTo(w * .45, h * .66, w * .65, h * .62, w * .67, h * .43)
-      ..cubicTo(w * .58, h * .56, w * .45, h * .58, w * .34, h * .48)
-      ..close();
-    canvas.drawPath(belly, light);
-
-    canvas.drawCircle(Offset(w * .37, h * .38), w * .13, white);
-    canvas.drawCircle(Offset(w * .59, h * .34), w * .13, white);
-    canvas.drawCircle(Offset(w * .40, h * .40), w * .055, dark);
-    canvas.drawCircle(Offset(w * .57, h * .34), w * .055, dark);
-    canvas.drawCircle(Offset(w * .43, h * .37), w * .022, white);
-    canvas.drawCircle(Offset(w * .60, h * .31), w * .022, white);
-
-    final beak = Path()
-      ..moveTo(w * .47, h * .46)
-      ..lineTo(w * .57, h * .42)
-      ..lineTo(w * .52, h * .51)
-      ..close();
-    canvas.drawPath(beak, orange);
-
-    for (final offset in [
-      Offset(w * .47, h * .58),
-      Offset(w * .56, h * .57),
-      Offset(w * .53, h * .65),
-    ]) {
-      canvas.drawOval(
-        Rect.fromCenter(center: offset, width: w * .08, height: h * .035),
-        light,
-      );
-    }
-
-    canvas.drawOval(Rect.fromLTWH(w * .42, h * .77, w * .16, h * .07), orange);
-    canvas.drawOval(Rect.fromLTWH(w * .65, h * .76, w * .16, h * .07), orange);
-    canvas.drawLine(Offset(w * .30, h * .89), Offset(w * .82, h * .89), shadow);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _ReLoginAccountCard extends StatelessWidget {
