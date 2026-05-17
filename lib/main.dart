@@ -64,7 +64,7 @@ class _StartupScreen extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           const Image(
-            image: AssetImage('assets/images/nomo_opening.png'),
+            image: AssetImage('assets/images/opening_nomo.png'),
             fit: BoxFit.cover,
           ),
           if (hasError)
