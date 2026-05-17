@@ -475,7 +475,7 @@ class _SelectedDayPosts extends StatelessWidget {
         Row(
           children: [
             Text(
-              '${day.month}/${day.day}の投稿',
+              '${day.month}/${day.day}の飲みログ',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: titleColor,
                 fontWeight: FontWeight.w900,
@@ -539,7 +539,7 @@ class _NoPostForDay extends StatelessWidget {
         ),
       ),
       child: Text(
-        '投稿がない',
+        '飲みログがない',
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           color: isWhite
               ? const Color(0xFF7A8490)
@@ -662,10 +662,10 @@ class _CalendarPostIcon extends StatelessWidget {
 
 String _calendarPostBody(DrinkLog log) {
   final memo = log.memo.trim();
-  if (memo.isNotEmpty) return '記録したよ！ $memo';
+  if (memo.isNotEmpty) return '飲みログを残したよ！ $memo';
   final place = log.place.trim();
-  if (place.isNotEmpty) return '記録したよ！ $place';
-  return '記録したよ！';
+  if (place.isNotEmpty) return '飲みログを残したよ！ $place';
+  return '飲みログを残したよ！';
 }
 
 class _Marker {

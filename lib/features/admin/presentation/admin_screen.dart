@@ -157,7 +157,7 @@ class _AdminSegmentedControl extends StatelessWidget {
             onTap: () => onChanged(_AdminSection.users),
           ),
           _AdminSegmentButton(
-            label: '投稿',
+            label: '飲みログ',
             selected: section == _AdminSection.posts,
             onTap: () => onChanged(_AdminSection.posts),
           ),
@@ -263,7 +263,7 @@ class _AdminPostsPane extends StatelessWidget {
     return Column(
       children: [
         _AdminPaneToolbar(
-          title: '投稿管理',
+          title: '飲みログ管理',
           actionLabel: '作成',
           onAction: () => _showPostSheet(context, ref),
           onRefresh: () => ref.invalidate(adminDrinkLogsProvider),
@@ -273,7 +273,7 @@ class _AdminPostsPane extends StatelessWidget {
           child: logsAsync.when(
             data: (logs) {
               if (logs.isEmpty) {
-                return const _AdminEmptyState(message: '投稿がまだありません。');
+                return const _AdminEmptyState(message: '飲みログがまだありません。');
               }
               return ListView.separated(
                 padding: const EdgeInsets.only(bottom: 120),
@@ -431,7 +431,7 @@ class _AdminPostCard extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                log.placeName.isEmpty ? '場所未設定の投稿' : log.placeName,
+                log.placeName.isEmpty ? '場所未設定の飲みログ' : log.placeName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -645,7 +645,7 @@ Future<void> _showPostSheet(
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setState) => _AdminSheet(
-          title: log == null ? '投稿作成' : '投稿編集',
+          title: log == null ? '飲みログ作成' : '飲みログ編集',
           child: Padding(
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
@@ -719,7 +719,7 @@ Future<void> _showPostSheet(
                         Navigator.of(sheetContext).pop();
                       }
                       if (context.mounted) {
-                        NomoToast.show(context, '投稿を保存しました。');
+                        NomoToast.show(context, '飲みログを保存しました。');
                       }
                     } on BackendApiException catch (e) {
                       setState(() {
@@ -775,14 +775,14 @@ Future<void> _confirmDeletePost(
 ) async {
   final ok = await _confirmDestructive(
     context,
-    title: '投稿を削除しますか？',
+    title: '飲みログを削除しますか？',
     message: log.placeName.isEmpty ? log.id : log.placeName,
   );
   if (ok != true) return;
   try {
     await ref.read(adminControllerProvider).deleteDrinkLog(log.id);
     ref.invalidate(adminDrinkLogsProvider);
-    if (context.mounted) NomoToast.show(context, '投稿を削除しました。');
+    if (context.mounted) NomoToast.show(context, '飲みログを削除しました。');
   } catch (e) {
     if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
   }
@@ -928,7 +928,7 @@ class _AdminDropdown extends StatelessWidget {
     initialValue: value.isEmpty ? null : value,
     dropdownColor: const Color(0xFF101B28),
     decoration: InputDecoration(
-      labelText: '投稿ユーザー',
+      labelText: '飲みログのユーザー',
       labelStyle: const TextStyle(color: _AdminColors.sub),
       filled: true,
       fillColor: Colors.white.withValues(alpha: .06),

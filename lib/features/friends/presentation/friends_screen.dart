@@ -149,9 +149,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               const SizedBox(height: 18),
               Expanded(
                 child: logsAsync.when(
-                  loading: () => const _LoadingState(label: 'ログを読み込み中...'),
+                  loading: () => const _LoadingState(label: '飲みログを読み込み中...'),
                   error: (error, stackTrace) =>
-                      _ErrorState(title: 'ログを読み込めませんでした', message: '$error'),
+                      _ErrorState(title: '飲みログを読み込めませんでした', message: '$error'),
                   data: (logs) => friendsAsync.when(
                     loading: () => const _LoadingState(label: '友達を読み込み中...'),
                     error: (error, stackTrace) =>
@@ -813,7 +813,7 @@ class _CountBadge extends StatelessWidget {
           ),
           const SizedBox(height: 3),
           Text(
-            '今月の記録',
+            '今月の飲みログ',
             style: TextStyle(
               color: isWhite
                   ? const Color(0xFF687481)

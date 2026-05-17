@@ -453,12 +453,12 @@ class _FeedSectionEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final title = switch (section) {
-      _FeedSection.feed => 'まだ投稿がありません',
-      _FeedSection.following => 'フレンズの投稿はまだありません',
+      _FeedSection.feed => 'まだ飲みログがありません',
+      _FeedSection.following => 'フレンズの飲みログはまだありません',
       _FeedSection.official => '公式のお知らせはまだありません',
     };
     final message = switch (section) {
-      _FeedSection.feed => '乾杯ログを追加するとフィードに表示されます。',
+      _FeedSection.feed => '飲みログを追加するとフィードに表示されます。',
       _FeedSection.following => 'フレンズの飲みログが届くとここに表示されます。',
       _FeedSection.official => 'Nomoからのニュースやイベントをここで確認できます。',
     };
@@ -488,18 +488,18 @@ Future<void> _showFeedPostActions(
       actions: [
         CupertinoActionSheetAction(
           onPressed: () => Navigator.of(context).pop(_FeedPostAction.copy),
-          child: const Text('投稿内容をコピー'),
+          child: const Text('飲みログをコピー'),
         ),
         if (item.ownedByMe)
           CupertinoActionSheetAction(
             isDestructiveAction: true,
             onPressed: () => Navigator.of(context).pop(_FeedPostAction.delete),
-            child: const Text('投稿を削除'),
+            child: const Text('飲みログを削除'),
           )
         else
           CupertinoActionSheetAction(
             onPressed: () => Navigator.of(context).pop(_FeedPostAction.report),
-            child: const Text('投稿を報告'),
+            child: const Text('飲みログを報告'),
           ),
       ],
       cancelButton: CupertinoActionSheetAction(
@@ -513,26 +513,26 @@ Future<void> _showFeedPostActions(
   switch (action) {
     case _FeedPostAction.copy:
       await Clipboard.setData(ClipboardData(text: item.body));
-      if (context.mounted) NomoToast.show(context, '投稿内容をコピーしました');
+      if (context.mounted) NomoToast.show(context, '飲みログをコピーしました');
     case _FeedPostAction.delete:
       final confirmed = await _confirmDeleteFeedPost(context);
       if (!confirmed || !context.mounted) return;
       try {
         await ref.read(drinkLogControllerProvider.notifier).deleteLog(item.id);
         ref.invalidate(drinkLogControllerProvider);
-        if (context.mounted) NomoToast.show(context, '投稿を削除しました');
+        if (context.mounted) NomoToast.show(context, '飲みログを削除しました');
       } catch (error) {
         if (context.mounted) {
-          NomoToast.show(context, '投稿を削除できませんでした: $error');
+          NomoToast.show(context, '飲みログを削除できませんでした: $error');
         }
       }
     case _FeedPostAction.report:
       try {
         await ref.read(drinkLogControllerProvider.notifier).reportLog(item.id);
-        if (context.mounted) NomoToast.show(context, '投稿を報告しました');
+        if (context.mounted) NomoToast.show(context, '飲みログを報告しました');
       } catch (error) {
         if (context.mounted) {
-          NomoToast.show(context, '投稿を報告できませんでした: $error');
+          NomoToast.show(context, '飲みログを報告できませんでした: $error');
         }
       }
   }
@@ -542,8 +542,8 @@ Future<bool> _confirmDeleteFeedPost(BuildContext context) async {
   final result = await showCupertinoDialog<bool>(
     context: context,
     builder: (context) => CupertinoAlertDialog(
-      title: const Text('投稿を削除しますか？'),
-      content: const Text('削除した投稿は元に戻せません。'),
+      title: const Text('飲みログを削除しますか？'),
+      content: const Text('削除した飲みログは元に戻せません。'),
       actions: [
         CupertinoDialogAction(
           onPressed: () => Navigator.of(context).pop(false),
@@ -763,11 +763,11 @@ String _duoStyleBody(_FeedItem item) {
   if (item.userName.contains('公式')) {
     return switch (item.prop) {
       _PostProp.spark => 'Nomoで飲み友との思い出をもっと楽しく残せるようになったよ！',
-      _PostProp.ticket => 'フレンズと一緒に今月の乾杯ログをふり返ろう。',
+      _PostProp.ticket => 'フレンズと一緒に今月の飲みログをふり返ろう。',
       _ => item.body,
     };
   }
-  return '${item.userName}さんが「${item.body}」を記録したよ！';
+  return '${item.userName}さんが「${item.body}」の飲みログを残したよ！';
 }
 
 class _PostPhoto extends StatelessWidget {

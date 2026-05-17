@@ -1114,18 +1114,18 @@ const _demoSlides = [
   _DemoSlideData(
     step: '1 / 4',
     title: 'Nomoで飲みログを\nかわいく残そう',
-    subtitle: '今月、誰と何回飲みに行ったかをゆるく記録。健康管理ではなく、友達との思い出を楽しく残すSNSです。',
+    subtitle: '今月、誰と何回飲みに行ったかを飲みログでゆるく残そう。健康管理ではなく、友達との思い出を楽しく残すSNSです。',
     kind: _DemoKind.hero,
   ),
   _DemoSlideData(
     step: '2 / 4',
     title: 'プロフィールと\nアバターを作ろう',
-    subtitle: '名前と自分らしいアバターを設定。飲み友リストやログにあなたのアイコンとして表示されます。',
+    subtitle: '名前と自分らしいアバターを設定。飲み友リストや飲みログにあなたのアイコンとして表示されます。',
     kind: _DemoKind.profile,
   ),
   _DemoSlideData(
     step: '3 / 4',
-    title: '飲み会の思い出を\nさっと記録',
+    title: '飲み会の思い出を\n飲みログに残そう',
     subtitle: '場所、飲み友、日付、メモを残して、カレンダーで今月の交流を振り返れます。',
     kind: _DemoKind.log,
   ),
@@ -1352,7 +1352,7 @@ class _LogDemoVisual extends StatelessWidget {
           value: '5人',
         ),
         SizedBox(height: 14),
-        _DemoRow(icon: CupertinoIcons.calendar, label: 'カレンダーに記録', value: 'OK'),
+        _DemoRow(icon: CupertinoIcons.calendar, label: '飲みログに保存', value: 'OK'),
       ],
     ),
   );
