@@ -77,6 +77,12 @@ class ProfileScreen extends ConsumerWidget {
                         name: user?.name ?? 'ユーザー名',
                         avatar: user?.avatar,
                       ),
+                      const SizedBox(height: 14),
+                      _ProfileEditCta(
+                        onTap: () async {
+                          await _showEditProfileSheet(context, ref, user);
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -893,6 +899,83 @@ class _ProfileMoodCtaIcon extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _ProfileEditCta extends StatelessWidget {
+  const _ProfileEditCta({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    const baseColor = _ProfileColors.sub;
+    final darkColor = Color.lerp(baseColor, Colors.black, .22)!;
+
+    return Semantics(
+      button: true,
+      label: 'プロフィールを修正',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 60,
+          padding: const EdgeInsets.fromLTRB(16, 8, 14, 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color.lerp(baseColor, Colors.white, .16)!, baseColor],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withValues(alpha: .18)),
+            boxShadow: [
+              BoxShadow(
+                color: baseColor.withValues(alpha: .30),
+                blurRadius: 22,
+                offset: const Offset(0, 12),
+              ),
+              BoxShadow(
+                color: darkColor,
+                blurRadius: 0,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const _ProfileMoodCtaIcon(
+                icon: CupertinoIcons.person_crop_circle,
+                color: Colors.white,
+                muted: true,
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Text(
+                  'プロフィールを修正',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                    letterSpacing: -.2,
+                  ),
+                ),
+              ),
+              NomoPopIcon(
+                icon: CupertinoIcons.chevron_right,
+                color: Colors.white,
+                foregroundColor: Colors.white,
+                size: 28,
+                iconSize: 24,
+                showBubble: false,
+                shadow: false,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _ProfileSocialSection extends StatelessWidget {
