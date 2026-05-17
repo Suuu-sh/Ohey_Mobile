@@ -14,7 +14,7 @@ import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../profile/presentation/avatar_builder_screen.dart';
 
-enum _OnboardingStep { intro, auth, profile }
+enum _OnboardingStep { intro, accountChoice, auth, profile }
 
 class CreateUserDialog extends ConsumerStatefulWidget {
   const CreateUserDialog({super.key, this.startAtLogin = false});
@@ -207,6 +207,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                 _OnboardingStep.intro => _FullScreenStep(
                   child: _IntroCard(child: _buildIntro(context)),
                 ),
+                _OnboardingStep.accountChoice => _buildAccountChoice(context),
                 _OnboardingStep.auth => _buildAuth(context),
                 _OnboardingStep.profile => _FullScreenStep(
                   child: _AuthSurfaceCard(child: _buildProfile(context)),
@@ -248,7 +249,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                     );
                     return;
                   }
-                  setState(() => _step = _OnboardingStep.auth);
+                  setState(() => _step = _OnboardingStep.accountChoice);
                 },
                 child: Container(
                   width: 58,
@@ -280,11 +281,74 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
           ),
           const SizedBox(height: 4),
           TextButton(
-            onPressed: () => setState(() => _step = _OnboardingStep.auth),
-            child: Text(_demoPage == slides.length - 1 ? 'ログインへ進む' : 'スキップ'),
+            onPressed: () =>
+                setState(() => _step = _OnboardingStep.accountChoice),
+            child: Text(_demoPage == slides.length - 1 ? 'はじめる' : 'スキップ'),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAccountChoice(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 700;
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight - 42),
+            child: Column(
+              children: [
+                _AccountChoiceHeader(
+                  onBack: _isBusy
+                      ? null
+                      : () => setState(() => _step = _OnboardingStep.intro),
+                ),
+                SizedBox(height: compact ? 170 : 244),
+                const Text(
+                  'すでにアカウントをお持ち\nですか？',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 27,
+                    fontWeight: FontWeight.w900,
+                    height: 1.2,
+                    letterSpacing: -.8,
+                  ),
+                ),
+                const SizedBox(height: 46),
+                _AccountChoicePrimaryButton(
+                  label: 'ログイン',
+                  onTap: _showLoginForm,
+                ),
+                const SizedBox(height: 68),
+                Divider(
+                  height: 1,
+                  thickness: 2,
+                  color: Colors.white.withValues(alpha: .18),
+                ),
+                const SizedBox(height: 68),
+                const Text(
+                  'Nomoは初めてですか？',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 25,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.6,
+                  ),
+                ),
+                const SizedBox(height: 42),
+                _AccountChoiceOutlineButton(
+                  label: 'スタート',
+                  onTap: _showRegistrationForm,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -314,18 +378,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                   ? '飲みログと飲み友リストの続きを開きましょう。'
                   : '飲みログを保存するためにアカウントが必要です。',
               showBackButton: !widget.startAtLogin || _lastAccount != null,
-              onBack: _isBusy
-                  ? null
-                  : () => setState(() {
-                      if (widget.startAtLogin && _lastAccount != null) {
-                        _showAuthForm = false;
-                        _isLogin = true;
-                        _error = null;
-                        _notice = null;
-                        return;
-                      }
-                      _step = _OnboardingStep.intro;
-                    }),
+              onBack: _isBusy ? null : _handleAuthBack,
             ),
             const SizedBox(height: 16),
             _AuthHeroCard(isLogin: _isLogin),
@@ -508,7 +561,30 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
         _notice = null;
         return;
       }
-      _step = _OnboardingStep.intro;
+      _step = _OnboardingStep.accountChoice;
+      _isLogin = true;
+      _error = null;
+      _notice = null;
+    });
+  }
+
+  void _showLoginForm() {
+    setState(() {
+      _step = _OnboardingStep.auth;
+      _isLogin = true;
+      _showAuthForm = true;
+      _error = null;
+      _notice = null;
+    });
+  }
+
+  void _showRegistrationForm() {
+    setState(() {
+      _step = _OnboardingStep.auth;
+      _isLogin = false;
+      _showAuthForm = true;
+      _error = null;
+      _notice = null;
     });
   }
 
@@ -1502,6 +1578,99 @@ class _ReLoginAccountCard extends StatelessWidget {
           ),
         ),
       ],
+    ),
+  );
+}
+
+class _AccountChoiceHeader extends StatelessWidget {
+  const _AccountChoiceHeader({required this.onBack});
+
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: 48,
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: IconButton(
+        onPressed: onBack,
+        icon: Icon(
+          CupertinoIcons.arrow_left,
+          color: Colors.white.withValues(alpha: .72),
+          size: 31,
+        ),
+      ),
+    ),
+  );
+}
+
+class _AccountChoicePrimaryButton extends StatelessWidget {
+  const _AccountChoicePrimaryButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: double.infinity,
+      height: 64,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFF93DF28),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF69B616),
+            blurRadius: 0,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Color(0xFF11202A),
+          fontSize: 20,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -.3,
+        ),
+      ),
+    ),
+  );
+}
+
+class _AccountChoiceOutlineButton extends StatelessWidget {
+  const _AccountChoiceOutlineButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: double.infinity,
+      height: 64,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: .20),
+          width: 2.4,
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Color(0xFF93DF28),
+          fontSize: 20,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -.2,
+        ),
+      ),
     ),
   );
 }
