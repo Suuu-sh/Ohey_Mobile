@@ -13,6 +13,8 @@ class Nomo3DButton extends StatelessWidget {
     this.color = const Color(0xFF12C9A4),
     this.foregroundColor = Colors.white,
     this.shadowColor,
+    this.disabledColor,
+    this.disabledOpacity = .62,
     this.trailing,
     this.isLoading = false,
     this.enabled = true,
@@ -29,6 +31,8 @@ class Nomo3DButton extends StatelessWidget {
   final Color color;
   final Color foregroundColor;
   final Color? shadowColor;
+  final Color? disabledColor;
+  final double disabledOpacity;
   final Widget? trailing;
   final bool isLoading;
   final bool enabled;
@@ -39,7 +43,7 @@ class Nomo3DButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final active = enabled && onTap != null && !isLoading;
-    final base = active ? color : const Color(0xFF52606F);
+    final base = active ? color : disabledColor ?? const Color(0xFF52606F);
     final bottom = shadowColor ?? Color.lerp(base, Colors.black, .28)!;
 
     return LayoutBuilder(
@@ -49,7 +53,7 @@ class Nomo3DButton extends StatelessWidget {
         return GestureDetector(
           onTap: active ? onTap : null,
           child: Opacity(
-            opacity: active ? 1 : .62,
+            opacity: active ? 1 : disabledOpacity,
             child: Container(
               width: expandsWidth ? double.infinity : null,
               height: height + 7,
