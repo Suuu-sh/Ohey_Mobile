@@ -1013,11 +1013,33 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
 
   Future<void> _saveLastAccount(String email) async {
     final user = ref.read(nomoUserProvider);
+    final displayName = await _latestDisplayName(user?.name);
     await NomoLastAccountStore.save(
-      name: user?.name ?? _nameController.text,
+      name: displayName,
       email: email,
       avatar: user?.avatar ?? _avatar,
     );
+  }
+
+  Future<String?> _latestDisplayName(String? fallback) async {
+    final authUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    if (authUserId == null || authUserId.isEmpty) return fallback;
+
+    try {
+      final row = await ref
+          .read(supabaseClientProvider)
+          .from('profiles')
+          .select('display_name')
+          .eq('id', authUserId)
+          .maybeSingle();
+      final displayName = (row?['display_name'] as String?)?.trim();
+      if (displayName != null && displayName.isNotEmpty) {
+        return displayName;
+      }
+    } catch (_) {
+      // Re-login can still proceed even if refreshing the cached label fails.
+    }
+    return fallback;
   }
 
   String _signupDisplayName(String email) {
