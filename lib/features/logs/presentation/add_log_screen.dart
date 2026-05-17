@@ -298,7 +298,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     children: [
       const Text(
-        '飲み記録',
+        '飲みログ',
         style: TextStyle(
           color: Colors.white,
           fontSize: 24,
@@ -784,7 +784,7 @@ class _SaveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Nomo3DButton(
-    label: '記録する',
+    label: '飲みログを残す',
     isLoading: isSaving,
     enabled: onPressed != null,
     onTap: onPressed,

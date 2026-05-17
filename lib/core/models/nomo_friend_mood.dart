@@ -20,7 +20,7 @@ extension NomoFriendMoodX on NomoFriendMood {
     NomoFriendMood.tipsy => '少しほろよい気分。写真やメモも残しておこう。',
     NomoFriendMood.hype => '交流モード全開！Nomo Friendもハイテンション。',
     NomoFriendMood.tired => 'たくさん遊んだね。今日はふわっと休もう。',
-    NomoFriendMood.sleep => '夢の中でも楽しいログを整理中。おやすみ。',
+    NomoFriendMood.sleep => '夢の中でも楽しい飲みログを整理中。おやすみ。',
   };
 }
 

@@ -2151,7 +2151,7 @@ class _RecentMemory extends StatelessWidget {
                           _Tag(
                             latest?.place.isNotEmpty == true
                                 ? latest!.place
-                                : '未記録',
+                                : '場所未設定',
                           ),
                           const _Tag('思い出'),
                         ],
@@ -2160,7 +2160,7 @@ class _RecentMemory extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  latest == null ? '未記録' : _relativeTime(latest.date),
+                  latest == null ? '飲みログなし' : _relativeTime(latest.date),
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: _ProfileColors.sub,
                     fontWeight: FontWeight.w800,
