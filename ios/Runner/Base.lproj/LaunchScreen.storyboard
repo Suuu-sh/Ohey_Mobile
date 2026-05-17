@@ -19,7 +19,7 @@
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFill" image="LaunchImage" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
                             </imageView>
                         </subviews>
-                        <color key="backgroundColor" red="0.00784313725490196" green="0.01176470588235294" blue="0.07058823529411765" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" red="1" green="0.0392156862745098" blue="0.5529411764705883" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="1a2-6s-vTC"/>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="bottom" secondItem="Ze5-6b-2t3" secondAttribute="bottom" id="4X2-HB-R7a"/>
@@ -34,6 +34,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="LaunchImage" width="852" height="1846"/>
+        <image name="LaunchImage" width="853" height="1844"/>
     </resources>
 </document>
