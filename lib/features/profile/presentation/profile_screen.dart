@@ -2132,11 +2132,7 @@ class _RecentMemory extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        latest == null
-                            ? '飲みログを追加するとここに表示されます'
-                            : (latest.memo.isNotEmpty
-                                  ? latest.memo
-                                  : latest.friendNames),
+                        latest == null ? '飲みログを追加するとここに表示されます' : '飲みログを追加しました。',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -2641,16 +2637,16 @@ void _showMemoryDetail(BuildContext context, DrinkLog? log) {
           _MemoryRow(log: log, onTap: () {}),
           const SizedBox(height: 16),
           Text(
-            'メモ',
+            '飲みログ',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w900,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            log.memo.isEmpty ? 'メモはありません。' : log.memo,
-            style: const TextStyle(
+          const Text(
+            '飲みログを追加しました。',
+            style: TextStyle(
               color: _ProfileColors.sub,
               fontWeight: FontWeight.w800,
               height: 1.5,
