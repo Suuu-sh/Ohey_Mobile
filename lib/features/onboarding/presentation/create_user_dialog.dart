@@ -18,6 +18,10 @@ enum _OnboardingStep { intro, accountChoice, auth, profile }
 
 enum _RegistrationStep { email, password }
 
+const _authPink = AppColors.coral;
+const _authPinkShadow = Color(0xFFE05F83);
+const _authPinkInk = Color(0xFF2B1320);
+
 class CreateUserDialog extends ConsumerStatefulWidget {
   const CreateUserDialog({super.key, this.startAtLogin = false});
 
@@ -457,9 +461,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                             _obscureSignupPassword
                                 ? CupertinoIcons.eye_slash_fill
                                 : CupertinoIcons.eye_fill,
-                            color: const Color(
-                              0xFF18A7D5,
-                            ).withValues(alpha: .78),
+                            color: _authPink.withValues(alpha: .78),
                             size: 28,
                           ),
                         ),
@@ -581,7 +583,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                   child: const Text(
                     'パスワードをお忘れですか？',
                     style: TextStyle(
-                      color: Color(0xFF55D6FF),
+                      color: _authPink,
                       fontSize: 17,
                       fontWeight: FontWeight.w900,
                     ),
@@ -1524,7 +1526,7 @@ class _ReLoginLoading extends StatelessWidget {
         const _ReLoginMascot(size: 112),
         const SizedBox(height: 24),
         CircularProgressIndicator(
-          color: const Color(0xFF8BDB00),
+          color: _authPink,
           backgroundColor: Colors.white.withValues(alpha: .10),
         ),
       ],
@@ -1790,7 +1792,7 @@ class _SignupProgressHeader extends StatelessWidget {
                 heightFactor: 1,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFF93DF28),
+                    color: _authPink,
                     borderRadius: BorderRadius.circular(99),
                     boxShadow: [
                       BoxShadow(
@@ -1853,13 +1855,13 @@ class _SignupStepButton extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: enabled
-            ? const Color(0xFF93DF28)
+            ? _authPink
             : const Color(0xFF526671).withValues(alpha: .62),
         borderRadius: BorderRadius.circular(17),
         boxShadow: enabled
             ? const [
                 BoxShadow(
-                  color: Color(0xFF69B616),
+                  color: _authPinkShadow,
                   blurRadius: 0,
                   offset: Offset(0, 6),
                 ),
@@ -1879,7 +1881,7 @@ class _SignupStepButton extends StatelessWidget {
               label,
               style: TextStyle(
                 color: enabled
-                    ? const Color(0xFF11202A)
+                    ? _authPinkInk
                     : Colors.white.withValues(alpha: .26),
                 fontSize: 19,
                 fontWeight: FontWeight.w900,
@@ -1931,11 +1933,11 @@ class _AccountChoicePrimaryButton extends StatelessWidget {
       height: height,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color(0xFF93DF28),
+        color: _authPink,
         borderRadius: BorderRadius.circular(18),
         boxShadow: const [
           BoxShadow(
-            color: Color(0xFF69B616),
+            color: _authPinkShadow,
             blurRadius: 0,
             offset: Offset(0, 6),
           ),
@@ -1944,7 +1946,7 @@ class _AccountChoicePrimaryButton extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
-          color: Color(0xFF11202A),
+          color: _authPinkInk,
           fontSize: 20,
           fontWeight: FontWeight.w900,
           letterSpacing: -.3,
@@ -1983,7 +1985,7 @@ class _AccountChoiceOutlineButton extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
-          color: Color(0xFF93DF28),
+          color: _authPink,
           fontSize: 20,
           fontWeight: FontWeight.w900,
           letterSpacing: -.2,
@@ -2090,7 +2092,7 @@ class _PlainLoginFields extends StatelessWidget {
               obscurePassword
                   ? CupertinoIcons.eye_slash_fill
                   : CupertinoIcons.eye_fill,
-              color: const Color(0xFF18A7D5).withValues(alpha: .78),
+              color: _authPink.withValues(alpha: .78),
               size: 28,
             ),
           ),
@@ -2142,7 +2144,7 @@ class _PlainLoginTextField extends StatelessWidget {
               fontSize: 19,
               fontWeight: FontWeight.w800,
             ),
-            cursorColor: const Color(0xFF55D6FF),
+            cursorColor: _authPink,
             keyboardType: keyboardType,
             textInputAction: textInputAction,
             autofillHints: autofillHints,
@@ -2197,7 +2199,7 @@ class _PlainLoginButton extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: enabled
-            ? const Color(0xFF55D6FF)
+            ? _authPink
             : const Color(0xFF526671).withValues(alpha: .62),
         borderRadius: BorderRadius.circular(17),
       ),
@@ -2214,7 +2216,7 @@ class _PlainLoginButton extends StatelessWidget {
               'ログイン',
               style: TextStyle(
                 color: enabled
-                    ? const Color(0xFF0D1A22)
+                    ? _authPinkInk
                     : Colors.white.withValues(alpha: .26),
                 fontSize: 19,
                 fontWeight: FontWeight.w900,
@@ -2325,7 +2327,7 @@ class _DarkMessageText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isError ? AppColors.coral : const Color(0xFF55D6FF);
+    final color = isError ? AppColors.coral : _authPink;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
