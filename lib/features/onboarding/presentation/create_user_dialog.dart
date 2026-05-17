@@ -346,7 +346,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
               ),
               SizedBox(height: compact ? 30 : 54),
               Text(
-                'Nomoは初めてですか？',
+                'Nomoは初めてですか',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -357,7 +357,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
               ),
               SizedBox(height: compact ? 28 : 40),
               _AccountChoiceOutlineButton(
-                label: 'スタート',
+                label: 'サインアップ',
                 height: compact ? 58 : 64,
                 onTap: _showRegistrationForm,
               ),
