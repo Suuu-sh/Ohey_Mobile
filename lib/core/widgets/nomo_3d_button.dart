@@ -42,89 +42,98 @@ class Nomo3DButton extends StatelessWidget {
     final base = active ? color : const Color(0xFF52606F);
     final bottom = shadowColor ?? Color.lerp(base, Colors.black, .28)!;
 
-    return GestureDetector(
-      onTap: active ? onTap : null,
-      child: Opacity(
-        opacity: active ? 1 : .62,
-        child: Container(
-          height: height + 7,
-          decoration: BoxDecoration(
-            color: bottom,
-            borderRadius: BorderRadius.circular(radius + 1),
-            boxShadow: [
-              BoxShadow(
-                color: base.withValues(alpha: .22),
-                blurRadius: 22,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 140),
-              width: double.infinity,
-              height: height,
-              padding: padding,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final expandsWidth = constraints.hasBoundedWidth;
+
+        return GestureDetector(
+          onTap: active ? onTap : null,
+          child: Opacity(
+            opacity: active ? 1 : .62,
+            child: Container(
+              width: expandsWidth ? double.infinity : null,
+              height: height + 7,
               decoration: BoxDecoration(
-                color: useGradient ? null : base,
-                gradient: useGradient
-                    ? LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color.lerp(base, Colors.white, .22)!,
-                          Color.lerp(base, Colors.white, .10)!,
-                          base,
-                        ],
-                        stops: const [0, .55, 1],
-                      )
-                    : null,
+                color: bottom,
+                borderRadius: BorderRadius.circular(radius + 1),
                 boxShadow: [
                   BoxShadow(
                     color: base.withValues(alpha: .22),
-                    blurRadius: 18,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 0),
+                    blurRadius: 22,
+                    offset: const Offset(0, 10),
                   ),
                 ],
-                borderRadius: BorderRadius.circular(radius),
-                border: Border.all(color: Colors.white.withValues(alpha: .18)),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (isLoading)
-                    CupertinoActivityIndicator(color: foregroundColor)
-                  else ...[
-                    if (icon != null) ...[
-                      NomoGeneratedIcon(
-                        icon!,
-                        color: foregroundColor,
-                        size: fontSize + 7,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 140),
+                  width: expandsWidth ? double.infinity : null,
+                  height: height,
+                  padding: padding,
+                  decoration: BoxDecoration(
+                    color: useGradient ? null : base,
+                    gradient: useGradient
+                        ? LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color.lerp(base, Colors.white, .22)!,
+                              Color.lerp(base, Colors.white, .10)!,
+                              base,
+                            ],
+                            stops: const [0, .55, 1],
+                          )
+                        : null,
+                    boxShadow: [
+                      BoxShadow(
+                        color: base.withValues(alpha: .22),
+                        blurRadius: 18,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 0),
                       ),
-                      const SizedBox(width: 10),
                     ],
-                    Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: foregroundColor,
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.2,
-                      ),
+                    borderRadius: BorderRadius.circular(radius),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: .18),
                     ),
-                    if (trailing != null) ...[const Spacer(), trailing!],
-                  ],
-                ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isLoading)
+                        CupertinoActivityIndicator(color: foregroundColor)
+                      else ...[
+                        if (icon != null) ...[
+                          NomoGeneratedIcon(
+                            icon!,
+                            color: foregroundColor,
+                            size: fontSize + 7,
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: foregroundColor,
+                            fontSize: fontSize,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -.2,
+                          ),
+                        ),
+                        if (trailing != null) ...[const Spacer(), trailing!],
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
