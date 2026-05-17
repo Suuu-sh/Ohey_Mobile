@@ -5,6 +5,7 @@ import UIKit
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var qrSaverChannel: FlutterMethodChannel?
+  private var instagramStoryChannel: FlutterMethodChannel?
 
   override func application(
     _ application: UIApplication,
@@ -12,6 +13,7 @@ import UIKit
   ) -> Bool {
     if let controller = window?.rootViewController as? FlutterViewController {
       registerQrSaverChannel(on: controller.binaryMessenger)
+      registerInstagramStoryChannel(on: controller.binaryMessenger)
     }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -20,6 +22,53 @@ import UIKit
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoQrSaver") {
       registerQrSaverChannel(on: registrar.messenger())
+      registerInstagramStoryChannel(on: registrar.messenger())
+    }
+  }
+
+  private func registerInstagramStoryChannel(on messenger: FlutterBinaryMessenger) {
+    instagramStoryChannel = FlutterMethodChannel(name: "nomo/instagram_story", binaryMessenger: messenger)
+    instagramStoryChannel?.setMethodCallHandler { [weak self] call, result in
+      guard call.method == "shareImage" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      self?.shareImageToInstagramStory(call.arguments, result: result)
+    }
+  }
+
+  private func shareImageToInstagramStory(_ arguments: Any?, result: @escaping FlutterResult) {
+    guard
+      let args = arguments as? [String: Any],
+      let path = args["path"] as? String,
+      let image = UIImage(contentsOfFile: path),
+      let imageData = image.pngData()
+    else {
+      result(FlutterError(code: "invalid_image", message: "Invalid story image.", details: nil))
+      return
+    }
+
+    guard let url = URL(string: "instagram-stories://share") else {
+      result(false)
+      return
+    }
+
+    DispatchQueue.main.async {
+      guard UIApplication.shared.canOpenURL(url) else {
+        result(false)
+        return
+      }
+
+      let pasteboardItems: [[String: Any]] = [[
+        "com.instagram.sharedSticker.backgroundImage": imageData
+      ]]
+      let options: [UIPasteboard.OptionsKey: Any] = [
+        .expirationDate: Date().addingTimeInterval(60 * 5)
+      ]
+      UIPasteboard.general.setItems(pasteboardItems, options: options)
+      UIApplication.shared.open(url, options: [:]) { success in
+        result(success)
+      }
     }
   }
 
