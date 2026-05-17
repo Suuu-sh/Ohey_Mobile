@@ -16,6 +16,8 @@ import '../../profile/presentation/avatar_builder_screen.dart';
 
 enum _OnboardingStep { intro, accountChoice, auth, profile }
 
+enum _RegistrationStep { email, password }
+
 class CreateUserDialog extends ConsumerStatefulWidget {
   const CreateUserDialog({super.key, this.startAtLogin = false});
 
@@ -149,6 +151,8 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _isLastAccountLoaded = false;
   bool _showAuthForm = false;
   bool _obscurePlainLoginPassword = true;
+  bool _obscureSignupPassword = true;
+  _RegistrationStep _registrationStep = _RegistrationStep.email;
   NomoLastAccount? _lastAccount;
   String? _error;
   String? _notice;
@@ -202,7 +206,9 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.easeOutCubic,
             child: KeyedSubtree(
-              key: ValueKey('$_step-$_showAuthForm-$_isLogin'),
+              key: ValueKey(
+                '$_step-$_showAuthForm-$_isLogin-$_registrationStep',
+              ),
               child: switch (_step) {
                 _OnboardingStep.intro => _FullScreenStep(
                   child: _IntroCard(child: _buildIntro(context)),
@@ -367,90 +373,141 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       return _buildPlainLogin(context);
     }
 
-    return _FullScreenStep(
-      child: _AuthSurfaceCard(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _Header(
-              title: _isLogin ? 'おかえりログイン' : 'Nomoをはじめる',
-              subtitle: _isLogin
-                  ? '飲みログと飲み友リストの続きを開きましょう。'
-                  : '飲みログを保存するためにアカウントが必要です。',
-              showBackButton: !widget.startAtLogin || _lastAccount != null,
-              onBack: _isBusy ? null : _handleAuthBack,
+    return _buildSignupStep(context);
+  }
+
+  Widget _buildSignupStep(BuildContext context) {
+    final isEmailStep = _registrationStep == _RegistrationStep.email;
+    final canContinue = _emailController.text.trim().isNotEmpty && !_isBusy;
+    final canRegister = _passwordController.text.length >= 6 && !_isBusy;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 700;
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight - 42),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _SignupProgressHeader(
+                  progress: isEmailStep ? .48 : .76,
+                  onBack: _isBusy ? null : _handleSignupBack,
+                ),
+                SizedBox(height: compact ? 44 : 68),
+                Text(
+                  isEmailStep ? 'メールアドレスを入力して\nください' : 'パスワードを入力してください',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    height: 1.18,
+                    letterSpacing: -.8,
+                  ),
+                ),
+                SizedBox(height: compact ? 34 : 42),
+                _SignupInputBox(
+                  child: _PlainLoginTextField(
+                    controller: isEmailStep
+                        ? _emailController
+                        : _passwordController,
+                    enabled: !_isBusy,
+                    hintText: isEmailStep ? 'メールアドレス' : 'パスワード',
+                    keyboardType: isEmailStep
+                        ? TextInputType.emailAddress
+                        : null,
+                    textInputAction: isEmailStep
+                        ? TextInputAction.next
+                        : TextInputAction.done,
+                    autofillHints: isEmailStep
+                        ? const [AutofillHints.email]
+                        : const [AutofillHints.newPassword],
+                    obscureText: !isEmailStep && _obscureSignupPassword,
+                    onChanged: (_) => setState(() {}),
+                    onSubmitted: (_) {
+                      if (isEmailStep && canContinue) {
+                        _goToSignupPasswordStep();
+                      } else if (!isEmailStep && canRegister) {
+                        _submitAuth();
+                      }
+                    },
+                    trailing: isEmailStep
+                        ? null
+                        : IconButton(
+                            onPressed: _isBusy
+                                ? null
+                                : () => setState(
+                                    () => _obscureSignupPassword =
+                                        !_obscureSignupPassword,
+                                  ),
+                            icon: Icon(
+                              _obscureSignupPassword
+                                  ? CupertinoIcons.eye_slash_fill
+                                  : CupertinoIcons.eye_fill,
+                              color: const Color(
+                                0xFF18A7D5,
+                              ).withValues(alpha: .78),
+                              size: 28,
+                            ),
+                          ),
+                  ),
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 14),
+                  _DarkMessageText(_error!, isError: true),
+                ],
+                if (_notice != null) ...[
+                  const SizedBox(height: 14),
+                  _DarkMessageText(_notice!),
+                ],
+                SizedBox(height: compact ? 34 : 42),
+                _SignupStepButton(
+                  label: isEmailStep ? '次へ' : 'アカウントを登録（無料）',
+                  busy: _isBusy,
+                  enabled: isEmailStep ? canContinue : canRegister,
+                  onTap: isEmailStep
+                      ? (canContinue ? _goToSignupPasswordStep : null)
+                      : (canRegister ? _submitAuth : null),
+                ),
+                if (!isEmailStep) ...[
+                  const SizedBox(height: 24),
+                  Text(
+                    '登録するとNomoの利用規約とプライバシー\nポリシーに同意したことになります。',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: .82),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      height: 1.45,
+                    ),
+                  ),
+                ],
+                if (isEmailStep) ...[
+                  SizedBox(height: compact ? 220 : 360),
+                  _SocialLoginButton(
+                    label: 'GOOGLEで登録',
+                    mark: const _GoogleMark(),
+                    onTap: () => _showComingSoonSnack('Google登録は今後対応予定です。'),
+                  ),
+                  const SizedBox(height: 14),
+                  _SocialLoginButton(
+                    label: 'FACEBOOKで登録',
+                    mark: const _FacebookMark(),
+                    onTap: () => _showComingSoonSnack('Facebook登録は今後対応予定です。'),
+                  ),
+                  const SizedBox(height: 14),
+                  _SocialLoginButton(
+                    label: 'APPLEで登録',
+                    mark: const _AppleMark(),
+                    onTap: () => _showComingSoonSnack('Apple登録は今後対応予定です。'),
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 16),
-            _AuthHeroCard(isLogin: _isLogin),
-            const SizedBox(height: 16),
-            _AuthTextField(
-              controller: _emailController,
-              enabled: !_isBusy,
-              icon: CupertinoIcons.mail,
-              hintText: 'メールアドレス',
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.next,
-              autofillHints: const [AutofillHints.email],
-            ),
-            const SizedBox(height: 12),
-            _AuthTextField(
-              controller: _passwordController,
-              enabled: !_isBusy,
-              icon: CupertinoIcons.lock_fill,
-              hintText: 'パスワード（6文字以上）',
-              obscureText: true,
-              textInputAction: TextInputAction.done,
-              autofillHints: const [AutofillHints.password],
-            ),
-            if (!_isLogin) ...[
-              const SizedBox(height: 16),
-              _RegistrationProfileFields(
-                userIdController: _userIdController,
-                nameController: _nameController,
-                avatar: _avatar,
-                enabled: !_isBusy,
-                userIdTouched: _userIdTouched,
-                nameTouched: _nameTouched,
-                onUserIdChanged: (_) {
-                  if (!_userIdTouched) setState(() => _userIdTouched = true);
-                },
-                onNameChanged: (_) {
-                  if (!_nameTouched) setState(() => _nameTouched = true);
-                },
-                onAvatarTap: _openAvatarBuilder,
-              ),
-            ],
-            if (_error != null) ...[
-              const SizedBox(height: 12),
-              _MessageText(_error!, isError: true),
-            ],
-            if (_notice != null) ...[
-              const SizedBox(height: 12),
-              _MessageText(_notice!),
-            ],
-            const SizedBox(height: 18),
-            _PrimaryButton(
-              label: _isLogin ? 'ログイン' : '新規登録して続ける',
-              icon: _isLogin
-                  ? CupertinoIcons.arrow_right_circle_fill
-                  : CupertinoIcons.person_add_solid,
-              busy: _isBusy,
-              onPressed: _submitAuth,
-            ),
-            const SizedBox(height: 12),
-            TextButton(
-              onPressed: _isBusy
-                  ? null
-                  : () => setState(() {
-                      _isLogin = !_isLogin;
-                      _error = null;
-                      _notice = null;
-                    }),
-              child: Text(_isLogin ? 'アカウントがない方はこちら' : 'すでにアカウントがある方はこちら'),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -573,6 +630,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _step = _OnboardingStep.auth;
       _isLogin = true;
       _showAuthForm = true;
+      _registrationStep = _RegistrationStep.email;
       _error = null;
       _notice = null;
     });
@@ -583,6 +641,36 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _step = _OnboardingStep.auth;
       _isLogin = false;
       _showAuthForm = true;
+      _registrationStep = _RegistrationStep.email;
+      _passwordController.clear();
+      _error = null;
+      _notice = null;
+    });
+  }
+
+  void _handleSignupBack() {
+    setState(() {
+      if (_registrationStep == _RegistrationStep.password) {
+        _registrationStep = _RegistrationStep.email;
+        _error = null;
+        _notice = null;
+        return;
+      }
+      _step = _OnboardingStep.accountChoice;
+      _isLogin = true;
+      _error = null;
+      _notice = null;
+    });
+  }
+
+  void _goToSignupPasswordStep() {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() => _error = 'メールアドレスを入力してください。');
+      return;
+    }
+    setState(() {
+      _registrationStep = _RegistrationStep.password;
       _error = null;
       _notice = null;
     });
@@ -771,7 +859,6 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       if (email.isEmpty || password.length < 6) {
         throw const AuthException('メールアドレスと6文字以上のパスワードを入力してください。');
       }
-      if (!_isLogin && !_validateRegistrationProfile()) return;
 
       if (_isLogin) {
         await supabase.auth.signInWithPassword(
@@ -787,8 +874,14 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
         }
         _hydrateProfileFromAuthMetadata(supabase.auth.currentUser);
       } else {
-        final userId = _userIdController.text.trim();
-        final name = _nameController.text.trim();
+        final userId = _signupUserId(email);
+        final name = _signupDisplayName(email);
+        if (_userIdController.text.trim().isEmpty) {
+          _userIdController.text = userId;
+        }
+        if (_nameController.text.trim().isEmpty) {
+          _nameController.text = name;
+        }
         final res = await supabase.auth.signUp(
           email: email,
           password: password,
@@ -901,6 +994,31 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       email: email,
       avatar: user?.avatar ?? _avatar,
     );
+  }
+
+  String _signupDisplayName(String email) {
+    final entered = _nameController.text.trim();
+    if (entered.isNotEmpty) return entered;
+    final localPart = email.split('@').first.trim();
+    return localPart.isEmpty ? 'Nomoユーザー' : localPart;
+  }
+
+  String _signupUserId(String email) {
+    final entered = _userIdController.text.trim();
+    if (_isValidUserId(entered)) return entered;
+
+    final localPart = email.split('@').first.toLowerCase();
+    final base = localPart
+        .replaceAll(RegExp(r'[^a-z0-9_]'), '_')
+        .replaceAll(RegExp(r'_+'), '_')
+        .replaceAll(RegExp(r'^_+|_+$'), '');
+    final suffix = DateTime.now().millisecondsSinceEpoch.toRadixString(36);
+    final prefix = (base.isEmpty ? 'nomo' : base);
+    final maxPrefixLength = 24 - suffix.length - 1;
+    final compactPrefix = prefix.length > maxPrefixLength
+        ? prefix.substring(0, maxPrefixLength)
+        : prefix;
+    return '${compactPrefix}_$suffix';
   }
 
   Future<void> _openAvatarBuilder() async {
@@ -1582,6 +1700,151 @@ class _ReLoginAccountCard extends StatelessWidget {
   );
 }
 
+class _SignupProgressHeader extends StatelessWidget {
+  const _SignupProgressHeader({required this.progress, required this.onBack});
+
+  final double progress;
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Container(
+        width: 62,
+        height: 62,
+        decoration: BoxDecoration(
+          color: const Color(0xFF12222C),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withValues(alpha: .08)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .14),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: IconButton(
+          onPressed: onBack,
+          icon: Icon(
+            CupertinoIcons.arrow_left,
+            color: Colors.white.withValues(alpha: .76),
+            size: 31,
+          ),
+        ),
+      ),
+      const SizedBox(width: 14),
+      Expanded(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(99),
+          child: Container(
+            height: 22,
+            color: Colors.white.withValues(alpha: .18),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: FractionallySizedBox(
+                widthFactor: progress.clamp(0, 1),
+                heightFactor: 1,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF93DF28),
+                    borderRadius: BorderRadius.circular(99),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withValues(alpha: .22),
+                        blurRadius: 0,
+                        spreadRadius: -5,
+                        offset: const Offset(0, -5),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+class _SignupInputBox extends StatelessWidget {
+  const _SignupInputBox({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    clipBehavior: Clip.antiAlias,
+    decoration: BoxDecoration(
+      color: const Color(0xFF132630).withValues(alpha: .74),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: Colors.white.withValues(alpha: .18), width: 2),
+    ),
+    child: child,
+  );
+}
+
+class _SignupStepButton extends StatelessWidget {
+  const _SignupStepButton({
+    required this.label,
+    required this.busy,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool busy;
+  final bool enabled;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: enabled ? onTap : null,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 160),
+      width: double.infinity,
+      height: 64,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: enabled
+            ? const Color(0xFF93DF28)
+            : const Color(0xFF526671).withValues(alpha: .62),
+        borderRadius: BorderRadius.circular(17),
+        boxShadow: enabled
+            ? const [
+                BoxShadow(
+                  color: Color(0xFF69B616),
+                  blurRadius: 0,
+                  offset: Offset(0, 6),
+                ),
+              ]
+            : null,
+      ),
+      child: busy
+          ? const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.8,
+                color: Colors.white,
+              ),
+            )
+          : Text(
+              label,
+              style: TextStyle(
+                color: enabled
+                    ? const Color(0xFF11202A)
+                    : Colors.white.withValues(alpha: .26),
+                fontSize: 19,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.2,
+              ),
+            ),
+    ),
+  );
+}
+
 class _AccountChoiceHeader extends StatelessWidget {
   const _AccountChoiceHeader({required this.onBack});
 
@@ -2020,241 +2283,12 @@ class _DarkMessageText extends StatelessWidget {
   }
 }
 
-class _AuthHeroCard extends StatelessWidget {
-  const _AuthHeroCard({required this.isLogin});
-
-  final bool isLogin;
-
-  @override
-  Widget build(BuildContext context) {
-    final height = isLogin ? 154.0 : 118.0;
-    return Container(
-      width: double.infinity,
-      height: height,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFFFEEF5), Color(0xFFE8F6FF), Color(0xFFEDE7FF)],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.white.withValues(alpha: .86)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.rose.withValues(alpha: .16),
-            blurRadius: 22,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          const Positioned(
-            right: -8,
-            top: -10,
-            child: _AuthDecorativeIcon(
-              icon: CupertinoIcons.sparkles,
-              color: AppColors.orange,
-              size: 60,
-              angle: .16,
-            ),
-          ),
-          const Positioned(
-            left: -10,
-            bottom: -12,
-            child: _AuthDecorativeIcon(
-              icon: Icons.local_bar_rounded,
-              color: AppColors.beer,
-              size: 64,
-              angle: -.12,
-            ),
-          ),
-          Positioned(
-            right: isLogin ? 14 : 18,
-            bottom: isLogin ? 12 : 14,
-            child: const _AuthDecorativeIcon(
-              icon: CupertinoIcons.heart_fill,
-              color: AppColors.rose,
-              size: 42,
-              angle: -.08,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
-            child: Row(
-              children: [
-                _AuthAvatarBadge(size: isLogin ? 82 : 68),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isLogin ? 'また乾杯を記録しよう' : '可愛いプロフィールで参加',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.navy,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
-                          height: 1.18,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        isLogin
-                            ? 'アイコン・カレンダー・飲み友を、ログインして続きから。'
-                            : '飲み友に見える名前とアイコンを一緒に作ります。',
-                        maxLines: isLogin ? 2 : 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.mutedInk,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          height: 1.35,
-                        ),
-                      ),
-                      if (isLogin) ...[
-                        const SizedBox(height: 10),
-                        const Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            _AuthMiniBadge(
-                              icon: Icons.local_bar_rounded,
-                              label: '飲みログ',
-                            ),
-                            _AuthMiniBadge(
-                              icon: CupertinoIcons.person_2_fill,
-                              label: '飲み友',
-                            ),
-                            _AuthMiniBadge(
-                              icon: CupertinoIcons.calendar,
-                              label: '予定',
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AuthAvatarBadge extends StatelessWidget {
-  const _AuthAvatarBadge({required this.size});
-
-  final double size;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: size,
-    height: size,
-    padding: EdgeInsets.all(size * .075),
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      gradient: const LinearGradient(colors: [AppColors.peach, AppColors.sky]),
-      border: Border.all(color: Colors.white, width: 3),
-      boxShadow: [
-        BoxShadow(
-          color: AppColors.navy.withValues(alpha: .10),
-          blurRadius: 16,
-          offset: const Offset(0, 8),
-        ),
-      ],
-    ),
-    child: const NomoAvatarView(avatar: NomoAvatar.defaultAvatar),
-  );
-}
-
-class _AuthDecorativeIcon extends StatelessWidget {
-  const _AuthDecorativeIcon({
-    required this.icon,
-    required this.color,
-    required this.size,
-    this.angle = 0,
-  });
-
-  final IconData icon;
-  final Color color;
-  final double size;
-  final double angle;
-
-  @override
-  Widget build(BuildContext context) => Transform.rotate(
-    angle: angle,
-    child: Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .76),
-        shape: BoxShape.circle,
-        border: Border.all(color: color.withValues(alpha: .28)),
-      ),
-      child: Center(
-        child: NomoPopIcon(
-          icon: icon,
-          color: color,
-          size: size * .58,
-          showBubble: false,
-        ),
-      ),
-    ),
-  );
-}
-
-class _AuthMiniBadge extends StatelessWidget {
-  const _AuthMiniBadge({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .72),
-      borderRadius: BorderRadius.circular(99),
-      border: Border.all(color: AppColors.navy.withValues(alpha: .08)),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        NomoGeneratedIcon(icon, color: AppColors.navy, size: 14),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.navy,
-            fontSize: 10,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
 class _Header extends StatelessWidget {
-  const _Header({
-    required this.title,
-    required this.subtitle,
-    this.onBack,
-    this.showBackButton = true,
-  });
+  const _Header({required this.title, required this.subtitle, this.onBack});
 
   final String title;
   final String subtitle;
   final VoidCallback? onBack;
-  final bool showBackButton;
 
   @override
   Widget build(BuildContext context) {
@@ -2264,15 +2298,13 @@ class _Header extends StatelessWidget {
           children: [
             SizedBox(
               width: 48,
-              child: showBackButton
-                  ? IconButton(
-                      onPressed: onBack,
-                      icon: const NomoGeneratedIcon(
-                        CupertinoIcons.chevron_left,
-                        size: 20,
-                      ),
-                    )
-                  : const SizedBox.shrink(),
+              child: IconButton(
+                onPressed: onBack,
+                icon: const NomoGeneratedIcon(
+                  CupertinoIcons.chevron_left,
+                  size: 20,
+                ),
+              ),
             ),
             Expanded(
               child: Text(
@@ -2304,111 +2336,6 @@ class _Header extends StatelessWidget {
 
 bool _isValidUserId(String value) =>
     RegExp(r'^[a-zA-Z0-9_]{3,24}$').hasMatch(value);
-
-class _RegistrationProfileFields extends StatelessWidget {
-  const _RegistrationProfileFields({
-    required this.userIdController,
-    required this.nameController,
-    required this.avatar,
-    required this.enabled,
-    required this.userIdTouched,
-    required this.nameTouched,
-    required this.onUserIdChanged,
-    required this.onNameChanged,
-    required this.onAvatarTap,
-  });
-
-  final TextEditingController userIdController;
-  final TextEditingController nameController;
-  final NomoAvatar avatar;
-  final bool enabled;
-  final bool userIdTouched;
-  final bool nameTouched;
-  final ValueChanged<String> onUserIdChanged;
-  final ValueChanged<String> onNameChanged;
-  final VoidCallback onAvatarTap;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .78),
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: const Color(0xFFE4E8F0), width: 1.4),
-    ),
-    child: Column(
-      children: [
-        Row(
-          children: [
-            GestureDetector(
-              onTap: enabled ? onAvatarTap : null,
-              child: Container(
-                width: 64,
-                height: 64,
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [AppColors.peach, AppColors.sky],
-                  ),
-                  border: Border.all(color: Colors.white, width: 2.5),
-                ),
-                child: NomoAvatarView(avatar: avatar),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'プロフィール',
-                    style: TextStyle(
-                      color: AppColors.ink,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    '登録と同時に作成します',
-                    style: TextStyle(
-                      color: AppColors.mutedInk,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        _ProfileTextField(
-          controller: userIdController,
-          enabled: enabled,
-          icon: CupertinoIcons.at,
-          hintText: 'ユーザーID（必須・完全一致検索用）',
-          errorText:
-              userIdTouched && !_isValidUserId(userIdController.text.trim())
-              ? '3〜24文字の英数字と_のみ使えます'
-              : null,
-          onChanged: onUserIdChanged,
-        ),
-        const SizedBox(height: 10),
-        _ProfileTextField(
-          controller: nameController,
-          enabled: enabled,
-          icon: CupertinoIcons.person_crop_circle,
-          hintText: 'ユーザー名（必須）',
-          errorText: nameTouched && nameController.text.trim().isEmpty
-              ? 'ユーザー名を入力してください'
-              : null,
-          onChanged: onNameChanged,
-        ),
-      ],
-    ),
-  );
-}
 
 class _ProfileTextField extends StatelessWidget {
   const _ProfileTextField({
@@ -2463,10 +2390,7 @@ class _AuthTextField extends StatelessWidget {
     required this.enabled,
     required this.icon,
     required this.hintText,
-    this.keyboardType,
     this.textInputAction,
-    this.autofillHints,
-    this.obscureText = false,
     this.onChanged,
   });
 
@@ -2474,10 +2398,7 @@ class _AuthTextField extends StatelessWidget {
   final bool enabled;
   final IconData icon;
   final String hintText;
-  final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
-  final Iterable<String>? autofillHints;
-  final bool obscureText;
   final ValueChanged<String>? onChanged;
 
   @override
@@ -2510,10 +2431,7 @@ class _AuthTextField extends StatelessWidget {
               fontSize: 15,
             ),
             cursorColor: AppColors.navy,
-            keyboardType: keyboardType,
             textInputAction: textInputAction,
-            autofillHints: autofillHints,
-            obscureText: obscureText,
             onChanged: onChanged,
             decoration: InputDecoration(
               isCollapsed: true,

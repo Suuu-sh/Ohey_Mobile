@@ -33,6 +33,22 @@ void main() {
     expect(find.text('ログイン'), findsOneWidget);
     expect(find.text('Nomoは初めてですか？'), findsOneWidget);
     expect(find.text('スタート'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('スタート'));
+    await tester.tap(find.text('スタート'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('メールアドレスを入力して\nください'), findsOneWidget);
+    expect(find.text('次へ'), findsOneWidget);
+    expect(find.text('GOOGLEで登録'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).first, 'yaujt@gmail.com');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('次へ'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('パスワードを入力してください'), findsOneWidget);
+    expect(find.text('アカウントを登録（無料）'), findsOneWidget);
   });
 
   testWidgets('signed out returning users land on the login page', (
