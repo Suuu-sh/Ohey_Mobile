@@ -1575,11 +1575,6 @@ class _ReLoginMascotPainter extends CustomPainter {
     final body = Paint()..color = const Color(0xFFFF4FA3);
     final bodyDark = Paint()..color = const Color(0xFFE52B83);
     final bodyLight = Paint()..color = const Color(0xFFFF86C7);
-    final outline = Paint()
-      ..color = const Color(0xFFFFA4D6)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = w * .018
-      ..strokeCap = StrokeCap.round;
     final eye = Paint()..color = const Color(0xFF101827);
     final white = Paint()..color = Colors.white;
     final mouth = Paint()..color = const Color(0xFF251225);
@@ -1615,10 +1610,10 @@ class _ReLoginMascotPainter extends CustomPainter {
       Paint()..color = const Color(0xFFFF4FAB).withValues(alpha: .16),
     );
 
-    rotatedOval(Offset(w * .33, h * .76), w * .20, h * .17, -.58, bodyDark);
-    rotatedOval(Offset(w * .57, h * .79), w * .18, h * .22, -.12, bodyDark);
-    rotatedOval(Offset(w * .18, h * .49), w * .18, h * .27, -.58, bodyDark);
-    rotatedOval(Offset(w * .82, h * .56), w * .18, h * .24, .18, bodyDark);
+    rotatedOval(Offset(w * .34, h * .74), w * .22, h * .18, -.55, body);
+    rotatedOval(Offset(w * .57, h * .77), w * .19, h * .22, -.12, body);
+    rotatedOval(Offset(w * .22, h * .50), w * .20, h * .29, -.54, body);
+    rotatedOval(Offset(w * .78, h * .56), w * .20, h * .25, .14, body);
 
     final bodyRect = Rect.fromCenter(
       center: Offset(w * .50, h * .54),
@@ -1626,7 +1621,6 @@ class _ReLoginMascotPainter extends CustomPainter {
       height: h * .58,
     );
     canvas.drawOval(bodyRect, body);
-    canvas.drawOval(bodyRect, outline);
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(w * .38, h * .39),
@@ -1634,6 +1628,14 @@ class _ReLoginMascotPainter extends CustomPainter {
         height: h * .13,
       ),
       bodyLight..color = const Color(0xFFFF86C7).withValues(alpha: .36),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * .58, h * .70),
+        width: w * .30,
+        height: h * .13,
+      ),
+      bodyDark..color = const Color(0xFFE52B83).withValues(alpha: .18),
     );
 
     final stem = Path()
