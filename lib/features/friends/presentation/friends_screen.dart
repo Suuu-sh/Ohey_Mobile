@@ -12,6 +12,7 @@ import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
+import '../application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../profile/presentation/profile_screen.dart';
 
@@ -41,6 +42,17 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           if (!context.mounted) return;
           NomoToast.show(context, 'お気に入り設定に失敗しました: $error');
         });
+  }
+
+  Future<void> _sendDrinkInvite(NomoFriend friend) async {
+    try {
+      await ref.read(drinkInviteControllerProvider).sendTodayInvite(friend.id);
+      if (!mounted) return;
+      NomoToast.show(context, '${friend.name}に飲み招待を送りました。');
+    } catch (error) {
+      if (!mounted) return;
+      NomoToast.show(context, '招待を送れませんでした: $error');
+    }
   }
 
   @override
@@ -107,6 +119,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                       selectedFilter: _selectedFilter,
                       onFavoriteToggle: (friend, isFavorite) =>
                           _onToggleFavorite(context, friend, isFavorite),
+                      onInvite: (friend) => _sendDrinkInvite(friend),
                     ),
                   ),
                 ),
@@ -265,6 +278,7 @@ class _FriendsList extends StatelessWidget {
     required this.userAvatar,
     required this.selectedFilter,
     required this.onFavoriteToggle,
+    required this.onInvite,
   });
 
   final List<DrinkLog> logs;
@@ -272,6 +286,7 @@ class _FriendsList extends StatelessWidget {
   final NomoAvatar userAvatar;
   final _FriendFilterType selectedFilter;
   final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
+  final ValueChanged<NomoFriend> onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -313,6 +328,7 @@ class _FriendsList extends StatelessWidget {
           count: item.count,
           onFavoriteToggle: () =>
               onFavoriteToggle(item.friend, !item.friend.isFavorite),
+          onInvite: () => onInvite(item.friend),
         );
       },
     );
@@ -476,12 +492,14 @@ class _FriendCard extends StatelessWidget {
     required this.status,
     required this.count,
     required this.onFavoriteToggle,
+    required this.onInvite,
   });
 
   final NomoFriend friend;
   final _FriendStatus status;
   final int count;
   final VoidCallback onFavoriteToggle;
+  final VoidCallback onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -606,7 +624,12 @@ class _FriendCard extends StatelessWidget {
             children: [
               _CountBadge(count: count, accent: accent),
               const SizedBox(height: 10),
-              _InviteButton(status: status, accent: accent, name: friend.name),
+              _InviteButton(
+                status: status,
+                accent: accent,
+                name: friend.name,
+                onInvite: onInvite,
+              ),
             ],
           ),
         ],
@@ -699,11 +722,13 @@ class _InviteButton extends StatelessWidget {
     required this.status,
     required this.accent,
     required this.name,
+    required this.onInvite,
   });
 
   final _FriendStatus status;
   final Color accent;
   final String name;
+  final VoidCallback onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -712,7 +737,12 @@ class _InviteButton extends StatelessWidget {
       label: '誘う',
       icon: CupertinoIcons.paperplane_fill,
       onTap: enabled
-          ? () => _showInviteSheet(context: context, name: name, accent: accent)
+          ? () => _showInviteSheet(
+              context: context,
+              name: name,
+              accent: accent,
+              onTodayInvite: onInvite,
+            )
           : null,
       enabled: enabled,
       height: 36,
@@ -729,6 +759,7 @@ Future<void> _showInviteSheet({
   required BuildContext context,
   required String name,
   required Color accent,
+  required VoidCallback onTodayInvite,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -802,7 +833,7 @@ Future<void> _showInviteSheet({
               accent: _FriendsColors.lime,
               onTap: () {
                 Navigator.of(context).pop();
-                NomoToast.show(context, '$nameに今日誘うメッセージを準備しました。');
+                onTodayInvite();
               },
             ),
           ],
