@@ -2132,7 +2132,9 @@ class _RecentMemory extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        latest == null ? '飲みログを追加するとここに表示されます' : '飲みログを追加しました。',
+                        latest == null
+                            ? '飲みログを追加するとここに表示されます'
+                            : latest.memo.trim(),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -2625,6 +2627,7 @@ void _showMemoryDetail(BuildContext context, DrinkLog? log) {
     _showSnack(context, 'まだ表示できる思い出がありません。');
     return;
   }
+  final comment = log.memo.trim();
   showModalBottomSheet<void>(
     context: context,
     backgroundColor: Colors.transparent,
@@ -2635,23 +2638,25 @@ void _showMemoryDetail(BuildContext context, DrinkLog? log) {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _MemoryRow(log: log, onTap: () {}),
-          const SizedBox(height: 16),
-          Text(
-            '飲みログ',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
+          if (comment.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(
+              'コメント',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            '飲みログを追加しました。',
-            style: TextStyle(
-              color: _ProfileColors.sub,
-              fontWeight: FontWeight.w800,
-              height: 1.5,
+            const SizedBox(height: 8),
+            Text(
+              comment,
+              style: const TextStyle(
+                color: _ProfileColors.sub,
+                fontWeight: FontWeight.w800,
+                height: 1.5,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     ),
