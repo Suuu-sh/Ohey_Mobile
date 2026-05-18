@@ -1056,6 +1056,394 @@ class _FeedModalTextButton extends StatelessWidget {
   }
 }
 
+Future<void> _showFeedCompanionList(
+  BuildContext context,
+  List<_Companion> friends,
+) async {
+  if (friends.isEmpty) return;
+  HapticFeedback.selectionClick();
+  final selected = await showModalBottomSheet<_Companion>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (context) => _FeedCompanionListSheet(friends: friends),
+  );
+  if (!context.mounted || selected == null) return;
+  HapticFeedback.selectionClick();
+  await showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: .62),
+    builder: (context) => _FeedCompanionProfileSheet(friend: selected),
+  );
+}
+
+class _FeedCompanionListSheet extends StatelessWidget {
+  const _FeedCompanionListSheet({required this.friends});
+
+  final List<_Companion> friends;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final subtitleColor = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .58);
+    final listHeight = (friends.length * 78.0).clamp(
+      78.0,
+      MediaQuery.sizeOf(context).height * .44,
+    );
+    return _FeedModalShell(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _FeedModalHandle(),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              NomoPopIcon(
+                icon: CupertinoIcons.person_2_fill,
+                color: _FeedColors.teal,
+                size: 46,
+                iconSize: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '一緒に飲んだフレンズ',
+                      style: TextStyle(
+                        color: titleColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.6,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'タップしてプロフィールを見る',
+                      style: TextStyle(
+                        color: subtitleColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: NomoPopIcon(
+                  icon: CupertinoIcons.xmark,
+                  color: subtitleColor,
+                  size: 34,
+                  iconSize: 18,
+                  shadow: false,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: listHeight,
+            child: ListView.separated(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: friends.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              itemBuilder: (context, index) => _FeedCompanionTile(
+                friend: friends[index],
+                onTap: () => Navigator.of(context).pop(friends[index]),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeedCompanionTile extends StatelessWidget {
+  const _FeedCompanionTile({required this.friend, required this.onTap});
+
+  final _Companion friend;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final subtitleColor = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .56);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? const Color(0xFFF7FAFC)
+              : Colors.white.withValues(alpha: .055),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isWhite
+                ? const Color(0xFFE1E8F1)
+                : Colors.white.withValues(alpha: .10),
+          ),
+        ),
+        child: Row(
+          children: [
+            _AvatarBubble(
+              avatar: friend.avatar,
+              size: 44,
+              glowColor: friend.accent,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    friend.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: titleColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.3,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    friend.handleLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: subtitleColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: _companionStatusColor(
+                  friend.statusKey,
+                ).withValues(alpha: isWhite ? .13 : .11),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                _companionStatusLabel(friend.statusKey),
+                style: TextStyle(
+                  color: _companionStatusColor(friend.statusKey),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            NomoPopIcon(
+              icon: CupertinoIcons.chevron_forward,
+              color: subtitleColor,
+              size: 28,
+              iconSize: 15,
+              shadow: false,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedCompanionProfileSheet extends StatelessWidget {
+  const _FeedCompanionProfileSheet({required this.friend});
+
+  final _Companion friend;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final subtitleColor = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .58);
+    final statusColor = _companionStatusColor(friend.statusKey);
+    return _FeedModalShell(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _FeedModalHandle(),
+          const SizedBox(height: 14),
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: NomoPopIcon(
+                icon: CupertinoIcons.xmark,
+                color: subtitleColor,
+                size: 34,
+                iconSize: 18,
+                shadow: false,
+              ),
+            ),
+          ),
+          Center(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 142,
+                  height: 142,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [friend.accent, _FeedColors.teal],
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 130,
+                  height: 130,
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: isWhite ? Colors.white : const Color(0xFFF4F2EE),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 5),
+                  ),
+                  child: ClipOval(
+                    child: NomoAvatarView(avatar: friend.avatar, size: 112),
+                  ),
+                ),
+                const Positioned(
+                  right: 12,
+                  top: 14,
+                  child: NomoPopIcon(
+                    icon: CupertinoIcons.sparkles,
+                    color: Color(0xFFFFD166),
+                    size: 32,
+                    iconSize: 19,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            friend.name,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: titleColor,
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.8,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isWhite
+                    ? const Color(0xFFF2F6F8)
+                    : Colors.white.withValues(alpha: .08),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: isWhite
+                      ? const Color(0xFFE1E8F1)
+                      : Colors.white.withValues(alpha: .10),
+                ),
+              ),
+              child: Text(
+                friend.handleLabel,
+                style: TextStyle(
+                  color: subtitleColor,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: isWhite
+                  ? const Color(0xFFF7FAFC)
+                  : Colors.white.withValues(alpha: .045),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: isWhite
+                    ? const Color(0xFFE1E8F1)
+                    : Colors.white.withValues(alpha: .08),
+              ),
+            ),
+            child: Row(
+              children: [
+                NomoPopIcon(
+                  icon: _companionStatusIcon(friend.statusKey),
+                  color: statusColor,
+                  size: 40,
+                  iconSize: 22,
+                  showBubble: false,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _companionStatusLabel(friend.statusKey),
+                        style: TextStyle(
+                          color: titleColor,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _companionStatusMessage(friend.statusKey),
+                        style: TextStyle(
+                          color: subtitleColor,
+                          fontWeight: FontWeight.w800,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _FeedModalTextButton(
+            label: '閉じる',
+            onTap: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _FeedPostCard extends StatelessWidget {
   const _FeedPostCard({
     required this.item,
@@ -1410,33 +1798,49 @@ class _WithFriendsPill extends StatelessWidget {
   final List<_Companion> friends;
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: 46,
-    padding: const EdgeInsets.fromLTRB(12, 8, 13, 8),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .035),
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(
-        color: Colors.white.withValues(alpha: .20),
-        width: 1.6,
-      ),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          'with',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: Colors.white.withValues(alpha: .90),
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.2,
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    return Semantics(
+      button: true,
+      label: '一緒に飲んだフレンズを表示',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _showFeedCompanionList(context, friends),
+        child: Container(
+          height: 46,
+          padding: const EdgeInsets.fromLTRB(12, 8, 13, 8),
+          decoration: BoxDecoration(
+            color: isWhite
+                ? Colors.black.withValues(alpha: .025)
+                : Colors.white.withValues(alpha: .035),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isWhite
+                  ? Colors.black.withValues(alpha: .18)
+                  : Colors.white.withValues(alpha: .20),
+              width: 1.6,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'with',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: ink.withValues(alpha: .90),
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.2,
+                ),
+              ),
+              const SizedBox(width: 8),
+              _FriendAvatarStack(friends: friends),
+            ],
           ),
         ),
-        const SizedBox(width: 8),
-        _FriendAvatarStack(friends: friends),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 class _FeedNotificationsScreen extends ConsumerStatefulWidget {
@@ -1911,15 +2315,99 @@ class _FeedItem {
 enum _PostProp { beer, ticket, spark }
 
 class _Companion {
-  const _Companion({required this.name, required this.avatar});
+  const _Companion({
+    required this.name,
+    required this.handle,
+    required this.avatar,
+    required this.accent,
+    required this.statusKey,
+  });
 
   factory _Companion.fromFriend(NomoFriend friend) => _Companion(
     name: friend.name,
+    handle: friend.vibe,
     avatar: friend.avatar ?? NomoAvatar.defaultAvatar,
+    accent: friend.accentColor,
+    statusKey: friend.statusKey,
   );
 
   final String name;
+  final String handle;
   final NomoAvatar avatar;
+  final Color accent;
+  final String? statusKey;
+
+  String get handleLabel => handle.trim().isEmpty ? 'Nomoフレンズ' : '@$handle';
+}
+
+String _companionStatusLabel(String? statusKey) {
+  final legacy = switch (statusKey) {
+    'available' => '今ヒマ',
+    'last_train' => '終電までなら',
+    'want_drink' => '飲みたい気分',
+    'busy' => '休肝日',
+    'unset' => '未設定',
+    _ => null,
+  };
+  if (legacy != null) return legacy;
+  return nomoDailyStatusFromKey(statusKey).label;
+}
+
+String _companionStatusMessage(String? statusKey) {
+  final legacy = switch (statusKey) {
+    'available' => '今日なら行けるよ〜！',
+    'last_train' => '軽く飲めるかも！',
+    'want_drink' => '誰か誘って〜！',
+    'busy' => '今日はお休み中...',
+    'unset' => 'ステータス未設定',
+    _ => null,
+  };
+  if (legacy != null) return legacy;
+  return nomoDailyStatusFromKey(statusKey).description;
+}
+
+IconData _companionStatusIcon(String? statusKey) {
+  final legacy = switch (statusKey) {
+    'available' => CupertinoIcons.hand_thumbsup_fill,
+    'last_train' => CupertinoIcons.clock_fill,
+    'want_drink' => Icons.local_bar_rounded,
+    'busy' => CupertinoIcons.moon_fill,
+    _ => null,
+  };
+  if (legacy != null) return legacy;
+  final status = nomoDailyStatusFromKey(statusKey);
+  return switch (status) {
+    NomoDailyStatus.canDrinkToday => CupertinoIcons.checkmark_circle_fill,
+    NomoDailyStatus.lightDrink => CupertinoIcons.clock_fill,
+    NomoDailyStatus.wantDrinkHard => Icons.local_bar_rounded,
+    NomoDailyStatus.nonAlcohol => CupertinoIcons.drop_fill,
+    NomoDailyStatus.liverRest => CupertinoIcons.moon_fill,
+    NomoDailyStatus.waitingInvite => CupertinoIcons.bell_fill,
+    NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
+    NomoDailyStatus.unselected => CupertinoIcons.circle,
+  };
+}
+
+Color _companionStatusColor(String? statusKey) {
+  final legacy = switch (statusKey) {
+    'available' => const Color(0xFF9AF21A),
+    'last_train' => const Color(0xFF58D6FF),
+    'want_drink' => const Color(0xFFFFC857),
+    'busy' => const Color(0xFFFF5EA8),
+    _ => null,
+  };
+  if (legacy != null) return legacy;
+  final status = nomoDailyStatusFromKey(statusKey);
+  return switch (status) {
+    NomoDailyStatus.canDrinkToday => const Color(0xFF9AF21A),
+    NomoDailyStatus.lightDrink => const Color(0xFF58D6FF),
+    NomoDailyStatus.wantDrinkHard => const Color(0xFFFFC857),
+    NomoDailyStatus.nonAlcohol => const Color(0xFF5DEBD3),
+    NomoDailyStatus.liverRest => const Color(0xFFFF5EA8),
+    NomoDailyStatus.waitingInvite => const Color(0xFFC08BFF),
+    NomoDailyStatus.hasPlans => const Color(0xFFB8C1CD),
+    NomoDailyStatus.unselected => _FeedColors.sub,
+  };
 }
 
 class _FeedNotification {
