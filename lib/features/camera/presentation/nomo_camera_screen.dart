@@ -109,37 +109,42 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: _CameraColors.shell,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-                child: _CameraPreviewStage(
-                  filter: _filter,
-                  showStoryPreview: _showStoryPreview,
-                  onClose: () => Navigator.of(context).maybePop(),
-                  cameraController: _cameraController,
-                  isInitializingCamera: _isInitializingCamera,
-                  flashOn: _flashOn,
-                  onFlash: _toggleFlash,
-                  onSettings: () => _showSnack('カメラ設定は準備中です。'),
-                  onTool: (label) => _showSnack('$label は準備中です。'),
-                  onBackToCamera: () =>
-                      setState(() => _showStoryPreview = false),
-                ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          _CameraPreviewStage(
+            filter: _filter,
+            showStoryPreview: _showStoryPreview,
+            onClose: () => Navigator.of(context).maybePop(),
+            cameraController: _cameraController,
+            isInitializingCamera: _isInitializingCamera,
+            flashOn: _flashOn,
+            onFlash: _toggleFlash,
+            onSettings: () => _showSnack('カメラ設定は準備中です。'),
+            onTool: (label) => _showSnack('$label は準備中です。'),
+            onBackToCamera: () => setState(() => _showStoryPreview = false),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _InstagramFilterStrip(filter: _filter, onCapture: _capture),
+                  _BottomCameraBar(
+                    filter: _filter,
+                    isCapturing: _isCapturing,
+                    onCapture: _capture,
+                    onFlip: _flipCamera,
+                  ),
+                ],
               ),
             ),
-            _InstagramFilterStrip(filter: _filter, onCapture: _capture),
-            _BottomCameraBar(
-              filter: _filter,
-              isCapturing: _isCapturing,
-              onCapture: _capture,
-              onFlip: _flipCamera,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -234,15 +239,7 @@ class _CameraPreviewStage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 0),
-      clipBehavior: Clip.antiAlias,
-      decoration: const BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(28),
-          bottom: Radius.circular(34),
-        ),
-      ),
+      color: Colors.black,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -264,24 +261,6 @@ class _CameraPreviewStage extends StatelessWidget {
             bottom: 0,
             child: Center(child: _SideToolRail(onTool: onTool)),
           ),
-          if (!showStoryPreview)
-            Center(
-              child: Text(
-                '飲みログを撮影',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.6,
-                  shadows: const [
-                    Shadow(
-                      color: Colors.black54,
-                      blurRadius: 14,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-              ),
-            ),
         ],
       ),
     );
@@ -407,7 +386,7 @@ class _TopCameraControls extends StatelessWidget {
     return Positioned(
       left: 24,
       right: 24,
-      top: 22,
+      top: MediaQuery.paddingOf(context).top + 16,
       child: Row(
         children: [
           _CameraIconButton(
