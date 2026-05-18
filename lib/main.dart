@@ -271,7 +271,7 @@ double _openingCollapseMaxRadius(Size size) {
 }
 
 double _openingCollapseFaceStopRadius(Size size) {
-  return size.shortestSide * .30;
+  return size.shortestSide * .27;
 }
 
 double _openingCollapseRadius(Size size, double rawProgress) {
