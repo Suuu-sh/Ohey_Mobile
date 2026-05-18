@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
+import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
@@ -125,37 +125,36 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
   }
 
   Future<_FriendProfile?> _findProfileByUserId(String userId) async {
-    final currentUser = Supabase.instance.client.auth.currentUser;
-    if (currentUser == null) {
+    final client = ref.read(backendApiClientProvider);
+    if (client.currentUserId == null) {
       throw StateError('友達追加にはログインが必要です。');
     }
     final exactUserId = userId.trim();
     if (exactUserId.isEmpty) return null;
-    final row = await Supabase.instance.client
-        .from('profiles')
-        .select('id, display_name, user_id, avatar_url')
-        .eq('user_id', exactUserId)
-        .maybeSingle();
-    if (row == null) return null;
-    return _FriendProfile.fromRow(Map<String, dynamic>.from(row));
+    try {
+      final row = await client.get(
+        '/v1/profiles/by-user-id/${Uri.encodeComponent(exactUserId)}',
+      );
+      return _FriendProfile.fromRow(Map<String, dynamic>.from(row as Map));
+    } on BackendApiException catch (error) {
+      if (error.statusCode == 404) return null;
+      rethrow;
+    }
   }
 
   Future<void> _addFriend(_FriendProfile profile) async {
-    final currentUser = Supabase.instance.client.auth.currentUser;
-    if (currentUser == null) {
+    final client = ref.read(backendApiClientProvider);
+    final currentUserId = client.currentUserId;
+    if (currentUserId == null || currentUserId.isEmpty) {
       NomoToast.show(context, '友達追加にはログインが必要です。');
       return;
     }
-    if (profile.id == currentUser.id) {
+    if (profile.id == currentUserId) {
       NomoToast.show(context, '自分自身は追加できません。');
       return;
     }
-    final ids = [currentUser.id, profile.id]..sort();
     try {
-      await Supabase.instance.client.from('friendships').upsert({
-        'user_a_id': ids[0],
-        'user_b_id': ids[1],
-      }, onConflict: 'user_a_id,user_b_id');
+      await client.post('/v1/friends', {'friend_id': profile.id});
       ref.invalidate(friendsProvider);
       if (!mounted) return;
       Navigator.of(context).pop();

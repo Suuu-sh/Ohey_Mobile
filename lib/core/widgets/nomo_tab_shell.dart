@@ -84,7 +84,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
       _didScheduleProfileRestore = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         try {
-          await ref.read(nomoUserProvider.notifier).loadFromSupabaseProfile();
+          await ref.read(nomoUserProvider.notifier).loadFromBackendProfile();
         } finally {
           if (mounted) {
             setState(() {

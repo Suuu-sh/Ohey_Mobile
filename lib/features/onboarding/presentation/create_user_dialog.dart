@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/config/supabase_config.dart';
+import '../../../core/data/backend_api_client.dart';
 import '../../../core/data/nomo_last_account_store.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/nomo_avatar.dart';
@@ -888,7 +889,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
         );
         final loaded = await ref
             .read(nomoUserProvider.notifier)
-            .loadFromSupabaseProfile();
+            .loadFromBackendProfile();
         if (loaded && mounted) {
           await _saveLastAccount(email);
           return;
@@ -1019,17 +1020,14 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   }
 
   Future<String?> _latestDisplayName(String? fallback) async {
-    final authUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    final client = ref.read(backendApiClientProvider);
+    final authUserId = client.currentUserId;
     if (authUserId == null || authUserId.isEmpty) return fallback;
 
     try {
-      final row = await ref
-          .read(supabaseClientProvider)
-          .from('profiles')
-          .select('display_name')
-          .eq('id', authUserId)
-          .maybeSingle();
-      final displayName = (row?['display_name'] as String?)?.trim();
+      final row = await client.get('/v1/me/profile');
+      final profile = row is Map ? Map<String, dynamic>.from(row) : null;
+      final displayName = (profile?['display_name'] as String?)?.trim();
       if (displayName != null && displayName.isNotEmpty) {
         return displayName;
       }

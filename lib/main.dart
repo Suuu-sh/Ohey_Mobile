@@ -6,14 +6,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/application/nomo_user_controller.dart';
 import 'core/config/supabase_config.dart';
 import 'core/data/auth_session_guard.dart';
+import 'core/data/supabase_client_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/nomo_theme_mode.dart';
 import 'core/widgets/nomo_tab_shell.dart';
 
 const _openingNomoAsset = 'assets/images/opening_nomo.png';
 const _minimumOpeningDuration = Duration(seconds: 1);
+const _openingExitFaceArrivalMs = 620;
+const _openingExitFacePauseMs = 250;
+const _openingExitFinalCollapseMs = 320;
+const _openingExitDurationMs =
+    _openingExitFaceArrivalMs +
+    _openingExitFacePauseMs +
+    _openingExitFinalCollapseMs;
+const _openingExitFaceStopStart =
+    _openingExitFaceArrivalMs / _openingExitDurationMs;
+const _openingExitFaceStopEnd =
+    (_openingExitFaceArrivalMs + _openingExitFacePauseMs) /
+    _openingExitDurationMs;
 
 ui.Image? _openingNomoImage;
 
@@ -40,16 +54,21 @@ Future<void> _loadOpeningNomoImage() async {
 }
 
 final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
-  final minimumOpening = Future<void>.delayed(_minimumOpeningDuration);
+  final alreadyInitialized = _isSupabaseInitialized();
+  final minimumOpening = alreadyInitialized
+      ? Future<void>.value()
+      : Future<void>.delayed(_minimumOpeningDuration);
   try {
-    await Supabase.initialize(
-      url: SupabaseConfig.url,
-      anonKey: SupabaseConfig.publishableKey,
-      authOptions: const FlutterAuthClientOptions(
-        authFlowType: AuthFlowType.pkce,
-        detectSessionInUri: true,
-      ),
-    ).timeout(const Duration(seconds: 12));
+    if (!alreadyInitialized) {
+      await Supabase.initialize(
+        url: SupabaseConfig.url,
+        anonKey: SupabaseConfig.publishableKey,
+        authOptions: const FlutterAuthClientOptions(
+          authFlowType: AuthFlowType.pkce,
+          detectSessionInUri: true,
+        ),
+      ).timeout(const Duration(seconds: 12));
+    }
 
     await AuthSessionGuard.clearIfProjectMismatch(
       Supabase.instance.client,
@@ -59,14 +78,115 @@ final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
   }
 });
 
-class _BootstrapGate extends ConsumerWidget {
+bool _isSupabaseInitialized() {
+  try {
+    return Supabase.instance.isInitialized;
+  } catch (_) {
+    return false;
+  }
+}
+
+class _BootstrapGate extends ConsumerStatefulWidget {
   const _BootstrapGate();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_BootstrapGate> createState() => _BootstrapGateState();
+}
+
+class _BootstrapGateState extends ConsumerState<_BootstrapGate>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _openingExitController;
+  bool _openingExitCompleted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _openingExitController =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: _openingExitDurationMs),
+        )..addStatusListener((status) {
+          if (status == AnimationStatus.completed && mounted) {
+            setState(() => _openingExitCompleted = true);
+          }
+        });
+  }
+
+  @override
+  void dispose() {
+    _openingExitController.dispose();
+    super.dispose();
+  }
+
+  void _startOpeningExit() {
+    if (_openingExitCompleted ||
+        _openingExitController.isAnimating ||
+        _openingExitController.value > 0) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          _openingExitCompleted ||
+          _openingExitController.isAnimating ||
+          _openingExitController.value > 0) {
+        return;
+      }
+      _openingExitController.forward();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<AsyncValue<void>>(_nomoBootstrapProvider, (previous, next) {
+      if (next.isLoading) {
+        _openingExitCompleted = false;
+        _openingExitController.reset();
+      }
+    });
+
     final bootstrap = ref.watch(_nomoBootstrapProvider);
     return bootstrap.when(
-      data: (_) => const NomoTabShell(),
+      data: (_) {
+        final user = ref.watch(nomoUserProvider);
+        ref.watch(supabaseAuthStateProvider);
+        final hasSession =
+            ref.watch(supabaseClientProvider).auth.currentSession != null;
+        final canRevealFeed = user != null || !hasSession;
+
+        if (canRevealFeed) {
+          _startOpeningExit();
+        }
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            const NomoTabShell(),
+            if (!_openingExitCompleted)
+              AnimatedBuilder(
+                animation: _openingExitController,
+                builder: (context, child) => Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ClipPath(
+                      clipper: _OpeningCollapseClipper(
+                        progress: _openingExitController.value,
+                      ),
+                      child: child,
+                    ),
+                    IgnorePointer(
+                      child: CustomPaint(
+                        painter: _OpeningCollapseEdgePainter(
+                          progress: _openingExitController.value,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                child: const _StartupScreen(),
+              ),
+          ],
+        );
+      },
       loading: () => const _StartupScreen(),
       error: (error, stackTrace) => _StartupScreen(
         message: '起動に失敗しました',
@@ -75,6 +195,106 @@ class _BootstrapGate extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _OpeningCollapseClipper extends CustomClipper<Path> {
+  const _OpeningCollapseClipper({required this.progress});
+
+  final double progress;
+
+  @override
+  Path getClip(Size size) {
+    final eased = Curves.easeInOutCubic.transform(progress.clamp(0, 1));
+    final scale = 1 - eased;
+    if (scale <= 0.001) {
+      return Path();
+    }
+
+    final radius = _openingCollapseRadius(size, progress);
+    return Path()..addOval(
+      Rect.fromCircle(
+        center: Offset(size.width / 2, size.height / 2),
+        radius: radius,
+      ),
+    );
+  }
+
+  @override
+  bool shouldReclip(covariant _OpeningCollapseClipper oldClipper) =>
+      oldClipper.progress != progress;
+}
+
+class _OpeningCollapseEdgePainter extends CustomPainter {
+  const _OpeningCollapseEdgePainter({required this.progress});
+
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final eased = Curves.easeInOutCubic.transform(progress.clamp(0, 1));
+    final scale = 1 - eased;
+    if (scale <= 0.001 || scale >= 0.999) {
+      return;
+    }
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = _openingCollapseRadius(size, progress);
+    final faceStopRadius = _openingCollapseFaceStopRadius(size);
+    final fadeIn = (progress * 5).clamp(0, 1).toDouble();
+    final fadeOut = (radius / faceStopRadius).clamp(0, 1).toDouble();
+    final edgeOpacity = fadeIn * fadeOut;
+    final glowWidth = size.shortestSide * .035;
+    final rimWidth = size.shortestSide * .006;
+
+    final outerGlow = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = glowWidth
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)
+      ..color = Colors.white.withValues(alpha: .18 * edgeOpacity);
+    final rim = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = rimWidth
+      ..color = Colors.white.withValues(alpha: .46 * edgeOpacity);
+
+    canvas.drawCircle(center, radius, outerGlow);
+    canvas.drawCircle(center, radius, rim);
+  }
+
+  @override
+  bool shouldRepaint(covariant _OpeningCollapseEdgePainter oldDelegate) =>
+      oldDelegate.progress != progress;
+}
+
+double _openingCollapseMaxRadius(Size size) {
+  return (Offset(size.width / 2, size.height / 2) - Offset.zero).distance +
+      size.shortestSide * .02;
+}
+
+double _openingCollapseFaceStopRadius(Size size) {
+  return size.shortestSide * .20;
+}
+
+double _openingCollapseRadius(Size size, double rawProgress) {
+  final progress = rawProgress.clamp(0, 1).toDouble();
+  final maxRadius = _openingCollapseMaxRadius(size);
+  final faceStopRadius = _openingCollapseFaceStopRadius(size);
+
+  if (progress <= _openingExitFaceStopStart) {
+    final phase = progress / _openingExitFaceStopStart;
+    return ui.lerpDouble(
+      maxRadius,
+      faceStopRadius,
+      Curves.easeInOutCubic.transform(phase),
+    )!;
+  }
+
+  if (progress <= _openingExitFaceStopEnd) {
+    return faceStopRadius;
+  }
+
+  final phase =
+      (progress - _openingExitFaceStopEnd) / (1 - _openingExitFaceStopEnd);
+  return ui.lerpDouble(faceStopRadius, 0, Curves.easeInCubic.transform(phase))!;
 }
 
 class _StartupScreen extends StatelessWidget {
