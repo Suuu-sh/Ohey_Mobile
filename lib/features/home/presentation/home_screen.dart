@@ -827,7 +827,8 @@ class _FeedPostCard extends StatelessWidget {
                 icon: CupertinoIcons.square_arrow_up,
                 label: '',
                 color: Colors.white,
-                useSystemIcon: true,
+                keepIconColor: true,
+                useVectorShareIcon: true,
                 onTap: onShare,
               ),
               const SizedBox(width: 10),
@@ -862,21 +863,23 @@ class _DuoFeedButton extends StatelessWidget {
     required this.label,
     required this.color,
     this.onTap,
-    this.useSystemIcon = false,
+    this.keepIconColor = false,
+    this.useVectorShareIcon = false,
   });
 
   final IconData icon;
   final String label;
   final Color color;
   final VoidCallback? onTap;
-  final bool useSystemIcon;
+  final bool keepIconColor;
+  final bool useVectorShareIcon;
 
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final effectiveIconColor = color == Colors.white && isWhite
-        ? const Color(0xFF101820)
-        : color;
+    final effectiveIconColor = keepIconColor
+        ? color
+        : (color == Colors.white && isWhite ? const Color(0xFF101820) : color);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -895,8 +898,8 @@ class _DuoFeedButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            useSystemIcon
-                ? Icon(icon, color: effectiveIconColor, size: 27)
+            useVectorShareIcon
+                ? _VectorShareIcon(color: effectiveIconColor, size: 27)
                 : NomoPopIcon(
                     icon: icon,
                     color: effectiveIconColor,
@@ -920,6 +923,54 @@ class _DuoFeedButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _VectorShareIcon extends StatelessWidget {
+  const _VectorShareIcon({required this.color, required this.size});
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: size,
+    child: CustomPaint(painter: _VectorShareIconPainter(color)),
+  );
+}
+
+class _VectorShareIconPainter extends CustomPainter {
+  const _VectorShareIconPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = w * .105;
+
+    final tray = Path()
+      ..moveTo(w * .22, h * .62)
+      ..lineTo(w * .22, h * .76)
+      ..quadraticBezierTo(w * .22, h * .86, w * .32, h * .86)
+      ..lineTo(w * .68, h * .86)
+      ..quadraticBezierTo(w * .78, h * .86, w * .78, h * .76)
+      ..lineTo(w * .78, h * .62);
+    canvas.drawPath(tray, stroke);
+
+    canvas.drawLine(Offset(w * .50, h * .66), Offset(w * .50, h * .16), stroke);
+    canvas.drawLine(Offset(w * .34, h * .31), Offset(w * .50, h * .16), stroke);
+    canvas.drawLine(Offset(w * .66, h * .31), Offset(w * .50, h * .16), stroke);
+  }
+
+  @override
+  bool shouldRepaint(covariant _VectorShareIconPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 bool _isDisplayablePostPhoto(String? path) {
