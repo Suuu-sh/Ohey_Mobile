@@ -592,6 +592,7 @@ Future<void> _showUserSheet(
                       }
                       ref.invalidate(adminUsersProvider);
                       if (sheetContext.mounted) {
+                        FocusScope.of(sheetContext).unfocus();
                         Navigator.of(sheetContext).pop();
                       }
                       if (context.mounted) {
@@ -617,6 +618,7 @@ Future<void> _showUserSheet(
       ),
     );
   } finally {
+    await WidgetsBinding.instance.endOfFrame;
     emailController.dispose();
     passwordController.dispose();
     userIdController.dispose();
@@ -717,6 +719,7 @@ Future<void> _showPostSheet(
                       }
                       ref.invalidate(adminDrinkLogsProvider);
                       if (sheetContext.mounted) {
+                        FocusScope.of(sheetContext).unfocus();
                         Navigator.of(sheetContext).pop();
                       }
                       if (context.mounted) {
@@ -742,6 +745,7 @@ Future<void> _showPostSheet(
       ),
     );
   } finally {
+    await WidgetsBinding.instance.endOfFrame;
     ownerController.dispose();
     placeController.dispose();
     memoController.dispose();
@@ -847,7 +851,10 @@ class _AdminSheet extends StatelessWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    FocusScope.of(context).unfocus();
+                    Navigator.of(context).pop();
+                  },
                   icon: const NomoGeneratedIcon(
                     CupertinoIcons.xmark,
                     color: Colors.white,
