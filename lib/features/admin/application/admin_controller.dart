@@ -101,12 +101,14 @@ class AdminController {
     required String ownerUserId,
     required String placeName,
     required String memo,
+    required bool isOfficial,
   }) async {
     await _client.post('/v1/admin/drink-logs', {
       'owner_user_id': ownerUserId,
       'drank_at': DateTime.now().toUtc().toIso8601String(),
       'place_name': placeName,
       'memo': memo,
+      'is_official': isOfficial,
     });
   }
 
@@ -115,11 +117,13 @@ class AdminController {
     required String ownerUserId,
     required String placeName,
     required String memo,
+    required bool isOfficial,
   }) async {
     await _client.patch('/v1/admin/drink-logs/$id', {
       'owner_user_id': ownerUserId,
       'place_name': placeName,
       'memo': memo,
+      'is_official': isOfficial,
     });
   }
 
@@ -166,6 +170,7 @@ class AdminDrinkLog {
     required this.drankAt,
     required this.placeName,
     required this.memo,
+    required this.isOfficial,
   });
 
   final String id;
@@ -175,6 +180,7 @@ class AdminDrinkLog {
   final DateTime drankAt;
   final String placeName;
   final String memo;
+  final bool isOfficial;
 
   factory AdminDrinkLog.fromJson(Map<String, dynamic> json) {
     final owner = json['owner'] is Map
@@ -190,6 +196,7 @@ class AdminDrinkLog {
           DateTime.fromMillisecondsSinceEpoch(0),
       placeName: json['place_name'] as String? ?? '',
       memo: json['memo'] as String? ?? '',
+      isOfficial: json['is_official'] as bool? ?? false,
     );
   }
 }

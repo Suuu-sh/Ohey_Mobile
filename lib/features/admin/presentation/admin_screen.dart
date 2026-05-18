@@ -442,6 +442,10 @@ class _AdminPostCard extends StatelessWidget {
                 ),
               ),
             ),
+            if (log.isOfficial) ...[
+              const _AdminBadge(label: '公式'),
+              const SizedBox(width: 8),
+            ],
             _AdminIconButton(icon: CupertinoIcons.pencil, onTap: onEdit),
             const SizedBox(width: 8),
             _AdminIconButton(
@@ -638,6 +642,7 @@ Future<void> _showPostSheet(
   final ownerController = TextEditingController(text: log?.ownerUserId ?? '');
   var ownerUserId =
       log?.ownerUserId ?? (users.isNotEmpty ? users.first.id : '');
+  var isOfficial = log?.isOfficial ?? false;
   var saving = false;
   String? error;
 
@@ -679,6 +684,12 @@ Future<void> _showPostSheet(
                   label: 'メモ',
                   maxLines: 3,
                 ),
+                const SizedBox(height: 10),
+                _AdminSwitchRow(
+                  label: '公式投稿として表示',
+                  value: isOfficial,
+                  onChanged: (value) => setState(() => isOfficial = value),
+                ),
                 if (error != null) ...[
                   const SizedBox(height: 10),
                   Text(
@@ -706,6 +717,7 @@ Future<void> _showPostSheet(
                               ownerUserId: ownerUserId,
                               placeName: placeController.text.trim(),
                               memo: memoController.text.trim(),
+                              isOfficial: isOfficial,
                             );
                       } else {
                         await ref
@@ -715,6 +727,7 @@ Future<void> _showPostSheet(
                               ownerUserId: ownerUserId,
                               placeName: placeController.text.trim(),
                               memo: memoController.text.trim(),
+                              isOfficial: isOfficial,
                             );
                       }
                       ref.invalidate(adminDrinkLogsProvider);
