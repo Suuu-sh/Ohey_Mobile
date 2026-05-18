@@ -46,6 +46,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
     final friendsAsync = ref.watch(friendsProvider);
     final keyboardBottom = MediaQuery.viewInsetsOf(context).bottom;
     final maxSheetHeight = MediaQuery.sizeOf(context).height * .86;
+    final isWhite = _AddLogColors.isWhite(context);
 
     return AnimatedPadding(
       duration: const Duration(milliseconds: 220),
@@ -60,14 +61,14 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
               margin: const EdgeInsets.all(14),
               padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
               decoration: BoxDecoration(
-                color: _AddLogColors.panel,
+                color: _AddLogColors.panelFor(context),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: _AddLogColors.line),
+                border: Border.all(color: _AddLogColors.lineFor(context)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: .24),
-                    blurRadius: 30,
-                    offset: const Offset(0, 16),
+                    color: Colors.black.withValues(alpha: isWhite ? .10 : .24),
+                    blurRadius: isWhite ? 24 : 30,
+                    offset: Offset(0, isWhite ? 12 : 16),
                   ),
                 ],
               ),
@@ -244,17 +245,24 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
   }
 
   Future<void> _pickDate() async {
+    final isWhite = _AddLogColors.isWhite(context);
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(DateTime.now().year - 2),
       lastDate: DateTime(DateTime.now().year + 1),
       builder: (context, child) => Theme(
-        data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: _AddLogColors.lime,
-            surface: _AddLogColors.surface,
-          ),
+        data: (isWhite ? ThemeData.light() : ThemeData.dark()).copyWith(
+          colorScheme: isWhite
+              ? const ColorScheme.light(
+                  primary: _AddLogColors.lime,
+                  surface: Colors.white,
+                  onSurface: _AddLogColors.lightText,
+                )
+              : const ColorScheme.dark(
+                  primary: _AddLogColors.lime,
+                  surface: _AddLogColors.surface,
+                ),
         ),
         child: child!,
       ),
@@ -399,28 +407,31 @@ class _Header extends StatelessWidget {
   final VoidCallback onClose;
 
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      const Text(
-        '飲みログ',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.w900,
-          letterSpacing: -1.1,
+  Widget build(BuildContext context) {
+    final titleColor = _AddLogColors.primaryTextFor(context);
+    return Row(
+      children: [
+        Text(
+          '飲みログ',
+          style: TextStyle(
+            color: titleColor,
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -1.1,
+          ),
         ),
-      ),
-      const Spacer(),
-      IconButton(
-        onPressed: onClose,
-        icon: const NomoGeneratedIcon(
-          CupertinoIcons.xmark,
-          color: Colors.white,
-          size: 28,
+        const Spacer(),
+        IconButton(
+          onPressed: onClose,
+          icon: NomoGeneratedIcon(
+            CupertinoIcons.xmark,
+            color: titleColor,
+            size: 28,
+          ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }
 
 class _InputBox extends StatelessWidget {
@@ -449,67 +460,75 @@ class _InputBox extends StatelessWidget {
   final ValueChanged<String>? onChanged;
 
   @override
-  Widget build(BuildContext context) => _DarkShell(
-    borderless: borderless,
-    padding: EdgeInsets.symmetric(
-      horizontal: borderless ? 0 : 16,
-      vertical: borderless ? 0 : 13,
-    ),
-    child: Row(
-      crossAxisAlignment: maxLines > 1
-          ? CrossAxisAlignment.start
-          : CrossAxisAlignment.center,
-      children: [
-        if (icon != null) ...[
-          NomoPopIcon(
-            icon: icon!,
-            color: iconColor,
-            size: 34,
-            iconSize: 19,
-            shadow: false,
-          ),
-          const SizedBox(width: 12),
-        ],
-        Expanded(
-          child: TextField(
-            controller: controller,
-            maxLines: maxLines,
-            maxLength: showCounter ? maxLength : null,
-            onChanged: onChanged,
-            decoration: InputDecoration(
-              isDense: true,
-              border: InputBorder.none,
-              counterText: '',
-              hintText: hint,
-              hintStyle: TextStyle(
-                color: Colors.white.withValues(alpha: .45),
-                fontWeight: FontWeight.w800,
+  Widget build(BuildContext context) {
+    final primaryText = _AddLogColors.primaryTextFor(context);
+    final secondaryText = _AddLogColors.secondaryTextFor(context);
+    return _DarkShell(
+      borderless: borderless,
+      padding: EdgeInsets.symmetric(
+        horizontal: borderless ? 0 : 16,
+        vertical: borderless ? 0 : 13,
+      ),
+      child: Row(
+        crossAxisAlignment: maxLines > 1
+            ? CrossAxisAlignment.start
+            : CrossAxisAlignment.center,
+        children: [
+          if (icon != null) ...[
+            NomoPopIcon(
+              icon: icon!,
+              color: iconColor,
+              size: 34,
+              iconSize: 19,
+              shadow: false,
+            ),
+            const SizedBox(width: 12),
+          ],
+          Expanded(
+            child: TextField(
+              controller: controller,
+              maxLines: maxLines,
+              maxLength: showCounter ? maxLength : null,
+              onChanged: onChanged,
+              decoration: InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
+                fillColor: Colors.transparent,
+                counterText: '',
+                hintText: hint,
+                hintStyle: TextStyle(
+                  color: secondaryText,
+                  fontWeight: FontWeight.w800,
+                ),
+                contentPadding: EdgeInsets.zero,
               ),
-              contentPadding: EdgeInsets.zero,
-            ),
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-        if (showCounter)
-          Padding(
-            padding: const EdgeInsets.only(left: 8, top: 48),
-            child: Text(
-              '${controller.text.length}/$maxLength',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: .38),
-                fontSize: 12,
+                color: primaryText,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
             ),
           ),
-        ?suffix,
-      ],
-    ),
-  );
+          if (showCounter)
+            Padding(
+              padding: const EdgeInsets.only(left: 8, top: 48),
+              child: Text(
+                '${controller.text.length}/$maxLength',
+                style: TextStyle(
+                  color: secondaryText,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ?suffix,
+        ],
+      ),
+    );
+  }
 }
 
 class _FriendSelectCard extends StatelessWidget {
@@ -546,7 +565,7 @@ class _FriendChips extends StatelessWidget {
           child: Text(
             emptyMessage,
             style: TextStyle(
-              color: _AddLogColors.muted,
+              color: _AddLogColors.mutedTextFor(context),
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -592,12 +611,12 @@ class _FriendChip extends StatelessWidget {
       duration: const Duration(milliseconds: 180),
       padding: const EdgeInsets.fromLTRB(10, 8, 9, 8),
       decoration: BoxDecoration(
-        color: _AddLogColors.surface,
+        color: _AddLogColors.surfaceFor(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: selected
               ? _AddLogColors.friendRemoveIcon
-              : Colors.white.withValues(alpha: .06),
+              : _AddLogColors.lineFor(context),
           width: selected ? 1.4 : 1,
         ),
       ),
@@ -620,8 +639,8 @@ class _FriendChip extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             friend.name,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: _AddLogColors.primaryTextFor(context),
               fontSize: 14,
               fontWeight: FontWeight.w900,
             ),
@@ -676,7 +695,7 @@ class _DateTimeBox extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: Colors.white,
+                color: _AddLogColors.primaryTextFor(context),
                 fontSize: 14,
                 fontWeight: FontWeight.w900,
               ),
@@ -706,6 +725,8 @@ class _PhotoPickerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final path = photoPath;
+    final primaryText = _AddLogColors.primaryTextFor(context);
+    final secondaryText = _AddLogColors.secondaryTextFor(context);
     return _DarkShell(
       padding: const EdgeInsets.all(12),
       child: path == null || path.isEmpty
@@ -715,7 +736,7 @@ class _PhotoPickerCard extends StatelessWidget {
                 Container(
                   height: 176,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .045),
+                    color: _AddLogColors.insetSurfaceFor(context),
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(
                       color: _AddLogColors.cameraIcon.withValues(alpha: .34),
@@ -733,10 +754,10 @@ class _PhotoPickerCard extends StatelessWidget {
                         shadow: false,
                       ),
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         '写真が主役の飲みログ',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: primaryText,
                           fontWeight: FontWeight.w900,
                           fontSize: 17,
                         ),
@@ -745,7 +766,7 @@ class _PhotoPickerCard extends StatelessWidget {
                       Text(
                         '最後に必ず1枚セットしてください',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: .56),
+                          color: secondaryText,
                           fontWeight: FontWeight.w900,
                           fontSize: 12,
                         ),
@@ -798,10 +819,10 @@ class _PhotoPickerCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             '写真をセット済み',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: primaryText,
                               fontWeight: FontWeight.w900,
                               fontSize: 15,
                             ),
@@ -814,7 +835,7 @@ class _PhotoPickerCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: .50),
+                              color: secondaryText,
                               fontWeight: FontWeight.w800,
                               fontSize: 12,
                             ),
@@ -831,7 +852,7 @@ class _PhotoPickerCard extends StatelessWidget {
                       ),
                       label: const Text('差し替え'),
                       style: TextButton.styleFrom(
-                        foregroundColor: Colors.white,
+                        foregroundColor: primaryText,
                         textStyle: const TextStyle(fontWeight: FontWeight.w900),
                       ),
                     ),
@@ -871,9 +892,9 @@ class _PhotoActionButton extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .045),
+        color: _AddLogColors.insetSurfaceFor(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withValues(alpha: .07)),
+        border: Border.all(color: _AddLogColors.lineFor(context)),
       ),
       child: Row(
         children: [
@@ -893,8 +914,8 @@ class _PhotoActionButton extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: _AddLogColors.primaryTextFor(context),
                     fontWeight: FontWeight.w900,
                     fontSize: 13,
                   ),
@@ -905,7 +926,7 @@ class _PhotoActionButton extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: .42),
+                    color: _AddLogColors.secondaryTextFor(context),
                     fontWeight: FontWeight.w800,
                     fontSize: 10,
                   ),
@@ -936,9 +957,18 @@ class _DarkShell extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: _AddLogColors.surface,
+        color: _AddLogColors.surfaceFor(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: _AddLogColors.line),
+        border: Border.all(color: _AddLogColors.lineFor(context)),
+        boxShadow: _AddLogColors.isWhite(context)
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .035),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : null,
       ),
       child: child,
     );
@@ -979,7 +1009,11 @@ class _LoadingBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _DarkShell(
     padding: EdgeInsets.all(compact ? 10 : 16),
-    child: const Center(child: CupertinoActivityIndicator(color: Colors.white)),
+    child: Center(
+      child: CupertinoActivityIndicator(
+        color: _AddLogColors.primaryTextFor(context),
+      ),
+    ),
   );
 }
 
@@ -994,8 +1028,8 @@ class _ErrorBox extends StatelessWidget {
     padding: EdgeInsets.all(compact ? 10 : 16),
     child: Text(
       message,
-      style: const TextStyle(
-        color: _AddLogColors.muted,
+      style: TextStyle(
+        color: _AddLogColors.mutedTextFor(context),
         fontWeight: FontWeight.w900,
       ),
     ),
@@ -1005,6 +1039,11 @@ class _ErrorBox extends StatelessWidget {
 class _AddLogColors {
   const _AddLogColors._();
 
+  static const lightText = Color(0xFF101820);
+  static const lightSubText = Color(0xFF72808D);
+  static const lightMuted = Color(0xFF8A96A3);
+  static const lightLine = Color(0xFFE0E7EF);
+  static const lightInset = Color(0xFFF8FAFC);
   static const panel = Color(0xFF08131A);
   static const surface = Color(0xFF14212B);
   static const muted = Color(0xFF99A3AE);
@@ -1019,4 +1058,28 @@ class _AddLogColors {
   static const friendAddIcon = Color(0xFF4CD964);
   static const friendRemoveIcon = Color(0xFFFF5F8F);
   static const line = Color(0xFF243542);
+
+  static bool isWhite(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.light;
+
+  static Color panelFor(BuildContext context) =>
+      isWhite(context) ? Colors.white : panel;
+
+  static Color surfaceFor(BuildContext context) =>
+      isWhite(context) ? Colors.white : surface;
+
+  static Color insetSurfaceFor(BuildContext context) =>
+      isWhite(context) ? lightInset : Colors.white.withValues(alpha: .045);
+
+  static Color lineFor(BuildContext context) =>
+      isWhite(context) ? lightLine : line;
+
+  static Color primaryTextFor(BuildContext context) =>
+      isWhite(context) ? lightText : Colors.white;
+
+  static Color secondaryTextFor(BuildContext context) =>
+      isWhite(context) ? lightSubText : Colors.white.withValues(alpha: .56);
+
+  static Color mutedTextFor(BuildContext context) =>
+      isWhite(context) ? lightMuted : muted;
 }
