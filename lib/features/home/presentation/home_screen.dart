@@ -19,6 +19,8 @@ import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../logs/application/drink_log_controller.dart';
+import '../../notifications/application/notification_controller.dart';
+import '../../notifications/data/notification_repository.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -48,6 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final logsAsync = ref.watch(drinkLogControllerProvider);
     final friendsAsync = ref.watch(friendsProvider);
+    final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
     final user = ref.watch(nomoUserProvider);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     final currentUserId = ref
@@ -86,14 +89,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Column(
             children: [
               _FeedHeader(
-                hasUnreadNotifications: false,
+                hasUnreadNotifications: hasUnreadNotifications,
                 isRefreshing: _isRefreshingFeed,
                 onRefresh: _refreshFeed,
                 onNotifications: () => Navigator.of(context).push(
                   CupertinoPageRoute<void>(
-                    builder: (_) => _FeedNotificationsScreen(
-                      notifications: const <_FeedNotification>[],
-                    ),
+                    builder: (_) => const _FeedNotificationsScreen(),
                   ),
                 ),
               ),
@@ -156,6 +157,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       await Future.wait([
         ref.refresh(drinkLogControllerProvider.future),
         ref.refresh(friendsProvider.future),
+        ref.refresh(notificationControllerProvider.future),
       ]);
       if (!mounted) return;
       NomoToast.show(
@@ -1099,13 +1101,38 @@ class _WithFriendsPill extends StatelessWidget {
   );
 }
 
-class _FeedNotificationsScreen extends StatelessWidget {
-  const _FeedNotificationsScreen({required this.notifications});
+class _FeedNotificationsScreen extends ConsumerStatefulWidget {
+  const _FeedNotificationsScreen();
 
-  final List<_FeedNotification> notifications;
+  @override
+  ConsumerState<_FeedNotificationsScreen> createState() =>
+      _FeedNotificationsScreenState();
+}
+
+class _FeedNotificationsScreenState
+    extends ConsumerState<_FeedNotificationsScreen> {
+  bool _scheduledRead = false;
 
   @override
   Widget build(BuildContext context) {
+    final notificationsAsync = ref.watch(notificationControllerProvider);
+    final notifications = notificationsAsync.asData?.value
+        .map(_FeedNotification.fromNotification)
+        .toList(growable: false);
+
+    if (!_scheduledRead &&
+        (notificationsAsync.asData?.value.any(
+              (notification) => notification.isUnread,
+            ) ??
+            false)) {
+      _scheduledRead = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(notificationControllerProvider.notifier).markAllRead();
+        }
+      });
+    }
+
     final isWhite = Theme.of(context).brightness == Brightness.light;
 
     return Scaffold(
@@ -1195,7 +1222,21 @@ class _FeedNotificationsScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 18),
-                      if (notifications.isEmpty)
+                      if (notificationsAsync.isLoading && notifications == null)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 42),
+                          child: Center(child: CupertinoActivityIndicator()),
+                        )
+                      else if (notificationsAsync.hasError &&
+                          notifications == null)
+                        _FeedEmptyState(
+                          icon: CupertinoIcons.exclamationmark_triangle,
+                          isWhite: isWhite,
+                          title: 'お知らせを読み込めませんでした',
+                          message: '時間をおいてもう一度お試しください。',
+                          accent: const Color(0xFFFF75B5),
+                        )
+                      else if ((notifications ?? const []).isEmpty)
                         _FeedEmptyState(
                           icon: CupertinoIcons.bell,
                           isWhite: isWhite,
@@ -1203,7 +1244,7 @@ class _FeedNotificationsScreen extends StatelessWidget {
                           message: 'フレンズの反応がここに届きます。',
                         )
                       else
-                        ...notifications.map(
+                        ...notifications!.map(
                           (notification) => _NotificationTile(
                             notification: notification,
                             isWhite: isWhite,
@@ -1545,12 +1586,40 @@ class _FeedNotification {
     required this.unread,
   });
 
+  factory _FeedNotification.fromNotification(NomoNotification notification) {
+    return _FeedNotification(
+      title: notification.title,
+      message: notification.message,
+      timeAgo: _relativeTimeText(notification.createdAt),
+      icon: switch (notification.kind) {
+        'drink_log_like' => CupertinoIcons.heart_fill,
+        _ => CupertinoIcons.bell_fill,
+      },
+      accent: switch (notification.kind) {
+        'drink_log_like' => const Color(0xFFFF75B5),
+        _ => _FeedColors.teal,
+      },
+      unread: notification.isUnread,
+    );
+  }
+
   final String title;
   final String message;
   final String timeAgo;
   final IconData icon;
   final Color accent;
   final bool unread;
+}
+
+String _relativeTimeText(DateTime time) {
+  final diff = DateTime.now().difference(time);
+  if (diff.inMinutes < 1) return 'たった今';
+  if (diff.inHours < 1) return '${diff.inMinutes}分前';
+  if (diff.inDays < 1) return '${diff.inHours}時間前';
+  if (diff.inDays < 7) return '${diff.inDays}日前';
+  final month = time.month.toString().padLeft(2, '0');
+  final day = time.day.toString().padLeft(2, '0');
+  return '$month/$day';
 }
 
 Future<String> _createStoryShareImage(_FeedItem item) async {
