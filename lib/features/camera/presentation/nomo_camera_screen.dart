@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:camera/camera.dart';
 
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
@@ -30,8 +30,79 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
     vignette: Color(0x66030A10),
   );
 
+  CameraController? _cameraController;
+  List<CameraDescription> _cameras = const [];
+  int _cameraIndex = 0;
   bool _isCapturing = false;
+  bool _isInitializingCamera = true;
+  bool _flashOn = false;
   bool _showStoryPreview = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+  }
+
+  @override
+  void dispose() {
+    _cameraController?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeCamera({int? cameraIndex}) async {
+    setState(() => _isInitializingCamera = true);
+    try {
+      final cameras = await availableCameras();
+      if (!mounted) return;
+      if (cameras.isEmpty) {
+        setState(() {
+          _cameras = const [];
+          _cameraController = null;
+          _isInitializingCamera = false;
+        });
+        return;
+      }
+
+      final nextIndex =
+          cameraIndex ??
+          cameras.indexWhere(
+            (camera) => camera.lensDirection == CameraLensDirection.back,
+          );
+      final resolvedIndex = nextIndex < 0 ? 0 : nextIndex % cameras.length;
+      final previous = _cameraController;
+      _cameraController = null;
+      await previous?.dispose();
+
+      final controller = CameraController(
+        cameras[resolvedIndex],
+        ResolutionPreset.high,
+        enableAudio: false,
+        imageFormatGroup: ImageFormatGroup.jpeg,
+      );
+      await controller.initialize();
+      await controller.setFlashMode(FlashMode.off);
+      if (!mounted) {
+        await controller.dispose();
+        return;
+      }
+      setState(() {
+        _cameras = cameras;
+        _cameraIndex = resolvedIndex;
+        _cameraController = controller;
+        _flashOn = false;
+        _isInitializingCamera = false;
+      });
+    } on CameraException catch (error) {
+      if (!mounted) return;
+      setState(() => _isInitializingCamera = false);
+      _showSnack(_cameraErrorMessage(error));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isInitializingCamera = false);
+      _showSnack('カメラを起動できませんでした。');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +120,10 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
                   filter: _filter,
                   showStoryPreview: _showStoryPreview,
                   onClose: () => Navigator.of(context).maybePop(),
-                  onFlash: () => _showSnack('フラッシュは準備中です。'),
+                  cameraController: _cameraController,
+                  isInitializingCamera: _isInitializingCamera,
+                  flashOn: _flashOn,
+                  onFlash: _toggleFlash,
                   onSettings: () => _showSnack('カメラ設定は準備中です。'),
                   onTool: (label) => _showSnack('$label は準備中です。'),
                   onBackToCamera: () =>
@@ -62,7 +136,7 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
               filter: _filter,
               isCapturing: _isCapturing,
               onCapture: _capture,
-              onFlip: () => _showSnack('カメラ反転は準備中です。'),
+              onFlip: _flipCamera,
             ),
           ],
         ),
@@ -72,24 +146,58 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
 
   Future<void> _capture() async {
     if (_isCapturing) return;
-    if (!widget.returnPhoto) {
-      setState(() => _showStoryPreview = true);
+    final controller = _cameraController;
+    if (controller == null || !controller.value.isInitialized) {
+      _showSnack('カメラの準備中です。');
       return;
     }
 
     setState(() => _isCapturing = true);
     try {
-      final picked = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-        imageQuality: 88,
-        maxWidth: 1600,
-      );
-      if (picked == null || !mounted) return;
+      final shot = await controller.takePicture();
+      if (!mounted) return;
+      if (!widget.returnPhoto) {
+        setState(() => _showStoryPreview = true);
+        return;
+      }
       Navigator.of(
         context,
-      ).pop(NomoCameraResult(path: picked.path, filterName: _filter.name));
+      ).pop(NomoCameraResult(path: shot.path, filterName: _filter.name));
+    } on CameraException catch (error) {
+      if (mounted) _showSnack(_cameraErrorMessage(error));
     } finally {
       if (mounted) setState(() => _isCapturing = false);
+    }
+  }
+
+  Future<void> _flipCamera() async {
+    if (_cameras.length < 2 || _isInitializingCamera) return;
+    await _initializeCamera(cameraIndex: (_cameraIndex + 1) % _cameras.length);
+  }
+
+  Future<void> _toggleFlash() async {
+    final controller = _cameraController;
+    if (controller == null || !controller.value.isInitialized) {
+      _showSnack('カメラの準備中です。');
+      return;
+    }
+    try {
+      final next = !_flashOn;
+      await controller.setFlashMode(next ? FlashMode.torch : FlashMode.off);
+      if (mounted) setState(() => _flashOn = next);
+    } on CameraException catch (_) {
+      _showSnack('この端末ではフラッシュを使えません。');
+    }
+  }
+
+  String _cameraErrorMessage(CameraException error) {
+    switch (error.code) {
+      case 'CameraAccessDenied':
+      case 'CameraAccessDeniedWithoutPrompt':
+      case 'CameraAccessRestricted':
+        return 'カメラへのアクセスを許可してください。';
+      default:
+        return 'カメラを起動できませんでした。';
     }
   }
 
@@ -102,6 +210,9 @@ class _CameraPreviewStage extends StatelessWidget {
   const _CameraPreviewStage({
     required this.filter,
     required this.showStoryPreview,
+    required this.cameraController,
+    required this.isInitializingCamera,
+    required this.flashOn,
     required this.onClose,
     required this.onFlash,
     required this.onSettings,
@@ -111,6 +222,9 @@ class _CameraPreviewStage extends StatelessWidget {
 
   final _NomoFilter filter;
   final bool showStoryPreview;
+  final CameraController? cameraController;
+  final bool isInitializingCamera;
+  final bool flashOn;
   final VoidCallback onClose;
   final VoidCallback onFlash;
   final VoidCallback onSettings;
@@ -132,10 +246,15 @@ class _CameraPreviewStage extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          _AnalogPreview(filter: filter),
+          _LiveCameraBackground(
+            controller: cameraController,
+            isInitializing: isInitializingCamera,
+            filter: filter,
+          ),
           if (showStoryPreview) _StoryPreviewOverlay(onClose: onBackToCamera),
           _TopCameraControls(
             onClose: onClose,
+            flashOn: flashOn,
             onFlash: onFlash,
             onSettings: onSettings,
           ),
@@ -169,45 +288,103 @@ class _CameraPreviewStage extends StatelessWidget {
   }
 }
 
-class _AnalogPreview extends StatelessWidget {
-  const _AnalogPreview({required this.filter});
+class _LiveCameraBackground extends StatelessWidget {
+  const _LiveCameraBackground({
+    required this.controller,
+    required this.isInitializing,
+    required this.filter,
+  });
 
+  final CameraController? controller;
+  final bool isInitializing;
   final _NomoFilter filter;
 
   @override
   Widget build(BuildContext context) {
+    final camera = controller;
+    final isReady = camera != null && camera.value.isInitialized;
     return Stack(
       fit: StackFit.expand,
       children: [
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF141D23), Color(0xFF76818A), Color(0xFFE7D3C4)],
-            ),
-          ),
-        ),
-        Positioned.fill(
-          child: CustomPaint(painter: const _PreviewPatternPainter()),
-        ),
+        if (isReady)
+          _CoverCameraPreview(controller: camera)
+        else
+          _CameraUnavailablePlaceholder(isInitializing: isInitializing),
         Positioned.fill(child: ColoredBox(color: filter.overlay)),
         const Positioned.fill(
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 center: Alignment.center,
-                radius: .86,
-                colors: [Colors.transparent, Color(0x9902090F)],
-                stops: [.58, 1],
+                radius: .88,
+                colors: [Colors.transparent, Color(0xB002090F)],
+                stops: [.55, 1],
               ),
             ),
           ),
         ),
-        Positioned.fill(
-          child: ColoredBox(color: filter.vignette.withValues(alpha: .18)),
-        ),
       ],
+    );
+  }
+}
+
+class _CoverCameraPreview extends StatelessWidget {
+  const _CoverCameraPreview({required this.controller});
+
+  final CameraController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final previewSize = controller.value.previewSize;
+        if (previewSize == null) return CameraPreview(controller);
+        final previewAspect = previewSize.height / previewSize.width;
+        return ClipRect(
+          child: OverflowBox(
+            alignment: Alignment.center,
+            child: FittedBox(
+              fit: BoxFit.cover,
+              child: SizedBox(
+                width: constraints.maxWidth,
+                height: constraints.maxWidth / previewAspect,
+                child: CameraPreview(controller),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CameraUnavailablePlaceholder extends StatelessWidget {
+  const _CameraUnavailablePlaceholder({required this.isInitializing});
+
+  final bool isInitializing;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF060B10), Color(0xFF1C2833)],
+        ),
+      ),
+      child: Center(
+        child: isInitializing
+            ? const CupertinoActivityIndicator(color: Colors.white)
+            : const Text(
+                'カメラを利用できません',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+      ),
     );
   }
 }
@@ -215,11 +392,13 @@ class _AnalogPreview extends StatelessWidget {
 class _TopCameraControls extends StatelessWidget {
   const _TopCameraControls({
     required this.onClose,
+    required this.flashOn,
     required this.onFlash,
     required this.onSettings,
   });
 
   final VoidCallback onClose;
+  final bool flashOn;
   final VoidCallback onFlash;
   final VoidCallback onSettings;
 
@@ -238,7 +417,9 @@ class _TopCameraControls extends StatelessWidget {
           ),
           const Spacer(),
           _CameraIconButton(
-            icon: CupertinoIcons.bolt_slash_fill,
+            icon: flashOn
+                ? CupertinoIcons.bolt_fill
+                : CupertinoIcons.bolt_slash_fill,
             semanticLabel: 'フラッシュ',
             onTap: onFlash,
           ),
@@ -719,42 +900,6 @@ class _SideToolIcon extends StatelessWidget {
       ),
     );
   }
-}
-
-class _PreviewPatternPainter extends CustomPainter {
-  const _PreviewPatternPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final line = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..color = Colors.white.withValues(alpha: .18);
-    final glow = Paint()
-      ..style = PaintingStyle.fill
-      ..color = const Color(0xFFFFE0C2).withValues(alpha: .10);
-
-    canvas.drawCircle(
-      Offset(size.width * .78, size.height * .18),
-      size.width * .28,
-      glow,
-    );
-    canvas.drawCircle(
-      Offset(size.width * .22, size.height * .82),
-      size.width * .32,
-      glow,
-    );
-
-    const step = 54.0;
-    for (double x = -step; x < size.width + step; x += step) {
-      for (double y = -step; y < size.height + step; y += step) {
-        canvas.drawCircle(Offset(x, y), step * .64, line);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _PreviewPatternPainter oldDelegate) => false;
 }
 
 class _NomoFilter {
