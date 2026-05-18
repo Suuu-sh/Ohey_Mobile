@@ -825,7 +825,7 @@ class _FeedPostCard extends StatelessWidget {
               const SizedBox(width: 10),
               _DuoFeedButton(
                 icon: CupertinoIcons.arrow_up_to_line,
-                label: 'Share',
+                label: '',
                 color: Colors.white,
                 onTap: onShare,
               ),
