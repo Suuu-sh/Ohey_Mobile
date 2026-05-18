@@ -6,8 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/application/nomo_user_controller.dart';
 import 'core/config/supabase_config.dart';
 import 'core/data/auth_session_guard.dart';
+import 'core/data/supabase_client_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/nomo_theme_mode.dart';
 import 'core/widgets/nomo_tab_shell.dart';
@@ -133,7 +135,16 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
     final bootstrap = ref.watch(_nomoBootstrapProvider);
     return bootstrap.when(
       data: (_) {
-        _startOpeningExit();
+        final user = ref.watch(nomoUserProvider);
+        ref.watch(supabaseAuthStateProvider);
+        final hasSession =
+            ref.watch(supabaseClientProvider).auth.currentSession != null;
+        final canRevealFeed = user != null || !hasSession;
+
+        if (canRevealFeed) {
+          _startOpeningExit();
+        }
+
         return Stack(
           fit: StackFit.expand,
           children: [
@@ -141,11 +152,23 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
             if (!_openingExitCompleted)
               AnimatedBuilder(
                 animation: _openingExitController,
-                builder: (context, child) => ClipPath(
-                  clipper: _OpeningCollapseClipper(
-                    progress: _openingExitController.value,
-                  ),
-                  child: child,
+                builder: (context, child) => Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ClipPath(
+                      clipper: _OpeningCollapseClipper(
+                        progress: _openingExitController.value,
+                      ),
+                      child: child,
+                    ),
+                    IgnorePointer(
+                      child: CustomPaint(
+                        painter: _OpeningCollapseEdgePainter(
+                          progress: _openingExitController.value,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 child: const _StartupScreen(),
               ),
@@ -175,20 +198,62 @@ class _OpeningCollapseClipper extends CustomClipper<Path> {
       return Path();
     }
 
-    final rect = Rect.fromCenter(
-      center: Offset(size.width / 2, size.height / 2),
-      width: size.width * scale,
-      height: size.height * scale,
+    final radius =
+        _openingCollapseMaxRadius(size) * Curves.easeOutCubic.transform(scale);
+    return Path()..addOval(
+      Rect.fromCircle(
+        center: Offset(size.width / 2, size.height / 2),
+        radius: radius,
+      ),
     );
-    final radius = Radius.circular(
-      ui.lerpDouble(size.shortestSide * .06, size.shortestSide * .44, eased)!,
-    );
-    return Path()..addRRect(RRect.fromRectAndRadius(rect, radius));
   }
 
   @override
   bool shouldReclip(covariant _OpeningCollapseClipper oldClipper) =>
       oldClipper.progress != progress;
+}
+
+class _OpeningCollapseEdgePainter extends CustomPainter {
+  const _OpeningCollapseEdgePainter({required this.progress});
+
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final eased = Curves.easeInOutCubic.transform(progress.clamp(0, 1));
+    final scale = 1 - eased;
+    if (scale <= 0.001 || scale >= 0.999) {
+      return;
+    }
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius =
+        _openingCollapseMaxRadius(size) * Curves.easeOutCubic.transform(scale);
+    final glowWidth = size.shortestSide * .035;
+    final rimWidth = size.shortestSide * .006;
+
+    final outerGlow = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = glowWidth
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)
+      ..color = Colors.white.withValues(alpha: .18 * scale);
+    final rim = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = rimWidth
+      ..color = Colors.white.withValues(alpha: .46 * scale);
+
+    canvas.drawCircle(center, radius, outerGlow);
+    canvas.drawCircle(center, radius, rim);
+  }
+
+  @override
+  bool shouldRepaint(covariant _OpeningCollapseEdgePainter oldDelegate) =>
+      oldDelegate.progress != progress;
+}
+
+double _openingCollapseMaxRadius(Size size) {
+  return (Offset(size.width / 2, size.height / 2) - Offset.zero).distance +
+      size.shortestSide * .02;
 }
 
 class _StartupScreen extends StatelessWidget {
