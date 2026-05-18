@@ -13,6 +13,7 @@ import 'core/theme/nomo_theme_mode.dart';
 import 'core/widgets/nomo_tab_shell.dart';
 
 const _openingNomoAsset = 'assets/images/opening_nomo.png';
+const _minimumOpeningDuration = Duration(seconds: 1);
 
 ui.Image? _openingNomoImage;
 
@@ -39,18 +40,23 @@ Future<void> _loadOpeningNomoImage() async {
 }
 
 final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
-  await Supabase.initialize(
-    url: SupabaseConfig.url,
-    anonKey: SupabaseConfig.publishableKey,
-    authOptions: const FlutterAuthClientOptions(
-      authFlowType: AuthFlowType.pkce,
-      detectSessionInUri: true,
-    ),
-  ).timeout(const Duration(seconds: 12));
+  final minimumOpening = Future<void>.delayed(_minimumOpeningDuration);
+  try {
+    await Supabase.initialize(
+      url: SupabaseConfig.url,
+      anonKey: SupabaseConfig.publishableKey,
+      authOptions: const FlutterAuthClientOptions(
+        authFlowType: AuthFlowType.pkce,
+        detectSessionInUri: true,
+      ),
+    ).timeout(const Duration(seconds: 12));
 
-  await AuthSessionGuard.clearIfProjectMismatch(
-    Supabase.instance.client,
-  ).timeout(const Duration(seconds: 4), onTimeout: () {});
+    await AuthSessionGuard.clearIfProjectMismatch(
+      Supabase.instance.client,
+    ).timeout(const Duration(seconds: 4), onTimeout: () {});
+  } finally {
+    await minimumOpening;
+  }
 });
 
 class _BootstrapGate extends ConsumerWidget {
