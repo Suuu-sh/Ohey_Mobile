@@ -534,7 +534,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final compact = constraints.maxHeight < 640;
+        final compact = constraints.maxHeight < 760;
         final fieldHeight = compact ? 56.0 : 64.0;
         final buttonHeight = compact ? 56.0 : 64.0;
         final socialHeight = compact ? 50.0 : 64.0;
