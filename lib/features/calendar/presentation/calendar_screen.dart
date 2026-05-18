@@ -475,7 +475,7 @@ class _SelectedDayPosts extends StatelessWidget {
         Row(
           children: [
             Text(
-              '${day.month}/${day.day}の投稿',
+              '${day.month}/${day.day}の飲みログ',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: titleColor,
                 fontWeight: FontWeight.w900,
@@ -539,7 +539,7 @@ class _NoPostForDay extends StatelessWidget {
         ),
       ),
       child: Text(
-        '投稿がない',
+        '飲みログがない',
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           color: isWhite
               ? const Color(0xFF7A8490)
@@ -563,7 +563,7 @@ class _CalendarPostCard extends StatelessWidget {
     final subColor = isWhite
         ? const Color(0xFF7A8490)
         : Colors.white.withValues(alpha: .58);
-    final body = _calendarPostBody(log);
+    final body = _calendarPostBody(log).trim();
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -593,17 +593,19 @@ class _CalendarPostCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  body,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: titleColor,
-                    fontWeight: FontWeight.w900,
-                    height: 1.25,
+                if (body.isNotEmpty) ...[
+                  Text(
+                    body,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: titleColor,
+                      fontWeight: FontWeight.w900,
+                      height: 1.25,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 7),
+                  const SizedBox(height: 7),
+                ],
                 Row(
                   children: [
                     NomoGeneratedIcon(
@@ -661,11 +663,7 @@ class _CalendarPostIcon extends StatelessWidget {
 }
 
 String _calendarPostBody(DrinkLog log) {
-  final memo = log.memo.trim();
-  if (memo.isNotEmpty) return '記録したよ！ $memo';
-  final place = log.place.trim();
-  if (place.isNotEmpty) return '記録したよ！ $place';
-  return '記録したよ！';
+  return log.memo.trim();
 }
 
 class _Marker {

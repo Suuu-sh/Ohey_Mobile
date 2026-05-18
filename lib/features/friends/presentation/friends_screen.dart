@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/drink_log.dart';
@@ -12,6 +13,7 @@ import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
+import '../application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../profile/presentation/profile_screen.dart';
 
@@ -24,9 +26,38 @@ class FriendsScreen extends ConsumerStatefulWidget {
 
 class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   _FriendFilterType _selectedFilter = _FriendFilterType.all;
+  bool _isRefreshingFriends = false;
+  final Map<String, bool> _favoriteOverrides = {};
 
   void _openAddFriend() {
     showMyQrDialog(context, ref.read(nomoUserProvider), ref);
+  }
+
+  Future<void> _refreshFriends() async {
+    if (_isRefreshingFriends) return;
+    HapticFeedback.selectionClick();
+    setState(() => _isRefreshingFriends = true);
+    try {
+      await Future.wait([
+        ref.refresh(friendsProvider.future),
+        ref.refresh(drinkLogControllerProvider.future),
+      ]);
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        'フレンズを更新しました',
+        icon: CupertinoIcons.arrow_clockwise,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        'フレンズを更新できませんでした',
+        icon: CupertinoIcons.arrow_clockwise,
+      );
+    } finally {
+      if (mounted) setState(() => _isRefreshingFriends = false);
+    }
   }
 
   void _onToggleFavorite(
@@ -34,13 +65,31 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     NomoFriend friend,
     bool isFavorite,
   ) {
+    final previous = _favoriteOverrides[friend.id] ?? friend.isFavorite;
+    HapticFeedback.selectionClick();
+    setState(() => _favoriteOverrides[friend.id] = isFavorite);
+
     ref
         .read(friendsControllerProvider)
         .toggleFavorite(friendId: friend.id, isFavorite: isFavorite)
         .catchError((error) {
+          if (mounted) {
+            setState(() => _favoriteOverrides[friend.id] = previous);
+          }
           if (!context.mounted) return;
           NomoToast.show(context, 'お気に入り設定に失敗しました: $error');
         });
+  }
+
+  Future<void> _sendDrinkInvite(NomoFriend friend) async {
+    try {
+      await ref.read(drinkInviteControllerProvider).sendTodayInvite(friend.id);
+      if (!mounted) return;
+      NomoToast.show(context, '${friend.name}に飲み招待を送りました。');
+    } catch (error) {
+      if (!mounted) return;
+      NomoToast.show(context, '招待を送れませんでした: $error');
+    }
   }
 
   @override
@@ -79,10 +128,25 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               NomoPageHeader(
                 title: 'フレンズ',
                 titleColor: _FriendsColors.lime,
-                trailing: NomoHeaderIconButton(
-                  icon: CupertinoIcons.plus,
-                  color: _FriendsColors.lime,
-                  onTap: _openAddFriend,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    NomoHeaderIconButton(
+                      icon: CupertinoIcons.arrow_clockwise,
+                      semanticLabel: 'フレンズを更新',
+                      color: _isRefreshingFriends
+                          ? _FriendsColors.muted
+                          : _FriendsColors.lime,
+                      onTap: _isRefreshingFriends ? () {} : _refreshFriends,
+                    ),
+                    const SizedBox(width: 8),
+                    NomoHeaderIconButton(
+                      icon: CupertinoIcons.plus,
+                      semanticLabel: 'フレンズを追加',
+                      color: _FriendsColors.lime,
+                      onTap: _openAddFriend,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 18),
@@ -93,9 +157,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               const SizedBox(height: 18),
               Expanded(
                 child: logsAsync.when(
-                  loading: () => const _LoadingState(label: 'ログを読み込み中...'),
+                  loading: () => const _LoadingState(label: '飲みログを読み込み中...'),
                   error: (error, stackTrace) =>
-                      _ErrorState(title: 'ログを読み込めませんでした', message: '$error'),
+                      _ErrorState(title: '飲みログを読み込めませんでした', message: '$error'),
                   data: (logs) => friendsAsync.when(
                     loading: () => const _LoadingState(label: '友達を読み込み中...'),
                     error: (error, stackTrace) =>
@@ -105,8 +169,10 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                       friends: friends,
                       userAvatar: user?.avatar ?? NomoAvatar.defaultAvatar,
                       selectedFilter: _selectedFilter,
+                      favoriteOverrides: _favoriteOverrides,
                       onFavoriteToggle: (friend, isFavorite) =>
                           _onToggleFavorite(context, friend, isFavorite),
+                      onInvite: (friend) => _sendDrinkInvite(friend),
                     ),
                   ),
                 ),
@@ -264,14 +330,18 @@ class _FriendsList extends StatelessWidget {
     required this.friends,
     required this.userAvatar,
     required this.selectedFilter,
+    required this.favoriteOverrides,
     required this.onFavoriteToggle,
+    required this.onInvite,
   });
 
   final List<DrinkLog> logs;
   final List<NomoFriend> friends;
   final NomoAvatar userAvatar;
   final _FriendFilterType selectedFilter;
+  final Map<String, bool> favoriteOverrides;
   final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
+  final ValueChanged<NomoFriend> onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -279,7 +349,10 @@ class _FriendsList extends StatelessWidget {
     final decorated = [
       for (var i = 0; i < friends.length; i++)
         _DecoratedFriend(
-          friend: friends[i],
+          friend: _friendWithFavorite(
+            friends[i],
+            favoriteOverrides[friends[i].id] ?? friends[i].isFavorite,
+          ),
           status: _statusForFriend(friends[i], i),
           count: _displayCount(friends[i], counts),
         ),
@@ -313,6 +386,7 @@ class _FriendsList extends StatelessWidget {
           count: item.count,
           onFavoriteToggle: () =>
               onFavoriteToggle(item.friend, !item.friend.isFavorite),
+          onInvite: () => onInvite(item.friend),
         );
       },
     );
@@ -329,6 +403,24 @@ class _DecoratedFriend {
   final NomoFriend friend;
   final _FriendStatus status;
   final int count;
+}
+
+NomoFriend _friendWithFavorite(NomoFriend friend, bool isFavorite) {
+  if (friend.isFavorite == isFavorite) return friend;
+  return NomoFriend(
+    id: friend.id,
+    name: friend.name,
+    avatarEmoji: friend.avatarEmoji,
+    vibe: friend.vibe,
+    characterAssetPath: friend.characterAssetPath,
+    kind: friend.kind,
+    palette: friend.palette,
+    avatar: friend.avatar,
+    monthlyCount: friend.monthlyCount,
+    statusKey: friend.statusKey,
+    isOnline: friend.isOnline,
+    isFavorite: isFavorite,
+  );
 }
 
 class _EmptyFriendsState extends StatelessWidget {
@@ -476,12 +568,14 @@ class _FriendCard extends StatelessWidget {
     required this.status,
     required this.count,
     required this.onFavoriteToggle,
+    required this.onInvite,
   });
 
   final NomoFriend friend;
   final _FriendStatus status;
   final int count;
   final VoidCallback onFavoriteToggle;
+  final VoidCallback onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -539,45 +633,26 @@ class _FriendCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 9),
-                    GestureDetector(
-                      onTap: onFavoriteToggle,
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: friend.isFavorite
-                              ? const Color(0xFFFFE39B).withValues(alpha: .22)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                        child: Icon(
-                          friend.isFavorite
-                              ? CupertinoIcons.star_fill
-                              : CupertinoIcons.star,
-                          size: 20,
-                          color: friend.isFavorite
-                              ? const Color(0xFFFFC700)
-                              : (isWhite
-                                    ? const Color(0xFF8C9CAB)
-                                    : _FriendsColors.muted),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 9),
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: status.enabled ? accent : _FriendsColors.muted,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          if (status.enabled)
-                            BoxShadow(
-                              color: accent.withValues(alpha: .5),
-                              blurRadius: 12,
+                    Semantics(
+                      button: true,
+                      label: friend.isFavorite ? 'お気に入りを解除' : 'お気に入りに追加',
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: onFavoriteToggle,
+                        child: SizedBox(
+                          width: 36,
+                          height: 36,
+                          child: Center(
+                            child: _FavoriteStarIcon(
+                              filled: friend.isFavorite,
+                              color: friend.isFavorite
+                                  ? const Color(0xFFFFC700)
+                                  : (isWhite
+                                        ? const Color(0xFF8C9CAB)
+                                        : _FriendsColors.muted),
                             ),
-                        ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -606,7 +681,12 @@ class _FriendCard extends StatelessWidget {
             children: [
               _CountBadge(count: count, accent: accent),
               const SizedBox(height: 10),
-              _InviteButton(status: status, accent: accent, name: friend.name),
+              _InviteButton(
+                status: status,
+                accent: accent,
+                name: friend.name,
+                onInvite: onInvite,
+              ),
             ],
           ),
         ],
@@ -638,6 +718,88 @@ class _StatusPill extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _FavoriteStarIcon extends StatelessWidget {
+  const _FavoriteStarIcon({required this.filled, required this.color});
+
+  final bool filled;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 21,
+    height: 21,
+    child: CustomPaint(
+      painter: _FavoriteStarPainter(filled: filled, color: color),
+    ),
+  );
+}
+
+class _FavoriteStarPainter extends CustomPainter {
+  const _FavoriteStarPainter({required this.filled, required this.color});
+
+  final bool filled;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final star = _starPath(size);
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * .12
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    if (filled) {
+      canvas.drawPath(
+        star.shift(Offset(size.width * .045, size.height * .055)),
+        Paint()
+          ..color = const Color(0xFF06111D).withValues(alpha: .26)
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawPath(star, Paint()..color = color);
+      canvas.drawPath(
+        star,
+        stroke..color = Colors.white.withValues(alpha: .38),
+      );
+      canvas.drawCircle(
+        Offset(size.width * .39, size.height * .35),
+        size.width * .045,
+        Paint()..color = Colors.white.withValues(alpha: .62),
+      );
+      return;
+    }
+
+    canvas.drawPath(star, stroke);
+  }
+
+  Path _starPath(Size size) {
+    final points = <Offset>[
+      Offset(size.width * .50, size.height * .08),
+      Offset(size.width * .61, size.height * .36),
+      Offset(size.width * .91, size.height * .36),
+      Offset(size.width * .67, size.height * .55),
+      Offset(size.width * .76, size.height * .85),
+      Offset(size.width * .50, size.height * .68),
+      Offset(size.width * .24, size.height * .85),
+      Offset(size.width * .33, size.height * .55),
+      Offset(size.width * .09, size.height * .36),
+      Offset(size.width * .39, size.height * .36),
+    ];
+
+    final path = Path()..moveTo(points.first.dx, points.first.dy);
+    for (final point in points.skip(1)) {
+      path.lineTo(point.dx, point.dy);
+    }
+    return path..close();
+  }
+
+  @override
+  bool shouldRepaint(covariant _FavoriteStarPainter oldDelegate) {
+    return oldDelegate.filled != filled || oldDelegate.color != color;
   }
 }
 
@@ -679,7 +841,7 @@ class _CountBadge extends StatelessWidget {
           ),
           const SizedBox(height: 3),
           Text(
-            '今月の記録',
+            '今月の飲みログ',
             style: TextStyle(
               color: isWhite
                   ? const Color(0xFF687481)
@@ -699,28 +861,38 @@ class _InviteButton extends StatelessWidget {
     required this.status,
     required this.accent,
     required this.name,
+    required this.onInvite,
   });
 
   final _FriendStatus status;
   final Color accent;
   final String name;
+  final VoidCallback onInvite;
 
   @override
   Widget build(BuildContext context) {
     final enabled = status.enabled;
-    return Nomo3DButton(
-      label: '誘う',
-      icon: CupertinoIcons.paperplane_fill,
-      onTap: enabled
-          ? () => _showInviteSheet(context: context, name: name, accent: accent)
-          : null,
-      enabled: enabled,
-      height: 36,
-      radius: 18,
-      color: const Color(0xFF12C9A4),
-      shadowColor: const Color(0xFF079078),
-      padding: const EdgeInsets.symmetric(horizontal: 13),
-      fontSize: 12,
+    return SizedBox(
+      width: 92,
+      child: Nomo3DButton(
+        label: '誘う',
+        icon: CupertinoIcons.paperplane_fill,
+        onTap: enabled
+            ? () => _showInviteSheet(
+                context: context,
+                name: name,
+                accent: accent,
+                onTodayInvite: onInvite,
+              )
+            : null,
+        enabled: enabled,
+        height: 36,
+        radius: 18,
+        color: const Color(0xFF12C9A4),
+        shadowColor: const Color(0xFF079078),
+        padding: const EdgeInsets.symmetric(horizontal: 13),
+        fontSize: 12,
+      ),
     );
   }
 }
@@ -729,6 +901,7 @@ Future<void> _showInviteSheet({
   required BuildContext context,
   required String name,
   required Color accent,
+  required VoidCallback onTodayInvite,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -802,7 +975,7 @@ Future<void> _showInviteSheet({
               accent: _FriendsColors.lime,
               onTap: () {
                 Navigator.of(context).pop();
-                NomoToast.show(context, '$nameに今日誘うメッセージを準備しました。');
+                onTodayInvite();
               },
             ),
           ],

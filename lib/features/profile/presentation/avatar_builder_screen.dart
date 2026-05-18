@@ -18,77 +18,232 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
   late NomoAvatar _avatar = widget.initialAvatar;
   _AvatarTab _tab = _AvatarTab.face;
 
+  bool get _hasChanges => _avatar.encode() != widget.initialAvatar.encode();
+
+  Future<void> _handleClose() async {
+    if (!_hasChanges) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    final action = await showCupertinoModalPopup<_UnsavedAvatarAction>(
+      context: context,
+      builder: (context) => const _UnsavedAvatarSheet(),
+    );
+    if (!mounted || action == null) return;
+
+    switch (action) {
+      case _UnsavedAvatarAction.save:
+        Navigator.of(context).pop(_avatar);
+      case _UnsavedAvatarAction.discard:
+        Navigator.of(context).pop();
+      case _UnsavedAvatarAction.cancel:
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _AvatarColors.cream,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _Header(
-              onClose: () => Navigator.of(context).pop(),
-              onDone: () => Navigator.of(context).pop(_avatar),
-              onRandom: () => setState(() => _avatar = NomoAvatar.random()),
-            ),
-            Expanded(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            _AvatarColors.previewA,
-                            _AvatarColors.previewB,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleClose();
+      },
+      child: Scaffold(
+        backgroundColor: _AvatarColors.cream,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _Header(
+                onClose: _handleClose,
+                onDone: () => Navigator.of(context).pop(_avatar),
+                onRandom: () => setState(() => _avatar = NomoAvatar.random()),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              _AvatarColors.previewA,
+                              _AvatarColors.previewB,
+                            ],
+                          ),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            NomoAvatarView(avatar: _avatar, size: 250),
+                            Positioned(
+                              right: 28,
+                              top: 70,
+                              child: _RoundTool(
+                                icon: CupertinoIcons.shuffle,
+                                label: 'ランダム',
+                                onTap: () => setState(
+                                  () => _avatar = NomoAvatar.random(),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          NomoAvatarView(avatar: _avatar, size: 250),
-                          Positioned(
-                            right: 28,
-                            top: 70,
-                            child: _RoundTool(
-                              icon: CupertinoIcons.shuffle,
-                              label: 'ランダム',
-                              onTap: () =>
-                                  setState(() => _avatar = NomoAvatar.random()),
-                            ),
-                          ),
-                        ],
+                    ),
+                    _TabBar(
+                      selected: _tab,
+                      onChanged: (tab) => setState(() => _tab = tab),
+                    ),
+                    SizedBox(
+                      height: 330,
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+                        child: _OptionsPanel(
+                          tab: _tab,
+                          avatar: _avatar,
+                          onChanged: (avatar) =>
+                              setState(() => _avatar = avatar),
+                        ),
                       ),
                     ),
-                  ),
-                  _TabBar(
-                    selected: _tab,
-                    onChanged: (tab) => setState(() => _tab = tab),
-                  ),
-                  SizedBox(
-                    height: 330,
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-                      child: _OptionsPanel(
-                        tab: _tab,
-                        avatar: _avatar,
-                        onChanged: (avatar) => setState(() => _avatar = avatar),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+enum _UnsavedAvatarAction { save, discard, cancel }
+
+class _UnsavedAvatarSheet extends StatelessWidget {
+  const _UnsavedAvatarSheet();
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    child: Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .16),
+            blurRadius: 30,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'アバターの変更を保存する？',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: _AvatarColors.ink,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '保存せずに閉じると、変更前のアバターに戻ります。',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: _AvatarColors.dim,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 18),
+          _UnsavedAvatarButton(
+            label: '保存して閉じる',
+            icon: CupertinoIcons.check_mark_circled_solid,
+            color: _AvatarColors.coral,
+            textColor: Colors.white,
+            onTap: () => Navigator.of(context).pop(_UnsavedAvatarAction.save),
+          ),
+          const SizedBox(height: 10),
+          _UnsavedAvatarButton(
+            label: '変更を戻す',
+            icon: CupertinoIcons.arrow_uturn_left,
+            color: const Color(0xFFFFF2F7),
+            textColor: _AvatarColors.coral,
+            onTap: () =>
+                Navigator.of(context).pop(_UnsavedAvatarAction.discard),
+          ),
+          const SizedBox(height: 10),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(context).pop(_UnsavedAvatarAction.cancel),
+            child: const Text(
+              '編集を続ける',
+              style: TextStyle(
+                color: _AvatarColors.dim,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _UnsavedAvatarButton extends StatelessWidget {
+  const _UnsavedAvatarButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.textColor,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final Color textColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      height: 56,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          NomoGeneratedIcon(icon, color: textColor, size: 22),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _Header extends StatelessWidget {

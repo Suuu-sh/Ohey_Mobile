@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/supabase_config.dart';
@@ -10,9 +12,30 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/nomo_theme_mode.dart';
 import 'core/widgets/nomo_tab_shell.dart';
 
+const _openingNomoAsset = 'assets/images/opening_nomo.png';
+
+ui.Image? _openingNomoImage;
+
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  binding.deferFirstFrame();
+
+  try {
+    await _loadOpeningNomoImage().timeout(const Duration(seconds: 3));
+  } on Object {
+    // If decoding ever fails, fall back to the regular asset image below.
+  }
+
   runApp(const ProviderScope(child: NomoApp()));
+  binding.allowFirstFrame();
+}
+
+Future<void> _loadOpeningNomoImage() async {
+  final data = await rootBundle.load(_openingNomoAsset);
+  final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  final codec = await ui.instantiateImageCodec(bytes);
+  final frame = await codec.getNextFrame();
+  _openingNomoImage = frame.image;
 }
 
 final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
@@ -59,67 +82,89 @@ class _StartupScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasError = message != null;
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1420),
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 74,
-                  height: 74,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF12C9A4).withValues(alpha: .16),
-                    shape: BoxShape.circle,
-                  ),
-                  child: hasError
-                      ? const Icon(
-                          Icons.warning_rounded,
-                          color: Color(0xFFFF5EA8),
-                          size: 34,
-                        )
-                      : const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF12C9A4),
-                            strokeWidth: 4,
+      backgroundColor: const Color(0xFFFF0A8D),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const _OpeningNomoArtwork(),
+          if (hasError)
+            SafeArea(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 36),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF08091F).withValues(alpha: .78),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: const Color(0xFFFF5EA8).withValues(alpha: .28),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.warning_rounded,
+                            color: Color(0xFFFF5EA8),
+                            size: 32,
                           ),
-                        ),
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  message ?? 'Nomoを起動中...',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                if (detail != null) ...[
-                  const SizedBox(height: 10),
-                  Text(
-                    detail!,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .58),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                          const SizedBox(height: 10),
+                          Text(
+                            message!,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                          ),
+                          if (detail != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              detail!,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: .64),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                          if (onRetry != null) ...[
+                            const SizedBox(height: 14),
+                            FilledButton(
+                              onPressed: onRetry,
+                              child: const Text('もう一度試す'),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ),
-                ],
-                if (onRetry != null) ...[
-                  const SizedBox(height: 18),
-                  FilledButton(onPressed: onRetry, child: const Text('もう一度試す')),
-                ],
-              ],
+                ),
+              ),
             ),
-          ),
-        ),
+        ],
       ),
     );
+  }
+}
+
+class _OpeningNomoArtwork extends StatelessWidget {
+  const _OpeningNomoArtwork();
+
+  @override
+  Widget build(BuildContext context) {
+    final image = _openingNomoImage;
+    if (image == null) {
+      return Image.asset(_openingNomoAsset, fit: BoxFit.cover);
+    }
+    return RawImage(image: image, fit: BoxFit.cover);
   }
 }
 
@@ -140,7 +185,7 @@ class NomoApp extends ConsumerWidget {
         return MediaQuery(
           data: mediaQuery.copyWith(
             textScaler: mediaQuery.textScaler.clamp(
-              minScaleFactor: 0.86,
+              minScaleFactor: 0.92,
               maxScaleFactor: 0.92,
             ),
           ),

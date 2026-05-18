@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/config/supabase_config.dart';
+import '../../../core/data/nomo_last_account_store.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/theme/app_colors.dart';
@@ -13,10 +16,18 @@ import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../profile/presentation/avatar_builder_screen.dart';
 
-enum _OnboardingStep { intro, auth, profile }
+enum _OnboardingStep { intro, accountChoice, auth, profile }
+
+enum _RegistrationStep { email, password }
+
+const _authPink = AppColors.coral;
+const _authPinkShadow = Color(0xFFE05F83);
+const _authPinkInk = Color(0xFF2B1320);
 
 class CreateUserDialog extends ConsumerStatefulWidget {
-  const CreateUserDialog({super.key});
+  const CreateUserDialog({super.key, this.startAtLogin = false});
+
+  final bool startAtLogin;
 
   @override
   ConsumerState<CreateUserDialog> createState() => _CreateUserDialogState();
@@ -143,6 +154,12 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _isBusy = false;
   bool _userIdTouched = false;
   bool _nameTouched = false;
+  bool _isLastAccountLoaded = false;
+  bool _showAuthForm = false;
+  bool _obscurePlainLoginPassword = true;
+  bool _obscureSignupPassword = true;
+  _RegistrationStep _registrationStep = _RegistrationStep.email;
+  List<NomoLastAccount> _lastAccounts = const <NomoLastAccount>[];
   String? _error;
   String? _notice;
 
@@ -154,7 +171,23 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _step = _OnboardingStep.profile;
       _emailController.text = session.user.email ?? '';
       _hydrateProfileFromAuthMetadata(session.user);
+    } else if (widget.startAtLogin) {
+      _step = _OnboardingStep.auth;
     }
+    _showAuthForm = !widget.startAtLogin;
+    _loadLastAccount();
+  }
+
+  Future<void> _loadLastAccount() async {
+    final accounts = await NomoLastAccountStore.loadAccounts();
+    if (!mounted) return;
+    setState(() {
+      _lastAccounts = accounts;
+      _isLastAccountLoaded = true;
+      if (widget.startAtLogin && accounts.isEmpty) {
+        _showAuthForm = true;
+      }
+    });
   }
 
   @override
@@ -171,30 +204,28 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      child: Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 22),
-        backgroundColor: Colors.transparent,
-        child: AnimatedSize(
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(32),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.ink.withValues(alpha: .14),
-                  blurRadius: 32,
-                  offset: const Offset(0, 18),
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0D1A22),
+        body: SafeArea(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 240),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeOutCubic,
+            child: KeyedSubtree(
+              key: ValueKey(
+                '$_step-$_showAuthForm-$_isLogin-$_registrationStep',
+              ),
+              child: switch (_step) {
+                _OnboardingStep.intro => _FullScreenStep(
+                  child: _IntroCard(child: _buildIntro(context)),
                 ),
-              ],
+                _OnboardingStep.accountChoice => _buildAccountChoice(context),
+                _OnboardingStep.auth => _buildAuth(context),
+                _OnboardingStep.profile => _FullScreenStep(
+                  child: _AuthSurfaceCard(child: _buildProfile(context)),
+                ),
+              },
             ),
-            child: switch (_step) {
-              _OnboardingStep.intro => _buildIntro(context),
-              _OnboardingStep.auth => _buildAuth(context),
-              _OnboardingStep.profile => _buildProfile(context),
-            },
           ),
         ),
       ),
@@ -230,7 +261,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                     );
                     return;
                   }
-                  setState(() => _step = _OnboardingStep.auth);
+                  setState(() => _step = _OnboardingStep.accountChoice);
                 },
                 child: Container(
                   width: 58,
@@ -262,92 +293,482 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
           ),
           const SizedBox(height: 4),
           TextButton(
-            onPressed: () => setState(() => _step = _OnboardingStep.auth),
-            child: Text(_demoPage == slides.length - 1 ? 'ログインへ進む' : 'スキップ'),
+            onPressed: () =>
+                setState(() => _step = _OnboardingStep.accountChoice),
+            child: Text(_demoPage == slides.length - 1 ? 'はじめる' : 'スキップ'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAuth(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _Header(
-          title: _isLogin ? 'ログイン' : '新規登録',
-          subtitle: '飲みログを保存するためにアカウントが必要です。',
-          onBack: _isBusy
-              ? null
-              : () => setState(() => _step = _OnboardingStep.intro),
-        ),
-        const SizedBox(height: 22),
-        _AuthTextField(
-          controller: _emailController,
-          enabled: !_isBusy,
-          icon: CupertinoIcons.mail,
-          hintText: 'メールアドレス',
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          autofillHints: const [AutofillHints.email],
-        ),
-        const SizedBox(height: 12),
-        _AuthTextField(
-          controller: _passwordController,
-          enabled: !_isBusy,
-          icon: CupertinoIcons.lock_fill,
-          hintText: 'パスワード（6文字以上）',
-          obscureText: true,
-          textInputAction: TextInputAction.done,
-          autofillHints: const [AutofillHints.password],
-        ),
-        if (!_isLogin) ...[
-          const SizedBox(height: 16),
-          _RegistrationProfileFields(
-            userIdController: _userIdController,
-            nameController: _nameController,
-            avatar: _avatar,
-            enabled: !_isBusy,
-            userIdTouched: _userIdTouched,
-            nameTouched: _nameTouched,
-            onUserIdChanged: (_) {
-              if (!_userIdTouched) setState(() => _userIdTouched = true);
-            },
-            onNameChanged: (_) {
-              if (!_nameTouched) setState(() => _nameTouched = true);
-            },
-            onAvatarTap: _openAvatarBuilder,
+  Widget _buildAccountChoice(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 640;
+        return _fixedAuthPage(
+          constraints: constraints,
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+          child: Column(
+            children: [
+              _AccountChoiceHeader(
+                onBack: _isBusy
+                    ? null
+                    : () => setState(() {
+                        if (widget.startAtLogin && _lastAccounts.isNotEmpty) {
+                          _step = _OnboardingStep.auth;
+                          _showAuthForm = false;
+                          _isLogin = true;
+                        } else {
+                          _step = _OnboardingStep.intro;
+                        }
+                        _error = null;
+                        _notice = null;
+                      }),
+              ),
+              const Spacer(flex: 5),
+              Text(
+                'すでにアカウントをお持ち\nですか？',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: compact ? 24 : 27,
+                  fontWeight: FontWeight.w900,
+                  height: 1.2,
+                  letterSpacing: -.8,
+                ),
+              ),
+              SizedBox(height: compact ? 26 : 44),
+              _AccountChoicePrimaryButton(
+                label: 'ログイン',
+                height: compact ? 58 : 64,
+                onTap: _showLoginForm,
+              ),
+              SizedBox(height: compact ? 30 : 54),
+              Divider(
+                height: 1,
+                thickness: 2,
+                color: Colors.white.withValues(alpha: .18),
+              ),
+              SizedBox(height: compact ? 30 : 54),
+              Text(
+                'Nomoは初めてですか',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: compact ? 23 : 25,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.6,
+                ),
+              ),
+              SizedBox(height: compact ? 28 : 40),
+              _AccountChoiceOutlineButton(
+                label: 'サインアップ',
+                height: compact ? 58 : 64,
+                onTap: _showRegistrationForm,
+              ),
+              const Spacer(flex: 6),
+            ],
           ),
-        ],
-        if (_error != null) ...[
-          const SizedBox(height: 12),
-          _MessageText(_error!, isError: true),
-        ],
-        if (_notice != null) ...[
-          const SizedBox(height: 12),
-          _MessageText(_notice!),
-        ],
-        const SizedBox(height: 18),
-        _PrimaryButton(
-          label: _isLogin ? 'ログイン' : '新規登録して続ける',
-          icon: _isLogin
-              ? CupertinoIcons.arrow_right_circle_fill
-              : CupertinoIcons.person_add_solid,
-          busy: _isBusy,
-          onPressed: _submitAuth,
-        ),
-        const SizedBox(height: 12),
-        TextButton(
-          onPressed: _isBusy
-              ? null
-              : () => setState(() {
-                  _isLogin = !_isLogin;
-                  _error = null;
-                  _notice = null;
-                }),
-          child: Text(_isLogin ? 'アカウントがない方はこちら' : 'すでにアカウントがある方はこちら'),
-        ),
-      ],
+        );
+      },
+    );
+  }
+
+  Widget _buildAuth(BuildContext context) {
+    if (widget.startAtLogin && !_showAuthForm && _isLogin) {
+      if (!_isLastAccountLoaded) {
+        return const _FullScreenStep(child: _ReLoginLoading());
+      }
+      if (_lastAccounts.isNotEmpty) {
+        return _buildReLogin(context, _lastAccounts);
+      }
+    }
+
+    if (_isLogin) {
+      return _buildPlainLogin(context);
+    }
+
+    return _buildSignupStep(context);
+  }
+
+  Widget _buildSignupStep(BuildContext context) {
+    final isEmailStep = _registrationStep == _RegistrationStep.email;
+    final canContinue = _emailController.text.trim().isNotEmpty && !_isBusy;
+    final canRegister = _passwordController.text.length >= 6 && !_isBusy;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 640;
+        final textFieldHeight = compact ? 56.0 : 64.0;
+        final buttonHeight = compact ? 56.0 : 64.0;
+        final socialHeight = compact ? 52.0 : 64.0;
+        return _fixedAuthPage(
+          constraints: constraints,
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _SignupProgressHeader(
+                progress: isEmailStep ? .48 : .76,
+                onBack: _isBusy ? null : _handleSignupBack,
+              ),
+              SizedBox(height: compact ? 34 : 64),
+              Text(
+                isEmailStep ? 'メールアドレスを入力して\nください' : 'パスワードを入力してください',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: compact ? 27 : 28,
+                  fontWeight: FontWeight.w900,
+                  height: 1.18,
+                  letterSpacing: -.8,
+                ),
+              ),
+              SizedBox(height: compact ? 28 : 42),
+              _SignupInputBox(
+                child: _PlainLoginTextField(
+                  controller: isEmailStep
+                      ? _emailController
+                      : _passwordController,
+                  enabled: !_isBusy,
+                  hintText: isEmailStep ? 'メールアドレス' : 'パスワード',
+                  height: textFieldHeight,
+                  keyboardType: isEmailStep ? TextInputType.emailAddress : null,
+                  textInputAction: isEmailStep
+                      ? TextInputAction.next
+                      : TextInputAction.done,
+                  autofillHints: isEmailStep
+                      ? const [AutofillHints.email]
+                      : const [AutofillHints.newPassword],
+                  obscureText: !isEmailStep && _obscureSignupPassword,
+                  onChanged: (_) => setState(() {}),
+                  onSubmitted: (_) {
+                    if (isEmailStep && canContinue) {
+                      _goToSignupPasswordStep();
+                    } else if (!isEmailStep && canRegister) {
+                      _submitAuth();
+                    }
+                  },
+                  trailing: isEmailStep
+                      ? null
+                      : IconButton(
+                          onPressed: _isBusy
+                              ? null
+                              : () => setState(
+                                  () => _obscureSignupPassword =
+                                      !_obscureSignupPassword,
+                                ),
+                          icon: Icon(
+                            _obscureSignupPassword
+                                ? CupertinoIcons.eye_slash_fill
+                                : CupertinoIcons.eye_fill,
+                            color: _authPink.withValues(alpha: .78),
+                            size: 28,
+                          ),
+                        ),
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                _DarkMessageText(_error!, isError: true),
+              ],
+              if (_notice != null) ...[
+                const SizedBox(height: 10),
+                _DarkMessageText(_notice!),
+              ],
+              SizedBox(height: compact ? 24 : 42),
+              _SignupStepButton(
+                label: isEmailStep ? '次へ' : 'アカウントを登録（無料）',
+                height: buttonHeight,
+                busy: _isBusy,
+                enabled: isEmailStep ? canContinue : canRegister,
+                onTap: isEmailStep
+                    ? (canContinue ? _goToSignupPasswordStep : null)
+                    : (canRegister ? _submitAuth : null),
+              ),
+              if (!isEmailStep) ...[
+                const SizedBox(height: 20),
+                Text(
+                  '登録するとNomoの利用規約とプライバシー\nポリシーに同意したことになります。',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .82),
+                    fontSize: compact ? 13 : 14,
+                    fontWeight: FontWeight.w800,
+                    height: 1.45,
+                  ),
+                ),
+                const Spacer(),
+              ],
+              if (isEmailStep) ...[
+                const Spacer(),
+                _SocialLoginButton(
+                  label: 'GOOGLEで登録',
+                  height: socialHeight,
+                  mark: const _GoogleMark(),
+                  onTap: () => _showComingSoonSnack('Google登録は今後対応予定です。'),
+                ),
+                SizedBox(height: compact ? 10 : 14),
+                _SocialLoginButton(
+                  label: 'APPLEで登録',
+                  height: socialHeight,
+                  mark: const _AppleMark(),
+                  onTap: () => _showComingSoonSnack('Apple登録は今後対応予定です。'),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPlainLogin(BuildContext context) {
+    final canGoBack = !widget.startAtLogin || _lastAccounts.isNotEmpty;
+    final canSubmit =
+        _emailController.text.trim().isNotEmpty &&
+        _passwordController.text.length >= 6 &&
+        !_isBusy;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 640;
+        final fieldHeight = compact ? 52.0 : 64.0;
+        final loginHeight = compact ? 52.0 : 60.0;
+        final socialHeight = compact ? 50.0 : 64.0;
+        return _fixedAuthPage(
+          constraints: constraints,
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+          child: Column(
+            children: [
+              _PlainLoginHeader(
+                canGoBack: canGoBack,
+                onBack: _isBusy ? null : _handleAuthBack,
+              ),
+              SizedBox(height: compact ? 16 : 30),
+              _PlainLoginFields(
+                emailController: _emailController,
+                passwordController: _passwordController,
+                obscurePassword: _obscurePlainLoginPassword,
+                enabled: !_isBusy,
+                fieldHeight: fieldHeight,
+                onChanged: (_) => setState(() {}),
+                onPasswordVisibilityTap: () => setState(
+                  () =>
+                      _obscurePlainLoginPassword = !_obscurePlainLoginPassword,
+                ),
+                onSubmitted: canSubmit ? _submitAuth : null,
+              ),
+              SizedBox(height: compact ? 18 : 28),
+              _PlainLoginButton(
+                height: loginHeight,
+                busy: _isBusy,
+                enabled: canSubmit,
+                onTap: canSubmit ? _submitAuth : null,
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                _DarkMessageText(_error!, isError: true),
+              ],
+              if (_notice != null) ...[
+                const SizedBox(height: 10),
+                _DarkMessageText(_notice!),
+              ],
+              SizedBox(height: compact ? 10 : 22),
+              SizedBox(
+                height: compact ? 38 : 44,
+                child: TextButton(
+                  onPressed: _isBusy
+                      ? null
+                      : () => _showComingSoonSnack('パスワード再設定は今後対応予定です。'),
+                  child: const Text(
+                    'パスワードをお忘れですか？',
+                    style: TextStyle(
+                      color: _authPink,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+              const Spacer(),
+              _SocialLoginButton(
+                label: 'GOOGLEでログイン',
+                height: socialHeight,
+                mark: const _GoogleMark(),
+                onTap: () => _showComingSoonSnack('Googleログインは今後対応予定です。'),
+              ),
+              SizedBox(height: compact ? 10 : 14),
+              _SocialLoginButton(
+                label: 'APPLEでログイン',
+                height: socialHeight,
+                mark: const _AppleMark(),
+                onTap: () => _showComingSoonSnack('Appleログインは今後対応予定です。'),
+              ),
+              SizedBox(height: compact ? 12 : 24),
+              Text(
+                'ログインするとNomoの利用規約とプライバシー\nポリシーに同意したことになります。',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: .82),
+                  fontSize: compact ? 13 : 14,
+                  fontWeight: FontWeight.w800,
+                  height: 1.45,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _handleAuthBack() {
+    setState(() {
+      if (widget.startAtLogin && _lastAccounts.isNotEmpty) {
+        _showAuthForm = false;
+        _isLogin = true;
+        _error = null;
+        _notice = null;
+        return;
+      }
+      _step = _OnboardingStep.accountChoice;
+      _isLogin = true;
+      _error = null;
+      _notice = null;
+    });
+  }
+
+  void _showLoginForm() {
+    setState(() {
+      _step = _OnboardingStep.auth;
+      _isLogin = true;
+      _showAuthForm = true;
+      _registrationStep = _RegistrationStep.email;
+      _error = null;
+      _notice = null;
+    });
+  }
+
+  void _showRegistrationForm() {
+    setState(() {
+      _step = _OnboardingStep.auth;
+      _isLogin = false;
+      _showAuthForm = true;
+      _registrationStep = _RegistrationStep.email;
+      _passwordController.clear();
+      _error = null;
+      _notice = null;
+    });
+  }
+
+  void _handleSignupBack() {
+    setState(() {
+      if (_registrationStep == _RegistrationStep.password) {
+        _registrationStep = _RegistrationStep.email;
+        _error = null;
+        _notice = null;
+        return;
+      }
+      _step = _OnboardingStep.accountChoice;
+      _isLogin = true;
+      _error = null;
+      _notice = null;
+    });
+  }
+
+  void _goToSignupPasswordStep() {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() => _error = 'メールアドレスを入力してください。');
+      return;
+    }
+    setState(() {
+      _registrationStep = _RegistrationStep.password;
+      _error = null;
+      _notice = null;
+    });
+  }
+
+  void _showComingSoonSnack(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Widget _buildReLogin(BuildContext context, List<NomoLastAccount> accounts) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact =
+            constraints.maxHeight < 720 ||
+            accounts.length >= NomoLastAccountStore.maxAccounts;
+        return _fixedAuthPage(
+          constraints: constraints,
+          padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
+          child: Column(
+            children: [
+              Spacer(flex: compact ? 1 : 2),
+              _ReLoginMascot(size: compact ? 92 : 150),
+              SizedBox(height: compact ? 10 : 28),
+              Text(
+                '再ログイン',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: compact ? 28 : 32,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.8,
+                ),
+              ),
+              SizedBox(height: compact ? 16 : 42),
+              _ReLoginAccountCard(
+                accounts: accounts,
+                compact: compact,
+                onAccountTap: (account) {
+                  _emailController.text = account.email;
+                  _passwordController.clear();
+                  setState(() {
+                    _showAuthForm = true;
+                    _isLogin = true;
+                    _error = null;
+                    _notice = null;
+                  });
+                },
+                onAddAccount: () {
+                  _emailController.clear();
+                  _passwordController.clear();
+                  setState(() {
+                    _step = _OnboardingStep.accountChoice;
+                    _showAuthForm = false;
+                    _isLogin = true;
+                    _error = null;
+                    _notice = null;
+                  });
+                },
+              ),
+              SizedBox(height: compact ? 8 : 34),
+              SizedBox(
+                height: compact ? 40 : 48,
+                child: TextButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('アカウント管理は今後対応予定です。')),
+                    );
+                  },
+                  child: Text(
+                    'アカウント管理',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: .42),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+              Spacer(flex: compact ? 2 : 3),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -459,7 +880,6 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       if (email.isEmpty || password.length < 6) {
         throw const AuthException('メールアドレスと6文字以上のパスワードを入力してください。');
       }
-      if (!_isLogin && !_validateRegistrationProfile()) return;
 
       if (_isLogin) {
         await supabase.auth.signInWithPassword(
@@ -470,13 +890,19 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
             .read(nomoUserProvider.notifier)
             .loadFromSupabaseProfile();
         if (loaded && mounted) {
-          Navigator.of(context).pop();
+          await _saveLastAccount(email);
           return;
         }
         _hydrateProfileFromAuthMetadata(supabase.auth.currentUser);
       } else {
-        final userId = _userIdController.text.trim();
-        final name = _nameController.text.trim();
+        final userId = _signupUserId(email);
+        final name = _signupDisplayName(email);
+        if (_userIdController.text.trim().isEmpty) {
+          _userIdController.text = userId;
+        }
+        if (_nameController.text.trim().isEmpty) {
+          _nameController.text = name;
+        }
         final res = await supabase.auth.signUp(
           email: email,
           password: password,
@@ -492,7 +918,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
           await ref
               .read(nomoUserProvider.notifier)
               .createUser(name: name, userId: userId, avatar: _avatar);
-          if (mounted) Navigator.of(context).pop();
+          await _saveLastAccount(email);
           return;
         }
         if (res.session == null) {
@@ -534,7 +960,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       await ref
           .read(nomoUserProvider.notifier)
           .createUser(name: name, userId: userId, avatar: _avatar);
-      if (mounted) Navigator.of(context).pop();
+      await _saveLastAccount(_emailController.text.trim());
     } catch (e) {
       if (mounted) {
         setState(() => _error = 'プロフィール作成に失敗しました: $e');
@@ -582,6 +1008,62 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     if (avatar != null) _avatar = avatar;
   }
 
+  Future<void> _saveLastAccount(String email) async {
+    final user = ref.read(nomoUserProvider);
+    final displayName = await _latestDisplayName(user?.name);
+    await NomoLastAccountStore.save(
+      name: displayName,
+      email: email,
+      avatar: user?.avatar ?? _avatar,
+    );
+  }
+
+  Future<String?> _latestDisplayName(String? fallback) async {
+    final authUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    if (authUserId == null || authUserId.isEmpty) return fallback;
+
+    try {
+      final row = await ref
+          .read(supabaseClientProvider)
+          .from('profiles')
+          .select('display_name')
+          .eq('id', authUserId)
+          .maybeSingle();
+      final displayName = (row?['display_name'] as String?)?.trim();
+      if (displayName != null && displayName.isNotEmpty) {
+        return displayName;
+      }
+    } catch (_) {
+      // Re-login can still proceed even if refreshing the cached label fails.
+    }
+    return fallback;
+  }
+
+  String _signupDisplayName(String email) {
+    final entered = _nameController.text.trim();
+    if (entered.isNotEmpty) return entered;
+    final localPart = email.split('@').first.trim();
+    return localPart.isEmpty ? 'Nomoユーザー' : localPart;
+  }
+
+  String _signupUserId(String email) {
+    final entered = _userIdController.text.trim();
+    if (_isValidUserId(entered)) return entered;
+
+    final localPart = email.split('@').first.toLowerCase();
+    final base = localPart
+        .replaceAll(RegExp(r'[^a-z0-9_]'), '_')
+        .replaceAll(RegExp(r'_+'), '_')
+        .replaceAll(RegExp(r'^_+|_+$'), '');
+    final suffix = DateTime.now().millisecondsSinceEpoch.toRadixString(36);
+    final prefix = (base.isEmpty ? 'nomo' : base);
+    final maxPrefixLength = 24 - suffix.length - 1;
+    final compactPrefix = prefix.length > maxPrefixLength
+        ? prefix.substring(0, maxPrefixLength)
+        : prefix;
+    return '${compactPrefix}_$suffix';
+  }
+
   Future<void> _openAvatarBuilder() async {
     final result = await Navigator.of(context).push<NomoAvatar>(
       CupertinoPageRoute(
@@ -606,22 +1088,44 @@ String _friendlyAuthError(String message) {
   return message;
 }
 
+Widget _fixedAuthPage({
+  required BoxConstraints constraints,
+  required EdgeInsets padding,
+  required Widget child,
+}) {
+  final availableHeight = constraints.maxHeight.isFinite
+      ? constraints.maxHeight - padding.vertical
+      : 720.0;
+  return Padding(
+    padding: padding,
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 430),
+        child: SizedBox(
+          height: availableHeight > 0 ? availableHeight : 0,
+          child: child,
+        ),
+      ),
+    ),
+  );
+}
+
 const _demoSlides = [
   _DemoSlideData(
     step: '1 / 4',
     title: 'Nomoで飲みログを\nかわいく残そう',
-    subtitle: '今月、誰と何回飲みに行ったかをゆるく記録。健康管理ではなく、友達との思い出を楽しく残すSNSです。',
+    subtitle: '今月、誰と何回飲みに行ったかを飲みログでゆるく残そう。健康管理ではなく、友達との思い出を楽しく残すSNSです。',
     kind: _DemoKind.hero,
   ),
   _DemoSlideData(
     step: '2 / 4',
     title: 'プロフィールと\nアバターを作ろう',
-    subtitle: '名前と自分らしいアバターを設定。飲み友リストやログにあなたのアイコンとして表示されます。',
+    subtitle: '名前と自分らしいアバターを設定。飲み友リストや飲みログにあなたのアイコンとして表示されます。',
     kind: _DemoKind.profile,
   ),
   _DemoSlideData(
     step: '3 / 4',
-    title: '飲み会の思い出を\nさっと記録',
+    title: '飲み会の思い出を\n飲みログに残そう',
     subtitle: '場所、飲み友、日付、メモを残して、カレンダーで今月の交流を振り返れます。',
     kind: _DemoKind.log,
   ),
@@ -848,7 +1352,7 @@ class _LogDemoVisual extends StatelessWidget {
           value: '5人',
         ),
         SizedBox(height: 14),
-        _DemoRow(icon: CupertinoIcons.calendar, label: 'カレンダーに記録', value: 'OK'),
+        _DemoRow(icon: CupertinoIcons.calendar, label: '飲みログに保存', value: 'OK'),
       ],
     ),
   );
@@ -980,8 +1484,999 @@ class _DemoDots extends StatelessWidget {
   );
 }
 
+class _FullScreenStep extends StatelessWidget {
+  const _FullScreenStep({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => _fixedAuthPage(
+        constraints: constraints,
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+        child: Center(child: child),
+      ),
+    );
+  }
+}
+
+class _IntroCard extends StatelessWidget {
+  const _IntroCard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => child;
+}
+
+class _AuthSurfaceCard extends StatelessWidget {
+  const _AuthSurfaceCard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(32),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: .24),
+          blurRadius: 32,
+          offset: const Offset(0, 18),
+        ),
+      ],
+    ),
+    child: child,
+  );
+}
+
+class _ReLoginLoading extends StatelessWidget {
+  const _ReLoginLoading();
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const _ReLoginMascot(size: 112),
+        const SizedBox(height: 24),
+        CircularProgressIndicator(
+          color: _authPink,
+          backgroundColor: Colors.white.withValues(alpha: .10),
+        ),
+      ],
+    ),
+  );
+}
+
+class _ReLoginMascot extends StatelessWidget {
+  const _ReLoginMascot({this.size = 150});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: size,
+    height: size * 1.06,
+    child: CustomPaint(painter: _ReLoginMascotPainter()),
+  );
+}
+
+class _ReLoginMascotPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    final body = Paint()..color = const Color(0xFFFF4FA3);
+    final bodyDark = Paint()..color = const Color(0xFFE52B83);
+    final bodyLight = Paint()..color = const Color(0xFFFF86C7);
+    final eye = Paint()..color = const Color(0xFF101827);
+    final white = Paint()..color = Colors.white;
+    final mouth = Paint()..color = const Color(0xFF251225);
+    final tongue = Paint()..color = const Color(0xFFFF6AAE);
+    final leaf = Paint()..color = const Color(0xFF84E817);
+    final leafDark = Paint()..color = const Color(0xFF58C80A);
+    final sparkle = Paint()..color = const Color(0xFFFF4FAB);
+
+    void rotatedOval(
+      Offset center,
+      double width,
+      double height,
+      double radians,
+      Paint paint,
+    ) {
+      canvas
+        ..save()
+        ..translate(center.dx, center.dy)
+        ..rotate(radians)
+        ..drawOval(
+          Rect.fromCenter(center: Offset.zero, width: width, height: height),
+          paint,
+        )
+        ..restore();
+    }
+
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * .50, h * .86),
+        width: w * .48,
+        height: h * .075,
+      ),
+      Paint()..color = const Color(0xFFFF4FAB).withValues(alpha: .16),
+    );
+
+    rotatedOval(Offset(w * .34, h * .74), w * .22, h * .18, -.55, body);
+    rotatedOval(Offset(w * .57, h * .77), w * .19, h * .22, -.12, body);
+    rotatedOval(Offset(w * .22, h * .50), w * .20, h * .29, -.54, body);
+    rotatedOval(Offset(w * .78, h * .56), w * .20, h * .25, .14, body);
+
+    final bodyRect = Rect.fromCenter(
+      center: Offset(w * .50, h * .54),
+      width: w * .66,
+      height: h * .58,
+    );
+    canvas.drawOval(bodyRect, body);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * .38, h * .39),
+        width: w * .30,
+        height: h * .13,
+      ),
+      bodyLight..color = const Color(0xFFFF86C7).withValues(alpha: .36),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * .58, h * .70),
+        width: w * .30,
+        height: h * .13,
+      ),
+      bodyDark..color = const Color(0xFFE52B83).withValues(alpha: .18),
+    );
+
+    final stem = Path()
+      ..moveTo(w * .50, h * .26)
+      ..cubicTo(w * .52, h * .20, w * .58, h * .21, w * .59, h * .29)
+      ..cubicTo(w * .56, h * .31, w * .52, h * .31, w * .49, h * .29)
+      ..close();
+    canvas.drawPath(stem, leafDark);
+
+    final leafPath = Path()
+      ..moveTo(w * .52, h * .20)
+      ..cubicTo(w * .58, h * .07, w * .83, h * .08, w * .83, h * .23)
+      ..cubicTo(w * .81, h * .36, w * .60, h * .36, w * .52, h * .20)
+      ..close();
+    canvas.drawPath(leafPath, leaf);
+    canvas.drawPath(
+      leafPath,
+      Paint()
+        ..color = Colors.white.withValues(alpha: .28)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w * .012,
+    );
+
+    rotatedOval(Offset(w * .38, h * .48), w * .17, h * .27, .17, eye);
+    rotatedOval(Offset(w * .60, h * .50), w * .17, h * .27, -.08, eye);
+    canvas.drawCircle(Offset(w * .41, h * .42), w * .035, white);
+    canvas.drawCircle(Offset(w * .62, h * .44), w * .035, white);
+
+    final smile = Path()
+      ..moveTo(w * .43, h * .61)
+      ..cubicTo(w * .46, h * .70, w * .58, h * .70, w * .61, h * .61)
+      ..cubicTo(w * .57, h * .64, w * .48, h * .64, w * .43, h * .61)
+      ..close();
+    canvas.drawPath(smile, mouth);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * .52, h * .66),
+        width: w * .11,
+        height: h * .045,
+      ),
+      tongue,
+    );
+
+    final starCenter = Offset(w * .88, h * .33);
+    final star = Path();
+    for (var i = 0; i < 8; i++) {
+      final radius = i.isEven ? w * .08 : w * .028;
+      final angle = -math.pi / 2 + i * math.pi / 4;
+      final point = Offset(
+        starCenter.dx + math.cos(angle) * radius,
+        starCenter.dy + math.sin(angle) * radius,
+      );
+      if (i == 0) {
+        star.moveTo(point.dx, point.dy);
+      } else {
+        star.lineTo(point.dx, point.dy);
+      }
+    }
+    star.close();
+    canvas.drawPath(star, sparkle);
+    canvas.drawPath(
+      star,
+      Paint()
+        ..color = const Color(0xFFFF9BD0)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w * .012,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _ReLoginAccountCard extends StatelessWidget {
+  const _ReLoginAccountCard({
+    required this.accounts,
+    required this.onAccountTap,
+    required this.onAddAccount,
+    this.compact = false,
+  });
+
+  final List<NomoLastAccount> accounts;
+  final ValueChanged<NomoLastAccount> onAccountTap;
+  final VoidCallback onAddAccount;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final visibleAccounts = accounts
+        .take(NomoLastAccountStore.maxAccounts)
+        .toList(growable: false);
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: const Color(0xFF101F28).withValues(alpha: .82),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: .20),
+          width: 2,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var index = 0; index < visibleAccounts.length; index++) ...[
+            _ReLoginAccountRow(
+              account: visibleAccounts[index],
+              compact: compact,
+              onTap: () => onAccountTap(visibleAccounts[index]),
+            ),
+            Divider(height: 1, color: Colors.white.withValues(alpha: .16)),
+          ],
+          InkWell(
+            onTap: onAddAccount,
+            child: Padding(
+              padding: compact
+                  ? const EdgeInsets.fromLTRB(18, 14, 18, 14)
+                  : const EdgeInsets.fromLTRB(20, 18, 20, 18),
+              child: Row(
+                children: [
+                  Container(
+                    width: compact ? 46 : 52,
+                    height: compact ? 46 : 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: .34),
+                        width: 2,
+                      ),
+                    ),
+                    child: Center(
+                      child: NomoGeneratedIcon(
+                        CupertinoIcons.plus,
+                        color: Colors.white.withValues(alpha: .44),
+                        size: compact ? 24 : 26,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: compact ? 14 : 16),
+                  Text(
+                    '別のアカウントを追加',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: .44),
+                      fontSize: compact ? 16 : 17,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReLoginAccountRow extends StatelessWidget {
+  const _ReLoginAccountRow({
+    required this.account,
+    required this.onTap,
+    required this.compact,
+  });
+
+  final NomoLastAccount account;
+  final VoidCallback onTap;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    child: Padding(
+      padding: compact
+          ? const EdgeInsets.fromLTRB(18, 12, 16, 10)
+          : const EdgeInsets.fromLTRB(20, 16, 18, 14),
+      child: Row(
+        children: [
+          Container(
+            width: compact ? 48 : 56,
+            height: compact ? 48 : 56,
+            padding: const EdgeInsets.all(4),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [AppColors.peach, AppColors.lavender],
+              ),
+            ),
+            child: NomoAvatarView(
+              avatar: account.avatar ?? NomoAvatar.defaultAvatar,
+              size: compact ? 40 : 48,
+            ),
+          ),
+          SizedBox(width: compact ? 14 : 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  account.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: compact ? 17 : 19,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.2,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  account.email,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .36),
+                    fontSize: compact ? 12 : 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          NomoGeneratedIcon(
+            CupertinoIcons.chevron_right,
+            color: Colors.white.withValues(alpha: .68),
+            size: compact ? 25 : 28,
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _SignupProgressHeader extends StatelessWidget {
+  const _SignupProgressHeader({required this.progress, required this.onBack});
+
+  final double progress;
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Container(
+        width: 62,
+        height: 62,
+        decoration: BoxDecoration(
+          color: const Color(0xFF12222C),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withValues(alpha: .08)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .14),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: IconButton(
+          onPressed: onBack,
+          icon: Icon(
+            CupertinoIcons.arrow_left,
+            color: Colors.white.withValues(alpha: .76),
+            size: 31,
+          ),
+        ),
+      ),
+      const SizedBox(width: 14),
+      Expanded(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(99),
+          child: Container(
+            height: 22,
+            color: Colors.white.withValues(alpha: .18),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: FractionallySizedBox(
+                widthFactor: progress.clamp(0, 1),
+                heightFactor: 1,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: _authPink,
+                    borderRadius: BorderRadius.circular(99),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withValues(alpha: .22),
+                        blurRadius: 0,
+                        spreadRadius: -5,
+                        offset: const Offset(0, -5),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+class _SignupInputBox extends StatelessWidget {
+  const _SignupInputBox({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    clipBehavior: Clip.antiAlias,
+    decoration: BoxDecoration(
+      color: const Color(0xFF132630).withValues(alpha: .74),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: Colors.white.withValues(alpha: .18), width: 2),
+    ),
+    child: child,
+  );
+}
+
+class _SignupStepButton extends StatelessWidget {
+  const _SignupStepButton({
+    required this.label,
+    required this.busy,
+    required this.enabled,
+    required this.onTap,
+    this.height = 64,
+  });
+
+  final String label;
+  final bool busy;
+  final bool enabled;
+  final VoidCallback? onTap;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) => Nomo3DButton(
+    label: label,
+    onTap: enabled ? onTap : null,
+    isLoading: busy,
+    enabled: enabled,
+    height: height,
+    radius: 18,
+    color: _authPink,
+    shadowColor: _authPinkShadow,
+    disabledColor: _authPink,
+    disabledOpacity: 1,
+    foregroundColor: _authPinkInk,
+    fontSize: 19,
+  );
+}
+
+class _AccountChoiceHeader extends StatelessWidget {
+  const _AccountChoiceHeader({required this.onBack});
+
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: 48,
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: IconButton(
+        onPressed: onBack,
+        icon: Icon(
+          CupertinoIcons.arrow_left,
+          color: Colors.white.withValues(alpha: .72),
+          size: 31,
+        ),
+      ),
+    ),
+  );
+}
+
+class _AccountChoicePrimaryButton extends StatelessWidget {
+  const _AccountChoicePrimaryButton({
+    required this.label,
+    required this.onTap,
+    this.height = 64,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) => Nomo3DButton(
+    label: label,
+    onTap: onTap,
+    height: height,
+    radius: 18,
+    color: _authPink,
+    shadowColor: _authPinkShadow,
+    foregroundColor: _authPinkInk,
+    fontSize: 20,
+  );
+}
+
+class _AccountChoiceOutlineButton extends StatelessWidget {
+  const _AccountChoiceOutlineButton({
+    required this.label,
+    required this.onTap,
+    this.height = 64,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) => _Auth3DPanelButton(
+    onTap: onTap,
+    height: height,
+    radius: 18,
+    topColor: const Color(0xFF10242F).withValues(alpha: .98),
+    bottomColor: const Color(0xFF384B55),
+    borderColor: Colors.white.withValues(alpha: .22),
+    glowColor: _authPink.withValues(alpha: .12),
+    child: Text(
+      label,
+      style: const TextStyle(
+        color: _authPink,
+        fontSize: 20,
+        fontWeight: FontWeight.w900,
+        letterSpacing: -.2,
+      ),
+    ),
+  );
+}
+
+class _PlainLoginHeader extends StatelessWidget {
+  const _PlainLoginHeader({required this.canGoBack, required this.onBack});
+
+  final bool canGoBack;
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: 48,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: canGoBack
+              ? IconButton(
+                  onPressed: onBack,
+                  icon: Icon(
+                    CupertinoIcons.arrow_left,
+                    color: Colors.white.withValues(alpha: .72),
+                    size: 31,
+                  ),
+                )
+              : const SizedBox(width: 48),
+        ),
+        Text(
+          'ログイン',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: .34),
+            fontSize: 25,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.2,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _PlainLoginFields extends StatelessWidget {
+  const _PlainLoginFields({
+    required this.emailController,
+    required this.passwordController,
+    required this.obscurePassword,
+    required this.enabled,
+    required this.onChanged,
+    required this.onPasswordVisibilityTap,
+    required this.onSubmitted,
+    this.fieldHeight = 64,
+  });
+
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final bool obscurePassword;
+  final bool enabled;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onPasswordVisibilityTap;
+  final VoidCallback? onSubmitted;
+  final double fieldHeight;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    clipBehavior: Clip.antiAlias,
+    decoration: BoxDecoration(
+      color: const Color(0xFF132630).withValues(alpha: .74),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: Colors.white.withValues(alpha: .18), width: 2),
+    ),
+    child: Column(
+      children: [
+        _PlainLoginTextField(
+          controller: emailController,
+          enabled: enabled,
+          hintText: 'Eメール/電話番号/ユーザー名',
+          height: fieldHeight,
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.email, AutofillHints.username],
+          onChanged: onChanged,
+        ),
+        Divider(height: 1, color: Colors.white.withValues(alpha: .14)),
+        _PlainLoginTextField(
+          controller: passwordController,
+          enabled: enabled,
+          hintText: 'パスワード',
+          height: fieldHeight,
+          obscureText: obscurePassword,
+          textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.password],
+          onChanged: onChanged,
+          onSubmitted: (_) => onSubmitted?.call(),
+          trailing: IconButton(
+            onPressed: enabled ? onPasswordVisibilityTap : null,
+            icon: Icon(
+              obscurePassword
+                  ? CupertinoIcons.eye_slash_fill
+                  : CupertinoIcons.eye_fill,
+              color: _authPink.withValues(alpha: .78),
+              size: 28,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _PlainLoginTextField extends StatelessWidget {
+  const _PlainLoginTextField({
+    required this.controller,
+    required this.enabled,
+    required this.hintText,
+    required this.onChanged,
+    this.height = 64,
+    this.keyboardType,
+    this.textInputAction,
+    this.autofillHints,
+    this.obscureText = false,
+    this.onSubmitted,
+    this.trailing,
+  });
+
+  final TextEditingController controller;
+  final bool enabled;
+  final String hintText;
+  final ValueChanged<String> onChanged;
+  final double height;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final Iterable<String>? autofillHints;
+  final bool obscureText;
+  final ValueChanged<String>? onSubmitted;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: height,
+    child: Row(
+      children: [
+        const SizedBox(width: 26),
+        Expanded(
+          child: TextField(
+            controller: controller,
+            enabled: enabled,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 19,
+              fontWeight: FontWeight.w800,
+            ),
+            cursorColor: _authPink,
+            keyboardType: keyboardType,
+            textInputAction: textInputAction,
+            autofillHints: autofillHints,
+            obscureText: obscureText,
+            onChanged: onChanged,
+            onSubmitted: onSubmitted,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              hintText: hintText,
+              hintStyle: TextStyle(
+                color: Colors.white.withValues(alpha: .29),
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+        if (trailing != null) ...[
+          const SizedBox(width: 8),
+          trailing!,
+          const SizedBox(width: 14),
+        ] else
+          const SizedBox(width: 26),
+      ],
+    ),
+  );
+}
+
+class _PlainLoginButton extends StatelessWidget {
+  const _PlainLoginButton({
+    required this.busy,
+    required this.enabled,
+    required this.onTap,
+    this.height = 60,
+  });
+
+  final bool busy;
+  final bool enabled;
+  final VoidCallback? onTap;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final canTap = enabled && onTap != null && !busy;
+    return GestureDetector(
+      onTap: canTap ? onTap : null,
+      child: Opacity(
+        opacity: enabled || busy ? 1 : .78,
+        child: Container(
+          width: double.infinity,
+          height: height + 7,
+          decoration: BoxDecoration(
+            color: _authPinkShadow,
+            borderRadius: BorderRadius.circular(19),
+            boxShadow: [
+              BoxShadow(
+                color: _authPink.withValues(alpha: .22),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              width: double.infinity,
+              height: height,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: _authPink,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.white.withValues(alpha: .18)),
+              ),
+              child: busy
+                  ? const CupertinoActivityIndicator(color: _authPinkInk)
+                  : Text(
+                      'ログイン',
+                      style: TextStyle(
+                        color: _authPinkInk.withValues(
+                          alpha: enabled ? 1 : .58,
+                        ),
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SocialLoginButton extends StatelessWidget {
+  const _SocialLoginButton({
+    required this.label,
+    required this.mark,
+    required this.onTap,
+    this.height = 64,
+  });
+
+  final String label;
+  final Widget mark;
+  final VoidCallback onTap;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) => _Auth3DPanelButton(
+    onTap: onTap,
+    height: height,
+    radius: 18,
+    topColor: const Color(0xFF52606B),
+    bottomColor: const Color(0xFF35434D),
+    borderColor: Colors.white.withValues(alpha: .18),
+    glowColor: const Color(0xFF52606B).withValues(alpha: .18),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(width: 34, child: Center(child: mark)),
+        const SizedBox(width: 14),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: .88),
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: .6,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _Auth3DPanelButton extends StatelessWidget {
+  const _Auth3DPanelButton({
+    required this.child,
+    required this.onTap,
+    required this.height,
+    required this.radius,
+    required this.topColor,
+    required this.bottomColor,
+    required this.borderColor,
+    required this.glowColor,
+  });
+
+  final Widget child;
+  final VoidCallback onTap;
+  final double height;
+  final double radius;
+  final Color topColor;
+  final Color bottomColor;
+  final Color borderColor;
+  final Color glowColor;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: double.infinity,
+      height: height + 7,
+      decoration: BoxDecoration(
+        color: bottomColor,
+        borderRadius: BorderRadius.circular(radius + 1),
+        boxShadow: [
+          BoxShadow(
+            color: glowColor,
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .16),
+            blurRadius: 18,
+            offset: const Offset(0, 9),
+          ),
+        ],
+      ),
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+          width: double.infinity,
+          height: height,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: topColor,
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(color: borderColor, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withValues(alpha: .08),
+                blurRadius: 0,
+                spreadRadius: -4,
+                offset: const Offset(0, -5),
+              ),
+            ],
+          ),
+          child: child,
+        ),
+      ),
+    ),
+  );
+}
+
+class _GoogleMark extends StatelessWidget {
+  const _GoogleMark();
+
+  @override
+  Widget build(BuildContext context) => const Text(
+    'G',
+    style: TextStyle(
+      color: Color(0xFF4285F4),
+      fontSize: 27,
+      fontWeight: FontWeight.w900,
+    ),
+  );
+}
+
+class _AppleMark extends StatelessWidget {
+  const _AppleMark();
+
+  @override
+  Widget build(BuildContext context) =>
+      const Icon(Icons.apple, color: Colors.white, size: 35);
+}
+
+class _DarkMessageText extends StatelessWidget {
+  const _DarkMessageText(this.text, {this.isError = false});
+
+  final String text;
+  final bool isError;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isError ? AppColors.coral : _authPink;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: .12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: .24)),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+          height: 1.45,
+        ),
+      ),
+    );
+  }
+}
+
 class _Header extends StatelessWidget {
   const _Header({required this.title, required this.subtitle, this.onBack});
+
   final String title;
   final String subtitle;
   final VoidCallback? onBack;
@@ -992,11 +2487,14 @@ class _Header extends StatelessWidget {
       children: [
         Row(
           children: [
-            IconButton(
-              onPressed: onBack,
-              icon: const NomoGeneratedIcon(
-                CupertinoIcons.chevron_left,
-                size: 20,
+            SizedBox(
+              width: 48,
+              child: IconButton(
+                onPressed: onBack,
+                icon: const NomoGeneratedIcon(
+                  CupertinoIcons.chevron_left,
+                  size: 20,
+                ),
               ),
             ),
             Expanded(
@@ -1029,111 +2527,6 @@ class _Header extends StatelessWidget {
 
 bool _isValidUserId(String value) =>
     RegExp(r'^[a-zA-Z0-9_]{3,24}$').hasMatch(value);
-
-class _RegistrationProfileFields extends StatelessWidget {
-  const _RegistrationProfileFields({
-    required this.userIdController,
-    required this.nameController,
-    required this.avatar,
-    required this.enabled,
-    required this.userIdTouched,
-    required this.nameTouched,
-    required this.onUserIdChanged,
-    required this.onNameChanged,
-    required this.onAvatarTap,
-  });
-
-  final TextEditingController userIdController;
-  final TextEditingController nameController;
-  final NomoAvatar avatar;
-  final bool enabled;
-  final bool userIdTouched;
-  final bool nameTouched;
-  final ValueChanged<String> onUserIdChanged;
-  final ValueChanged<String> onNameChanged;
-  final VoidCallback onAvatarTap;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .78),
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: const Color(0xFFE4E8F0), width: 1.4),
-    ),
-    child: Column(
-      children: [
-        Row(
-          children: [
-            GestureDetector(
-              onTap: enabled ? onAvatarTap : null,
-              child: Container(
-                width: 64,
-                height: 64,
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [AppColors.peach, AppColors.sky],
-                  ),
-                  border: Border.all(color: Colors.white, width: 2.5),
-                ),
-                child: NomoAvatarView(avatar: avatar),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'プロフィール',
-                    style: TextStyle(
-                      color: AppColors.ink,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    '登録と同時に作成します',
-                    style: TextStyle(
-                      color: AppColors.mutedInk,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        _ProfileTextField(
-          controller: userIdController,
-          enabled: enabled,
-          icon: CupertinoIcons.at,
-          hintText: 'ユーザーID（必須・完全一致検索用）',
-          errorText:
-              userIdTouched && !_isValidUserId(userIdController.text.trim())
-              ? '3〜24文字の英数字と_のみ使えます'
-              : null,
-          onChanged: onUserIdChanged,
-        ),
-        const SizedBox(height: 10),
-        _ProfileTextField(
-          controller: nameController,
-          enabled: enabled,
-          icon: CupertinoIcons.person_crop_circle,
-          hintText: 'ユーザー名（必須）',
-          errorText: nameTouched && nameController.text.trim().isEmpty
-              ? 'ユーザー名を入力してください'
-              : null,
-          onChanged: onNameChanged,
-        ),
-      ],
-    ),
-  );
-}
 
 class _ProfileTextField extends StatelessWidget {
   const _ProfileTextField({
@@ -1188,10 +2581,7 @@ class _AuthTextField extends StatelessWidget {
     required this.enabled,
     required this.icon,
     required this.hintText,
-    this.keyboardType,
     this.textInputAction,
-    this.autofillHints,
-    this.obscureText = false,
     this.onChanged,
   });
 
@@ -1199,10 +2589,7 @@ class _AuthTextField extends StatelessWidget {
   final bool enabled;
   final IconData icon;
   final String hintText;
-  final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
-  final Iterable<String>? autofillHints;
-  final bool obscureText;
   final ValueChanged<String>? onChanged;
 
   @override
@@ -1235,10 +2622,7 @@ class _AuthTextField extends StatelessWidget {
               fontSize: 15,
             ),
             cursorColor: AppColors.navy,
-            keyboardType: keyboardType,
             textInputAction: textInputAction,
-            autofillHints: autofillHints,
-            obscureText: obscureText,
             onChanged: onChanged,
             decoration: InputDecoration(
               isCollapsed: true,

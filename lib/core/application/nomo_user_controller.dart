@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../data/nomo_last_account_store.dart';
 import '../models/nomo_user.dart';
 import '../models/nomo_avatar.dart';
 
@@ -167,7 +168,18 @@ class NomoUserController extends Notifier<NomoUser?> {
   }
 
   Future<void> signOut() async {
+    final currentUser = state;
+    final currentAuthUser = Supabase.instance.client.auth.currentUser;
     try {
+      try {
+        await NomoLastAccountStore.save(
+          name: currentUser?.name,
+          email: currentAuthUser?.email,
+          avatar: currentUser?.avatar,
+        );
+      } catch (_) {
+        // 保存に失敗してもログアウト自体は止めない。
+      }
       await Supabase.instance.client.auth.signOut(scope: SignOutScope.local);
     } finally {
       // ローカルセッション削除が例外になっても、UI上は必ず未ログイン状態へ戻す。
