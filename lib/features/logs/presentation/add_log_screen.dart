@@ -83,6 +83,17 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          _PhotoPickerCard(
+                            photoPath: _photoPath,
+                            filterName: _photoFilterName,
+                            onCamera: _openNomoCamera,
+                            onGallery: _pickPhotoFromGallery,
+                            onRemove: () => setState(() {
+                              _photoPath = null;
+                              _photoFilterName = null;
+                            }),
+                          ),
+                          const SizedBox(height: 14),
                           _DateTimeBox(
                             icon: CupertinoIcons.calendar,
                             iconColor: _AddLogColors.calendarIcon,
@@ -154,27 +165,19 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                             maxLines: 1,
                             onChanged: (_) => setState(() {}),
                           ),
-                          const SizedBox(height: 14),
-                          _PhotoPickerCard(
-                            photoPath: _photoPath,
-                            filterName: _photoFilterName,
-                            onCamera: _openNomoCamera,
-                            onGallery: _pickPhotoFromGallery,
-                            onRemove: () => setState(() {
-                              _photoPath = null;
-                              _photoFilterName = null;
-                            }),
-                          ),
                         ],
                       ),
                     ),
                   ),
                   const SizedBox(height: 18),
                   _SaveButton(
+                    hasPhoto: _hasPhoto,
                     isSaving: _isSaving,
-                    onPressed: () => _save(
-                      friendsAsync.asData?.value ?? const <NomoFriend>[],
-                    ),
+                    onPressed: _hasPhoto
+                        ? () => _save(
+                            friendsAsync.asData?.value ?? const <NomoFriend>[],
+                          )
+                        : _promptPhoto,
                   ),
                 ],
               ),
@@ -204,6 +207,13 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
         _selectedFriendIds.add(id);
       }
     });
+  }
+
+  bool get _hasPhoto => _photoPath != null && _photoPath!.trim().isNotEmpty;
+
+  Future<void> _promptPhoto() async {
+    NomoToast.show(context, '飲みログには写真が必須です。まず写真を撮るか、撮影済みの写真を選んでください。');
+    await _openNomoCamera();
   }
 
   Future<void> _openNomoCamera() async {
@@ -257,6 +267,10 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
   }
 
   Future<void> _save(List<NomoFriend> friends) async {
+    if (!_hasPhoto) {
+      await _promptPhoto();
+      return;
+    }
     setState(() => _isSaving = true);
     final selectedFriends = friends
         .where((friend) => _selectedFriendIds.contains(friend.id))
@@ -282,9 +296,11 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
     }
   }
 
-  Future<String?> _photoPathForSave() async {
+  Future<String> _photoPathForSave() async {
     final path = _photoPath;
-    if (path == null || path.isEmpty) return null;
+    if (path == null || path.isEmpty) {
+      throw StateError('写真を追加してください。');
+    }
 
     final impression = _memoController.text.trim();
     if (impression.isEmpty) return path;
@@ -693,75 +709,140 @@ class _PhotoPickerCard extends StatelessWidget {
     return _DarkShell(
       padding: const EdgeInsets.all(12),
       child: path == null || path.isEmpty
-          ? Row(
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: _PhotoActionButton(
-                    icon: CupertinoIcons.camera_fill,
-                    label: 'カメラ（任意）',
-                    subtitle: '感想を画像に重ねられます',
-                    color: _AddLogColors.cameraIcon,
-                    onTap: onCamera,
+                Container(
+                  height: 176,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: .045),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: _AddLogColors.cameraIcon.withValues(alpha: .34),
+                      width: 1.4,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _PhotoActionButton(
-                    icon: CupertinoIcons.photo_fill_on_rectangle_fill,
-                    label: '写真を選ぶ',
-                    subtitle: '任意・1枚まで',
-                    color: _AddLogColors.photoIcon,
-                    onTap: onGallery,
-                  ),
-                ),
-              ],
-            )
-          : Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: Image.file(
-                    File(path),
-                    width: 82,
-                    height: 62,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      NomoPopIcon(
+                        icon: CupertinoIcons.camera_fill,
+                        color: _AddLogColors.cameraIcon,
+                        size: 64,
+                        iconSize: 34,
+                        shadow: false,
+                      ),
+                      const SizedBox(height: 12),
                       const Text(
-                        '写真を追加済み',
+                        '写真が主役の飲みログ',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
-                          fontSize: 14,
+                          fontSize: 17,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 5),
                       Text(
-                        filterName == null
-                            ? 'Nomo Photo'
-                            : '$filterName filter',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        '最後に必ず1枚セットしてください',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: .50),
-                          fontWeight: FontWeight.w800,
+                          color: Colors.white.withValues(alpha: .56),
+                          fontWeight: FontWeight.w900,
                           fontSize: 12,
                         ),
                       ),
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: onRemove,
-                  icon: const NomoGeneratedIcon(
-                    CupertinoIcons.xmark_circle_fill,
-                    color: _AddLogColors.clearIcon,
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _PhotoActionButton(
+                        icon: CupertinoIcons.camera_fill,
+                        label: '今すぐ撮影',
+                        subtitle: '決定ボタンからも起動',
+                        color: _AddLogColors.cameraIcon,
+                        onTap: onCamera,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _PhotoActionButton(
+                        icon: CupertinoIcons.photo_fill_on_rectangle_fill,
+                        label: '撮影済みを選ぶ',
+                        subtitle: 'アルバムから1枚',
+                        color: _AddLogColors.photoIcon,
+                        onTap: onGallery,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(22),
+                  child: Image.file(
+                    File(path),
+                    height: 220,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '写真をセット済み',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            filterName == null
+                                ? 'Nomo Photo'
+                                : '$filterName filter',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: .50),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: onGallery,
+                      icon: const NomoGeneratedIcon(
+                        CupertinoIcons.photo_fill_on_rectangle_fill,
+                        color: _AddLogColors.photoIcon,
+                        size: 18,
+                      ),
+                      label: const Text('差し替え'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        textStyle: const TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: onRemove,
+                      icon: const NomoGeneratedIcon(
+                        CupertinoIcons.xmark_circle_fill,
+                        color: _AddLogColors.clearIcon,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -865,21 +946,26 @@ class _DarkShell extends StatelessWidget {
 }
 
 class _SaveButton extends StatelessWidget {
-  const _SaveButton({required this.isSaving, required this.onPressed});
+  const _SaveButton({
+    required this.hasPhoto,
+    required this.isSaving,
+    required this.onPressed,
+  });
 
+  final bool hasPhoto;
   final bool isSaving;
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) => Nomo3DButton(
-    label: '飲みログを残す',
+    label: hasPhoto ? '写真つきで飲みログを残す' : '写真を撮って決定',
     isLoading: isSaving,
     enabled: onPressed != null,
     onTap: onPressed,
     height: 56,
     radius: 22,
-    color: const Color(0xFF35DCC4),
-    shadowColor: const Color(0xFF35DCC4),
+    color: hasPhoto ? const Color(0xFF35DCC4) : _AddLogColors.photoIcon,
+    shadowColor: hasPhoto ? const Color(0xFF35DCC4) : _AddLogColors.photoIcon,
     fontSize: 15,
     useGradient: false,
   );
