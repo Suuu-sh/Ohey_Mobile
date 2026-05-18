@@ -404,27 +404,42 @@ Future<void> showMyQrDialog(
   await showDialog<void>(
     context: context,
     barrierColor: Colors.black.withValues(alpha: .74),
-    builder: (dialogContext) => MediaQuery(
-      data: MediaQuery.of(
-        dialogContext,
-      ).copyWith(textScaler: const TextScaler.linear(1)),
-      child: Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
-        backgroundColor: Colors.transparent,
-        child: _MyQrCard(
-          name: name,
-          handle: '@${user.userId}',
-          avatar: user.avatar,
-          payload: payload,
-          onClose: () => Navigator.of(dialogContext).pop(),
-          onCopyUserId: () => copyUserId(dialogContext),
-          onSaveQr: () => saveQrImage(dialogContext),
-          onScan: () => scanQr(dialogContext),
-          onSearchUserId: (value) =>
-              searchAndShowProfileByUserId(dialogContext, value),
+    builder: (dialogContext) {
+      final mediaQuery = MediaQuery.of(dialogContext);
+      final maxDialogHeight =
+          (mediaQuery.size.height -
+                  mediaQuery.viewInsets.bottom -
+                  mediaQuery.padding.vertical -
+                  48)
+              .clamp(360.0, mediaQuery.size.height)
+              .toDouble();
+
+      return MediaQuery(
+        data: mediaQuery.copyWith(textScaler: const TextScaler.linear(1)),
+        child: Dialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 22,
+            vertical: 24,
+          ),
+          backgroundColor: Colors.transparent,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxDialogHeight),
+            child: _MyQrCard(
+              name: name,
+              handle: '@${user.userId}',
+              avatar: user.avatar,
+              payload: payload,
+              onClose: () => Navigator.of(dialogContext).pop(),
+              onCopyUserId: () => copyUserId(dialogContext),
+              onSaveQr: () => saveQrImage(dialogContext),
+              onScan: () => scanQr(dialogContext),
+              onSearchUserId: (value) =>
+                  searchAndShowProfileByUserId(dialogContext, value),
+            ),
+          ),
         ),
-      ),
-    ),
+      );
+    },
   );
 }
 
@@ -1548,135 +1563,139 @@ class _MyQrCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onTap: onClose,
-                  behavior: HitTestBehavior.opaque,
-                  child: const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: NomoGeneratedIcon(
-                      CupertinoIcons.xmark,
-                      color: Color(0xFF4B5056),
-                      size: 30,
+      child: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        physics: const BouncingScrollPhysics(parent: ClampingScrollPhysics()),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: GestureDetector(
+                    onTap: onClose,
+                    behavior: HitTestBehavior.opaque,
+                    child: const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: NomoGeneratedIcon(
+                        CupertinoIcons.xmark,
+                        color: Color(0xFF4B5056),
+                        size: 30,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Column(
-                children: [
-                  Text(
-                    name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: titleColor,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
+                Column(
+                  children: [
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: titleColor,
+                        fontWeight: FontWeight.w900,
+                        height: 1,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    handle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: subColor,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              QrImageView(
-                data: payload,
-                version: QrVersions.auto,
-                size: 284,
-                padding: EdgeInsets.zero,
-                backgroundColor: Colors.white,
-                eyeStyle: QrEyeStyle(
-                  eyeShape: QrEyeShape.square,
-                  color: qrColor,
-                ),
-                dataModuleStyle: QrDataModuleStyle(
-                  dataModuleShape: QrDataModuleShape.circle,
-                  color: qrColor,
-                ),
-              ),
-              Container(
-                width: 96,
-                height: 96,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: logoBg,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: logoBorder, width: 6),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: .10),
-                      blurRadius: 14,
-                      offset: const Offset(0, 8),
+                    const SizedBox(height: 4),
+                    Text(
+                      handle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: subColor,
+                        fontWeight: FontWeight.w900,
+                        height: 1,
+                      ),
                     ),
                   ],
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(17),
-                  child: NomoAvatarView(
-                    avatar: avatar ?? NomoAvatar.defaultAvatar,
-                    size: 78,
+              ],
+            ),
+            const SizedBox(height: 18),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                QrImageView(
+                  data: payload,
+                  version: QrVersions.auto,
+                  size: 284,
+                  padding: EdgeInsets.zero,
+                  backgroundColor: Colors.white,
+                  eyeStyle: QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: qrColor,
+                  ),
+                  dataModuleStyle: QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.circle,
+                    color: qrColor,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'nomo',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: const Color(0xFF22D7C5),
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.8,
+                Container(
+                  width: 96,
+                  height: 96,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: logoBg,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: logoBorder, width: 6),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: .10),
+                        blurRadius: 14,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(17),
+                    child: NomoAvatarView(
+                      avatar: avatar ?? NomoAvatar.defaultAvatar,
+                      size: 78,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _QrActionButton(
-                icon: CupertinoIcons.arrow_down_to_line_alt,
-                label: 'QR保存',
+            const SizedBox(height: 10),
+            Text(
+              'nomo',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: const Color(0xFF22D7C5),
-                onTap: onSaveQr,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.8,
               ),
-              _QrActionButton(
-                icon: CupertinoIcons.qrcode_viewfinder,
-                label: 'QR読取',
-                color: const Color(0xFFB188FF),
-                onTap: onScan,
-              ),
-              _QrActionButton(
-                icon: CupertinoIcons.at,
-                label: 'IDコピー',
-                color: const Color(0xFFFF8A3D),
-                onTap: onCopyUserId,
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          _QrIdSearchInput(onSearch: onSearchUserId),
-        ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _QrActionButton(
+                  icon: CupertinoIcons.arrow_down_to_line_alt,
+                  label: 'QR保存',
+                  color: const Color(0xFF22D7C5),
+                  onTap: onSaveQr,
+                ),
+                _QrActionButton(
+                  icon: CupertinoIcons.qrcode_viewfinder,
+                  label: 'QR読取',
+                  color: const Color(0xFFB188FF),
+                  onTap: onScan,
+                ),
+                _QrActionButton(
+                  icon: CupertinoIcons.at,
+                  label: 'IDコピー',
+                  color: const Color(0xFFFF8A3D),
+                  onTap: onCopyUserId,
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            _QrIdSearchInput(onSearch: onSearchUserId),
+          ],
+        ),
       ),
     );
   }
@@ -1782,12 +1801,43 @@ class _QrIdSearchInput extends StatefulWidget {
 
 class _QrIdSearchInputState extends State<_QrIdSearchInput> {
   final _controller = TextEditingController();
+  final _focusNode = FocusNode();
   bool _busy = false;
 
   @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_scrollIntoViewWhenFocused);
+  }
+
+  @override
   void dispose() {
+    _focusNode
+      ..removeListener(_scrollIntoViewWhenFocused)
+      ..dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _scrollIntoViewWhenFocused() {
+    if (!_focusNode.hasFocus) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureInputVisible();
+      Future<void>.delayed(
+        const Duration(milliseconds: 280),
+        _ensureInputVisible,
+      );
+    });
+  }
+
+  void _ensureInputVisible() {
+    if (!mounted) return;
+    Scrollable.ensureVisible(
+      context,
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      alignment: .86,
+    );
   }
 
   Future<void> _submit() async {
@@ -1828,6 +1878,7 @@ class _QrIdSearchInputState extends State<_QrIdSearchInput> {
           Expanded(
             child: TextField(
               controller: _controller,
+              focusNode: _focusNode,
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => _submit(),
               decoration: InputDecoration(
