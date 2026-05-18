@@ -824,9 +824,10 @@ class _FeedPostCard extends StatelessWidget {
               ],
               const SizedBox(width: 10),
               _DuoFeedButton(
-                icon: CupertinoIcons.arrow_up_to_line,
+                icon: CupertinoIcons.square_arrow_up,
                 label: '',
                 color: Colors.white,
+                useSystemIcon: true,
                 onTap: onShare,
               ),
               const SizedBox(width: 10),
@@ -861,12 +862,14 @@ class _DuoFeedButton extends StatelessWidget {
     required this.label,
     required this.color,
     this.onTap,
+    this.useSystemIcon = false,
   });
 
   final IconData icon;
   final String label;
   final Color color;
   final VoidCallback? onTap;
+  final bool useSystemIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -892,12 +895,14 @@ class _DuoFeedButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            NomoPopIcon(
-              icon: icon,
-              color: effectiveIconColor,
-              size: 27,
-              showBubble: false,
-            ),
+            useSystemIcon
+                ? Icon(icon, color: effectiveIconColor, size: 27)
+                : NomoPopIcon(
+                    icon: icon,
+                    color: effectiveIconColor,
+                    size: 27,
+                    showBubble: false,
+                  ),
             if (label.isNotEmpty) ...[
               const SizedBox(width: 8),
               Text(
