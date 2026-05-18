@@ -72,14 +72,86 @@ bool _isSupabaseInitialized() {
   }
 }
 
-class _BootstrapGate extends ConsumerWidget {
+class _BootstrapGate extends ConsumerStatefulWidget {
   const _BootstrapGate();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_BootstrapGate> createState() => _BootstrapGateState();
+}
+
+class _BootstrapGateState extends ConsumerState<_BootstrapGate>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _openingExitController;
+  bool _openingExitCompleted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _openingExitController =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 760),
+        )..addStatusListener((status) {
+          if (status == AnimationStatus.completed && mounted) {
+            setState(() => _openingExitCompleted = true);
+          }
+        });
+  }
+
+  @override
+  void dispose() {
+    _openingExitController.dispose();
+    super.dispose();
+  }
+
+  void _startOpeningExit() {
+    if (_openingExitCompleted ||
+        _openingExitController.isAnimating ||
+        _openingExitController.value > 0) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          _openingExitCompleted ||
+          _openingExitController.isAnimating ||
+          _openingExitController.value > 0) {
+        return;
+      }
+      _openingExitController.forward();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<AsyncValue<void>>(_nomoBootstrapProvider, (previous, next) {
+      if (next.isLoading) {
+        _openingExitCompleted = false;
+        _openingExitController.reset();
+      }
+    });
+
     final bootstrap = ref.watch(_nomoBootstrapProvider);
     return bootstrap.when(
-      data: (_) => const NomoTabShell(),
+      data: (_) {
+        _startOpeningExit();
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            const NomoTabShell(),
+            if (!_openingExitCompleted)
+              AnimatedBuilder(
+                animation: _openingExitController,
+                builder: (context, child) => ClipPath(
+                  clipper: _OpeningCollapseClipper(
+                    progress: _openingExitController.value,
+                  ),
+                  child: child,
+                ),
+                child: const _StartupScreen(),
+              ),
+          ],
+        );
+      },
       loading: () => const _StartupScreen(),
       error: (error, stackTrace) => _StartupScreen(
         message: '起動に失敗しました',
@@ -88,6 +160,35 @@ class _BootstrapGate extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _OpeningCollapseClipper extends CustomClipper<Path> {
+  const _OpeningCollapseClipper({required this.progress});
+
+  final double progress;
+
+  @override
+  Path getClip(Size size) {
+    final eased = Curves.easeInOutCubic.transform(progress.clamp(0, 1));
+    final scale = 1 - eased;
+    if (scale <= 0.001) {
+      return Path();
+    }
+
+    final rect = Rect.fromCenter(
+      center: Offset(size.width / 2, size.height / 2),
+      width: size.width * scale,
+      height: size.height * scale,
+    );
+    final radius = Radius.circular(
+      ui.lerpDouble(size.shortestSide * .06, size.shortestSide * .44, eased)!,
+    );
+    return Path()..addRRect(RRect.fromRectAndRadius(rect, radius));
+  }
+
+  @override
+  bool shouldReclip(covariant _OpeningCollapseClipper oldClipper) =>
+      oldClipper.progress != progress;
 }
 
 class _StartupScreen extends StatelessWidget {
