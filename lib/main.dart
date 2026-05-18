@@ -17,7 +17,7 @@ import 'core/widgets/nomo_tab_shell.dart';
 const _openingNomoAsset = 'assets/images/opening_nomo.png';
 const _minimumOpeningDuration = Duration(seconds: 1);
 const _openingExitFaceArrivalMs = 620;
-const _openingExitFacePauseMs = 500;
+const _openingExitFacePauseMs = 250;
 const _openingExitFinalCollapseMs = 320;
 const _openingExitDurationMs =
     _openingExitFaceArrivalMs +
@@ -271,7 +271,7 @@ double _openingCollapseMaxRadius(Size size) {
 }
 
 double _openingCollapseFaceStopRadius(Size size) {
-  return size.shortestSide * .27;
+  return size.shortestSide * .20;
 }
 
 double _openingCollapseRadius(Size size, double rawProgress) {
