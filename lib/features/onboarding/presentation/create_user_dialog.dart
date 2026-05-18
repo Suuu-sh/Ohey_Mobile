@@ -621,7 +621,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                 const SizedBox(height: 10),
                 _DarkMessageText(_notice!),
               ],
-              if (isEmailStep) ...[
+              if (!isEmailStep) ...[
                 SizedBox(height: compact ? 10 : 22),
                 SizedBox(
                   height: compact ? 38 : 44,
