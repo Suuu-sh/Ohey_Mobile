@@ -1711,8 +1711,16 @@ class _VectorShareIconPainter extends CustomPainter {
 }
 
 bool _isDisplayablePostPhoto(String? path) {
-  if (path == null || path.isEmpty) return false;
-  return !path.startsWith('nomo_memory_template_');
+  final normalized = path?.trim();
+  if (normalized == null || normalized.isEmpty) return false;
+  if (normalized.startsWith('nomo_memory_template_')) return false;
+  if (normalized.startsWith('/')) return File(normalized).existsSync();
+  if (normalized.startsWith('http://') ||
+      normalized.startsWith('https://') ||
+      normalized.startsWith('assets/')) {
+    return true;
+  }
+  return false;
 }
 
 String _duoStyleBody(_FeedItem item) {
@@ -1733,27 +1741,35 @@ class _PostPhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final image = path.startsWith('http')
-        ? Image.network(
-            path,
-            height: 150,
-            width: double.infinity,
-            fit: BoxFit.cover,
-          )
-        : path.startsWith('/')
-        ? Image.file(
-            File(path),
-            height: 150,
-            width: double.infinity,
-            fit: BoxFit.cover,
-          )
-        : Image.asset(
-            path,
-            height: 150,
-            width: double.infinity,
-            fit: BoxFit.cover,
-          );
-    return ClipRRect(borderRadius: BorderRadius.circular(22), child: image);
+    final provider = _imageProviderFor(path);
+    if (provider == null) return const SizedBox.shrink();
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(22),
+      child: Image(
+        image: provider,
+        height: 150,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        gaplessPlayback: true,
+        errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+      ),
+    );
+  }
+
+  ImageProvider? _imageProviderFor(String value) {
+    final normalized = value.trim();
+    if (normalized.isEmpty) return null;
+    if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+      return NetworkImage(normalized);
+    }
+    if (normalized.startsWith('/')) {
+      final file = File(normalized);
+      if (!file.existsSync()) return null;
+      return FileImage(file);
+    }
+    if (normalized.startsWith('assets/')) return AssetImage(normalized);
+    return null;
   }
 }
 

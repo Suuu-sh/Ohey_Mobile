@@ -2307,50 +2307,32 @@ class _Auth3DPanelButton extends StatelessWidget {
   final Color glowColor;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => Nomo3DButtonSurface(
     onTap: onTap,
-    child: Container(
-      width: double.infinity,
-      height: height + 7,
-      decoration: BoxDecoration(
-        color: bottomColor,
-        borderRadius: BorderRadius.circular(radius + 1),
-        boxShadow: [
-          BoxShadow(
-            color: glowColor,
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .16),
-            blurRadius: 18,
-            offset: const Offset(0, 9),
-          ),
-        ],
+    height: height,
+    radius: radius,
+    color: topColor,
+    bottomColor: bottomColor,
+    useGradient: false,
+    borderColor: borderColor,
+    borderWidth: 2,
+    outerShadows: [
+      BoxShadow(color: glowColor, blurRadius: 24, offset: const Offset(0, 12)),
+      BoxShadow(
+        color: Colors.black.withValues(alpha: .16),
+        blurRadius: 18,
+        offset: const Offset(0, 9),
       ),
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: Container(
-          width: double.infinity,
-          height: height,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: topColor,
-            borderRadius: BorderRadius.circular(radius),
-            border: Border.all(color: borderColor, width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withValues(alpha: .08),
-                blurRadius: 0,
-                spreadRadius: -4,
-                offset: const Offset(0, -5),
-              ),
-            ],
-          ),
-          child: child,
-        ),
+    ],
+    innerShadows: [
+      BoxShadow(
+        color: Colors.white.withValues(alpha: .08),
+        blurRadius: 0,
+        spreadRadius: -4,
+        offset: const Offset(0, -5),
       ),
-    ),
+    ],
+    child: child,
   );
 }
 
