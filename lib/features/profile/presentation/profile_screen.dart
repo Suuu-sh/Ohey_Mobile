@@ -7,9 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
+import '../../../core/data/backend_api_client.dart';
+import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_drink_invite.dart';
@@ -35,7 +36,8 @@ class ProfileScreen extends ConsumerWidget {
     final logsAsync = ref.watch(drinkLogControllerProvider);
     final friendsAsync = ref.watch(friendsProvider);
     final user = ref.watch(nomoUserProvider);
-    final currentAuthUserId = Supabase.instance.client.auth.currentUser?.id;
+    final currentAuthUser = ref.watch(supabaseClientProvider).auth.currentUser;
+    final currentAuthUserId = currentAuthUser?.id;
     final reservationsAsync = ref.watch(todayReservationsProvider);
     final incomingInvitesAsync = ref.watch(incomingDrinkInvitesProvider);
     final reservations =
@@ -46,8 +48,7 @@ class ProfileScreen extends ConsumerWidget {
     final friendsCount = friendsAsync.asData?.value.length ?? 0;
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     final canOpenAdmin =
-        Supabase.instance.client.auth.currentUser?.email?.toLowerCase() ==
-        'yisshiki39@gmail.com';
+        currentAuthUser?.email?.toLowerCase() == 'yisshiki39@gmail.com';
     final monthlyLogs = logs
         .where((log) => log.isInMonth(DateTime.now()))
         .toList();
@@ -172,36 +173,35 @@ String? _parseProfileFriendQrPayload(String raw) {
   return null;
 }
 
-Future<bool> _isAlreadyFriend(String currentUserId, String friendId) async {
-  final rows = await Supabase.instance.client
-      .from('friendships')
-      .select('id')
-      .or(
-        'and(user_a_id.eq.$currentUserId,user_b_id.eq.$friendId),and(user_a_id.eq.$friendId,user_b_id.eq.$currentUserId)',
-      )
-      .limit(1);
-  return rows.isNotEmpty;
-}
-
 enum _FriendRequestState { none, outgoing, incoming }
 
-Future<_FriendRequestState> _friendRequestState(
-  String currentUserId,
+class _FriendRelationshipStatus {
+  const _FriendRelationshipStatus({
+    required this.alreadyFriend,
+    required this.requestState,
+  });
+
+  final bool alreadyFriend;
+  final _FriendRequestState requestState;
+}
+
+Future<_FriendRelationshipStatus> _friendRelationshipStatus(
+  WidgetRef ref,
   String friendId,
 ) async {
-  final rows = await Supabase.instance.client
-      .from('friend_requests')
-      .select('from_user_id,to_user_id')
-      .eq('status', 'pending')
-      .or(
-        'and(from_user_id.eq.$currentUserId,to_user_id.eq.$friendId),and(from_user_id.eq.$friendId,to_user_id.eq.$currentUserId)',
-      )
-      .limit(1);
-  if (rows.isEmpty) return _FriendRequestState.none;
-  final row = Map<String, dynamic>.from(rows.first as Map);
-  return row['from_user_id'] == currentUserId
-      ? _FriendRequestState.outgoing
-      : _FriendRequestState.incoming;
+  final data = await ref
+      .read(backendApiClientProvider)
+      .get('/v1/friend-requests/status', query: {'friend_id': friendId});
+  final row = data is Map ? Map<String, dynamic>.from(data) : const {};
+  final requestState = switch (row['request_state'] as String?) {
+    'outgoing' => _FriendRequestState.outgoing,
+    'incoming' => _FriendRequestState.incoming,
+    _ => _FriendRequestState.none,
+  };
+  return _FriendRelationshipStatus(
+    alreadyFriend: (row['already_friend'] as bool?) ?? false,
+    requestState: requestState,
+  );
 }
 
 class _NomoSearchProfile {
@@ -296,29 +296,26 @@ Future<void> showMyQrDialog(
     BuildContext sheetContext,
     _NomoSearchProfile profile,
   ) async {
-    final currentUser = Supabase.instance.client.auth.currentUser;
-    if (currentUser == null) {
+    final client = ref.read(backendApiClientProvider);
+    final currentUserId = client.currentUserId;
+    if (currentUserId == null || currentUserId.isEmpty) {
       NomoToast.show(sheetContext, 'フレンズ申請にはログインが必要です');
       return;
     }
-    if (profile.id == currentUser.id) {
+    if (profile.id == currentUserId) {
       NomoToast.show(sheetContext, '自分自身には申請できません');
       return;
     }
 
     try {
-      await Supabase.instance.client.from('friend_requests').insert({
-        'from_user_id': currentUser.id,
-        'to_user_id': profile.id,
-        'status': 'pending',
-      });
+      await client.post('/v1/friend-requests', {'to_user_id': profile.id});
       if (!sheetContext.mounted) return;
       Navigator.of(sheetContext).pop();
       if (!context.mounted) return;
       NomoToast.show(context, '${profile.displayName}にフレンズ申請を送りました');
-    } on PostgrestException catch (e) {
+    } on BackendApiException catch (e) {
       if (!sheetContext.mounted) return;
-      if (e.code == '23505') {
+      if (e.statusCode == 409) {
         NomoToast.show(sheetContext, 'すでに申請済みです');
       } else {
         NomoToast.show(sheetContext, '申請を送れませんでした: ${e.message}');
@@ -339,36 +336,28 @@ Future<void> showMyQrDialog(
       return;
     }
 
-    final currentUser = Supabase.instance.client.auth.currentUser;
-    if (currentUser == null) {
+    final client = ref.read(backendApiClientProvider);
+    final currentUserId = client.currentUserId;
+    if (currentUserId == null || currentUserId.isEmpty) {
       NomoToast.show(dialogContext, '友達追加にはログインが必要です');
       return;
     }
 
     try {
-      final row = await Supabase.instance.client
-          .from('profiles')
-          .select('id, display_name, user_id, avatar_url')
-          .eq('user_id', query)
-          .maybeSingle();
+      final row = await client.get(
+        '/v1/profiles/by-user-id/${Uri.encodeComponent(query)}',
+      );
       if (!dialogContext.mounted) return;
-      if (row == null) {
-        NomoToast.show(dialogContext, '@$query は見つかりませんでした');
-        return;
-      }
 
       final profile = _NomoSearchProfile.fromRow(
         Map<String, dynamic>.from(row),
       );
-      if (profile.id == currentUser.id) {
+      if (profile.id == currentUserId) {
         NomoToast.show(dialogContext, '自分自身は追加できません');
         return;
       }
 
-      final alreadyFriend = await _isAlreadyFriend(currentUser.id, profile.id);
-      final requestState = alreadyFriend
-          ? _FriendRequestState.none
-          : await _friendRequestState(currentUser.id, profile.id);
+      final relationship = await _friendRelationshipStatus(ref, profile.id);
       if (!dialogContext.mounted) return;
       await showModalBottomSheet<void>(
         context: dialogContext,
@@ -378,11 +367,18 @@ Future<void> showMyQrDialog(
         barrierColor: Colors.black.withValues(alpha: .62),
         builder: (sheetContext) => _NomoProfilePreviewSheet(
           profile: profile,
-          alreadyFriend: alreadyFriend,
-          requestState: requestState,
+          alreadyFriend: relationship.alreadyFriend,
+          requestState: relationship.requestState,
           onRequest: () => sendFriendRequest(sheetContext, profile),
         ),
       );
+    } on BackendApiException catch (e) {
+      if (!dialogContext.mounted) return;
+      if (e.statusCode == 404) {
+        NomoToast.show(dialogContext, '@$query は見つかりませんでした');
+      } else {
+        NomoToast.show(dialogContext, '検索できませんでした: ${e.message}');
+      }
     } catch (e) {
       if (!dialogContext.mounted) return;
       NomoToast.show(dialogContext, '検索できませんでした: $e');

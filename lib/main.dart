@@ -40,16 +40,21 @@ Future<void> _loadOpeningNomoImage() async {
 }
 
 final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
-  final minimumOpening = Future<void>.delayed(_minimumOpeningDuration);
+  final alreadyInitialized = _isSupabaseInitialized();
+  final minimumOpening = alreadyInitialized
+      ? Future<void>.value()
+      : Future<void>.delayed(_minimumOpeningDuration);
   try {
-    await Supabase.initialize(
-      url: SupabaseConfig.url,
-      anonKey: SupabaseConfig.publishableKey,
-      authOptions: const FlutterAuthClientOptions(
-        authFlowType: AuthFlowType.pkce,
-        detectSessionInUri: true,
-      ),
-    ).timeout(const Duration(seconds: 12));
+    if (!alreadyInitialized) {
+      await Supabase.initialize(
+        url: SupabaseConfig.url,
+        anonKey: SupabaseConfig.publishableKey,
+        authOptions: const FlutterAuthClientOptions(
+          authFlowType: AuthFlowType.pkce,
+          detectSessionInUri: true,
+        ),
+      ).timeout(const Duration(seconds: 12));
+    }
 
     await AuthSessionGuard.clearIfProjectMismatch(
       Supabase.instance.client,
@@ -58,6 +63,14 @@ final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
     await minimumOpening;
   }
 });
+
+bool _isSupabaseInitialized() {
+  try {
+    return Supabase.instance.isInitialized;
+  } catch (_) {
+    return false;
+  }
+}
 
 class _BootstrapGate extends ConsumerWidget {
   const _BootstrapGate();
