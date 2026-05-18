@@ -101,12 +101,14 @@ class AdminController {
     String? ownerUserId,
     required String placeName,
     required String memo,
+    required String linkUrl,
     required bool isOfficial,
   }) async {
     final body = <String, dynamic>{
       'drank_at': DateTime.now().toUtc().toIso8601String(),
       'place_name': placeName,
       'memo': memo,
+      'link_url': linkUrl,
       'is_official': isOfficial,
     };
     if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
@@ -120,11 +122,13 @@ class AdminController {
     String? ownerUserId,
     required String placeName,
     required String memo,
+    required String linkUrl,
     required bool isOfficial,
   }) async {
     final body = <String, dynamic>{
       'place_name': placeName,
       'memo': memo,
+      'link_url': linkUrl,
       'is_official': isOfficial,
     };
     if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
@@ -176,6 +180,7 @@ class AdminDrinkLog {
     required this.drankAt,
     required this.placeName,
     required this.memo,
+    required this.linkUrl,
     required this.isOfficial,
   });
 
@@ -186,6 +191,7 @@ class AdminDrinkLog {
   final DateTime drankAt;
   final String placeName;
   final String memo;
+  final String linkUrl;
   final bool isOfficial;
 
   factory AdminDrinkLog.fromJson(Map<String, dynamic> json) {
@@ -202,6 +208,7 @@ class AdminDrinkLog {
           DateTime.fromMillisecondsSinceEpoch(0),
       placeName: json['place_name'] as String? ?? '',
       memo: json['memo'] as String? ?? '',
+      linkUrl: json['link_url'] as String? ?? '',
       isOfficial: json['is_official'] as bool? ?? false,
     );
   }

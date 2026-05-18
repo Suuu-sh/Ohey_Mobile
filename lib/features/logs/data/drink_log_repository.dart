@@ -115,6 +115,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       place: (row['place_name'] as String?) ?? '',
       memo: (row['memo'] as String?) ?? '',
       photoAssetPath: row['photo_path'] as String?,
+      linkUrl: row['link_url'] as String?,
       likeCount: 0,
       likedByMe: false,
       ownerUserId:
@@ -154,6 +155,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       place: (row['place_name'] as String?) ?? '',
       memo: (row['memo'] as String?) ?? '',
       photoAssetPath: row['photo_path'] as String?,
+      linkUrl: row['link_url'] as String?,
       likeCount: (row['like_count'] as num?)?.toInt() ?? 0,
       likedByMe: (row['liked_by_me'] as bool?) ?? false,
       ownerUserId: (row['owner_user_id'] as String?) ?? '',

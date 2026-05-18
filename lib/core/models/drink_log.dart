@@ -9,6 +9,7 @@ class DrinkLog {
     required this.place,
     required this.memo,
     this.photoAssetPath,
+    this.linkUrl,
     this.likeCount = 0,
     this.likedByMe = false,
     this.ownerUserId = '',
@@ -23,6 +24,7 @@ class DrinkLog {
   final String place;
   final String memo;
   final String? photoAssetPath;
+  final String? linkUrl;
   final int likeCount;
   final bool likedByMe;
   final String ownerUserId;
@@ -37,6 +39,7 @@ class DrinkLog {
     place: place,
     memo: memo,
     photoAssetPath: photoAssetPath,
+    linkUrl: linkUrl,
     likeCount: likeCount ?? this.likeCount,
     likedByMe: likedByMe ?? this.likedByMe,
     ownerUserId: ownerUserId,
