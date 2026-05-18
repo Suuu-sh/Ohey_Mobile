@@ -581,9 +581,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
               SizedBox(
                 height: compact ? 38 : 44,
                 child: TextButton(
-                  onPressed: _isBusy
-                      ? null
-                      : () => _showComingSoonSnack('パスワード再設定は今後対応予定です。'),
+                  onPressed: _isBusy ? null : _sendPasswordResetEmail,
                   child: const Text(
                     'パスワードをお忘れですか？',
                     style: TextStyle(
@@ -691,6 +689,45 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _error = null;
       _notice = null;
     });
+  }
+
+  Future<void> _sendPasswordResetEmail() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() {
+        _error = 'パスワード再設定メールを送るメールアドレスを入力してください。';
+        _notice = null;
+      });
+      return;
+    }
+
+    setState(() {
+      _isBusy = true;
+      _error = null;
+      _notice = null;
+    });
+
+    try {
+      await ref
+          .read(supabaseClientProvider)
+          .auth
+          .resetPasswordForEmail(
+            email,
+            redirectTo: SupabaseConfig.authRedirectUrl,
+          );
+      if (!mounted) return;
+      setState(() {
+        _notice = 'パスワード再設定メールを送信しました。メール内のリンクから再設定してください。';
+      });
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = _friendlyAuthError(e.message));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = 'パスワード再設定メールを送信できませんでした: $e');
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
   }
 
   void _showComingSoonSnack(String message) {
