@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
@@ -1565,11 +1566,12 @@ class _FeedPostCard extends StatelessWidget {
                 onTap: onShare,
               ),
               const SizedBox(width: 10),
-              if (_isOfficial)
-                const _DuoFeedButton(
+              if (_isOfficial && item.linkUrl.trim().isNotEmpty)
+                _DuoFeedButton(
                   icon: CupertinoIcons.arrow_right_circle_fill,
                   label: '詳しく見る',
                   color: _FeedColors.teal,
+                  onTap: () => _openOfficialLink(context, item.linkUrl),
                 ),
               const Spacer(),
               Padding(
@@ -1587,6 +1589,18 @@ class _FeedPostCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _openOfficialLink(BuildContext context, String rawUrl) async {
+    final uri = Uri.tryParse(rawUrl.trim());
+    if (uri == null || !uri.hasScheme) {
+      NomoToast.show(context, 'リンクを開けませんでした。');
+      return;
+    }
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened && context.mounted) {
+      NomoToast.show(context, 'リンクを開けませんでした。');
+    }
   }
 }
 
@@ -2604,6 +2618,7 @@ class _FeedItem {
     required this.avatar,
     required this.accent,
     this.photoAssetPath,
+    this.linkUrl = '',
     this.friends = const <_Companion>[],
     required this.likes,
     required this.saved,
@@ -2637,6 +2652,7 @@ class _FeedItem {
       avatar: log.ownerAvatar ?? user?.avatar ?? NomoAvatar.defaultAvatar,
       accent: accent,
       photoAssetPath: log.photoAssetPath,
+      linkUrl: log.linkUrl ?? '',
       friends: log.friends.map(_Companion.fromFriend).toList(),
       likes: log.likeCount,
       saved: log.id.hashCode.isEven,
@@ -2671,6 +2687,7 @@ class _FeedItem {
   final NomoAvatar avatar;
   final Color accent;
   final String? photoAssetPath;
+  final String linkUrl;
   final List<_Companion> friends;
   final int likes;
   final bool saved;
