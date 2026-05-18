@@ -605,22 +605,20 @@ class _FriendCard extends StatelessWidget {
                       button: true,
                       label: friend.isFavorite ? 'お気に入りを解除' : 'お気に入りに追加',
                       child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: onFavoriteToggle,
-                        child: Container(
-                          width: 28,
-                          height: 28,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Colors.transparent,
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                          child: _FavoriteStarIcon(
-                            filled: friend.isFavorite,
-                            color: friend.isFavorite
-                                ? const Color(0xFFFFC700)
-                                : (isWhite
-                                      ? const Color(0xFF8C9CAB)
-                                      : _FriendsColors.muted),
+                        child: SizedBox(
+                          width: 36,
+                          height: 36,
+                          child: Center(
+                            child: _FavoriteStarIcon(
+                              filled: friend.isFavorite,
+                              color: friend.isFavorite
+                                  ? const Color(0xFFFFC700)
+                                  : (isWhite
+                                        ? const Color(0xFF8C9CAB)
+                                        : _FriendsColors.muted),
+                            ),
                           ),
                         ),
                       ),
