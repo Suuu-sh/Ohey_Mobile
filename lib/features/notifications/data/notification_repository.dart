@@ -16,6 +16,10 @@ class NomoNotification {
     required this.isUnread,
     this.actorUserId,
     this.drinkLogId,
+    this.friendRequestId,
+    this.drinkInviteId,
+    this.notificationDate,
+    this.systemKey,
   });
 
   final String id;
@@ -26,6 +30,10 @@ class NomoNotification {
   final bool isUnread;
   final String? actorUserId;
   final String? drinkLogId;
+  final String? friendRequestId;
+  final String? drinkInviteId;
+  final DateTime? notificationDate;
+  final String? systemKey;
 
   factory NomoNotification.fromJson(Map<String, dynamic> json) {
     final createdAtText = json['created_at'] as String?;
@@ -40,6 +48,10 @@ class NomoNotification {
       isUnread: json['read_at'] == null,
       actorUserId: json['actor_user_id'] as String?,
       drinkLogId: json['drink_log_id'] as String?,
+      friendRequestId: json['friend_request_id'] as String?,
+      drinkInviteId: json['drink_invite_id'] as String?,
+      notificationDate: _dateOnly(json['notification_date'] as String?),
+      systemKey: json['system_key'] as String?,
     );
   }
 }
@@ -56,7 +68,10 @@ class BackendNotificationRepository implements NotificationRepository {
 
   @override
   Future<List<NomoNotification>> fetchNotifications() async {
-    final response = await _client.get('/v1/notifications');
+    final response = await _client.get(
+      '/v1/notifications',
+      query: {'date': _todayIsoDate()},
+    );
     final rows = (response as List<dynamic>? ?? const [])
         .whereType<Map>()
         .map((row) => Map<String, dynamic>.from(row))
@@ -68,4 +83,16 @@ class BackendNotificationRepository implements NotificationRepository {
   Future<void> markAllRead() async {
     await _client.patch('/v1/notifications/read-all', const {});
   }
+}
+
+DateTime? _dateOnly(String? value) {
+  if (value == null || value.isEmpty) return null;
+  return DateTime.tryParse(value);
+}
+
+String _todayIsoDate() {
+  final now = DateTime.now();
+  return '${now.year.toString().padLeft(4, '0')}-'
+      '${now.month.toString().padLeft(2, '0')}-'
+      '${now.day.toString().padLeft(2, '0')}';
 }
