@@ -24,4 +24,24 @@ class NotificationController extends AsyncNotifier<List<NomoNotification>> {
     await ref.read(notificationRepositoryProvider).markAllRead();
     ref.invalidateSelf();
   }
+
+  Future<void> acceptFriendRequest(String friendRequestId) async {
+    await ref
+        .read(notificationRepositoryProvider)
+        .updateFriendRequest(
+          friendRequestId: friendRequestId,
+          status: 'accepted',
+        );
+    ref.invalidateSelf();
+  }
+
+  Future<void> rejectFriendRequest(String friendRequestId) async {
+    await ref
+        .read(notificationRepositoryProvider)
+        .updateFriendRequest(
+          friendRequestId: friendRequestId,
+          status: 'rejected',
+        );
+    ref.invalidateSelf();
+  }
 }
