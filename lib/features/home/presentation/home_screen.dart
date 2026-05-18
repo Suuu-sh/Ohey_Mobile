@@ -189,14 +189,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       NomoToast.show(
         context,
         shared == true ? 'Instagramストーリーに共有します。' : 'Instagramアプリが見つかりませんでした。',
-        icon: CupertinoIcons.share_up,
+        icon: CupertinoIcons.square_arrow_up,
       );
     } catch (error) {
       if (!context.mounted) return;
       NomoToast.show(
         context,
         '共有を開始できませんでした: $error',
-        icon: CupertinoIcons.share_up,
+        icon: CupertinoIcons.square_arrow_up,
       );
     }
   }
@@ -711,7 +711,7 @@ class _FeedPostCard extends StatelessWidget {
               ],
               const SizedBox(width: 10),
               _DuoFeedButton(
-                icon: CupertinoIcons.share_up,
+                icon: CupertinoIcons.square_arrow_up,
                 label: '',
                 color: _FeedColors.teal,
                 onTap: onShare,
