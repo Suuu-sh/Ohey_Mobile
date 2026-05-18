@@ -1459,9 +1459,13 @@ List<_FeedItem> _itemsForSection(
     _FeedSection.feed => following,
     _FeedSection.following =>
       following
-          .where((item) => friendUserIds.contains(item.ownerUserId))
+          .where(
+            (item) =>
+                !item.isOfficial && friendUserIds.contains(item.ownerUserId),
+          )
           .toList(growable: false),
-    _FeedSection.official => const <_FeedItem>[],
+    _FeedSection.official =>
+      following.where((item) => item.isOfficial).toList(growable: false),
   };
 }
 
@@ -1482,6 +1486,7 @@ class _FeedItem {
     required this.tilt,
     this.ownerUserId = '',
     this.ownedByMe = false,
+    this.isOfficial = false,
     required this.sparkles,
   });
 
@@ -1500,7 +1505,7 @@ class _FeedItem {
         : user?.userId ?? 'nomo_user';
     return _FeedItem(
       id: log.id,
-      userName: authorName,
+      userName: log.isOfficial ? 'Nomo公式' : authorName,
       timeAgo: _relativeTime(log.date),
       body: log.memo.trim(),
       avatar: log.ownerAvatar ?? user?.avatar ?? NomoAvatar.defaultAvatar,
@@ -1514,6 +1519,7 @@ class _FeedItem {
       tilt: (log.id.hashCode.isEven ? -.08 : .08),
       ownerUserId: log.ownerUserId,
       ownedByMe: log.ownerUserId.isNotEmpty && log.ownerUserId == currentUserId,
+      isOfficial: log.isOfficial,
       sparkles: const [
         Offset(12, 18),
         Offset(54, 2),
@@ -1530,7 +1536,7 @@ class _FeedItem {
     return searchable.contains(normalized);
   }
 
-  bool get isLikeable => id.isNotEmpty && !userName.contains('公式');
+  bool get isLikeable => id.isNotEmpty && !isOfficial;
 
   final String id;
   final String userName;
@@ -1547,6 +1553,7 @@ class _FeedItem {
   final _PostProp prop;
   final double tilt;
   final bool ownedByMe;
+  final bool isOfficial;
   final List<Offset> sparkles;
 }
 
