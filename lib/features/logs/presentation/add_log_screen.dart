@@ -16,7 +16,9 @@ import '../../camera/presentation/nomo_camera_screen.dart';
 import '../application/drink_log_controller.dart';
 
 class AddLogScreen extends ConsumerStatefulWidget {
-  const AddLogScreen({super.key});
+  const AddLogScreen({super.key, this.initialPhotoPath});
+
+  final String? initialPhotoPath;
 
   @override
   ConsumerState<AddLogScreen> createState() => _AddLogScreenState();
@@ -31,6 +33,12 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
   String _friendSearchQuery = '';
   String? _photoPath;
   bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _photoPath = widget.initialPhotoPath;
+  }
 
   @override
   void dispose() {

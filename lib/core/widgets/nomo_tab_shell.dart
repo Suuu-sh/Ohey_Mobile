@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/calendar/presentation/calendar_screen.dart';
+import '../../features/camera/presentation/nomo_camera_screen.dart';
 import '../../features/friends/presentation/friends_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/logs/presentation/add_log_screen.dart';
@@ -56,6 +58,25 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
     CalendarScreen(),
     ProfileScreen(),
   ];
+
+  Future<void> _openDrinkLogFlow() async {
+    final result = await Navigator.of(context).push<NomoCameraResult>(
+      CupertinoPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const NomoCameraScreen(returnPhoto: true),
+      ),
+    );
+    if (!mounted || result == null) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: false,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: .45),
+      builder: (_) => AddLogScreen(initialPhotoPath: result.path),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -179,14 +200,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
                     offset: const Offset(0, -2),
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
-                      onTap: () => showModalBottomSheet<void>(
-                        context: context,
-                        isScrollControlled: true,
-                        useSafeArea: false,
-                        backgroundColor: Colors.transparent,
-                        barrierColor: Colors.black.withValues(alpha: .45),
-                        builder: (_) => const AddLogScreen(),
-                      ),
+                      onTap: _openDrinkLogFlow,
                       child: Semantics(
                         button: true,
                         label: '飲みログを追加',
