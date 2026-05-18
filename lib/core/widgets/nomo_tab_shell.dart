@@ -98,6 +98,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
 
     if (user == null && hasSession && !_didAttemptProfileRestore) {
       return Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: isWhite ? Colors.white : const Color(0xFF0B1420),
         body: const SizedBox.expand(),
       );
@@ -105,6 +106,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
 
     if (user == null && !_onboardingPrefLoaded) {
       return Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: isWhite ? Colors.white : const Color(0xFF0B1420),
         body: const SizedBox.expand(),
       );
@@ -115,6 +117,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
     }
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       extendBody: true,
       body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: SafeArea(

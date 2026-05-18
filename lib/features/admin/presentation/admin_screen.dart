@@ -25,6 +25,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
     final access = ref.watch(adminAccessProvider);
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: _AdminColors.bg,
       body: SafeArea(
         bottom: false,
