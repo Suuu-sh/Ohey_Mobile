@@ -16,6 +16,18 @@ import 'core/widgets/nomo_tab_shell.dart';
 
 const _openingNomoAsset = 'assets/images/opening_nomo.png';
 const _minimumOpeningDuration = Duration(seconds: 1);
+const _openingExitFaceArrivalMs = 620;
+const _openingExitFacePauseMs = 500;
+const _openingExitFinalCollapseMs = 320;
+const _openingExitDurationMs =
+    _openingExitFaceArrivalMs +
+    _openingExitFacePauseMs +
+    _openingExitFinalCollapseMs;
+const _openingExitFaceStopStart =
+    _openingExitFaceArrivalMs / _openingExitDurationMs;
+const _openingExitFaceStopEnd =
+    (_openingExitFaceArrivalMs + _openingExitFacePauseMs) /
+    _openingExitDurationMs;
 
 ui.Image? _openingNomoImage;
 
@@ -92,7 +104,7 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
     _openingExitController =
         AnimationController(
           vsync: this,
-          duration: const Duration(milliseconds: 760),
+          duration: const Duration(milliseconds: _openingExitDurationMs),
         )..addStatusListener((status) {
           if (status == AnimationStatus.completed && mounted) {
             setState(() => _openingExitCompleted = true);
@@ -198,8 +210,7 @@ class _OpeningCollapseClipper extends CustomClipper<Path> {
       return Path();
     }
 
-    final radius =
-        _openingCollapseMaxRadius(size) * Curves.easeOutCubic.transform(scale);
+    final radius = _openingCollapseRadius(size, progress);
     return Path()..addOval(
       Rect.fromCircle(
         center: Offset(size.width / 2, size.height / 2),
@@ -227,8 +238,11 @@ class _OpeningCollapseEdgePainter extends CustomPainter {
     }
 
     final center = Offset(size.width / 2, size.height / 2);
-    final radius =
-        _openingCollapseMaxRadius(size) * Curves.easeOutCubic.transform(scale);
+    final radius = _openingCollapseRadius(size, progress);
+    final faceStopRadius = _openingCollapseFaceStopRadius(size);
+    final fadeIn = (progress * 5).clamp(0, 1).toDouble();
+    final fadeOut = (radius / faceStopRadius).clamp(0, 1).toDouble();
+    final edgeOpacity = fadeIn * fadeOut;
     final glowWidth = size.shortestSide * .035;
     final rimWidth = size.shortestSide * .006;
 
@@ -236,11 +250,11 @@ class _OpeningCollapseEdgePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = glowWidth
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)
-      ..color = Colors.white.withValues(alpha: .18 * scale);
+      ..color = Colors.white.withValues(alpha: .18 * edgeOpacity);
     final rim = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = rimWidth
-      ..color = Colors.white.withValues(alpha: .46 * scale);
+      ..color = Colors.white.withValues(alpha: .46 * edgeOpacity);
 
     canvas.drawCircle(center, radius, outerGlow);
     canvas.drawCircle(center, radius, rim);
@@ -254,6 +268,33 @@ class _OpeningCollapseEdgePainter extends CustomPainter {
 double _openingCollapseMaxRadius(Size size) {
   return (Offset(size.width / 2, size.height / 2) - Offset.zero).distance +
       size.shortestSide * .02;
+}
+
+double _openingCollapseFaceStopRadius(Size size) {
+  return size.shortestSide * .30;
+}
+
+double _openingCollapseRadius(Size size, double rawProgress) {
+  final progress = rawProgress.clamp(0, 1).toDouble();
+  final maxRadius = _openingCollapseMaxRadius(size);
+  final faceStopRadius = _openingCollapseFaceStopRadius(size);
+
+  if (progress <= _openingExitFaceStopStart) {
+    final phase = progress / _openingExitFaceStopStart;
+    return ui.lerpDouble(
+      maxRadius,
+      faceStopRadius,
+      Curves.easeInOutCubic.transform(phase),
+    )!;
+  }
+
+  if (progress <= _openingExitFaceStopEnd) {
+    return faceStopRadius;
+  }
+
+  final phase =
+      (progress - _openingExitFaceStopEnd) / (1 - _openingExitFaceStopEnd);
+  return ui.lerpDouble(faceStopRadius, 0, Curves.easeInCubic.transform(phase))!;
 }
 
 class _StartupScreen extends StatelessWidget {
