@@ -55,6 +55,7 @@ class _NomoDemoScreenState extends State<NomoDemoScreen> {
   Widget build(BuildContext context) {
     final slides = _demoSlides;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFF07131F),
       body: SafeArea(
         child: Padding(
@@ -159,6 +160,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _showAuthForm = false;
   bool _obscurePlainLoginPassword = true;
   bool _obscureSignupPassword = true;
+  _RegistrationStep _loginStep = _RegistrationStep.email;
   _RegistrationStep _registrationStep = _RegistrationStep.email;
   List<NomoLastAccount> _lastAccounts = const <NomoLastAccount>[];
   String? _error;
@@ -206,6 +208,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     return PopScope(
       canPop: false,
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: const Color(0xFF0D1A22),
         body: SafeArea(
           child: AnimatedSwitcher(
@@ -214,7 +217,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
             switchOutCurve: Curves.easeOutCubic,
             child: KeyedSubtree(
               key: ValueKey(
-                '$_step-$_showAuthForm-$_isLogin-$_registrationStep',
+                '$_step-$_showAuthForm-$_isLogin-$_loginStep-$_registrationStep',
               ),
               child: switch (_step) {
                 _OnboardingStep.intro => _FullScreenStep(
@@ -525,47 +528,90 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   }
 
   Widget _buildPlainLogin(BuildContext context) {
-    final canGoBack = !widget.startAtLogin || _lastAccounts.isNotEmpty;
-    final canSubmit =
-        _emailController.text.trim().isNotEmpty &&
-        _passwordController.text.length >= 6 &&
-        !_isBusy;
+    final isEmailStep = _loginStep == _RegistrationStep.email;
+    final canContinue = _emailController.text.trim().isNotEmpty && !_isBusy;
+    final canSubmit = _passwordController.text.length >= 6 && !_isBusy;
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final compact = constraints.maxHeight < 640;
-        final fieldHeight = compact ? 52.0 : 64.0;
-        final loginHeight = compact ? 52.0 : 60.0;
+        final compact = constraints.maxHeight < 760;
+        final fieldHeight = compact ? 56.0 : 64.0;
+        final buttonHeight = compact ? 56.0 : 64.0;
         final socialHeight = compact ? 50.0 : 64.0;
         return _fixedAuthPage(
           constraints: constraints,
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _PlainLoginHeader(
-                canGoBack: canGoBack,
-                onBack: _isBusy ? null : _handleAuthBack,
+              _SignupProgressHeader(
+                progress: isEmailStep ? .48 : .76,
+                onBack: _isBusy ? null : _handleLoginBack,
               ),
-              SizedBox(height: compact ? 16 : 30),
-              _PlainLoginFields(
-                emailController: _emailController,
-                passwordController: _passwordController,
-                obscurePassword: _obscurePlainLoginPassword,
-                enabled: !_isBusy,
-                fieldHeight: fieldHeight,
-                onChanged: (_) => setState(() {}),
-                onPasswordVisibilityTap: () => setState(
-                  () =>
-                      _obscurePlainLoginPassword = !_obscurePlainLoginPassword,
+              SizedBox(height: compact ? 34 : 64),
+              Text(
+                isEmailStep ? 'メールアドレスを入力して\nください' : 'パスワードを入力してください',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: compact ? 27 : 28,
+                  fontWeight: FontWeight.w900,
+                  height: 1.18,
+                  letterSpacing: -.8,
                 ),
-                onSubmitted: canSubmit ? _submitAuth : null,
               ),
-              SizedBox(height: compact ? 18 : 28),
-              _PlainLoginButton(
-                height: loginHeight,
+              SizedBox(height: compact ? 28 : 42),
+              _SignupInputBox(
+                child: _PlainLoginTextField(
+                  controller: isEmailStep
+                      ? _emailController
+                      : _passwordController,
+                  enabled: !_isBusy,
+                  hintText: isEmailStep ? 'メールアドレス' : 'パスワード',
+                  height: fieldHeight,
+                  keyboardType: isEmailStep ? TextInputType.emailAddress : null,
+                  textInputAction: isEmailStep
+                      ? TextInputAction.next
+                      : TextInputAction.done,
+                  autofillHints: isEmailStep
+                      ? const [AutofillHints.email, AutofillHints.username]
+                      : const [AutofillHints.password],
+                  obscureText: !isEmailStep && _obscurePlainLoginPassword,
+                  onChanged: (_) => setState(() {}),
+                  onSubmitted: (_) {
+                    if (isEmailStep && canContinue) {
+                      _goToLoginPasswordStep();
+                    } else if (!isEmailStep && canSubmit) {
+                      _submitAuth();
+                    }
+                  },
+                  trailing: isEmailStep
+                      ? null
+                      : IconButton(
+                          onPressed: _isBusy
+                              ? null
+                              : () => setState(
+                                  () => _obscurePlainLoginPassword =
+                                      !_obscurePlainLoginPassword,
+                                ),
+                          icon: Icon(
+                            _obscurePlainLoginPassword
+                                ? CupertinoIcons.eye_slash_fill
+                                : CupertinoIcons.eye_fill,
+                            color: _authPink.withValues(alpha: .78),
+                            size: 28,
+                          ),
+                        ),
+                ),
+              ),
+              SizedBox(height: compact ? 24 : 42),
+              _SignupStepButton(
+                label: isEmailStep ? '次へ' : 'ログイン',
+                height: buttonHeight,
                 busy: _isBusy,
-                enabled: canSubmit,
-                onTap: canSubmit ? _submitAuth : null,
+                enabled: isEmailStep ? canContinue : canSubmit,
+                onTap: isEmailStep
+                    ? (canContinue ? _goToLoginPasswordStep : null)
+                    : (canSubmit ? _submitAuth : null),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 10),
@@ -575,23 +621,23 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                 const SizedBox(height: 10),
                 _DarkMessageText(_notice!),
               ],
-              SizedBox(height: compact ? 10 : 22),
-              SizedBox(
-                height: compact ? 38 : 44,
-                child: TextButton(
-                  onPressed: _isBusy
-                      ? null
-                      : () => _showComingSoonSnack('パスワード再設定は今後対応予定です。'),
-                  child: const Text(
-                    'パスワードをお忘れですか？',
-                    style: TextStyle(
-                      color: _authPink,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w900,
+              if (!isEmailStep) ...[
+                SizedBox(height: compact ? 10 : 22),
+                SizedBox(
+                  height: compact ? 38 : 44,
+                  child: TextButton(
+                    onPressed: _isBusy ? null : _sendPasswordResetEmail,
+                    child: const Text(
+                      'パスワードをお忘れですか？',
+                      style: TextStyle(
+                        color: _authPink,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
               const Spacer(),
               _SocialLoginButton(
                 label: 'GOOGLEでログイン',
@@ -624,27 +670,12 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     );
   }
 
-  void _handleAuthBack() {
-    setState(() {
-      if (widget.startAtLogin && _lastAccounts.isNotEmpty) {
-        _showAuthForm = false;
-        _isLogin = true;
-        _error = null;
-        _notice = null;
-        return;
-      }
-      _step = _OnboardingStep.accountChoice;
-      _isLogin = true;
-      _error = null;
-      _notice = null;
-    });
-  }
-
   void _showLoginForm() {
     setState(() {
       _step = _OnboardingStep.auth;
       _isLogin = true;
       _showAuthForm = true;
+      _loginStep = _RegistrationStep.email;
       _registrationStep = _RegistrationStep.email;
       _error = null;
       _notice = null;
@@ -656,6 +687,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _step = _OnboardingStep.auth;
       _isLogin = false;
       _showAuthForm = true;
+      _loginStep = _RegistrationStep.email;
       _registrationStep = _RegistrationStep.email;
       _passwordController.clear();
       _error = null;
@@ -678,6 +710,42 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     });
   }
 
+  void _handleLoginBack() {
+    setState(() {
+      if (_loginStep == _RegistrationStep.password) {
+        _loginStep = _RegistrationStep.email;
+        _passwordController.clear();
+        _error = null;
+        _notice = null;
+        return;
+      }
+      if (widget.startAtLogin && _lastAccounts.isNotEmpty) {
+        _showAuthForm = false;
+        _isLogin = true;
+        _error = null;
+        _notice = null;
+        return;
+      }
+      _step = _OnboardingStep.accountChoice;
+      _isLogin = true;
+      _error = null;
+      _notice = null;
+    });
+  }
+
+  void _goToLoginPasswordStep() {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() => _error = 'メールアドレスを入力してください。');
+      return;
+    }
+    setState(() {
+      _loginStep = _RegistrationStep.password;
+      _error = null;
+      _notice = null;
+    });
+  }
+
   void _goToSignupPasswordStep() {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
@@ -689,6 +757,45 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _error = null;
       _notice = null;
     });
+  }
+
+  Future<void> _sendPasswordResetEmail() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() {
+        _error = 'パスワード再設定メールを送るメールアドレスを入力してください。';
+        _notice = null;
+      });
+      return;
+    }
+
+    setState(() {
+      _isBusy = true;
+      _error = null;
+      _notice = null;
+    });
+
+    try {
+      await ref
+          .read(supabaseClientProvider)
+          .auth
+          .resetPasswordForEmail(
+            email,
+            redirectTo: SupabaseConfig.authRedirectUrl,
+          );
+      if (!mounted) return;
+      setState(() {
+        _notice = 'パスワード再設定メールを送信しました。メール内のリンクから再設定してください。';
+      });
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = _friendlyAuthError(e.message));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = 'パスワード再設定メールを送信できませんでした: $e');
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
   }
 
   void _showComingSoonSnack(String message) {
@@ -730,6 +837,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                   setState(() {
                     _showAuthForm = true;
                     _isLogin = true;
+                    _loginStep = _RegistrationStep.password;
                     _error = null;
                     _notice = null;
                   });
@@ -2062,113 +2170,6 @@ class _AccountChoiceOutlineButton extends StatelessWidget {
   );
 }
 
-class _PlainLoginHeader extends StatelessWidget {
-  const _PlainLoginHeader({required this.canGoBack, required this.onBack});
-
-  final bool canGoBack;
-  final VoidCallback? onBack;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    height: 48,
-    child: Stack(
-      alignment: Alignment.center,
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: canGoBack
-              ? IconButton(
-                  onPressed: onBack,
-                  icon: Icon(
-                    CupertinoIcons.arrow_left,
-                    color: Colors.white.withValues(alpha: .72),
-                    size: 31,
-                  ),
-                )
-              : const SizedBox(width: 48),
-        ),
-        Text(
-          'ログイン',
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: .34),
-            fontSize: 25,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.2,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _PlainLoginFields extends StatelessWidget {
-  const _PlainLoginFields({
-    required this.emailController,
-    required this.passwordController,
-    required this.obscurePassword,
-    required this.enabled,
-    required this.onChanged,
-    required this.onPasswordVisibilityTap,
-    required this.onSubmitted,
-    this.fieldHeight = 64,
-  });
-
-  final TextEditingController emailController;
-  final TextEditingController passwordController;
-  final bool obscurePassword;
-  final bool enabled;
-  final ValueChanged<String> onChanged;
-  final VoidCallback onPasswordVisibilityTap;
-  final VoidCallback? onSubmitted;
-  final double fieldHeight;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    clipBehavior: Clip.antiAlias,
-    decoration: BoxDecoration(
-      color: const Color(0xFF132630).withValues(alpha: .74),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: Colors.white.withValues(alpha: .18), width: 2),
-    ),
-    child: Column(
-      children: [
-        _PlainLoginTextField(
-          controller: emailController,
-          enabled: enabled,
-          hintText: 'Eメール/電話番号/ユーザー名',
-          height: fieldHeight,
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          autofillHints: const [AutofillHints.email, AutofillHints.username],
-          onChanged: onChanged,
-        ),
-        Divider(height: 1, color: Colors.white.withValues(alpha: .14)),
-        _PlainLoginTextField(
-          controller: passwordController,
-          enabled: enabled,
-          hintText: 'パスワード',
-          height: fieldHeight,
-          obscureText: obscurePassword,
-          textInputAction: TextInputAction.done,
-          autofillHints: const [AutofillHints.password],
-          onChanged: onChanged,
-          onSubmitted: (_) => onSubmitted?.call(),
-          trailing: IconButton(
-            onPressed: enabled ? onPasswordVisibilityTap : null,
-            icon: Icon(
-              obscurePassword
-                  ? CupertinoIcons.eye_slash_fill
-                  : CupertinoIcons.eye_fill,
-              color: _authPink.withValues(alpha: .78),
-              size: 28,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
 class _PlainLoginTextField extends StatelessWidget {
   const _PlainLoginTextField({
     required this.controller,
@@ -2241,72 +2242,6 @@ class _PlainLoginTextField extends StatelessWidget {
       ],
     ),
   );
-}
-
-class _PlainLoginButton extends StatelessWidget {
-  const _PlainLoginButton({
-    required this.busy,
-    required this.enabled,
-    required this.onTap,
-    this.height = 60,
-  });
-
-  final bool busy;
-  final bool enabled;
-  final VoidCallback? onTap;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    final canTap = enabled && onTap != null && !busy;
-    return GestureDetector(
-      onTap: canTap ? onTap : null,
-      child: Opacity(
-        opacity: enabled || busy ? 1 : .78,
-        child: Container(
-          width: double.infinity,
-          height: height + 7,
-          decoration: BoxDecoration(
-            color: _authPinkShadow,
-            borderRadius: BorderRadius.circular(19),
-            boxShadow: [
-              BoxShadow(
-                color: _authPink.withValues(alpha: .22),
-                blurRadius: 22,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 140),
-              width: double.infinity,
-              height: height,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: _authPink,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.white.withValues(alpha: .18)),
-              ),
-              child: busy
-                  ? const CupertinoActivityIndicator(color: _authPinkInk)
-                  : Text(
-                      'ログイン',
-                      style: TextStyle(
-                        color: _authPinkInk.withValues(
-                          alpha: enabled ? 1 : .58,
-                        ),
-                        fontSize: 19,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _SocialLoginButton extends StatelessWidget {

@@ -14,6 +14,7 @@ class DrinkLog {
     this.ownerUserId = '',
     this.ownerDisplayName = '',
     this.ownerAvatar,
+    this.isOfficial = false,
   });
 
   final String id;
@@ -27,6 +28,7 @@ class DrinkLog {
   final String ownerUserId;
   final String ownerDisplayName;
   final NomoAvatar? ownerAvatar;
+  final bool isOfficial;
 
   DrinkLog copyWith({int? likeCount, bool? likedByMe}) => DrinkLog(
     id: id,
@@ -40,6 +42,7 @@ class DrinkLog {
     ownerUserId: ownerUserId,
     ownerDisplayName: ownerDisplayName,
     ownerAvatar: ownerAvatar,
+    isOfficial: isOfficial,
   );
 
   bool isInMonth(DateTime month) =>

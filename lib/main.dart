@@ -164,23 +164,11 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
             if (!_openingExitCompleted)
               AnimatedBuilder(
                 animation: _openingExitController,
-                builder: (context, child) => Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    ClipPath(
-                      clipper: _OpeningCollapseClipper(
-                        progress: _openingExitController.value,
-                      ),
-                      child: child,
-                    ),
-                    IgnorePointer(
-                      child: CustomPaint(
-                        painter: _OpeningCollapseEdgePainter(
-                          progress: _openingExitController.value,
-                        ),
-                      ),
-                    ),
-                  ],
+                builder: (context, child) => ClipPath(
+                  clipper: _OpeningCollapseClipper(
+                    progress: _openingExitController.value,
+                  ),
+                  child: child,
                 ),
                 child: const _StartupScreen(),
               ),
@@ -224,54 +212,13 @@ class _OpeningCollapseClipper extends CustomClipper<Path> {
       oldClipper.progress != progress;
 }
 
-class _OpeningCollapseEdgePainter extends CustomPainter {
-  const _OpeningCollapseEdgePainter({required this.progress});
-
-  final double progress;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final eased = Curves.easeInOutCubic.transform(progress.clamp(0, 1));
-    final scale = 1 - eased;
-    if (scale <= 0.001 || scale >= 0.999) {
-      return;
-    }
-
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = _openingCollapseRadius(size, progress);
-    final faceStopRadius = _openingCollapseFaceStopRadius(size);
-    final fadeIn = (progress * 5).clamp(0, 1).toDouble();
-    final fadeOut = (radius / faceStopRadius).clamp(0, 1).toDouble();
-    final edgeOpacity = fadeIn * fadeOut;
-    final glowWidth = size.shortestSide * .035;
-    final rimWidth = size.shortestSide * .006;
-
-    final outerGlow = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = glowWidth
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)
-      ..color = Colors.white.withValues(alpha: .18 * edgeOpacity);
-    final rim = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = rimWidth
-      ..color = Colors.white.withValues(alpha: .46 * edgeOpacity);
-
-    canvas.drawCircle(center, radius, outerGlow);
-    canvas.drawCircle(center, radius, rim);
-  }
-
-  @override
-  bool shouldRepaint(covariant _OpeningCollapseEdgePainter oldDelegate) =>
-      oldDelegate.progress != progress;
-}
-
 double _openingCollapseMaxRadius(Size size) {
   return (Offset(size.width / 2, size.height / 2) - Offset.zero).distance +
       size.shortestSide * .02;
 }
 
 double _openingCollapseFaceStopRadius(Size size) {
-  return size.shortestSide * .20;
+  return size.shortestSide * .15;
 }
 
 double _openingCollapseRadius(Size size, double rawProgress) {
@@ -308,6 +255,7 @@ class _StartupScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasError = message != null;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFFFF0A8D),
       body: Stack(
         fit: StackFit.expand,

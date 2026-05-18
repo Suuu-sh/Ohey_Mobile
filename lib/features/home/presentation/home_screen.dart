@@ -255,7 +255,7 @@ extension _FeedSectionView on _FeedSection {
   IconData get icon => switch (this) {
     _FeedSection.feed => Icons.sports_bar_rounded,
     _FeedSection.following => CupertinoIcons.person_2_fill,
-    _FeedSection.official => CupertinoIcons.sparkles,
+    _FeedSection.official => CupertinoIcons.bolt_fill,
   };
 
   Color get accent => switch (this) {
@@ -536,32 +536,19 @@ class _FeedTab extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
+                    AnimatedScale(
+                      duration: const Duration(milliseconds: 180),
                       curve: Curves.easeOutCubic,
-                      width: selected ? 27 : 22,
-                      height: selected ? 27 : 22,
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? Colors.white.withValues(alpha: .38)
-                            : Colors.white.withValues(
-                                alpha: isWhite ? .74 : .06,
-                              ),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: selected
-                              ? Colors.white.withValues(alpha: .44)
-                              : Colors.white.withValues(
-                                  alpha: isWhite ? .55 : .06,
-                                ),
-                        ),
-                      ),
-                      child: Icon(
-                        section.icon,
-                        size: selected ? 15 : 13,
+                      scale: selected ? 1.08 : 1,
+                      child: NomoPopIcon(
+                        icon: section.icon,
+                        size: selected ? 28 : 24,
+                        iconSize: selected ? 27 : 23,
+                        showBubble: false,
+                        shadow: false,
                         color: selected
                             ? selectedColor
-                            : idleColor.withValues(alpha: isWhite ? .82 : .72),
+                            : idleColor.withValues(alpha: isWhite ? .86 : .78),
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -635,34 +622,14 @@ Future<void> _showFeedPostActions(
   _FeedItem item,
 ) async {
   final body = item.body.trim();
-  final action = await showCupertinoModalPopup<_FeedPostAction>(
+  HapticFeedback.selectionClick();
+  final action = await showModalBottomSheet<_FeedPostAction>(
     context: context,
-    builder: (context) => CupertinoActionSheet(
-      title: Text(item.userName),
-      message: body.isEmpty ? null : Text(body),
-      actions: [
-        if (body.isNotEmpty)
-          CupertinoActionSheetAction(
-            onPressed: () => Navigator.of(context).pop(_FeedPostAction.copy),
-            child: const Text('コメントをコピー'),
-          ),
-        if (item.ownedByMe)
-          CupertinoActionSheetAction(
-            isDestructiveAction: true,
-            onPressed: () => Navigator.of(context).pop(_FeedPostAction.delete),
-            child: const Text('飲みログを削除'),
-          )
-        else
-          CupertinoActionSheetAction(
-            onPressed: () => Navigator.of(context).pop(_FeedPostAction.report),
-            child: const Text('飲みログを報告'),
-          ),
-      ],
-      cancelButton: CupertinoActionSheetAction(
-        onPressed: () => Navigator.of(context).pop(),
-        child: const Text('キャンセル'),
-      ),
-    ),
+    useSafeArea: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (context) => _FeedPostActionsSheet(item: item, body: body),
   );
   if (!context.mounted || action == null) return;
 
@@ -695,28 +662,787 @@ Future<void> _showFeedPostActions(
 }
 
 Future<bool> _confirmDeleteFeedPost(BuildContext context) async {
-  final result = await showCupertinoDialog<bool>(
+  final result = await showModalBottomSheet<bool>(
     context: context,
-    builder: (context) => CupertinoAlertDialog(
-      title: const Text('飲みログを削除しますか？'),
-      content: const Text('削除した飲みログは元に戻せません。'),
-      actions: [
-        CupertinoDialogAction(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('キャンセル'),
-        ),
-        CupertinoDialogAction(
-          isDestructiveAction: true,
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('削除'),
-        ),
-      ],
-    ),
+    useSafeArea: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: .62),
+    builder: (context) => const _FeedDeleteConfirmSheet(),
   );
   return result ?? false;
 }
 
 enum _FeedPostAction { copy, delete, report }
+
+class _FeedPostActionsSheet extends StatelessWidget {
+  const _FeedPostActionsSheet({required this.item, required this.body});
+
+  final _FeedItem item;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final subtitleColor = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .58);
+    return _FeedModalShell(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _FeedModalHandle(),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              _AvatarBubble(
+                avatar: item.avatar,
+                size: 46,
+                glowColor: item.accent,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.userName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: titleColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      body.isEmpty ? '飲みログメニュー' : body,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: subtitleColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: NomoPopIcon(
+                  icon: CupertinoIcons.xmark,
+                  color: subtitleColor,
+                  size: 34,
+                  iconSize: 18,
+                  shadow: false,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          if (body.isNotEmpty) ...[
+            _FeedActionTile(
+              icon: CupertinoIcons.doc_on_clipboard_fill,
+              title: 'コメントをコピー',
+              subtitle: 'クリップボードに保存',
+              accent: _FeedColors.teal,
+              onTap: () => Navigator.of(context).pop(_FeedPostAction.copy),
+            ),
+            const SizedBox(height: 10),
+          ],
+          if (item.ownedByMe)
+            _FeedActionTile(
+              icon: CupertinoIcons.trash_fill,
+              title: '飲みログを削除',
+              subtitle: 'この投稿をフィードから消す',
+              accent: const Color(0xFFFF5F8F),
+              destructive: true,
+              onTap: () => Navigator.of(context).pop(_FeedPostAction.delete),
+            )
+          else
+            _FeedActionTile(
+              icon: CupertinoIcons.exclamationmark_bubble_fill,
+              title: '飲みログを報告',
+              subtitle: '気になる投稿を運営に送る',
+              accent: const Color(0xFFFFD166),
+              onTap: () => Navigator.of(context).pop(_FeedPostAction.report),
+            ),
+          const SizedBox(height: 12),
+          _FeedModalTextButton(
+            label: 'キャンセル',
+            onTap: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeedDeleteConfirmSheet extends StatelessWidget {
+  const _FeedDeleteConfirmSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final subtitleColor = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .58);
+    return _FeedModalShell(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _FeedModalHandle(),
+          const SizedBox(height: 20),
+          Center(
+            child: NomoPopIcon(
+              icon: CupertinoIcons.trash_fill,
+              color: const Color(0xFFFF5F8F),
+              size: 64,
+              iconSize: 34,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '飲みログを削除しますか？',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: titleColor,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.7,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '削除した飲みログは元に戻せません。',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: subtitleColor,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _FeedModalTextButton(
+                  label: 'やめる',
+                  onTap: () => Navigator.of(context).pop(false),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _FeedModalTextButton(
+                  label: '削除する',
+                  color: const Color(0xFFFF5F8F),
+                  onTap: () => Navigator.of(context).pop(true),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeedModalShell extends StatelessWidget {
+  const _FeedModalShell({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+              decoration: BoxDecoration(
+                color: isWhite ? Colors.white : null,
+                gradient: isWhite
+                    ? null
+                    : const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF172737), Color(0xFF0B1722)],
+                      ),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: isWhite
+                      ? const Color(0xFFE1E8F1)
+                      : Colors.white.withValues(alpha: .12),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isWhite ? .16 : .36),
+                    blurRadius: 34,
+                    offset: const Offset(0, 18),
+                  ),
+                ],
+              ),
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedModalHandle extends StatelessWidget {
+  const _FeedModalHandle();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return Center(
+      child: Container(
+        width: 42,
+        height: 5,
+        decoration: BoxDecoration(
+          color: isWhite
+              ? const Color(0xFFD7E0EA)
+              : Colors.white.withValues(alpha: .20),
+          borderRadius: BorderRadius.circular(999),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedActionTile extends StatelessWidget {
+  const _FeedActionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.accent,
+    required this.onTap,
+    this.destructive = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color accent;
+  final VoidCallback onTap;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = destructive
+        ? const Color(0xFFFF5F8F)
+        : isWhite
+        ? const Color(0xFF101820)
+        : Colors.white;
+    final subtitleColor = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .55);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? const Color(0xFFF7FAFC)
+              : Colors.white.withValues(alpha: .055),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: destructive
+                ? const Color(0xFFFF5F8F).withValues(alpha: .32)
+                : isWhite
+                ? const Color(0xFFE1E8F1)
+                : Colors.white.withValues(alpha: .10),
+          ),
+        ),
+        child: Row(
+          children: [
+            NomoPopIcon(icon: icon, color: accent, size: 44, iconSize: 23),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: titleColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.3,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: subtitleColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            NomoPopIcon(
+              icon: CupertinoIcons.chevron_forward,
+              color: subtitleColor,
+              size: 30,
+              iconSize: 16,
+              shadow: false,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedModalTextButton extends StatelessWidget {
+  const _FeedModalTextButton({
+    required this.label,
+    required this.onTap,
+    this.color = _FeedColors.teal,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 54,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: isWhite ? .13 : .10),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: .30)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.35,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _showFeedCompanionList(
+  BuildContext context,
+  List<_Companion> friends,
+) async {
+  if (friends.isEmpty) return;
+  HapticFeedback.selectionClick();
+  final selected = await showModalBottomSheet<_Companion>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (context) => _FeedCompanionListSheet(friends: friends),
+  );
+  if (!context.mounted || selected == null) return;
+  HapticFeedback.selectionClick();
+  await showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: .62),
+    builder: (context) => _FeedCompanionProfileSheet(friend: selected),
+  );
+}
+
+class _FeedCompanionListSheet extends StatelessWidget {
+  const _FeedCompanionListSheet({required this.friends});
+
+  final List<_Companion> friends;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final subtitleColor = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .58);
+    final listHeight = (friends.length * 78.0).clamp(
+      78.0,
+      MediaQuery.sizeOf(context).height * .44,
+    );
+    return _FeedModalShell(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _FeedModalHandle(),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              NomoPopIcon(
+                icon: CupertinoIcons.person_2_fill,
+                color: _FeedColors.teal,
+                size: 46,
+                iconSize: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '一緒に飲んだフレンズ',
+                      style: TextStyle(
+                        color: titleColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.6,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'タップしてプロフィールを見る',
+                      style: TextStyle(
+                        color: subtitleColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: NomoPopIcon(
+                  icon: CupertinoIcons.xmark,
+                  color: subtitleColor,
+                  size: 34,
+                  iconSize: 18,
+                  shadow: false,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: listHeight,
+            child: ListView.separated(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: friends.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              itemBuilder: (context, index) => _FeedCompanionTile(
+                friend: friends[index],
+                onTap: () => Navigator.of(context).pop(friends[index]),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeedCompanionTile extends StatelessWidget {
+  const _FeedCompanionTile({required this.friend, required this.onTap});
+
+  final _Companion friend;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final subtitleColor = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .56);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? const Color(0xFFF7FAFC)
+              : Colors.white.withValues(alpha: .055),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isWhite
+                ? const Color(0xFFE1E8F1)
+                : Colors.white.withValues(alpha: .10),
+          ),
+        ),
+        child: Row(
+          children: [
+            _AvatarBubble(
+              avatar: friend.avatar,
+              size: 44,
+              glowColor: friend.accent,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    friend.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: titleColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.3,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    friend.handleLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: subtitleColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: _companionStatusColor(
+                  friend.statusKey,
+                ).withValues(alpha: isWhite ? .13 : .11),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                _companionStatusLabel(friend.statusKey),
+                style: TextStyle(
+                  color: _companionStatusColor(friend.statusKey),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            NomoPopIcon(
+              icon: CupertinoIcons.chevron_forward,
+              color: subtitleColor,
+              size: 28,
+              iconSize: 15,
+              shadow: false,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedCompanionProfileSheet extends StatelessWidget {
+  const _FeedCompanionProfileSheet({required this.friend});
+
+  final _Companion friend;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final subtitleColor = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .58);
+    final statusColor = _companionStatusColor(friend.statusKey);
+    return _FeedModalShell(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _FeedModalHandle(),
+          const SizedBox(height: 14),
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: NomoPopIcon(
+                icon: CupertinoIcons.xmark,
+                color: subtitleColor,
+                size: 34,
+                iconSize: 18,
+                shadow: false,
+              ),
+            ),
+          ),
+          Center(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 142,
+                  height: 142,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [friend.accent, _FeedColors.teal],
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 130,
+                  height: 130,
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: isWhite ? Colors.white : const Color(0xFFF4F2EE),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 5),
+                  ),
+                  child: ClipOval(
+                    child: NomoAvatarView(avatar: friend.avatar, size: 112),
+                  ),
+                ),
+                const Positioned(
+                  right: 12,
+                  top: 14,
+                  child: NomoPopIcon(
+                    icon: CupertinoIcons.sparkles,
+                    color: Color(0xFFFFD166),
+                    size: 32,
+                    iconSize: 19,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            friend.name,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: titleColor,
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.8,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isWhite
+                    ? const Color(0xFFF2F6F8)
+                    : Colors.white.withValues(alpha: .08),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: isWhite
+                      ? const Color(0xFFE1E8F1)
+                      : Colors.white.withValues(alpha: .10),
+                ),
+              ),
+              child: Text(
+                friend.handleLabel,
+                style: TextStyle(
+                  color: subtitleColor,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: isWhite
+                  ? const Color(0xFFF7FAFC)
+                  : Colors.white.withValues(alpha: .045),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: isWhite
+                    ? const Color(0xFFE1E8F1)
+                    : Colors.white.withValues(alpha: .08),
+              ),
+            ),
+            child: Row(
+              children: [
+                NomoPopIcon(
+                  icon: _companionStatusIcon(friend.statusKey),
+                  color: statusColor,
+                  size: 40,
+                  iconSize: 22,
+                  showBubble: false,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _companionStatusLabel(friend.statusKey),
+                        style: TextStyle(
+                          color: titleColor,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _companionStatusMessage(friend.statusKey),
+                        style: TextStyle(
+                          color: subtitleColor,
+                          fontWeight: FontWeight.w800,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _FeedModalTextButton(
+            label: '閉じる',
+            onTap: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _FeedPostCard extends StatelessWidget {
   const _FeedPostCard({
@@ -1072,33 +1798,49 @@ class _WithFriendsPill extends StatelessWidget {
   final List<_Companion> friends;
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: 46,
-    padding: const EdgeInsets.fromLTRB(12, 8, 13, 8),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .035),
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(
-        color: Colors.white.withValues(alpha: .20),
-        width: 1.6,
-      ),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          'with',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: Colors.white.withValues(alpha: .90),
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.2,
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    return Semantics(
+      button: true,
+      label: '一緒に飲んだフレンズを表示',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _showFeedCompanionList(context, friends),
+        child: Container(
+          height: 46,
+          padding: const EdgeInsets.fromLTRB(12, 8, 13, 8),
+          decoration: BoxDecoration(
+            color: isWhite
+                ? Colors.black.withValues(alpha: .025)
+                : Colors.white.withValues(alpha: .035),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isWhite
+                  ? Colors.black.withValues(alpha: .18)
+                  : Colors.white.withValues(alpha: .20),
+              width: 1.6,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'with',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: ink.withValues(alpha: .90),
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.2,
+                ),
+              ),
+              const SizedBox(width: 8),
+              _FriendAvatarStack(friends: friends),
+            ],
           ),
         ),
-        const SizedBox(width: 8),
-        _FriendAvatarStack(friends: friends),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 class _FeedNotificationsScreen extends ConsumerStatefulWidget {
@@ -1136,6 +1878,7 @@ class _FeedNotificationsScreenState
     final isWhite = Theme.of(context).brightness == Brightness.light;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: isWhite ? Colors.white : const Color(0xFF07131F),
       body: MediaQuery(
         data: MediaQuery.of(
@@ -1471,9 +2214,13 @@ List<_FeedItem> _itemsForSection(
     _FeedSection.feed => following,
     _FeedSection.following =>
       following
-          .where((item) => friendUserIds.contains(item.ownerUserId))
+          .where(
+            (item) =>
+                !item.isOfficial && friendUserIds.contains(item.ownerUserId),
+          )
           .toList(growable: false),
-    _FeedSection.official => const <_FeedItem>[],
+    _FeedSection.official =>
+      following.where((item) => item.isOfficial).toList(growable: false),
   };
 }
 
@@ -1494,6 +2241,7 @@ class _FeedItem {
     required this.tilt,
     this.ownerUserId = '',
     this.ownedByMe = false,
+    this.isOfficial = false,
     required this.sparkles,
   });
 
@@ -1512,7 +2260,7 @@ class _FeedItem {
         : user?.userId ?? 'nomo_user';
     return _FeedItem(
       id: log.id,
-      userName: authorName,
+      userName: log.isOfficial ? 'Nomo公式' : authorName,
       timeAgo: _relativeTime(log.date),
       body: log.memo.trim(),
       avatar: log.ownerAvatar ?? user?.avatar ?? NomoAvatar.defaultAvatar,
@@ -1526,6 +2274,7 @@ class _FeedItem {
       tilt: (log.id.hashCode.isEven ? -.08 : .08),
       ownerUserId: log.ownerUserId,
       ownedByMe: log.ownerUserId.isNotEmpty && log.ownerUserId == currentUserId,
+      isOfficial: log.isOfficial,
       sparkles: const [
         Offset(12, 18),
         Offset(54, 2),
@@ -1542,7 +2291,7 @@ class _FeedItem {
     return searchable.contains(normalized);
   }
 
-  bool get isLikeable => id.isNotEmpty && !userName.contains('公式');
+  bool get isLikeable => id.isNotEmpty && !isOfficial;
 
   final String id;
   final String userName;
@@ -1559,21 +2308,106 @@ class _FeedItem {
   final _PostProp prop;
   final double tilt;
   final bool ownedByMe;
+  final bool isOfficial;
   final List<Offset> sparkles;
 }
 
 enum _PostProp { beer, ticket, spark }
 
 class _Companion {
-  const _Companion({required this.name, required this.avatar});
+  const _Companion({
+    required this.name,
+    required this.handle,
+    required this.avatar,
+    required this.accent,
+    required this.statusKey,
+  });
 
   factory _Companion.fromFriend(NomoFriend friend) => _Companion(
     name: friend.name,
+    handle: friend.vibe,
     avatar: friend.avatar ?? NomoAvatar.defaultAvatar,
+    accent: friend.accentColor,
+    statusKey: friend.statusKey,
   );
 
   final String name;
+  final String handle;
   final NomoAvatar avatar;
+  final Color accent;
+  final String? statusKey;
+
+  String get handleLabel => handle.trim().isEmpty ? 'Nomoフレンズ' : '@$handle';
+}
+
+String _companionStatusLabel(String? statusKey) {
+  final legacy = switch (statusKey) {
+    'available' => '今ヒマ',
+    'last_train' => '終電までなら',
+    'want_drink' => '飲みたい気分',
+    'busy' => '休肝日',
+    'unset' => '未設定',
+    _ => null,
+  };
+  if (legacy != null) return legacy;
+  return nomoDailyStatusFromKey(statusKey).label;
+}
+
+String _companionStatusMessage(String? statusKey) {
+  final legacy = switch (statusKey) {
+    'available' => '今日なら行けるよ〜！',
+    'last_train' => '軽く飲めるかも！',
+    'want_drink' => '誰か誘って〜！',
+    'busy' => '今日はお休み中...',
+    'unset' => 'ステータス未設定',
+    _ => null,
+  };
+  if (legacy != null) return legacy;
+  return nomoDailyStatusFromKey(statusKey).description;
+}
+
+IconData _companionStatusIcon(String? statusKey) {
+  final legacy = switch (statusKey) {
+    'available' => CupertinoIcons.hand_thumbsup_fill,
+    'last_train' => CupertinoIcons.clock_fill,
+    'want_drink' => Icons.local_bar_rounded,
+    'busy' => CupertinoIcons.moon_fill,
+    _ => null,
+  };
+  if (legacy != null) return legacy;
+  final status = nomoDailyStatusFromKey(statusKey);
+  return switch (status) {
+    NomoDailyStatus.canDrinkToday => CupertinoIcons.checkmark_circle_fill,
+    NomoDailyStatus.lightDrink => CupertinoIcons.clock_fill,
+    NomoDailyStatus.wantDrinkHard => Icons.local_bar_rounded,
+    NomoDailyStatus.nonAlcohol => CupertinoIcons.drop_fill,
+    NomoDailyStatus.liverRest => CupertinoIcons.moon_fill,
+    NomoDailyStatus.waitingInvite => CupertinoIcons.bell_fill,
+    NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
+    NomoDailyStatus.unselected => CupertinoIcons.circle,
+  };
+}
+
+Color _companionStatusColor(String? statusKey) {
+  final legacy = switch (statusKey) {
+    'available' => const Color(0xFF9AF21A),
+    'last_train' => const Color(0xFF58D6FF),
+    'want_drink' => const Color(0xFFFFC857),
+    'busy' => const Color(0xFFFF5EA8),
+    _ => null,
+  };
+  if (legacy != null) return legacy;
+  final status = nomoDailyStatusFromKey(statusKey);
+  return switch (status) {
+    NomoDailyStatus.canDrinkToday => const Color(0xFF9AF21A),
+    NomoDailyStatus.lightDrink => const Color(0xFF58D6FF),
+    NomoDailyStatus.wantDrinkHard => const Color(0xFFFFC857),
+    NomoDailyStatus.nonAlcohol => const Color(0xFF5DEBD3),
+    NomoDailyStatus.liverRest => const Color(0xFFFF5EA8),
+    NomoDailyStatus.waitingInvite => const Color(0xFFC08BFF),
+    NomoDailyStatus.hasPlans => const Color(0xFFB8C1CD),
+    NomoDailyStatus.unselected => _FeedColors.sub,
+  };
 }
 
 class _FeedNotification {

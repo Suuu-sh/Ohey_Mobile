@@ -25,6 +25,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
     final access = ref.watch(adminAccessProvider);
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: _AdminColors.bg,
       body: SafeArea(
         bottom: false,
@@ -441,6 +442,10 @@ class _AdminPostCard extends StatelessWidget {
                 ),
               ),
             ),
+            if (log.isOfficial) ...[
+              const _AdminBadge(label: '公式'),
+              const SizedBox(width: 8),
+            ],
             _AdminIconButton(icon: CupertinoIcons.pencil, onTap: onEdit),
             const SizedBox(width: 8),
             _AdminIconButton(
@@ -591,6 +596,7 @@ Future<void> _showUserSheet(
                       }
                       ref.invalidate(adminUsersProvider);
                       if (sheetContext.mounted) {
+                        FocusScope.of(sheetContext).unfocus();
                         Navigator.of(sheetContext).pop();
                       }
                       if (context.mounted) {
@@ -616,6 +622,7 @@ Future<void> _showUserSheet(
       ),
     );
   } finally {
+    await WidgetsBinding.instance.endOfFrame;
     emailController.dispose();
     passwordController.dispose();
     userIdController.dispose();
@@ -633,8 +640,10 @@ Future<void> _showPostSheet(
   final placeController = TextEditingController(text: log?.placeName ?? '');
   final memoController = TextEditingController(text: log?.memo ?? '');
   final ownerController = TextEditingController(text: log?.ownerUserId ?? '');
-  var ownerUserId =
-      log?.ownerUserId ?? (users.isNotEmpty ? users.first.id : '');
+  var ownerUserId = log != null && !log.isOfficial
+      ? log.ownerUserId
+      : (users.isNotEmpty ? users.first.id : '');
+  var isOfficial = log?.isOfficial ?? false;
   var saving = false;
   String? error;
 
@@ -654,7 +663,18 @@ Future<void> _showPostSheet(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (users.isEmpty)
+                _AdminSwitchRow(
+                  label: '公式投稿として表示',
+                  value: isOfficial,
+                  onChanged: (value) => setState(() => isOfficial = value),
+                ),
+                const SizedBox(height: 10),
+                if (isOfficial)
+                  const _AdminInfoBox(
+                    title: 'Nomo公式として投稿します',
+                    message: '投稿者は自動で公式アカウントになります。全ユーザーのフィードに表示されます。',
+                  )
+                else if (users.isEmpty)
                   _AdminInput(
                     label: 'owner_user_id',
                     controller: ownerController,
@@ -700,22 +720,25 @@ Future<void> _showPostSheet(
                         await ref
                             .read(adminControllerProvider)
                             .createDrinkLog(
-                              ownerUserId: ownerUserId,
+                              ownerUserId: isOfficial ? null : ownerUserId,
                               placeName: placeController.text.trim(),
                               memo: memoController.text.trim(),
+                              isOfficial: isOfficial,
                             );
                       } else {
                         await ref
                             .read(adminControllerProvider)
                             .updateDrinkLog(
                               id: log.id,
-                              ownerUserId: ownerUserId,
+                              ownerUserId: isOfficial ? null : ownerUserId,
                               placeName: placeController.text.trim(),
                               memo: memoController.text.trim(),
+                              isOfficial: isOfficial,
                             );
                       }
                       ref.invalidate(adminDrinkLogsProvider);
                       if (sheetContext.mounted) {
+                        FocusScope.of(sheetContext).unfocus();
                         Navigator.of(sheetContext).pop();
                       }
                       if (context.mounted) {
@@ -741,6 +764,7 @@ Future<void> _showPostSheet(
       ),
     );
   } finally {
+    await WidgetsBinding.instance.endOfFrame;
     ownerController.dispose();
     placeController.dispose();
     memoController.dispose();
@@ -846,7 +870,10 @@ class _AdminSheet extends StatelessWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    FocusScope.of(context).unfocus();
+                    Navigator.of(context).pop();
+                  },
                   icon: const NomoGeneratedIcon(
                     CupertinoIcons.xmark,
                     color: Colors.white,
@@ -984,6 +1011,56 @@ class _AdminSwitchRow extends StatelessWidget {
           value: value,
           activeTrackColor: _AdminColors.lime,
           onChanged: onChanged,
+        ),
+      ],
+    ),
+  );
+}
+
+class _AdminInfoBox extends StatelessWidget {
+  const _AdminInfoBox({required this.title, required this.message});
+
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: _AdminColors.lime.withValues(alpha: .10),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: _AdminColors.lime.withValues(alpha: .28)),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(
+          CupertinoIcons.checkmark_seal_fill,
+          color: _AdminColors.lime,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                message,
+                style: const TextStyle(
+                  color: _AdminColors.sub,
+                  fontWeight: FontWeight.w700,
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     ),

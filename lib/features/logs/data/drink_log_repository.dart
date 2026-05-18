@@ -119,6 +119,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       likedByMe: false,
       ownerUserId:
           (row['owner_user_id'] as String?) ?? _client.currentUserId ?? '',
+      isOfficial: (row['is_official'] as bool?) ?? false,
     );
   }
 
@@ -158,6 +159,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       ownerUserId: (row['owner_user_id'] as String?) ?? '',
       ownerDisplayName: (owner['display_name'] as String?) ?? '',
       ownerAvatar: NomoAvatar.decode(owner['avatar_url'] as String?),
+      isOfficial: (row['is_official'] as bool?) ?? false,
     );
   }
 
