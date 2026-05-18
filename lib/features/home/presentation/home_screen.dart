@@ -255,7 +255,7 @@ extension _FeedSectionView on _FeedSection {
   IconData get icon => switch (this) {
     _FeedSection.feed => Icons.sports_bar_rounded,
     _FeedSection.following => CupertinoIcons.person_2_fill,
-    _FeedSection.official => CupertinoIcons.sparkles,
+    _FeedSection.official => CupertinoIcons.bolt_fill,
   };
 
   Color get accent => switch (this) {
@@ -536,32 +536,19 @@ class _FeedTab extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
+                    AnimatedScale(
+                      duration: const Duration(milliseconds: 180),
                       curve: Curves.easeOutCubic,
-                      width: selected ? 27 : 22,
-                      height: selected ? 27 : 22,
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? Colors.white.withValues(alpha: .38)
-                            : Colors.white.withValues(
-                                alpha: isWhite ? .74 : .06,
-                              ),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: selected
-                              ? Colors.white.withValues(alpha: .44)
-                              : Colors.white.withValues(
-                                  alpha: isWhite ? .55 : .06,
-                                ),
-                        ),
-                      ),
-                      child: Icon(
-                        section.icon,
-                        size: selected ? 15 : 13,
+                      scale: selected ? 1.08 : 1,
+                      child: NomoPopIcon(
+                        icon: section.icon,
+                        size: selected ? 28 : 24,
+                        iconSize: selected ? 27 : 23,
+                        showBubble: false,
+                        shadow: false,
                         color: selected
                             ? selectedColor
-                            : idleColor.withValues(alpha: isWhite ? .82 : .72),
+                            : idleColor.withValues(alpha: isWhite ? .86 : .78),
                       ),
                     ),
                     const SizedBox(width: 6),
