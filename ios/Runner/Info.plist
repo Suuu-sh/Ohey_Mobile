@@ -37,10 +37,6 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>instagram-stories</string>
-	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>友達追加用のQRコードを読み取るためにカメラを使用します。</string>
 	<key>NSPhotoLibraryUsageDescription</key>

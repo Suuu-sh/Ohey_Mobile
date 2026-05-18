@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
@@ -122,8 +123,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         onLikePressed: (item) => ref
                             .read(drinkLogControllerProvider.notifier)
                             .toggleLike(item.id),
-                        onSharePressed: (item) =>
-                            _shareFeedItemToInstagram(context, item),
+                        onSharePressed: (item) => _shareFeedItem(context, item),
                         onMorePressed: (item) =>
                             _showFeedPostActions(context, ref, item),
                       ),
@@ -175,22 +175,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<void> _shareFeedItemToInstagram(
-    BuildContext context,
-    _FeedItem item,
-  ) async {
+  Future<void> _shareFeedItem(BuildContext context, _FeedItem item) async {
+    final renderBox = context.findRenderObject() as RenderBox?;
+    final shareOrigin = renderBox == null
+        ? null
+        : renderBox.localToGlobal(Offset.zero) & renderBox.size;
     try {
       final imagePath = await _createStoryShareImage(item);
-      const channel = MethodChannel('nomo/instagram_story');
-      final shared = await channel.invokeMethod<bool>('shareImage', {
-        'path': imagePath,
-      });
-      if (!context.mounted) return;
-      NomoToast.show(
-        context,
-        shared == true ? 'Instagramストーリーに共有します。' : 'Instagramアプリが見つかりませんでした。',
-        icon: CupertinoIcons.square_arrow_up,
+      final result = await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(imagePath, mimeType: 'image/png')],
+          fileNameOverrides: const ['nomo_drink_log.png'],
+          title: '飲みログを共有',
+          subject: 'Nomoの飲みログ',
+          sharePositionOrigin: shareOrigin,
+        ),
       );
+      if (!context.mounted) return;
+      if (result.status == ShareResultStatus.unavailable) {
+        NomoToast.show(
+          context,
+          '共有できるアプリが見つかりませんでした。',
+          icon: CupertinoIcons.square_arrow_up,
+        );
+      }
     } catch (error) {
       if (!context.mounted) return;
       NomoToast.show(
