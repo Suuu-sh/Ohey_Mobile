@@ -101,7 +101,8 @@ enum _CuteGlyphKind {
   calendar,
   plus,
   xmark,
-  chevron,
+  chevronLeft,
+  chevronRight,
   bell,
   heart,
   more,
@@ -248,12 +249,14 @@ _CuteGlyphKind? _cuteGlyphKindFromIcon(IconData icon) {
   }
   if (code == CupertinoIcons.drop_fill.codePoint) return _CuteGlyphKind.drink;
   if (code == CupertinoIcons.scissors.codePoint) return _CuteGlyphKind.pencil;
-  if (code == CupertinoIcons.chevron_right.codePoint ||
-      code == CupertinoIcons.chevron_left.codePoint ||
-      code == CupertinoIcons.chevron_forward.codePoint ||
-      code == CupertinoIcons.arrow_right.codePoint ||
+  if (code == CupertinoIcons.chevron_left.codePoint ||
       code == CupertinoIcons.arrow_left.codePoint) {
-    return _CuteGlyphKind.chevron;
+    return _CuteGlyphKind.chevronLeft;
+  }
+  if (code == CupertinoIcons.chevron_right.codePoint ||
+      code == CupertinoIcons.chevron_forward.codePoint ||
+      code == CupertinoIcons.arrow_right.codePoint) {
+    return _CuteGlyphKind.chevronRight;
   }
   return null;
 }
@@ -297,8 +300,10 @@ class _CuteGlyphPainter extends CustomPainter {
         _drawPlus(canvas, size, stroke);
       case _CuteGlyphKind.xmark:
         _drawX(canvas, size, stroke);
-      case _CuteGlyphKind.chevron:
-        _drawChevron(canvas, size, stroke);
+      case _CuteGlyphKind.chevronLeft:
+        _drawChevron(canvas, size, stroke, pointsLeft: true);
+      case _CuteGlyphKind.chevronRight:
+        _drawChevron(canvas, size, stroke, pointsLeft: false);
       case _CuteGlyphKind.bell:
         _drawBell(canvas, size, p, stroke);
       case _CuteGlyphKind.heart:
@@ -790,15 +795,22 @@ class _CuteGlyphPainter extends CustomPainter {
     );
   }
 
-  void _drawChevron(Canvas canvas, Size s, Paint stroke) {
+  void _drawChevron(
+    Canvas canvas,
+    Size s,
+    Paint stroke, {
+    required bool pointsLeft,
+  }) {
+    final tipX = pointsLeft ? .36 : .64;
+    final tailX = pointsLeft ? .62 : .38;
     canvas.drawLine(
-      Offset(s.width * .38, s.height * .25),
-      Offset(s.width * .64, s.height * .50),
+      Offset(s.width * tailX, s.height * .25),
+      Offset(s.width * tipX, s.height * .50),
       stroke,
     );
     canvas.drawLine(
-      Offset(s.width * .64, s.height * .50),
-      Offset(s.width * .38, s.height * .75),
+      Offset(s.width * tipX, s.height * .50),
+      Offset(s.width * tailX, s.height * .75),
       stroke,
     );
   }
