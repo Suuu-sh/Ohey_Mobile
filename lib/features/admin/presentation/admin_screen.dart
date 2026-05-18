@@ -475,6 +475,18 @@ class _AdminPostCard extends StatelessWidget {
             ),
           ),
         ],
+        if (log.linkUrl.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            log.linkUrl,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: _AdminColors.lime,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
         const SizedBox(height: 8),
         Text(
           _dateLabel(log.drankAt),
@@ -639,6 +651,7 @@ Future<void> _showPostSheet(
       ref.read(adminUsersProvider).asData?.value ?? const <AdminUserProfile>[];
   final placeController = TextEditingController(text: log?.placeName ?? '');
   final memoController = TextEditingController(text: log?.memo ?? '');
+  final linkController = TextEditingController(text: log?.linkUrl ?? '');
   final ownerController = TextEditingController(text: log?.ownerUserId ?? '');
   var ownerUserId = log != null && !log.isOfficial
       ? log.ownerUserId
@@ -696,6 +709,12 @@ Future<void> _showPostSheet(
                   label: 'メモ',
                   maxLines: 3,
                 ),
+                const SizedBox(height: 10),
+                _AdminInput(
+                  controller: linkController,
+                  label: 'リンクURL（任意・公式投稿の詳しく見る）',
+                  keyboardType: TextInputType.url,
+                ),
                 if (error != null) ...[
                   const SizedBox(height: 10),
                   Text(
@@ -723,6 +742,7 @@ Future<void> _showPostSheet(
                               ownerUserId: isOfficial ? null : ownerUserId,
                               placeName: placeController.text.trim(),
                               memo: memoController.text.trim(),
+                              linkUrl: linkController.text.trim(),
                               isOfficial: isOfficial,
                             );
                       } else {
@@ -733,6 +753,7 @@ Future<void> _showPostSheet(
                               ownerUserId: isOfficial ? null : ownerUserId,
                               placeName: placeController.text.trim(),
                               memo: memoController.text.trim(),
+                              linkUrl: linkController.text.trim(),
                               isOfficial: isOfficial,
                             );
                       }
@@ -768,6 +789,7 @@ Future<void> _showPostSheet(
     ownerController.dispose();
     placeController.dispose();
     memoController.dispose();
+    linkController.dispose();
   }
 }
 
