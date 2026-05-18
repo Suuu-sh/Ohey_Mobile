@@ -36,6 +36,7 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
     final user = ref.watch(nomoUserProvider);
     final qrPayload = _friendQrPayload(user?.userId ?? '');
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: _ExchangeColors.bg,
       body: DecoratedBox(
         decoration: const BoxDecoration(
@@ -299,6 +300,7 @@ class _QrScannerScreenState extends State<NomiTomoQrScannerScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+    resizeToAvoidBottomInset: false,
     backgroundColor: Colors.black,
     appBar: AppBar(
       backgroundColor: Colors.black,

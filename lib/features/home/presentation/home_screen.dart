@@ -1136,6 +1136,7 @@ class _FeedNotificationsScreenState
     final isWhite = Theme.of(context).brightness == Brightness.light;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: isWhite ? Colors.white : const Color(0xFF07131F),
       body: MediaQuery(
         data: MediaQuery.of(

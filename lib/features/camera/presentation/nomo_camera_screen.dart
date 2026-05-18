@@ -66,6 +66,7 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
     final filter = _filters[_selectedFilterIndex];
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFF101B28),
       body: SafeArea(
         child: CustomScrollView(

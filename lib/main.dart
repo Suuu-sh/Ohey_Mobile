@@ -308,6 +308,7 @@ class _StartupScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasError = message != null;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFFFF0A8D),
       body: Stack(
         fit: StackFit.expand,

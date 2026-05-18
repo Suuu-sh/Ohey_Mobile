@@ -62,6 +62,7 @@ class ProfileScreen extends ConsumerWidget {
       value: (isWhite ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
           .copyWith(statusBarColor: topBackground),
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: bodyBackground,
         body: ColoredBox(
           color: topBackground,

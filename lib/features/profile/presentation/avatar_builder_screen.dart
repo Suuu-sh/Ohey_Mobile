@@ -50,6 +50,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
         if (!didPop) _handleClose();
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: _AvatarColors.cream,
         body: SafeArea(
           child: Column(

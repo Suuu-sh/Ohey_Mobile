@@ -55,6 +55,7 @@ class _NomoDemoScreenState extends State<NomoDemoScreen> {
   Widget build(BuildContext context) {
     final slides = _demoSlides;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFF07131F),
       body: SafeArea(
         child: Padding(
@@ -206,6 +207,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     return PopScope(
       canPop: false,
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: const Color(0xFF0D1A22),
         body: SafeArea(
           child: AnimatedSwitcher(
