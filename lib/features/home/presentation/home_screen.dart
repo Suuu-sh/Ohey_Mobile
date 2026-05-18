@@ -1458,7 +1458,7 @@ class _FeedPostCard extends StatelessWidget {
   final VoidCallback? onShare;
   final VoidCallback? onMore;
 
-  bool get _isOfficial => item.userName.contains('公式');
+  bool get _isOfficial => item.isOfficial;
 
   @override
   Widget build(BuildContext context) {
@@ -1490,27 +1490,23 @@ class _FeedPostCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: RichText(
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  text: TextSpan(
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: ink.withValues(alpha: .88),
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.2,
-                    ),
-                    children: [
-                      TextSpan(text: item.userName),
-                      if (_isOfficial)
-                        TextSpan(
-                          text: '  公式',
-                          style: TextStyle(
-                            color: item.accent,
-                            fontWeight: FontWeight.w900,
-                          ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        item.userName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: ink.withValues(alpha: .88),
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.2,
                         ),
-                    ],
-                  ),
+                      ),
+                    ),
+                    if (_isOfficial) const _OfficialVerifiedBadge(),
+                  ],
                 ),
               ),
               GestureDetector(
@@ -1589,6 +1585,43 @@ class _FeedPostCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _OfficialVerifiedBadge extends StatelessWidget {
+  const _OfficialVerifiedBadge();
+
+  static const _badgeColor = Color(0xFFFF5EA8);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 7),
+      child: Semantics(
+        label: '公式アカウント',
+        child: Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            color: _badgeColor,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: _badgeColor.withValues(alpha: .28),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(
+            CupertinoIcons.checkmark,
+            color: Colors.white,
+            size: 14,
+            weight: 900,
+          ),
+        ),
       ),
     );
   }
