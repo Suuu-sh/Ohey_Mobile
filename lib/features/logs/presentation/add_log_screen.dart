@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
@@ -277,8 +278,36 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
     }
 
     final impression = _memoController.text.trim();
-    if (impression.isEmpty) return path;
+    if (impression.isEmpty) return _copyPhotoToPermanentStorage(path);
     return _writeImpressionOnPhoto(path, impression);
+  }
+
+  Future<String> _copyPhotoToPermanentStorage(String path) async {
+    final source = File(path);
+    if (!await source.exists()) return path;
+    final directory = await _nomoPhotoDirectory();
+    final extension = _fileExtension(path, fallback: '.jpg');
+    final outputPath =
+        '${directory.path}/nomo_photo_${DateTime.now().microsecondsSinceEpoch}$extension';
+    return source.copy(outputPath).then((file) => file.path);
+  }
+
+  Future<Directory> _nomoPhotoDirectory() async {
+    final documents = await getApplicationDocumentsDirectory();
+    final directory = Directory('${documents.path}/nomo_photos');
+    if (!await directory.exists()) {
+      await directory.create(recursive: true);
+    }
+    return directory;
+  }
+
+  String _fileExtension(String path, {required String fallback}) {
+    final name = path.split('/').last;
+    final dot = name.lastIndexOf('.');
+    if (dot < 0 || dot == name.length - 1) return fallback;
+    final extension = name.substring(dot).toLowerCase();
+    if (extension.length > 8) return fallback;
+    return extension;
   }
 
   Future<String> _writeImpressionOnPhoto(String path, String impression) async {
@@ -351,8 +380,9 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
       throw StateError('写真に感想を書き込めませんでした。');
     }
 
+    final directory = await _nomoPhotoDirectory();
     final outputPath =
-        '${source.parent.path}/nomo_impression_${DateTime.now().microsecondsSinceEpoch}.png';
+        '${directory.path}/nomo_impression_${DateTime.now().microsecondsSinceEpoch}.png';
     await File(outputPath).writeAsBytes(byteData.buffer.asUint8List());
     image.dispose();
     output.dispose();
