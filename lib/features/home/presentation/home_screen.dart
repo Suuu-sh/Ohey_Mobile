@@ -332,27 +332,39 @@ class _FeedTabs extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(6),
+      padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: isWhite
-            ? Colors.white
-            : const Color(0xFF0C1724).withValues(alpha: .78),
-        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isWhite
+              ? const [Colors.white, Color(0xFFF5FAFF)]
+              : [
+                  const Color(0xFF122334).withValues(alpha: .96),
+                  const Color(0xFF081421).withValues(alpha: .96),
+                ],
+        ),
+        borderRadius: BorderRadius.circular(30),
         border: Border.all(
           color: isWhite
-              ? const Color(0xFFDCE4EC)
-              : Colors.white.withValues(alpha: .08),
+              ? const Color(0xFFE2EAF2)
+              : Colors.white.withValues(alpha: .10),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .06 : .18),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: isWhite ? .07 : .24),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: selected.accent.withValues(alpha: isWhite ? .10 : .12),
+            blurRadius: 30,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
       child: SizedBox(
-        height: 50,
+        height: 58,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final sections = _FeedSection.values;
@@ -360,34 +372,15 @@ class _FeedTabs extends StatelessWidget {
             return Stack(
               children: [
                 AnimatedPositioned(
-                  duration: const Duration(milliseconds: 260),
-                  curve: Curves.easeOutBack,
-                  left: selected.index * tabWidth + 2,
-                  top: 0,
-                  bottom: 0,
-                  width: tabWidth - 4,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          selected.accent,
-                          selected.accent.withValues(alpha: .76),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(19),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: .24),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: selected.accent.withValues(alpha: .30),
-                          blurRadius: 16,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  left: selected.index * tabWidth + 3,
+                  top: 3,
+                  bottom: 3,
+                  width: tabWidth - 6,
+                  child: _FeedTabIndicator(
+                    accent: selected.accent,
+                    isWhite: isWhite,
                   ),
                 ),
                 Row(
@@ -409,6 +402,87 @@ class _FeedTabs extends StatelessWidget {
   }
 }
 
+class _FeedTabIndicator extends StatelessWidget {
+  const _FeedTabIndicator({required this.accent, required this.isWhite});
+
+  final Color accent;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      foregroundPainter: _FeedTabIndicatorPainter(accent: accent),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color.lerp(Colors.white, accent, isWhite ? .32 : .24)!,
+              accent,
+              Color.lerp(accent, const Color(0xFFFFFFFF), .16)!,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: isWhite ? .66 : .34),
+            width: 1.3,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: accent.withValues(alpha: isWhite ? .26 : .34),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+            ),
+            BoxShadow(
+              color: Colors.white.withValues(alpha: isWhite ? .58 : .14),
+              blurRadius: 0,
+              offset: const Offset(0, -1),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedTabIndicatorPainter extends CustomPainter {
+  const _FeedTabIndicatorPainter({required this.accent});
+
+  final Color accent;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final glow = Paint()..color = Colors.white.withValues(alpha: .18);
+    canvas.drawCircle(
+      Offset(size.width * .18, size.height * .28),
+      size.height * .22,
+      glow,
+    );
+    canvas.drawCircle(
+      Offset(size.width * .86, size.height * .70),
+      size.height * .12,
+      glow..color = Colors.white.withValues(alpha: .13),
+    );
+
+    final dot = Paint()..color = accent.withValues(alpha: .22);
+    canvas.drawCircle(
+      Offset(size.width * .72, size.height * .26),
+      size.height * .055,
+      dot,
+    );
+    canvas.drawCircle(
+      Offset(size.width * .33, size.height * .78),
+      size.height * .04,
+      dot..color = Colors.white.withValues(alpha: .16),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _FeedTabIndicatorPainter oldDelegate) =>
+      oldDelegate.accent != accent;
+}
+
 class _FeedTab extends StatelessWidget {
   const _FeedTab({
     required this.section,
@@ -421,58 +495,97 @@ class _FeedTab extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
-      child: Semantics(
-        button: true,
-        selected: selected,
-        label: '${section.label}タブ',
-        child: CupertinoButton(
-          onPressed: selected ? null : onTap,
-          minimumSize: const Size(0, 44),
-          padding: EdgeInsets.zero,
-          borderRadius: BorderRadius.circular(19),
-          child: Container(
-            width: double.infinity,
-            height: 50,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Flexible(
-                  child: AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 180),
-                    curve: Curves.easeOutCubic,
-                    style:
-                        Theme.of(context).textTheme.titleSmall?.copyWith(
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final selectedColor = Color.lerp(
+      const Color(0xFF031B22),
+      section.accent,
+      .10,
+    )!;
+    final idleColor = isWhite ? const Color(0xFF748291) : _FeedColors.sub;
+
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        child: Semantics(
+          button: true,
+          selected: selected,
+          label: '${section.label}タブ',
+          child: CupertinoButton(
+            onPressed: selected ? null : onTap,
+            minimumSize: const Size(0, 48),
+            padding: EdgeInsets.zero,
+            borderRadius: BorderRadius.circular(25),
+            child: SizedBox(
+              width: double.infinity,
+              height: 58,
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                scale: selected ? 1 : .96,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOutCubic,
+                      width: selected ? 27 : 22,
+                      height: selected ? 27 : 22,
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? Colors.white.withValues(alpha: .38)
+                            : Colors.white.withValues(
+                                alpha: isWhite ? .74 : .06,
+                              ),
+                        shape: BoxShape.circle,
+                        border: Border.all(
                           color: selected
-                              ? const Color(0xFF062327)
-                              : _FeedColors.sub,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.35,
-                        ) ??
-                        TextStyle(
-                          color: selected
-                              ? const Color(0xFF062327)
-                              : _FeedColors.sub,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.35,
+                              ? Colors.white.withValues(alpha: .44)
+                              : Colors.white.withValues(
+                                  alpha: isWhite ? .55 : .06,
+                                ),
                         ),
-                    child: Text(
-                      section.label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      ),
+                      child: Icon(
+                        section.icon,
+                        size: selected ? 15 : 13,
+                        color: selected
+                            ? selectedColor
+                            : idleColor.withValues(alpha: isWhite ? .82 : .72),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutCubic,
+                        style:
+                            Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: selected ? selectedColor : idleColor,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -.45,
+                            ) ??
+                            TextStyle(
+                              color: selected ? selectedColor : idleColor,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -.45,
+                            ),
+                        child: Text(
+                          section.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _FeedSectionEmptyState extends StatelessWidget {
