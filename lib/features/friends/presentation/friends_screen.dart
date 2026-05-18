@@ -1137,6 +1137,54 @@ class _FriendStatus {
 
 _FriendStatus _statusForFriend(NomoFriend friend, int index) {
   switch (friend.statusKey) {
+    case 'can_drink_today':
+      return const _FriendStatus(
+        label: '今日飲める',
+        message: '今夜の誘いを受けやすいよ！',
+        enabled: true,
+      );
+    case 'light_drink':
+      return const _FriendStatus(
+        label: '軽く一杯なら',
+        message: '短時間なら行けるかも！',
+        enabled: true,
+      );
+    case 'want_drink_hard':
+      return const _FriendStatus(
+        label: 'しっかり飲みたい',
+        message: '今日は飲みたい気分！',
+        enabled: true,
+      );
+    case 'non_alcohol':
+      return const _FriendStatus(
+        label: 'ノンアルなら',
+        message: 'ノンアル参加ならOK！',
+        enabled: true,
+      );
+    case 'waiting_invite':
+      return const _FriendStatus(
+        label: '誘われ待ち',
+        message: '誰かからの誘いを待ってるよ！',
+        enabled: true,
+      );
+    case 'liver_rest':
+      return const _FriendStatus(
+        label: '休肝日',
+        message: '今日はお休み中...',
+        enabled: false,
+      );
+    case 'has_plans':
+      return const _FriendStatus(
+        label: '予定あり',
+        message: '今日は予定があるみたい。',
+        enabled: false,
+      );
+    case 'unselected':
+      return const _FriendStatus(
+        label: '未設定',
+        message: 'ステータス未設定',
+        enabled: true,
+      );
     case 'available':
       return const _FriendStatus(
         label: '今ヒマ',

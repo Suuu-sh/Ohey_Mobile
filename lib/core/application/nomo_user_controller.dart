@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../data/backend_api_client.dart';
 import '../data/nomo_last_account_store.dart';
+import '../data/supabase_client_provider.dart';
 import '../models/nomo_user.dart';
 import '../models/nomo_avatar.dart';
 
@@ -13,30 +15,28 @@ class NomoUserController extends Notifier<NomoUser?> {
   @override
   NomoUser? build() => null;
 
-  Future<bool> loadFromSupabaseProfile() async {
-    final supabase = Supabase.instance.client;
-    final user = supabase.auth.currentUser;
-    if (user == null) return false;
+  Future<bool> loadFromBackendProfile() async {
+    final client = ref.read(backendApiClientProvider);
+    final userId = client.currentUserId;
+    if (userId == null || userId.isEmpty) return false;
 
-    final row = await supabase
-        .from('profiles')
-        .select('user_id,display_name,character_key,avatar_url,is_plus')
-        .eq('id', user.id)
-        .maybeSingle();
-    if (row == null) return false;
+    Map<String, dynamic> row;
+    try {
+      row = _asMap(await client.get('/v1/me/profile'));
+    } on BackendApiException catch (error) {
+      if (error.statusCode == 404) return false;
+      rethrow;
+    }
 
-    final statusRow = await supabase
-        .from('daily_statuses')
-        .select('status')
-        .eq('user_id', user.id)
-        .eq('status_date', _todayIsoDate())
-        .maybeSingle();
+    final statusRow = _firstMapOrNull(
+      await client.get('/v1/daily-status', query: {'date': _todayIsoDate()}),
+    );
 
     state = NomoUser(
       name: (row['display_name'] as String?)?.trim().isNotEmpty == true
           ? row['display_name'] as String
           : 'mi-mu',
-      userId: (row['user_id'] as String?) ?? _defaultUserId(user.id),
+      userId: (row['user_id'] as String?) ?? _defaultUserId(userId),
       avatar: NomoAvatar.decode(row['avatar_url'] as String?),
       dailyStatus: nomoDailyStatusFromKey(statusRow?['status'] as String?),
       isPlus: (row['is_plus'] as bool?) ?? false,
@@ -49,9 +49,9 @@ class NomoUserController extends Notifier<NomoUser?> {
     required String userId,
     NomoAvatar? avatar,
   }) async {
-    final supabase = Supabase.instance.client;
-    final authUser = supabase.auth.currentUser;
-    if (authUser == null) {
+    final client = ref.read(backendApiClientProvider);
+    final authUserId = client.currentUserId;
+    if (authUserId == null || authUserId.isEmpty) {
       throw StateError('Login is required before creating a Nomo user.');
     }
 
@@ -67,23 +67,12 @@ class NomoUserController extends Notifier<NomoUser?> {
         'User ID must be 3-24 letters, numbers, or underscores.',
       );
     }
-    await _ensureUserIdAvailable(
-      supabase,
-      userId: normalizedUserId,
-      currentAuthUserId: authUser.id,
-    );
-
-    await supabase
-        .from('profiles')
-        .upsert(
-          {
-            'id': authUser.id,
-            'user_id': normalizedUserId,
-            'display_name': trimmed,
-            'character_key': 'avatar',
-            'avatar_url': avatar?.encode(),
-          }..removeWhere((_, value) => value == null),
-        );
+    await client.put('/v1/me/profile', {
+      'user_id': normalizedUserId,
+      'display_name': trimmed,
+      'character_key': 'avatar',
+      'avatar_url': avatar?.encode() ?? '',
+    });
 
     state = NomoUser(name: trimmed, avatar: avatar, userId: normalizedUserId);
   }
@@ -93,9 +82,9 @@ class NomoUserController extends Notifier<NomoUser?> {
     required String userId,
     NomoAvatar? avatar,
   }) async {
-    final supabase = Supabase.instance.client;
-    final authUser = supabase.auth.currentUser;
-    if (authUser == null) {
+    final client = ref.read(backendApiClientProvider);
+    final authUserId = client.currentUserId;
+    if (authUserId == null || authUserId.isEmpty) {
       throw StateError('Login is required before updating a Nomo user.');
     }
 
@@ -111,65 +100,44 @@ class NomoUserController extends Notifier<NomoUser?> {
         'User ID must be 3-24 letters, numbers, or underscores.',
       );
     }
-    await _ensureUserIdAvailable(
-      supabase,
-      userId: normalizedUserId,
-      currentAuthUserId: authUser.id,
-    );
-
-    await supabase
-        .from('profiles')
-        .update({
-          'user_id': normalizedUserId,
-          'display_name': trimmed,
-          'character_key': 'avatar',
-          'avatar_url': avatar?.encode(),
-          'updated_at': DateTime.now().toUtc().toIso8601String(),
-        })
-        .eq('id', authUser.id);
+    await client.patch('/v1/me/profile', {
+      'user_id': normalizedUserId,
+      'display_name': trimmed,
+      'character_key': 'avatar',
+      'avatar_url': avatar?.encode() ?? '',
+    });
 
     state =
         (state ??
                 NomoUser(
                   name: trimmed,
                   avatar: avatar,
-                  userId: _defaultUserId(authUser.id),
+                  userId: _defaultUserId(authUserId),
                 ))
             .copyWith(name: trimmed, userId: normalizedUserId, avatar: avatar);
   }
 
   Future<void> updateDailyStatus(NomoDailyStatus status) async {
-    final supabase = Supabase.instance.client;
-    final authUser = supabase.auth.currentUser;
-    if (authUser == null) {
+    final client = ref.read(backendApiClientProvider);
+    final authUserId = client.currentUserId;
+    if (authUserId == null || authUserId.isEmpty) {
       throw StateError('Login is required before updating daily status.');
     }
 
-    final payload = {
-      'user_id': authUser.id,
+    await client.put('/v1/daily-status', {
       'status_date': _todayIsoDate(),
       'status': status.key,
-      'updated_at': DateTime.now().toUtc().toIso8601String(),
-    };
-
-    try {
-      await supabase.from('daily_statuses').upsert(payload);
-    } on PostgrestException catch (error) {
-      if (error.code != '23514') rethrow;
-      await supabase.from('daily_statuses').upsert({
-        ...payload,
-        'status': status.legacyCompatibleKey,
-      });
-    }
+    });
 
     state =
-        (state ?? NomoUser(name: 'mi-mu', userId: _defaultUserId(authUser.id)))
+        (state ?? NomoUser(name: 'mi-mu', userId: _defaultUserId(authUserId)))
             .copyWith(dailyStatus: status);
   }
 
   Future<void> signOut() async {
     final currentUser = state;
-    final currentAuthUser = Supabase.instance.client.auth.currentUser;
+    final supabase = ref.read(supabaseClientProvider);
+    final currentAuthUser = supabase.auth.currentUser;
     try {
       try {
         await NomoLastAccountStore.save(
@@ -180,7 +148,7 @@ class NomoUserController extends Notifier<NomoUser?> {
       } catch (_) {
         // 保存に失敗してもログアウト自体は止めない。
       }
-      await Supabase.instance.client.auth.signOut(scope: SignOutScope.local);
+      await supabase.auth.signOut(scope: SignOutScope.local);
     } finally {
       // ローカルセッション削除が例外になっても、UI上は必ず未ログイン状態へ戻す。
       state = null;
@@ -191,22 +159,6 @@ class NomoUserController extends Notifier<NomoUser?> {
 bool _isValidUserId(String userId) =>
     RegExp(r'^[a-zA-Z0-9_]{3,24}$').hasMatch(userId);
 
-Future<void> _ensureUserIdAvailable(
-  SupabaseClient supabase, {
-  required String userId,
-  required String currentAuthUserId,
-}) async {
-  final existing = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('user_id', userId)
-      .neq('id', currentAuthUserId)
-      .maybeSingle();
-  if (existing != null) {
-    throw StateError('このユーザーIDはすでに使われています。');
-  }
-}
-
 String _todayIsoDate() {
   final now = DateTime.now();
   return '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
@@ -215,4 +167,20 @@ String _todayIsoDate() {
 String _defaultUserId(String authUserId) {
   final compact = authUserId.replaceAll('-', '');
   return 'nomo_${compact.substring(0, compact.length < 12 ? compact.length : 12)}';
+}
+
+Map<String, dynamic> _asMap(Object? value) {
+  if (value is Map) return Map<String, dynamic>.from(value);
+  if (value is List && value.isNotEmpty && value.first is Map) {
+    return Map<String, dynamic>.from(value.first as Map);
+  }
+  throw const FormatException('プロフィールデータの形式が不正です。');
+}
+
+Map<String, dynamic>? _firstMapOrNull(Object? value) {
+  if (value is Map) return Map<String, dynamic>.from(value);
+  if (value is List && value.isNotEmpty && value.first is Map) {
+    return Map<String, dynamic>.from(value.first as Map);
+  }
+  return null;
 }
