@@ -463,10 +463,11 @@ class _AlbumButton extends StatelessWidget {
     return _RoundCameraButton(
       semanticLabel: 'アルバムを開く',
       onTap: onTap,
-      child: const NomoGeneratedIcon(
-        CupertinoIcons.photo_on_rectangle,
-        color: Colors.white,
-        size: 28,
+      child: const NomoPopIcon(
+        icon: CupertinoIcons.photo_fill,
+        color: Color(0xFFFF8BC0),
+        size: 34,
+        showBubble: false,
       ),
     );
   }
