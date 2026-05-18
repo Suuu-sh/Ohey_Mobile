@@ -2,7 +2,7 @@
 <resources>
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowSplashScreenBackground">#FF0A8D</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/opening_nomo_launch</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/opening_nomo_splash_icon</item>
         <item name="android:windowSplashScreenAnimationDuration">0</item>
         <item name="android:windowSplashScreenIconBackgroundColor">#00000000</item>
         <item name="android:postSplashScreenTheme">@style/NormalTheme</item>
