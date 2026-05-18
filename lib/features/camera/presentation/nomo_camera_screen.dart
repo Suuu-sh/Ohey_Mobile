@@ -231,14 +231,23 @@ class _TopCameraControls extends StatelessWidget {
       top: 22,
       child: Row(
         children: [
-          _CameraIconButton(icon: CupertinoIcons.xmark, onTap: onClose),
+          _CameraIconButton(
+            icon: CupertinoIcons.chevron_left,
+            semanticLabel: '戻る',
+            onTap: onClose,
+          ),
           const Spacer(),
           _CameraIconButton(
             icon: CupertinoIcons.bolt_slash_fill,
+            semanticLabel: 'フラッシュ',
             onTap: onFlash,
           ),
           const Spacer(),
-          _CameraIconButton(icon: CupertinoIcons.gear_solid, onTap: onSettings),
+          _CameraIconButton(
+            icon: CupertinoIcons.gear_solid,
+            semanticLabel: 'カメラ設定',
+            onTap: onSettings,
+          ),
         ],
       ),
     );
@@ -613,21 +622,46 @@ class _FlipCameraButton extends StatelessWidget {
 }
 
 class _CameraIconButton extends StatelessWidget {
-  const _CameraIconButton({required this.icon, required this.onTap});
+  const _CameraIconButton({
+    required this.icon,
+    required this.semanticLabel,
+    required this.onTap,
+  });
 
   final IconData icon;
+  final String semanticLabel;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: SizedBox(
-        width: 46,
-        height: 46,
-        child: Center(
-          child: NomoGeneratedIcon(icon, color: Colors.white, size: 32),
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: .34),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withValues(alpha: .34)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: .32),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Center(
+            child: NomoGeneratedIcon(
+              icon,
+              color: Colors.white,
+              size: icon == CupertinoIcons.chevron_left ? 30 : 27,
+            ),
+          ),
         ),
       ),
     );
