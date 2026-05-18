@@ -98,33 +98,39 @@ class AdminController {
   }
 
   Future<void> createDrinkLog({
-    required String ownerUserId,
+    String? ownerUserId,
     required String placeName,
     required String memo,
     required bool isOfficial,
   }) async {
-    await _client.post('/v1/admin/drink-logs', {
-      'owner_user_id': ownerUserId,
+    final body = <String, dynamic>{
       'drank_at': DateTime.now().toUtc().toIso8601String(),
       'place_name': placeName,
       'memo': memo,
       'is_official': isOfficial,
-    });
+    };
+    if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
+      body['owner_user_id'] = ownerUserId.trim();
+    }
+    await _client.post('/v1/admin/drink-logs', body);
   }
 
   Future<void> updateDrinkLog({
     required String id,
-    required String ownerUserId,
+    String? ownerUserId,
     required String placeName,
     required String memo,
     required bool isOfficial,
   }) async {
-    await _client.patch('/v1/admin/drink-logs/$id', {
-      'owner_user_id': ownerUserId,
+    final body = <String, dynamic>{
       'place_name': placeName,
       'memo': memo,
       'is_official': isOfficial,
-    });
+    };
+    if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
+      body['owner_user_id'] = ownerUserId.trim();
+    }
+    await _client.patch('/v1/admin/drink-logs/$id', body);
   }
 
   Future<void> deleteDrinkLog(String id) async {
