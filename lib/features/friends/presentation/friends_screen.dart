@@ -27,6 +27,7 @@ class FriendsScreen extends ConsumerStatefulWidget {
 class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   _FriendFilterType _selectedFilter = _FriendFilterType.all;
   bool _isRefreshingFriends = false;
+  final Map<String, bool> _favoriteOverrides = {};
 
   void _openAddFriend() {
     showMyQrDialog(context, ref.read(nomoUserProvider), ref);
@@ -64,10 +65,17 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     NomoFriend friend,
     bool isFavorite,
   ) {
+    final previous = _favoriteOverrides[friend.id] ?? friend.isFavorite;
+    HapticFeedback.selectionClick();
+    setState(() => _favoriteOverrides[friend.id] = isFavorite);
+
     ref
         .read(friendsControllerProvider)
         .toggleFavorite(friendId: friend.id, isFavorite: isFavorite)
         .catchError((error) {
+          if (mounted) {
+            setState(() => _favoriteOverrides[friend.id] = previous);
+          }
           if (!context.mounted) return;
           NomoToast.show(context, 'お気に入り設定に失敗しました: $error');
         });
@@ -161,6 +169,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                       friends: friends,
                       userAvatar: user?.avatar ?? NomoAvatar.defaultAvatar,
                       selectedFilter: _selectedFilter,
+                      favoriteOverrides: _favoriteOverrides,
                       onFavoriteToggle: (friend, isFavorite) =>
                           _onToggleFavorite(context, friend, isFavorite),
                       onInvite: (friend) => _sendDrinkInvite(friend),
@@ -321,6 +330,7 @@ class _FriendsList extends StatelessWidget {
     required this.friends,
     required this.userAvatar,
     required this.selectedFilter,
+    required this.favoriteOverrides,
     required this.onFavoriteToggle,
     required this.onInvite,
   });
@@ -329,6 +339,7 @@ class _FriendsList extends StatelessWidget {
   final List<NomoFriend> friends;
   final NomoAvatar userAvatar;
   final _FriendFilterType selectedFilter;
+  final Map<String, bool> favoriteOverrides;
   final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
   final ValueChanged<NomoFriend> onInvite;
 
@@ -338,7 +349,10 @@ class _FriendsList extends StatelessWidget {
     final decorated = [
       for (var i = 0; i < friends.length; i++)
         _DecoratedFriend(
-          friend: friends[i],
+          friend: _friendWithFavorite(
+            friends[i],
+            favoriteOverrides[friends[i].id] ?? friends[i].isFavorite,
+          ),
           status: _statusForFriend(friends[i], i),
           count: _displayCount(friends[i], counts),
         ),
@@ -389,6 +403,24 @@ class _DecoratedFriend {
   final NomoFriend friend;
   final _FriendStatus status;
   final int count;
+}
+
+NomoFriend _friendWithFavorite(NomoFriend friend, bool isFavorite) {
+  if (friend.isFavorite == isFavorite) return friend;
+  return NomoFriend(
+    id: friend.id,
+    name: friend.name,
+    avatarEmoji: friend.avatarEmoji,
+    vibe: friend.vibe,
+    characterAssetPath: friend.characterAssetPath,
+    kind: friend.kind,
+    palette: friend.palette,
+    avatar: friend.avatar,
+    monthlyCount: friend.monthlyCount,
+    statusKey: friend.statusKey,
+    isOnline: friend.isOnline,
+    isFavorite: isFavorite,
+  );
 }
 
 class _EmptyFriendsState extends StatelessWidget {
