@@ -16,18 +16,7 @@ import 'core/widgets/nomo_tab_shell.dart';
 
 const _openingNomoAsset = 'assets/images/opening_nomo.png';
 const _minimumOpeningDuration = Duration(seconds: 1);
-const _openingExitFaceArrivalMs = 620;
-const _openingExitFacePauseMs = 250;
-const _openingExitFinalCollapseMs = 320;
-const _openingExitDurationMs =
-    _openingExitFaceArrivalMs +
-    _openingExitFacePauseMs +
-    _openingExitFinalCollapseMs;
-const _openingExitFaceStopStart =
-    _openingExitFaceArrivalMs / _openingExitDurationMs;
-const _openingExitFaceStopEnd =
-    (_openingExitFaceArrivalMs + _openingExitFacePauseMs) /
-    _openingExitDurationMs;
+const _openingExitDurationMs = 520;
 
 ui.Image? _openingNomoImage;
 
@@ -96,6 +85,7 @@ class _BootstrapGate extends ConsumerStatefulWidget {
 class _BootstrapGateState extends ConsumerState<_BootstrapGate>
     with SingleTickerProviderStateMixin {
   late final AnimationController _openingExitController;
+  late final Animation<double> _openingExitFade;
   bool _openingExitCompleted = false;
 
   @override
@@ -110,6 +100,9 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
             setState(() => _openingExitCompleted = true);
           }
         });
+    _openingExitFade = Tween<double>(begin: 1, end: 0).animate(
+      CurvedAnimation(parent: _openingExitController, curve: Curves.easeOut),
+    );
   }
 
   @override
@@ -162,14 +155,8 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
           children: [
             const NomoTabShell(),
             if (!_openingExitCompleted)
-              AnimatedBuilder(
-                animation: _openingExitController,
-                builder: (context, child) => ClipPath(
-                  clipper: _OpeningCollapseClipper(
-                    progress: _openingExitController.value,
-                  ),
-                  child: child,
-                ),
+              FadeTransition(
+                opacity: _openingExitFade,
                 child: const _StartupScreen(),
               ),
           ],
@@ -183,65 +170,6 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
       ),
     );
   }
-}
-
-class _OpeningCollapseClipper extends CustomClipper<Path> {
-  const _OpeningCollapseClipper({required this.progress});
-
-  final double progress;
-
-  @override
-  Path getClip(Size size) {
-    final eased = Curves.easeInOutCubic.transform(progress.clamp(0, 1));
-    final scale = 1 - eased;
-    if (scale <= 0.001) {
-      return Path();
-    }
-
-    final radius = _openingCollapseRadius(size, progress);
-    return Path()..addOval(
-      Rect.fromCircle(
-        center: Offset(size.width / 2, size.height / 2),
-        radius: radius,
-      ),
-    );
-  }
-
-  @override
-  bool shouldReclip(covariant _OpeningCollapseClipper oldClipper) =>
-      oldClipper.progress != progress;
-}
-
-double _openingCollapseMaxRadius(Size size) {
-  return (Offset(size.width / 2, size.height / 2) - Offset.zero).distance +
-      size.shortestSide * .02;
-}
-
-double _openingCollapseFaceStopRadius(Size size) {
-  return size.shortestSide * .15;
-}
-
-double _openingCollapseRadius(Size size, double rawProgress) {
-  final progress = rawProgress.clamp(0, 1).toDouble();
-  final maxRadius = _openingCollapseMaxRadius(size);
-  final faceStopRadius = _openingCollapseFaceStopRadius(size);
-
-  if (progress <= _openingExitFaceStopStart) {
-    final phase = progress / _openingExitFaceStopStart;
-    return ui.lerpDouble(
-      maxRadius,
-      faceStopRadius,
-      Curves.easeInOutCubic.transform(phase),
-    )!;
-  }
-
-  if (progress <= _openingExitFaceStopEnd) {
-    return faceStopRadius;
-  }
-
-  final phase =
-      (progress - _openingExitFaceStopEnd) / (1 - _openingExitFaceStopEnd);
-  return ui.lerpDouble(faceStopRadius, 0, Curves.easeInCubic.transform(phase))!;
 }
 
 class _StartupScreen extends StatelessWidget {
