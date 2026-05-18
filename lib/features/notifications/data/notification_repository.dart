@@ -17,6 +17,7 @@ class NomoNotification {
     this.actorUserId,
     this.drinkLogId,
     this.friendRequestId,
+    this.friendRequestStatus,
     this.drinkInviteId,
     this.notificationDate,
     this.systemKey,
@@ -31,12 +32,17 @@ class NomoNotification {
   final String? actorUserId;
   final String? drinkLogId;
   final String? friendRequestId;
+  final String? friendRequestStatus;
   final String? drinkInviteId;
   final DateTime? notificationDate;
   final String? systemKey;
 
   factory NomoNotification.fromJson(Map<String, dynamic> json) {
     final createdAtText = json['created_at'] as String?;
+    final friendRequest = json['friend_request'];
+    final friendRequestMap = friendRequest is Map
+        ? Map<String, dynamic>.from(friendRequest)
+        : null;
     return NomoNotification(
       id: json['id'] as String,
       kind: (json['kind'] as String?) ?? 'drink_log_like',
@@ -49,6 +55,7 @@ class NomoNotification {
       actorUserId: json['actor_user_id'] as String?,
       drinkLogId: json['drink_log_id'] as String?,
       friendRequestId: json['friend_request_id'] as String?,
+      friendRequestStatus: friendRequestMap?['status'] as String?,
       drinkInviteId: json['drink_invite_id'] as String?,
       notificationDate: _dateOnly(json['notification_date'] as String?),
       systemKey: json['system_key'] as String?,
@@ -59,6 +66,10 @@ class NomoNotification {
 abstract interface class NotificationRepository {
   Future<List<NomoNotification>> fetchNotifications();
   Future<void> markAllRead();
+  Future<void> updateFriendRequest({
+    required String friendRequestId,
+    required String status,
+  });
 }
 
 class BackendNotificationRepository implements NotificationRepository {
@@ -82,6 +93,16 @@ class BackendNotificationRepository implements NotificationRepository {
   @override
   Future<void> markAllRead() async {
     await _client.patch('/v1/notifications/read-all', const {});
+  }
+
+  @override
+  Future<void> updateFriendRequest({
+    required String friendRequestId,
+    required String status,
+  }) async {
+    await _client.patch('/v1/friend-requests/$friendRequestId', {
+      'status': status,
+    });
   }
 }
 

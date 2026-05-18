@@ -15,6 +15,7 @@ import '../../../core/models/nomo_friend.dart';
 import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
+import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
@@ -1991,6 +1992,9 @@ class _FeedNotificationsScreenState
                           (notification) => _NotificationTile(
                             notification: notification,
                             isWhite: isWhite,
+                            onTap: notification.canOpen
+                                ? () => _openNotification(notification)
+                                : null,
                           ),
                         ),
                     ],
@@ -2003,13 +2007,51 @@ class _FeedNotificationsScreenState
       ),
     );
   }
+
+  Future<void> _openNotification(_FeedNotification notification) async {
+    if (notification.kind != 'friend_request_received') return;
+    final friendRequestId = notification.friendRequestId;
+    if (friendRequestId == null || friendRequestId.isEmpty) {
+      NomoToast.show(context, 'この申請を開けませんでした。もう一度お試しください。');
+      return;
+    }
+
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: .62),
+      builder: (sheetContext) => _FriendRequestNotificationSheet(
+        notification: notification,
+        onAccept: () async {
+          await ref
+              .read(notificationControllerProvider.notifier)
+              .acceptFriendRequest(friendRequestId);
+          ref.invalidate(friendsProvider);
+          ref.invalidate(drinkLogControllerProvider);
+        },
+        onReject: () async {
+          await ref
+              .read(notificationControllerProvider.notifier)
+              .rejectFriendRequest(friendRequestId);
+          ref.invalidate(notificationControllerProvider);
+        },
+      ),
+    );
+  }
 }
 
 class _NotificationTile extends StatelessWidget {
-  const _NotificationTile({required this.notification, required this.isWhite});
+  const _NotificationTile({
+    required this.notification,
+    required this.isWhite,
+    this.onTap,
+  });
 
   final _FeedNotification notification;
   final bool isWhite;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -2029,7 +2071,7 @@ class _NotificationTile extends StatelessWidget {
     final titleColor = isWhite ? const Color(0xFF27313B) : Colors.white;
     final timeColor = isWhite ? const Color(0xFF8B96A3) : _FeedColors.sub;
 
-    return Container(
+    final tile = Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: _feedCardDecoration(radius: 22).copyWith(
@@ -2088,18 +2130,298 @@ class _NotificationTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  notification.timeAgo,
-                  style: TextStyle(
-                    color: timeColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      notification.timeAgo,
+                      style: TextStyle(
+                        color: timeColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    if (notification.actionLabel != null) ...[
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: notification.accent.withValues(
+                                alpha: isWhite ? .14 : .18,
+                              ),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: notification.accent.withValues(
+                                  alpha: isWhite ? .24 : .30,
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              notification.actionLabel!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: notification.accent,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+
+    if (onTap == null) return tile;
+    return Semantics(
+      button: true,
+      label: '${notification.title}を開く',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap!();
+        },
+        child: tile,
+      ),
+    );
+  }
+}
+
+class _FriendRequestNotificationSheet extends StatefulWidget {
+  const _FriendRequestNotificationSheet({
+    required this.notification,
+    required this.onAccept,
+    required this.onReject,
+  });
+
+  final _FeedNotification notification;
+  final Future<void> Function() onAccept;
+  final Future<void> Function() onReject;
+
+  @override
+  State<_FriendRequestNotificationSheet> createState() =>
+      _FriendRequestNotificationSheetState();
+}
+
+class _FriendRequestNotificationSheetState
+    extends State<_FriendRequestNotificationSheet> {
+  String? _busyAction;
+
+  bool get _isPending =>
+      widget.notification.friendRequestStatus == null ||
+      widget.notification.friendRequestStatus == 'pending';
+
+  Future<void> _submit({required bool accept}) async {
+    if (_busyAction != null || !_isPending) return;
+    final action = accept ? 'accept' : 'reject';
+    setState(() => _busyAction = action);
+    try {
+      if (accept) {
+        await widget.onAccept();
+      } else {
+        await widget.onReject();
+      }
+      if (!mounted) return;
+      NomoToast.show(context, accept ? 'フレンズ申請を承認しました' : '申請を見送りました');
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        accept
+            ? '承認できませんでした。時間をおいてもう一度お試しください。'
+            : '見送りできませんでした。時間をおいてもう一度お試しください。',
+      );
+      setState(() => _busyAction = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final statusLabel = switch (widget.notification.friendRequestStatus) {
+      'accepted' => '承認済み',
+      'rejected' => '見送り済み',
+      'cancelled' => '取り消し済み',
+      _ => '承認待ち',
+    };
+
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+        decoration: BoxDecoration(
+          color: const Color(0xFF071622),
+          borderRadius: BorderRadius.circular(34),
+          border: Border.all(color: Colors.white.withValues(alpha: .10)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .32),
+              blurRadius: 30,
+              offset: const Offset(0, 18),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: .22),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                NomoPopIcon(
+                  icon: CupertinoIcons.person_badge_plus_fill,
+                  color: const Color(0xFF58D6FF),
+                  size: 54,
+                  iconSize: 29,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.notification.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.4,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF58D6FF).withValues(alpha: .14),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: const Color(
+                              0xFF58D6FF,
+                            ).withValues(alpha: .26),
+                          ),
+                        ),
+                        child: Text(
+                          statusLabel,
+                          style: const TextStyle(
+                            color: Color(0xFF58D6FF),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                CupertinoButton(
+                  minimumSize: const Size(42, 42),
+                  padding: EdgeInsets.zero,
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const NomoGeneratedIcon(
+                      CupertinoIcons.xmark,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .045),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: Colors.white.withValues(alpha: .08)),
+              ),
+              child: Text(
+                _isPending
+                    ? '${widget.notification.message}\n承認するとフレンズになり、飲みログや飲み予約でつながれます。'
+                    : widget.notification.message,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: .78),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  height: 1.45,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            if (_isPending) ...[
+              Nomo3DButton(
+                label: '承認してフレンズになる',
+                icon: CupertinoIcons.checkmark_seal_fill,
+                onTap: () => _submit(accept: true),
+                isLoading: _busyAction == 'accept',
+                enabled: _busyAction == null,
+                height: 54,
+                radius: 22,
+                color: const Color(0xFF9AF21A),
+                shadowColor: const Color(0xFF5BB716),
+                fontSize: 15,
+              ),
+              const SizedBox(height: 10),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: _busyAction == null
+                    ? () => _submit(accept: false)
+                    : null,
+                child: Text(
+                  _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .60),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ] else
+              Nomo3DButton(
+                label: '閉じる',
+                icon: CupertinoIcons.checkmark_circle_fill,
+                onTap: () => Navigator.of(context).pop(),
+                height: 52,
+                radius: 22,
+                color: const Color(0xFF22D7C5),
+                shadowColor: const Color(0xFF109F91),
+                fontSize: 15,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -2412,16 +2734,20 @@ Color _companionStatusColor(String? statusKey) {
 
 class _FeedNotification {
   const _FeedNotification({
+    required this.kind,
     required this.title,
     required this.message,
     required this.timeAgo,
     required this.icon,
     required this.accent,
     required this.unread,
+    this.friendRequestId,
+    this.friendRequestStatus,
   });
 
   factory _FeedNotification.fromNotification(NomoNotification notification) {
     return _FeedNotification(
+      kind: notification.kind,
       title: notification.title,
       message: notification.message,
       timeAgo: _relativeTimeText(notification.createdAt),
@@ -2448,15 +2774,35 @@ class _FeedNotification {
         _ => _FeedColors.teal,
       },
       unread: notification.isUnread,
+      friendRequestId: notification.friendRequestId,
+      friendRequestStatus: notification.friendRequestStatus,
     );
   }
 
+  final String kind;
   final String title;
   final String message;
   final String timeAgo;
   final IconData icon;
   final Color accent;
   final bool unread;
+  final String? friendRequestId;
+  final String? friendRequestStatus;
+
+  bool get canOpen =>
+      kind == 'friend_request_received' &&
+      friendRequestId != null &&
+      friendRequestId!.isNotEmpty;
+
+  String? get actionLabel {
+    if (kind != 'friend_request_received') return null;
+    return switch (friendRequestStatus) {
+      'accepted' => '承認済み',
+      'rejected' => '見送り済み',
+      'cancelled' => '取り消し済み',
+      _ => 'タップして承認',
+    };
+  }
 }
 
 String _relativeTimeText(DateTime time) {
