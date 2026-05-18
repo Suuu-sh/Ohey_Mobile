@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
@@ -30,7 +29,6 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
   final _friendSearchController = TextEditingController();
   String _friendSearchQuery = '';
   String? _photoPath;
-  String? _photoFilterName;
   bool _isSaving = false;
 
   @override
@@ -84,17 +82,6 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _PhotoPickerCard(
-                            photoPath: _photoPath,
-                            filterName: _photoFilterName,
-                            onCamera: _openNomoCamera,
-                            onGallery: _pickPhotoFromGallery,
-                            onRemove: () => setState(() {
-                              _photoPath = null;
-                              _photoFilterName = null;
-                            }),
-                          ),
-                          const SizedBox(height: 14),
                           _DateTimeBox(
                             icon: CupertinoIcons.calendar,
                             iconColor: _AddLogColors.calendarIcon,
@@ -172,13 +159,10 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                   ),
                   const SizedBox(height: 18),
                   _SaveButton(
-                    hasPhoto: _hasPhoto,
                     isSaving: _isSaving,
-                    onPressed: _hasPhoto
-                        ? () => _save(
-                            friendsAsync.asData?.value ?? const <NomoFriend>[],
-                          )
-                        : _promptPhoto,
+                    onPressed: () => _save(
+                      friendsAsync.asData?.value ?? const <NomoFriend>[],
+                    ),
                   ),
                 ],
               ),
@@ -212,36 +196,18 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
 
   bool get _hasPhoto => _photoPath != null && _photoPath!.trim().isNotEmpty;
 
-  Future<void> _promptPhoto() async {
-    NomoToast.show(context, '飲みログには写真が必須です。まず写真を撮るか、撮影済みの写真を選んでください。');
-    await _openNomoCamera();
-  }
-
-  Future<void> _openNomoCamera() async {
+  Future<bool> _openNomoCamera() async {
     final result = await Navigator.of(context).push<NomoCameraResult>(
       CupertinoPageRoute(
         fullscreenDialog: true,
         builder: (_) => const NomoCameraScreen(returnPhoto: true),
       ),
     );
-    if (result == null || !mounted) return;
+    if (result == null || !mounted) return false;
     setState(() {
       _photoPath = result.path;
-      _photoFilterName = result.filterName;
     });
-  }
-
-  Future<void> _pickPhotoFromGallery() async {
-    final picked = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 88,
-      maxWidth: 1600,
-    );
-    if (picked == null || !mounted) return;
-    setState(() {
-      _photoPath = picked.path;
-      _photoFilterName = 'Album';
-    });
+    return true;
   }
 
   Future<void> _pickDate() async {
@@ -276,8 +242,8 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
 
   Future<void> _save(List<NomoFriend> friends) async {
     if (!_hasPhoto) {
-      await _promptPhoto();
-      return;
+      final hasCapturedPhoto = await _openNomoCamera();
+      if (!hasCapturedPhoto || !mounted) return;
     }
     setState(() => _isSaving = true);
     final selectedFriends = friends
@@ -707,239 +673,6 @@ class _DateTimeBox extends StatelessWidget {
   );
 }
 
-class _PhotoPickerCard extends StatelessWidget {
-  const _PhotoPickerCard({
-    required this.photoPath,
-    required this.filterName,
-    required this.onCamera,
-    required this.onGallery,
-    required this.onRemove,
-  });
-
-  final String? photoPath;
-  final String? filterName;
-  final VoidCallback onCamera;
-  final VoidCallback onGallery;
-  final VoidCallback onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    final path = photoPath;
-    final primaryText = _AddLogColors.primaryTextFor(context);
-    final secondaryText = _AddLogColors.secondaryTextFor(context);
-    return _DarkShell(
-      padding: const EdgeInsets.all(12),
-      child: path == null || path.isEmpty
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  height: 176,
-                  decoration: BoxDecoration(
-                    color: _AddLogColors.insetSurfaceFor(context),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color: _AddLogColors.cameraIcon.withValues(alpha: .34),
-                      width: 1.4,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      NomoPopIcon(
-                        icon: CupertinoIcons.camera_fill,
-                        color: _AddLogColors.cameraIcon,
-                        size: 64,
-                        iconSize: 34,
-                        shadow: false,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '写真が主役の飲みログ',
-                        style: TextStyle(
-                          color: primaryText,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 17,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        '最後に必ず1枚セットしてください',
-                        style: TextStyle(
-                          color: secondaryText,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _PhotoActionButton(
-                        icon: CupertinoIcons.camera_fill,
-                        label: '今すぐ撮影',
-                        subtitle: '決定ボタンからも起動',
-                        color: _AddLogColors.cameraIcon,
-                        onTap: onCamera,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _PhotoActionButton(
-                        icon: CupertinoIcons.photo_fill_on_rectangle_fill,
-                        label: '撮影済みを選ぶ',
-                        subtitle: 'アルバムから1枚',
-                        color: _AddLogColors.photoIcon,
-                        onTap: onGallery,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(22),
-                  child: Image.file(
-                    File(path),
-                    height: 220,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '写真をセット済み',
-                            style: TextStyle(
-                              color: primaryText,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            filterName == null
-                                ? 'Nomo Photo'
-                                : '$filterName filter',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: secondaryText,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    TextButton.icon(
-                      onPressed: onGallery,
-                      icon: const NomoGeneratedIcon(
-                        CupertinoIcons.photo_fill_on_rectangle_fill,
-                        color: _AddLogColors.photoIcon,
-                        size: 18,
-                      ),
-                      label: const Text('差し替え'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: primaryText,
-                        textStyle: const TextStyle(fontWeight: FontWeight.w900),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: onRemove,
-                      icon: const NomoGeneratedIcon(
-                        CupertinoIcons.xmark_circle_fill,
-                        color: _AddLogColors.clearIcon,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-    );
-  }
-}
-
-class _PhotoActionButton extends StatelessWidget {
-  const _PhotoActionButton({
-    required this.icon,
-    required this.label,
-    required this.subtitle,
-    required this.color,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final String subtitle;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-      decoration: BoxDecoration(
-        color: _AddLogColors.insetSurfaceFor(context),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: _AddLogColors.lineFor(context)),
-      ),
-      child: Row(
-        children: [
-          NomoPopIcon(
-            icon: icon,
-            color: color,
-            size: 36,
-            iconSize: 20,
-            shadow: false,
-          ),
-          const SizedBox(width: 9),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: _AddLogColors.primaryTextFor(context),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: _AddLogColors.secondaryTextFor(context),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
 class _DarkShell extends StatelessWidget {
   const _DarkShell({
     required this.child,
@@ -976,26 +709,21 @@ class _DarkShell extends StatelessWidget {
 }
 
 class _SaveButton extends StatelessWidget {
-  const _SaveButton({
-    required this.hasPhoto,
-    required this.isSaving,
-    required this.onPressed,
-  });
+  const _SaveButton({required this.isSaving, required this.onPressed});
 
-  final bool hasPhoto;
   final bool isSaving;
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) => Nomo3DButton(
-    label: hasPhoto ? '写真つきで飲みログを残す' : '写真を撮って決定',
+    label: '飲みログを残す',
     isLoading: isSaving,
     enabled: onPressed != null,
     onTap: onPressed,
     height: 56,
     radius: 22,
-    color: hasPhoto ? const Color(0xFF35DCC4) : _AddLogColors.photoIcon,
-    shadowColor: hasPhoto ? const Color(0xFF35DCC4) : _AddLogColors.photoIcon,
+    color: const Color(0xFF35DCC4),
+    shadowColor: const Color(0xFF35DCC4),
     fontSize: 15,
     useGradient: false,
   );
@@ -1043,7 +771,6 @@ class _AddLogColors {
   static const lightSubText = Color(0xFF72808D);
   static const lightMuted = Color(0xFF8A96A3);
   static const lightLine = Color(0xFFE0E7EF);
-  static const lightInset = Color(0xFFF8FAFC);
   static const panel = Color(0xFF08131A);
   static const surface = Color(0xFF14212B);
   static const muted = Color(0xFF99A3AE);
@@ -1052,8 +779,6 @@ class _AddLogColors {
   static const searchIcon = Color(0xFFFFD166);
   static const clearIcon = Color(0xFFFF8AB3);
   static const calendarIcon = Color(0xFF9F7BFF);
-  static const cameraIcon = Color(0xFF35DCC4);
-  static const photoIcon = Color(0xFFFFD166);
   static const impressionIcon = Color(0xFFFF8AB3);
   static const friendAddIcon = Color(0xFF4CD964);
   static const friendRemoveIcon = Color(0xFFFF5F8F);
@@ -1067,9 +792,6 @@ class _AddLogColors {
 
   static Color surfaceFor(BuildContext context) =>
       isWhite(context) ? Colors.white : surface;
-
-  static Color insetSurfaceFor(BuildContext context) =>
-      isWhite(context) ? lightInset : Colors.white.withValues(alpha: .045);
 
   static Color lineFor(BuildContext context) =>
       isWhite(context) ? lightLine : line;
