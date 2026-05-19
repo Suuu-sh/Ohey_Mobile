@@ -17,6 +17,7 @@
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		A90000000000000000000002 /* NomoWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A90000000000000000000001 /* NomoWidgets.swift */; };
 		A90000000000000000000007 /* NomoWidgetsExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A90000000000000000000006 /* NomoWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B10000000000000000000002 /* NomoArAvatarCameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* NomoArAvatarCameraView.swift */; };
 		B144C745E088A1CCD00D1D68 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1452E07B482E90AFCE18C63B /* Pods_RunnerTests.framework */; };
 		FDC0B1A6D71458898F34AF49 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4AB8111CA5C58D9AE4B6CDA /* Pods_Runner.framework */; };
 /* End PBXBuildFile section */
@@ -89,6 +90,7 @@
 		A90000000000000000000004 /* NomoWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NomoWidgets.entitlements; sourceTree = "<group>"; };
 		A90000000000000000000005 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		A90000000000000000000006 /* NomoWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NomoWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000001 /* NomoArAvatarCameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomoArAvatarCameraView.swift; sourceTree = "<group>"; };
 		BA469E506A65B71BE3F98796 /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 		C4AB8111CA5C58D9AE4B6CDA /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE70147EA3359CF274CE401D /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -188,6 +190,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */,
+				B10000000000000000000001 /* NomoArAvatarCameraView.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				A90000000000000000000005 /* Runner.entitlements */,
 			);
@@ -476,6 +479,7 @@
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */,
+				B10000000000000000000002 /* NomoArAvatarCameraView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

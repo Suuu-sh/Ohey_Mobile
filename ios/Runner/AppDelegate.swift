@@ -7,12 +7,14 @@ import WidgetKit
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var qrSaverChannel: FlutterMethodChannel?
   private var widgetSyncChannel: FlutterMethodChannel?
+  private var didRegisterArAvatarCameraViewFactory = false
   private let widgetAppGroupIdentifier = "group.app.nomo.nomo"
 
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    registerArAvatarCameraViewFactory()
     if let controller = window?.rootViewController as? FlutterViewController {
       registerQrSaverChannel(on: controller.binaryMessenger)
       registerWidgetSyncChannel(on: controller.binaryMessenger)
@@ -28,6 +30,25 @@ import WidgetKit
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoWidgetSync") {
       registerWidgetSyncChannel(on: registrar.messenger())
     }
+    if !didRegisterArAvatarCameraViewFactory,
+       let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoArAvatarCamera") {
+      registerArAvatarCameraViewFactory(with: registrar)
+    }
+  }
+
+  private func registerArAvatarCameraViewFactory() {
+    guard !didRegisterArAvatarCameraViewFactory else { return }
+    guard let registrar = registrar(forPlugin: "NomoArAvatarCamera") else { return }
+    registerArAvatarCameraViewFactory(with: registrar)
+  }
+
+  private func registerArAvatarCameraViewFactory(with registrar: FlutterPluginRegistrar) {
+    guard !didRegisterArAvatarCameraViewFactory else { return }
+    didRegisterArAvatarCameraViewFactory = true
+    registrar.register(
+      NomoArAvatarCameraFactory(messenger: registrar.messenger()),
+      withId: "nomo/ar_avatar_camera"
+    )
   }
 
   private func registerQrSaverChannel(on messenger: FlutterBinaryMessenger) {

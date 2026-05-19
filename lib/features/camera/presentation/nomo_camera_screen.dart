@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/application/nomo_user_controller.dart';
+import '../../../core/models/nomo_avatar.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
 
@@ -14,25 +20,31 @@ class NomoCameraResult {
   final String filterName;
 }
 
-class NomoCameraScreen extends StatefulWidget {
+class NomoCameraScreen extends ConsumerStatefulWidget {
   const NomoCameraScreen({super.key, this.returnPhoto = false});
 
   final bool returnPhoto;
 
   @override
-  State<NomoCameraScreen> createState() => _NomoCameraScreenState();
+  ConsumerState<NomoCameraScreen> createState() => _NomoCameraScreenState();
 }
 
-class _NomoCameraScreenState extends State<NomoCameraScreen> {
+class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
   static const _plainFilterName = 'Original';
+  static const _avatarFilterName = 'Nomo AR Avatar';
 
   CameraController? _cameraController;
+  _ArAvatarCameraController? _arCameraController;
   List<CameraDescription> _cameras = const [];
   int _cameraIndex = 0;
   bool _isCapturing = false;
   bool _isInitializingCamera = true;
+  late bool _useArAvatarFilter = _canUseArAvatarFilter;
   bool _showStoryPreview = false;
   bool _isClosing = false;
+
+  bool get _canUseArAvatarFilter =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 
   @override
   void initState() {
@@ -41,13 +53,18 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    _initializeCamera();
+    if (_useArAvatarFilter) {
+      _isInitializingCamera = false;
+    } else {
+      _initializeCamera();
+    }
   }
 
   @override
   void dispose() {
     _restorePortraitOrientation();
     _cameraController?.dispose();
+    _arCameraController = null;
     super.dispose();
   }
 
@@ -131,6 +148,9 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final avatar =
+        ref.watch(nomoUserProvider)?.avatar ?? NomoAvatar.defaultAvatar;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -146,7 +166,13 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
               showStoryPreview: _showStoryPreview,
               onClose: _closeCamera,
               cameraController: _cameraController,
+              useArAvatarFilter: _useArAvatarFilter,
+              avatar: avatar,
               isInitializingCamera: _isInitializingCamera,
+              onArViewCreated: _handleArViewCreated,
+              onToggleFilter: _canUseArAvatarFilter
+                  ? () => _setAvatarFilterEnabled(!_useArAvatarFilter)
+                  : null,
               onBackToCamera: () => setState(() => _showStoryPreview = false),
             ),
             Positioned(
@@ -171,6 +197,11 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
 
   Future<void> _capture() async {
     if (_isCapturing) return;
+    if (_useArAvatarFilter) {
+      await _captureArAvatar();
+      return;
+    }
+
     final controller = _cameraController;
     if (controller == null || !controller.value.isInitialized) {
       _showSnack('カメラの準備中です。');
@@ -195,9 +226,80 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
     }
   }
 
+  Future<void> _captureArAvatar() async {
+    final controller = _arCameraController;
+    if (controller == null) {
+      _showSnack('ARカメラの準備中です。');
+      return;
+    }
+
+    setState(() => _isCapturing = true);
+    try {
+      final path = await controller.capture();
+      if (!mounted) return;
+      if (!widget.returnPhoto) {
+        setState(() => _showStoryPreview = true);
+        return;
+      }
+      await _closeCamera(
+        NomoCameraResult(path: path, filterName: _avatarFilterName),
+      );
+    } on PlatformException catch (error) {
+      if (mounted) _showSnack(error.message ?? 'AR写真を撮影できませんでした。');
+    } catch (_) {
+      if (mounted) _showSnack('AR写真を撮影できませんでした。');
+    } finally {
+      if (mounted) setState(() => _isCapturing = false);
+    }
+  }
+
   Future<void> _flipCamera() async {
+    if (_useArAvatarFilter) {
+      _showSnack('Nomo ARアバターは前面カメラ専用です。');
+      return;
+    }
     if (_cameras.length < 2 || _isInitializingCamera) return;
     await _initializeCamera(cameraIndex: (_cameraIndex + 1) % _cameras.length);
+  }
+
+  void _handleArViewCreated(_ArAvatarCameraController controller) {
+    _arCameraController = controller;
+    unawaited(_fallbackToPlainCameraIfArUnsupported(controller));
+  }
+
+  Future<void> _fallbackToPlainCameraIfArUnsupported(
+    _ArAvatarCameraController controller,
+  ) async {
+    final isSupported = await controller.isSupported();
+    if (!mounted || controller != _arCameraController || !_useArAvatarFilter) {
+      return;
+    }
+    if (isSupported) return;
+    _showSnack('この端末ではARアバターを使えないため、通常カメラに切り替えます。');
+    await _setAvatarFilterEnabled(false);
+  }
+
+  Future<void> _setAvatarFilterEnabled(bool enabled) async {
+    if (!_canUseArAvatarFilter && enabled) return;
+    if (_useArAvatarFilter == enabled) return;
+
+    setState(() {
+      _useArAvatarFilter = enabled;
+      _showStoryPreview = false;
+      _isInitializingCamera = !enabled;
+    });
+
+    if (enabled) {
+      _arCameraController = null;
+      final previous = _cameraController;
+      _cameraController = null;
+      await previous?.dispose();
+      if (mounted) setState(() => _isInitializingCamera = false);
+      return;
+    }
+
+    _arCameraController = null;
+    await _initializeCamera();
   }
 
   Future<void> _pickFromAlbum() async {
@@ -242,14 +344,22 @@ class _CameraPreviewStage extends StatelessWidget {
   const _CameraPreviewStage({
     required this.showStoryPreview,
     required this.cameraController,
+    required this.useArAvatarFilter,
+    required this.avatar,
     required this.isInitializingCamera,
+    required this.onArViewCreated,
+    required this.onToggleFilter,
     required this.onClose,
     required this.onBackToCamera,
   });
 
   final bool showStoryPreview;
   final CameraController? cameraController;
+  final bool useArAvatarFilter;
+  final NomoAvatar avatar;
   final bool isInitializingCamera;
+  final ValueChanged<_ArAvatarCameraController> onArViewCreated;
+  final VoidCallback? onToggleFilter;
   final VoidCallback onClose;
   final VoidCallback onBackToCamera;
 
@@ -260,12 +370,20 @@ class _CameraPreviewStage extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          _LiveCameraBackground(
-            controller: cameraController,
-            isInitializing: isInitializingCamera,
-          ),
+          if (useArAvatarFilter)
+            _ArAvatarCameraView(avatar: avatar, onCreated: onArViewCreated)
+          else
+            _LiveCameraBackground(
+              controller: cameraController,
+              isInitializing: isInitializingCamera,
+            ),
           if (showStoryPreview) _StoryPreviewOverlay(onClose: onBackToCamera),
           _TopCameraControls(onClose: onClose),
+          if (onToggleFilter != null)
+            _FilterToggleButton(
+              isAvatarFilterEnabled: useArAvatarFilter,
+              onTap: onToggleFilter!,
+            ),
         ],
       ),
     );
@@ -304,6 +422,78 @@ class _PlainCameraPreview extends StatelessWidget {
     return Center(child: CameraPreview(controller));
   }
 }
+
+class _ArAvatarCameraView extends StatefulWidget {
+  const _ArAvatarCameraView({required this.avatar, required this.onCreated});
+
+  final NomoAvatar avatar;
+  final ValueChanged<_ArAvatarCameraController> onCreated;
+
+  @override
+  State<_ArAvatarCameraView> createState() => _ArAvatarCameraViewState();
+}
+
+class _ArAvatarCameraViewState extends State<_ArAvatarCameraView> {
+  _ArAvatarCameraController? _controller;
+
+  @override
+  void didUpdateWidget(covariant _ArAvatarCameraView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.avatar.encode() != widget.avatar.encode()) {
+      unawaited(_controller?.setAvatar(widget.avatar));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return UiKitView(
+      viewType: 'nomo/ar_avatar_camera',
+      creationParams: {'avatar': _avatarPayload(widget.avatar)},
+      creationParamsCodec: const StandardMessageCodec(),
+      onPlatformViewCreated: (viewId) {
+        final controller = _ArAvatarCameraController(viewId);
+        _controller = controller;
+        widget.onCreated(controller);
+      },
+    );
+  }
+}
+
+class _ArAvatarCameraController {
+  _ArAvatarCameraController(int viewId)
+    : _channel = MethodChannel('nomo/ar_avatar_camera_$viewId');
+
+  final MethodChannel _channel;
+
+  Future<bool> isSupported() async {
+    return await _channel.invokeMethod<bool>('isSupported') ?? false;
+  }
+
+  Future<void> setAvatar(NomoAvatar avatar) {
+    return _channel.invokeMethod<void>('setAvatar', _avatarPayload(avatar));
+  }
+
+  Future<String> capture() async {
+    final path = await _channel.invokeMethod<String>('capture');
+    if (path == null || path.trim().isEmpty) {
+      throw PlatformException(
+        code: 'empty_snapshot_path',
+        message: 'AR写真を書き出せませんでした。',
+      );
+    }
+    return path;
+  }
+}
+
+Map<String, Object?> _avatarPayload(NomoAvatar avatar) => {
+  'skin': avatar.skin,
+  'hair': avatar.hair,
+  'shirt': avatar.shirt,
+  'eyes': avatar.eyes,
+  'mouth': avatar.mouth,
+  'accessory': avatar.accessory,
+  'isAdmin': avatar.isAdmin,
+};
 
 class _CameraUnavailablePlaceholder extends StatelessWidget {
   const _CameraUnavailablePlaceholder({required this.isInitializing});
@@ -344,6 +534,73 @@ class _TopCameraControls extends StatelessWidget {
         icon: CupertinoIcons.chevron_left,
         semanticLabel: '戻る',
         onTap: onClose,
+      ),
+    );
+  }
+}
+
+class _FilterToggleButton extends StatelessWidget {
+  const _FilterToggleButton({
+    required this.isAvatarFilterEnabled,
+    required this.onTap,
+  });
+
+  final bool isAvatarFilterEnabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      right: 24,
+      top: MediaQuery.paddingOf(context).top + 16,
+      child: Semantics(
+        button: true,
+        label: isAvatarFilterEnabled ? '通常カメラに切り替え' : 'ARアバターフィルターに切り替え',
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            decoration: BoxDecoration(
+              color: isAvatarFilterEnabled
+                  ? const Color(0xFFFF4FA2).withValues(alpha: .92)
+                  : Colors.black.withValues(alpha: .42),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: Colors.white.withValues(alpha: .34)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .32),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                NomoGeneratedIcon(
+                  isAvatarFilterEnabled
+                      ? CupertinoIcons.person_crop_circle_fill
+                      : CupertinoIcons.sparkles,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 7),
+                Text(
+                  isAvatarFilterEnabled ? 'Nomo AR' : 'Original',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: .2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
