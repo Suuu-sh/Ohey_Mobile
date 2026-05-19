@@ -58,7 +58,7 @@ void main() {
     await tester.tap(find.text('次へ'));
     await tester.pumpAndSettle();
 
-    expect(find.text('プロフィール作成'), findsOneWidget);
+    expect(find.text('プロフィールを作成して\nください'), findsOneWidget);
     expect(find.text('アバターを作る'), findsOneWidget);
     expect(find.text('ユーザー作成'), findsOneWidget);
   });
