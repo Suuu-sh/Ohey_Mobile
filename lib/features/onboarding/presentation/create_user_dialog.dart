@@ -530,10 +530,17 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final compact = constraints.maxHeight < 760;
+        final hasMessage = _error != null || _notice != null;
+        final compact = constraints.maxHeight < 760 || hasMessage;
         final fieldHeight = compact ? 56.0 : 64.0;
         final buttonHeight = compact ? 56.0 : 64.0;
-        final socialHeight = compact ? 50.0 : 64.0;
+        final socialHeight = compact ? 48.0 : 64.0;
+        final headingGap = compact ? 24.0 : 64.0;
+        final inputGap = compact ? 24.0 : 42.0;
+        final buttonGap = compact ? 22.0 : 42.0;
+        final forgotGap = compact ? 8.0 : 22.0;
+        final socialGap = compact ? 8.0 : 14.0;
+        final termsGap = compact ? 8.0 : 24.0;
         return _fixedAuthPage(
           constraints: constraints,
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
@@ -544,18 +551,18 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                 progress: isEmailStep ? .48 : .76,
                 onBack: _isBusy ? null : _handleLoginBack,
               ),
-              SizedBox(height: compact ? 34 : 64),
+              SizedBox(height: headingGap),
               Text(
                 isEmailStep ? 'メールアドレスを入力して\nください' : 'パスワードを入力してください',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: compact ? 27 : 28,
+                  fontSize: compact ? 26 : 28,
                   fontWeight: FontWeight.w900,
                   height: 1.18,
                   letterSpacing: -.8,
                 ),
               ),
-              SizedBox(height: compact ? 28 : 42),
+              SizedBox(height: inputGap),
               _SignupInputBox(
                 child: _PlainLoginTextField(
                   controller: isEmailStep
@@ -599,7 +606,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                         ),
                 ),
               ),
-              SizedBox(height: compact ? 24 : 42),
+              SizedBox(height: buttonGap),
               _SignupStepButton(
                 label: isEmailStep ? '次へ' : 'ログイン',
                 height: buttonHeight,
@@ -618,9 +625,9 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                 _DarkMessageText(_notice!),
               ],
               if (!isEmailStep) ...[
-                SizedBox(height: compact ? 10 : 22),
+                SizedBox(height: forgotGap),
                 SizedBox(
-                  height: compact ? 38 : 44,
+                  height: compact ? 34 : 44,
                   child: TextButton(
                     onPressed: _isBusy ? null : _sendPasswordResetEmail,
                     child: const Text(
@@ -641,20 +648,20 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                 mark: const _GoogleMark(),
                 onTap: () => _showComingSoonSnack('Googleログインは今後対応予定です。'),
               ),
-              SizedBox(height: compact ? 10 : 14),
+              SizedBox(height: socialGap),
               _SocialLoginButton(
                 label: 'APPLEでログイン',
                 height: socialHeight,
                 mark: const _AppleMark(),
                 onTap: () => _showComingSoonSnack('Appleログインは今後対応予定です。'),
               ),
-              SizedBox(height: compact ? 12 : 24),
+              SizedBox(height: termsGap),
               Text(
                 'ログインするとNomoの利用規約とプライバシー\nポリシーに同意したことになります。',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: .82),
-                  fontSize: compact ? 13 : 14,
+                  fontSize: compact ? 12 : 14,
                   fontWeight: FontWeight.w800,
                   height: 1.45,
                 ),
@@ -1095,7 +1102,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _error = 'ログインに失敗しました: $e');
+        setState(() => _error = _friendlyUnexpectedAuthError(e));
       }
     } finally {
       if (mounted) setState(() => _isBusy = false);
@@ -1243,6 +1250,18 @@ String _friendlyAuthError(String message) {
     return 'メール確認がまだです。確認メールのリンクを開いてからログインしてください。';
   }
   return message;
+}
+
+String _friendlyUnexpectedAuthError(Object error) {
+  final message = error.toString();
+  final lower = message.toLowerCase();
+  if (lower.contains('socketexception') ||
+      lower.contains('connection refused') ||
+      lower.contains('failed host lookup') ||
+      lower.contains('connection timed out')) {
+    return 'サーバーに接続できませんでした。通信環境を確認して、もう一度お試しください。';
+  }
+  return 'ログインに失敗しました。時間をおいてもう一度お試しください。';
 }
 
 Widget _fixedAuthPage({
