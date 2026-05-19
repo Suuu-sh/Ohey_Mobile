@@ -18,6 +18,17 @@ class NomoAvatarView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (avatar.isAdmin) {
+      return ClipOval(
+        child: Image.asset(
+          'assets/images/admin_nomo_icon.png',
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
     return SizedBox(
       width: size,
       height: size,

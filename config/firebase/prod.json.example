@@ -1,0 +1,15 @@
+{
+  "NOMO_ENV": "prod",
+  "NOMO_BACKEND_URL": "https://nomo-backend-nezf.onrender.com",
+  "SUPABASE_URL": "replace_with_prod_supabase_url",
+  "SUPABASE_PUBLISHABLE_KEY": "replace_with_prod_publishable_key",
+  "SUPABASE_AUTH_REDIRECT_URL": "app.nomo.nomo://login-callback/",
+  "FIREBASE_MESSAGING_SENDER_ID": "replace_with_prod_sender_id",
+  "FIREBASE_PROJECT_ID": "replace_with_prod_project_id",
+  "FIREBASE_STORAGE_BUCKET": "replace_with_prod_storage_bucket",
+  "FIREBASE_IOS_BUNDLE_ID": "app.nomo.nomo",
+  "FIREBASE_IOS_API_KEY": "replace_with_prod_ios_firebase_api_key",
+  "FIREBASE_ANDROID_API_KEY": "replace_with_prod_android_firebase_api_key",
+  "FIREBASE_IOS_APP_ID": "replace_with_prod_ios_firebase_app_id",
+  "FIREBASE_ANDROID_APP_ID": "replace_with_prod_android_firebase_app_id"
+}

@@ -10,6 +10,7 @@ class NomoAvatar {
     required this.eyes,
     required this.mouth,
     required this.accessory,
+    this.isAdmin = false,
   });
 
   final int skin;
@@ -18,6 +19,7 @@ class NomoAvatar {
   final int eyes;
   final int mouth;
   final int accessory;
+  final bool isAdmin;
 
   static const defaultAvatar = NomoAvatar(
     skin: 2,
@@ -27,6 +29,20 @@ class NomoAvatar {
     mouth: 0,
     accessory: 0,
   );
+
+  /// Admin-only mascot avatar used for the signed-in owner account.
+  static const adminAvatar = NomoAvatar(
+    skin: 5,
+    hair: 5,
+    shirt: 9,
+    eyes: 2,
+    mouth: 1,
+    accessory: 1,
+    isAdmin: true,
+  );
+
+  static bool isAdminEmail(String? email) =>
+      (email ?? '').trim().toLowerCase() == 'yisshiki39@gmail.com';
 
   static NomoAvatar random() {
     final random = Random();
@@ -40,10 +56,14 @@ class NomoAvatar {
     );
   }
 
-  String encode() =>
-      'nomo_avatar:v1:$skin:$hair:$shirt:$eyes:$mouth:$accessory';
+  String encode() => isAdmin
+      ? 'nomo_avatar:admin:v1'
+      : 'nomo_avatar:v1:$skin:$hair:$shirt:$eyes:$mouth:$accessory';
 
-  static NomoAvatar? decode(String? value) {
+  static NomoAvatar? decode(String? value, {bool allowAdmin = false}) {
+    if (value == 'nomo_avatar:admin:v1') {
+      return allowAdmin ? adminAvatar : null;
+    }
     if (value == null || !value.startsWith('nomo_avatar:v1:')) return null;
     final parts = value.split(':');
     if (parts.length != 8) return null;
@@ -77,6 +97,7 @@ class NomoAvatar {
       eyes: eyes ?? this.eyes,
       mouth: mouth ?? this.mouth,
       accessory: accessory ?? this.accessory,
+      isAdmin: isAdmin,
     );
   }
 

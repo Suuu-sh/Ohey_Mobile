@@ -652,6 +652,7 @@ Future<void> _showPostSheet(
   final placeController = TextEditingController(text: log?.placeName ?? '');
   final memoController = TextEditingController(text: log?.memo ?? '');
   final linkController = TextEditingController(text: log?.linkUrl ?? '');
+  final photoController = TextEditingController(text: log?.photoPath ?? '');
   final ownerController = TextEditingController(text: log?.ownerUserId ?? '');
   var ownerUserId = log != null && !log.isOfficial
       ? log.ownerUserId
@@ -715,6 +716,12 @@ Future<void> _showPostSheet(
                   label: 'リンクURL（任意・公式投稿の詳しく見る）',
                   keyboardType: TextInputType.url,
                 ),
+                const SizedBox(height: 10),
+                _AdminInput(
+                  controller: photoController,
+                  label: '画像URL/アセットパス（任意・公式投稿の画像）',
+                  keyboardType: TextInputType.url,
+                ),
                 if (error != null) ...[
                   const SizedBox(height: 10),
                   Text(
@@ -743,6 +750,7 @@ Future<void> _showPostSheet(
                               placeName: placeController.text.trim(),
                               memo: memoController.text.trim(),
                               linkUrl: linkController.text.trim(),
+                              photoPath: photoController.text.trim(),
                               isOfficial: isOfficial,
                             );
                       } else {
@@ -754,6 +762,7 @@ Future<void> _showPostSheet(
                               placeName: placeController.text.trim(),
                               memo: memoController.text.trim(),
                               linkUrl: linkController.text.trim(),
+                              photoPath: photoController.text.trim(),
                               isOfficial: isOfficial,
                             );
                       }
@@ -790,6 +799,7 @@ Future<void> _showPostSheet(
     placeController.dispose();
     memoController.dispose();
     linkController.dispose();
+    photoController.dispose();
   }
 }
 
