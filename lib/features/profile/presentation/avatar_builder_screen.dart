@@ -283,8 +283,77 @@ class _Header extends StatelessWidget {
             ),
           ),
         ),
-        TextButton(onPressed: onDone, child: const Text('保存')),
+        _SaveAvatarButton(onTap: onDone),
       ],
+    ),
+  );
+}
+
+class _SaveAvatarButton extends StatelessWidget {
+  const _SaveAvatarButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      height: 46,
+      padding: const EdgeInsets.fromLTRB(14, 0, 16, 0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF21E0C2), Color(0xFF12C9A4)],
+        ),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: .86),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF12C9A4).withValues(alpha: .28),
+            blurRadius: 18,
+            offset: const Offset(0, 9),
+          ),
+          const BoxShadow(
+            color: Color(0xFF079078),
+            blurRadius: 0,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: .24),
+              shape: BoxShape.circle,
+            ),
+            child: const Center(
+              child: NomoGeneratedIcon(
+                CupertinoIcons.checkmark,
+                color: Colors.white,
+                size: 17,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Text(
+            '保存',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              letterSpacing: .2,
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }
