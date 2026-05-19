@@ -73,3 +73,45 @@ flutter test
 The app initializes `supabase_flutter` on startup. Local debug runs default to the `dev-nomo` Supabase project through `/Users/yota/Projects/Products/Nomo/Mobile/lib/core/config/supabase_config.dart`.
 
 Override environment values with `--dart-define` for production/release builds. See `/Users/yota/Projects/Products/Nomo/Mobile/docs/supabase_nomo.md`.
+
+
+## Firebase/FCM dev and prod setup
+
+Nomo supports separate Firebase values for dev and prod. Keep filled config files out of git.
+
+Recommended Firebase apps:
+
+- dev iOS bundle ID: `app.nomo.nomo.dev`
+- prod iOS bundle ID: `app.nomo.nomo`
+- dev Android application ID: `app.nomo.nomo.dev`
+- prod Android application ID: `app.nomo.nomo`
+
+Prepare local dart-define files:
+
+```sh
+cp config/firebase/dev.json.example config/firebase/dev.json
+cp config/firebase/prod.json.example config/firebase/prod.json
+# Fill FIREBASE_* / SUPABASE_* values from Firebase and Supabase.
+```
+
+Run dev builds with:
+
+```sh
+flutter run --dart-define-from-file=config/firebase/dev.json
+```
+
+Run prod/TestFlight values with:
+
+```sh
+flutter build ios --release --dart-define-from-file=config/firebase/prod.json
+flutter build appbundle --flavor prod --dart-define-from-file=config/firebase/prod.json
+```
+
+If you prefer native Firebase config files instead of dart-defines, place them at:
+
+- `ios/firebase/dev/GoogleService-Info.plist`
+- `ios/firebase/prod/GoogleService-Info.plist`
+- `android/app/src/dev/google-services.json`
+- `android/app/src/prod/google-services.json`
+
+The backend also needs matching environment-specific `FCM_SERVICE_ACCOUNT_JSON` values. Store operational copies under `/Users/yota/Projects/Secrets/Nomo` and set them in the dev/prod backend environments.
