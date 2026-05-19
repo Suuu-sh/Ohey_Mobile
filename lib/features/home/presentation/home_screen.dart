@@ -1616,8 +1616,8 @@ class _OfficialVerifiedBadge extends StatelessWidget {
       child: Semantics(
         label: '公式アカウント',
         child: SizedBox(
-          width: 24,
-          height: 24,
+          width: 19,
+          height: 19,
           child: Stack(
             alignment: Alignment.center,
             children: const [
@@ -1627,7 +1627,7 @@ class _OfficialVerifiedBadge extends StatelessWidget {
               Icon(
                 CupertinoIcons.checkmark_alt,
                 color: Colors.white,
-                size: 15,
+                size: 12,
                 weight: 900,
               ),
             ],
@@ -1648,7 +1648,7 @@ class _VerifiedBadgeSeal extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final bounds = Offset.zero & size;
-    final seal = _sealPath(size, inset: size.shortestSide * .095);
+    final seal = _sealPath(size, inset: size.shortestSide * .14);
     final shadow = Paint()
       ..color = _pink.withValues(alpha: .34)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
@@ -1657,7 +1657,7 @@ class _VerifiedBadgeSeal extends CustomPainter {
     final outer = Paint()
       ..color = Colors.white.withValues(alpha: .95)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = size.shortestSide * .13
+      ..strokeWidth = size.shortestSide * .10
       ..strokeJoin = StrokeJoin.round;
     canvas.drawPath(seal, outer);
 
@@ -1672,13 +1672,13 @@ class _VerifiedBadgeSeal extends CustomPainter {
     final innerRim = Paint()
       ..color = _rim.withValues(alpha: .65)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = size.shortestSide * .055
+      ..strokeWidth = size.shortestSide * .045
       ..strokeJoin = StrokeJoin.round;
     canvas.drawPath(seal, innerRim);
 
     canvas.drawCircle(
       Offset(size.width * .36, size.height * .31),
-      size.shortestSide * .115,
+      size.shortestSide * .095,
       Paint()..color = Colors.white.withValues(alpha: .24),
     );
   }
@@ -1691,7 +1691,7 @@ class _VerifiedBadgeSeal extends CustomPainter {
     for (var i = 0; i <= samples; i++) {
       final angle = -math.pi / 2 + (math.pi * 2 * i / samples);
       final wave = math.cos(angle * 8);
-      final r = radius * (1 + wave * .085);
+      final r = radius * (1 + wave * .065);
       final point = Offset(
         center.dx + math.cos(angle) * r,
         center.dy + math.sin(angle) * r,
