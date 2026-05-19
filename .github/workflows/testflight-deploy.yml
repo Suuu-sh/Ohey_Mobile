@@ -219,7 +219,7 @@ jobs:
           end
 
           profiles = {
-            'APP_PROVISIONING_PROFILE_NAME' => 'Nomo App Store CI App Groups',
+            'APP_PROVISIONING_PROFILE_NAME' => 'Nomo App Store CI Push',
             'WIDGET_PROVISIONING_PROFILE_NAME' => 'Nomo Widgets App Store CI',
           }
 
