@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 
 /// Firebase/FCM environment configuration for Nomo.
 ///
@@ -11,7 +12,13 @@ class NomoFirebaseConfig {
   const NomoFirebaseConfig._();
 
   static const apiKey = String.fromEnvironment('FIREBASE_API_KEY');
+  static const iosApiKey = String.fromEnvironment('FIREBASE_IOS_API_KEY');
+  static const androidApiKey = String.fromEnvironment(
+    'FIREBASE_ANDROID_API_KEY',
+  );
   static const appId = String.fromEnvironment('FIREBASE_APP_ID');
+  static const iosAppId = String.fromEnvironment('FIREBASE_IOS_APP_ID');
+  static const androidAppId = String.fromEnvironment('FIREBASE_ANDROID_APP_ID');
   static const messagingSenderId = String.fromEnvironment(
     'FIREBASE_MESSAGING_SENDER_ID',
   );
@@ -26,16 +33,38 @@ class NomoFirebaseConfig {
   static const iosClientId = String.fromEnvironment('FIREBASE_IOS_CLIENT_ID');
 
   static bool get hasDartDefineOptions =>
-      apiKey.isNotEmpty &&
-      appId.isNotEmpty &&
+      _platformApiKey.isNotEmpty &&
+      _platformAppId.isNotEmpty &&
       messagingSenderId.isNotEmpty &&
       projectId.isNotEmpty;
+
+  static String get _platformApiKey {
+    if (defaultTargetPlatform == TargetPlatform.iOS && iosApiKey.isNotEmpty) {
+      return iosApiKey;
+    }
+    if (defaultTargetPlatform == TargetPlatform.android &&
+        androidApiKey.isNotEmpty) {
+      return androidApiKey;
+    }
+    return apiKey;
+  }
+
+  static String get _platformAppId {
+    if (defaultTargetPlatform == TargetPlatform.iOS && iosAppId.isNotEmpty) {
+      return iosAppId;
+    }
+    if (defaultTargetPlatform == TargetPlatform.android &&
+        androidAppId.isNotEmpty) {
+      return androidAppId;
+    }
+    return appId;
+  }
 
   static FirebaseOptions? get currentPlatformOptions {
     if (!hasDartDefineOptions) return null;
     return FirebaseOptions(
-      apiKey: apiKey,
-      appId: appId,
+      apiKey: _platformApiKey,
+      appId: _platformAppId,
       messagingSenderId: messagingSenderId,
       projectId: projectId,
       storageBucket: storageBucket.isEmpty ? null : storageBucket,
