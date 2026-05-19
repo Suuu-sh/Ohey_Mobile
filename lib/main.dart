@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/config/supabase_config.dart';
 import 'core/data/auth_session_guard.dart';
 import 'core/data/supabase_client_provider.dart';
+import 'core/services/nomo_push_notification_service.dart';
 import 'core/services/nomo_widget_sync.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/nomo_theme_mode.dart';
@@ -62,6 +63,11 @@ final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
     await AuthSessionGuard.clearIfProjectMismatch(
       Supabase.instance.client,
     ).timeout(const Duration(seconds: 4), onTimeout: () {});
+
+    await ref
+        .read(nomoPushNotificationServiceProvider)
+        .start()
+        .timeout(const Duration(seconds: 8), onTimeout: () {});
   } finally {
     await minimumOpening;
   }
