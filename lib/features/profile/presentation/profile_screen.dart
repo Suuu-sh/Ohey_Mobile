@@ -2639,8 +2639,16 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 if (sheetContext.mounted) {
                   Navigator.of(sheetContext).pop();
                 }
+                // Wait until the settings sheet has finished popping. Opening
+                // another bottom sheet in the same tap while the first route is
+                // still closing can drop the tap on iOS.
+                await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!context.mounted) return;
-                await _showEditProfileSheet(context, ref, user);
+                await _showEditProfileSheet(
+                  context,
+                  ref,
+                  ref.read(nomoUserProvider),
+                );
               },
             ),
             _SettingsTile(
