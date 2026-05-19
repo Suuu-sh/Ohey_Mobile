@@ -32,6 +32,7 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
   bool _isCapturing = false;
   bool _isInitializingCamera = true;
   bool _showStoryPreview = false;
+  bool _isClosing = false;
 
   @override
   void initState() {
@@ -45,9 +46,27 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
 
   @override
   void dispose() {
-    SystemChrome.setPreferredOrientations(const [DeviceOrientation.portraitUp]);
+    _restorePortraitOrientation();
     _cameraController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _restorePortraitOrientation() async {
+    await SystemChrome.setPreferredOrientations(const [
+      DeviceOrientation.portraitUp,
+    ]);
+  }
+
+  Future<void> _closeCamera([NomoCameraResult? result]) async {
+    if (_isClosing) return;
+    _isClosing = true;
+    await _restorePortraitOrientation();
+    if (!mounted) return;
+    if (result == null) {
+      Navigator.of(context).pop();
+    } else {
+      Navigator.of(context).pop(result);
+    }
   }
 
   Future<void> _initializeCamera({int? cameraIndex}) async {
@@ -112,34 +131,40 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: _CameraColors.shell,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          _CameraPreviewStage(
-            showStoryPreview: _showStoryPreview,
-            onClose: () => Navigator.of(context).maybePop(),
-            cameraController: _cameraController,
-            isInitializingCamera: _isInitializingCamera,
-            onBackToCamera: () => setState(() => _showStoryPreview = false),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SafeArea(
-              top: false,
-              child: _BottomCameraControls(
-                isCapturing: _isCapturing,
-                onPickAlbum: _pickFromAlbum,
-                onCapture: _capture,
-                onFlip: _flipCamera,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _closeCamera();
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: _CameraColors.shell,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            _CameraPreviewStage(
+              showStoryPreview: _showStoryPreview,
+              onClose: _closeCamera,
+              cameraController: _cameraController,
+              isInitializingCamera: _isInitializingCamera,
+              onBackToCamera: () => setState(() => _showStoryPreview = false),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SafeArea(
+                top: false,
+                child: _BottomCameraControls(
+                  isCapturing: _isCapturing,
+                  onPickAlbum: _pickFromAlbum,
+                  onCapture: _capture,
+                  onFlip: _flipCamera,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -160,9 +185,9 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
         setState(() => _showStoryPreview = true);
         return;
       }
-      Navigator.of(
-        context,
-      ).pop(NomoCameraResult(path: shot.path, filterName: _plainFilterName));
+      await _closeCamera(
+        NomoCameraResult(path: shot.path, filterName: _plainFilterName),
+      );
     } on CameraException catch (error) {
       if (mounted) _showSnack(_cameraErrorMessage(error));
     } finally {
@@ -189,9 +214,9 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
         setState(() => _showStoryPreview = true);
         return;
       }
-      Navigator.of(
-        context,
-      ).pop(NomoCameraResult(path: picked.path, filterName: _plainFilterName));
+      await _closeCamera(
+        NomoCameraResult(path: picked.path, filterName: _plainFilterName),
+      );
     } finally {
       if (mounted) setState(() => _isCapturing = false);
     }
