@@ -43,11 +43,16 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations(const [
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     _initializeCamera();
   }
 
   @override
   void dispose() {
+    SystemChrome.setPreferredOrientations(const [DeviceOrientation.portraitUp]);
     _cameraController?.dispose();
     super.dispose();
   }
