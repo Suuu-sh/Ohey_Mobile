@@ -154,8 +154,6 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   int _demoPage = 0;
   bool _isLogin = true;
   bool _isBusy = false;
-  bool _userIdTouched = false;
-  bool _nameTouched = false;
   bool _isLastAccountLoaded = false;
   bool _showAuthForm = false;
   bool _obscurePlainLoginPassword = true;
@@ -764,12 +762,6 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       setState(() => _error = 'メールアドレスと6文字以上のパスワードを入力してください。');
       return;
     }
-    if (_userIdController.text.trim().isEmpty) {
-      _userIdController.text = _signupUserId(email);
-    }
-    if (_nameController.text.trim().isEmpty) {
-      _nameController.text = _signupDisplayName(email);
-    }
     setState(() {
       _step = _OnboardingStep.profile;
       _error = null;
@@ -910,7 +902,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
         final compact = constraints.maxHeight < 700;
         final fieldHeight = compact ? 50.0 : 64.0;
         final buttonHeight = compact ? 54.0 : 64.0;
-        final avatarSize = compact ? 86.0 : 144.0;
+        final avatarSize = compact ? 74.0 : 144.0;
         return _fixedAuthPage(
           constraints: constraints,
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
@@ -923,128 +915,126 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                     ? null
                     : () => setState(() => _step = _OnboardingStep.auth),
               ),
-              SizedBox(height: compact ? 10 : 34),
-              Text(
-                'プロフィールを作成して\nください',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: compact ? 27 : 28,
-                  fontWeight: FontWeight.w900,
-                  height: 1.18,
-                  letterSpacing: -.8,
-                ),
-              ),
-              SizedBox(height: compact ? 6 : 12),
-              Text(
-                '友達リストに表示する名前と自分だけのアバターを作ってね。',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: .66),
-                  fontSize: compact ? 12 : 15,
-                  fontWeight: FontWeight.w800,
-                  height: 1.45,
-                ),
-              ),
-              SizedBox(height: compact ? 8 : 26),
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: _isBusy ? null : _openAvatarBuilder,
-                      child: Container(
-                        width: avatarSize,
-                        height: avatarSize,
-                        padding: const EdgeInsets.all(9),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: const LinearGradient(
-                            colors: [AppColors.peach, AppColors.sky],
-                          ),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: .20),
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(
-                                0xFF12C9A4,
-                              ).withValues(alpha: .16),
-                              blurRadius: 28,
-                              offset: const Offset(0, 16),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.only(top: compact ? 8 : 34, bottom: 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'プロフィールを作成して\nください',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: compact ? 24 : 28,
+                          fontWeight: FontWeight.w900,
+                          height: 1.18,
+                          letterSpacing: -.8,
+                        ),
+                      ),
+                      SizedBox(height: compact ? 6 : 12),
+                      Text(
+                        '友達リストに表示する名前と自分だけのアバターを作ってね。',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: .66),
+                          fontSize: compact ? 12 : 15,
+                          fontWeight: FontWeight.w800,
+                          height: 1.45,
+                        ),
+                      ),
+                      SizedBox(height: compact ? 8 : 26),
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: _isBusy ? null : _openAvatarBuilder,
+                              child: Container(
+                                width: avatarSize,
+                                height: avatarSize,
+                                padding: const EdgeInsets.all(9),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(
+                                    colors: [AppColors.peach, AppColors.sky],
+                                  ),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: .20),
+                                    width: 2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(
+                                        0xFF12C9A4,
+                                      ).withValues(alpha: .16),
+                                      blurRadius: 28,
+                                      offset: const Offset(0, 16),
+                                    ),
+                                  ],
+                                ),
+                                child: NomoAvatarView(avatar: _avatar),
+                              ),
+                            ),
+                            SizedBox(height: compact ? 2 : 12),
+                            TextButton.icon(
+                              onPressed: _isBusy ? null : _openAvatarBuilder,
+                              icon: const NomoGeneratedIcon(
+                                CupertinoIcons.pencil,
+                                color: Color(0xFF12C9A4),
+                                size: 20,
+                              ),
+                              label: const Text(
+                                'アバターを作る',
+                                style: TextStyle(
+                                  color: Color(0xFF12C9A4),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        child: NomoAvatarView(avatar: _avatar),
                       ),
-                    ),
-                    SizedBox(height: compact ? 2 : 12),
-                    TextButton.icon(
-                      onPressed: _isBusy ? null : _openAvatarBuilder,
-                      icon: const NomoGeneratedIcon(
-                        CupertinoIcons.pencil,
-                        color: Color(0xFF12C9A4),
-                        size: 20,
-                      ),
-                      label: const Text(
-                        'アバターを作る',
-                        style: TextStyle(
-                          color: Color(0xFF12C9A4),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
+                      SizedBox(height: compact ? 4 : 22),
+                      _SignupInputBox(
+                        child: _SignupProfileTextField(
+                          controller: _userIdController,
+                          enabled: !_isBusy,
+                          icon: CupertinoIcons.at_circle_fill,
+                          hintText: 'ユーザーID（必須・完全一致検索用）',
+                          height: fieldHeight,
+                          textInputAction: TextInputAction.next,
+                          onChanged: (_) => setState(() {}),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      _SignupInputBox(
+                        child: _SignupProfileTextField(
+                          controller: _nameController,
+                          enabled: !_isBusy,
+                          icon: CupertinoIcons.person_crop_circle_fill,
+                          hintText: 'ユーザー名（必須）',
+                          height: fieldHeight,
+                          textInputAction: TextInputAction.done,
+                          onChanged: (_) => setState(() {}),
+                          onSubmitted: (_) {
+                            if (canSubmit) _submitProfile();
+                          },
+                        ),
+                      ),
+                      if (_error != null) ...[
+                        const SizedBox(height: 10),
+                        _DarkMessageText(_error!, isError: true),
+                      ],
+                      if (_notice != null) ...[
+                        const SizedBox(height: 10),
+                        _DarkMessageText(_notice!),
+                      ],
+                    ],
+                  ),
                 ),
               ),
-              SizedBox(height: compact ? 4 : 22),
-              _SignupInputBox(
-                child: _SignupProfileTextField(
-                  controller: _userIdController,
-                  enabled: !_isBusy,
-                  icon: CupertinoIcons.at_circle_fill,
-                  hintText: 'ユーザーID（必須・完全一致検索用）',
-                  height: fieldHeight,
-                  textInputAction: TextInputAction.next,
-                  onChanged: (_) => setState(() => _userIdTouched = true),
-                ),
-              ),
-              if (_userIdTouched &&
-                  !_isValidUserId(_userIdController.text.trim())) ...[
-                const SizedBox(height: 8),
-                const _DarkMessageText(
-                  'ユーザーIDは3〜24文字の英数字と_のみ使えます。',
-                  isError: true,
-                ),
-              ],
-              const SizedBox(height: 12),
-              _SignupInputBox(
-                child: _SignupProfileTextField(
-                  controller: _nameController,
-                  enabled: !_isBusy,
-                  icon: CupertinoIcons.person_crop_circle_fill,
-                  hintText: 'ユーザー名（必須）',
-                  height: fieldHeight,
-                  textInputAction: TextInputAction.done,
-                  onChanged: (_) => setState(() => _nameTouched = true),
-                  onSubmitted: (_) {
-                    if (canSubmit) _submitProfile();
-                  },
-                ),
-              ),
-              if (_nameTouched && _nameController.text.trim().isEmpty) ...[
-                const SizedBox(height: 8),
-                const _DarkMessageText('ユーザー名を入力してください。', isError: true),
-              ],
-              if (_error != null) ...[
-                const SizedBox(height: 10),
-                _DarkMessageText(_error!, isError: true),
-              ],
-              if (_notice != null) ...[
-                const SizedBox(height: 10),
-                _DarkMessageText(_notice!),
-              ],
-              const Spacer(),
+              const SizedBox(height: 10),
               _SignupStepButton(
                 label: 'ユーザー作成',
                 height: buttonHeight,
@@ -1166,7 +1156,6 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     final name = _nameController.text.trim();
     if (!_isValidUserId(userId)) {
       setState(() {
-        _userIdTouched = true;
         _error = 'ユーザーIDは3〜24文字の英数字と_のみ使えます。';
         _notice = null;
       });
@@ -1174,7 +1163,6 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     }
     if (name.isEmpty) {
       setState(() {
-        _nameTouched = true;
         _error = 'ユーザー名を入力してください。';
         _notice = null;
       });
@@ -1225,31 +1213,6 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       // Re-login can still proceed even if refreshing the cached label fails.
     }
     return fallback;
-  }
-
-  String _signupDisplayName(String email) {
-    final entered = _nameController.text.trim();
-    if (entered.isNotEmpty) return entered;
-    final localPart = email.split('@').first.trim();
-    return localPart.isEmpty ? 'Nomoユーザー' : localPart;
-  }
-
-  String _signupUserId(String email) {
-    final entered = _userIdController.text.trim();
-    if (_isValidUserId(entered)) return entered;
-
-    final localPart = email.split('@').first.toLowerCase();
-    final base = localPart
-        .replaceAll(RegExp(r'[^a-z0-9_]'), '_')
-        .replaceAll(RegExp(r'_+'), '_')
-        .replaceAll(RegExp(r'^_+|_+$'), '');
-    final suffix = DateTime.now().millisecondsSinceEpoch.toRadixString(36);
-    final prefix = (base.isEmpty ? 'nomo' : base);
-    final maxPrefixLength = 24 - suffix.length - 1;
-    final compactPrefix = prefix.length > maxPrefixLength
-        ? prefix.substring(0, maxPrefixLength)
-        : prefix;
-    return '${compactPrefix}_$suffix';
   }
 
   Future<void> _openAvatarBuilder() async {
