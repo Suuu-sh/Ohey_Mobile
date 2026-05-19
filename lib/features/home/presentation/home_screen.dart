@@ -1771,7 +1771,7 @@ bool _isDisplayablePostPhoto(String? path) {
 }
 
 String _duoStyleBody(_FeedItem item) {
-  if (item.userName.contains('公式')) {
+  if (item.isOfficial) {
     return switch (item.prop) {
       _PostProp.spark => 'Nomoで飲み友との思い出をもっと楽しく残せるようになったよ！',
       _PostProp.ticket => 'フレンズと一緒に今月の飲みログをふり返ろう。',
@@ -2646,7 +2646,7 @@ class _FeedItem {
         : user?.userId ?? 'nomo_user';
     return _FeedItem(
       id: log.id,
-      userName: log.isOfficial ? 'Nomo公式' : authorName,
+      userName: log.isOfficial ? 'Nomo' : authorName,
       timeAgo: _relativeTime(log.date),
       body: log.memo.trim(),
       avatar: log.ownerAvatar ?? user?.avatar ?? NomoAvatar.defaultAvatar,
