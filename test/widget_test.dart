@@ -50,8 +50,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('パスワードを入力してください'), findsOneWidget);
-    expect(find.text('アカウントを登録（無料）'), findsOneWidget);
+    expect(find.text('次へ'), findsOneWidget);
     expect(find.byType(SingleChildScrollView), findsNothing);
+
+    await tester.enterText(find.byType(TextField).first, 'password123');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('次へ'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('プロフィール作成'), findsOneWidget);
+    expect(find.text('アバターを作る'), findsOneWidget);
+    expect(find.text('ユーザー作成'), findsOneWidget);
   });
 
   testWidgets('signed out returning users land on the login page', (
@@ -86,13 +95,24 @@ void main() {
     await tester.tap(find.text('ログイン'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Eメール/電話番号/ユーザー名'), findsOneWidget);
-    expect(find.text('パスワード'), findsOneWidget);
-    expect(find.text('パスワードをお忘れですか？'), findsOneWidget);
+    expect(find.text('メールアドレスを入力して\nください'), findsOneWidget);
+    expect(find.text('次へ'), findsOneWidget);
     expect(find.text('GOOGLEでログイン'), findsOneWidget);
     expect(find.text('FACEBOOKでログイン'), findsNothing);
     expect(find.text('APPLEでログイン'), findsOneWidget);
     expect(find.byType(SingleChildScrollView), findsNothing);
+
+    await tester.enterText(
+      find.byType(TextField).first,
+      'yisshiki39@gmail.com',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('次へ'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('パスワードを入力してください'), findsOneWidget);
+    expect(find.text('ログイン'), findsOneWidget);
+    expect(find.text('パスワードをお忘れですか？'), findsOneWidget);
   });
 
   test('last account store keeps the latest three unique accounts', () async {
