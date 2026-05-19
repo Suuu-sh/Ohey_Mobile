@@ -227,6 +227,15 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
         )
         .toList(growable: false);
 
+    final rawLikes = row['drink_log_likes'] as List<dynamic>? ?? const [];
+    final likedBy = rawLikes
+        .map((item) => item is Map ? item['profiles'] : null)
+        .whereType<Map>()
+        .map(
+          (profile) => _friendFromProfile(Map<String, dynamic>.from(profile)),
+        )
+        .toList(growable: false);
+
     final owner = row['owner'] is Map
         ? Map<String, dynamic>.from(row['owner'] as Map)
         : const <String, dynamic>{};
@@ -245,6 +254,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       ownerDisplayName: (owner['display_name'] as String?) ?? '',
       ownerAvatar: NomoAvatar.decode(owner['avatar_url'] as String?),
       isOfficial: (row['is_official'] as bool?) ?? false,
+      likedBy: likedBy,
     );
   }
 
