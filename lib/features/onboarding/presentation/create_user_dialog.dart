@@ -450,7 +450,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                     if (isEmailStep && canContinue) {
                       _goToSignupPasswordStep();
                     } else if (!isEmailStep && canRegister) {
-                      _submitAuth();
+                      _goToSignupProfileStep();
                     }
                   },
                   trailing: isEmailStep
@@ -482,13 +482,13 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
               ],
               SizedBox(height: compact ? 24 : 42),
               _SignupStepButton(
-                label: isEmailStep ? '次へ' : 'アカウントを登録（無料）',
+                label: isEmailStep ? '次へ' : '次へ',
                 height: buttonHeight,
                 busy: _isBusy,
                 enabled: isEmailStep ? canContinue : canRegister,
                 onTap: isEmailStep
                     ? (canContinue ? _goToSignupPasswordStep : null)
-                    : (canRegister ? _submitAuth : null),
+                    : (canRegister ? _goToSignupProfileStep : null),
               ),
               if (!isEmailStep) ...[
                 const SizedBox(height: 20),
@@ -759,6 +759,26 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     });
   }
 
+  void _goToSignupProfileStep() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || password.length < 6) {
+      setState(() => _error = 'メールアドレスと6文字以上のパスワードを入力してください。');
+      return;
+    }
+    if (_userIdController.text.trim().isEmpty) {
+      _userIdController.text = _signupUserId(email);
+    }
+    if (_nameController.text.trim().isEmpty) {
+      _nameController.text = _signupDisplayName(email);
+    }
+    setState(() {
+      _step = _OnboardingStep.profile;
+      _error = null;
+      _notice = null;
+    });
+  }
+
   Future<void> _sendPasswordResetEmail() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
@@ -896,8 +916,8 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
         GestureDetector(
           onTap: _isBusy ? null : _openAvatarBuilder,
           child: Container(
-            width: 128,
-            height: 128,
+            width: 132,
+            height: 132,
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -1004,40 +1024,8 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
         }
         _hydrateProfileFromAuthMetadata(supabase.auth.currentUser);
       } else {
-        final userId = _signupUserId(email);
-        final name = _signupDisplayName(email);
-        if (_userIdController.text.trim().isEmpty) {
-          _userIdController.text = userId;
-        }
-        if (_nameController.text.trim().isEmpty) {
-          _nameController.text = name;
-        }
-        final res = await supabase.auth.signUp(
-          email: email,
-          password: password,
-          emailRedirectTo: SupabaseConfig.authRedirectUrl,
-          data: {
-            'user_id': userId,
-            'display_name': name,
-            'character_key': 'avatar',
-            'avatar_url': _avatar.encode(),
-          },
-        );
-        if (res.session != null) {
-          await ref
-              .read(nomoUserProvider.notifier)
-              .createUser(name: name, userId: userId, avatar: _avatar);
-          await _saveLastAccount(email);
-          return;
-        }
-        if (res.session == null) {
-          if (mounted) {
-            setState(() {
-              _notice = '確認メールを送信しました。メール内のリンクを開いてからログインしてください。';
-            });
-          }
-          return;
-        }
+        _goToSignupProfileStep();
+        return;
       }
       if (mounted) {
         setState(() => _step = _OnboardingStep.profile);
@@ -1066,10 +1054,41 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _notice = null;
     });
     try {
+      final supabase = ref.read(supabaseClientProvider);
+      if (supabase.auth.currentSession == null) {
+        final email = _emailController.text.trim();
+        final password = _passwordController.text;
+        if (email.isEmpty || password.length < 6) {
+          throw const AuthException('メールアドレスと6文字以上のパスワードを入力してください。');
+        }
+        final res = await supabase.auth.signUp(
+          email: email,
+          password: password,
+          emailRedirectTo: SupabaseConfig.authRedirectUrl,
+          data: {
+            'user_id': userId,
+            'display_name': name,
+            'character_key': 'avatar',
+            'avatar_url': _avatar.encode(),
+          },
+        );
+        if (res.session == null) {
+          if (mounted) {
+            setState(() {
+              _notice = '確認メールを送信しました。メール内のリンクを開いてからログインしてください。';
+            });
+          }
+          return;
+        }
+      }
       await ref
           .read(nomoUserProvider.notifier)
           .createUser(name: name, userId: userId, avatar: _avatar);
       await _saveLastAccount(_emailController.text.trim());
+    } on AuthException catch (e) {
+      if (mounted) {
+        setState(() => _error = _friendlyAuthError(e.message));
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _error = 'プロフィール作成に失敗しました: $e');
