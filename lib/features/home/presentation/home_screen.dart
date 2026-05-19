@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
@@ -1608,38 +1609,104 @@ class _FeedPostCard extends StatelessWidget {
 class _OfficialVerifiedBadge extends StatelessWidget {
   const _OfficialVerifiedBadge();
 
-  static const _badgeColor = Color(0xFFFF5EA8);
-
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 7),
       child: Semantics(
         label: '公式アカウント',
-        child: Container(
-          width: 20,
-          height: 20,
-          decoration: BoxDecoration(
-            color: _badgeColor,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: _badgeColor.withValues(alpha: .28),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: Stack(
+            alignment: Alignment.center,
+            children: const [
+              Positioned.fill(
+                child: CustomPaint(painter: _VerifiedBadgeSeal()),
+              ),
+              Icon(
+                CupertinoIcons.checkmark_alt,
+                color: Colors.white,
+                size: 15,
+                weight: 900,
               ),
             ],
-          ),
-          child: const Icon(
-            CupertinoIcons.checkmark,
-            color: Colors.white,
-            size: 14,
-            weight: 900,
           ),
         ),
       ),
     );
   }
+}
+
+class _VerifiedBadgeSeal extends CustomPainter {
+  const _VerifiedBadgeSeal();
+
+  static const _pink = Color(0xFFFF5EA8);
+  static const _pinkLight = Color(0xFFFF83C0);
+  static const _rim = Color(0xFFFFC1DC);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final bounds = Offset.zero & size;
+    final seal = _sealPath(size, inset: size.shortestSide * .095);
+    final shadow = Paint()
+      ..color = _pink.withValues(alpha: .34)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    canvas.drawPath(seal.shift(Offset(0, size.height * .10)), shadow);
+
+    final outer = Paint()
+      ..color = Colors.white.withValues(alpha: .95)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.shortestSide * .13
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(seal, outer);
+
+    final fill = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [_pinkLight, _pink],
+      ).createShader(bounds);
+    canvas.drawPath(seal, fill);
+
+    final innerRim = Paint()
+      ..color = _rim.withValues(alpha: .65)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.shortestSide * .055
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(seal, innerRim);
+
+    canvas.drawCircle(
+      Offset(size.width * .36, size.height * .31),
+      size.shortestSide * .115,
+      Paint()..color = Colors.white.withValues(alpha: .24),
+    );
+  }
+
+  Path _sealPath(Size size, {required double inset}) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.shortestSide / 2 - inset;
+    final path = Path();
+    const samples = 48;
+    for (var i = 0; i <= samples; i++) {
+      final angle = -math.pi / 2 + (math.pi * 2 * i / samples);
+      final wave = math.cos(angle * 8);
+      final r = radius * (1 + wave * .085);
+      final point = Offset(
+        center.dx + math.cos(angle) * r,
+        center.dy + math.sin(angle) * r,
+      );
+      if (i == 0) {
+        path.moveTo(point.dx, point.dy);
+      } else {
+        path.lineTo(point.dx, point.dy);
+      }
+    }
+    return path..close();
+  }
+
+  @override
+  bool shouldRepaint(covariant _VerifiedBadgeSeal oldDelegate) => false;
 }
 
 class _DuoFeedButton extends StatelessWidget {
