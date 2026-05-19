@@ -201,20 +201,18 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
     let rootNode = SCNNode()
     if let device = sceneView.device,
        let faceGeometry = ARSCNFaceGeometry(device: device, fillMesh: true) {
-      let material = faceGeometry.firstMaterial
-      material?.diffuse.contents = avatar.skinColor.withAlphaComponent(0.62)
-      material?.lightingModel = .physicallyBased
-      material?.isDoubleSided = true
-      material?.transparency = 0.78
+      if let material = faceGeometry.firstMaterial {
+        NomoAvatarTextureRenderer.configureFaceMaskMaterial(material, for: avatar)
+      }
 
       let geometryNode = SCNNode(geometry: faceGeometry)
       rootNode.addChildNode(geometryNode)
       faceGeometryNode = geometryNode
     }
 
-    let overlayNode = SCNNode(geometry: NomoAvatarTextureRenderer.makePlane(for: avatar))
+    let overlayNode = SCNNode(geometry: NomoAvatarTextureRenderer.makeFeaturePlane(for: avatar))
     overlayNode.name = "nomo-avatar-face-overlay"
-    overlayNode.position = SCNVector3(0, 0.012, 0.061)
+    overlayNode.position = SCNVector3(0, 0.008, 0.064)
     overlayNode.eulerAngles = SCNVector3(0, 0, 0)
     rootNode.addChildNode(overlayNode)
     faceOverlayNode = overlayNode
@@ -239,9 +237,9 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
     DispatchQueue.main.async { [weak self] in
       guard let self else { return }
       if let material = self.faceGeometryNode?.geometry?.firstMaterial {
-        material.diffuse.contents = self.avatar.skinColor.withAlphaComponent(0.62)
+        NomoAvatarTextureRenderer.configureFaceMaskMaterial(material, for: self.avatar)
       }
-      self.faceOverlayNode?.geometry = NomoAvatarTextureRenderer.makePlane(for: self.avatar)
+      self.faceOverlayNode?.geometry = NomoAvatarTextureRenderer.makeFeaturePlane(for: self.avatar)
     }
   }
 }
@@ -310,22 +308,39 @@ private enum NomoPalette {
 }
 
 private enum NomoAvatarTextureRenderer {
-  static func makePlane(for avatar: NomoNativeAvatar) -> SCNPlane {
-    let image = makeImage(for: avatar)
-    let plane = SCNPlane(width: 0.185, height: 0.205)
+  static func configureFaceMaskMaterial(_ material: SCNMaterial, for avatar: NomoNativeAvatar) {
+    material.diffuse.contents = avatar.skinColor
+    material.lightingModel = .physicallyBased
+    material.isDoubleSided = true
+    material.transparency = 1
+    material.blendMode = .replace
+    material.writesToDepthBuffer = true
+    material.readsFromDepthBuffer = true
+    material.metalness.contents = 0
+    material.roughness.contents = 0.86
+    material.specular.contents = UIColor.white.withAlphaComponent(0.16)
+  }
+
+  static func makeFeaturePlane(for avatar: NomoNativeAvatar) -> SCNPlane {
+    let image = makeFeatureImage(for: avatar)
+    let plane = SCNPlane(width: 0.172, height: 0.222)
     let material = SCNMaterial()
     material.diffuse.contents = image
     material.isDoubleSided = true
     material.lightingModel = .constant
+    material.blendMode = .alpha
     material.writesToDepthBuffer = false
-    material.readsFromDepthBuffer = false
+    material.readsFromDepthBuffer = true
     plane.firstMaterial = material
     return plane
   }
 
-  private static func makeImage(for avatar: NomoNativeAvatar) -> UIImage {
+  private static func makeFeatureImage(for avatar: NomoNativeAvatar) -> UIImage {
     let size = CGSize(width: 512, height: 512)
-    let renderer = UIGraphicsImageRenderer(size: size)
+    let format = UIGraphicsImageRendererFormat()
+    format.opaque = false
+    format.scale = 1
+    let renderer = UIGraphicsImageRenderer(size: size, format: format)
     return renderer.image { context in
       let cg = context.cgContext
       cg.clear(CGRect(origin: .zero, size: size))
@@ -334,39 +349,43 @@ private enum NomoAvatarTextureRenderer {
       cg.scaleBy(x: scale, y: scale)
 
       if avatar.isAdmin {
-        drawAdminMascot(in: cg)
+        drawAdminMascot(includeSkin: false, in: cg)
       } else {
-        drawFace(avatar, in: cg)
+        drawFace(avatar, includeSkin: false, in: cg)
       }
     }
   }
 
-  private static func drawFace(_ avatar: NomoNativeAvatar, in cg: CGContext) {
+  private static func drawFace(_ avatar: NomoNativeAvatar, includeSkin: Bool, in cg: CGContext) {
     let skin = avatar.skinColor
     let hair = avatar.hairColor
     let outline = UIColor(hex: 0x1B2027).withAlphaComponent(0.22)
 
-    fillEllipse(CGRect(x: 37, y: 70, width: 25, height: 20), color: skin, in: cg)
-    fillEllipse(CGRect(x: 118, y: 70, width: 25, height: 20), color: skin, in: cg)
+    if includeSkin {
+      fillEllipse(CGRect(x: 37, y: 70, width: 25, height: 20), color: skin, in: cg)
+      fillEllipse(CGRect(x: 118, y: 70, width: 25, height: 20), color: skin, in: cg)
 
-    let head = UIBezierPath(roundedRect: CGRect(x: 38, y: 38, width: 104, height: 92), cornerRadius: 30)
-    cg.saveGState()
-    cg.translateBy(x: 0, y: 2)
-    outline.setFill()
-    head.fill()
-    cg.restoreGState()
-    skin.setFill()
-    head.fill()
+      let head = UIBezierPath(roundedRect: CGRect(x: 38, y: 38, width: 104, height: 92), cornerRadius: 30)
+      cg.saveGState()
+      cg.translateBy(x: 0, y: 2)
+      outline.setFill()
+      head.fill()
+      cg.restoreGState()
+      skin.setFill()
+      head.fill()
+    }
 
-    drawHair(style: avatar.hair, skin: skin, color: hair, in: cg)
+    drawHair(style: avatar.hair, skin: skin, color: hair, featureOnly: !includeSkin, in: cg)
     drawEyes(style: avatar.eyes, in: cg)
     drawNose(skin: skin, in: cg)
     drawMouth(style: avatar.mouth, in: cg)
     drawAccessory(style: avatar.accessory, in: cg)
   }
 
-  private static func drawAdminMascot(in cg: CGContext) {
-    fillEllipse(CGRect(x: 36, y: 28, width: 108, height: 116), color: UIColor(hex: 0xFFC08A), in: cg)
+  private static func drawAdminMascot(includeSkin: Bool, in cg: CGContext) {
+    if includeSkin {
+      fillEllipse(CGRect(x: 36, y: 28, width: 108, height: 116), color: UIColor(hex: 0xFFC08A), in: cg)
+    }
     let hairPath = UIBezierPath(roundedRect: CGRect(x: 44, y: 26, width: 92, height: 38), cornerRadius: 22)
     UIColor(hex: 0xEFE8D8).setFill()
     hairPath.fill()
@@ -376,7 +395,7 @@ private enum NomoAvatarTextureRenderer {
     drawAccessory(style: 1, in: cg)
   }
 
-  private static func drawHair(style: Int, skin: UIColor, color: UIColor, in cg: CGContext) {
+  private static func drawHair(style: Int, skin: UIColor, color: UIColor, featureOnly: Bool, in cg: CGContext) {
     color.setFill()
     switch style {
     case 0:
@@ -409,17 +428,38 @@ private enum NomoAvatarTextureRenderer {
       UIBezierPath(roundedRect: CGRect(x: 62, y: 20, width: 56, height: 18), cornerRadius: 16).fill()
     case 6:
       UIBezierPath(roundedRect: CGRect(x: 40, y: 36, width: 100, height: 68), cornerRadius: 28).fill()
-      skin.setFill()
-      UIBezierPath(roundedRect: CGRect(x: 48, y: 56, width: 84, height: 42), cornerRadius: 24).fill()
+      fillSkinCutout(
+        UIBezierPath(roundedRect: CGRect(x: 48, y: 56, width: 84, height: 42), cornerRadius: 24),
+        skin: skin,
+        featureOnly: featureOnly,
+        in: cg
+      )
     case 7:
       UIBezierPath(roundedRect: CGRect(x: 36, y: 32, width: 108, height: 108), cornerRadius: 34).fill()
-      skin.setFill()
-      UIBezierPath(roundedRect: CGRect(x: 46, y: 50, width: 88, height: 76), cornerRadius: 28).fill()
+      fillSkinCutout(
+        UIBezierPath(roundedRect: CGRect(x: 46, y: 50, width: 88, height: 76), cornerRadius: 28),
+        skin: skin,
+        featureOnly: featureOnly,
+        in: cg
+      )
     default:
       UIBezierPath(roundedRect: CGRect(x: 34, y: 50, width: 30, height: 82), cornerRadius: 18).fill()
       UIBezierPath(roundedRect: CGRect(x: 116, y: 50, width: 30, height: 82), cornerRadius: 18).fill()
       fillEllipse(CGRect(x: 41, y: 17, width: 34, height: 34), color: color, in: cg)
       fillEllipse(CGRect(x: 105, y: 17, width: 34, height: 34), color: color, in: cg)
+    }
+  }
+
+  private static func fillSkinCutout(_ path: UIBezierPath, skin: UIColor, featureOnly: Bool, in cg: CGContext) {
+    if featureOnly {
+      cg.saveGState()
+      cg.setBlendMode(.clear)
+      UIColor.clear.setFill()
+      path.fill()
+      cg.restoreGState()
+    } else {
+      skin.setFill()
+      path.fill()
     }
   }
 
