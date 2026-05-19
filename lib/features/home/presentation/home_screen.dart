@@ -3015,18 +3015,24 @@ class _FeedItem {
   }) {
     final accent = _accentForId(log.id);
     final ownerName = log.ownerDisplayName.trim();
+    final isOwnedByCurrentUser =
+        currentUserId?.isNotEmpty == true && log.ownerUserId == currentUserId;
     final authorName = ownerName.isNotEmpty
         ? ownerName
-        : (log.ownerUserId == currentUserId &&
-              user?.name.trim().isNotEmpty == true)
+        : (isOwnedByCurrentUser && user?.name.trim().isNotEmpty == true)
         ? user!.name.trim()
         : user?.userId ?? 'nomo_user';
+    final avatar = log.isOfficial
+        ? NomoAvatar.adminAvatar
+        : log.ownerAvatar ??
+              (isOwnedByCurrentUser ? user?.avatar : null) ??
+              NomoAvatar.defaultAvatar;
     return _FeedItem(
       id: log.id,
       userName: log.isOfficial ? 'Nomo' : authorName,
       timeAgo: _relativeTime(log.date),
       body: log.memo.trim(),
-      avatar: log.ownerAvatar ?? user?.avatar ?? NomoAvatar.defaultAvatar,
+      avatar: avatar,
       accent: accent,
       photoAssetPath: log.photoAssetPath,
       linkUrl: log.linkUrl ?? '',
@@ -3037,7 +3043,7 @@ class _FeedItem {
       prop: _PostProp.beer,
       tilt: (log.id.hashCode.isEven ? -.08 : .08),
       ownerUserId: log.ownerUserId,
-      ownedByMe: log.ownerUserId.isNotEmpty && log.ownerUserId == currentUserId,
+      ownedByMe: isOwnedByCurrentUser,
       isOfficial: log.isOfficial,
       sparkles: const [
         Offset(12, 18),
