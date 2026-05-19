@@ -81,6 +81,7 @@ class _NomoWidgetSnapshot {
     required this.statusDescription,
     required this.availableFriendsCount,
     required this.availableFriendNames,
+    required this.availableFriendStatusLabels,
   });
 
   factory _NomoWidgetSnapshot.from({
@@ -102,6 +103,10 @@ class _NomoWidgetSnapshot {
       availableFriendNames: [
         for (final friend in availableFriends.take(3)) friend.name,
       ],
+      availableFriendStatusLabels: [
+        for (final friend in availableFriends.take(3))
+          nomoDailyStatusFromKey(friend.statusKey).label,
+      ],
     );
   }
 
@@ -110,6 +115,7 @@ class _NomoWidgetSnapshot {
   final String statusDescription;
   final int availableFriendsCount;
   final List<String> availableFriendNames;
+  final List<String> availableFriendStatusLabels;
 
   String get cacheKey => Object.hashAll([
     statusKey,
@@ -117,6 +123,7 @@ class _NomoWidgetSnapshot {
     statusDescription,
     availableFriendsCount,
     ...availableFriendNames,
+    ...availableFriendStatusLabels,
   ]).toString();
 
   Map<String, Object?> get payload => {
@@ -125,6 +132,7 @@ class _NomoWidgetSnapshot {
     'statusDescription': statusDescription,
     'availableFriendsCount': availableFriendsCount,
     'availableFriendNames': availableFriendNames,
+    'availableFriendStatusLabels': availableFriendStatusLabels,
     'updatedAtMillis': DateTime.now().millisecondsSinceEpoch,
   };
 }

@@ -3,12 +3,20 @@ import WidgetKit
 
 private let appGroupIdentifier = "group.app.nomo.nomo"
 
+struct NomoAvailableFriend: Equatable, Identifiable {
+  let name: String
+  let statusLabel: String
+
+  var id: String { "\(name)-\(statusLabel)" }
+}
+
 struct NomoWidgetSnapshot: Equatable {
   let statusKey: String
   let statusLabel: String
   let statusDescription: String
   let availableFriendsCount: Int
   let availableFriendNames: [String]
+  let availableFriends: [NomoAvailableFriend]
   let updatedAt: Date?
 
   static let placeholder = NomoWidgetSnapshot(
@@ -17,6 +25,7 @@ struct NomoWidgetSnapshot: Equatable {
     statusDescription: "Nomoを開いて飲みステータスをセットしよう",
     availableFriendsCount: 0,
     availableFriendNames: [],
+    availableFriends: [],
     updatedAt: nil
   )
 
@@ -26,9 +35,16 @@ struct NomoWidgetSnapshot: Equatable {
     let statusLabel = defaults.string(forKey: "statusLabel") ?? "今日の気分は？"
     let statusDescription = defaults.string(forKey: "statusDescription") ?? "Nomoを開いて飲みステータスをセットしよう"
     let friendNames = Array((defaults.stringArray(forKey: "availableFriendNames") ?? []).prefix(3))
+    let friendStatusLabels = Array((defaults.stringArray(forKey: "availableFriendStatusLabels") ?? []).prefix(3))
     let friendCount = defaults.object(forKey: "availableFriendsCount") as? Int ?? friendNames.count
     let updatedAtMillis = defaults.object(forKey: "updatedAtMillis") as? Double
     let updatedAt = updatedAtMillis.map { Date(timeIntervalSince1970: $0 / 1000) }
+    let friends = friendNames.enumerated().map { index, name in
+      NomoAvailableFriend(
+        name: name,
+        statusLabel: friendStatusLabels.indices.contains(index) ? friendStatusLabels[index] : "今日飲める"
+      )
+    }
 
     return NomoWidgetSnapshot(
       statusKey: statusKey,
@@ -36,6 +52,7 @@ struct NomoWidgetSnapshot: Equatable {
       statusDescription: statusDescription,
       availableFriendsCount: friendCount,
       availableFriendNames: friendNames,
+      availableFriends: friends,
       updatedAt: updatedAt
     )
   }
@@ -69,8 +86,8 @@ struct NomoTodayStatusWidget: Widget {
     StaticConfiguration(kind: kind, provider: NomoTimelineProvider()) { entry in
       NomoTodayStatusWidgetView(entry: entry)
     }
-    .configurationDisplayName("今日の飲みステータス")
-    .description("Nomoのメインキャラクターと一緒に今日の飲み気分をホーム画面で確認できます。")
+    .configurationDisplayName("今日のノリ")
+    .description("Nomoのキャラクターと一緒に、今日の飲みステータスをホーム画面で確認できます。")
     .supportedFamilies([.systemSmall, .systemMedium])
   }
 }
@@ -82,8 +99,8 @@ struct NomoFriendsAvailabilityWidget: Widget {
     StaticConfiguration(kind: kind, provider: NomoTimelineProvider()) { entry in
       NomoFriendsAvailabilityWidgetView(entry: entry)
     }
-    .configurationDisplayName("今夜空いてるフレンズ")
-    .description("飲みに行けそうなフレンズをかわいくチェックできます。")
+    .configurationDisplayName("誘える飲み友リスト")
+    .description("今日飲みに誘えそうな飲み友を、Nomoのキャラクターと一緒にすぐチェックできます。")
     .supportedFamilies([.systemSmall, .systemMedium])
   }
 }
@@ -104,11 +121,9 @@ struct NomoTodayStatusWidgetView: View {
     switch family {
     case .systemMedium:
       MediumStatusContent(snapshot: entry.snapshot)
-        .nomoWidgetBackground()
         .widgetURL(URL(string: "app.nomo.nomo://widget/status"))
     default:
       SmallStatusContent(snapshot: entry.snapshot)
-        .nomoWidgetBackground()
         .widgetURL(URL(string: "app.nomo.nomo://widget/status"))
     }
   }
@@ -122,11 +137,9 @@ struct NomoFriendsAvailabilityWidgetView: View {
     switch family {
     case .systemMedium:
       MediumFriendsContent(snapshot: entry.snapshot)
-        .nomoWidgetBackground()
         .widgetURL(URL(string: "app.nomo.nomo://widget/friends"))
     default:
       SmallFriendsContent(snapshot: entry.snapshot)
-        .nomoWidgetBackground()
         .widgetURL(URL(string: "app.nomo.nomo://widget/friends"))
     }
   }
@@ -138,32 +151,29 @@ private struct SmallStatusContent: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       HStack(alignment: .top) {
-        NomoMascotView(size: 48)
+        WidgetEyebrow(icon: "wineglass.fill", title: "今日のノリ")
         Spacer(minLength: 0)
-        Image(systemName: statusSymbolName)
-          .font(.system(size: 18, weight: .black))
-          .foregroundStyle(Color.nomoLime)
-          .padding(8)
-          .background(Circle().fill(Color.white.opacity(0.18)))
+        StatusOrb(symbolName: statusSymbolName)
       }
 
       Spacer(minLength: 0)
 
-      Text("今日の飲み")
-        .font(.system(size: 13, weight: .black, design: .rounded))
-        .foregroundStyle(Color.white.opacity(0.78))
-
       Text(snapshot.statusLabel)
-        .font(.system(size: 20, weight: .black, design: .rounded))
+        .font(.system(size: 22, weight: .black, design: .rounded))
         .foregroundStyle(.white)
         .lineLimit(2)
-        .minimumScaleFactor(0.72)
+        .minimumScaleFactor(0.68)
+        .nomoTextGlow()
 
-      Text("タップして変更")
-        .font(.system(size: 11, weight: .heavy, design: .rounded))
-        .foregroundStyle(Color.white.opacity(0.62))
+      Text("タップして飲みステータス更新")
+        .font(.system(size: 10.5, weight: .heavy, design: .rounded))
+        .foregroundStyle(Color.white.opacity(0.72))
+        .lineLimit(1)
+        .minimumScaleFactor(0.72)
     }
-    .padding(16)
+    .padding(15)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    .nomoWidgetBackground(artwork: .small)
   }
 
   private var statusSymbolName: String {
@@ -182,52 +192,46 @@ private struct MediumStatusContent: View {
   let snapshot: NomoWidgetSnapshot
 
   var body: some View {
-    HStack(spacing: 16) {
-      NomoMascotView(size: 82)
-        .overlay(alignment: .bottomTrailing) {
-          Text("Nomo")
-            .font(.system(size: 11, weight: .black, design: .rounded))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Capsule().fill(Color.black.opacity(0.24)))
-            .offset(x: 4, y: 3)
-        }
+    HStack(spacing: 0) {
+      Spacer(minLength: 122)
 
-      VStack(alignment: .leading, spacing: 9) {
-        HStack(spacing: 7) {
-          Image(systemName: "heart.text.square.fill")
-            .font(.system(size: 15, weight: .black))
-            .foregroundStyle(Color.nomoLime)
-          Text("今日の飲みステータス")
-            .font(.system(size: 13, weight: .black, design: .rounded))
-            .foregroundStyle(Color.white.opacity(0.76))
-        }
+      VStack(alignment: .leading, spacing: 8) {
+        WidgetEyebrow(icon: "heart.text.square.fill", title: "今日のノリ")
 
         Text(snapshot.statusLabel)
-          .font(.system(size: 27, weight: .black, design: .rounded))
+          .font(.system(size: 26, weight: .black, design: .rounded))
           .foregroundStyle(.white)
           .lineLimit(1)
-          .minimumScaleFactor(0.7)
+          .minimumScaleFactor(0.65)
+          .nomoTextGlow()
 
         Text(snapshot.statusDescription)
           .font(.system(size: 12, weight: .bold, design: .rounded))
-          .foregroundStyle(Color.white.opacity(0.68))
+          .foregroundStyle(Color.white.opacity(0.75))
           .lineLimit(2)
-          .minimumScaleFactor(0.8)
+          .minimumScaleFactor(0.75)
 
-        Text(updatedText)
-          .font(.system(size: 11, weight: .heavy, design: .rounded))
-          .foregroundStyle(Color.white.opacity(0.52))
+        HStack(spacing: 6) {
+          Image(systemName: "arrow.up.forward.app.fill")
+            .font(.system(size: 10, weight: .black))
+          Text(updatedText)
+            .lineLimit(1)
+            .minimumScaleFactor(0.72)
+        }
+        .font(.system(size: 10.5, weight: .heavy, design: .rounded))
+        .foregroundStyle(Color.white.opacity(0.58))
       }
-
-      Spacer(minLength: 0)
+      .padding(13)
+      .frame(maxWidth: 215, alignment: .leading)
+      .background(WidgetGlassCard(cornerRadius: 22))
     }
-    .padding(18)
+    .padding(14)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+    .nomoWidgetBackground(artwork: .medium)
   }
 
   private var updatedText: String {
-    guard let updatedAt = snapshot.updatedAt else { return "アプリを開くと更新されます" }
+    guard let updatedAt = snapshot.updatedAt else { return "アプリを開くと更新" }
     return "更新 \(Self.timeFormatter.string(from: updatedAt))"
   }
 
@@ -245,37 +249,39 @@ private struct SmallFriendsContent: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       HStack(alignment: .top) {
-        NomoMascotView(size: 46)
+        WidgetEyebrow(icon: "person.2.fill", title: "誘える")
         Spacer(minLength: 0)
-        Text("\(snapshot.availableFriendsCount)")
-          .font(.system(size: 26, weight: .black, design: .rounded))
-          .foregroundStyle(Color.nomoLime)
-          .monospacedDigit()
+        FriendCountBadge(count: snapshot.availableFriendsCount, compact: true)
       }
 
       Spacer(minLength: 0)
 
-      Text("今夜いける？")
+      Text("飲み友リスト")
         .font(.system(size: 13, weight: .black, design: .rounded))
         .foregroundStyle(Color.white.opacity(0.78))
+        .lineLimit(1)
 
       Text(friendHeadline)
-        .font(.system(size: 19, weight: .black, design: .rounded))
+        .font(.system(size: 21, weight: .black, design: .rounded))
         .foregroundStyle(.white)
         .lineLimit(2)
-        .minimumScaleFactor(0.72)
+        .minimumScaleFactor(0.68)
+        .nomoTextGlow()
 
-      Text("フレンズを見る")
-        .font(.system(size: 11, weight: .heavy, design: .rounded))
-        .foregroundStyle(Color.white.opacity(0.62))
+      Text(snapshot.availableFriendsCount <= 0 ? "みんなの状態を更新" : "タップでフレンズへ")
+        .font(.system(size: 10.5, weight: .heavy, design: .rounded))
+        .foregroundStyle(Color.white.opacity(0.70))
+        .lineLimit(1)
     }
-    .padding(16)
+    .padding(15)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    .nomoWidgetBackground(artwork: .small)
   }
 
   private var friendHeadline: String {
-    if snapshot.availableFriendsCount <= 0 { return "まだ静か" }
-    if let name = snapshot.availableFriendNames.first { return "\(name)が空いてる" }
-    return "\(snapshot.availableFriendsCount)人が空いてる"
+    if snapshot.availableFriendsCount <= 0 { return "今は様子見" }
+    if let name = snapshot.availableFriends.first?.name { return "\(name)を誘えそう" }
+    return "\(snapshot.availableFriendsCount)人を誘えそう"
   }
 }
 
@@ -283,163 +289,264 @@ private struct MediumFriendsContent: View {
   let snapshot: NomoWidgetSnapshot
 
   var body: some View {
-    HStack(spacing: 16) {
-      ZStack(alignment: .topTrailing) {
-        NomoMascotView(size: 82)
-        Text("\(snapshot.availableFriendsCount)")
-          .font(.system(size: 18, weight: .black, design: .rounded))
-          .foregroundStyle(Color.nomoPink)
-          .monospacedDigit()
-          .padding(9)
-          .background(Circle().fill(.white))
-          .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
-          .offset(x: 8, y: -5)
-      }
+    HStack(spacing: 0) {
+      Spacer(minLength: 118)
 
-      VStack(alignment: .leading, spacing: 9) {
-        HStack(spacing: 7) {
-          Image(systemName: "person.2.wave.2.fill")
-            .font(.system(size: 15, weight: .black))
-            .foregroundStyle(Color.nomoLime)
-          Text("今夜空いてるフレンズ")
-            .font(.system(size: 13, weight: .black, design: .rounded))
-            .foregroundStyle(Color.white.opacity(0.76))
+      VStack(alignment: .leading, spacing: 8) {
+        HStack(spacing: 8) {
+          WidgetEyebrow(icon: "person.2.wave.2.fill", title: "誘える飲み友")
+          Spacer(minLength: 0)
+          FriendCountBadge(count: snapshot.availableFriendsCount, compact: false)
         }
 
-        Text(snapshot.availableFriendsCount <= 0 ? "誘える人をチェック" : "\(snapshot.availableFriendsCount)人がいけそう")
-          .font(.system(size: 25, weight: .black, design: .rounded))
+        Text(friendHeadline)
+          .font(.system(size: 22, weight: .black, design: .rounded))
           .foregroundStyle(.white)
           .lineLimit(1)
-          .minimumScaleFactor(0.68)
+          .minimumScaleFactor(0.66)
+          .nomoTextGlow()
 
-        friendNamesView
+        friendRows
 
-        Text("タップでフレンズへ")
-          .font(.system(size: 11, weight: .heavy, design: .rounded))
-          .foregroundStyle(Color.white.opacity(0.52))
+        Text(snapshot.availableFriendsCount <= 0 ? "飲み友のステータス待ち" : "タップして声をかけにいく")
+          .font(.system(size: 10.5, weight: .heavy, design: .rounded))
+          .foregroundStyle(Color.white.opacity(0.58))
+          .lineLimit(1)
+          .minimumScaleFactor(0.75)
       }
-
-      Spacer(minLength: 0)
+      .padding(12)
+      .frame(maxWidth: 225, alignment: .leading)
+      .background(WidgetGlassCard(cornerRadius: 22))
     }
-    .padding(18)
+    .padding(14)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+    .nomoWidgetBackground(artwork: .medium)
+  }
+
+  private var friendHeadline: String {
+    if snapshot.availableFriendsCount <= 0 { return "今日はまだ静か" }
+    if snapshot.availableFriendsCount == 1 { return "1人に声かけよ" }
+    return "\(snapshot.availableFriendsCount)人に声かけよ"
   }
 
   @ViewBuilder
-  private var friendNamesView: some View {
-    if snapshot.availableFriendNames.isEmpty {
-      Text("Nomoを開いてみんなのステータスを更新しよう")
+  private var friendRows: some View {
+    if snapshot.availableFriends.isEmpty {
+      Text("Nomoを開いて、みんなの今日のノリを更新しよう。")
         .font(.system(size: 12, weight: .bold, design: .rounded))
-        .foregroundStyle(Color.white.opacity(0.68))
+        .foregroundStyle(Color.white.opacity(0.72))
         .lineLimit(2)
+        .minimumScaleFactor(0.78)
     } else {
-      HStack(spacing: 6) {
-        ForEach(snapshot.availableFriendNames.prefix(3), id: \.self) { name in
-          Text(name)
-            .font(.system(size: 11, weight: .black, design: .rounded))
-            .foregroundStyle(Color.nomoInk)
-            .lineLimit(1)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
-            .background(Capsule().fill(Color.white.opacity(0.92)))
+      VStack(spacing: 5) {
+        ForEach(snapshot.availableFriends.prefix(3)) { friend in
+          HStack(spacing: 7) {
+            Circle()
+              .fill(Color.nomoLime)
+              .frame(width: 7, height: 7)
+              .shadow(color: Color.nomoLime.opacity(0.6), radius: 5)
+
+            Text(friend.name)
+              .font(.system(size: 12, weight: .black, design: .rounded))
+              .foregroundStyle(.white)
+              .lineLimit(1)
+              .minimumScaleFactor(0.72)
+
+            Spacer(minLength: 4)
+
+            Text(friend.statusLabel)
+              .font(.system(size: 9.5, weight: .black, design: .rounded))
+              .foregroundStyle(Color.nomoInk)
+              .lineLimit(1)
+              .minimumScaleFactor(0.68)
+              .padding(.horizontal, 6)
+              .padding(.vertical, 3)
+              .background(Capsule().fill(Color.white.opacity(0.92)))
+          }
         }
       }
     }
   }
 }
 
-private struct NomoMascotView: View {
-  let size: CGFloat
+private struct WidgetEyebrow: View {
+  let icon: String
+  let title: String
 
   var body: some View {
-    ZStack {
-      Circle()
-        .fill(
-          LinearGradient(
-            colors: [Color.nomoPink, Color(red: 1.0, green: 0.15, blue: 0.55)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-          )
-        )
-        .overlay(
-          Circle()
-            .strokeBorder(Color.white.opacity(0.26), lineWidth: max(1, size * 0.035))
-        )
-        .shadow(color: Color.nomoPink.opacity(0.34), radius: size * 0.18, y: size * 0.08)
-
-      HStack(spacing: size * 0.09) {
-        mascotEye
-        mascotEye
-      }
-      .offset(y: size * 0.06)
-
-      Capsule()
-        .fill(Color.nomoLime)
-        .frame(width: size * 0.28, height: size * 0.17)
-        .rotationEffect(.degrees(-26))
-        .offset(x: size * 0.16, y: -size * 0.26)
-
-      Capsule()
-        .fill(Color.nomoLime)
-        .frame(width: size * 0.07, height: size * 0.16)
-        .rotationEffect(.degrees(28))
-        .offset(x: size * 0.03, y: -size * 0.13)
+    HStack(spacing: 5) {
+      Image(systemName: icon)
+        .font(.system(size: 11, weight: .black))
+        .foregroundStyle(Color.nomoLime)
+      Text(title)
+        .font(.system(size: 11.5, weight: .black, design: .rounded))
+        .foregroundStyle(Color.white.opacity(0.82))
+        .lineLimit(1)
     }
-    .frame(width: size, height: size)
+    .padding(.horizontal, 9)
+    .padding(.vertical, 6)
+    .background(Capsule().fill(Color.nomoInk.opacity(0.42)))
+    .overlay(Capsule().stroke(Color.white.opacity(0.12), lineWidth: 1))
   }
+}
 
-  private var mascotEye: some View {
-    Ellipse()
-      .fill(
-        LinearGradient(
-          colors: [Color.black, Color(red: 0.03, green: 0.03, blue: 0.05)],
-          startPoint: .top,
-          endPoint: .bottom
-        )
-      )
-      .frame(width: size * 0.19, height: size * 0.29)
-      .overlay(alignment: .topLeading) {
-        Circle()
-          .fill(.white.opacity(0.95))
-          .frame(width: size * 0.065, height: size * 0.065)
-          .offset(x: size * 0.035, y: size * 0.035)
+private struct StatusOrb: View {
+  let symbolName: String
+
+  var body: some View {
+    Image(systemName: symbolName)
+      .font(.system(size: 15, weight: .black))
+      .foregroundStyle(Color.nomoLime)
+      .frame(width: 33, height: 33)
+      .background(Circle().fill(Color.nomoInk.opacity(0.48)))
+      .overlay(Circle().stroke(Color.white.opacity(0.16), lineWidth: 1))
+      .shadow(color: Color.nomoPink.opacity(0.24), radius: 10, y: 4)
+  }
+}
+
+private struct FriendCountBadge: View {
+  let count: Int
+  let compact: Bool
+
+  var body: some View {
+    HStack(alignment: .firstTextBaseline, spacing: 2) {
+      Text("\(count)")
+        .font(.system(size: compact ? 24 : 18, weight: .black, design: .rounded))
+        .monospacedDigit()
+      if !compact {
+        Text("人")
+          .font(.system(size: 10, weight: .black, design: .rounded))
       }
+    }
+    .foregroundStyle(Color.nomoPink)
+    .padding(.horizontal, compact ? 9 : 8)
+    .padding(.vertical, compact ? 6 : 5)
+    .background(Capsule().fill(.white))
+    .shadow(color: Color.nomoPink.opacity(0.28), radius: 10, y: 4)
+  }
+}
+
+private struct WidgetGlassCard: View {
+  let cornerRadius: CGFloat
+
+  var body: some View {
+    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+      .fill(Color.nomoInk.opacity(0.50))
+      .overlay(
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+          .stroke(
+            LinearGradient(
+              colors: [Color.white.opacity(0.22), Color.nomoPink.opacity(0.28)],
+              startPoint: .topLeading,
+              endPoint: .bottomTrailing
+            ),
+            lineWidth: 1
+          )
+      )
+      .shadow(color: Color.black.opacity(0.20), radius: 18, y: 8)
+  }
+}
+
+private enum NomoWidgetArtwork {
+  case small
+  case medium
+
+  var imageName: String {
+    switch self {
+    case .small:
+      return "nomo_widget_mascot_small"
+    case .medium:
+      return "nomo_widget_mascot_medium"
+    }
   }
 }
 
 private struct NomoWidgetBackground: View {
+  let artwork: NomoWidgetArtwork
+
   var body: some View {
-    ZStack {
-      LinearGradient(
-        colors: [Color.nomoInk, Color(red: 0.08, green: 0.07, blue: 0.18), Color.nomoPink.opacity(0.86)],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-      )
+    GeometryReader { proxy in
+      ZStack {
+        LinearGradient(
+          colors: [
+            Color.nomoInk,
+            Color(red: 0.08, green: 0.07, blue: 0.18),
+            Color.nomoPink.opacity(0.86),
+          ],
+          startPoint: .topLeading,
+          endPoint: .bottomTrailing
+        )
 
-      Circle()
-        .fill(Color.nomoPink.opacity(0.36))
-        .frame(width: 170, height: 170)
-        .blur(radius: 26)
-        .offset(x: 90, y: -70)
+        Image(artwork.imageName, bundle: .main)
+          .resizable()
+          .scaledToFill()
+          .frame(width: proxy.size.width, height: proxy.size.height)
+          .clipped()
+          .accessibilityHidden(true)
 
-      Circle()
-        .fill(Color.nomoLime.opacity(0.18))
-        .frame(width: 130, height: 130)
-        .blur(radius: 24)
-        .offset(x: -95, y: 80)
+        overlay
+      }
+    }
+  }
+
+  @ViewBuilder
+  private var overlay: some View {
+    switch artwork {
+    case .small:
+      ZStack {
+        LinearGradient(
+          colors: [
+            Color.clear,
+            Color.nomoInk.opacity(0.10),
+            Color.nomoInk.opacity(0.82),
+          ],
+          startPoint: .top,
+          endPoint: .bottom
+        )
+        RadialGradient(
+          colors: [Color.clear, Color.black.opacity(0.36)],
+          center: .center,
+          startRadius: 48,
+          endRadius: 120
+        )
+      }
+    case .medium:
+      ZStack {
+        LinearGradient(
+          colors: [
+            Color.clear,
+            Color.nomoInk.opacity(0.10),
+            Color.nomoInk.opacity(0.82),
+          ],
+          startPoint: .leading,
+          endPoint: .trailing
+        )
+        LinearGradient(
+          colors: [Color.clear, Color.black.opacity(0.28)],
+          startPoint: .top,
+          endPoint: .bottom
+        )
+      }
     }
   }
 }
 
 private extension View {
   @ViewBuilder
-  func nomoWidgetBackground() -> some View {
+  func nomoWidgetBackground(artwork: NomoWidgetArtwork) -> some View {
     if #available(iOSApplicationExtension 17.0, *) {
       self.containerBackground(for: .widget) {
-        NomoWidgetBackground()
+        NomoWidgetBackground(artwork: artwork)
       }
     } else {
-      self.background(NomoWidgetBackground())
+      self.background(NomoWidgetBackground(artwork: artwork))
     }
+  }
+
+  func nomoTextGlow() -> some View {
+    self
+      .shadow(color: Color.nomoInk.opacity(0.62), radius: 6, x: 0, y: 2)
+      .shadow(color: Color.nomoPink.opacity(0.22), radius: 10, x: 0, y: 3)
   }
 }
 

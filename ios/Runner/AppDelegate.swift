@@ -91,6 +91,10 @@ import WidgetKit
     defaults.set(payload["statusDescription"] as? String, forKey: "statusDescription")
     defaults.set(payload["availableFriendsCount"] as? Int, forKey: "availableFriendsCount")
     defaults.set(payload["availableFriendNames"] as? [String] ?? [], forKey: "availableFriendNames")
+    defaults.set(
+      payload["availableFriendStatusLabels"] as? [String] ?? [],
+      forKey: "availableFriendStatusLabels"
+    )
 
     if let updatedAtMillis = payload["updatedAtMillis"] as? Double {
       defaults.set(updatedAtMillis, forKey: "updatedAtMillis")
