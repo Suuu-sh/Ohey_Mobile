@@ -62,7 +62,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   Widget build(BuildContext context) {
     final logsAsync = ref.watch(drinkLogControllerProvider);
     final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
-    final monthlyLogs = logs.where((log) => log.isInMonth(_month)).toList();
+    final userLogs = logs.where((log) => !log.isOfficial);
+    final monthlyLogs = userLogs.where((log) => log.isInMonth(_month)).toList();
     final selectedLogs = monthlyLogs
         .where((log) => log.isSameDay(_selectedDay))
         .toList();
