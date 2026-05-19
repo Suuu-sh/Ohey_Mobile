@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../config/firebase_config.dart';
 import '../data/backend_api_client.dart';
 import '../data/supabase_client_provider.dart';
 
@@ -29,7 +30,8 @@ class NomoPushNotificationService {
 
     try {
       if (Firebase.apps.isEmpty) {
-        await Firebase.initializeApp();
+        final options = NomoFirebaseConfig.currentPlatformOptions;
+        await Firebase.initializeApp(options: options);
       }
       final messaging = FirebaseMessaging.instance;
       final settings = await messaging.requestPermission(
