@@ -14,6 +14,7 @@ import '../application/nomo_user_controller.dart';
 import '../data/nomo_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
 import '../theme/nomo_theme_mode.dart';
+import 'nomo_backend_busy_screen.dart';
 
 class NomoTabShell extends ConsumerStatefulWidget {
   const NomoTabShell({super.key});
@@ -105,7 +106,14 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
       _didScheduleProfileRestore = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         try {
-          await ref.read(nomoUserProvider.notifier).loadFromBackendProfile();
+          await ref
+              .read(nomoUserProvider.notifier)
+              .loadFromBackendProfile()
+              .timeout(const Duration(seconds: 10));
+        } catch (_) {
+          // Backend can be waking up from a cold start. After the friendly
+          // waiting screen has had a chance to show, continue to the normal
+          // logged-in/profile setup flow instead of leaving a blank page.
         } finally {
           if (mounted) {
             setState(() {
@@ -118,11 +126,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
     }
 
     if (user == null && hasSession && !_didAttemptProfileRestore) {
-      return Scaffold(
-        resizeToAvoidBottomInset: false,
-        backgroundColor: isWhite ? Colors.white : const Color(0xFF0B1420),
-        body: const SizedBox.expand(),
-      );
+      return const NomoBackendBusyScreen();
     }
 
     if (user == null && !_onboardingPrefLoaded) {
