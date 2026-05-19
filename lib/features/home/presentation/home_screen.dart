@@ -192,9 +192,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final result = await SharePlus.instance.share(
         ShareParams(
           files: [XFile(imagePath, mimeType: 'image/png')],
-          fileNameOverrides: const ['nomo_drink_log.png'],
-          title: '飲みログを共有',
-          subject: 'Nomoの飲みログ',
+          fileNameOverrides: [
+            item.isOfficial ? 'nomo_official_post.png' : 'nomo_drink_log.png',
+          ],
+          title: item.isOfficial ? 'Nomo公式投稿を共有' : '飲みログを共有',
+          subject: item.isOfficial ? 'Nomo公式のお知らせ' : 'Nomoの飲みログ',
           sharePositionOrigin: shareOrigin,
         ),
       );
@@ -1475,12 +1477,42 @@ class _FeedPostCard extends StatelessWidget {
         : Colors.white.withValues(alpha: .09);
     final body = _duoStyleBody(item).trim();
 
+    final decoration = _isOfficial
+        ? BoxDecoration(
+            gradient: LinearGradient(
+              colors: isWhite
+                  ? const [Color(0xFFFFF5FA), Color(0xFFFFFBF0)]
+                  : const [Color(0xFF251424), Color(0xFF241C10)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: const Color(0xFFFF9DCA), width: 1.4),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF5EA8).withValues(alpha: .13),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          )
+        : BoxDecoration(
+            border: Border(bottom: BorderSide(color: line)),
+          );
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 0),
-      padding: const EdgeInsets.fromLTRB(0, 20, 0, 22),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: line)),
+      margin: EdgeInsets.only(
+        left: _isOfficial ? 4 : 0,
+        right: _isOfficial ? 4 : 0,
+        bottom: _isOfficial ? 14 : 0,
       ),
+      padding: EdgeInsets.fromLTRB(
+        _isOfficial ? 16 : 0,
+        20,
+        _isOfficial ? 16 : 0,
+        22,
+      ),
+      decoration: decoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1529,6 +1561,10 @@ class _FeedPostCard extends StatelessWidget {
               ),
             ],
           ),
+          if (_isOfficial) ...[
+            const SizedBox(height: 12),
+            const _OfficialPostPill(),
+          ],
           if (hasPhoto) ...[
             const SizedBox(height: 12),
             _PostPhoto(path: photoPath!),
@@ -1595,8 +1631,12 @@ class _FeedPostCard extends StatelessWidget {
   }
 
   Future<void> _openOfficialLink(BuildContext context, String rawUrl) async {
-    final uri = Uri.tryParse(rawUrl.trim());
-    if (uri == null || !uri.hasScheme) {
+    final normalized = rawUrl.trim();
+    final candidate = normalized.startsWith(RegExp(r'https?://'))
+        ? normalized
+        : 'https://$normalized';
+    final uri = Uri.tryParse(candidate);
+    if (uri == null || !uri.hasScheme || uri.host.trim().isEmpty) {
       NomoToast.show(context, 'リンクを開けませんでした。');
       return;
     }
@@ -1604,6 +1644,46 @@ class _FeedPostCard extends StatelessWidget {
     if (!opened && context.mounted) {
       NomoToast.show(context, 'リンクを開けませんでした。');
     }
+  }
+}
+
+class _OfficialPostPill extends StatelessWidget {
+  const _OfficialPostPill();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Nomo公式からのお知らせ',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFF5EA8).withValues(alpha: .12),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: const Color(0xFFFF5EA8).withValues(alpha: .24),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              CupertinoIcons.sparkles,
+              color: Color(0xFFFF5EA8),
+              size: 14,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'Nomo公式のお知らせ',
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: const Color(0xFFFF5EA8),
+                fontWeight: FontWeight.w900,
+                letterSpacing: .2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

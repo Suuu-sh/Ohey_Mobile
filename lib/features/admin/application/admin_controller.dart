@@ -102,6 +102,7 @@ class AdminController {
     required String placeName,
     required String memo,
     required String linkUrl,
+    required String photoPath,
     required bool isOfficial,
   }) async {
     final body = <String, dynamic>{
@@ -109,6 +110,7 @@ class AdminController {
       'place_name': placeName,
       'memo': memo,
       'link_url': linkUrl,
+      'photo_path': photoPath,
       'is_official': isOfficial,
     };
     if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
@@ -123,12 +125,14 @@ class AdminController {
     required String placeName,
     required String memo,
     required String linkUrl,
+    required String photoPath,
     required bool isOfficial,
   }) async {
     final body = <String, dynamic>{
       'place_name': placeName,
       'memo': memo,
       'link_url': linkUrl,
+      'photo_path': photoPath,
       'is_official': isOfficial,
     };
     if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
@@ -181,6 +185,7 @@ class AdminDrinkLog {
     required this.placeName,
     required this.memo,
     required this.linkUrl,
+    required this.photoPath,
     required this.isOfficial,
   });
 
@@ -192,6 +197,7 @@ class AdminDrinkLog {
   final String placeName;
   final String memo;
   final String linkUrl;
+  final String photoPath;
   final bool isOfficial;
 
   factory AdminDrinkLog.fromJson(Map<String, dynamic> json) {
@@ -209,6 +215,7 @@ class AdminDrinkLog {
       placeName: json['place_name'] as String? ?? '',
       memo: json['memo'] as String? ?? '',
       linkUrl: json['link_url'] as String? ?? '',
+      photoPath: json['photo_path'] as String? ?? '',
       isOfficial: json['is_official'] as bool? ?? false,
     );
   }
