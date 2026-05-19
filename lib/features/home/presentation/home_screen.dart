@@ -1862,13 +1862,15 @@ class _PostPhoto extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
-      child: Image(
-        image: provider,
-        height: 150,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        gaplessPlayback: true,
-        errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Image(
+          image: provider,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          gaplessPlayback: true,
+          errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+        ),
       ),
     );
   }

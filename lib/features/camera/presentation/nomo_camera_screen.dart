@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
+import '../../../core/utils/nomo_photo_orientation.dart';
 
 class NomoCameraResult {
   const NomoCameraResult({required this.path, required this.filterName});
@@ -81,6 +83,13 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
         imageFormatGroup: ImageFormatGroup.jpeg,
       );
       await controller.initialize();
+      try {
+        await controller.lockCaptureOrientation(
+          DeviceOrientation.landscapeLeft,
+        );
+      } on CameraException {
+        // Capture is still validated after shooting/selection.
+      }
       await controller.setFlashMode(FlashMode.off);
       if (!mounted) {
         await controller.dispose();
@@ -156,6 +165,7 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
     try {
       final shot = await controller.takePicture();
       if (!mounted) return;
+      if (!await _ensureLandscapePhoto(shot.path) || !mounted) return;
       if (!widget.returnPhoto) {
         setState(() => _showStoryPreview = true);
         return;
@@ -185,6 +195,7 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
         maxWidth: 1600,
       );
       if (picked == null || !mounted) return;
+      if (!await _ensureLandscapePhoto(picked.path) || !mounted) return;
       if (!widget.returnPhoto) {
         setState(() => _showStoryPreview = true);
         return;
@@ -194,6 +205,20 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
       ).pop(NomoCameraResult(path: picked.path, filterName: _filter.name));
     } finally {
       if (mounted) setState(() => _isCapturing = false);
+    }
+  }
+
+  Future<bool> _ensureLandscapePhoto(String path) async {
+    try {
+      final isLandscape = await nomoIsLandscapePhoto(path);
+      if (isLandscape) return true;
+      if (mounted) {
+        _showSnack('横向き写真のみ投稿できます。端末を横にして撮影してください。');
+      }
+      return false;
+    } catch (_) {
+      if (mounted) _showSnack('写真を読み込めませんでした。');
+      return false;
     }
   }
 
