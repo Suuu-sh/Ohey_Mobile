@@ -87,6 +87,8 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
   late final AnimationController _openingExitController;
   late final Animation<double> _openingExitFade;
   bool _openingExitCompleted = false;
+  bool _didScheduleProfileRestore = false;
+  bool _didAttemptProfileRestore = false;
 
   @override
   void initState() {
@@ -140,10 +142,46 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
     final bootstrap = ref.watch(_nomoBootstrapProvider);
     return bootstrap.when(
       data: (_) {
-        ref.watch(nomoUserProvider);
+        final user = ref.watch(nomoUserProvider);
         ref.watch(supabaseAuthStateProvider);
-        ref.watch(supabaseClientProvider);
-        _startOpeningExit();
+        final hasSession =
+            ref.watch(supabaseClientProvider).auth.currentSession != null;
+
+        if (user != null || !hasSession) {
+          _didScheduleProfileRestore = false;
+          _didAttemptProfileRestore = false;
+        }
+
+        if (user == null &&
+            hasSession &&
+            !_didAttemptProfileRestore &&
+            !_didScheduleProfileRestore) {
+          _didScheduleProfileRestore = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            try {
+              await ref
+                  .read(nomoUserProvider.notifier)
+                  .loadFromBackendProfile()
+                  .timeout(const Duration(seconds: 5));
+            } catch (_) {
+              // If restore is slow or fails, reveal the app so it can show the
+              // normal logged-in/profile setup state instead of a blank screen.
+            } finally {
+              if (mounted) {
+                setState(() {
+                  _didAttemptProfileRestore = true;
+                  _didScheduleProfileRestore = false;
+                });
+              }
+            }
+          });
+        }
+
+        final canRevealApp =
+            user != null || !hasSession || _didAttemptProfileRestore;
+        if (canRevealApp) {
+          _startOpeningExit();
+        }
 
         return Stack(
           fit: StackFit.expand,
