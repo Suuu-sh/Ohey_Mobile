@@ -19,6 +19,7 @@ class NomoNotification {
     this.friendRequestId,
     this.friendRequestStatus,
     this.drinkInviteId,
+    this.drinkInviteStatus,
     this.notificationDate,
     this.systemKey,
   });
@@ -34,6 +35,7 @@ class NomoNotification {
   final String? friendRequestId;
   final String? friendRequestStatus;
   final String? drinkInviteId;
+  final String? drinkInviteStatus;
   final DateTime? notificationDate;
   final String? systemKey;
 
@@ -42,6 +44,10 @@ class NomoNotification {
     final friendRequest = json['friend_request'];
     final friendRequestMap = friendRequest is Map
         ? Map<String, dynamic>.from(friendRequest)
+        : null;
+    final drinkInvite = json['drink_invite'];
+    final drinkInviteMap = drinkInvite is Map
+        ? Map<String, dynamic>.from(drinkInvite)
         : null;
     return NomoNotification(
       id: json['id'] as String,
@@ -57,6 +63,7 @@ class NomoNotification {
       friendRequestId: json['friend_request_id'] as String?,
       friendRequestStatus: friendRequestMap?['status'] as String?,
       drinkInviteId: json['drink_invite_id'] as String?,
+      drinkInviteStatus: drinkInviteMap?['status'] as String?,
       notificationDate: _dateOnly(json['notification_date'] as String?),
       systemKey: json['system_key'] as String?,
     );
@@ -68,6 +75,10 @@ abstract interface class NotificationRepository {
   Future<void> markAllRead();
   Future<void> updateFriendRequest({
     required String friendRequestId,
+    required String status,
+  });
+  Future<void> updateDrinkInvite({
+    required String drinkInviteId,
     required String status,
   });
 }
@@ -103,6 +114,14 @@ class BackendNotificationRepository implements NotificationRepository {
     await _client.patch('/v1/friend-requests/$friendRequestId', {
       'status': status,
     });
+  }
+
+  @override
+  Future<void> updateDrinkInvite({
+    required String drinkInviteId,
+    required String status,
+  }) async {
+    await _client.patch('/v1/drink-invites/$drinkInviteId', {'status': status});
   }
 }
 

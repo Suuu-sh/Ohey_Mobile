@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'os_notification_service.dart';
 import '../data/notification_repository.dart';
 
 final notificationControllerProvider =
@@ -14,8 +15,14 @@ final hasUnreadNotificationsProvider = Provider<bool>((ref) {
 
 class NotificationController extends AsyncNotifier<List<NomoNotification>> {
   @override
-  Future<List<NomoNotification>> build() {
-    return ref.watch(notificationRepositoryProvider).fetchNotifications();
+  Future<List<NomoNotification>> build() async {
+    final notifications = await ref
+        .watch(notificationRepositoryProvider)
+        .fetchNotifications();
+    await ref
+        .read(osNotificationServiceProvider)
+        .showNewNotifications(notifications);
+    return notifications;
   }
 
   Future<void> markAllRead() async {
@@ -42,6 +49,20 @@ class NotificationController extends AsyncNotifier<List<NomoNotification>> {
           friendRequestId: friendRequestId,
           status: 'rejected',
         );
+    ref.invalidateSelf();
+  }
+
+  Future<void> acceptDrinkInvite(String drinkInviteId) async {
+    await ref
+        .read(notificationRepositoryProvider)
+        .updateDrinkInvite(drinkInviteId: drinkInviteId, status: 'accepted');
+    ref.invalidateSelf();
+  }
+
+  Future<void> rejectDrinkInvite(String drinkInviteId) async {
+    await ref
+        .read(notificationRepositoryProvider)
+        .updateDrinkInvite(drinkInviteId: drinkInviteId, status: 'rejected');
     ref.invalidateSelf();
   }
 }

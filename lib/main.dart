@@ -140,15 +140,10 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
     final bootstrap = ref.watch(_nomoBootstrapProvider);
     return bootstrap.when(
       data: (_) {
-        final user = ref.watch(nomoUserProvider);
+        ref.watch(nomoUserProvider);
         ref.watch(supabaseAuthStateProvider);
-        final hasSession =
-            ref.watch(supabaseClientProvider).auth.currentSession != null;
-        final canRevealFeed = user != null || !hasSession;
-
-        if (canRevealFeed) {
-          _startOpeningExit();
-        }
+        ref.watch(supabaseClientProvider);
+        _startOpeningExit();
 
         return Stack(
           fit: StackFit.expand,
