@@ -40,6 +40,12 @@ class _NomoAvatarPainter extends CustomPainter {
     canvas.save();
     canvas.scale(scale);
 
+    if (avatar.isAdmin) {
+      _drawAdminMascot(canvas, showBody: showBody);
+      canvas.restore();
+      return;
+    }
+
     final skin = NomoAvatar.skinColors[avatar.skin];
     final hair =
         NomoAvatar.hairColors[avatar.hair % NomoAvatar.hairColors.length];
@@ -54,9 +60,6 @@ class _NomoAvatarPainter extends CustomPainter {
         const Radius.circular(34),
       );
       canvas.drawRRect(body, Paint()..color = shirt);
-      if (avatar.isAdmin) {
-        _drawAdminBody(canvas);
-      }
     }
 
     canvas.drawOval(const Rect.fromLTWH(37, 70, 25, 20), skinPaint);
@@ -70,75 +73,119 @@ class _NomoAvatarPainter extends CustomPainter {
     canvas.drawRRect(head, skinPaint);
 
     _drawHair(canvas, hair);
-    if (avatar.isAdmin) {
-      _drawAdminCrown(canvas);
-    }
     _drawEyes(canvas);
     _drawNose(canvas, skin);
     _drawMouth(canvas);
     _drawAccessory(canvas);
-    if (avatar.isAdmin) {
-      _drawAdminSparkles(canvas);
-    }
 
     canvas.restore();
   }
 
-  void _drawAdminBody(Canvas canvas) {
-    final sash = Paint()..color = const Color(0xFFFFD25B);
-    final outline = Paint()
-      ..color = const Color(0xFF1B2027).withValues(alpha: .14)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(const Offset(62, 126), const Offset(116, 176), outline);
-    canvas.drawLine(
-      const Offset(62, 126),
-      const Offset(116, 176),
-      Paint()
-        ..color = sash.color
-        ..strokeWidth = 12
-        ..strokeCap = StrokeCap.round,
+  void _drawAdminMascot(Canvas canvas, {required bool showBody}) {
+    final background = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF10103A), Color(0xFF1A123E), Color(0xFF2A103A)],
+      ).createShader(const Rect.fromLTWH(14, 12, 152, 152));
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(14, 12, 152, 152),
+        const Radius.circular(38),
+      ),
+      background,
     );
-    canvas.drawCircle(const Offset(90, 146), 11, sash);
-    canvas.drawCircle(
-      const Offset(90, 146),
-      5,
-      Paint()..color = const Color(0xFF101820),
-    );
-  }
 
-  void _drawAdminCrown(Canvas canvas) {
-    final crown = Paint()..color = const Color(0xFFFFD25B);
-    final shadow = Paint()
-      ..color = const Color(0xFF1B2027).withValues(alpha: .14);
-    final path = Path()
-      ..moveTo(58, 36)
-      ..lineTo(68, 16)
-      ..lineTo(84, 34)
-      ..lineTo(98, 14)
-      ..lineTo(112, 34)
-      ..lineTo(128, 16)
-      ..lineTo(122, 42)
-      ..quadraticBezierTo(90, 52, 58, 42)
+    final glow = Paint()
+      ..color = const Color(0xFFFF40B7).withValues(alpha: .24)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18);
+    canvas.drawOval(const Rect.fromLTWH(18, 44, 140, 118), glow);
+
+    final bodyPath = Path()
+      ..moveTo(14, 148)
+      ..cubicTo(16, 96, 42, 58, 88, 54)
+      ..cubicTo(132, 50, 160, 83, 162, 132)
+      ..cubicTo(162, 148, 154, 160, 139, 164)
+      ..lineTo(48, 166)
+      ..cubicTo(28, 166, 14, 160, 14, 148)
       ..close();
-    canvas.drawPath(path.shift(const Offset(0, 3)), shadow);
-    canvas.drawPath(path, crown);
-    canvas.drawCircle(const Offset(68, 16), 4, crown);
-    canvas.drawCircle(const Offset(98, 14), 4, crown);
-    canvas.drawCircle(const Offset(128, 16), 4, crown);
-  }
+    final bodyPaint = Paint()
+      ..shader = const RadialGradient(
+        center: Alignment(-.42, -.55),
+        radius: 1.1,
+        colors: [Color(0xFFFF6ECC), Color(0xFFFF1AA8), Color(0xFFE9007D)],
+      ).createShader(const Rect.fromLTWH(8, 48, 160, 126));
+    canvas.drawPath(bodyPath, bodyPaint);
 
-  void _drawAdminSparkles(Canvas canvas) {
-    final paint = Paint()
-      ..color = const Color(0xFF21E0C2)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round;
-    for (final center in [const Offset(35, 44), const Offset(145, 58)]) {
-      canvas.drawLine(center.translate(-7, 0), center.translate(7, 0), paint);
-      canvas.drawLine(center.translate(0, -7), center.translate(0, 7), paint);
-    }
+    final shine = Paint()
+      ..color = Colors.white.withValues(alpha: .30)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    canvas.drawOval(const Rect.fromLTWH(28, 60, 74, 30), shine);
+
+    final stemPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFFB8FF44), Color(0xFF44D817)],
+      ).createShader(const Rect.fromLTWH(83, 19, 48, 44));
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(82, 42, 22, 30),
+        const Radius.circular(12),
+      ),
+      stemPaint,
+    );
+    canvas.drawOval(const Rect.fromLTWH(80, 18, 58, 38), stemPaint);
+    canvas.drawOval(
+      const Rect.fromLTWH(86, 21, 42, 14),
+      Paint()..color = Colors.white.withValues(alpha: .22),
+    );
+
+    final eyePaint = Paint()..color = const Color(0xFF111321);
+    canvas.drawOval(const Rect.fromLTWH(44, 78, 34, 58), eyePaint);
+    canvas.drawOval(const Rect.fromLTWH(103, 84, 32, 58), eyePaint);
+    canvas.drawOval(
+      const Rect.fromLTWH(56, 84, 12, 15),
+      Paint()..color = Colors.white,
+    );
+    canvas.drawOval(
+      const Rect.fromLTWH(113, 91, 11, 14),
+      Paint()..color = Colors.white,
+    );
+
+    final mouth = Path()
+      ..moveTo(78, 128)
+      ..cubicTo(84, 142, 107, 143, 116, 129)
+      ..cubicTo(116, 122, 108, 122, 101, 124)
+      ..cubicTo(91, 128, 86, 121, 80, 120)
+      ..cubicTo(76, 121, 76, 125, 78, 128)
+      ..close();
+    canvas.drawPath(mouth, Paint()..color = const Color(0xFF121025));
+    canvas.drawOval(
+      const Rect.fromLTWH(86, 134, 22, 10),
+      Paint()..color = const Color(0xFFFF7CCB).withValues(alpha: .5),
+    );
+
+    final sparklePaint = Paint()..color = const Color(0xFFFF5DCB);
+    final sparkle = Path()
+      ..moveTo(150, 58)
+      ..quadraticBezierTo(156, 72, 169, 78)
+      ..quadraticBezierTo(156, 84, 150, 99)
+      ..quadraticBezierTo(144, 84, 131, 78)
+      ..quadraticBezierTo(144, 72, 150, 58)
+      ..close();
+    canvas.drawPath(
+      sparkle.shift(const Offset(0, 1)),
+      Paint()..color = const Color(0xFFFF5DCB).withValues(alpha: .25),
+    );
+    canvas.drawPath(sparkle, sparklePaint);
+    canvas.drawPath(
+      sparkle,
+      Paint()
+        ..color = Colors.white.withValues(alpha: .58)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
   }
 
   void _drawHair(Canvas canvas, Color color) {
