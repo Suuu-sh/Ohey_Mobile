@@ -3255,145 +3255,110 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
 
   final background = Paint()
     ..shader = const LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [Color(0xFF07131E), Color(0xFF112D3F), Color(0xFF21D6C4)],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFF05080D), Color(0xFF111821), Color(0xFF05080D)],
+      stops: [0, .48, 1],
     ).createShader(rect);
   canvas.drawRect(rect, background);
 
-  final photoPath = item.photoAssetPath;
-  if (photoPath != null && photoPath.startsWith('/')) {
-    final file = File(photoPath);
-    if (await file.exists()) {
-      final bytes = await file.readAsBytes();
-      final codec = await ui.instantiateImageCodec(bytes);
-      final frame = await codec.getNextFrame();
-      final image = frame.image;
-      final source = Rect.fromLTWH(
-        0,
-        0,
-        image.width.toDouble(),
-        image.height.toDouble(),
-      );
-      final imageAspect = image.width / image.height;
-      final targetAspect = width / height;
-      Rect target;
-      if (imageAspect > targetAspect) {
-        final targetWidth = height * imageAspect;
-        target = Rect.fromLTWH(
-          (width - targetWidth) / 2,
-          0,
-          targetWidth,
-          height,
-        );
-      } else {
-        final targetHeight = width / imageAspect;
-        target = Rect.fromLTWH(
-          0,
-          (height - targetHeight) / 2,
-          width,
-          targetHeight,
-        );
-      }
-      canvas.drawImageRect(image, source, target, Paint());
-      canvas.drawRect(
-        rect,
-        Paint()..color = Colors.black.withValues(alpha: .38),
-      );
-      image.dispose();
-    }
-  }
-
-  final cardRect = RRect.fromRectAndRadius(
-    const Rect.fromLTWH(86, 1130, 908, 480),
-    const Radius.circular(52),
-  );
-  canvas.drawRRect(
-    cardRect,
-    Paint()..color = const Color(0xFF07131E).withValues(alpha: .78),
-  );
-  canvas.drawRRect(
-    cardRect,
-    Paint()
-      ..color = Colors.white.withValues(alpha: .18)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3,
-  );
-
-  void paintText(
-    String text, {
-    required double x,
-    required double y,
-    required double maxWidth,
-    required double size,
-    required FontWeight weight,
-    Color color = Colors.white,
-    int? maxLines,
-  }) {
-    final painter = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: TextStyle(
-          color: color,
-          fontSize: size,
-          fontWeight: weight,
-          height: 1.22,
-          letterSpacing: -0.8,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-      maxLines: maxLines,
-      ellipsis: '…',
-    )..layout(maxWidth: maxWidth);
-    painter.paint(canvas, Offset(x, y));
-  }
-
-  paintText(
-    'Nomo',
-    x: 116,
-    y: 120,
-    maxWidth: 500,
-    size: 64,
-    weight: FontWeight.w900,
-    color: _FeedColors.teal,
-  );
-  paintText(
-    '飲みログ',
-    x: 116,
-    y: 1212,
-    maxWidth: 820,
-    size: 44,
-    weight: FontWeight.w900,
-    color: _FeedColors.teal,
-  );
-  paintText(
-    item.userName,
-    x: 116,
-    y: 1284,
-    maxWidth: 820,
-    size: 58,
-    weight: FontWeight.w900,
-  );
-  final body = item.body.trim();
-  if (body.isNotEmpty) {
-    paintText(
-      body,
-      x: 116,
-      y: 1390,
-      maxWidth: 820,
-      size: 54,
-      weight: FontWeight.w900,
-      maxLines: 3,
+  final photo = await _loadSharePhoto(item.photoAssetPath);
+  if (photo != null) {
+    final blurredBackdropRect = Rect.fromLTWH(-160, 0, width + 320, height);
+    _paintCoverImage(
+      canvas,
+      image: photo,
+      target: blurredBackdropRect,
+      opacity: .20,
+    );
+    canvas.drawRect(
+      rect,
+      Paint()..color = const Color(0xFF05080D).withValues(alpha: .70),
     );
   }
-  paintText(
+
+  const cardWidth = 930.0;
+  const cardHorizontalPadding = 42.0;
+  const cardTopPadding = 42.0;
+  const photoWidth = cardWidth - cardHorizontalPadding * 2;
+  const photoHeight = photoWidth * 9 / 16;
+  const textTopGap = 38.0;
+  const captionFontSize = 54.0;
+  const metaFontSize = 34.0;
+  const metaGap = 16.0;
+  const cardBottomPadding = 44.0;
+  const cardHeight =
+      cardTopPadding +
+      photoHeight +
+      textTopGap +
+      captionFontSize * 1.20 +
+      metaGap +
+      metaFontSize * 1.18 +
+      cardBottomPadding;
+  const cardLeft = (width - cardWidth) / 2;
+  const cardTop = (height - cardHeight) / 2;
+  final cardRect = Rect.fromLTWH(cardLeft, cardTop, cardWidth, cardHeight);
+  final cardRRect = RRect.fromRectAndRadius(cardRect, const Radius.circular(4));
+
+  canvas.drawRRect(
+    cardRRect.shift(const Offset(0, 18)),
+    Paint()
+      ..color = Colors.black.withValues(alpha: .26)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24),
+  );
+  canvas.drawRRect(cardRRect, Paint()..color = Colors.white);
+
+  final photoRect = Rect.fromLTWH(
+    cardLeft + cardHorizontalPadding,
+    cardTop + cardTopPadding,
+    photoWidth,
+    photoHeight,
+  );
+  final photoRRect = RRect.fromRectAndRadius(
+    photoRect,
+    const Radius.circular(2),
+  );
+  if (photo != null) {
+    canvas.save();
+    canvas.clipRRect(photoRRect);
+    _paintCoverImage(canvas, image: photo, target: photoRect);
+    canvas.restore();
+    photo.dispose();
+  } else {
+    canvas.drawRRect(
+      photoRRect,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFF0A8D), Color(0xFF21D6C4)],
+        ).createShader(photoRect),
+    );
+  }
+
+  final title = item.body.trim().isNotEmpty ? item.body.trim() : item.userName;
+  final captionTop = photoRect.bottom + textTopGap;
+  _paintShareText(
+    canvas,
+    title,
+    x: photoRect.left,
+    y: captionTop,
+    maxWidth: photoRect.width,
+    size: captionFontSize,
+    weight: FontWeight.w700,
+    color: const Color(0xFF111111),
+    maxLines: 1,
+  );
+  _paintShareText(
+    canvas,
     item.timeAgo,
-    x: 116,
-    y: 1532,
-    maxWidth: 820,
-    size: 34,
-    weight: FontWeight.w800,
-    color: Colors.white.withValues(alpha: .68),
+    x: photoRect.left,
+    y: captionTop + captionFontSize * 1.20 + metaGap,
+    maxWidth: photoRect.width,
+    size: metaFontSize,
+    weight: FontWeight.w700,
+    color: const Color(0xFF8D8D8D),
+    maxLines: 1,
   );
 
   final picture = recorder.endRecording();
@@ -3408,6 +3373,100 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
   output.dispose();
   picture.dispose();
   return path;
+}
+
+Future<ui.Image?> _loadSharePhoto(String? path) async {
+  final normalized = path?.trim();
+  if (normalized == null || normalized.isEmpty) return null;
+  try {
+    late final Uint8List bytes;
+    if (normalized.startsWith('/')) {
+      final file = File(normalized);
+      if (!await file.exists()) return null;
+      bytes = await file.readAsBytes();
+    } else if (normalized.startsWith('assets/')) {
+      final data = await rootBundle.load(normalized);
+      bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    } else {
+      return null;
+    }
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    return frame.image;
+  } catch (_) {
+    return null;
+  }
+}
+
+void _paintCoverImage(
+  Canvas canvas, {
+  required ui.Image image,
+  required Rect target,
+  double opacity = 1,
+}) {
+  final source = Rect.fromLTWH(
+    0,
+    0,
+    image.width.toDouble(),
+    image.height.toDouble(),
+  );
+  final imageAspect = image.width / image.height;
+  final targetAspect = target.width / target.height;
+  Rect sourceCrop;
+  if (imageAspect > targetAspect) {
+    final cropWidth = image.height * targetAspect;
+    sourceCrop = Rect.fromLTWH(
+      (image.width - cropWidth) / 2,
+      0,
+      cropWidth,
+      image.height.toDouble(),
+    );
+  } else {
+    final cropHeight = image.width / targetAspect;
+    sourceCrop = Rect.fromLTWH(
+      0,
+      (image.height - cropHeight) / 2,
+      image.width.toDouble(),
+      cropHeight,
+    );
+  }
+  final paint = Paint()..filterQuality = ui.FilterQuality.high;
+  if (opacity < 1) {
+    paint.colorFilter = ColorFilter.mode(
+      Colors.white.withValues(alpha: opacity),
+      BlendMode.modulate,
+    );
+  }
+  canvas.drawImageRect(image, sourceCrop.intersect(source), target, paint);
+}
+
+void _paintShareText(
+  Canvas canvas,
+  String text, {
+  required double x,
+  required double y,
+  required double maxWidth,
+  required double size,
+  required FontWeight weight,
+  required Color color,
+  int? maxLines,
+}) {
+  final painter = TextPainter(
+    text: TextSpan(
+      text: text,
+      style: TextStyle(
+        color: color,
+        fontSize: size,
+        fontWeight: weight,
+        height: 1.18,
+        letterSpacing: -0.8,
+      ),
+    ),
+    textDirection: TextDirection.ltr,
+    maxLines: maxLines,
+    ellipsis: '…',
+  )..layout(maxWidth: maxWidth);
+  painter.paint(canvas, Offset(x, y));
 }
 
 class _FeedColors {
