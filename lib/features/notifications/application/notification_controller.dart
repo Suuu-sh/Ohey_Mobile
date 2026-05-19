@@ -51,4 +51,18 @@ class NotificationController extends AsyncNotifier<List<NomoNotification>> {
         );
     ref.invalidateSelf();
   }
+
+  Future<void> acceptDrinkInvite(String drinkInviteId) async {
+    await ref
+        .read(notificationRepositoryProvider)
+        .updateDrinkInvite(drinkInviteId: drinkInviteId, status: 'accepted');
+    ref.invalidateSelf();
+  }
+
+  Future<void> rejectDrinkInvite(String drinkInviteId) async {
+    await ref
+        .read(notificationRepositoryProvider)
+        .updateDrinkInvite(drinkInviteId: drinkInviteId, status: 'rejected');
+    ref.invalidateSelf();
+  }
 }
