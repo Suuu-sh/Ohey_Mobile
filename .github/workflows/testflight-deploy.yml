@@ -166,10 +166,91 @@ jobs:
           security default-keychain -d user -s "$KEYCHAIN_PATH"
           security find-identity -v -p codesigning "$KEYCHAIN_PATH"
 
-      - name: Generate automatic signing export options
+      - name: Download App Store provisioning profiles
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
           set -euo pipefail
-          cat > "$EXPORT_OPTIONS_PLIST" <<'PLIST'
+          ruby <<'RUBY'
+          require 'base64'
+          require 'json'
+          require 'net/http'
+          require 'openssl'
+          require 'uri'
+
+          key_id = ENV.fetch('ASC_KEY_ID')
+          issuer_id = ENV.fetch('ASC_ISSUER_ID')
+          private_key = OpenSSL::PKey.read(File.read(ENV.fetch('APP_STORE_CONNECT_KEY_PATH')))
+
+          def b64url(data)
+            Base64.urlsafe_encode64(data).delete('=')
+          end
+
+          def der_to_jose(der_sig, size)
+            asn1 = OpenSSL::ASN1.decode(der_sig)
+            asn1.value.map(&:value).map { |i| i.to_s(2).rjust(size, "\x00") }.join
+          end
+
+          def token_for(key_id, issuer_id, private_key)
+            now = Time.now.to_i
+            header = { alg: 'ES256', kid: key_id, typ: 'JWT' }
+            payload = { iss: issuer_id, iat: now, exp: now + 1200, aud: 'appstoreconnect-v1' }
+            signing_input = [b64url(header.to_json), b64url(payload.to_json)].join('.')
+            der_sig = private_key.sign('SHA256', signing_input)
+            [signing_input, b64url(der_to_jose(der_sig, 32))].join('.')
+          end
+
+          TOKEN = token_for(key_id, issuer_id, private_key)
+
+          def get_json(path, params = {})
+            uri = URI("https://api.appstoreconnect.apple.com#{path}")
+            uri.query = URI.encode_www_form(params) unless params.empty?
+            request = Net::HTTP::Get.new(uri)
+            request['Authorization'] = "Bearer #{TOKEN}"
+            request['Content-Type'] = 'application/json'
+            response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |http| http.request(request) }
+            parsed = JSON.parse(response.body)
+            unless response.is_a?(Net::HTTPSuccess)
+              warn JSON.pretty_generate(parsed)
+              exit 1
+            end
+            parsed
+          end
+
+          profiles = {
+            'APP_PROVISIONING_PROFILE_NAME' => 'Nomo App Store CI App Groups',
+            'WIDGET_PROVISIONING_PROFILE_NAME' => 'Nomo Widgets App Store CI',
+          }
+
+          profile_dir = File.expand_path('~/Library/MobileDevice/Provisioning Profiles')
+          Dir.mkdir(File.expand_path('~/Library/MobileDevice')) unless Dir.exist?(File.expand_path('~/Library/MobileDevice'))
+          Dir.mkdir(profile_dir) unless Dir.exist?(profile_dir)
+
+          File.open(ENV.fetch('GITHUB_ENV'), 'a') do |env|
+            profiles.each do |env_name, profile_name|
+              response = get_json('/v1/profiles', {
+                'filter[name]' => profile_name,
+                'filter[profileState]' => 'ACTIVE',
+                'limit' => '10',
+              })
+              profile = response.fetch('data').find { |item| item.dig('attributes', 'name') == profile_name }
+              abort("Provisioning profile not found: #{profile_name}") unless profile
+
+              attrs = profile.fetch('attributes')
+              uuid = attrs.fetch('uuid')
+              content = Base64.decode64(attrs.fetch('profileContent'))
+              File.binwrite(File.join(profile_dir, "#{uuid}.mobileprovision"), content)
+              env.puts "#{env_name}=#{profile_name}"
+              puts "Installed #{profile_name} (#{uuid})"
+            end
+          end
+          RUBY
+
+      - name: Generate manual signing export options
+        run: |
+          set -euo pipefail
+          cat > "$EXPORT_OPTIONS_PLIST" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -180,8 +261,17 @@ jobs:
             <false/>
             <key>method</key>
             <string>app-store-connect</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>app.nomo.nomo</key>
+              <string>$APP_PROVISIONING_PROFILE_NAME</string>
+              <key>app.nomo.nomo.widgets</key>
+              <string>$WIDGET_PROVISIONING_PROFILE_NAME</string>
+            </dict>
+            <key>signingCertificate</key>
+            <string>Apple Distribution</string>
             <key>signingStyle</key>
-            <string>automatic</string>
+            <string>manual</string>
             <key>teamID</key>
             <string>83J5SB3ZPX</string>
             <key>uploadSymbols</key>
@@ -191,10 +281,64 @@ jobs:
           PLIST
           plutil -p "$EXPORT_OPTIONS_PLIST"
 
-      - name: Archive release build with automatic signing
-        env:
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      - name: Configure manual signing for archive
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          pbxproj = Path('ios/Runner.xcodeproj/project.pbxproj')
+          text = pbxproj.read_text(encoding='utf-8')
+          profiles = {
+              'app.nomo.nomo': os.environ['APP_PROVISIONING_PROFILE_NAME'],
+              'app.nomo.nomo.widgets': os.environ['WIDGET_PROVISIONING_PROFILE_NAME'],
+          }
+
+          def set_setting(block: str, key: str, value: str) -> str:
+              line = f"\t\t\t\t{key} = {value};"
+              pattern = re.compile(rf"^\t{{4}}{re.escape(key)} = .*;$", re.MULTILINE)
+              if pattern.search(block):
+                  return pattern.sub(line, block)
+              return block + line + "\n"
+
+          pattern = re.compile(
+              r"(?P<header>\t\t[0-9A-F]+ /\* [^*]+ \*/ = \{\n"
+              r"\t\t\tisa = XCBuildConfiguration;\n"
+              r"(?:\t\t\t(?!buildSettings = \{)[^\n]*\n)*"
+              r"\t\t\tbuildSettings = \{\n)"
+              r"(?P<body>.*?)"
+              r"(?P<footer>\t\t\t\};\n\t\t\tname = [^;]+;\n\t\t\};)",
+              re.DOTALL,
+          )
+
+          changed = {bundle_id: 0 for bundle_id in profiles}
+
+          def replace(match: re.Match) -> str:
+              body = match.group('body')
+              for bundle_id, profile_name in profiles.items():
+                  if f"PRODUCT_BUNDLE_IDENTIFIER = {bundle_id};" not in body:
+                      continue
+                  original = body
+                  body = set_setting(body, 'CODE_SIGN_STYLE', 'Manual')
+                  body = set_setting(body, 'CODE_SIGN_IDENTITY', '"Apple Distribution"')
+                  body = set_setting(body, 'DEVELOPMENT_TEAM', '83J5SB3ZPX')
+                  body = set_setting(body, 'PROVISIONING_PROFILE_SPECIFIER', f'"{profile_name}"')
+                  if body != original:
+                      changed[bundle_id] += 1
+                  return match.group('header') + body + match.group('footer')
+              return match.group(0)
+
+          text = pattern.sub(replace, text)
+          missing = [bundle_id for bundle_id, count in changed.items() if count == 0]
+          if missing:
+              raise SystemExit(f"No build settings block found for: {', '.join(missing)}")
+          pbxproj.write_text(text, encoding='utf-8')
+          print('Configured manual signing:', changed)
+          PY
+
+      - name: Archive release build
         run: |
           set -euo pipefail
           rm -rf "$ARCHIVE_PATH" "$EXPORT_PATH"
@@ -204,12 +348,7 @@ jobs:
             -configuration Release \
             -archivePath "$ARCHIVE_PATH" \
             -destination 'generic/platform=iOS' \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$APP_STORE_CONNECT_KEY_PATH" \
-            -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
-            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
             DEVELOPMENT_TEAM=83J5SB3ZPX \
-            CODE_SIGN_STYLE=Automatic \
             OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" \
             CURRENT_PROJECT_VERSION="${{ steps.build-number.outputs.build-number }}" \
             archive
@@ -225,7 +364,6 @@ jobs:
             -archivePath "$ARCHIVE_PATH" \
             -exportPath "$EXPORT_PATH" \
             -exportOptionsPlist "$EXPORT_OPTIONS_PLIST" \
-            -allowProvisioningUpdates \
             -authenticationKeyPath "$APP_STORE_CONNECT_KEY_PATH" \
             -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
             -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
