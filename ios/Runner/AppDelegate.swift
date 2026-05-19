@@ -1,10 +1,13 @@
 import Flutter
 import Photos
 import UIKit
+import WidgetKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var qrSaverChannel: FlutterMethodChannel?
+  private var widgetSyncChannel: FlutterMethodChannel?
+  private let widgetAppGroupIdentifier = "group.app.nomo.nomo"
 
   override func application(
     _ application: UIApplication,
@@ -12,6 +15,7 @@ import UIKit
   ) -> Bool {
     if let controller = window?.rootViewController as? FlutterViewController {
       registerQrSaverChannel(on: controller.binaryMessenger)
+      registerWidgetSyncChannel(on: controller.binaryMessenger)
     }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -20,6 +24,9 @@ import UIKit
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoQrSaver") {
       registerQrSaverChannel(on: registrar.messenger())
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoWidgetSync") {
+      registerWidgetSyncChannel(on: registrar.messenger())
     }
   }
 
@@ -32,6 +39,49 @@ import UIKit
       }
       self?.savePngToPhotos(call.arguments, result: result)
     }
+  }
+
+  private func registerWidgetSyncChannel(on messenger: FlutterBinaryMessenger) {
+    widgetSyncChannel = FlutterMethodChannel(name: "nomo/widget_sync", binaryMessenger: messenger)
+    widgetSyncChannel?.setMethodCallHandler { [weak self] call, result in
+      switch call.method {
+      case "updateSnapshot":
+        self?.updateWidgetSnapshot(call.arguments, result: result)
+      case "reloadAllTimelines":
+        if #available(iOS 14.0, *) {
+          WidgetCenter.shared.reloadAllTimelines()
+        }
+        result(nil)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+  }
+
+  private func updateWidgetSnapshot(_ arguments: Any?, result: @escaping FlutterResult) {
+    guard let payload = arguments as? [String: Any] else {
+      result(FlutterError(code: "invalid_payload", message: "Invalid widget snapshot payload.", details: nil))
+      return
+    }
+
+    let defaults = UserDefaults(suiteName: widgetAppGroupIdentifier) ?? .standard
+    defaults.set(payload["statusKey"] as? String, forKey: "statusKey")
+    defaults.set(payload["statusLabel"] as? String, forKey: "statusLabel")
+    defaults.set(payload["statusDescription"] as? String, forKey: "statusDescription")
+    defaults.set(payload["availableFriendsCount"] as? Int, forKey: "availableFriendsCount")
+    defaults.set(payload["availableFriendNames"] as? [String] ?? [], forKey: "availableFriendNames")
+
+    if let updatedAtMillis = payload["updatedAtMillis"] as? Double {
+      defaults.set(updatedAtMillis, forKey: "updatedAtMillis")
+    } else if let updatedAtMillis = payload["updatedAtMillis"] as? Int {
+      defaults.set(Double(updatedAtMillis), forKey: "updatedAtMillis")
+    }
+    defaults.synchronize()
+
+    if #available(iOS 14.0, *) {
+      WidgetCenter.shared.reloadAllTimelines()
+    }
+    result(nil)
   }
 
   private func savePngToPhotos(_ arguments: Any?, result: @escaping FlutterResult) {
