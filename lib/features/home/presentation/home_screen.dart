@@ -1503,8 +1503,9 @@ class _FeedPostCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: ink.withValues(alpha: .88),
+                          fontSize: 17,
                           fontWeight: FontWeight.w900,
-                          letterSpacing: -.2,
+                          letterSpacing: -.25,
                         ),
                       ),
                     ),
@@ -1616,8 +1617,8 @@ class _OfficialVerifiedBadge extends StatelessWidget {
       child: Semantics(
         label: '公式アカウント',
         child: SizedBox(
-          width: 19,
-          height: 19,
+          width: 22,
+          height: 22,
           child: Stack(
             alignment: Alignment.center,
             children: const [
@@ -1627,7 +1628,7 @@ class _OfficialVerifiedBadge extends StatelessWidget {
               Icon(
                 CupertinoIcons.checkmark_alt,
                 color: Colors.white,
-                size: 12,
+                size: 14,
                 weight: 900,
               ),
             ],
