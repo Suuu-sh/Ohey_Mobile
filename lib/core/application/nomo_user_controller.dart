@@ -32,12 +32,17 @@ class NomoUserController extends Notifier<NomoUser?> {
       await client.get('/v1/daily-status', query: {'date': _todayIsoDate()}),
     );
 
+    final isAdminAccount = NomoAvatar.isAdminEmail(
+      ref.read(supabaseClientProvider).auth.currentUser?.email,
+    );
     state = NomoUser(
       name: (row['display_name'] as String?)?.trim().isNotEmpty == true
           ? row['display_name'] as String
           : 'mi-mu',
       userId: (row['user_id'] as String?) ?? _defaultUserId(userId),
-      avatar: NomoAvatar.decode(row['avatar_url'] as String?),
+      avatar: isAdminAccount
+          ? NomoAvatar.adminAvatar
+          : NomoAvatar.decode(row['avatar_url'] as String?),
       dailyStatus: nomoDailyStatusFromKey(statusRow?['status'] as String?),
       isPlus: (row['is_plus'] as bool?) ?? false,
     );
@@ -67,14 +72,19 @@ class NomoUserController extends Notifier<NomoUser?> {
         'User ID must be 3-24 letters, numbers, or underscores.',
       );
     }
+    final profileAvatar = _avatarForSignedInAccount(ref, avatar);
     await client.put('/v1/me/profile', {
       'user_id': normalizedUserId,
       'display_name': trimmed,
       'character_key': 'avatar',
-      'avatar_url': avatar?.encode() ?? '',
+      'avatar_url': profileAvatar?.encode() ?? '',
     });
 
-    state = NomoUser(name: trimmed, avatar: avatar, userId: normalizedUserId);
+    state = NomoUser(
+      name: trimmed,
+      avatar: profileAvatar,
+      userId: normalizedUserId,
+    );
   }
 
   Future<void> updateProfile({
@@ -100,21 +110,26 @@ class NomoUserController extends Notifier<NomoUser?> {
         'User ID must be 3-24 letters, numbers, or underscores.',
       );
     }
+    final profileAvatar = _avatarForSignedInAccount(ref, avatar);
     await client.patch('/v1/me/profile', {
       'user_id': normalizedUserId,
       'display_name': trimmed,
       'character_key': 'avatar',
-      'avatar_url': avatar?.encode() ?? '',
+      'avatar_url': profileAvatar?.encode() ?? '',
     });
 
     state =
         (state ??
                 NomoUser(
                   name: trimmed,
-                  avatar: avatar,
+                  avatar: profileAvatar,
                   userId: _defaultUserId(authUserId),
                 ))
-            .copyWith(name: trimmed, userId: normalizedUserId, avatar: avatar);
+            .copyWith(
+              name: trimmed,
+              userId: normalizedUserId,
+              avatar: profileAvatar,
+            );
   }
 
   Future<void> updateDailyStatus(NomoDailyStatus status) async {
@@ -193,4 +208,11 @@ Map<String, dynamic>? _firstMapOrNull(Object? value) {
     return Map<String, dynamic>.from(value.first as Map);
   }
   return null;
+}
+
+NomoAvatar? _avatarForSignedInAccount(Ref ref, NomoAvatar? selectedAvatar) {
+  final email = ref.read(supabaseClientProvider).auth.currentUser?.email;
+  return NomoAvatar.isAdminEmail(email)
+      ? NomoAvatar.adminAvatar
+      : selectedAvatar;
 }

@@ -54,6 +54,9 @@ class _NomoAvatarPainter extends CustomPainter {
         const Radius.circular(34),
       );
       canvas.drawRRect(body, Paint()..color = shirt);
+      if (avatar.isAdmin) {
+        _drawAdminBody(canvas);
+      }
     }
 
     canvas.drawOval(const Rect.fromLTWH(37, 70, 25, 20), skinPaint);
@@ -67,12 +70,75 @@ class _NomoAvatarPainter extends CustomPainter {
     canvas.drawRRect(head, skinPaint);
 
     _drawHair(canvas, hair);
+    if (avatar.isAdmin) {
+      _drawAdminCrown(canvas);
+    }
     _drawEyes(canvas);
     _drawNose(canvas, skin);
     _drawMouth(canvas);
     _drawAccessory(canvas);
+    if (avatar.isAdmin) {
+      _drawAdminSparkles(canvas);
+    }
 
     canvas.restore();
+  }
+
+  void _drawAdminBody(Canvas canvas) {
+    final sash = Paint()..color = const Color(0xFFFFD25B);
+    final outline = Paint()
+      ..color = const Color(0xFF1B2027).withValues(alpha: .14)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(const Offset(62, 126), const Offset(116, 176), outline);
+    canvas.drawLine(
+      const Offset(62, 126),
+      const Offset(116, 176),
+      Paint()
+        ..color = sash.color
+        ..strokeWidth = 12
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawCircle(const Offset(90, 146), 11, sash);
+    canvas.drawCircle(
+      const Offset(90, 146),
+      5,
+      Paint()..color = const Color(0xFF101820),
+    );
+  }
+
+  void _drawAdminCrown(Canvas canvas) {
+    final crown = Paint()..color = const Color(0xFFFFD25B);
+    final shadow = Paint()
+      ..color = const Color(0xFF1B2027).withValues(alpha: .14);
+    final path = Path()
+      ..moveTo(58, 36)
+      ..lineTo(68, 16)
+      ..lineTo(84, 34)
+      ..lineTo(98, 14)
+      ..lineTo(112, 34)
+      ..lineTo(128, 16)
+      ..lineTo(122, 42)
+      ..quadraticBezierTo(90, 52, 58, 42)
+      ..close();
+    canvas.drawPath(path.shift(const Offset(0, 3)), shadow);
+    canvas.drawPath(path, crown);
+    canvas.drawCircle(const Offset(68, 16), 4, crown);
+    canvas.drawCircle(const Offset(98, 14), 4, crown);
+    canvas.drawCircle(const Offset(128, 16), 4, crown);
+  }
+
+  void _drawAdminSparkles(Canvas canvas) {
+    final paint = Paint()
+      ..color = const Color(0xFF21E0C2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    for (final center in [const Offset(35, 44), const Offset(145, 58)]) {
+      canvas.drawLine(center.translate(-7, 0), center.translate(7, 0), paint);
+      canvas.drawLine(center.translate(0, -7), center.translate(0, 7), paint);
+    }
   }
 
   void _drawHair(Canvas canvas, Color color) {
