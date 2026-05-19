@@ -24,7 +24,7 @@ class NomoPushNotificationService {
   bool _started = false;
 
   Future<void> start() async {
-    if (_started || kIsWeb || !Platform.isIOS) return;
+    if (_started || kIsWeb || !(Platform.isIOS || Platform.isAndroid)) return;
     _started = true;
 
     try {
@@ -62,7 +62,7 @@ class NomoPushNotificationService {
     if (token == null || token.isEmpty) return;
     await _ref.read(backendApiClientProvider).put('/v1/me/push-token', {
       'token': token,
-      'platform': 'ios',
+      'platform': Platform.isAndroid ? 'android' : 'ios',
     });
   }
 
