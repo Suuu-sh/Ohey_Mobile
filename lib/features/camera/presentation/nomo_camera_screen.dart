@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
-import '../../../core/utils/nomo_photo_orientation.dart';
 
 class NomoCameraResult {
   const NomoCameraResult({required this.path, required this.filterName});
@@ -43,10 +42,7 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    SystemChrome.setPreferredOrientations(const [DeviceOrientation.portraitUp]);
     _initializeCamera();
   }
 
@@ -89,11 +85,9 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
       );
       await controller.initialize();
       try {
-        await controller.lockCaptureOrientation(
-          DeviceOrientation.landscapeLeft,
-        );
+        await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
       } on CameraException {
-        // Capture is still validated after shooting/selection.
+        // If locking fails, keep the camera usable and let the plugin default.
       }
       await controller.setFlashMode(FlashMode.off);
       if (!mounted) {
@@ -134,22 +128,28 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
             onBackToCamera: () => setState(() => _showStoryPreview = false),
           ),
           Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: SafeArea(
+              left: false,
+              child: _SideCameraControls(
+                isCapturing: _isCapturing,
+                onPickAlbum: _pickFromAlbum,
+                onCapture: _capture,
+                onFlip: _flipCamera,
+              ),
+            ),
+          ),
+          Positioned(
             left: 0,
             right: 0,
             bottom: 0,
             child: SafeArea(
               top: false,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _BottomCameraBar(
-                    filter: _filter,
-                    isCapturing: _isCapturing,
-                    onPickAlbum: _pickFromAlbum,
-                    onCapture: _capture,
-                    onFlip: _flipCamera,
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 22),
+                child: Center(child: _FilterSelectPill(filter: _filter)),
               ),
             ),
           ),
@@ -170,7 +170,6 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
     try {
       final shot = await controller.takePicture();
       if (!mounted) return;
-      if (!await _ensureLandscapePhoto(shot.path) || !mounted) return;
       if (!widget.returnPhoto) {
         setState(() => _showStoryPreview = true);
         return;
@@ -200,7 +199,6 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
         maxWidth: 1600,
       );
       if (picked == null || !mounted) return;
-      if (!await _ensureLandscapePhoto(picked.path) || !mounted) return;
       if (!widget.returnPhoto) {
         setState(() => _showStoryPreview = true);
         return;
@@ -210,20 +208,6 @@ class _NomoCameraScreenState extends State<NomoCameraScreen> {
       ).pop(NomoCameraResult(path: picked.path, filterName: _filter.name));
     } finally {
       if (mounted) setState(() => _isCapturing = false);
-    }
-  }
-
-  Future<bool> _ensureLandscapePhoto(String path) async {
-    try {
-      final isLandscape = await nomoIsLandscapePhoto(path);
-      if (isLandscape) return true;
-      if (mounted) {
-        _showSnack('横向き写真のみ投稿できます。端末を横にして撮影してください。');
-      }
-      return false;
-    } catch (_) {
-      if (mounted) _showSnack('写真を読み込めませんでした。');
-      return false;
     }
   }
 
@@ -400,16 +384,14 @@ class _TopCameraControls extends StatelessWidget {
   }
 }
 
-class _BottomCameraBar extends StatelessWidget {
-  const _BottomCameraBar({
-    required this.filter,
+class _SideCameraControls extends StatelessWidget {
+  const _SideCameraControls({
     required this.isCapturing,
     required this.onPickAlbum,
     required this.onCapture,
     required this.onFlip,
   });
 
-  final _NomoFilter filter;
   final bool isCapturing;
   final VoidCallback onPickAlbum;
   final VoidCallback onCapture;
@@ -418,27 +400,21 @@ class _BottomCameraBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 22),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _FilterSelectPill(filter: filter),
-          const SizedBox(height: 18),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _AlbumButton(onTap: onPickAlbum),
-              GestureDetector(
-                onTap: onCapture,
-                child: _FilterCaptureBubble(
-                  filter: filter,
-                  isCapturing: isCapturing,
-                ),
-              ),
-              _FlipCameraButton(onTap: onFlip),
-            ],
-          ),
-        ],
+      padding: const EdgeInsets.only(right: 18),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _AlbumButton(onTap: onPickAlbum),
+            const SizedBox(height: 24),
+            GestureDetector(
+              onTap: onCapture,
+              child: _FilterCaptureBubble(isCapturing: isCapturing),
+            ),
+            const SizedBox(height: 24),
+            _FlipCameraButton(onTap: onFlip),
+          ],
+        ),
       ),
     );
   }
@@ -566,9 +542,8 @@ class _StoryPreviewOverlay extends StatelessWidget {
 }
 
 class _FilterCaptureBubble extends StatelessWidget {
-  const _FilterCaptureBubble({required this.filter, required this.isCapturing});
+  const _FilterCaptureBubble({required this.isCapturing});
 
-  final _NomoFilter filter;
   final bool isCapturing;
 
   @override
@@ -600,14 +575,10 @@ class _FilterCaptureBubble extends StatelessWidget {
         child: Center(
           child: isCapturing
               ? const CupertinoActivityIndicator(color: Colors.white)
-              : Text(
-                  filter.shortName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    shadows: [Shadow(color: Colors.black54, blurRadius: 6)],
-                  ),
+              : const NomoGeneratedIcon(
+                  CupertinoIcons.camera_fill,
+                  color: Colors.white,
+                  size: 34,
                 ),
         ),
       ),
