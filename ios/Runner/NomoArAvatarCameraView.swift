@@ -31,6 +31,7 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
   private let statusLabel = UILabel()
   private let channel: FlutterMethodChannel
   private var avatar: NomoNativeAvatar
+  private var filterMode: NomoArCameraFilterMode
   private var faceOverlayNode: SCNNode?
   private var faceGeometryNode: SCNNode?
   private var didStartSession = false
@@ -43,6 +44,7 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
       binaryMessenger: messenger
     )
     avatar = NomoNativeAvatar(arguments: (args as? [String: Any])?["avatar"] as? [String: Any])
+    filterMode = NomoArCameraFilterMode(arguments: args as? [String: Any])
     super.init()
 
     configureView()
@@ -107,7 +109,11 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
       case "setAvatar":
         let payload = call.arguments as? [String: Any]
         self.avatar = NomoNativeAvatar(arguments: payload)
-        self.applyAvatarTexture()
+        self.applyCurrentFilter()
+        result(nil)
+      case "setFilterMode":
+        self.filterMode = NomoArCameraFilterMode(rawValue: call.arguments as? String)
+        self.applyCurrentFilter()
         result(nil)
       case "capture":
         self.capture(result: result)
@@ -202,7 +208,7 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
     if let device = sceneView.device,
        let faceGeometry = ARSCNFaceGeometry(device: device, fillMesh: true) {
       if let material = faceGeometry.firstMaterial {
-        NomoAvatarTextureRenderer.configureFaceMaskMaterial(material, for: avatar)
+        NomoArFilterRenderer.configureFaceMaterial(material, mode: filterMode, avatar: avatar)
       }
 
       let geometryNode = SCNNode(geometry: faceGeometry)
@@ -210,9 +216,9 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
       faceGeometryNode = geometryNode
     }
 
-    let overlayNode = SCNNode(geometry: NomoAvatarTextureRenderer.makeFeaturePlane(for: avatar))
+    let overlayNode = SCNNode(geometry: NomoArFilterRenderer.makeOverlayPlane(mode: filterMode, avatar: avatar))
     overlayNode.name = "nomo-avatar-face-overlay"
-    overlayNode.position = SCNVector3(0, 0.008, 0.064)
+    overlayNode.position = NomoArFilterRenderer.overlayPosition(for: filterMode)
     overlayNode.eulerAngles = SCNVector3(0, 0, 0)
     rootNode.addChildNode(overlayNode)
     faceOverlayNode = overlayNode
@@ -229,17 +235,44 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
     let jawOpen = faceAnchor.blendShapes[.jawOpen]?.floatValue ?? 0
     let smileLeft = faceAnchor.blendShapes[.mouthSmileLeft]?.floatValue ?? 0
     let smileRight = faceAnchor.blendShapes[.mouthSmileRight]?.floatValue ?? 0
-    let expressionScale = 1.0 + CGFloat(min(0.08, (jawOpen + smileLeft + smileRight) * 0.035))
+    let expressionScale: CGFloat
+    if filterMode == .avatar {
+      expressionScale = 1.0 + CGFloat(min(0.08, (jawOpen + smileLeft + smileRight) * 0.035))
+    } else {
+      expressionScale = 1.0
+    }
     faceOverlayNode?.scale = SCNVector3(Float(expressionScale), Float(expressionScale), 1)
   }
 
-  private func applyAvatarTexture() {
+  private func applyCurrentFilter() {
     DispatchQueue.main.async { [weak self] in
       guard let self else { return }
       if let material = self.faceGeometryNode?.geometry?.firstMaterial {
-        NomoAvatarTextureRenderer.configureFaceMaskMaterial(material, for: self.avatar)
+        NomoArFilterRenderer.configureFaceMaterial(material, mode: self.filterMode, avatar: self.avatar)
       }
-      self.faceOverlayNode?.geometry = NomoAvatarTextureRenderer.makeFeaturePlane(for: self.avatar)
+      self.faceOverlayNode?.geometry = NomoArFilterRenderer.makeOverlayPlane(
+        mode: self.filterMode,
+        avatar: self.avatar
+      )
+      self.faceOverlayNode?.position = NomoArFilterRenderer.overlayPosition(for: self.filterMode)
+    }
+  }
+}
+
+private enum NomoArCameraFilterMode: String {
+  case avatar
+  case natural
+
+  init(arguments: [String: Any]?) {
+    self.init(rawValue: arguments?["filterMode"] as? String)
+  }
+
+  init(rawValue: String?) {
+    switch rawValue {
+    case "natural":
+      self = .natural
+    default:
+      self = .avatar
     }
   }
 }
@@ -307,23 +340,49 @@ private enum NomoPalette {
   ]
 }
 
-private enum NomoAvatarTextureRenderer {
-  static func configureFaceMaskMaterial(_ material: SCNMaterial, for avatar: NomoNativeAvatar) {
-    material.diffuse.contents = avatar.skinColor
-    material.lightingModel = .physicallyBased
+private enum NomoArFilterRenderer {
+  static func configureFaceMaterial(
+    _ material: SCNMaterial,
+    mode: NomoArCameraFilterMode,
+    avatar: NomoNativeAvatar
+  ) {
+    switch mode {
+    case .avatar:
+      material.diffuse.contents = avatar.skinColor
+      material.emission.contents = UIColor.black
+      material.lightingModel = .physicallyBased
+      material.transparency = 1
+      material.blendMode = .replace
+      material.writesToDepthBuffer = true
+      material.readsFromDepthBuffer = true
+      material.metalness.contents = 0
+      material.roughness.contents = 0.86
+      material.specular.contents = UIColor.white.withAlphaComponent(0.16)
+    case .natural:
+      material.diffuse.contents = avatar.skinColor.mixed(with: UIColor(hex: 0xFFE9DA), amount: 0.56)
+      material.emission.contents = UIColor(hex: 0xFFECD8).withAlphaComponent(0.16)
+      material.lightingModel = .constant
+      material.transparency = 0.24
+      material.blendMode = .alpha
+      material.writesToDepthBuffer = true
+      material.readsFromDepthBuffer = true
+      material.metalness.contents = 0
+      material.roughness.contents = 1
+      material.specular.contents = UIColor.clear
+    }
     material.isDoubleSided = true
-    material.transparency = 1
-    material.blendMode = .replace
-    material.writesToDepthBuffer = true
-    material.readsFromDepthBuffer = true
-    material.metalness.contents = 0
-    material.roughness.contents = 0.86
-    material.specular.contents = UIColor.white.withAlphaComponent(0.16)
   }
 
-  static func makeFeaturePlane(for avatar: NomoNativeAvatar) -> SCNPlane {
-    let image = makeFeatureImage(for: avatar)
-    let plane = SCNPlane(width: 0.172, height: 0.222)
+  static func makeOverlayPlane(mode: NomoArCameraFilterMode, avatar: NomoNativeAvatar) -> SCNPlane {
+    let image: UIImage
+    switch mode {
+    case .avatar:
+      image = makeFeatureImage(for: avatar)
+    case .natural:
+      image = makeNaturalRetouchImage(for: avatar)
+    }
+    let size = overlaySize(for: mode)
+    let plane = SCNPlane(width: size.width, height: size.height)
     let material = SCNMaterial()
     material.diffuse.contents = image
     material.isDoubleSided = true
@@ -333,6 +392,24 @@ private enum NomoAvatarTextureRenderer {
     material.readsFromDepthBuffer = true
     plane.firstMaterial = material
     return plane
+  }
+
+  static func overlayPosition(for mode: NomoArCameraFilterMode) -> SCNVector3 {
+    switch mode {
+    case .avatar:
+      SCNVector3(0, 0.008, 0.064)
+    case .natural:
+      SCNVector3(0, 0.002, 0.066)
+    }
+  }
+
+  private static func overlaySize(for mode: NomoArCameraFilterMode) -> CGSize {
+    switch mode {
+    case .avatar:
+      CGSize(width: 0.172, height: 0.222)
+    case .natural:
+      CGSize(width: 0.192, height: 0.232)
+    }
   }
 
   private static func makeFeatureImage(for avatar: NomoNativeAvatar) -> UIImage {
@@ -354,6 +431,75 @@ private enum NomoAvatarTextureRenderer {
         drawFace(avatar, includeSkin: false, in: cg)
       }
     }
+  }
+
+  private static func makeNaturalRetouchImage(for avatar: NomoNativeAvatar) -> UIImage {
+    let size = CGSize(width: 512, height: 512)
+    let format = UIGraphicsImageRendererFormat()
+    format.opaque = false
+    format.scale = 1
+    let renderer = UIGraphicsImageRenderer(size: size, format: format)
+    return renderer.image { context in
+      let cg = context.cgContext
+      cg.clear(CGRect(origin: .zero, size: size))
+      let scale = size.width / 180
+      cg.scaleBy(x: scale, y: scale)
+      drawNaturalRetouchOverlay(skin: avatar.skinColor, in: cg)
+    }
+  }
+
+  private static func drawNaturalRetouchOverlay(skin: UIColor, in cg: CGContext) {
+    // Lightweight beauty pass: a soft skin veil plus cheek/jaw contour.
+    // It intentionally avoids hard edges so the real face remains natural.
+    let skinVeil = skin.mixed(with: UIColor(hex: 0xFFF6EA), amount: 0.72).withAlphaComponent(0.16)
+    fillEllipse(CGRect(x: 35, y: 30, width: 110, height: 118), color: skinVeil, in: cg)
+
+    let highlight = UIColor.white.withAlphaComponent(0.16)
+    fillEllipse(CGRect(x: 69, y: 36, width: 42, height: 86), color: highlight, in: cg)
+    fillEllipse(CGRect(x: 58, y: 56, width: 22, height: 18), color: UIColor.white.withAlphaComponent(0.10), in: cg)
+    fillEllipse(CGRect(x: 100, y: 56, width: 22, height: 18), color: UIColor.white.withAlphaComponent(0.10), in: cg)
+
+    let contour = UIColor(hex: 0x5A3327).withAlphaComponent(0.16)
+    let softContour = UIColor(hex: 0x5A3327).withAlphaComponent(0.08)
+    drawFaceContourPath(left: true, color: softContour, inset: 0, in: cg)
+    drawFaceContourPath(left: false, color: softContour, inset: 0, in: cg)
+    drawFaceContourPath(left: true, color: contour, inset: 6, in: cg)
+    drawFaceContourPath(left: false, color: contour, inset: 6, in: cg)
+
+    fillEllipse(CGRect(x: 52, y: 82, width: 24, height: 18), color: UIColor(hex: 0xFF8AA8).withAlphaComponent(0.11), in: cg)
+    fillEllipse(CGRect(x: 104, y: 82, width: 24, height: 18), color: UIColor(hex: 0xFF8AA8).withAlphaComponent(0.11), in: cg)
+
+    let chinShadow = UIBezierPath()
+    chinShadow.move(to: CGPoint(x: 66, y: 124))
+    chinShadow.addQuadCurve(to: CGPoint(x: 114, y: 124), controlPoint: CGPoint(x: 90, y: 135))
+    chinShadow.addQuadCurve(to: CGPoint(x: 66, y: 124), controlPoint: CGPoint(x: 90, y: 130))
+    UIColor(hex: 0x5A3327).withAlphaComponent(0.08).setFill()
+    chinShadow.fill()
+  }
+
+  private static func drawFaceContourPath(left: Bool, color: UIColor, inset: CGFloat, in cg: CGContext) {
+    let sign: CGFloat = left ? 1 : -1
+    let outerX: CGFloat = left ? 34 + inset : 146 - inset
+    let innerX: CGFloat = left ? 58 + inset : 122 - inset
+    let path = UIBezierPath()
+    path.move(to: CGPoint(x: outerX, y: 45))
+    path.addCurve(
+      to: CGPoint(x: outerX + sign * 7, y: 130),
+      controlPoint1: CGPoint(x: outerX - sign * 11, y: 72),
+      controlPoint2: CGPoint(x: outerX - sign * 8, y: 112)
+    )
+    path.addQuadCurve(
+      to: CGPoint(x: innerX, y: 112),
+      controlPoint: CGPoint(x: left ? 48 : 132, y: 128)
+    )
+    path.addCurve(
+      to: CGPoint(x: innerX - sign * 2, y: 46),
+      controlPoint1: CGPoint(x: innerX - sign * 8, y: 92),
+      controlPoint2: CGPoint(x: innerX - sign * 8, y: 64)
+    )
+    path.close()
+    color.setFill()
+    path.fill()
   }
 
   private static func drawFace(_ avatar: NomoNativeAvatar, includeSkin: Bool, in cg: CGContext) {
