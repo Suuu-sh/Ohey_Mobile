@@ -18,6 +18,17 @@ class NomoAvatarView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (avatar.isAdmin) {
+      return ClipOval(
+        child: Image.asset(
+          'assets/images/admin_nomo_icon.png',
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
     return SizedBox(
       width: size,
       height: size,
@@ -39,12 +50,6 @@ class _NomoAvatarPainter extends CustomPainter {
     final scale = size.width / 180;
     canvas.save();
     canvas.scale(scale);
-
-    if (avatar.isAdmin) {
-      _drawAdminMascot(canvas, showBody: showBody);
-      canvas.restore();
-      return;
-    }
 
     final skin = NomoAvatar.skinColors[avatar.skin];
     final hair =
@@ -79,113 +84,6 @@ class _NomoAvatarPainter extends CustomPainter {
     _drawAccessory(canvas);
 
     canvas.restore();
-  }
-
-  void _drawAdminMascot(Canvas canvas, {required bool showBody}) {
-    final background = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF10103A), Color(0xFF1A123E), Color(0xFF2A103A)],
-      ).createShader(const Rect.fromLTWH(14, 12, 152, 152));
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        const Rect.fromLTWH(14, 12, 152, 152),
-        const Radius.circular(38),
-      ),
-      background,
-    );
-
-    final glow = Paint()
-      ..color = const Color(0xFFFF40B7).withValues(alpha: .24)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18);
-    canvas.drawOval(const Rect.fromLTWH(18, 44, 140, 118), glow);
-
-    final bodyPath = Path()
-      ..moveTo(14, 148)
-      ..cubicTo(16, 96, 42, 58, 88, 54)
-      ..cubicTo(132, 50, 160, 83, 162, 132)
-      ..cubicTo(162, 148, 154, 160, 139, 164)
-      ..lineTo(48, 166)
-      ..cubicTo(28, 166, 14, 160, 14, 148)
-      ..close();
-    final bodyPaint = Paint()
-      ..shader = const RadialGradient(
-        center: Alignment(-.42, -.55),
-        radius: 1.1,
-        colors: [Color(0xFFFF6ECC), Color(0xFFFF1AA8), Color(0xFFE9007D)],
-      ).createShader(const Rect.fromLTWH(8, 48, 160, 126));
-    canvas.drawPath(bodyPath, bodyPaint);
-
-    final shine = Paint()
-      ..color = Colors.white.withValues(alpha: .30)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawOval(const Rect.fromLTWH(28, 60, 74, 30), shine);
-
-    final stemPaint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFB8FF44), Color(0xFF44D817)],
-      ).createShader(const Rect.fromLTWH(83, 19, 48, 44));
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        const Rect.fromLTWH(82, 42, 22, 30),
-        const Radius.circular(12),
-      ),
-      stemPaint,
-    );
-    canvas.drawOval(const Rect.fromLTWH(80, 18, 58, 38), stemPaint);
-    canvas.drawOval(
-      const Rect.fromLTWH(86, 21, 42, 14),
-      Paint()..color = Colors.white.withValues(alpha: .22),
-    );
-
-    final eyePaint = Paint()..color = const Color(0xFF111321);
-    canvas.drawOval(const Rect.fromLTWH(44, 78, 34, 58), eyePaint);
-    canvas.drawOval(const Rect.fromLTWH(103, 84, 32, 58), eyePaint);
-    canvas.drawOval(
-      const Rect.fromLTWH(56, 84, 12, 15),
-      Paint()..color = Colors.white,
-    );
-    canvas.drawOval(
-      const Rect.fromLTWH(113, 91, 11, 14),
-      Paint()..color = Colors.white,
-    );
-
-    final mouth = Path()
-      ..moveTo(78, 128)
-      ..cubicTo(84, 142, 107, 143, 116, 129)
-      ..cubicTo(116, 122, 108, 122, 101, 124)
-      ..cubicTo(91, 128, 86, 121, 80, 120)
-      ..cubicTo(76, 121, 76, 125, 78, 128)
-      ..close();
-    canvas.drawPath(mouth, Paint()..color = const Color(0xFF121025));
-    canvas.drawOval(
-      const Rect.fromLTWH(86, 134, 22, 10),
-      Paint()..color = const Color(0xFFFF7CCB).withValues(alpha: .5),
-    );
-
-    final sparklePaint = Paint()..color = const Color(0xFFFF5DCB);
-    final sparkle = Path()
-      ..moveTo(150, 58)
-      ..quadraticBezierTo(156, 72, 169, 78)
-      ..quadraticBezierTo(156, 84, 150, 99)
-      ..quadraticBezierTo(144, 84, 131, 78)
-      ..quadraticBezierTo(144, 72, 150, 58)
-      ..close();
-    canvas.drawPath(
-      sparkle.shift(const Offset(0, 1)),
-      Paint()..color = const Color(0xFFFF5DCB).withValues(alpha: .25),
-    );
-    canvas.drawPath(sparkle, sparklePaint);
-    canvas.drawPath(
-      sparkle,
-      Paint()
-        ..color = Colors.white.withValues(alpha: .58)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
-    );
   }
 
   void _drawHair(Canvas canvas, Color color) {
