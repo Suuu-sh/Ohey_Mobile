@@ -1504,135 +1504,151 @@ class _FeedPostDetailScreenState extends State<_FeedPostDetailScreen> {
     final likedBy = item.likedBy;
 
     return CupertinoPageScaffold(
-      backgroundColor: isWhite ? Colors.white : const Color(0xFF05080D),
-      navigationBar: CupertinoNavigationBar(
-        middle: const Text('投稿詳細'),
-        backgroundColor: (isWhite ? Colors.white : const Color(0xFF05080D))
-            .withValues(alpha: .92),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: ListView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 120),
-          children: [
-            Row(
-              children: [
-                _AvatarBubble(
-                  avatar: item.avatar,
-                  size: 54,
-                  glowColor: item.accent,
+      backgroundColor: Colors.transparent,
+      child: _FeedBackground(
+        child: SafeArea(
+          bottom: false,
+          child: ListView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(
+              NomoPageHeader.horizontalPadding,
+              NomoPageHeader.topPadding,
+              NomoPageHeader.horizontalPadding,
+              120,
+            ),
+            children: [
+              NomoPageHeader(
+                title: '投稿詳細',
+                titleColor: item.isOfficial ? const Color(0xFFFF5EA8) : null,
+                trailing: NomoHeaderIconButton(
+                  icon: CupertinoIcons.xmark,
+                  semanticLabel: '投稿詳細を閉じる',
+                  color: item.isOfficial
+                      ? const Color(0xFFFF5EA8)
+                      : _FeedColors.teal,
+                  onTap: () => Navigator.of(context).pop(),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              item.userName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(
-                                    color: ink,
-                                    fontWeight: FontWeight.w900,
-                                  ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  _AvatarBubble(
+                    avatar: item.avatar,
+                    size: 54,
+                    glowColor: item.accent,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                item.userName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      color: ink,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                              ),
                             ),
-                          ),
-                          if (item.isOfficial) const _OfficialVerifiedBadge(),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.timeAgo,
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: _FeedColors.sub,
-                          fontWeight: FontWeight.w800,
+                            if (item.isOfficial) const _OfficialVerifiedBadge(),
+                          ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          item.timeAgo,
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                color: _FeedColors.sub,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (hasPhoto) ...[
+                const SizedBox(height: 18),
+                _PostPhoto(path: item.photoAssetPath!),
+              ],
+              if (body.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                Text(
+                  body,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: ink.withValues(alpha: .88),
+                    fontWeight: FontWeight.w800,
+                    height: 1.35,
+                    letterSpacing: -.35,
                   ),
                 ),
               ],
-            ),
-            if (hasPhoto) ...[
+              const SizedBox(height: 22),
+              Row(
+                children: [
+                  _DuoFeedButton(
+                    icon: _liked
+                        ? CupertinoIcons.heart_fill
+                        : CupertinoIcons.heart,
+                    label: '$_likes',
+                    color: _liked ? const Color(0xFFFF5EA8) : Colors.white,
+                    onTap: _toggleLike,
+                  ),
+                  const SizedBox(width: 10),
+                  _DuoFeedButton(
+                    icon: CupertinoIcons.square_arrow_up,
+                    label: '共有',
+                    color: Colors.white,
+                    useVectorShareIcon: true,
+                    onTap: widget.onShare,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 28),
+              _DetailSection(
+                title: '一緒に飲んだ人',
+                child: item.friends.isEmpty
+                    ? const _DetailEmptyText('この投稿にはまだ一緒に飲んだ人がいません。')
+                    : Column(
+                        children: [
+                          for (final friend in item.friends)
+                            _DetailPersonRow(person: friend),
+                        ],
+                      ),
+              ),
               const SizedBox(height: 18),
-              _PostPhoto(path: item.photoAssetPath!),
-            ],
-            if (body.isNotEmpty) ...[
-              const SizedBox(height: 18),
-              Text(
-                body,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: ink.withValues(alpha: .92),
-                  fontWeight: FontWeight.w900,
-                  height: 1.34,
-                  letterSpacing: -.45,
+              _DetailSection(
+                title: 'いいね',
+                trailing: Text(
+                  '$_likes件',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: _FeedColors.sub,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
+                child: likedBy.isEmpty
+                    ? _DetailEmptyText(
+                        _likes == 0 ? 'まだいいねはありません。' : '$_likes人がいいねしています。',
+                      )
+                    : Column(
+                        children: [
+                          for (final liker in likedBy.take(20))
+                            _DetailPersonRow(person: liker),
+                          if (_likes > likedBy.length)
+                            _DetailEmptyText(
+                              'ほか${_likes - likedBy.length}人がいいねしています。',
+                            ),
+                        ],
+                      ),
               ),
             ],
-            const SizedBox(height: 22),
-            Row(
-              children: [
-                _DuoFeedButton(
-                  icon: _liked
-                      ? CupertinoIcons.heart_fill
-                      : CupertinoIcons.heart,
-                  label: '$_likes',
-                  color: _liked ? const Color(0xFFFF5EA8) : Colors.white,
-                  onTap: _toggleLike,
-                ),
-                const SizedBox(width: 10),
-                _DuoFeedButton(
-                  icon: CupertinoIcons.square_arrow_up,
-                  label: '共有',
-                  color: Colors.white,
-                  useVectorShareIcon: true,
-                  onTap: widget.onShare,
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
-            _DetailSection(
-              title: '一緒に飲んだ人',
-              child: item.friends.isEmpty
-                  ? const _DetailEmptyText('この投稿にはまだ一緒に飲んだ人がいません。')
-                  : Column(
-                      children: [
-                        for (final friend in item.friends)
-                          _DetailPersonRow(person: friend),
-                      ],
-                    ),
-            ),
-            const SizedBox(height: 18),
-            _DetailSection(
-              title: 'いいね',
-              trailing: Text(
-                '$_likes件',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: _FeedColors.sub,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              child: likedBy.isEmpty
-                  ? _DetailEmptyText(
-                      _likes == 0 ? 'まだいいねはありません。' : '$_likes人がいいねしています。',
-                    )
-                  : Column(
-                      children: [
-                        for (final liker in likedBy.take(20))
-                          _DetailPersonRow(person: liker),
-                        if (_likes > likedBy.length)
-                          _DetailEmptyText(
-                            'ほか${_likes - likedBy.length}人がいいねしています。',
-                          ),
-                      ],
-                    ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -1657,9 +1673,7 @@ class _DetailSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isWhite
-            ? const Color(0xFFF8F4EE)
-            : Colors.white.withValues(alpha: .045),
+        color: isWhite ? Colors.white : Colors.white.withValues(alpha: .045),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isWhite
