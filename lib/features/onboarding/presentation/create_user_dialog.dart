@@ -686,6 +686,9 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _loginStep = _RegistrationStep.email;
       _registrationStep = _RegistrationStep.email;
       _passwordController.clear();
+      _userIdController.clear();
+      _nameController.clear();
+      _avatar = NomoAvatar.defaultAvatar;
       _error = null;
       _notice = null;
     });
@@ -763,6 +766,9 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       return;
     }
     setState(() {
+      _userIdController.clear();
+      _nameController.clear();
+      _avatar = NomoAvatar.defaultAvatar;
       _step = _OnboardingStep.profile;
       _error = null;
       _notice = null;
