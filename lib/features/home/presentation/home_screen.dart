@@ -1564,7 +1564,6 @@ class _FeedPostCard extends StatelessWidget {
                 icon: CupertinoIcons.square_arrow_up,
                 label: '',
                 color: Colors.white,
-                keepIconColor: true,
                 useVectorShareIcon: true,
                 onTap: onShare,
               ),
@@ -1716,7 +1715,6 @@ class _DuoFeedButton extends StatelessWidget {
     required this.label,
     required this.color,
     this.onTap,
-    this.keepIconColor = false,
     this.useVectorShareIcon = false,
   });
 
@@ -1724,15 +1722,14 @@ class _DuoFeedButton extends StatelessWidget {
   final String label;
   final Color color;
   final VoidCallback? onTap;
-  final bool keepIconColor;
   final bool useVectorShareIcon;
 
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final effectiveIconColor = keepIconColor
-        ? color
-        : (color == Colors.white && isWhite ? const Color(0xFF101820) : color);
+    final effectiveIconColor = color == Colors.white && isWhite
+        ? const Color(0xFF101820)
+        : color;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -3021,7 +3018,7 @@ class _FeedItem {
     return searchable.contains(normalized);
   }
 
-  bool get isLikeable => id.isNotEmpty && !isOfficial;
+  bool get isLikeable => id.isNotEmpty;
 
   final String id;
   final String userName;
