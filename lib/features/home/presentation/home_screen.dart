@@ -1558,10 +1558,6 @@ class _FeedPostDetailScreenState extends State<_FeedPostDetailScreen> {
                 ),
               ],
             ),
-            if (item.isOfficial) ...[
-              const SizedBox(height: 14),
-              const _OfficialPostPill(),
-            ],
             if (hasPhoto) ...[
               const SizedBox(height: 18),
               _PostPhoto(path: item.photoAssetPath!),
@@ -1887,10 +1883,6 @@ class _FeedPostCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (_isOfficial) ...[
-              const SizedBox(height: 12),
-              const _OfficialPostPill(),
-            ],
             if (hasPhoto) ...[
               const SizedBox(height: 12),
               _PostPhoto(path: photoPath!),
@@ -1971,46 +1963,6 @@ class _FeedPostCard extends StatelessWidget {
     if (!opened && context.mounted) {
       NomoToast.show(context, 'リンクを開けませんでした。');
     }
-  }
-}
-
-class _OfficialPostPill extends StatelessWidget {
-  const _OfficialPostPill();
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: 'Nomo公式からのお知らせ',
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFF5EA8).withValues(alpha: .12),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: const Color(0xFFFF5EA8).withValues(alpha: .24),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              CupertinoIcons.sparkles,
-              color: Color(0xFFFF5EA8),
-              size: 14,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              'Nomo公式のお知らせ',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: const Color(0xFFFF5EA8),
-                fontWeight: FontWeight.w900,
-                letterSpacing: .2,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
