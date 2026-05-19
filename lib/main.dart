@@ -10,6 +10,7 @@ import 'core/application/nomo_user_controller.dart';
 import 'core/config/supabase_config.dart';
 import 'core/data/auth_session_guard.dart';
 import 'core/data/supabase_client_provider.dart';
+import 'core/services/nomo_widget_sync.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/nomo_theme_mode.dart';
 import 'core/widgets/nomo_tab_shell.dart';
@@ -187,6 +188,7 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
           fit: StackFit.expand,
           children: [
             const NomoTabShell(),
+            const NomoWidgetSnapshotSync(),
             if (!_openingExitCompleted)
               FadeTransition(
                 opacity: _openingExitFade,
