@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'os_notification_service.dart';
 import '../data/notification_repository.dart';
 
 final notificationControllerProvider =
@@ -14,8 +15,14 @@ final hasUnreadNotificationsProvider = Provider<bool>((ref) {
 
 class NotificationController extends AsyncNotifier<List<NomoNotification>> {
   @override
-  Future<List<NomoNotification>> build() {
-    return ref.watch(notificationRepositoryProvider).fetchNotifications();
+  Future<List<NomoNotification>> build() async {
+    final notifications = await ref
+        .watch(notificationRepositoryProvider)
+        .fetchNotifications();
+    await ref
+        .read(osNotificationServiceProvider)
+        .showNewNotifications(notifications);
+    return notifications;
   }
 
   Future<void> markAllRead() async {
