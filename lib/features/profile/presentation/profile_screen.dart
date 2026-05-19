@@ -107,6 +107,7 @@ class ProfileScreen extends ConsumerWidget {
                                 if (reservations.isNotEmpty ||
                                     incomingInvites.isNotEmpty) ...[
                                   _ProfileReservationStrip(
+                                    isWhite: isWhite,
                                     userAvatar: user?.avatar,
                                     currentUserId: currentAuthUserId,
                                     reservations: reservations,
@@ -741,6 +742,7 @@ class _SimpleHero extends StatelessWidget {
 
 class _ProfileReservationStrip extends StatelessWidget {
   const _ProfileReservationStrip({
+    required this.isWhite,
     required this.userAvatar,
     required this.currentUserId,
     required this.reservations,
@@ -749,6 +751,7 @@ class _ProfileReservationStrip extends StatelessWidget {
     required this.onReject,
   });
 
+  final bool isWhite;
   final NomoAvatar? userAvatar;
   final String? currentUserId;
   final List<NomoDrinkInvite> reservations;
@@ -761,6 +764,7 @@ class _ProfileReservationStrip extends StatelessWidget {
     if (incomingInvites.isNotEmpty) {
       final invite = incomingInvites.first;
       return _IncomingInviteCard(
+        isWhite: isWhite,
         invite: invite,
         currentUserId: currentUserId,
         onAccept: () => onAccept(invite),
@@ -778,9 +782,24 @@ class _ProfileReservationStrip extends StatelessWidget {
       height: 72,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .045),
+        color: isWhite
+            ? const Color(0xFFF2F6FA)
+            : Colors.white.withValues(alpha: .045),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: .10)),
+        border: Border.all(
+          color: isWhite
+              ? const Color(0xFFDCE5EE)
+              : Colors.white.withValues(alpha: .10),
+        ),
+        boxShadow: isWhite
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .06),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                ),
+              ]
+            : null,
       ),
       child: Row(
         children: [
@@ -809,10 +828,10 @@ class _ProfileReservationStrip extends StatelessWidget {
               ],
             ),
           ),
-          const Text(
+          Text(
             '予約成立',
             style: TextStyle(
-              color: Colors.white,
+              color: isWhite ? const Color(0xFF27313B) : Colors.white,
               fontWeight: FontWeight.w900,
               fontSize: 14,
             ),
@@ -825,12 +844,14 @@ class _ProfileReservationStrip extends StatelessWidget {
 
 class _IncomingInviteCard extends StatelessWidget {
   const _IncomingInviteCard({
+    required this.isWhite,
     required this.invite,
     required this.currentUserId,
     required this.onAccept,
     required this.onReject,
   });
 
+  final bool isWhite;
   final NomoDrinkInvite invite;
   final String? currentUserId;
   final VoidCallback onAccept;
@@ -844,9 +865,22 @@ class _IncomingInviteCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF102336),
+        color: isWhite ? const Color(0xFFF2F6FA) : const Color(0xFF102336),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _ProfileColors.lime.withValues(alpha: .22)),
+        border: Border.all(
+          color: isWhite
+              ? const Color(0xFFDCE5EE)
+              : _ProfileColors.lime.withValues(alpha: .22),
+        ),
+        boxShadow: isWhite
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .06),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                ),
+              ]
+            : null,
       ),
       child: Row(
         children: [
@@ -857,8 +891,8 @@ class _IncomingInviteCard extends StatelessWidget {
               '${from.name}から飲み招待',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: isWhite ? const Color(0xFF27313B) : Colors.white,
                 fontWeight: FontWeight.w900,
                 fontSize: 14,
               ),
@@ -872,8 +906,12 @@ class _IncomingInviteCard extends StatelessWidget {
           const SizedBox(width: 8),
           _InviteResponseButton(
             label: 'あとで',
-            color: Colors.white.withValues(alpha: .10),
-            textColor: Colors.white.withValues(alpha: .70),
+            color: isWhite
+                ? const Color(0xFFE8EEF5)
+                : Colors.white.withValues(alpha: .10),
+            textColor: isWhite
+                ? const Color(0xFF637181)
+                : Colors.white.withValues(alpha: .70),
             onTap: onReject,
           ),
         ],
