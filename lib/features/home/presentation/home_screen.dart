@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -3381,6 +3382,14 @@ Future<ui.Image?> _loadSharePhoto(String? path) async {
       final file = File(normalized);
       if (!await file.exists()) return null;
       bytes = await file.readAsBytes();
+    } else if (normalized.startsWith('http://') ||
+        normalized.startsWith('https://')) {
+      final uri = Uri.tryParse(normalized);
+      if (uri == null) return null;
+      final request = await HttpClient().getUrl(uri);
+      final response = await request.close();
+      if (response.statusCode < 200 || response.statusCode >= 300) return null;
+      bytes = await consolidateHttpClientResponseBytes(response);
     } else if (normalized.startsWith('assets/')) {
       final data = await rootBundle.load(normalized);
       bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
