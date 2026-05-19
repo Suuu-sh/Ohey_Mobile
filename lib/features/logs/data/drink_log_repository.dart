@@ -1,11 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/data/backend_api_client.dart';
+import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
 
 final drinkLogRepositoryProvider = Provider<DrinkLogRepository>((ref) {
-  return BackendDrinkLogRepository(ref.watch(backendApiClientProvider));
+  return BackendDrinkLogRepository(
+    ref.watch(backendApiClientProvider),
+    ref.watch(supabaseClientProvider),
+  );
 });
 
 abstract interface class DrinkLogRepository {
@@ -26,9 +33,12 @@ class DrinkLogLikeState {
 }
 
 class BackendDrinkLogRepository implements DrinkLogRepository {
-  const BackendDrinkLogRepository(this._client);
+  const BackendDrinkLogRepository(this._client, this._supabase);
+
+  static const _photoBucket = 'nomo-photos';
 
   final BackendApiClient _client;
+  final SupabaseClient _supabase;
 
   @override
   Future<List<DrinkLog>> fetchLogs() async {
@@ -38,7 +48,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
         .map((row) => Map<String, dynamic>.from(row))
         .toList(growable: false);
 
-    return rows.map<DrinkLog>(_drinkLogFromRow).toList(growable: false);
+    return Future.wait(rows.map(_drinkLogFromRow));
   }
 
   @override
@@ -97,11 +107,14 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
 
   @override
   Future<DrinkLog> addLog(DrinkLog log) async {
+    final uploadedPhotoPath = await _uploadLocalPhotoIfNeeded(
+      log.photoAssetPath,
+    );
     final response = await _client.post('/v1/drink-logs', {
       'drank_at': log.date.toUtc().toIso8601String(),
       'place_name': log.place,
       'memo': log.memo,
-      'photo_path': log.photoAssetPath ?? '',
+      'photo_path': uploadedPhotoPath ?? '',
       'friend_ids': log.friends
           .map((friend) => friend.id)
           .toList(growable: false),
@@ -114,7 +127,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       friends: log.friends,
       place: (row['place_name'] as String?) ?? '',
       memo: (row['memo'] as String?) ?? '',
-      photoAssetPath: row['photo_path'] as String?,
+      photoAssetPath: await _displayPhotoPath(row['photo_path'] as String?),
       linkUrl: row['link_url'] as String?,
       likeCount: 0,
       likedByMe: false,
@@ -122,6 +135,76 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
           (row['owner_user_id'] as String?) ?? _client.currentUserId ?? '',
       isOfficial: (row['is_official'] as bool?) ?? false,
     );
+  }
+
+  Future<String?> _uploadLocalPhotoIfNeeded(String? path) async {
+    final normalized = path?.trim();
+    if (normalized == null || normalized.isEmpty) return null;
+    if (!normalized.startsWith('/')) return normalized;
+
+    final file = File(normalized);
+    if (!await file.exists()) return normalized;
+
+    final userId = _client.currentUserId;
+    if (userId == null || userId.isEmpty) {
+      throw StateError('写真をアップロードするにはログインが必要です。');
+    }
+
+    final extension = _safeExtension(normalized);
+    final storagePath =
+        'users/$userId/drink_logs/${DateTime.now().toUtc().microsecondsSinceEpoch}$extension';
+
+    await _supabase.storage
+        .from(_photoBucket)
+        .upload(
+          storagePath,
+          file,
+          fileOptions: FileOptions(
+            cacheControl: '3600',
+            contentType: _contentTypeForExtension(extension),
+            upsert: false,
+          ),
+        );
+    return storagePath;
+  }
+
+  Future<String?> _displayPhotoPath(String? path) async {
+    final normalized = path?.trim();
+    if (normalized == null || normalized.isEmpty) return null;
+    if (normalized.startsWith('/') ||
+        normalized.startsWith('http://') ||
+        normalized.startsWith('https://') ||
+        normalized.startsWith('assets/')) {
+      return normalized;
+    }
+
+    try {
+      return await _supabase.storage
+          .from(_photoBucket)
+          .createSignedUrl(normalized, 60 * 60);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _safeExtension(String path) {
+    final name = path.split('/').last;
+    final dot = name.lastIndexOf('.');
+    if (dot < 0 || dot == name.length - 1) return '.jpg';
+    final extension = name.substring(dot).toLowerCase();
+    return switch (extension) {
+      '.jpg' || '.jpeg' || '.png' || '.heic' || '.webp' => extension,
+      _ => '.jpg',
+    };
+  }
+
+  String _contentTypeForExtension(String extension) {
+    return switch (extension) {
+      '.png' => 'image/png',
+      '.heic' => 'image/heic',
+      '.webp' => 'image/webp',
+      _ => 'image/jpeg',
+    };
   }
 
   @override
@@ -134,7 +217,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
     });
   }
 
-  DrinkLog _drinkLogFromRow(Map<String, dynamic> row) {
+  Future<DrinkLog> _drinkLogFromRow(Map<String, dynamic> row) async {
     final rawFriends = row['drink_log_friends'] as List<dynamic>? ?? const [];
     final friends = rawFriends
         .map((item) => (item as Map<String, dynamic>)['profiles'])
@@ -154,7 +237,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       friends: friends,
       place: (row['place_name'] as String?) ?? '',
       memo: (row['memo'] as String?) ?? '',
-      photoAssetPath: row['photo_path'] as String?,
+      photoAssetPath: await _displayPhotoPath(row['photo_path'] as String?),
       linkUrl: row['link_url'] as String?,
       likeCount: (row['like_count'] as num?)?.toInt() ?? 0,
       likedByMe: (row['liked_by_me'] as bool?) ?? false,
