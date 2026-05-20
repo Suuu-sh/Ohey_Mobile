@@ -1,5 +1,6 @@
 import ARKit
 import AVFoundation
+import CoreImage
 import Flutter
 import SceneKit
 import UIKit
@@ -28,12 +29,17 @@ final class NomoArAvatarCameraFactory: NSObject, FlutterPlatformViewFactory {
 private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
   private let containerView: UIView
   private let sceneView: ARSCNView
+  private let naturalPreviewImageView = UIImageView()
   private let statusLabel = UILabel()
   private let channel: FlutterMethodChannel
+  private let naturalBeautyRenderer = NomoNaturalBeautyRenderer()
+  private let naturalBeautyRenderQueue = DispatchQueue(label: "app.nomo.naturalBeautyRender", qos: .userInitiated)
   private var avatar: NomoNativeAvatar
   private var filterMode: NomoArCameraFilterMode
   private var faceOverlayNode: SCNNode?
   private var faceGeometryNode: SCNNode?
+  private var isNaturalBeautyRenderInFlight = false
+  private var lastNaturalBeautyRenderTime: CFTimeInterval = 0
   private var didStartSession = false
 
   init(frame: CGRect, viewId: Int64, messenger: FlutterBinaryMessenger, args: Any?) {
@@ -72,6 +78,13 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
     sceneView.preferredFramesPerSecond = 60
     containerView.addSubview(sceneView)
 
+    naturalPreviewImageView.translatesAutoresizingMaskIntoConstraints = false
+    naturalPreviewImageView.backgroundColor = .black
+    naturalPreviewImageView.contentMode = .scaleAspectFill
+    naturalPreviewImageView.isHidden = filterMode != .natural
+    naturalPreviewImageView.isUserInteractionEnabled = false
+    containerView.addSubview(naturalPreviewImageView)
+
     statusLabel.translatesAutoresizingMaskIntoConstraints = false
     statusLabel.numberOfLines = 0
     statusLabel.textAlignment = .center
@@ -88,6 +101,11 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
       sceneView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
       sceneView.topAnchor.constraint(equalTo: containerView.topAnchor),
       sceneView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
+
+      naturalPreviewImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+      naturalPreviewImageView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+      naturalPreviewImageView.topAnchor.constraint(equalTo: containerView.topAnchor),
+      naturalPreviewImageView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
 
       statusLabel.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
       statusLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
@@ -176,7 +194,12 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
       return
     }
 
-    let image = sceneView.snapshot()
+    let image: UIImage
+    if filterMode == .natural, let naturalImage = naturalPreviewImageView.image {
+      image = naturalImage
+    } else {
+      image = sceneView.snapshot()
+    }
     guard let data = image.jpegData(compressionQuality: 0.92) else {
       result(FlutterError(code: "snapshot_failed", message: "AR写真を書き出せませんでした。", details: nil))
       return
@@ -242,6 +265,15 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
       expressionScale = 1.0
     }
     faceOverlayNode?.scale = SCNVector3(Float(expressionScale), Float(expressionScale), 1)
+
+    if filterMode == .natural,
+       let projection = makeNaturalFaceProjection(
+        for: faceAnchor,
+        node: node,
+        renderer: renderer
+       ) {
+      scheduleNaturalBeautyRender(with: projection)
+    }
   }
 
   private func applyCurrentFilter() {
@@ -255,6 +287,92 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
         avatar: self.avatar
       )
       self.faceOverlayNode?.position = NomoArFilterRenderer.overlayPosition(for: self.filterMode)
+      self.updateNaturalPreviewVisibility()
+    }
+  }
+
+  private func updateNaturalPreviewVisibility() {
+    let shouldShowNaturalPreview = filterMode == .natural
+    naturalPreviewImageView.isHidden = !shouldShowNaturalPreview
+    if !shouldShowNaturalPreview {
+      naturalPreviewImageView.image = nil
+      isNaturalBeautyRenderInFlight = false
+    }
+  }
+
+  private func makeNaturalFaceProjection(
+    for faceAnchor: ARFaceAnchor,
+    node: SCNNode,
+    renderer: SCNSceneRenderer
+  ) -> NomoNaturalFaceProjection? {
+    let viewport = sceneView.bounds
+    guard viewport.width > 1, viewport.height > 1 else { return nil }
+
+    var projectedPoints: [CGPoint] = []
+    projectedPoints.reserveCapacity(faceAnchor.geometry.vertices.count)
+
+    for vertex in faceAnchor.geometry.vertices {
+      let localPoint = SCNVector3(vertex.x, vertex.y, vertex.z)
+      let worldPoint = node.convertPosition(localPoint, to: nil)
+      let projectedPoint = renderer.projectPoint(worldPoint)
+      guard projectedPoint.z.isFinite, projectedPoint.z > 0, projectedPoint.z < 1 else {
+        continue
+      }
+
+      let point = CGPoint(x: CGFloat(projectedPoint.x), y: CGFloat(projectedPoint.y))
+      guard point.x.isFinite, point.y.isFinite else { continue }
+      if viewport.insetBy(dx: -viewport.width * 0.18, dy: -viewport.height * 0.18).contains(point) {
+        projectedPoints.append(point)
+      }
+    }
+
+    guard projectedPoints.count > 24 else { return nil }
+
+    let minX = projectedPoints.map(\.x).min() ?? 0
+    let maxX = projectedPoints.map(\.x).max() ?? 0
+    let minY = projectedPoints.map(\.y).min() ?? 0
+    let maxY = projectedPoints.map(\.y).max() ?? 0
+    let faceBounds = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+      .intersection(viewport.insetBy(dx: -viewport.width * 0.08, dy: -viewport.height * 0.08))
+
+    guard faceBounds.width > 36, faceBounds.height > 44 else { return nil }
+    return NomoNaturalFaceProjection(faceBounds: faceBounds)
+  }
+
+  private func scheduleNaturalBeautyRender(with projection: NomoNaturalFaceProjection) {
+    let now = CACurrentMediaTime()
+    guard !isNaturalBeautyRenderInFlight, now - lastNaturalBeautyRenderTime > 1.0 / 18.0 else {
+      return
+    }
+
+    isNaturalBeautyRenderInFlight = true
+    lastNaturalBeautyRenderTime = now
+
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      guard self.filterMode == .natural, !self.naturalPreviewImageView.isHidden else {
+        self.isNaturalBeautyRenderInFlight = false
+        return
+      }
+
+      let snapshot = self.sceneView.snapshot()
+      let viewSize = self.sceneView.bounds.size
+      self.naturalBeautyRenderQueue.async { [weak self] in
+        guard let self else { return }
+        let renderedImage = self.naturalBeautyRenderer.render(
+          snapshot: snapshot,
+          projection: projection,
+          viewSize: viewSize
+        )
+
+        DispatchQueue.main.async { [weak self] in
+          guard let self else { return }
+          if self.filterMode == .natural {
+            self.naturalPreviewImageView.image = renderedImage
+          }
+          self.isNaturalBeautyRenderInFlight = false
+        }
+      }
     }
   }
 }
@@ -274,6 +392,219 @@ private enum NomoArCameraFilterMode: String {
     default:
       self = .avatar
     }
+  }
+}
+
+private struct NomoNaturalFaceProjection {
+  let faceBounds: CGRect
+
+  var faceCenter: CGPoint {
+    CGPoint(x: faceBounds.midX, y: faceBounds.minY + faceBounds.height * 0.58)
+  }
+
+  var leftCheek: CGPoint {
+    CGPoint(x: faceBounds.minX + faceBounds.width * 0.18, y: faceBounds.minY + faceBounds.height * 0.55)
+  }
+
+  var rightCheek: CGPoint {
+    CGPoint(x: faceBounds.maxX - faceBounds.width * 0.18, y: faceBounds.minY + faceBounds.height * 0.55)
+  }
+
+  var leftJaw: CGPoint {
+    CGPoint(x: faceBounds.minX + faceBounds.width * 0.25, y: faceBounds.minY + faceBounds.height * 0.78)
+  }
+
+  var rightJaw: CGPoint {
+    CGPoint(x: faceBounds.maxX - faceBounds.width * 0.25, y: faceBounds.minY + faceBounds.height * 0.78)
+  }
+
+  var chin: CGPoint {
+    CGPoint(x: faceBounds.midX, y: faceBounds.minY + faceBounds.height * 0.92)
+  }
+}
+
+private final class NomoNaturalBeautyRenderer {
+  private static let smallFaceWarpKernel = CIWarpKernel(source: """
+    kernel vec2 nomoSmallFaceWarp(
+      vec2 faceCenter,
+      vec2 leftCheek,
+      vec2 rightCheek,
+      vec2 leftJaw,
+      vec2 rightJaw,
+      vec2 chin,
+      float radius,
+      float cheekStrength,
+      float jawStrength,
+      float shrinkStrength
+    ) {
+      vec2 p = destCoord();
+      vec2 displacement = vec2(0.0, 0.0);
+
+      float cheekRadius = radius * 0.76;
+      float jawRadius = radius * 0.70;
+      float faceRadius = radius * 1.08;
+
+      float leftCheekFalloff = clamp(1.0 - distance(p, leftCheek) / cheekRadius, 0.0, 1.0);
+      leftCheekFalloff = leftCheekFalloff * leftCheekFalloff * (3.0 - 2.0 * leftCheekFalloff);
+      float rightCheekFalloff = clamp(1.0 - distance(p, rightCheek) / cheekRadius, 0.0, 1.0);
+      rightCheekFalloff = rightCheekFalloff * rightCheekFalloff * (3.0 - 2.0 * rightCheekFalloff);
+      float leftJawFalloff = clamp(1.0 - distance(p, leftJaw) / jawRadius, 0.0, 1.0);
+      leftJawFalloff = leftJawFalloff * leftJawFalloff * (3.0 - 2.0 * leftJawFalloff);
+      float rightJawFalloff = clamp(1.0 - distance(p, rightJaw) / jawRadius, 0.0, 1.0);
+      rightJawFalloff = rightJawFalloff * rightJawFalloff * (3.0 - 2.0 * rightJawFalloff);
+      float chinFalloff = clamp(1.0 - distance(p, chin) / jawRadius, 0.0, 1.0);
+      chinFalloff = chinFalloff * chinFalloff * (3.0 - 2.0 * chinFalloff);
+      float faceFalloff = clamp(1.0 - distance(p, faceCenter) / faceRadius, 0.0, 1.0);
+      faceFalloff = faceFalloff * faceFalloff * (3.0 - 2.0 * faceFalloff);
+
+      displacement += vec2(cheekStrength, 0.0) * leftCheekFalloff;
+      displacement += vec2(-cheekStrength, 0.0) * rightCheekFalloff;
+      displacement += vec2(jawStrength, jawStrength * 0.10) * leftJawFalloff;
+      displacement += vec2(-jawStrength, jawStrength * 0.10) * rightJawFalloff;
+      displacement += vec2(0.0, jawStrength * 0.22) * chinFalloff;
+      displacement += (faceCenter - p) * shrinkStrength * faceFalloff;
+
+      return p - displacement;
+    }
+    """)
+
+  private let context: CIContext
+
+  init() {
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    context = CIContext(options: [
+      .cacheIntermediates: false,
+      .workingColorSpace: colorSpace,
+      .outputColorSpace: colorSpace,
+    ])
+  }
+
+  func render(
+    snapshot: UIImage,
+    projection: NomoNaturalFaceProjection,
+    viewSize: CGSize
+  ) -> UIImage {
+    guard let cgImage = snapshot.cgImage, viewSize.width > 1, viewSize.height > 1 else {
+      return snapshot
+    }
+
+    let inputImage = CIImage(cgImage: cgImage)
+    let extent = inputImage.extent
+    var outputImage = applySmallFaceWarp(
+      to: inputImage,
+      projection: projection,
+      viewSize: viewSize,
+      extent: extent
+    )
+    outputImage = applyBeautyFilters(to: outputImage).cropped(to: extent)
+
+    guard let outputCGImage = context.createCGImage(outputImage, from: extent) else {
+      return snapshot
+    }
+    return UIImage(cgImage: outputCGImage, scale: snapshot.scale, orientation: .up)
+  }
+
+  private func applySmallFaceWarp(
+    to image: CIImage,
+    projection: NomoNaturalFaceProjection,
+    viewSize: CGSize,
+    extent: CGRect
+  ) -> CIImage {
+    guard let kernel = Self.smallFaceWarpKernel else { return image }
+
+    let scaleX = extent.width / viewSize.width
+    let scaleY = extent.height / viewSize.height
+    func ciPoint(_ point: CGPoint) -> CGPoint {
+      CGPoint(
+        x: point.x * scaleX,
+        y: extent.height - point.y * scaleY
+      )
+    }
+
+    let faceWidth = projection.faceBounds.width * scaleX
+    let faceHeight = projection.faceBounds.height * scaleY
+    let radius = max(42, min(faceWidth, faceHeight) * 0.66)
+    let cheekStrength = min(28, max(7, faceWidth * 0.075))
+    let jawStrength = min(24, max(6, faceWidth * 0.062))
+    let shrinkStrength = 0.042
+    let roiPadding = radius + max(cheekStrength, jawStrength) * 2
+
+    return kernel.apply(
+      extent: extent,
+      roiCallback: { _, rect in
+        rect.insetBy(dx: -roiPadding, dy: -roiPadding)
+      },
+      image: image,
+      arguments: [
+        CIVector(cgPoint: ciPoint(projection.faceCenter)),
+        CIVector(cgPoint: ciPoint(projection.leftCheek)),
+        CIVector(cgPoint: ciPoint(projection.rightCheek)),
+        CIVector(cgPoint: ciPoint(projection.leftJaw)),
+        CIVector(cgPoint: ciPoint(projection.rightJaw)),
+        CIVector(cgPoint: ciPoint(projection.chin)),
+        radius,
+        cheekStrength,
+        jawStrength,
+        shrinkStrength,
+      ]
+    ) ?? image
+  }
+
+  private func applyBeautyFilters(to image: CIImage) -> CIImage {
+    var output = image
+    output = applyingFilterIfAvailable(
+      "CINoiseReduction",
+      to: output,
+      parameters: [
+        "inputNoiseLevel": 0.045,
+        "inputSharpness": 0.46,
+      ]
+    )
+    output = applyingFilterIfAvailable(
+      "CIColorControls",
+      to: output,
+      parameters: [
+        kCIInputSaturationKey: 1.045,
+        kCIInputBrightnessKey: 0.012,
+        kCIInputContrastKey: 0.968,
+      ]
+    )
+    output = applyingFilterIfAvailable(
+      "CIHighlightShadowAdjust",
+      to: output,
+      parameters: [
+        "inputShadowAmount": 0.08,
+        "inputHighlightAmount": 0.92,
+      ]
+    )
+    output = applyingFilterIfAvailable(
+      "CIVibrance",
+      to: output,
+      parameters: [
+        "inputAmount": 0.16,
+      ]
+    )
+    output = applyingFilterIfAvailable(
+      "CISharpenLuminance",
+      to: output,
+      parameters: [
+        kCIInputSharpnessKey: 0.12,
+      ]
+    )
+    return output
+  }
+
+  private func applyingFilterIfAvailable(
+    _ name: String,
+    to image: CIImage,
+    parameters: [String: Any]
+  ) -> CIImage {
+    guard let filter = CIFilter(name: name) else { return image }
+    filter.setValue(image, forKey: kCIInputImageKey)
+    for (key, value) in parameters {
+      filter.setValue(value, forKey: key)
+    }
+    return filter.outputImage ?? image
   }
 }
 
@@ -348,21 +679,23 @@ private enum NomoArFilterRenderer {
   ) {
     switch mode {
     case .avatar:
+      material.colorBufferWriteMask = .all
       material.diffuse.contents = avatar.skinColor
-      material.emission.contents = UIColor.black
-      material.lightingModel = .physicallyBased
+      material.emission.contents = avatar.skinColor
+      material.lightingModel = .constant
       material.transparency = 1
       material.blendMode = .replace
       material.writesToDepthBuffer = true
       material.readsFromDepthBuffer = true
       material.metalness.contents = 0
-      material.roughness.contents = 0.86
-      material.specular.contents = UIColor.white.withAlphaComponent(0.16)
+      material.roughness.contents = 1
+      material.specular.contents = UIColor.clear
     case .natural:
-      material.diffuse.contents = avatar.skinColor.mixed(with: UIColor(hex: 0xFFE9DA), amount: 0.56)
-      material.emission.contents = UIColor(hex: 0xFFECD8).withAlphaComponent(0.16)
+      material.colorBufferWriteMask = []
+      material.diffuse.contents = UIColor.clear
+      material.emission.contents = UIColor.clear
       material.lightingModel = .constant
-      material.transparency = 0.24
+      material.transparency = 0
       material.blendMode = .alpha
       material.writesToDepthBuffer = true
       material.readsFromDepthBuffer = true
@@ -426,14 +759,14 @@ private enum NomoArFilterRenderer {
       cg.scaleBy(x: scale, y: scale)
 
       if avatar.isAdmin {
-        drawAdminMascot(includeSkin: false, in: cg)
+        drawAdminMascot(includeSkin: true, in: cg)
       } else {
-        drawFace(avatar, includeSkin: false, in: cg)
+        drawFace(avatar, includeSkin: true, in: cg)
       }
     }
   }
 
-  private static func makeNaturalRetouchImage(for avatar: NomoNativeAvatar) -> UIImage {
+  private static func makeNaturalRetouchImage(for _: NomoNativeAvatar) -> UIImage {
     let size = CGSize(width: 512, height: 512)
     let format = UIGraphicsImageRendererFormat()
     format.opaque = false
@@ -442,64 +775,62 @@ private enum NomoArFilterRenderer {
     return renderer.image { context in
       let cg = context.cgContext
       cg.clear(CGRect(origin: .zero, size: size))
-      let scale = size.width / 180
-      cg.scaleBy(x: scale, y: scale)
-      drawNaturalRetouchOverlay(skin: avatar.skinColor, in: cg)
+      // Natural uses a real camera-pixel pass in NomoNaturalBeautyRenderer.
+      // Keep the SceneKit face overlay transparent so it never becomes a
+      // visible white film on top of the user's face.
     }
   }
 
   private static func drawNaturalRetouchOverlay(skin: UIColor, in cg: CGContext) {
-    // Lightweight beauty pass: a soft skin veil plus cheek/jaw contour.
-    // It intentionally avoids hard edges so the real face remains natural.
-    let skinVeil = skin.mixed(with: UIColor(hex: 0xFFF6EA), amount: 0.72).withAlphaComponent(0.16)
-    fillEllipse(CGRect(x: 35, y: 30, width: 110, height: 118), color: skinVeil, in: cg)
+    // Lightweight beauty pass without a visible white face film:
+    // warm skin tone, under-eye light, cheek color, V-line contour, and lip tint.
+    let warm = skin.mixed(with: UIColor(hex: 0xFFE0C7), amount: 0.52)
+    drawSoftEllipse(center: CGPoint(x: 90, y: 82), radius: CGSize(width: 56, height: 66), color: warm, alpha: 0.08, in: cg)
+    drawSoftEllipse(center: CGPoint(x: 90, y: 76), radius: CGSize(width: 10, height: 34), color: .white, alpha: 0.16, in: cg)
 
-    let highlight = UIColor.white.withAlphaComponent(0.16)
-    fillEllipse(CGRect(x: 69, y: 36, width: 42, height: 86), color: highlight, in: cg)
-    fillEllipse(CGRect(x: 58, y: 56, width: 22, height: 18), color: UIColor.white.withAlphaComponent(0.10), in: cg)
-    fillEllipse(CGRect(x: 100, y: 56, width: 22, height: 18), color: UIColor.white.withAlphaComponent(0.10), in: cg)
+    drawSoftEllipse(center: CGPoint(x: 66, y: 74), radius: CGSize(width: 21, height: 12), color: .white, alpha: 0.11, in: cg)
+    drawSoftEllipse(center: CGPoint(x: 114, y: 74), radius: CGSize(width: 21, height: 12), color: .white, alpha: 0.11, in: cg)
 
-    let contour = UIColor(hex: 0x5A3327).withAlphaComponent(0.16)
-    let softContour = UIColor(hex: 0x5A3327).withAlphaComponent(0.08)
-    drawFaceContourPath(left: true, color: softContour, inset: 0, in: cg)
-    drawFaceContourPath(left: false, color: softContour, inset: 0, in: cg)
-    drawFaceContourPath(left: true, color: contour, inset: 6, in: cg)
-    drawFaceContourPath(left: false, color: contour, inset: 6, in: cg)
+    let blush = UIColor(hex: 0xFF7FA7)
+    drawSoftEllipse(center: CGPoint(x: 62, y: 94), radius: CGSize(width: 24, height: 18), color: blush, alpha: 0.18, in: cg)
+    drawSoftEllipse(center: CGPoint(x: 118, y: 94), radius: CGSize(width: 24, height: 18), color: blush, alpha: 0.18, in: cg)
 
-    fillEllipse(CGRect(x: 52, y: 82, width: 24, height: 18), color: UIColor(hex: 0xFF8AA8).withAlphaComponent(0.11), in: cg)
-    fillEllipse(CGRect(x: 104, y: 82, width: 24, height: 18), color: UIColor(hex: 0xFF8AA8).withAlphaComponent(0.11), in: cg)
+    let contour = UIColor(hex: 0x4B241C)
+    strokeFaceContour(left: true, color: contour.withAlphaComponent(0.12), lineWidth: 18, inset: 0, in: cg)
+    strokeFaceContour(left: false, color: contour.withAlphaComponent(0.12), lineWidth: 18, inset: 0, in: cg)
+    strokeFaceContour(left: true, color: contour.withAlphaComponent(0.16), lineWidth: 8, inset: 8, in: cg)
+    strokeFaceContour(left: false, color: contour.withAlphaComponent(0.16), lineWidth: 8, inset: 8, in: cg)
 
-    let chinShadow = UIBezierPath()
-    chinShadow.move(to: CGPoint(x: 66, y: 124))
-    chinShadow.addQuadCurve(to: CGPoint(x: 114, y: 124), controlPoint: CGPoint(x: 90, y: 135))
-    chinShadow.addQuadCurve(to: CGPoint(x: 66, y: 124), controlPoint: CGPoint(x: 90, y: 130))
-    UIColor(hex: 0x5A3327).withAlphaComponent(0.08).setFill()
-    chinShadow.fill()
+    let jaw = UIBezierPath()
+    jaw.move(to: CGPoint(x: 65, y: 125))
+    jaw.addQuadCurve(to: CGPoint(x: 115, y: 125), controlPoint: CGPoint(x: 90, y: 138))
+    contour.withAlphaComponent(0.11).setStroke()
+    jaw.lineWidth = 10
+    jaw.lineCapStyle = .round
+    jaw.stroke()
+
+    let lip = UIBezierPath()
+    lip.move(to: CGPoint(x: 74, y: 111))
+    lip.addQuadCurve(to: CGPoint(x: 106, y: 111), controlPoint: CGPoint(x: 90, y: 118))
+    UIColor(hex: 0xD85C78).withAlphaComponent(0.14).setStroke()
+    lip.lineWidth = 5
+    lip.lineCapStyle = .round
+    lip.stroke()
   }
 
-  private static func drawFaceContourPath(left: Bool, color: UIColor, inset: CGFloat, in cg: CGContext) {
-    let sign: CGFloat = left ? 1 : -1
-    let outerX: CGFloat = left ? 34 + inset : 146 - inset
-    let innerX: CGFloat = left ? 58 + inset : 122 - inset
+  private static func strokeFaceContour(left: Bool, color: UIColor, lineWidth: CGFloat, inset: CGFloat, in cg: CGContext) {
+    let edgeX: CGFloat = left ? 41 + inset : 139 - inset
     let path = UIBezierPath()
-    path.move(to: CGPoint(x: outerX, y: 45))
+    path.move(to: CGPoint(x: edgeX, y: 48))
     path.addCurve(
-      to: CGPoint(x: outerX + sign * 7, y: 130),
-      controlPoint1: CGPoint(x: outerX - sign * 11, y: 72),
-      controlPoint2: CGPoint(x: outerX - sign * 8, y: 112)
+      to: CGPoint(x: edgeX + (left ? 16 : -16), y: 122),
+      controlPoint1: CGPoint(x: edgeX + (left ? -8 : 8), y: 70),
+      controlPoint2: CGPoint(x: edgeX + (left ? -3 : 3), y: 104)
     )
-    path.addQuadCurve(
-      to: CGPoint(x: innerX, y: 112),
-      controlPoint: CGPoint(x: left ? 48 : 132, y: 128)
-    )
-    path.addCurve(
-      to: CGPoint(x: innerX - sign * 2, y: 46),
-      controlPoint1: CGPoint(x: innerX - sign * 8, y: 92),
-      controlPoint2: CGPoint(x: innerX - sign * 8, y: 64)
-    )
-    path.close()
-    color.setFill()
-    path.fill()
+    color.setStroke()
+    path.lineWidth = lineWidth
+    path.lineCapStyle = .round
+    path.stroke()
   }
 
   private static func drawFace(_ avatar: NomoNativeAvatar, includeSkin: Bool, in cg: CGContext) {
@@ -680,6 +1011,40 @@ private enum NomoArFilterRenderer {
   private static func fillEllipse(_ rect: CGRect, color: UIColor, in cg: CGContext) {
     color.setFill()
     cg.fillEllipse(in: rect)
+  }
+
+  private static func drawSoftEllipse(
+    center: CGPoint,
+    radius: CGSize,
+    color: UIColor,
+    alpha: CGFloat,
+    in cg: CGContext
+  ) {
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    guard let gradient = CGGradient(
+      colorsSpace: colorSpace,
+      colors: [
+        color.withAlphaComponent(alpha).cgColor,
+        color.withAlphaComponent(alpha * 0.36).cgColor,
+        color.withAlphaComponent(0).cgColor,
+      ] as CFArray,
+      locations: [0, 0.46, 1]
+    ) else {
+      return
+    }
+
+    cg.saveGState()
+    cg.translateBy(x: center.x, y: center.y)
+    cg.scaleBy(x: radius.width, y: radius.height)
+    cg.drawRadialGradient(
+      gradient,
+      startCenter: .zero,
+      startRadius: 0,
+      endCenter: .zero,
+      endRadius: 1,
+      options: [.drawsAfterEndLocation]
+    )
+    cg.restoreGState()
   }
 
   private static func strokeLine(from: CGPoint, to: CGPoint, color: UIColor, width: CGFloat, in cg: CGContext) {

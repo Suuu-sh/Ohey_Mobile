@@ -2424,8 +2424,12 @@ Future<void> _showEditProfileSheet(
                     onTap: saving
                         ? null
                         : () async {
-                            final result = await Navigator.of(context)
-                                .push<NomoAvatar>(
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            final result =
+                                await Navigator.of(
+                                  sheetBuildContext,
+                                  rootNavigator: true,
+                                ).push<NomoAvatar>(
                                   CupertinoPageRoute(
                                     fullscreenDialog: true,
                                     builder: (_) => AvatarBuilderScreen(
@@ -2977,6 +2981,7 @@ class _AvatarEditCard extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(14),
