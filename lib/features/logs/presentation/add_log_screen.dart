@@ -362,8 +362,9 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
       ellipsis: '…',
     )..layout(maxWidth: width - safePadding * 2);
 
-    final top = safePadding * .62;
     final backgroundHeight = textPainter.height + safePadding * .78;
+    final maxTop = height > backgroundHeight ? height - backgroundHeight : 0.0;
+    final top = ((height - backgroundHeight) / 2).clamp(0.0, maxTop).toDouble();
     final backgroundRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(
         safePadding * .55,
