@@ -149,11 +149,13 @@ private struct SmallStatusContent: View {
   let snapshot: NomoWidgetSnapshot
 
   var body: some View {
+    let style = NomoStatusWidgetStyle(statusKey: snapshot.statusKey)
+
     VStack(alignment: .leading, spacing: 8) {
       HStack(alignment: .top) {
-        WidgetEyebrow(icon: "wineglass.fill", title: "今日のノリ")
+        WidgetEyebrow(icon: style.symbolName, title: "今日のノリ", accent: style.accent)
         Spacer(minLength: 0)
-        StatusOrb(symbolName: statusSymbolName)
+        StatusOrb(symbolName: style.symbolName, accent: style.accent)
       }
 
       Spacer(minLength: 0)
@@ -173,18 +175,7 @@ private struct SmallStatusContent: View {
     }
     .padding(15)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-    .nomoWidgetBackground(artwork: .small)
-  }
-
-  private var statusSymbolName: String {
-    switch snapshot.statusKey {
-    case "can_drink_today", "want_drink", "light_drink", "want_drink_hard", "non_alcohol", "waiting_invite":
-      return "sparkles"
-    case "liver_rest", "busy", "has_plans":
-      return "moon.zzz.fill"
-    default:
-      return "plus.bubble.fill"
-    }
+    .nomoWidgetBackground(artwork: .statusSmall(snapshot.statusKey))
   }
 }
 
@@ -192,11 +183,13 @@ private struct MediumStatusContent: View {
   let snapshot: NomoWidgetSnapshot
 
   var body: some View {
+    let style = NomoStatusWidgetStyle(statusKey: snapshot.statusKey)
+
     HStack(spacing: 0) {
       Spacer(minLength: 122)
 
       VStack(alignment: .leading, spacing: 8) {
-        WidgetEyebrow(icon: "heart.text.square.fill", title: "今日のノリ")
+        WidgetEyebrow(icon: style.symbolName, title: "今日のノリ", accent: style.accent)
 
         Text(snapshot.statusLabel)
           .font(.system(size: 26, weight: .black, design: .rounded))
@@ -223,11 +216,10 @@ private struct MediumStatusContent: View {
       }
       .padding(13)
       .frame(maxWidth: 215, alignment: .leading)
-      .background(WidgetGlassCard(cornerRadius: 22))
     }
     .padding(14)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-    .nomoWidgetBackground(artwork: .medium)
+    .nomoWidgetBackground(artwork: .statusMedium(snapshot.statusKey))
   }
 
   private var updatedText: String {
@@ -249,7 +241,7 @@ private struct SmallFriendsContent: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       HStack(alignment: .top) {
-        WidgetEyebrow(icon: "person.2.fill", title: "誘える")
+        WidgetEyebrow(icon: "person.2.fill", title: "誘える", accent: .nomoLime)
         Spacer(minLength: 0)
         FriendCountBadge(count: snapshot.availableFriendsCount, compact: true)
       }
@@ -275,7 +267,7 @@ private struct SmallFriendsContent: View {
     }
     .padding(15)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-    .nomoWidgetBackground(artwork: .small)
+    .nomoWidgetBackground(artwork: .mascotSmall)
   }
 
   private var friendHeadline: String {
@@ -294,7 +286,7 @@ private struct MediumFriendsContent: View {
 
       VStack(alignment: .leading, spacing: 8) {
         HStack(spacing: 8) {
-          WidgetEyebrow(icon: "person.2.wave.2.fill", title: "誘える飲み友")
+          WidgetEyebrow(icon: "person.2.wave.2.fill", title: "誘える飲み友", accent: .nomoLime)
           Spacer(minLength: 0)
           FriendCountBadge(count: snapshot.availableFriendsCount, compact: false)
         }
@@ -316,11 +308,10 @@ private struct MediumFriendsContent: View {
       }
       .padding(12)
       .frame(maxWidth: 225, alignment: .leading)
-      .background(WidgetGlassCard(cornerRadius: 22))
     }
     .padding(14)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-    .nomoWidgetBackground(artwork: .medium)
+    .nomoWidgetBackground(artwork: .mascotMedium)
   }
 
   private var friendHeadline: String {
@@ -356,12 +347,10 @@ private struct MediumFriendsContent: View {
 
             Text(friend.statusLabel)
               .font(.system(size: 9.5, weight: .black, design: .rounded))
-              .foregroundStyle(Color.nomoInk)
+              .foregroundStyle(Color.white.opacity(0.78))
               .lineLimit(1)
               .minimumScaleFactor(0.68)
-              .padding(.horizontal, 6)
-              .padding(.vertical, 3)
-              .background(Capsule().fill(Color.white.opacity(0.92)))
+              .nomoTextGlow()
           }
         }
       }
@@ -369,38 +358,70 @@ private struct MediumFriendsContent: View {
   }
 }
 
+private struct NomoStatusWidgetStyle {
+  let symbolName: String
+  let accent: Color
+
+  init(statusKey: String) {
+    switch statusKey {
+    case "can_drink_today", "want_drink":
+      symbolName = "checkmark.circle.fill"
+      accent = .nomoLime
+    case "light_drink":
+      symbolName = "clock.fill"
+      accent = .nomoCyan
+    case "want_drink_hard":
+      symbolName = "flame.fill"
+      accent = .nomoAmber
+    case "non_alcohol":
+      symbolName = "drop.fill"
+      accent = .nomoMint
+    case "liver_rest", "busy":
+      symbolName = "moon.zzz.fill"
+      accent = .nomoPink
+    case "waiting_invite":
+      symbolName = "bell.fill"
+      accent = .nomoPurple
+    case "has_plans":
+      symbolName = "calendar"
+      accent = .nomoSoftBlue
+    default:
+      symbolName = "questionmark.bubble.fill"
+      accent = .nomoPink
+    }
+  }
+}
+
 private struct WidgetEyebrow: View {
   let icon: String
   let title: String
+  let accent: Color
 
   var body: some View {
     HStack(spacing: 5) {
       Image(systemName: icon)
         .font(.system(size: 11, weight: .black))
-        .foregroundStyle(Color.nomoLime)
+        .foregroundStyle(accent)
       Text(title)
         .font(.system(size: 11.5, weight: .black, design: .rounded))
         .foregroundStyle(Color.white.opacity(0.82))
         .lineLimit(1)
     }
-    .padding(.horizontal, 9)
-    .padding(.vertical, 6)
-    .background(Capsule().fill(Color.nomoInk.opacity(0.42)))
-    .overlay(Capsule().stroke(Color.white.opacity(0.12), lineWidth: 1))
+    .nomoTextGlow()
   }
 }
 
 private struct StatusOrb: View {
   let symbolName: String
+  let accent: Color
 
   var body: some View {
     Image(systemName: symbolName)
       .font(.system(size: 15, weight: .black))
-      .foregroundStyle(Color.nomoLime)
+      .foregroundStyle(accent)
       .frame(width: 33, height: 33)
-      .background(Circle().fill(Color.nomoInk.opacity(0.48)))
-      .overlay(Circle().stroke(Color.white.opacity(0.16), lineWidth: 1))
-      .shadow(color: Color.nomoPink.opacity(0.24), radius: 10, y: 4)
+      .shadow(color: Color.nomoInk.opacity(0.70), radius: 5, y: 2)
+      .shadow(color: accent.opacity(0.35), radius: 10, y: 3)
   }
 }
 
@@ -418,45 +439,48 @@ private struct FriendCountBadge: View {
           .font(.system(size: 10, weight: .black, design: .rounded))
       }
     }
-    .foregroundStyle(Color.nomoPink)
-    .padding(.horizontal, compact ? 9 : 8)
-    .padding(.vertical, compact ? 6 : 5)
-    .background(Capsule().fill(.white))
-    .shadow(color: Color.nomoPink.opacity(0.28), radius: 10, y: 4)
-  }
-}
-
-private struct WidgetGlassCard: View {
-  let cornerRadius: CGFloat
-
-  var body: some View {
-    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-      .fill(Color.nomoInk.opacity(0.50))
-      .overlay(
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-          .stroke(
-            LinearGradient(
-              colors: [Color.white.opacity(0.22), Color.nomoPink.opacity(0.28)],
-              startPoint: .topLeading,
-              endPoint: .bottomTrailing
-            ),
-            lineWidth: 1
-          )
-      )
-      .shadow(color: Color.black.opacity(0.20), radius: 18, y: 8)
+    .foregroundStyle(Color.white)
+    .nomoTextGlow()
   }
 }
 
 private enum NomoWidgetArtwork {
-  case small
-  case medium
+  case mascotSmall
+  case mascotMedium
+  case statusSmall(String)
+  case statusMedium(String)
 
   var imageName: String {
     switch self {
-    case .small:
+    case .mascotSmall:
       return "NomoWidgetMascotSmall"
-    case .medium:
+    case .mascotMedium:
       return "NomoWidgetMascotMedium"
+    case .statusSmall(let statusKey):
+      return "NomoWidgetStatus\(Self.statusSlug(for: statusKey))Small"
+    case .statusMedium(let statusKey):
+      return "NomoWidgetStatus\(Self.statusSlug(for: statusKey))Medium"
+    }
+  }
+
+  private static func statusSlug(for statusKey: String) -> String {
+    switch statusKey {
+    case "can_drink_today", "want_drink":
+      return "CanDrinkToday"
+    case "light_drink":
+      return "LightDrink"
+    case "want_drink_hard":
+      return "WantDrinkHard"
+    case "non_alcohol":
+      return "NonAlcohol"
+    case "liver_rest", "busy":
+      return "LiverRest"
+    case "waiting_invite":
+      return "WaitingInvite"
+    case "has_plans":
+      return "HasPlans"
+    default:
+      return "Unselected"
     }
   }
 }
@@ -492,7 +516,7 @@ private struct NomoWidgetBackground: View {
   @ViewBuilder
   private var overlay: some View {
     switch artwork {
-    case .small:
+    case .mascotSmall, .statusSmall(_):
       ZStack {
         LinearGradient(
           colors: [
@@ -510,7 +534,7 @@ private struct NomoWidgetBackground: View {
           endRadius: 120
         )
       }
-    case .medium:
+    case .mascotMedium, .statusMedium(_):
       ZStack {
         LinearGradient(
           colors: [
@@ -554,4 +578,9 @@ private extension Color {
   static let nomoPink = Color(red: 1.0, green: 0.04, blue: 0.52)
   static let nomoLime = Color(red: 0.78, green: 0.96, blue: 0.0)
   static let nomoInk = Color(red: 0.03, green: 0.07, blue: 0.12)
+  static let nomoCyan = Color(red: 0.34, green: 0.84, blue: 1.0)
+  static let nomoAmber = Color(red: 1.0, green: 0.72, blue: 0.16)
+  static let nomoMint = Color(red: 0.35, green: 0.93, blue: 0.82)
+  static let nomoPurple = Color(red: 0.78, green: 0.55, blue: 1.0)
+  static let nomoSoftBlue = Color(red: 0.74, green: 0.82, blue: 1.0)
 }
