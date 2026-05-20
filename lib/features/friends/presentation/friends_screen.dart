@@ -583,8 +583,8 @@ class _FriendCard extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
     return Container(
-      constraints: const BoxConstraints(minHeight: 118),
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      constraints: const BoxConstraints(minHeight: 124),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
         color: isWhite ? Colors.white : _FriendsColors.block,
         borderRadius: BorderRadius.circular(22),
@@ -602,34 +602,24 @@ class _FriendCard extends StatelessWidget {
         ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 74,
-            height: 86,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: isWhite
-                  ? const Color(0xFFF4F8FB)
-                  : Colors.white.withValues(alpha: .035),
-              borderRadius: BorderRadius.circular(24),
-            ),
+          SizedBox(
+            width: 72,
+            height: 78,
             child: NomoAvatarView(
               avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
-              size: 70,
+              size: 72,
             ),
           ),
-          const SizedBox(width: 13),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(
+                    Flexible(
                       child: Text(
                         friend.name,
                         maxLines: 1,
@@ -642,7 +632,7 @@ class _FriendCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 9),
                     Semantics(
                       button: true,
                       label: friend.isFavorite ? 'お気に入りを解除' : 'お気に入りに追加',
@@ -650,8 +640,8 @@ class _FriendCard extends StatelessWidget {
                         behavior: HitTestBehavior.opaque,
                         onTap: onFavoriteToggle,
                         child: SizedBox(
-                          width: 34,
-                          height: 34,
+                          width: 36,
+                          height: 36,
                           child: Center(
                             child: _FavoriteStarIcon(
                               filled: friend.isFavorite,
@@ -665,28 +655,26 @@ class _FriendCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    _CountBadge(count: count, accent: accent),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Flexible(
-                      child: _StatusPill(status: status, accent: accent),
-                    ),
-                    const Spacer(),
-                    const SizedBox(width: 10),
-                    _InviteButton(
-                      status: status,
-                      accent: accent,
-                      name: friend.name,
-                      onInvite: onInvite,
-                    ),
-                  ],
-                ),
+                const SizedBox(height: 8),
+                _StatusPill(status: status, accent: accent),
               ],
             ),
+          ),
+          const SizedBox(width: 8),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _CountBadge(count: count, accent: accent),
+              const SizedBox(height: 10),
+              _InviteButton(
+                status: status,
+                accent: accent,
+                name: friend.name,
+                onInvite: onInvite,
+              ),
+            ],
           ),
         ],
       ),
@@ -812,13 +800,11 @@ class _CountBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     return Container(
-      width: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      width: 80,
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 9),
       decoration: BoxDecoration(
-        color: isWhite
-            ? const Color(0xFFF7F9FB)
-            : Colors.white.withValues(alpha: .035),
-        borderRadius: BorderRadius.circular(15),
+        color: isWhite ? const Color(0xFFF7F9FB) : _FriendsColors.block,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isWhite
               ? const Color(0xFFDCE4EC)
@@ -826,28 +812,29 @@ class _CountBadge extends StatelessWidget {
         ),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            '$count回',
-            maxLines: 1,
-            style: TextStyle(
-              color: isWhite ? const Color(0xFF101820) : Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 15,
-              height: 1,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$count回',
+                style: TextStyle(
+                  color: isWhite ? const Color(0xFF101820) : Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 15,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 3),
           Text(
-            '今月',
+            '今月の飲みログ',
             style: TextStyle(
               color: isWhite
                   ? const Color(0xFF687481)
                   : Colors.white.withValues(alpha: .55),
               fontWeight: FontWeight.w800,
-              fontSize: 10,
-              height: 1,
+              fontSize: 9,
             ),
           ),
         ],
@@ -872,12 +859,6 @@ class _InviteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = status.enabled;
-    final buttonColor = enabled
-        ? const Color(0xFF12C9A4)
-        : const Color(0xFF657383);
-    final buttonShadow = enabled
-        ? const Color(0xFF079078)
-        : const Color(0xFF3D4A57);
     return SizedBox(
       width: 92,
       child: Nomo3DButton(
@@ -894,13 +875,8 @@ class _InviteButton extends StatelessWidget {
         enabled: enabled,
         height: 36,
         radius: 18,
-        color: buttonColor,
-        shadowColor: buttonShadow,
-        disabledColor: buttonColor,
-        disabledOpacity: .82,
-        foregroundColor: enabled
-            ? Colors.white
-            : Colors.white.withValues(alpha: .78),
+        color: const Color(0xFF12C9A4),
+        shadowColor: const Color(0xFF079078),
         padding: const EdgeInsets.symmetric(horizontal: 13),
         fontSize: 12,
       ),
