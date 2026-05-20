@@ -348,6 +348,7 @@ private enum NomoArFilterRenderer {
   ) {
     switch mode {
     case .avatar:
+      material.colorBufferWriteMask = .all
       material.diffuse.contents = avatar.skinColor
       material.emission.contents = avatar.skinColor
       material.lightingModel = .constant
@@ -359,10 +360,11 @@ private enum NomoArFilterRenderer {
       material.roughness.contents = 1
       material.specular.contents = UIColor.clear
     case .natural:
-      material.diffuse.contents = avatar.skinColor.mixed(with: UIColor(hex: 0xFFE9DA), amount: 0.56)
-      material.emission.contents = UIColor(hex: 0xFFECD8).withAlphaComponent(0.16)
+      material.colorBufferWriteMask = []
+      material.diffuse.contents = UIColor.clear
+      material.emission.contents = UIColor.clear
       material.lightingModel = .constant
-      material.transparency = 0.24
+      material.transparency = 0
       material.blendMode = .alpha
       material.writesToDepthBuffer = true
       material.readsFromDepthBuffer = true
@@ -449,57 +451,55 @@ private enum NomoArFilterRenderer {
   }
 
   private static func drawNaturalRetouchOverlay(skin: UIColor, in cg: CGContext) {
-    // Lightweight beauty pass: a soft skin veil plus cheek/jaw contour.
-    // It intentionally avoids hard edges so the real face remains natural.
-    let skinVeil = skin.mixed(with: UIColor(hex: 0xFFF6EA), amount: 0.72).withAlphaComponent(0.16)
-    fillEllipse(CGRect(x: 35, y: 30, width: 110, height: 118), color: skinVeil, in: cg)
+    // Lightweight beauty pass without a visible white face film:
+    // warm skin tone, under-eye light, cheek color, V-line contour, and lip tint.
+    let warm = skin.mixed(with: UIColor(hex: 0xFFE0C7), amount: 0.52)
+    drawSoftEllipse(center: CGPoint(x: 90, y: 82), radius: CGSize(width: 56, height: 66), color: warm, alpha: 0.08, in: cg)
+    drawSoftEllipse(center: CGPoint(x: 90, y: 76), radius: CGSize(width: 10, height: 34), color: .white, alpha: 0.16, in: cg)
 
-    let highlight = UIColor.white.withAlphaComponent(0.16)
-    fillEllipse(CGRect(x: 69, y: 36, width: 42, height: 86), color: highlight, in: cg)
-    fillEllipse(CGRect(x: 58, y: 56, width: 22, height: 18), color: UIColor.white.withAlphaComponent(0.10), in: cg)
-    fillEllipse(CGRect(x: 100, y: 56, width: 22, height: 18), color: UIColor.white.withAlphaComponent(0.10), in: cg)
+    drawSoftEllipse(center: CGPoint(x: 66, y: 74), radius: CGSize(width: 21, height: 12), color: .white, alpha: 0.11, in: cg)
+    drawSoftEllipse(center: CGPoint(x: 114, y: 74), radius: CGSize(width: 21, height: 12), color: .white, alpha: 0.11, in: cg)
 
-    let contour = UIColor(hex: 0x5A3327).withAlphaComponent(0.16)
-    let softContour = UIColor(hex: 0x5A3327).withAlphaComponent(0.08)
-    drawFaceContourPath(left: true, color: softContour, inset: 0, in: cg)
-    drawFaceContourPath(left: false, color: softContour, inset: 0, in: cg)
-    drawFaceContourPath(left: true, color: contour, inset: 6, in: cg)
-    drawFaceContourPath(left: false, color: contour, inset: 6, in: cg)
+    let blush = UIColor(hex: 0xFF7FA7)
+    drawSoftEllipse(center: CGPoint(x: 62, y: 94), radius: CGSize(width: 24, height: 18), color: blush, alpha: 0.18, in: cg)
+    drawSoftEllipse(center: CGPoint(x: 118, y: 94), radius: CGSize(width: 24, height: 18), color: blush, alpha: 0.18, in: cg)
 
-    fillEllipse(CGRect(x: 52, y: 82, width: 24, height: 18), color: UIColor(hex: 0xFF8AA8).withAlphaComponent(0.11), in: cg)
-    fillEllipse(CGRect(x: 104, y: 82, width: 24, height: 18), color: UIColor(hex: 0xFF8AA8).withAlphaComponent(0.11), in: cg)
+    let contour = UIColor(hex: 0x4B241C)
+    strokeFaceContour(left: true, color: contour.withAlphaComponent(0.12), lineWidth: 18, inset: 0, in: cg)
+    strokeFaceContour(left: false, color: contour.withAlphaComponent(0.12), lineWidth: 18, inset: 0, in: cg)
+    strokeFaceContour(left: true, color: contour.withAlphaComponent(0.16), lineWidth: 8, inset: 8, in: cg)
+    strokeFaceContour(left: false, color: contour.withAlphaComponent(0.16), lineWidth: 8, inset: 8, in: cg)
 
-    let chinShadow = UIBezierPath()
-    chinShadow.move(to: CGPoint(x: 66, y: 124))
-    chinShadow.addQuadCurve(to: CGPoint(x: 114, y: 124), controlPoint: CGPoint(x: 90, y: 135))
-    chinShadow.addQuadCurve(to: CGPoint(x: 66, y: 124), controlPoint: CGPoint(x: 90, y: 130))
-    UIColor(hex: 0x5A3327).withAlphaComponent(0.08).setFill()
-    chinShadow.fill()
+    let jaw = UIBezierPath()
+    jaw.move(to: CGPoint(x: 65, y: 125))
+    jaw.addQuadCurve(to: CGPoint(x: 115, y: 125), controlPoint: CGPoint(x: 90, y: 138))
+    contour.withAlphaComponent(0.11).setStroke()
+    jaw.lineWidth = 10
+    jaw.lineCapStyle = .round
+    jaw.stroke()
+
+    let lip = UIBezierPath()
+    lip.move(to: CGPoint(x: 74, y: 111))
+    lip.addQuadCurve(to: CGPoint(x: 106, y: 111), controlPoint: CGPoint(x: 90, y: 118))
+    UIColor(hex: 0xD85C78).withAlphaComponent(0.14).setStroke()
+    lip.lineWidth = 5
+    lip.lineCapStyle = .round
+    lip.stroke()
   }
 
-  private static func drawFaceContourPath(left: Bool, color: UIColor, inset: CGFloat, in cg: CGContext) {
-    let sign: CGFloat = left ? 1 : -1
-    let outerX: CGFloat = left ? 34 + inset : 146 - inset
-    let innerX: CGFloat = left ? 58 + inset : 122 - inset
+  private static func strokeFaceContour(left: Bool, color: UIColor, lineWidth: CGFloat, inset: CGFloat, in cg: CGContext) {
+    let edgeX: CGFloat = left ? 41 + inset : 139 - inset
     let path = UIBezierPath()
-    path.move(to: CGPoint(x: outerX, y: 45))
+    path.move(to: CGPoint(x: edgeX, y: 48))
     path.addCurve(
-      to: CGPoint(x: outerX + sign * 7, y: 130),
-      controlPoint1: CGPoint(x: outerX - sign * 11, y: 72),
-      controlPoint2: CGPoint(x: outerX - sign * 8, y: 112)
+      to: CGPoint(x: edgeX + (left ? 16 : -16), y: 122),
+      controlPoint1: CGPoint(x: edgeX + (left ? -8 : 8), y: 70),
+      controlPoint2: CGPoint(x: edgeX + (left ? -3 : 3), y: 104)
     )
-    path.addQuadCurve(
-      to: CGPoint(x: innerX, y: 112),
-      controlPoint: CGPoint(x: left ? 48 : 132, y: 128)
-    )
-    path.addCurve(
-      to: CGPoint(x: innerX - sign * 2, y: 46),
-      controlPoint1: CGPoint(x: innerX - sign * 8, y: 92),
-      controlPoint2: CGPoint(x: innerX - sign * 8, y: 64)
-    )
-    path.close()
-    color.setFill()
-    path.fill()
+    color.setStroke()
+    path.lineWidth = lineWidth
+    path.lineCapStyle = .round
+    path.stroke()
   }
 
   private static func drawFace(_ avatar: NomoNativeAvatar, includeSkin: Bool, in cg: CGContext) {
@@ -680,6 +680,40 @@ private enum NomoArFilterRenderer {
   private static func fillEllipse(_ rect: CGRect, color: UIColor, in cg: CGContext) {
     color.setFill()
     cg.fillEllipse(in: rect)
+  }
+
+  private static func drawSoftEllipse(
+    center: CGPoint,
+    radius: CGSize,
+    color: UIColor,
+    alpha: CGFloat,
+    in cg: CGContext
+  ) {
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    guard let gradient = CGGradient(
+      colorsSpace: colorSpace,
+      colors: [
+        color.withAlphaComponent(alpha).cgColor,
+        color.withAlphaComponent(alpha * 0.36).cgColor,
+        color.withAlphaComponent(0).cgColor,
+      ] as CFArray,
+      locations: [0, 0.46, 1]
+    ) else {
+      return
+    }
+
+    cg.saveGState()
+    cg.translateBy(x: center.x, y: center.y)
+    cg.scaleBy(x: radius.width, y: radius.height)
+    cg.drawRadialGradient(
+      gradient,
+      startCenter: .zero,
+      startRadius: 0,
+      endCenter: .zero,
+      endRadius: 1,
+      options: [.drawsAfterEndLocation]
+    )
+    cg.restoreGState()
   }
 
   private static func strokeLine(from: CGPoint, to: CGPoint, color: UIColor, width: CGFloat, in cg: CGContext) {
