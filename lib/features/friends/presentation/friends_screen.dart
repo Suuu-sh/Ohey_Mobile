@@ -659,19 +659,6 @@ class _FriendCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 _StatusPill(status: status, accent: accent),
-                const SizedBox(height: 6),
-                Text(
-                  status.message,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isWhite
-                        ? const Color(0xFF687481)
-                        : Colors.white.withValues(alpha: .58),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                  ),
-                ),
               ],
             ),
           ),
@@ -1124,122 +1111,43 @@ class _ErrorState extends StatelessWidget {
 }
 
 class _FriendStatus {
-  const _FriendStatus({
-    required this.label,
-    required this.message,
-    required this.enabled,
-  });
+  const _FriendStatus({required this.label, required this.enabled});
 
   final String label;
-  final String message;
   final bool enabled;
 }
 
-_FriendStatus _statusForFriend(NomoFriend friend, int index) {
+_FriendStatus _statusForFriend(NomoFriend friend, int _) {
   switch (friend.statusKey) {
     case 'can_drink_today':
-      return const _FriendStatus(
-        label: '今日飲める',
-        message: '今夜の誘いを受けやすいよ！',
-        enabled: true,
-      );
+      return const _FriendStatus(label: '今日飲める', enabled: true);
     case 'light_drink':
-      return const _FriendStatus(
-        label: '軽く一杯なら',
-        message: '短時間なら行けるかも！',
-        enabled: true,
-      );
+      return const _FriendStatus(label: '軽く一杯なら', enabled: true);
     case 'want_drink_hard':
-      return const _FriendStatus(
-        label: 'しっかり飲みたい',
-        message: '今日は飲みたい気分！',
-        enabled: true,
-      );
+      return const _FriendStatus(label: 'しっかり飲みたい', enabled: true);
     case 'non_alcohol':
-      return const _FriendStatus(
-        label: 'ノンアルなら',
-        message: 'ノンアル参加ならOK！',
-        enabled: true,
-      );
+      return const _FriendStatus(label: 'ノンアルなら', enabled: true);
     case 'waiting_invite':
-      return const _FriendStatus(
-        label: '誘われ待ち',
-        message: '誰かからの誘いを待ってるよ！',
-        enabled: true,
-      );
+      return const _FriendStatus(label: '誘われ待ち', enabled: true);
     case 'liver_rest':
-      return const _FriendStatus(
-        label: '休肝日',
-        message: '今日はお休み中...',
-        enabled: false,
-      );
+      return const _FriendStatus(label: '休肝日', enabled: false);
     case 'has_plans':
-      return const _FriendStatus(
-        label: '予定あり',
-        message: '今日は予定があるみたい。',
-        enabled: false,
-      );
-    case 'unselected':
-      return const _FriendStatus(
-        label: '未設定',
-        message: 'ステータス未設定',
-        enabled: true,
-      );
+      return const _FriendStatus(label: '予定あり', enabled: false);
+    case 'unselected' || 'unset' || null || '':
+      return const _FriendStatus(label: '未設定', enabled: false);
+    // Legacy daily status keys kept only for old rows. They are displayed as
+    // status labels, not as free-form comments.
     case 'available':
-      return const _FriendStatus(
-        label: '今ヒマ',
-        message: '今日なら行けるよ〜！',
-        enabled: true,
-      );
+      return const _FriendStatus(label: '今ヒマ', enabled: true);
     case 'last_train':
-      return const _FriendStatus(
-        label: '終電までなら',
-        message: '軽く飲めるかも！',
-        enabled: true,
-      );
+      return const _FriendStatus(label: '終電までなら', enabled: true);
     case 'want_drink':
-      return const _FriendStatus(
-        label: '飲みたい気分',
-        message: '誰か誘って〜！',
-        enabled: true,
-      );
+      return const _FriendStatus(label: '飲みたい気分', enabled: true);
     case 'busy':
-      return const _FriendStatus(
-        label: '休肝日',
-        message: '今日はお休み中...',
-        enabled: false,
-      );
-    case 'unset':
-      return const _FriendStatus(
-        label: '未設定',
-        message: 'ステータス未設定',
-        enabled: true,
-      );
+      return const _FriendStatus(label: '休肝日', enabled: false);
   }
 
-  return switch (index % 5) {
-    0 => const _FriendStatus(
-      label: '今ヒマ',
-      message: '今日なら行けるよ〜！',
-      enabled: true,
-    ),
-    1 => const _FriendStatus(
-      label: '終電までなら',
-      message: '軽く飲めるかも！',
-      enabled: true,
-    ),
-    2 => const _FriendStatus(
-      label: '飲みたい気分',
-      message: '誰か誘って〜！',
-      enabled: true,
-    ),
-    3 => const _FriendStatus(
-      label: '休肝日',
-      message: '今日はお休み中...',
-      enabled: false,
-    ),
-    _ => const _FriendStatus(label: '未設定', message: 'ステータス未設定', enabled: true),
-  };
+  return const _FriendStatus(label: '未設定', enabled: false);
 }
 
 Color _accentForFriend(NomoFriend friend) {
