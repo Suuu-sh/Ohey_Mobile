@@ -18,8 +18,7 @@
 		A90000000000000000000002 /* NomoWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A90000000000000000000001 /* NomoWidgets.swift */; };
 		A90000000000000000000007 /* NomoWidgetsExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A90000000000000000000006 /* NomoWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B10000000000000000000002 /* NomoArAvatarCameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* NomoArAvatarCameraView.swift */; };
-		C0DE00000000000000001001 /* nomo_widget_mascot_medium.png in Resources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000001002 /* nomo_widget_mascot_medium.png */; };
-		C0DE00000000000000001003 /* nomo_widget_mascot_small.png in Resources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000001004 /* nomo_widget_mascot_small.png */; };
+		C0DE00000000000000001005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000001006 /* Assets.xcassets */; };
 		B144C745E088A1CCD00D1D68 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1452E07B482E90AFCE18C63B /* Pods_RunnerTests.framework */; };
 		FDC0B1A6D71458898F34AF49 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4AB8111CA5C58D9AE4B6CDA /* Pods_Runner.framework */; };
 /* End PBXBuildFile section */
@@ -93,8 +92,7 @@
 		A90000000000000000000005 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		A90000000000000000000006 /* NomoWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NomoWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10000000000000000000001 /* NomoArAvatarCameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomoArAvatarCameraView.swift; sourceTree = "<group>"; };
-		C0DE00000000000000001002 /* nomo_widget_mascot_medium.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nomo_widget_mascot_medium.png; sourceTree = "<group>"; };
-		C0DE00000000000000001004 /* nomo_widget_mascot_small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nomo_widget_mascot_small.png; sourceTree = "<group>"; };
+		C0DE00000000000000001006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BA469E506A65B71BE3F98796 /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 		C4AB8111CA5C58D9AE4B6CDA /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE70147EA3359CF274CE401D /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -205,10 +203,9 @@
 			isa = PBXGroup;
 			children = (
 				A90000000000000000000001 /* NomoWidgets.swift */,
+				C0DE00000000000000001006 /* Assets.xcassets */,
 				A90000000000000000000003 /* Info.plist */,
 				A90000000000000000000004 /* NomoWidgets.entitlements */,
-				C0DE00000000000000001002 /* nomo_widget_mascot_medium.png */,
-				C0DE00000000000000001004 /* nomo_widget_mascot_small.png */,
 			);
 			path = NomoWidgets;
 			sourceTree = "<group>";
@@ -352,8 +349,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0DE00000000000000001001 /* nomo_widget_mascot_medium.png in Resources */,
-				C0DE00000000000000001003 /* nomo_widget_mascot_small.png in Resources */,
+				C0DE00000000000000001005 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
