@@ -65,16 +65,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return const _FeedBackground(child: SizedBox.expand()).copyWith(
       child: SafeArea(
         bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            NomoPageHeader.horizontalPadding,
-            NomoPageHeader.topPadding,
-            NomoPageHeader.horizontalPadding,
-            0,
-          ),
-          child: Column(
-            children: [
-              _FeedHeader(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                NomoPageHeader.horizontalPadding,
+                NomoPageHeader.topPadding,
+                NomoPageHeader.horizontalPadding,
+                0,
+              ),
+              child: _FeedHeader(
                 hasUnreadNotifications: hasUnreadNotifications,
                 isRefreshing: _isRefreshingFeed,
                 onRefresh: _refreshFeed,
@@ -84,22 +84,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
-              Expanded(
-                child: _buildFeedPage(
-                  items: feedItems,
-                  isWhite: isWhite,
-                  isLoading: logsAsync.isLoading || friendsAsync.isLoading,
-                  onLikePressed: (item) => ref
-                      .read(drinkLogControllerProvider.notifier)
-                      .toggleLike(item.id),
-                  onSharePressed: (item) => _shareFeedItem(context, item),
-                  onMorePressed: (item) =>
-                      _showFeedPostActions(context, ref, item),
-                ),
+            ),
+            const SizedBox(height: 14),
+            Expanded(
+              child: _buildFeedPage(
+                items: feedItems,
+                isWhite: isWhite,
+                isLoading: logsAsync.isLoading || friendsAsync.isLoading,
+                onLikePressed: (item) => ref
+                    .read(drinkLogControllerProvider.notifier)
+                    .toggleLike(item.id),
+                onSharePressed: (item) => _shareFeedItem(context, item),
+                onMorePressed: (item) =>
+                    _showFeedPostActions(context, ref, item),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
