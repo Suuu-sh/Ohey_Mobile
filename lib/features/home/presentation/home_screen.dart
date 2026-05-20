@@ -39,6 +39,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final logsAsync = ref.watch(drinkLogControllerProvider);
+    final friendsAsync = ref.watch(friendsProvider);
     final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
     final user = ref.watch(nomoUserProvider);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
@@ -48,10 +49,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .currentUser
         ?.id;
     final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
+    final friendUserIds =
+        friendsAsync.asData?.value
+            .map((friend) => friend.id)
+            .where((id) => id.isNotEmpty)
+            .toSet() ??
+        const <String>{};
     final feedItems = _feedItems(
       logs,
       user: user,
       currentUserId: currentUserId,
+      friendUserIds: friendUserIds,
     );
 
     return const _FeedBackground(child: SizedBox.expand()).copyWith(
@@ -81,7 +89,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: _buildFeedPage(
                   items: feedItems,
                   isWhite: isWhite,
-                  logsAsync: logsAsync,
+                  isLoading: logsAsync.isLoading || friendsAsync.isLoading,
                   onLikePressed: (item) => ref
                       .read(drinkLogControllerProvider.notifier)
                       .toggleLike(item.id),
@@ -165,7 +173,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 Widget _buildFeedPage({
   required List<_FeedItem> items,
   required bool isWhite,
-  required AsyncValue<List<DrinkLog>> logsAsync,
+  required bool isLoading,
   required ValueChanged<_FeedItem> onLikePressed,
   required ValueChanged<_FeedItem> onSharePressed,
   required ValueChanged<_FeedItem> onMorePressed,
@@ -173,7 +181,7 @@ Widget _buildFeedPage({
   physics: const BouncingScrollPhysics(),
   padding: const EdgeInsets.only(top: 2, bottom: 124),
   children: [
-    if (logsAsync.isLoading && items.isEmpty)
+    if (isLoading && items.isEmpty)
       const Padding(
         padding: EdgeInsets.all(36),
         child: Center(child: CupertinoActivityIndicator()),
@@ -273,8 +281,8 @@ class _FeedSectionEmptyState extends StatelessWidget {
       child: _FeedEmptyState(
         icon: CupertinoIcons.photo_on_rectangle,
         isWhite: isWhite,
-        title: 'まだ飲みログがありません',
-        message: '飲みログを追加するとフィードに大きく表示されます。',
+        title: 'フレンズの飲みログはまだありません',
+        message: 'フレンズの投稿が届くとフィードに大きく表示されます。',
         accent: _FeedColors.teal,
       ),
     );
@@ -2738,9 +2746,16 @@ List<_FeedItem> _feedItems(
   List<DrinkLog> logs, {
   NomoUser? user,
   String? currentUserId,
+  Set<String> friendUserIds = const <String>{},
 }) => logs
     .map(
       (log) => _FeedItem.fromLog(log, user: user, currentUserId: currentUserId),
+    )
+    .where(
+      (item) =>
+          !item.isOfficial &&
+          item.ownerUserId.isNotEmpty &&
+          friendUserIds.contains(item.ownerUserId),
     )
     .toList(growable: false);
 
