@@ -2309,6 +2309,13 @@ Future<void> _showEditProfileSheet(
     backgroundColor: Colors.transparent,
     builder: (sheetContext) => StatefulBuilder(
       builder: (sheetBuildContext, setState) {
+        final sheetIsWhite =
+            Theme.of(sheetBuildContext).brightness == Brightness.light;
+        final inputInk = sheetIsWhite ? const Color(0xFF101820) : Colors.white;
+        final inputSub = sheetIsWhite
+            ? const Color(0xFF8B96A3)
+            : Colors.white.withValues(alpha: .45);
+
         Future<void> saveProfile() async {
           final name = controller.text.trim();
           final userId = userIdController.text.trim();
@@ -2391,32 +2398,39 @@ Future<void> _showEditProfileSheet(
                   TextField(
                     controller: controller,
                     enabled: !saving,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: inputInk,
                       fontWeight: FontWeight.w800,
                     ),
-                    decoration: _darkInputDecoration('表示名'),
+                    decoration: _profileInputDecoration(
+                      '表示名',
+                      isWhite: sheetIsWhite,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: userIdController,
                     enabled: !saving,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: inputInk,
                       fontWeight: FontWeight.w800,
                     ),
-                    decoration: _darkInputDecoration('ユーザーID').copyWith(
-                      prefixText: '@',
-                      prefixStyle: const TextStyle(
-                        color: _ProfileColors.sub,
-                        fontWeight: FontWeight.w900,
-                      ),
-                      helperText: '半角英数字と_で3〜24文字',
-                      helperStyle: TextStyle(
-                        color: Colors.white.withValues(alpha: .45),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    decoration:
+                        _profileInputDecoration(
+                          'ユーザーID',
+                          isWhite: sheetIsWhite,
+                        ).copyWith(
+                          prefixText: '@',
+                          prefixStyle: TextStyle(
+                            color: inputSub,
+                            fontWeight: FontWeight.w900,
+                          ),
+                          helperText: '半角英数字と_で3〜24文字',
+                          helperStyle: TextStyle(
+                            color: inputSub,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                   ),
                   const SizedBox(height: 16),
                   _AvatarEditCard(
@@ -3475,27 +3489,36 @@ class _MemoryRow extends StatelessWidget {
   );
 }
 
-InputDecoration _darkInputDecoration(String hint) => InputDecoration(
-  hintText: hint,
-  hintStyle: TextStyle(
-    color: Colors.white.withValues(alpha: .45),
-    fontWeight: FontWeight.w800,
-  ),
-  filled: true,
-  fillColor: Colors.white.withValues(alpha: .06),
-  border: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(18),
-    borderSide: const BorderSide(color: _ProfileColors.line),
-  ),
-  enabledBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(18),
-    borderSide: const BorderSide(color: _ProfileColors.line),
-  ),
-  focusedBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(18),
-    borderSide: const BorderSide(color: _ProfileColors.lime),
-  ),
-);
+InputDecoration _profileInputDecoration(String hint, {required bool isWhite}) =>
+    InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(
+        color: isWhite
+            ? const Color(0xFF8B96A3)
+            : Colors.white.withValues(alpha: .45),
+        fontWeight: FontWeight.w800,
+      ),
+      filled: true,
+      fillColor: isWhite
+          ? const Color(0xFFF6F8FA)
+          : Colors.white.withValues(alpha: .06),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide(
+          color: isWhite ? const Color(0xFFDDE4EA) : _ProfileColors.line,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide(
+          color: isWhite ? const Color(0xFFDDE4EA) : _ProfileColors.line,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(color: _ProfileColors.lime),
+      ),
+    );
 
 String _relativeTime(DateTime date) {
   final diff = DateTime.now().difference(date);
