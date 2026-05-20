@@ -30,7 +30,7 @@ class NomoAvatar {
     accessory: 0,
   );
 
-  /// Admin-only mascot avatar used for the signed-in owner account.
+  /// Mascot avatar used only for official Nomo posts.
   static const adminAvatar = NomoAvatar(
     skin: 5,
     hair: 5,

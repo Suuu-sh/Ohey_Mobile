@@ -49,11 +49,9 @@ class ProfileScreen extends ConsumerWidget {
     final friendsCount = friendsAsync.asData?.value.length ?? 0;
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     final hasAdminEmail = NomoAvatar.isAdminEmail(currentAuthUser?.email);
-    final hasAdminAccess =
-        ref
-            .watch(adminAccessProvider)
-            .maybeWhen(data: (allowed) => allowed, orElse: () => false) ||
-        (user?.avatar?.isAdmin ?? false);
+    final hasAdminAccess = ref
+        .watch(adminAccessProvider)
+        .maybeWhen(data: (allowed) => allowed, orElse: () => false);
     final canOpenAdmin = hasAdminEmail || hasAdminAccess;
     final monthlyLogs = logs
         .where((log) => log.isInMonth(DateTime.now()))
