@@ -63,7 +63,7 @@ app.nomo.nomo://login-callback/
 ## Important: dev and production must stay separate
 
 `nomo` Supabase and `nomo-backend` are production resources. Do not use them for local/dev checks.
-Local/dev must use `dev-nomo` Supabase and either the local backend or `dev-nomo-backend` on Render.
+Dev/Simulator must use `dev-nomo` Supabase and the `dev-nomo-backend` Render backend.
 
 If Flutter and the backend point to different Supabase projects, PostgREST returns:
 

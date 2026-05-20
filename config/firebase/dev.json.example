@@ -1,6 +1,6 @@
 {
   "NOMO_ENV": "dev",
-  "NOMO_BACKEND_URL": "http://127.0.0.1:8080",
+  "NOMO_BACKEND_URL": "https://dev-nomo-backend.onrender.com",
   "SUPABASE_URL": "https://wwyaftonswgxnjcceyfb.supabase.co",
   "SUPABASE_PUBLISHABLE_KEY": "replace_with_dev_publishable_key",
   "SUPABASE_AUTH_REDIRECT_URL": "app.nomo.nomo.dev://login-callback/",

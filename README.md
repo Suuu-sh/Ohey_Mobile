@@ -49,10 +49,10 @@ go run ./cmd/api
 Run Flutter against it:
 
 ```sh
-flutter run --dart-define=NOMO_BACKEND_URL=http://localhost:8080
+flutter run --dart-define=NOMO_BACKEND_URL=https://dev-nomo-backend.onrender.com
 ```
 
-For Render/prod builds, set `NOMO_BACKEND_URL=https://nomo-backend-nezf.onrender.com`.
+For prod builds, set `NOMO_BACKEND_URL=https://nomo-backend-nezf.onrender.com`. For dev/Simulator use `https://dev-nomo-backend.onrender.com`.
 
 ## Run
 
