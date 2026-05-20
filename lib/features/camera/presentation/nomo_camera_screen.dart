@@ -52,10 +52,7 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    SystemChrome.setPreferredOrientations(const [DeviceOrientation.portraitUp]);
     if (_selectedFilter.usesArFaceTracking) {
       _isInitializingCamera = false;
     } else {
@@ -121,9 +118,7 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
       );
       await controller.initialize();
       try {
-        await controller.lockCaptureOrientation(
-          DeviceOrientation.landscapeLeft,
-        );
+        await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
       } on CameraException {
         // Keep the plain camera usable even if capture orientation locking fails.
       }

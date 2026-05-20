@@ -34,26 +34,11 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  late final PageController _feedPageController;
-  _FeedSection _selectedSection = _FeedSection.feed;
   bool _isRefreshingFeed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _feedPageController = PageController(initialPage: _selectedSection.index);
-  }
-
-  @override
-  void dispose() {
-    _feedPageController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     final logsAsync = ref.watch(drinkLogControllerProvider);
-    final friendsAsync = ref.watch(friendsProvider);
     final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
     final user = ref.watch(nomoUserProvider);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
@@ -63,22 +48,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .currentUser
         ?.id;
     final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
-    final friendUserIds =
-        friendsAsync.asData?.value
-            .map((friend) => friend.id)
-            .where((id) => id.isNotEmpty)
-            .toSet() ??
-        const <String>{};
-    final sectionItems = {
-      for (final section in _FeedSection.values)
-        section: _itemsForSection(
-          section,
-          logs,
-          user: user,
-          currentUserId: currentUserId,
-          friendUserIds: friendUserIds,
-        ),
-    };
+    final feedItems = _feedItems(
+      logs,
+      user: user,
+      currentUserId: currentUserId,
+    );
 
     return const _FeedBackground(child: SizedBox.expand()).copyWith(
       child: SafeArea(
@@ -102,37 +76,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 22),
-              _FeedTabs(
-                selected: _selectedSection,
-                onChanged: (section) => _onFeedSectionChanged(section),
-              ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
               Expanded(
-                child: PageView(
-                  controller: _feedPageController,
-                  physics: const BouncingScrollPhysics(),
-                  onPageChanged: (page) {
-                    final next = _FeedSection.values[page];
-                    if (_selectedSection != next) {
-                      setState(() => _selectedSection = next);
-                    }
-                  },
-                  children: [
-                    for (final section in _FeedSection.values)
-                      _buildFeedSectionPage(
-                        section: section,
-                        items: sectionItems[section] ?? const <_FeedItem>[],
-                        isWhite: isWhite,
-                        logsAsync: logsAsync,
-                        onLikePressed: (item) => ref
-                            .read(drinkLogControllerProvider.notifier)
-                            .toggleLike(item.id),
-                        onSharePressed: (item) => _shareFeedItem(context, item),
-                        onMorePressed: (item) =>
-                            _showFeedPostActions(context, ref, item),
-                      ),
-                  ],
+                child: _buildFeedPage(
+                  items: feedItems,
+                  isWhite: isWhite,
+                  logsAsync: logsAsync,
+                  onLikePressed: (item) => ref
+                      .read(drinkLogControllerProvider.notifier)
+                      .toggleLike(item.id),
+                  onSharePressed: (item) => _shareFeedItem(context, item),
+                  onMorePressed: (item) =>
+                      _showFeedPostActions(context, ref, item),
                 ),
               ),
             ],
@@ -140,17 +95,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
-  }
-
-  void _onFeedSectionChanged(_FeedSection section) {
-    setState(() => _selectedSection = section);
-    if (_feedPageController.hasClients) {
-      _feedPageController.animateToPage(
-        section.index,
-        duration: const Duration(milliseconds: 260),
-        curve: Curves.easeOutCubic,
-      );
-    }
   }
 
   Future<void> _refreshFeed() async {
@@ -218,8 +162,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-Widget _buildFeedSectionPage({
-  required _FeedSection section,
+Widget _buildFeedPage({
   required List<_FeedItem> items,
   required bool isWhite,
   required AsyncValue<List<DrinkLog>> logsAsync,
@@ -228,7 +171,7 @@ Widget _buildFeedSectionPage({
   required ValueChanged<_FeedItem> onMorePressed,
 }) => ListView(
   physics: const BouncingScrollPhysics(),
-  padding: const EdgeInsets.only(bottom: 124),
+  padding: const EdgeInsets.only(top: 2, bottom: 124),
   children: [
     if (logsAsync.isLoading && items.isEmpty)
       const Padding(
@@ -236,40 +179,21 @@ Widget _buildFeedSectionPage({
         child: Center(child: CupertinoActivityIndicator()),
       )
     else if (items.isEmpty)
-      _FeedSectionEmptyState(section: section, isWhite: isWhite)
+      _FeedSectionEmptyState(isWhite: isWhite)
     else
       ...items.map(
-        (item) => _FeedPostCard(
-          item: item,
-          onLike: item.isLikeable ? () => onLikePressed(item) : null,
-          onShare: item.id.isEmpty ? null : () => onSharePressed(item),
-          onMore: item.id.isEmpty ? null : () => onMorePressed(item),
+        (item) => Padding(
+          padding: const EdgeInsets.only(bottom: 18),
+          child: _FeedPostCard(
+            item: item,
+            onLike: item.isLikeable ? () => onLikePressed(item) : null,
+            onShare: item.id.isEmpty ? null : () => onSharePressed(item),
+            onMore: item.id.isEmpty ? null : () => onMorePressed(item),
+          ),
         ),
       ),
   ],
 );
-
-enum _FeedSection { feed, following, official }
-
-extension _FeedSectionView on _FeedSection {
-  String get label => switch (this) {
-    _FeedSection.feed => 'おすすめ',
-    _FeedSection.following => 'フレンズ',
-    _FeedSection.official => '公式',
-  };
-
-  IconData get icon => switch (this) {
-    _FeedSection.feed => Icons.sports_bar_rounded,
-    _FeedSection.following => CupertinoIcons.person_2_fill,
-    _FeedSection.official => CupertinoIcons.bolt_fill,
-  };
-
-  Color get accent => switch (this) {
-    _FeedSection.feed => _FeedColors.teal,
-    _FeedSection.following => const Color(0xFFFFD166),
-    _FeedSection.official => const Color(0xFFFF7AB8),
-  };
-}
 
 class _FeedBackground extends ConsumerWidget {
   const _FeedBackground({required this.child});
@@ -288,7 +212,7 @@ class _FeedBackground extends ConsumerWidget {
           end: Alignment.bottomCenter,
           colors: isWhite
               ? const [Colors.white, Colors.white, Color(0xFFF7F9FB)]
-              : const [Color(0xFF172637), Color(0xFF101B28), Color(0xFF0B1420)],
+              : const [Color(0xFF05080F), Color(0xFF07111D), Color(0xFF05080F)],
         ),
       ),
       child: child,
@@ -337,286 +261,21 @@ class _FeedHeader extends StatelessWidget {
   }
 }
 
-class _FeedTabs extends StatelessWidget {
-  const _FeedTabs({required this.selected, required this.onChanged});
-
-  final _FeedSection selected;
-  final ValueChanged<_FeedSection> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isWhite
-              ? const [Colors.white, Color(0xFFF5FAFF)]
-              : [
-                  const Color(0xFF122334).withValues(alpha: .96),
-                  const Color(0xFF081421).withValues(alpha: .96),
-                ],
-        ),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(
-          color: isWhite
-              ? const Color(0xFFE2EAF2)
-              : Colors.white.withValues(alpha: .10),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .07 : .24),
-            blurRadius: 22,
-            offset: const Offset(0, 12),
-          ),
-          BoxShadow(
-            color: selected.accent.withValues(alpha: isWhite ? .10 : .12),
-            blurRadius: 30,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
-      child: SizedBox(
-        height: 58,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final sections = _FeedSection.values;
-            final tabWidth = constraints.maxWidth / sections.length;
-            return Stack(
-              children: [
-                AnimatedPositioned(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutCubic,
-                  left: selected.index * tabWidth + 3,
-                  top: 3,
-                  bottom: 3,
-                  width: tabWidth - 6,
-                  child: _FeedTabIndicator(
-                    accent: selected.accent,
-                    isWhite: isWhite,
-                  ),
-                ),
-                Row(
-                  children: [
-                    for (final section in sections)
-                      _FeedTab(
-                        section: section,
-                        selected: selected == section,
-                        onTap: () => onChanged(section),
-                      ),
-                  ],
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class _FeedTabIndicator extends StatelessWidget {
-  const _FeedTabIndicator({required this.accent, required this.isWhite});
-
-  final Color accent;
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      foregroundPainter: _FeedTabIndicatorPainter(accent: accent),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color.lerp(Colors.white, accent, isWhite ? .32 : .24)!,
-              accent,
-              Color.lerp(accent, const Color(0xFFFFFFFF), .16)!,
-            ],
-          ),
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: isWhite ? .66 : .34),
-            width: 1.3,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: accent.withValues(alpha: isWhite ? .26 : .34),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
-            BoxShadow(
-              color: Colors.white.withValues(alpha: isWhite ? .58 : .14),
-              blurRadius: 0,
-              offset: const Offset(0, -1),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FeedTabIndicatorPainter extends CustomPainter {
-  const _FeedTabIndicatorPainter({required this.accent});
-
-  final Color accent;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final glow = Paint()..color = Colors.white.withValues(alpha: .18);
-    canvas.drawCircle(
-      Offset(size.width * .18, size.height * .28),
-      size.height * .22,
-      glow,
-    );
-    canvas.drawCircle(
-      Offset(size.width * .86, size.height * .70),
-      size.height * .12,
-      glow..color = Colors.white.withValues(alpha: .13),
-    );
-
-    final dot = Paint()..color = accent.withValues(alpha: .22);
-    canvas.drawCircle(
-      Offset(size.width * .72, size.height * .26),
-      size.height * .055,
-      dot,
-    );
-    canvas.drawCircle(
-      Offset(size.width * .33, size.height * .78),
-      size.height * .04,
-      dot..color = Colors.white.withValues(alpha: .16),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _FeedTabIndicatorPainter oldDelegate) =>
-      oldDelegate.accent != accent;
-}
-
-class _FeedTab extends StatelessWidget {
-  const _FeedTab({
-    required this.section,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final _FeedSection section;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final selectedColor = Color.lerp(
-      const Color(0xFF031B22),
-      section.accent,
-      .10,
-    )!;
-    final idleColor = isWhite ? const Color(0xFF748291) : _FeedColors.sub;
-
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
-        child: Semantics(
-          button: true,
-          selected: selected,
-          label: '${section.label}タブ',
-          child: CupertinoButton(
-            onPressed: selected ? null : onTap,
-            minimumSize: const Size(0, 48),
-            padding: EdgeInsets.zero,
-            borderRadius: BorderRadius.circular(25),
-            child: SizedBox(
-              width: double.infinity,
-              height: 58,
-              child: AnimatedScale(
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOutCubic,
-                scale: selected ? 1 : .96,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AnimatedScale(
-                      duration: const Duration(milliseconds: 180),
-                      curve: Curves.easeOutCubic,
-                      scale: selected ? 1.08 : 1,
-                      child: NomoPopIcon(
-                        icon: section.icon,
-                        size: selected ? 28 : 24,
-                        iconSize: selected ? 27 : 23,
-                        showBubble: false,
-                        shadow: false,
-                        color: selected
-                            ? selectedColor
-                            : idleColor.withValues(alpha: isWhite ? .86 : .78),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 180),
-                        curve: Curves.easeOutCubic,
-                        style:
-                            Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: selected ? selectedColor : idleColor,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -.45,
-                            ) ??
-                            TextStyle(
-                              color: selected ? selectedColor : idleColor,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -.45,
-                            ),
-                        child: Text(
-                          section.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _FeedSectionEmptyState extends StatelessWidget {
-  const _FeedSectionEmptyState({required this.section, required this.isWhite});
+  const _FeedSectionEmptyState({required this.isWhite});
 
-  final _FeedSection section;
   final bool isWhite;
 
   @override
   Widget build(BuildContext context) {
-    final title = switch (section) {
-      _FeedSection.feed => 'まだ飲みログがありません',
-      _FeedSection.following => 'フレンズの飲みログはまだありません',
-      _FeedSection.official => '公式のお知らせはまだありません',
-    };
-    final message = switch (section) {
-      _FeedSection.feed => '飲みログを追加するとフィードに表示されます。',
-      _FeedSection.following => 'フレンズの飲みログが届くとここに表示されます。',
-      _FeedSection.official => 'Nomoからのニュースやイベントをここで確認できます。',
-    };
     return Padding(
       padding: const EdgeInsets.only(top: 28),
       child: _FeedEmptyState(
-        icon: section.icon,
+        icon: CupertinoIcons.photo_on_rectangle,
         isWhite: isWhite,
-        title: title,
-        message: message,
-        accent: section.accent,
+        title: 'まだ飲みログがありません',
+        message: '飲みログを追加するとフィードに大きく表示されます。',
+        accent: _FeedColors.teal,
       ),
     );
   }
@@ -1467,126 +1126,418 @@ class _FeedPostCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final photoPath = item.photoAssetPath;
     final hasPhoto = _isDisplayablePostPhoto(photoPath);
+    final caption = _feedCardCaption(item);
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    final line = isWhite
-        ? Colors.black.withValues(alpha: .10)
-        : Colors.white.withValues(alpha: .09);
-    final rawBody = _duoStyleBody(item).trim();
 
-    final body = hasPhoto ? '' : rawBody;
-
-    final decoration = BoxDecoration(
-      border: Border(bottom: BorderSide(color: line)),
+    return Semantics(
+      label: '${item.userName}の飲みログ',
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isWhite ? .12 : .36),
+              blurRadius: 26,
+              offset: const Offset(0, 18),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: AspectRatio(
+            aspectRatio: 4 / 5,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (hasPhoto)
+                  _PostPhoto(path: photoPath!)
+                else
+                  _FeedPhotoPlaceholder(accent: item.accent),
+                const _FeedPhotoScrim(),
+                Positioned(
+                  left: 14,
+                  top: 14,
+                  right: 14,
+                  child: _FeedCardAuthorBar(item: item, onMore: onMore),
+                ),
+                Positioned(
+                  left: 18,
+                  right: 18,
+                  bottom: 15,
+                  child: _FeedCardFooter(
+                    item: item,
+                    caption: caption,
+                    onLike: onLike,
+                    onShare: onShare,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
+  }
+}
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(0, 20, 0, 22),
-      decoration: decoration,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+class _FeedCardAuthorBar extends StatelessWidget {
+  const _FeedCardAuthorBar({required this.item, this.onMore});
+
+  final _FeedItem item;
+  final VoidCallback? onMore;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _AvatarBubble(avatar: item.avatar, size: 42, glowColor: item.accent),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _AvatarBubble(
-                avatar: item.avatar,
-                size: 48,
-                glowColor: item.accent,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        item.userName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: ink.withValues(alpha: .88),
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.25,
-                        ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      item.userName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Colors.white,
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w900,
+                        height: 1.05,
+                        letterSpacing: -.25,
+                        shadows: const [
+                          Shadow(
+                            color: Colors.black54,
+                            blurRadius: 8,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                     ),
-                    if (item.isOfficial) const _OfficialVerifiedBadge(),
-                  ],
-                ),
-              ),
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: onMore,
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: NomoPopIcon(
-                    icon: CupertinoIcons.ellipsis,
-                    color: ink.withValues(alpha: .92),
-                    size: 26,
-                    showBubble: false,
                   ),
+                  if (item.isOfficial) const _OfficialVerifiedBadge(),
+                ],
+              ),
+              const SizedBox(height: 3),
+              Text(
+                item.timeAgo,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Colors.white.withValues(alpha: .78),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black54,
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          if (hasPhoto) ...[
-            const SizedBox(height: 12),
-            _PostPhoto(path: photoPath!),
-            if (body.isNotEmpty) const SizedBox(height: 12),
-          ] else if (body.isNotEmpty)
-            const SizedBox(height: 10),
-          if (body.isNotEmpty)
-            Text(
-              body,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: ink.withValues(alpha: .88),
-                fontWeight: FontWeight.w800,
-                height: 1.35,
-                letterSpacing: -.35,
-              ),
+        ),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onMore,
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: NomoPopIcon(
+              icon: CupertinoIcons.ellipsis,
+              color: Colors.white.withValues(alpha: .96),
+              size: 28,
+              showBubble: false,
             ),
-          SizedBox(height: body.isEmpty ? 12 : 18),
-          Row(
-            children: [
-              _DuoFeedButton(
-                icon: item.liked
-                    ? CupertinoIcons.heart_fill
-                    : CupertinoIcons.heart,
-                label: '${item.likes}',
-                color: item.liked ? const Color(0xFFFF5EA8) : Colors.white,
-                onTap: onLike,
-              ),
-              if (item.friends.isNotEmpty) ...[
-                const SizedBox(width: 10),
-                _WithFriendsPill(friends: item.friends),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FeedCardFooter extends StatelessWidget {
+  const _FeedCardFooter({
+    required this.item,
+    required this.caption,
+    this.onLike,
+    this.onShare,
+  });
+
+  final _FeedItem item;
+  final String caption;
+  final VoidCallback? onLike;
+  final VoidCallback? onShare;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (caption.isNotEmpty) ...[
+          Text(
+            caption,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: Colors.white,
+              fontSize: 21,
+              fontWeight: FontWeight.w900,
+              height: 1.12,
+              letterSpacing: -.55,
+              shadows: const [
+                Shadow(
+                  color: Colors.black87,
+                  blurRadius: 10,
+                  offset: Offset(0, 3),
+                ),
               ],
-              const SizedBox(width: 10),
-              _DuoFeedButton(
-                icon: CupertinoIcons.square_arrow_up,
-                label: '',
-                color: Colors.white,
-                useVectorShareIcon: true,
-                onTap: onShare,
-              ),
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.only(top: 18),
-                child: Text(
-                  item.timeAgo,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: _FeedColors.sub,
-                    fontWeight: FontWeight.w900,
-                  ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (item.friends.isNotEmpty)
+              _FeedOverlayFriends(friends: item.friends),
+            const Spacer(),
+            _FeedOverlayAction(
+              semanticLabel: item.liked ? 'いいねを取り消す' : 'いいね',
+              icon: item.liked
+                  ? CupertinoIcons.heart_fill
+                  : CupertinoIcons.heart,
+              label: '${item.likes}',
+              color: item.liked ? const Color(0xFFFF7AB8) : Colors.white,
+              onTap: onLike,
+            ),
+            const SizedBox(width: 13),
+            _FeedOverlayAction(
+              semanticLabel: '共有',
+              customIcon: const _VectorShareIcon(color: Colors.white, size: 25),
+              onTap: onShare,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _FeedOverlayAction extends StatelessWidget {
+  const _FeedOverlayAction({
+    required this.semanticLabel,
+    this.icon,
+    this.customIcon,
+    this.label = '',
+    this.color = Colors.white,
+    this.onTap,
+  });
+
+  final String semanticLabel;
+  final IconData? icon;
+  final Widget? customIcon;
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveColor = color;
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            customIcon ??
+                NomoPopIcon(
+                  icon: icon ?? CupertinoIcons.circle,
+                  color: effectiveColor,
+                  size: 26,
+                  showBubble: false,
+                ),
+            if (label.isNotEmpty) ...[
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black87,
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedOverlayFriends extends StatelessWidget {
+  const _FeedOverlayFriends({required this.friends});
+
+  final List<_Companion> friends;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '一緒に飲んだフレンズを表示',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _showFeedCompanionList(context, friends),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(8, 7, 10, 7),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: .24),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: Colors.white.withValues(alpha: .22)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _FriendAvatarStack(friends: friends),
+              const SizedBox(width: 8),
+              Text(
+                'with',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: .92),
+                  fontWeight: FontWeight.w900,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black54,
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedPhotoScrim extends StatelessWidget {
+  const _FeedPhotoScrim();
+
+  @override
+  Widget build(BuildContext context) {
+    return const DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xB2000000),
+            Color(0x1A000000),
+            Color(0x00000000),
+            Color(0xE6000000),
+          ],
+          stops: [0, .23, .50, 1],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedPhotoPlaceholder extends StatelessWidget {
+  const _FeedPhotoPlaceholder({required this.accent});
+
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.lerp(const Color(0xFF101B28), accent, .34)!,
+            const Color(0xFF090D16),
+            Color.lerp(const Color(0xFF2A1538), accent, .22)!,
+          ],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: -52,
+            top: 80,
+            child: _FeedPlaceholderOrb(
+              color: accent.withValues(alpha: .28),
+              size: 170,
+            ),
+          ),
+          Positioned(
+            right: -46,
+            bottom: 110,
+            child: _FeedPlaceholderOrb(
+              color: const Color(0xFFFF7AB8).withValues(alpha: .20),
+              size: 190,
+            ),
+          ),
+          Center(
+            child: Icon(
+              CupertinoIcons.photo_fill_on_rectangle_fill,
+              color: Colors.white.withValues(alpha: .18),
+              size: 74,
+            ),
           ),
         ],
       ),
     );
   }
+}
+
+class _FeedPlaceholderOrb extends StatelessWidget {
+  const _FeedPlaceholderOrb({required this.color, required this.size});
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: color,
+      boxShadow: [BoxShadow(color: color, blurRadius: 42, spreadRadius: 16)],
+    ),
+  );
+}
+
+String _feedCardCaption(_FeedItem item) {
+  final body = _duoStyleBody(item).trim();
+  if (body.isNotEmpty) return body;
+  final place = item.place.trim();
+  if (place.isNotEmpty) return place;
+  return '';
 }
 
 class _OfficialVerifiedBadge extends StatelessWidget {
@@ -1692,72 +1643,6 @@ class _VerifiedBadgeSeal extends CustomPainter {
   bool shouldRepaint(covariant _VerifiedBadgeSeal oldDelegate) => false;
 }
 
-class _DuoFeedButton extends StatelessWidget {
-  const _DuoFeedButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    this.onTap,
-    this.useVectorShareIcon = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback? onTap;
-  final bool useVectorShareIcon;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final effectiveIconColor = color == Colors.white && isWhite
-        ? const Color(0xFF101820)
-        : color;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isWhite
-                ? Colors.black.withValues(alpha: .18)
-                : Colors.white.withValues(alpha: .20),
-            width: 1.6,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            useVectorShareIcon
-                ? _VectorShareIcon(color: effectiveIconColor, size: 27)
-                : NomoPopIcon(
-                    icon: icon,
-                    color: effectiveIconColor,
-                    size: 27,
-                    showBubble: false,
-                  ),
-            if (label.isNotEmpty) ...[
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: isWhite
-                      ? const Color(0xFF101820)
-                      : Colors.white.withValues(alpha: .90),
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _VectorShareIcon extends StatelessWidget {
   const _VectorShareIcon({required this.color, required this.size});
 
@@ -1840,18 +1725,13 @@ class _PostPhoto extends StatelessWidget {
     final provider = _imageProviderFor(path);
     if (provider == null) return const SizedBox.shrink();
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Image(
-          image: provider,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          gaplessPlayback: true,
-          errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
-        ),
-      ),
+    return Image(
+      image: provider,
+      width: double.infinity,
+      height: double.infinity,
+      fit: BoxFit.cover,
+      gaplessPlayback: true,
+      errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
     );
   }
 
@@ -1902,57 +1782,6 @@ class _FriendAvatarStack extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _WithFriendsPill extends StatelessWidget {
-  const _WithFriendsPill({required this.friends});
-
-  final List<_Companion> friends;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    return Semantics(
-      button: true,
-      label: '一緒に飲んだフレンズを表示',
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => _showFeedCompanionList(context, friends),
-        child: Container(
-          height: 46,
-          padding: const EdgeInsets.fromLTRB(12, 8, 13, 8),
-          decoration: BoxDecoration(
-            color: isWhite
-                ? Colors.black.withValues(alpha: .025)
-                : Colors.white.withValues(alpha: .035),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isWhite
-                  ? Colors.black.withValues(alpha: .18)
-                  : Colors.white.withValues(alpha: .20),
-              width: 1.6,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'with',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: ink.withValues(alpha: .90),
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.2,
-                ),
-              ),
-              const SizedBox(width: 8),
-              _FriendAvatarStack(friends: friends),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -2905,32 +2734,15 @@ BoxDecoration _feedCardDecoration({required double radius}) => BoxDecoration(
   ],
 );
 
-List<_FeedItem> _itemsForSection(
-  _FeedSection section,
+List<_FeedItem> _feedItems(
   List<DrinkLog> logs, {
   NomoUser? user,
   String? currentUserId,
-  Set<String> friendUserIds = const <String>{},
-}) {
-  final following = logs
-      .map(
-        (log) =>
-            _FeedItem.fromLog(log, user: user, currentUserId: currentUserId),
-      )
-      .toList();
-  return switch (section) {
-    _FeedSection.feed => following,
-    _FeedSection.following =>
-      following
-          .where(
-            (item) =>
-                !item.isOfficial && friendUserIds.contains(item.ownerUserId),
-          )
-          .toList(growable: false),
-    _FeedSection.official =>
-      following.where((item) => item.isOfficial).toList(growable: false),
-  };
-}
+}) => logs
+    .map(
+      (log) => _FeedItem.fromLog(log, user: user, currentUserId: currentUserId),
+    )
+    .toList(growable: false);
 
 class _FeedItem {
   const _FeedItem({
@@ -2938,6 +2750,7 @@ class _FeedItem {
     required this.userName,
     required this.timeAgo,
     required this.body,
+    this.place = '',
     required this.avatar,
     required this.accent,
     this.photoAssetPath,
@@ -2978,6 +2791,7 @@ class _FeedItem {
       userName: log.isOfficial ? 'Nomo' : authorName,
       timeAgo: _relativeTime(log.date),
       body: log.memo.trim(),
+      place: log.place.trim(),
       avatar: avatar,
       accent: accent,
       photoAssetPath: log.photoAssetPath,
@@ -3003,7 +2817,7 @@ class _FeedItem {
   bool matches(String query) {
     final normalized = query.trim().toLowerCase();
     if (normalized.isEmpty) return true;
-    final searchable = [userName, timeAgo, body].join(' ').toLowerCase();
+    final searchable = [userName, timeAgo, body, place].join(' ').toLowerCase();
     return searchable.contains(normalized);
   }
 
@@ -3013,6 +2827,7 @@ class _FeedItem {
   final String userName;
   final String timeAgo;
   final String body;
+  final String place;
   final NomoAvatar avatar;
   final Color accent;
   final String? photoAssetPath;
