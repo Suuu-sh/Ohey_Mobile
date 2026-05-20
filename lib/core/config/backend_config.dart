@@ -9,7 +9,7 @@ import 'package:flutter/foundation.dart';
 class BackendConfig {
   const BackendConfig._();
 
-  static const _devBaseUrl = 'https://dev-nomo-backend.onrender.com';
+  static const _devBaseUrl = 'http://127.0.0.1:8080';
 
   static const _definedBaseUrl = String.fromEnvironment(
     'NOMO_BACKEND_URL',

@@ -16,7 +16,7 @@ SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-app.nomo.nomo://login-
 # Run Nomo against dev-nomo Supabase and the dev Render backend.
 # Do not reuse NOMO_BACKEND_URL from .env.local here: run_dev_local.sh owns
 # localhost, while this script must stay pinned to the dev Render backend.
-DEV_NOMO_BACKEND_URL="${DEV_NOMO_BACKEND_URL:-https://dev-nomo-backend.onrender.com}"
+: "${DEV_NOMO_BACKEND_URL:?DEV_NOMO_BACKEND_URL is required because the old dev Render hostname is not resolvable. Use run_dev_local.sh for local dev backend.}"
 
 flutter run \
   --dart-define=NOMO_ENV=dev \
