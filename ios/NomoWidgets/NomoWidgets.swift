@@ -454,9 +454,9 @@ private enum NomoWidgetArtwork {
   var imageName: String {
     switch self {
     case .small:
-      return "nomo_widget_mascot_small"
+      return "NomoWidgetMascotSmall"
     case .medium:
-      return "nomo_widget_mascot_medium"
+      return "NomoWidgetMascotMedium"
     }
   }
 }
@@ -477,7 +477,7 @@ private struct NomoWidgetBackground: View {
           endPoint: .bottomTrailing
         )
 
-        Image(artwork.imageName, bundle: .main)
+        Image(artwork.imageName)
           .resizable()
           .scaledToFill()
           .frame(width: proxy.size.width, height: proxy.size.height)
