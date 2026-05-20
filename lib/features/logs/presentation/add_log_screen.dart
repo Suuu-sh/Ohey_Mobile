@@ -363,7 +363,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
     )..layout(maxWidth: width - safePadding * 2);
 
     final backgroundHeight = textPainter.height + safePadding * .78;
-    final bottomInset = safePadding * .72;
+    final bottomInset = safePadding * .24;
     final top = (height - backgroundHeight - bottomInset).clamp(
       safePadding * .62,
       height - backgroundHeight,
