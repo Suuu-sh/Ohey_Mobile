@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
@@ -8,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
@@ -1464,8 +1462,6 @@ class _FeedPostCard extends StatelessWidget {
   final VoidCallback? onShare;
   final VoidCallback? onMore;
 
-  bool get _isOfficial => item.isOfficial;
-
   @override
   Widget build(BuildContext context) {
     final photoPath = item.photoAssetPath;
@@ -1479,41 +1475,12 @@ class _FeedPostCard extends StatelessWidget {
 
     final body = hasPhoto ? '' : rawBody;
 
-    final decoration = _isOfficial
-        ? BoxDecoration(
-            gradient: LinearGradient(
-              colors: isWhite
-                  ? const [Color(0xFFFFF5FA), Color(0xFFFFFBF0)]
-                  : const [Color(0xFF251424), Color(0xFF241C10)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: const Color(0xFFFF9DCA), width: 1.4),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFF5EA8).withValues(alpha: .13),
-                blurRadius: 22,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          )
-        : BoxDecoration(
-            border: Border(bottom: BorderSide(color: line)),
-          );
+    final decoration = BoxDecoration(
+      border: Border(bottom: BorderSide(color: line)),
+    );
 
     return Container(
-      margin: EdgeInsets.only(
-        left: _isOfficial ? 4 : 0,
-        right: _isOfficial ? 4 : 0,
-        bottom: _isOfficial ? 14 : 0,
-      ),
-      padding: EdgeInsets.fromLTRB(
-        _isOfficial ? 16 : 0,
-        20,
-        _isOfficial ? 16 : 0,
-        22,
-      ),
+      padding: const EdgeInsets.fromLTRB(0, 20, 0, 22),
       decoration: decoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1544,7 +1511,6 @@ class _FeedPostCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (_isOfficial) const _OfficialVerifiedBadge(),
                   ],
                 ),
               ),
@@ -1602,14 +1568,6 @@ class _FeedPostCard extends StatelessWidget {
                 useVectorShareIcon: true,
                 onTap: onShare,
               ),
-              const SizedBox(width: 10),
-              if (_isOfficial && item.linkUrl.trim().isNotEmpty)
-                _DuoFeedButton(
-                  icon: CupertinoIcons.arrow_right_circle_fill,
-                  label: '詳しく見る',
-                  color: _FeedColors.teal,
-                  onTap: () => _openOfficialLink(context, item.linkUrl),
-                ),
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(top: 18),
@@ -1627,125 +1585,6 @@ class _FeedPostCard extends StatelessWidget {
       ),
     );
   }
-
-  Future<void> _openOfficialLink(BuildContext context, String rawUrl) async {
-    final normalized = rawUrl.trim();
-    final candidate = normalized.startsWith(RegExp(r'https?://'))
-        ? normalized
-        : 'https://$normalized';
-    final uri = Uri.tryParse(candidate);
-    if (uri == null || !uri.hasScheme || uri.host.trim().isEmpty) {
-      NomoToast.show(context, 'リンクを開けませんでした。');
-      return;
-    }
-    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!opened && context.mounted) {
-      NomoToast.show(context, 'リンクを開けませんでした。');
-    }
-  }
-}
-
-class _OfficialVerifiedBadge extends StatelessWidget {
-  const _OfficialVerifiedBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 7),
-      child: Semantics(
-        label: '公式アカウント',
-        child: SizedBox(
-          width: 22,
-          height: 22,
-          child: Stack(
-            alignment: Alignment.center,
-            children: const [
-              Positioned.fill(
-                child: CustomPaint(painter: _VerifiedBadgeSeal()),
-              ),
-              Icon(
-                CupertinoIcons.checkmark_alt,
-                color: Colors.white,
-                size: 14,
-                weight: 900,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _VerifiedBadgeSeal extends CustomPainter {
-  const _VerifiedBadgeSeal();
-
-  static const _pink = Color(0xFFFF5EA8);
-  static const _pinkLight = Color(0xFFFF83C0);
-  static const _rim = Color(0xFFFFC1DC);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final bounds = Offset.zero & size;
-    final seal = _sealPath(size, inset: size.shortestSide * .14);
-    final shadow = Paint()
-      ..color = _pink.withValues(alpha: .34)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-    canvas.drawPath(seal.shift(Offset(0, size.height * .10)), shadow);
-
-    final outer = Paint()
-      ..color = Colors.white.withValues(alpha: .95)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.shortestSide * .10
-      ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(seal, outer);
-
-    final fill = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [_pinkLight, _pink],
-      ).createShader(bounds);
-    canvas.drawPath(seal, fill);
-
-    final innerRim = Paint()
-      ..color = _rim.withValues(alpha: .65)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.shortestSide * .045
-      ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(seal, innerRim);
-
-    canvas.drawCircle(
-      Offset(size.width * .36, size.height * .31),
-      size.shortestSide * .095,
-      Paint()..color = Colors.white.withValues(alpha: .24),
-    );
-  }
-
-  Path _sealPath(Size size, {required double inset}) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.shortestSide / 2 - inset;
-    final path = Path();
-    const samples = 48;
-    for (var i = 0; i <= samples; i++) {
-      final angle = -math.pi / 2 + (math.pi * 2 * i / samples);
-      final wave = math.cos(angle * 8);
-      final r = radius * (1 + wave * .065);
-      final point = Offset(
-        center.dx + math.cos(angle) * r,
-        center.dy + math.sin(angle) * r,
-      );
-      if (i == 0) {
-        path.moveTo(point.dx, point.dy);
-      } else {
-        path.lineTo(point.dx, point.dy);
-      }
-    }
-    return path..close();
-  }
-
-  @override
-  bool shouldRepaint(covariant _VerifiedBadgeSeal oldDelegate) => false;
 }
 
 class _DuoFeedButton extends StatelessWidget {
