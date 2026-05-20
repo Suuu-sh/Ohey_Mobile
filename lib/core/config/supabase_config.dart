@@ -11,9 +11,9 @@ class SupabaseConfig {
     defaultValue: 'dev',
   );
 
-  static const url = String.fromEnvironment(
+  static const _definedUrl = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://wwyaftonswgxnjcceyfb.supabase.co',
+    defaultValue: _devSupabaseUrl,
   );
 
   static const publishableKey = String.fromEnvironment(
@@ -25,6 +25,26 @@ class SupabaseConfig {
     'SUPABASE_AUTH_REDIRECT_URL',
     defaultValue: 'app.nomo.nomo://login-callback/',
   );
+
+  static const _devSupabaseUrl = 'https://wwyaftonswgxnjcceyfb.supabase.co';
+  static const _prodSupabaseUrl = 'https://pwifgddolctqghygwxwj.supabase.co';
+  static const _mistypedProdSupabaseUrl =
+      'https://pwifgddolctqhygywxwj.supabase.co';
+
+  /// Canonical Supabase URL used by the app.
+  ///
+  /// A previous production build path could supply a transposed project ref
+  /// (`...qhygy...`) through dart-defines. That hostname does not exist and
+  /// causes `SocketException: Failed host lookup` on both Simulator and
+  /// TestFlight. Normalize that exact known typo so affected build/run
+  /// invocations still connect to the intended `nomo` Supabase project.
+  static String get url {
+    final normalized = _definedUrl.trim().replaceFirst(RegExp(r'/+$'), '');
+    if (normalized == _mistypedProdSupabaseUrl) {
+      return _prodSupabaseUrl;
+    }
+    return normalized;
+  }
 
   static Uri get uri => Uri.parse(url);
 

@@ -77,6 +77,14 @@ jobs:
             exit 1
           fi
 
+          expected_supabase_url="https://pwifgddolctqghygwxwj.supabase.co"
+          actual_supabase_url="$(grep -E '^SUPABASE_URL=' .env.production | tail -n 1 | cut -d= -f2-)"
+          actual_supabase_url="${actual_supabase_url%/}"
+          if [ "$actual_supabase_url" != "$expected_supabase_url" ]; then
+            echo "::error::DOTENV_PRODUCTION SUPABASE_URL must be $expected_supabase_url, got $actual_supabase_url"
+            exit 1
+          fi
+
           printf '%s\n' "${dart_define_args[@]}" > "$RUNNER_TEMP/nomo_dart_defines.args"
 
       - name: Install Flutter dependencies
