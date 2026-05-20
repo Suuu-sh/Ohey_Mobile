@@ -349,15 +349,15 @@ private enum NomoArFilterRenderer {
     switch mode {
     case .avatar:
       material.diffuse.contents = avatar.skinColor
-      material.emission.contents = UIColor.black
-      material.lightingModel = .physicallyBased
+      material.emission.contents = avatar.skinColor
+      material.lightingModel = .constant
       material.transparency = 1
       material.blendMode = .replace
       material.writesToDepthBuffer = true
       material.readsFromDepthBuffer = true
       material.metalness.contents = 0
-      material.roughness.contents = 0.86
-      material.specular.contents = UIColor.white.withAlphaComponent(0.16)
+      material.roughness.contents = 1
+      material.specular.contents = UIColor.clear
     case .natural:
       material.diffuse.contents = avatar.skinColor.mixed(with: UIColor(hex: 0xFFE9DA), amount: 0.56)
       material.emission.contents = UIColor(hex: 0xFFECD8).withAlphaComponent(0.16)
@@ -426,9 +426,9 @@ private enum NomoArFilterRenderer {
       cg.scaleBy(x: scale, y: scale)
 
       if avatar.isAdmin {
-        drawAdminMascot(includeSkin: false, in: cg)
+        drawAdminMascot(includeSkin: true, in: cg)
       } else {
-        drawFace(avatar, includeSkin: false, in: cg)
+        drawFace(avatar, includeSkin: true, in: cg)
       }
     }
   }
