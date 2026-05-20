@@ -16,7 +16,7 @@ class AppTheme {
         seedColor: const Color(0xFF22D7C5),
         brightness: Brightness.dark,
       ),
-      scaffoldBackgroundColor: const Color(0xFF0B1420),
+      scaffoldBackgroundColor: AppColors.darkBackgroundBottom,
     );
 
     return base.copyWith(
@@ -28,13 +28,13 @@ class AppTheme {
       cupertinoOverrideTheme: const CupertinoThemeData(
         brightness: Brightness.dark,
         primaryColor: Color(0xFF22D7C5),
-        scaffoldBackgroundColor: Color(0xFF0B1420),
+        scaffoldBackgroundColor: AppColors.darkBackgroundBottom,
         textTheme: CupertinoTextThemeData(
           primaryColor: Colors.white,
           textStyle: TextStyle(fontFamily: _fontFamily),
         ),
       ),
-      scaffoldBackgroundColor: const Color(0xFF0B1420),
+      scaffoldBackgroundColor: AppColors.darkBackgroundBottom,
     );
   }
 

@@ -15,6 +15,7 @@ import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/models/nomo_user.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
@@ -60,8 +61,10 @@ class ProfileScreen extends ConsumerWidget {
         .toList(growable: false);
     final topBackground = isWhite
         ? const Color(0xFF06111D)
-        : const Color(0xFFF4F2EE);
-    final bodyBackground = isWhite ? Colors.white : const Color(0xFF0B1420);
+        : AppColors.darkBackgroundTop;
+    final bodyBackground = isWhite
+        ? Colors.white
+        : AppColors.darkBackgroundBottom;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: (isWhite ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
@@ -103,7 +106,7 @@ class ProfileScreen extends ConsumerWidget {
                         ColoredBox(
                           color: isWhite
                               ? Colors.white
-                              : const Color(0xFF0B1420),
+                              : AppColors.darkBackgroundBottom,
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(24, 16, 24, 18),
                             child: Column(
@@ -676,7 +679,7 @@ class _ProfileTopSheet extends StatelessWidget {
         18,
       ),
       decoration: BoxDecoration(
-        color: isWhite ? const Color(0xFF06111D) : const Color(0xFFF4F2EE),
+        color: isWhite ? const Color(0xFF06111D) : AppColors.darkBackgroundTop,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(34)),
       ),
       child: child,

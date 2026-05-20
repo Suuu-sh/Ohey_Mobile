@@ -15,6 +15,7 @@ import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
 import '../../../core/models/nomo_user.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
@@ -220,7 +221,7 @@ class _FeedBackground extends ConsumerWidget {
           end: Alignment.bottomCenter,
           colors: isWhite
               ? const [Colors.white, Colors.white, Color(0xFFF7F9FB)]
-              : const [Color(0xFF05080F), Color(0xFF07111D), Color(0xFF05080F)],
+              : AppColors.darkBackgroundGradient,
         ),
       ),
       child: child,

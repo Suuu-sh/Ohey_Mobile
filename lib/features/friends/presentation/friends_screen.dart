@@ -7,6 +7,7 @@ import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
@@ -106,11 +107,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           end: Alignment.bottomCenter,
           colors: isWhite
               ? const [Colors.white, Colors.white, Color(0xFFF7F9FB)]
-              : const [
-                  _FriendsColors.bgTop,
-                  _FriendsColors.bg,
-                  _FriendsColors.bg,
-                ],
+              : AppColors.darkBackgroundGradient,
         ),
       ),
       child: SafeArea(
@@ -1197,8 +1194,7 @@ Map<String, int> _monthlyFriendCounts(
 class _FriendsColors {
   const _FriendsColors._();
 
-  static const bg = Color(0xFF0B1420);
-  static const bgTop = Color(0xFF172637);
+  static const bg = AppColors.darkBackgroundBottom;
   static const block = Color(0xFF101B28);
   static const lime = Color(0xFFB8FF00);
   static const muted = Color(0xFF8792A3);

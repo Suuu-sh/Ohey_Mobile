@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/models/drink_log.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 
@@ -152,7 +153,7 @@ class PhotoArchiveScreen extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final background = isWhite
         ? const Color(0xFFF7F9FC)
-        : const Color(0xFF08111C);
+        : AppColors.darkBackgroundBottom;
 
     return Scaffold(
       backgroundColor: background,
@@ -163,7 +164,7 @@ class PhotoArchiveScreen extends StatelessWidget {
             end: Alignment.bottomCenter,
             colors: isWhite
                 ? const [Colors.white, Color(0xFFF7F9FC)]
-                : const [Color(0xFF172637), Color(0xFF08111C)],
+                : AppColors.darkBackgroundGradient,
           ),
         ),
         child: SafeArea(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_page_header.dart';
@@ -76,7 +77,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           end: Alignment.bottomCenter,
           colors: isWhite
               ? const [Colors.white, Colors.white, Color(0xFFF7F9FB)]
-              : const [Color(0xFF172637), Color(0xFF101B28), Color(0xFF0B1420)],
+              : AppColors.darkBackgroundGradient,
         ),
       ),
       child: SafeArea(
