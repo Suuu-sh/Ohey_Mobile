@@ -1475,7 +1475,9 @@ class _FeedPostCard extends StatelessWidget {
     final line = isWhite
         ? Colors.black.withValues(alpha: .10)
         : Colors.white.withValues(alpha: .09);
-    final body = _duoStyleBody(item).trim();
+    final rawBody = _duoStyleBody(item).trim();
+
+    final body = hasPhoto ? '' : rawBody;
 
     final decoration = _isOfficial
         ? BoxDecoration(

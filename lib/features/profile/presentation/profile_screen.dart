@@ -20,6 +20,7 @@ import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_toast.dart';
+import '../../admin/application/admin_controller.dart';
 import '../../admin/presentation/admin_screen.dart';
 import '../../friends/presentation/add_nomi_tomo_screen.dart';
 import '../../friends/application/drink_invite_controller.dart';
@@ -47,8 +48,13 @@ class ProfileScreen extends ConsumerWidget {
     final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
     final friendsCount = friendsAsync.asData?.value.length ?? 0;
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
-    final canOpenAdmin =
-        currentAuthUser?.email?.toLowerCase() == 'yisshiki39@gmail.com';
+    final hasAdminEmail = NomoAvatar.isAdminEmail(currentAuthUser?.email);
+    final hasAdminAccess =
+        ref
+            .watch(adminAccessProvider)
+            .maybeWhen(data: (allowed) => allowed, orElse: () => false) ||
+        (user?.avatar?.isAdmin ?? false);
+    final canOpenAdmin = hasAdminEmail || hasAdminAccess;
     final monthlyLogs = logs
         .where((log) => log.isInMonth(DateTime.now()))
         .toList();
