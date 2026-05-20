@@ -2605,13 +2605,83 @@ class _UnsavedProfileButton extends StatelessWidget {
   );
 }
 
+const _adminPortalPassword = 'REMOVED_ADMIN_PORTAL_PASSWORD';
+
 Future<void> _openAdminScreen(BuildContext context) async {
+  final isVerified = await _requestAdminPortalPassword(context);
+  if (!isVerified || !context.mounted) return;
+
   await Navigator.of(context).push<void>(
     CupertinoPageRoute(
       fullscreenDialog: true,
       builder: (_) => const AdminScreen(),
     ),
   );
+}
+
+Future<bool> _requestAdminPortalPassword(BuildContext context) async {
+  final controller = TextEditingController();
+  var hasError = false;
+
+  try {
+    return await showCupertinoDialog<bool>(
+          context: context,
+          barrierDismissible: true,
+          builder: (dialogContext) => StatefulBuilder(
+            builder: (context, setState) => CupertinoAlertDialog(
+              title: const Text('管理画面パスワード'),
+              content: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  const Text('管理画面に入るにはパスワードを入力してください。'),
+                  const SizedBox(height: 12),
+                  CupertinoTextField(
+                    controller: controller,
+                    autofocus: true,
+                    obscureText: true,
+                    placeholder: 'パスワード',
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) {
+                      if (controller.text == _adminPortalPassword) {
+                        Navigator.of(dialogContext).pop(true);
+                        return;
+                      }
+                      setState(() => hasError = true);
+                    },
+                  ),
+                  if (hasError) ...[
+                    const SizedBox(height: 10),
+                    const Text(
+                      'パスワードが違います。',
+                      style: TextStyle(color: Color(0xFFFF6F9F)),
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                CupertinoDialogAction(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('キャンセル'),
+                ),
+                CupertinoDialogAction(
+                  isDefaultAction: true,
+                  onPressed: () {
+                    if (controller.text == _adminPortalPassword) {
+                      Navigator.of(dialogContext).pop(true);
+                      return;
+                    }
+                    setState(() => hasError = true);
+                  },
+                  child: const Text('入室'),
+                ),
+              ],
+            ),
+          ),
+        ) ??
+        false;
+  } finally {
+    controller.dispose();
+  }
 }
 
 Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
