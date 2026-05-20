@@ -27,6 +27,7 @@ import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../onboarding/presentation/create_user_dialog.dart';
 import 'avatar_builder_screen.dart';
+import 'photo_archive_screen.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -53,10 +54,16 @@ class ProfileScreen extends ConsumerWidget {
         .watch(adminAccessProvider)
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
     final canOpenAdmin = hasAdminEmail || hasAdminAccess;
-    final monthlyLogs = logs
+    final myLogs = logs
+        .where((log) => _isMyUserLog(log, currentAuthUserId))
+        .toList(growable: false);
+    final monthlyLogs = myLogs
         .where((log) => log.isInMonth(DateTime.now()))
         .toList();
-    final streak = _currentStreak(logs);
+    final photoLogs = myLogs
+        .where((log) => (log.photoAssetPath ?? '').trim().isNotEmpty)
+        .toList(growable: false);
+    final streak = _currentStreak(myLogs);
     final topBackground = isWhite
         ? const Color(0xFF06111D)
         : const Color(0xFFF4F2EE);
@@ -145,11 +152,15 @@ class ProfileScreen extends ConsumerWidget {
                         Expanded(
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(24, 0, 24, 106),
-                            child: _ProfileDashboard(
-                              isWhite: isWhite,
-                              monthlyLogs: monthlyLogs.length,
-                              friends: friendsCount,
-                              streak: streak,
+                            child: SingleChildScrollView(
+                              physics: const BouncingScrollPhysics(),
+                              child: _ProfileDashboard(
+                                isWhite: isWhite,
+                                monthlyLogs: monthlyLogs.length,
+                                friends: friendsCount,
+                                streak: streak,
+                                photoLogs: photoLogs,
+                              ),
                             ),
                           ),
                         ),
@@ -167,6 +178,13 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 String _profileQrPayload(String userId) => 'nomo://friend/$userId';
+
+bool _isMyUserLog(DrinkLog log, String? currentUserId) {
+  if (log.isOfficial) return false;
+  if (currentUserId == null || currentUserId.isEmpty) return true;
+  if (log.ownerUserId.isEmpty) return true;
+  return log.ownerUserId == currentUserId;
+}
 
 String? _parseProfileFriendQrPayload(String raw) {
   final value = raw.trim();
@@ -1194,12 +1212,14 @@ class _ProfileDashboard extends StatelessWidget {
     required this.monthlyLogs,
     required this.friends,
     required this.streak,
+    required this.photoLogs,
   });
 
   final bool isWhite;
   final int monthlyLogs;
   final int friends;
   final int streak;
+  final List<DrinkLog> photoLogs;
 
   @override
   Widget build(BuildContext context) {
@@ -1239,6 +1259,17 @@ class _ProfileDashboard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 16),
+        PhotoArchivePreview(
+          logs: photoLogs,
+          isWhite: isWhite,
+          onTap: () => Navigator.of(context).push<void>(
+            CupertinoPageRoute(
+              fullscreenDialog: true,
+              builder: (_) => PhotoArchiveScreen(logs: photoLogs),
+            ),
+          ),
         ),
       ],
     );
