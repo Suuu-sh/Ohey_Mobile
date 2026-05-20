@@ -2266,6 +2266,8 @@ class _SignupProfileTextField extends StatelessWidget {
             onChanged: onChanged,
             onSubmitted: onSubmitted,
             decoration: InputDecoration(
+              filled: false,
+              fillColor: Colors.transparent,
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
@@ -2335,6 +2337,8 @@ class _PlainLoginTextField extends StatelessWidget {
             onChanged: onChanged,
             onSubmitted: onSubmitted,
             decoration: InputDecoration(
+              filled: false,
+              fillColor: Colors.transparent,
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
