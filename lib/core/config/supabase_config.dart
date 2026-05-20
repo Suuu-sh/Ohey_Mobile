@@ -2,36 +2,36 @@ import 'package:flutter/foundation.dart';
 
 /// Supabase environment configuration for Nomo.
 ///
-/// Development-safe defaults are embedded so local `flutter run` never touches
-/// production accidentally. TestFlight/production builds must pass explicit
-/// production values via `--dart-define`.
+/// Non-release builds (Simulator / `flutter run`) are forced to dev-nomo so
+/// local checks never touch production accidentally. Release builds
+/// (TestFlight/App Store) default to production even if dart-defines are
+/// missing, and may still override values explicitly via `--dart-define`.
 class SupabaseConfig {
   const SupabaseConfig._();
 
   static const environment = String.fromEnvironment(
     'NOMO_ENV',
-    defaultValue: 'dev',
+    defaultValue: kReleaseMode ? 'production' : 'dev',
   );
 
-  static const _definedUrl = String.fromEnvironment(
-    'SUPABASE_URL',
-    defaultValue: _devSupabaseUrl,
-  );
+  static const _definedUrl = String.fromEnvironment('SUPABASE_URL');
 
   static const _definedPublishableKey = String.fromEnvironment(
     'SUPABASE_PUBLISHABLE_KEY',
-    defaultValue: _devPublishableKey,
   );
 
-  static const authRedirectUrl = String.fromEnvironment(
+  static const _definedAuthRedirectUrl = String.fromEnvironment(
     'SUPABASE_AUTH_REDIRECT_URL',
-    defaultValue: 'app.nomo.nomo://login-callback/',
   );
 
   static const _devSupabaseUrl = 'https://wwyaftonswgxnjcceyfb.supabase.co';
   static const _devPublishableKey =
       'sb_publishable_pPvKPrOvVmkKQIXKVWj2Rw_DlYkm0Ty';
   static const _prodSupabaseUrl = 'https://pwifgddolctqghygwxwj.supabase.co';
+  static const _prodPublishableKey =
+      'sb_publishable_pezjPt7pYRECNFdydlon8A_RpSjNulk';
+  static const _prodAuthRedirectUrl = 'app.nomo.nomo://login-callback/';
+  static const _devAuthRedirectUrl = 'app.nomo.nomo.dev://login-callback/';
   static const _mistypedProdSupabaseUrl =
       'https://pwifgddolctqhygywxwj.supabase.co';
 
@@ -39,8 +39,8 @@ class SupabaseConfig {
   ///
   /// Local `flutter run` / Simulator checks are non-release builds, and must
   /// always stay on dev-nomo even if a production dart-define file is passed by
-  /// mistake. TestFlight/App Store builds are release builds, so they continue
-  /// to use the explicitly supplied production values.
+  /// mistake. TestFlight/App Store builds are release builds, so they default
+  /// to production and can be overridden by production dart-defines.
   ///
   /// A previous production build path could supply a transposed project ref
   /// (`...qhygy...`) through dart-defines. That hostname does not exist and
@@ -52,7 +52,9 @@ class SupabaseConfig {
       return _devSupabaseUrl;
     }
 
-    final normalized = _definedUrl.trim().replaceFirst(RegExp(r'/+$'), '');
+    final normalized = (_definedUrl.isEmpty ? _prodSupabaseUrl : _definedUrl)
+        .trim()
+        .replaceFirst(RegExp(r'/+$'), '');
     if (normalized == _mistypedProdSupabaseUrl) {
       return _prodSupabaseUrl;
     }
@@ -63,7 +65,18 @@ class SupabaseConfig {
     if (!kReleaseMode) {
       return _devPublishableKey;
     }
-    return _definedPublishableKey;
+    return _definedPublishableKey.isEmpty
+        ? _prodPublishableKey
+        : _definedPublishableKey;
+  }
+
+  static String get authRedirectUrl {
+    if (!kReleaseMode) {
+      return _devAuthRedirectUrl;
+    }
+    return _definedAuthRedirectUrl.isEmpty
+        ? _prodAuthRedirectUrl
+        : _definedAuthRedirectUrl;
   }
 
   static Uri get uri => Uri.parse(url);
