@@ -1140,8 +1140,8 @@ class _FeedPostCard extends StatelessWidget {
     return Semantics(
       label: '${item.userName}の飲みログ',
       child: Container(
+        width: double.infinity,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isWhite ? .12 : .36),
@@ -1150,37 +1150,34 @@ class _FeedPostCard extends StatelessWidget {
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: AspectRatio(
-            aspectRatio: 4 / 5,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (hasPhoto)
-                  _PostPhoto(path: photoPath!)
-                else
-                  _FeedPhotoPlaceholder(accent: item.accent),
-                const _FeedPhotoScrim(),
-                Positioned(
-                  left: 14,
-                  top: 14,
-                  right: 14,
-                  child: _FeedCardAuthorBar(item: item, onMore: onMore),
+        child: AspectRatio(
+          aspectRatio: 4 / 5,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (hasPhoto)
+                _PostPhoto(path: photoPath!)
+              else
+                _FeedPhotoPlaceholder(accent: item.accent),
+              const _FeedPhotoScrim(),
+              Positioned(
+                left: 14,
+                top: 14,
+                right: 14,
+                child: _FeedCardAuthorBar(item: item, onMore: onMore),
+              ),
+              Positioned(
+                left: 18,
+                right: 18,
+                bottom: 15,
+                child: _FeedCardFooter(
+                  item: item,
+                  caption: caption,
+                  onLike: onLike,
+                  onShare: onShare,
                 ),
-                Positioned(
-                  left: 18,
-                  right: 18,
-                  bottom: 15,
-                  child: _FeedCardFooter(
-                    item: item,
-                    caption: caption,
-                    onLike: onLike,
-                    onShare: onShare,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
