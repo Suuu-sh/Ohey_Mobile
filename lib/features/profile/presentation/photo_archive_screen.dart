@@ -22,6 +22,8 @@ class PhotoArchivePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sorted = _sortedPhotoLogs(logs);
+    final memoryLog = _randomMemoryLog(sorted);
+    final previewLogs = _archivePreviewLogs(sorted);
     final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
     final subColor = isWhite
         ? const Color(0xFF7A8490)
@@ -96,9 +98,9 @@ class PhotoArchivePreview extends StatelessWidget {
                             ),
                       ),
                       Text(
-                        sorted.isEmpty
+                        memoryLog == null
                             ? '自分の投稿写真をおしゃれに見返す'
-                            : '${sorted.length}枚の投稿写真',
+                            : '${_memoryAgoLabel(memoryLog.date)}の思い出',
                         style: Theme.of(context).textTheme.labelMedium
                             ?.copyWith(
                               color: subColor,
@@ -128,7 +130,7 @@ class PhotoArchivePreview extends StatelessWidget {
               _ArchiveEmptyPreview(isWhite: isWhite)
             else
               _ArchivePreviewCollage(
-                logs: sorted.take(3).toList(),
+                logs: previewLogs,
                 totalCount: sorted.length,
               ),
           ],
@@ -146,6 +148,7 @@ class PhotoArchiveScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sorted = _sortedPhotoLogs(logs);
+    final memoryLog = _randomMemoryLog(sorted);
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final background = isWhite
         ? const Color(0xFFF7F9FC)
@@ -194,7 +197,9 @@ class PhotoArchiveScreen extends StatelessWidget {
                           SliverPadding(
                             padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
                             sliver: SliverToBoxAdapter(
-                              child: _ArchiveHeroCard(log: sorted.first),
+                              child: _ArchiveHeroCard(
+                                log: memoryLog ?? sorted.first,
+                              ),
                             ),
                           ),
                           SliverPadding(
@@ -359,7 +364,7 @@ class _PreviewOverlay extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              _archiveDate(log.date),
+              '${_memoryAgoLabel(log.date)}の思い出',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 color: Colors.white.withValues(alpha: .82),
                 fontWeight: FontWeight.w800,
@@ -426,7 +431,7 @@ class _ArchiveHeroCard extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    '最新の1枚',
+                    '${_memoryAgoLabel(log.date)}の思い出',
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
@@ -797,6 +802,48 @@ class _ArchiveEmptyState extends StatelessWidget {
       ),
     );
   }
+}
+
+List<DrinkLog> _archivePreviewLogs(List<DrinkLog> sorted) {
+  final memoryLog = _randomMemoryLog(sorted);
+  if (memoryLog == null) return const <DrinkLog>[];
+  final rest = sorted.where((log) => log.id != memoryLog.id).take(2);
+  return [memoryLog, ...rest];
+}
+
+DrinkLog? _randomMemoryLog(List<DrinkLog> sorted) {
+  if (sorted.isEmpty) return null;
+  if (sorted.length == 1) return sorted.first;
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final olderLogs = sorted
+      .where(
+        (log) => DateTime(
+          log.date.year,
+          log.date.month,
+          log.date.day,
+        ).isBefore(today),
+      )
+      .toList(growable: false);
+  final pool = olderLogs.isEmpty ? sorted : olderLogs;
+  final seed = today.year * 10000 + today.month * 100 + today.day + pool.length;
+  return pool[seed % pool.length];
+}
+
+String _memoryAgoLabel(DateTime date) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final day = DateTime(date.year, date.month, date.day);
+  final days = today.difference(day).inDays;
+  if (days <= 0) return '今日';
+  if (days == 1) return '昨日';
+  if (days < 30) return '$days日前';
+  if (days < 365) {
+    final months = (days / 30).floor().clamp(1, 11);
+    return '$monthsか月前';
+  }
+  final years = (days / 365).floor();
+  return '$years年前';
 }
 
 List<DrinkLog> _sortedPhotoLogs(List<DrinkLog> logs) {

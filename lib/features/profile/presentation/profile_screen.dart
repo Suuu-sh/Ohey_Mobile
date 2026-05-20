@@ -36,7 +36,6 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final logsAsync = ref.watch(drinkLogControllerProvider);
-    final friendsAsync = ref.watch(friendsProvider);
     final user = ref.watch(nomoUserProvider);
     final currentAuthUser = ref.watch(supabaseClientProvider).auth.currentUser;
     final currentAuthUserId = currentAuthUser?.id;
@@ -47,7 +46,6 @@ class ProfileScreen extends ConsumerWidget {
     final incomingInvites =
         incomingInvitesAsync.asData?.value ?? const <NomoDrinkInvite>[];
     final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
-    final friendsCount = friendsAsync.asData?.value.length ?? 0;
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     final hasAdminEmail = NomoAvatar.isAdminEmail(currentAuthUser?.email);
     final hasAdminAccess = ref
@@ -57,13 +55,9 @@ class ProfileScreen extends ConsumerWidget {
     final myLogs = logs
         .where((log) => _isMyUserLog(log, currentAuthUserId))
         .toList(growable: false);
-    final monthlyLogs = myLogs
-        .where((log) => log.isInMonth(DateTime.now()))
-        .toList();
     final photoLogs = myLogs
         .where((log) => (log.photoAssetPath ?? '').trim().isNotEmpty)
         .toList(growable: false);
-    final streak = _currentStreak(myLogs);
     final topBackground = isWhite
         ? const Color(0xFF06111D)
         : const Color(0xFFF4F2EE);
@@ -156,9 +150,6 @@ class ProfileScreen extends ConsumerWidget {
                               physics: const BouncingScrollPhysics(),
                               child: _ProfileDashboard(
                                 isWhite: isWhite,
-                                monthlyLogs: monthlyLogs.length,
-                                friends: friendsCount,
-                                streak: streak,
                                 photoLogs: photoLogs,
                               ),
                             ),
@@ -1207,18 +1198,9 @@ class _ProfileSocialSection extends StatelessWidget {
 }
 
 class _ProfileDashboard extends StatelessWidget {
-  const _ProfileDashboard({
-    required this.isWhite,
-    required this.monthlyLogs,
-    required this.friends,
-    required this.streak,
-    required this.photoLogs,
-  });
+  const _ProfileDashboard({required this.isWhite, required this.photoLogs});
 
   final bool isWhite;
-  final int monthlyLogs;
-  final int friends;
-  final int streak;
   final List<DrinkLog> photoLogs;
 
   @override
@@ -1227,40 +1209,6 @@ class _ProfileDashboard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _StatTile(
-                isWhite: isWhite,
-                value: '$friends',
-                label: '友達',
-                icon: CupertinoIcons.person_2_fill,
-                accent: _ProfileColors.lime,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _StatTile(
-                isWhite: isWhite,
-                value: '$monthlyLogs',
-                label: '今月',
-                icon: CupertinoIcons.calendar,
-                accent: const Color(0xFF49D7FF),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _StatTile(
-                isWhite: isWhite,
-                value: '$streak',
-                label: '連続',
-                icon: CupertinoIcons.flame_fill,
-                accent: const Color(0xFFFFB74A),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
         PhotoArchivePreview(
           logs: photoLogs,
           isWhite: isWhite,
