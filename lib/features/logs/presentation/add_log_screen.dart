@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:ui' as ui;
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -102,11 +100,9 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                           _InputBox(
                             icon: CupertinoIcons.text_quote,
                             iconColor: _AddLogColors.impressionIcon,
-                            hint: 'コメント（15文字以内）',
+                            hint: 'コメント（任意）',
                             controller: _memoController,
-                            maxLines: 1,
-                            showCounter: true,
-                            maxLength: 15,
+                            maxLines: 3,
                             onChanged: (_) => setState(() {}),
                           ),
                           const SizedBox(height: 14),
@@ -285,14 +281,11 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
     if (path == null || path.isEmpty) {
       throw StateError('写真を追加してください。');
     }
-
-    if (!await nomoIsLandscapePhoto(path)) {
-      throw StateError('横向き写真のみ投稿できます。');
+    if (!await nomoIsSquareOrLandscapePhoto(path)) {
+      throw StateError('正方形または横長の写真のみ投稿できます。');
     }
 
-    final impression = _memoController.text.trim();
-    if (impression.isEmpty) return _copyPhotoToPermanentStorage(path);
-    return _writeImpressionOnPhoto(path, impression);
+    return _copyPhotoToPermanentStorage(path);
   }
 
   Future<String> _copyPhotoToPermanentStorage(String path) async {
@@ -321,86 +314,6 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
     final extension = name.substring(dot).toLowerCase();
     if (extension.length > 8) return fallback;
     return extension;
-  }
-
-  Future<String> _writeImpressionOnPhoto(String path, String impression) async {
-    final source = File(path);
-    final bytes = await source.readAsBytes();
-    final codec = await ui.instantiateImageCodec(bytes);
-    final frame = await codec.getNextFrame();
-    final image = frame.image;
-    final width = image.width.toDouble();
-    final height = image.height.toDouble();
-
-    final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
-    final imageRect = Rect.fromLTWH(0, 0, width, height);
-    canvas.drawImageRect(image, imageRect, imageRect, Paint());
-
-    final safePadding = (width * .055).clamp(28.0, 72.0).toDouble();
-    final fontSize = (width * .060).clamp(34.0, 70.0).toDouble();
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: impression,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: fontSize,
-          fontWeight: FontWeight.w900,
-          height: 1.12,
-          letterSpacing: -1.0,
-          shadows: [
-            Shadow(
-              color: Colors.black.withValues(alpha: .55),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-      ),
-      textAlign: TextAlign.center,
-      textDirection: TextDirection.ltr,
-      maxLines: 2,
-      ellipsis: '…',
-    )..layout(maxWidth: width - safePadding * 2);
-
-    final top = safePadding * .62;
-    final backgroundHeight = textPainter.height + safePadding * .78;
-    final backgroundRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(
-        safePadding * .55,
-        top,
-        width - safePadding * 1.1,
-        backgroundHeight,
-      ),
-      Radius.circular(safePadding * .45),
-    );
-    canvas.drawRRect(
-      backgroundRect,
-      Paint()..color = Colors.black.withValues(alpha: .38),
-    );
-    textPainter.paint(
-      canvas,
-      Offset(
-        (width - textPainter.width) / 2,
-        top + (backgroundHeight - textPainter.height) / 2,
-      ),
-    );
-
-    final picture = recorder.endRecording();
-    final output = await picture.toImage(image.width, image.height);
-    final byteData = await output.toByteData(format: ui.ImageByteFormat.png);
-    if (byteData == null) {
-      throw StateError('写真に感想を書き込めませんでした。');
-    }
-
-    final directory = await _nomoPhotoDirectory();
-    final outputPath =
-        '${directory.path}/nomo_impression_${DateTime.now().microsecondsSinceEpoch}.png';
-    await File(outputPath).writeAsBytes(byteData.buffer.asUint8List());
-    image.dispose();
-    output.dispose();
-    picture.dispose();
-    return outputPath;
   }
 
   static String _dateLabel(DateTime date) =>
@@ -451,8 +364,6 @@ class _InputBox extends StatelessWidget {
     this.icon,
     this.iconColor = _AddLogColors.lime,
     this.suffix,
-    this.showCounter = false,
-    this.maxLength = 100,
     this.borderless = false,
     this.onChanged,
   });
@@ -463,8 +374,6 @@ class _InputBox extends StatelessWidget {
   final TextEditingController controller;
   final int maxLines;
   final Widget? suffix;
-  final bool showCounter;
-  final int maxLength;
   final bool borderless;
   final ValueChanged<String>? onChanged;
 
@@ -497,7 +406,6 @@ class _InputBox extends StatelessWidget {
             child: TextField(
               controller: controller,
               maxLines: maxLines,
-              maxLength: showCounter ? maxLength : null,
               onChanged: onChanged,
               decoration: InputDecoration(
                 isDense: true,
@@ -521,18 +429,6 @@ class _InputBox extends StatelessWidget {
               ),
             ),
           ),
-          if (showCounter)
-            Padding(
-              padding: const EdgeInsets.only(left: 8, top: 48),
-              child: Text(
-                '${controller.text.length}/$maxLength',
-                style: TextStyle(
-                  color: secondaryText,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
           ?suffix,
         ],
       ),

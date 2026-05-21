@@ -679,12 +679,16 @@ private enum NomoArFilterRenderer {
   ) {
     switch mode {
     case .avatar:
-      material.colorBufferWriteMask = .all
-      material.diffuse.contents = avatar.skinColor
-      material.emission.contents = avatar.skinColor
+      // The avatar is drawn as one flat, opaque avatar face texture below.
+      // Do not paint the AR face mesh itself; otherwise the side of the real
+      // face gets a separate peach/orange cover that looks detached from the
+      // avatar artwork.
+      material.colorBufferWriteMask = []
+      material.diffuse.contents = UIColor.clear
+      material.emission.contents = UIColor.clear
       material.lightingModel = .constant
-      material.transparency = 1
-      material.blendMode = .replace
+      material.transparency = 0
+      material.blendMode = .alpha
       material.writesToDepthBuffer = true
       material.readsFromDepthBuffer = true
       material.metalness.contents = 0
@@ -730,7 +734,7 @@ private enum NomoArFilterRenderer {
   static func overlayPosition(for mode: NomoArCameraFilterMode) -> SCNVector3 {
     switch mode {
     case .avatar:
-      SCNVector3(0, 0.008, 0.064)
+      SCNVector3(0, 0.002, 0.058)
     case .natural:
       SCNVector3(0, 0.002, 0.066)
     }
@@ -739,7 +743,7 @@ private enum NomoArFilterRenderer {
   private static func overlaySize(for mode: NomoArCameraFilterMode) -> CGSize {
     switch mode {
     case .avatar:
-      CGSize(width: 0.172, height: 0.222)
+      CGSize(width: 0.216, height: 0.276)
     case .natural:
       CGSize(width: 0.192, height: 0.232)
     }
@@ -839,12 +843,9 @@ private enum NomoArFilterRenderer {
     let outline = UIColor(hex: 0x1B2027).withAlphaComponent(0.22)
 
     if includeSkin {
-      fillEllipse(CGRect(x: 37, y: 70, width: 25, height: 20), color: skin, in: cg)
-      fillEllipse(CGRect(x: 118, y: 70, width: 25, height: 20), color: skin, in: cg)
-
-      let head = UIBezierPath(roundedRect: CGRect(x: 38, y: 38, width: 104, height: 92), cornerRadius: 30)
+      let head = UIBezierPath(roundedRect: CGRect(x: 26, y: 24, width: 128, height: 134), cornerRadius: 56)
       cg.saveGState()
-      cg.translateBy(x: 0, y: 2)
+      cg.translateBy(x: 0, y: 3)
       outline.setFill()
       head.fill()
       cg.restoreGState()
@@ -861,7 +862,9 @@ private enum NomoArFilterRenderer {
 
   private static func drawAdminMascot(includeSkin: Bool, in cg: CGContext) {
     if includeSkin {
-      fillEllipse(CGRect(x: 36, y: 28, width: 108, height: 116), color: UIColor(hex: 0xFFC08A), in: cg)
+      let head = UIBezierPath(roundedRect: CGRect(x: 26, y: 18, width: 128, height: 140), cornerRadius: 58)
+      UIColor(hex: 0xFFC08A).setFill()
+      head.fill()
     }
     let hairPath = UIBezierPath(roundedRect: CGRect(x: 44, y: 26, width: 92, height: 38), cornerRadius: 22)
     UIColor(hex: 0xEFE8D8).setFill()

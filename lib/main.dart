@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/supabase_config.dart';
+import 'core/application/nomo_user_controller.dart';
 import 'core/data/auth_session_guard.dart';
 import 'core/data/supabase_client_provider.dart';
 import 'core/services/nomo_push_notification_service.dart';
@@ -64,6 +65,8 @@ final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
       Supabase.instance.client,
     ).timeout(const Duration(seconds: 4), onTimeout: () {});
 
+    await _preloadBackendProfileIfSessionExists(ref);
+
     await ref
         .read(nomoPushNotificationServiceProvider)
         .start()
@@ -72,6 +75,21 @@ final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
     await minimumOpening;
   }
 });
+
+Future<void> _preloadBackendProfileIfSessionExists(Ref ref) async {
+  final session = Supabase.instance.client.auth.currentSession;
+  if (session == null) return;
+
+  try {
+    await ref
+        .read(nomoUserProvider.notifier)
+        .loadFromBackendProfile()
+        .timeout(const Duration(seconds: 3));
+  } catch (_) {
+    // If the backend is cold-starting or unavailable, let NomoTabShell show the
+    // friendly waiting screen and retry instead of blocking the opening screen.
+  }
+}
 
 bool _isSupabaseInitialized() {
   try {

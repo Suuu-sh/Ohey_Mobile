@@ -1243,6 +1243,9 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
 
 String _friendlyAuthError(String message) {
   final lower = message.toLowerCase();
+  if (_isNetworkAuthError(lower)) {
+    return _networkAuthErrorMessage;
+  }
   if (lower.contains('invalid login credentials')) {
     return 'メールアドレスまたはパスワードが違います。dev環境は本番アカウントとは別なので、初回は「アカウントがない方はこちら」から新規登録してください。';
   }
@@ -1253,15 +1256,19 @@ String _friendlyAuthError(String message) {
 }
 
 String _friendlyUnexpectedAuthError(Object error) {
-  final message = error.toString();
-  final lower = message.toLowerCase();
-  if (lower.contains('socketexception') ||
-      lower.contains('connection refused') ||
-      lower.contains('failed host lookup') ||
-      lower.contains('connection timed out')) {
-    return 'サーバーに接続できませんでした。通信環境を確認して、もう一度お試しください。';
-  }
+  final lower = error.toString().toLowerCase();
+  if (_isNetworkAuthError(lower)) return _networkAuthErrorMessage;
   return 'ログインに失敗しました。時間をおいてもう一度お試しください。';
+}
+
+const _networkAuthErrorMessage = 'サーバーに接続できませんでした。通信環境を確認して、もう一度お試しください。';
+
+bool _isNetworkAuthError(String lowerMessage) {
+  return lowerMessage.contains('socketexception') ||
+      lowerMessage.contains('clientexception') ||
+      lowerMessage.contains('connection refused') ||
+      lowerMessage.contains('failed host lookup') ||
+      lowerMessage.contains('connection timed out');
 }
 
 Widget _fixedAuthPage({
@@ -2259,6 +2266,8 @@ class _SignupProfileTextField extends StatelessWidget {
             onChanged: onChanged,
             onSubmitted: onSubmitted,
             decoration: InputDecoration(
+              filled: false,
+              fillColor: Colors.transparent,
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
@@ -2328,6 +2337,8 @@ class _PlainLoginTextField extends StatelessWidget {
             onChanged: onChanged,
             onSubmitted: onSubmitted,
             decoration: InputDecoration(
+              filled: false,
+              fillColor: Colors.transparent,
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,

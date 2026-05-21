@@ -15,17 +15,20 @@ import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/models/nomo_user.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_toast.dart';
+import '../../admin/application/admin_controller.dart';
 import '../../admin/presentation/admin_screen.dart';
 import '../../friends/presentation/add_nomi_tomo_screen.dart';
 import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../onboarding/presentation/create_user_dialog.dart';
 import 'avatar_builder_screen.dart';
+import 'photo_archive_screen.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -33,8 +36,6 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final logsAsync = ref.watch(drinkLogControllerProvider);
-    final friendsAsync = ref.watch(friendsProvider);
     final user = ref.watch(nomoUserProvider);
     final currentAuthUser = ref.watch(supabaseClientProvider).auth.currentUser;
     final currentAuthUserId = currentAuthUser?.id;
@@ -44,19 +45,18 @@ class ProfileScreen extends ConsumerWidget {
         reservationsAsync.asData?.value ?? const <NomoDrinkInvite>[];
     final incomingInvites =
         incomingInvitesAsync.asData?.value ?? const <NomoDrinkInvite>[];
-    final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
-    final friendsCount = friendsAsync.asData?.value.length ?? 0;
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
-    final canOpenAdmin =
-        currentAuthUser?.email?.toLowerCase() == 'yisshiki39@gmail.com';
-    final monthlyLogs = logs
-        .where((log) => log.isInMonth(DateTime.now()))
-        .toList();
-    final streak = _currentStreak(logs);
+    final hasAdminEmail = NomoAvatar.isAdminEmail(currentAuthUser?.email);
+    final hasAdminAccess = ref
+        .watch(adminAccessProvider)
+        .maybeWhen(data: (allowed) => allowed, orElse: () => false);
+    final canOpenAdmin = hasAdminEmail || hasAdminAccess;
     final topBackground = isWhite
         ? const Color(0xFF06111D)
         : const Color(0xFFF4F2EE);
-    final bodyBackground = isWhite ? Colors.white : const Color(0xFF0B1420);
+    final bodyBackground = isWhite
+        ? Colors.white
+        : AppColors.darkBackgroundBottom;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: (isWhite ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
@@ -98,7 +98,7 @@ class ProfileScreen extends ConsumerWidget {
                         ColoredBox(
                           color: isWhite
                               ? Colors.white
-                              : const Color(0xFF0B1420),
+                              : AppColors.darkBackgroundBottom,
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(24, 16, 24, 18),
                             child: Column(
@@ -138,17 +138,7 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 0, 24, 106),
-                            child: _ProfileDashboard(
-                              isWhite: isWhite,
-                              monthlyLogs: monthlyLogs.length,
-                              friends: friendsCount,
-                              streak: streak,
-                            ),
-                          ),
-                        ),
+                        Expanded(child: ColoredBox(color: bodyBackground)),
                       ],
                     ),
                   ),
@@ -163,6 +153,21 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 String _profileQrPayload(String userId) => 'nomo://friend/$userId';
+
+bool _isMyUserLog(DrinkLog log, String? currentUserId) {
+  if (log.isOfficial) return false;
+  if (currentUserId == null || currentUserId.isEmpty) return true;
+  if (log.ownerUserId.isEmpty) return true;
+  return log.ownerUserId == currentUserId;
+}
+
+List<DrinkLog> _photoArchiveLogs(
+  List<DrinkLog> logs,
+  String? currentAuthUserId,
+) => logs
+    .where((log) => _isMyUserLog(log, currentAuthUserId))
+    .where((log) => (log.photoAssetPath ?? '').trim().isNotEmpty)
+    .toList(growable: false);
 
 String? _parseProfileFriendQrPayload(String raw) {
   final value = raw.trim();
@@ -1182,63 +1187,6 @@ class _ProfileSocialSection extends StatelessWidget {
       ),
     ],
   );
-}
-
-class _ProfileDashboard extends StatelessWidget {
-  const _ProfileDashboard({
-    required this.isWhite,
-    required this.monthlyLogs,
-    required this.friends,
-    required this.streak,
-  });
-
-  final bool isWhite;
-  final int monthlyLogs;
-  final int friends;
-  final int streak;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _StatTile(
-                isWhite: isWhite,
-                value: '$friends',
-                label: '友達',
-                icon: CupertinoIcons.person_2_fill,
-                accent: _ProfileColors.lime,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _StatTile(
-                isWhite: isWhite,
-                value: '$monthlyLogs',
-                label: '今月',
-                icon: CupertinoIcons.calendar,
-                accent: const Color(0xFF49D7FF),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _StatTile(
-                isWhite: isWhite,
-                value: '$streak',
-                label: '連続',
-                icon: CupertinoIcons.flame_fill,
-                accent: const Color(0xFFFFB74A),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
 }
 
 class _StatTile extends StatelessWidget {
@@ -2309,6 +2257,13 @@ Future<void> _showEditProfileSheet(
     backgroundColor: Colors.transparent,
     builder: (sheetContext) => StatefulBuilder(
       builder: (sheetBuildContext, setState) {
+        final sheetIsWhite =
+            Theme.of(sheetBuildContext).brightness == Brightness.light;
+        final inputInk = sheetIsWhite ? const Color(0xFF101820) : Colors.white;
+        final inputSub = sheetIsWhite
+            ? const Color(0xFF8B96A3)
+            : Colors.white.withValues(alpha: .45);
+
         Future<void> saveProfile() async {
           final name = controller.text.trim();
           final userId = userIdController.text.trim();
@@ -2391,32 +2346,39 @@ Future<void> _showEditProfileSheet(
                   TextField(
                     controller: controller,
                     enabled: !saving,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: inputInk,
                       fontWeight: FontWeight.w800,
                     ),
-                    decoration: _darkInputDecoration('表示名'),
+                    decoration: _profileInputDecoration(
+                      '表示名',
+                      isWhite: sheetIsWhite,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: userIdController,
                     enabled: !saving,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: inputInk,
                       fontWeight: FontWeight.w800,
                     ),
-                    decoration: _darkInputDecoration('ユーザーID').copyWith(
-                      prefixText: '@',
-                      prefixStyle: const TextStyle(
-                        color: _ProfileColors.sub,
-                        fontWeight: FontWeight.w900,
-                      ),
-                      helperText: '半角英数字と_で3〜24文字',
-                      helperStyle: TextStyle(
-                        color: Colors.white.withValues(alpha: .45),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    decoration:
+                        _profileInputDecoration(
+                          'ユーザーID',
+                          isWhite: sheetIsWhite,
+                        ).copyWith(
+                          prefixText: '@',
+                          prefixStyle: TextStyle(
+                            color: inputSub,
+                            fontWeight: FontWeight.w900,
+                          ),
+                          helperText: '半角英数字と_で3〜24文字',
+                          helperStyle: TextStyle(
+                            color: inputSub,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                   ),
                   const SizedBox(height: 16),
                   _AvatarEditCard(
@@ -2587,7 +2549,14 @@ class _UnsavedProfileButton extends StatelessWidget {
   );
 }
 
+const _adminPortalPassword = String.fromEnvironment(
+  'NOMO_ADMIN_PORTAL_PASSWORD',
+);
+
 Future<void> _openAdminScreen(BuildContext context) async {
+  final isVerified = await _requestAdminPortalPassword(context);
+  if (!isVerified || !context.mounted) return;
+
   await Navigator.of(context).push<void>(
     CupertinoPageRoute(
       fullscreenDialog: true,
@@ -2596,7 +2565,83 @@ Future<void> _openAdminScreen(BuildContext context) async {
   );
 }
 
+Future<bool> _requestAdminPortalPassword(BuildContext context) async {
+  final controller = TextEditingController();
+  var hasError = false;
+
+  try {
+    return await showCupertinoDialog<bool>(
+          context: context,
+          barrierDismissible: true,
+          builder: (dialogContext) => StatefulBuilder(
+            builder: (context, setState) => CupertinoAlertDialog(
+              title: const Text('管理画面パスワード'),
+              content: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  const Text('管理画面に入るにはパスワードを入力してください。'),
+                  const SizedBox(height: 12),
+                  if (_adminPortalPassword.isEmpty) ...[
+                    const Text(
+                      '管理画面パスワードが未設定です。',
+                      style: TextStyle(color: Color(0xFFFF6F9F)),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                  CupertinoTextField(
+                    controller: controller,
+                    enabled: _adminPortalPassword.isNotEmpty,
+                    autofocus: true,
+                    obscureText: true,
+                    placeholder: 'パスワード',
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) {
+                      if (_adminPortalPassword.isNotEmpty &&
+                          controller.text == _adminPortalPassword) {
+                        Navigator.of(dialogContext).pop(true);
+                        return;
+                      }
+                      setState(() => hasError = true);
+                    },
+                  ),
+                  if (hasError) ...[
+                    const SizedBox(height: 10),
+                    const Text(
+                      'パスワードが違います。',
+                      style: TextStyle(color: Color(0xFFFF6F9F)),
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                CupertinoDialogAction(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('キャンセル'),
+                ),
+                CupertinoDialogAction(
+                  isDefaultAction: true,
+                  onPressed: () {
+                    if (_adminPortalPassword.isNotEmpty &&
+                        controller.text == _adminPortalPassword) {
+                      Navigator.of(dialogContext).pop(true);
+                      return;
+                    }
+                    setState(() => hasError = true);
+                  },
+                  child: const Text('入室'),
+                ),
+              ],
+            ),
+          ),
+        ) ??
+        false;
+  } finally {
+    controller.dispose();
+  }
+}
+
 Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
+  final rootContext = context;
   final user = ref.read(nomoUserProvider);
   await showModalBottomSheet<void>(
     context: context,
@@ -2606,6 +2651,15 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
     builder: (sheetContext) => Consumer(
       builder: (context, ref, _) {
         final themeMode = ref.watch(nomoThemeModeProvider);
+        final currentAuthUserId = ref
+            .watch(supabaseClientProvider)
+            .auth
+            .currentUser
+            ?.id;
+        final logs =
+            ref.watch(drinkLogControllerProvider).asData?.value ??
+            const <DrinkLog>[];
+        final photoLogs = _photoArchiveLogs(logs, currentAuthUserId);
         return _SettingsSheetShell(
           user: user,
           onClose: () => Navigator.of(sheetContext).pop(),
@@ -2652,6 +2706,27 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                   context,
                   ref,
                   ref.read(nomoUserProvider),
+                );
+              },
+            ),
+            _SettingsTile(
+              icon: CupertinoIcons.photo_fill_on_rectangle_fill,
+              label: 'フォトアーカイブ',
+              subtitle: photoLogs.isEmpty
+                  ? '写真付きの飲みログを見返す'
+                  : '${photoLogs.length}件の思い出を見返す',
+              accent: const Color(0xFFFF7AB8),
+              onTap: () async {
+                if (sheetContext.mounted) {
+                  Navigator.of(sheetContext).pop();
+                }
+                await Future<void>.delayed(const Duration(milliseconds: 180));
+                if (!rootContext.mounted) return;
+                await Navigator.of(rootContext).push<void>(
+                  CupertinoPageRoute(
+                    fullscreenDialog: true,
+                    builder: (_) => PhotoArchiveScreen(logs: photoLogs),
+                  ),
                 );
               },
             ),
@@ -3475,27 +3550,36 @@ class _MemoryRow extends StatelessWidget {
   );
 }
 
-InputDecoration _darkInputDecoration(String hint) => InputDecoration(
-  hintText: hint,
-  hintStyle: TextStyle(
-    color: Colors.white.withValues(alpha: .45),
-    fontWeight: FontWeight.w800,
-  ),
-  filled: true,
-  fillColor: Colors.white.withValues(alpha: .06),
-  border: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(18),
-    borderSide: const BorderSide(color: _ProfileColors.line),
-  ),
-  enabledBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(18),
-    borderSide: const BorderSide(color: _ProfileColors.line),
-  ),
-  focusedBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(18),
-    borderSide: const BorderSide(color: _ProfileColors.lime),
-  ),
-);
+InputDecoration _profileInputDecoration(String hint, {required bool isWhite}) =>
+    InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(
+        color: isWhite
+            ? const Color(0xFF8B96A3)
+            : Colors.white.withValues(alpha: .45),
+        fontWeight: FontWeight.w800,
+      ),
+      filled: true,
+      fillColor: isWhite
+          ? const Color(0xFFF6F8FA)
+          : Colors.white.withValues(alpha: .06),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide(
+          color: isWhite ? const Color(0xFFDDE4EA) : _ProfileColors.line,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide(
+          color: isWhite ? const Color(0xFFDDE4EA) : _ProfileColors.line,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(color: _ProfileColors.lime),
+      ),
+    );
 
 String _relativeTime(DateTime date) {
   final diff = DateTime.now().difference(date);

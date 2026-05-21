@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/nomo_avatar.dart';
+import '../../../core/utils/nomo_photo_orientation.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
 
@@ -43,6 +44,7 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
   late _CameraFilter _selectedFilter = _canUseArFilters
       ? _CameraFilter.avatar
       : _CameraFilter.original;
+  _CameraFraming _selectedFraming = _CameraFraming.square;
   bool _showStoryPreview = false;
   bool _isClosing = false;
 
@@ -52,10 +54,7 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    unawaited(_applyOrientationForFraming(_selectedFraming));
     if (_selectedFilter.usesArFaceTracking) {
       _isInitializingCamera = false;
     } else {
@@ -75,6 +74,23 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
     await SystemChrome.setPreferredOrientations(const [
       DeviceOrientation.portraitUp,
     ]);
+  }
+
+  Future<void> _applyOrientationForFraming(_CameraFraming framing) async {
+    await SystemChrome.setPreferredOrientations(const [
+      DeviceOrientation.portraitUp,
+    ]);
+    final controller = _cameraController;
+    if (controller == null || !controller.value.isInitialized) return;
+    try {
+      if (framing == _CameraFraming.square) {
+        await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      } else {
+        await controller.unlockCaptureOrientation();
+      }
+    } on CameraException {
+      // Keep the camera usable even if capture orientation locking fails.
+    }
   }
 
   Future<void> _closeCamera([NomoCameraResult? result]) async {
@@ -121,9 +137,11 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
       );
       await controller.initialize();
       try {
-        await controller.lockCaptureOrientation(
-          DeviceOrientation.landscapeLeft,
-        );
+        if (_selectedFraming == _CameraFraming.square) {
+          await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
+        } else {
+          await controller.unlockCaptureOrientation();
+        }
       } on CameraException {
         // Keep the plain camera usable even if capture orientation locking fails.
       }
@@ -170,10 +188,14 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
               onClose: _closeCamera,
               cameraController: _cameraController,
               selectedFilter: _selectedFilter,
+              selectedFraming: _selectedFraming,
               avatar: avatar,
               isInitializingCamera: _isInitializingCamera,
               onArViewCreated: _handleArViewCreated,
-              onToggleFilter: _canUseArFilters ? _selectNextFilter : null,
+              onToggleFilter:
+                  _canUseArFilters && _selectedFraming.allowsArFilters
+                  ? _selectNextFilter
+                  : null,
               onBackToCamera: () => setState(() => _showStoryPreview = false),
             ),
             Positioned(
@@ -184,6 +206,8 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
                 top: false,
                 child: _BottomCameraControls(
                   isCapturing: _isCapturing,
+                  selectedFraming: _selectedFraming,
+                  onFramingChanged: _setFraming,
                   onPickAlbum: _pickFromAlbum,
                   onCapture: _capture,
                   onFlip: _flipCamera,
@@ -213,15 +237,18 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
     try {
       final shot = await controller.takePicture();
       if (!mounted) return;
+      final outputPath = await _photoPathForSelectedFraming(shot.path);
       if (!widget.returnPhoto) {
         setState(() => _showStoryPreview = true);
         return;
       }
       await _closeCamera(
-        NomoCameraResult(path: shot.path, filterName: _plainFilterName),
+        NomoCameraResult(path: outputPath, filterName: _plainFilterName),
       );
     } on CameraException catch (error) {
       if (mounted) _showSnack(_cameraErrorMessage(error));
+    } catch (_) {
+      if (mounted) _showSnack('写真を処理できませんでした。');
     } finally {
       if (mounted) setState(() => _isCapturing = false);
     }
@@ -238,12 +265,16 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
     try {
       final path = await controller.capture();
       if (!mounted) return;
+      final outputPath = await _photoPathForSelectedFraming(path);
       if (!widget.returnPhoto) {
         setState(() => _showStoryPreview = true);
         return;
       }
       await _closeCamera(
-        NomoCameraResult(path: path, filterName: _selectedFilter.resultName),
+        NomoCameraResult(
+          path: outputPath,
+          filterName: _selectedFilter.resultName,
+        ),
       );
     } on PlatformException catch (error) {
       if (mounted) _showSnack(error.message ?? 'AR写真を撮影できませんでした。');
@@ -252,6 +283,24 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
     } finally {
       if (mounted) setState(() => _isCapturing = false);
     }
+  }
+
+  Future<void> _setFraming(_CameraFraming framing) async {
+    if (_selectedFraming == framing || _isCapturing) return;
+    await HapticFeedback.selectionClick();
+    setState(() => _selectedFraming = framing);
+    await _applyOrientationForFraming(framing);
+    if (framing == _CameraFraming.landscape &&
+        _selectedFilter.usesArFaceTracking) {
+      await _setFilter(_CameraFilter.original);
+    }
+  }
+
+  Future<String> _photoPathForSelectedFraming(String path) async {
+    return switch (_selectedFraming) {
+      _CameraFraming.square => nomoWriteSquarePhotoCopy(path),
+      _CameraFraming.landscape => nomoWriteLandscapePhotoCopy(path),
+    };
   }
 
   Future<void> _flipCamera() async {
@@ -293,6 +342,9 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
 
   Future<void> _setFilter(_CameraFilter filter) async {
     if (!_canUseArFilters && filter.usesArFaceTracking) return;
+    if (filter.usesArFaceTracking && !_selectedFraming.allowsArFilters) {
+      await _setFraming(_CameraFraming.square);
+    }
     if (_selectedFilter == filter) return;
 
     final wasUsingAr = _selectedFilter.usesArFaceTracking;
@@ -332,16 +384,30 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
         maxWidth: 1600,
       );
       if (picked == null || !mounted) return;
+      final outputPath = await _photoPathFromAlbum(picked.path);
+      if (outputPath == null || !mounted) return;
       if (!widget.returnPhoto) {
         setState(() => _showStoryPreview = true);
         return;
       }
       await _closeCamera(
-        NomoCameraResult(path: picked.path, filterName: _plainFilterName),
+        NomoCameraResult(path: outputPath, filterName: _plainFilterName),
       );
+    } catch (_) {
+      if (mounted) _showSnack('写真を読み込めませんでした。');
     } finally {
       if (mounted) setState(() => _isCapturing = false);
     }
+  }
+
+  Future<String?> _photoPathFromAlbum(String path) async {
+    if (_selectedFraming == _CameraFraming.square) {
+      return nomoWriteSquarePhotoCopy(path);
+    }
+    final dimensions = await nomoReadPhotoDimensions(path);
+    if (dimensions.isSquareOrLandscape) return path;
+    _showSnack('横長または正方形の写真を選んでください。');
+    return null;
   }
 
   String _cameraErrorMessage(CameraException error) {
@@ -398,11 +464,39 @@ enum _CameraFilter {
   };
 }
 
+enum _CameraFraming {
+  square,
+  landscape;
+
+  bool get allowsArFilters => this == square;
+
+  String get label => switch (this) {
+    square => '1:1',
+    landscape => '横長',
+  };
+
+  String get description => switch (this) {
+    square => '縦撮り',
+    landscape => '横撮り',
+  };
+
+  double get frameAspectRatio => switch (this) {
+    square => 1,
+    landscape => 4 / 3,
+  };
+
+  String get semanticLabel => switch (this) {
+    square => '縦撮り 1対1',
+    landscape => '横撮り 横長',
+  };
+}
+
 class _CameraPreviewStage extends StatelessWidget {
   const _CameraPreviewStage({
     required this.showStoryPreview,
     required this.cameraController,
     required this.selectedFilter,
+    required this.selectedFraming,
     required this.avatar,
     required this.isInitializingCamera,
     required this.onArViewCreated,
@@ -414,6 +508,7 @@ class _CameraPreviewStage extends StatelessWidget {
   final bool showStoryPreview;
   final CameraController? cameraController;
   final _CameraFilter selectedFilter;
+  final _CameraFraming selectedFraming;
   final NomoAvatar avatar;
   final bool isInitializingCamera;
   final ValueChanged<_ArAvatarCameraController> onArViewCreated;
@@ -439,6 +534,10 @@ class _CameraPreviewStage extends StatelessWidget {
               controller: cameraController,
               isInitializing: isInitializingCamera,
             ),
+          _CameraFrameMask(
+            aspectRatio: selectedFraming.frameAspectRatio,
+            label: selectedFraming.label,
+          ),
           if (showStoryPreview) _StoryPreviewOverlay(onClose: onBackToCamera),
           _TopCameraControls(onClose: onClose),
           if (onToggleFilter != null)
@@ -597,6 +696,106 @@ class _CameraUnavailablePlaceholder extends StatelessWidget {
   }
 }
 
+class _CameraFrameMask extends StatelessWidget {
+  const _CameraFrameMask({required this.aspectRatio, required this.label});
+
+  final double aspectRatio;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final topReserve = MediaQuery.paddingOf(context).top + 86;
+    final bottomReserve = MediaQuery.paddingOf(context).bottom + 196;
+    return IgnorePointer(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final maxWidth = constraints.maxWidth - 44;
+          final maxHeight = constraints.maxHeight - topReserve - bottomReserve;
+          var frameWidth = maxWidth;
+          var frameHeight = frameWidth / aspectRatio;
+          if (frameHeight > maxHeight) {
+            frameHeight = maxHeight;
+            frameWidth = frameHeight * aspectRatio;
+          }
+          if (frameWidth <= 0 || frameHeight <= 0) {
+            return const SizedBox.shrink();
+          }
+          final left = (constraints.maxWidth - frameWidth) / 2;
+          final availableTop = topReserve + (maxHeight - frameHeight) / 2;
+          final top = availableTop < topReserve ? topReserve : availableTop;
+          final rect = Rect.fromLTWH(left, top, frameWidth, frameHeight);
+
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              CustomPaint(painter: _CameraFrameMaskPainter(rect)),
+              Positioned(
+                left: rect.left + 14,
+                top: rect.top + 14,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: .46),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: .32),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    child: Text(
+                      label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: .4,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _CameraFrameMaskPainter extends CustomPainter {
+  const _CameraFrameMaskPainter(this.frameRect);
+
+  final Rect frameRect;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final frame = RRect.fromRectAndRadius(frameRect, const Radius.circular(28));
+    final maskPath = Path()
+      ..fillType = PathFillType.evenOdd
+      ..addRect(Offset.zero & size)
+      ..addRRect(frame);
+    canvas.drawPath(
+      maskPath,
+      Paint()..color = Colors.black.withValues(alpha: .38),
+    );
+    canvas.drawRRect(
+      frame,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..color = Colors.white.withValues(alpha: .88),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CameraFrameMaskPainter oldDelegate) {
+    return oldDelegate.frameRect != frameRect;
+  }
+}
+
 class _TopCameraControls extends StatelessWidget {
   const _TopCameraControls({required this.onClose});
 
@@ -682,12 +881,16 @@ class _FilterToggleButton extends StatelessWidget {
 class _BottomCameraControls extends StatelessWidget {
   const _BottomCameraControls({
     required this.isCapturing,
+    required this.selectedFraming,
+    required this.onFramingChanged,
     required this.onPickAlbum,
     required this.onCapture,
     required this.onFlip,
   });
 
   final bool isCapturing;
+  final _CameraFraming selectedFraming;
+  final ValueChanged<_CameraFraming> onFramingChanged;
   final VoidCallback onPickAlbum;
   final VoidCallback onCapture;
   final VoidCallback onFlip;
@@ -696,16 +899,128 @@ class _BottomCameraControls extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 18),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _AlbumButton(onTap: onPickAlbum),
-          GestureDetector(
-            onTap: onCapture,
-            child: _PlainCaptureButton(isCapturing: isCapturing),
+          _FramingModeSelector(
+            selectedFraming: selectedFraming,
+            onChanged: onFramingChanged,
           ),
-          _FlipCameraButton(onTap: onFlip),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _AlbumButton(onTap: onPickAlbum),
+              GestureDetector(
+                onTap: onCapture,
+                child: _PlainCaptureButton(isCapturing: isCapturing),
+              ),
+              _FlipCameraButton(onTap: onFlip),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _FramingModeSelector extends StatelessWidget {
+  const _FramingModeSelector({
+    required this.selectedFraming,
+    required this.onChanged,
+  });
+
+  final _CameraFraming selectedFraming;
+  final ValueChanged<_CameraFraming> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: .44),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: .22)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .28),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(5),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final framing in _CameraFraming.values)
+              _FramingModeChip(
+                framing: framing,
+                isSelected: framing == selectedFraming,
+                onTap: () => onChanged(framing),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FramingModeChip extends StatelessWidget {
+  const _FramingModeChip({
+    required this.framing,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final _CameraFraming framing;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = isSelected ? const Color(0xFF051015) : Colors.white;
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: framing.semanticLabel,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          constraints: const BoxConstraints(minWidth: 86),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF28F0E0) : Colors.transparent,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                framing.label,
+                style: TextStyle(
+                  color: foreground,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: .2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                framing.description,
+                style: TextStyle(
+                  color: foreground.withValues(alpha: isSelected ? .72 : .66),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: .4,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

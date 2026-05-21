@@ -1,5 +1,6 @@
 {
   "NOMO_ENV": "prod",
+  "NOMO_ADMIN_PORTAL_PASSWORD": "set_via_secret_not_in_git",
   "NOMO_BACKEND_URL": "https://nomo-backend-nezf.onrender.com",
   "SUPABASE_URL": "replace_with_prod_supabase_url",
   "SUPABASE_PUBLISHABLE_KEY": "replace_with_prod_publishable_key",

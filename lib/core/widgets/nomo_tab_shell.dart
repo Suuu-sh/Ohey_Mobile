@@ -13,6 +13,7 @@ import '../../features/onboarding/presentation/create_user_dialog.dart';
 import '../application/nomo_user_controller.dart';
 import '../data/nomo_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
+import '../theme/app_colors.dart';
 import '../theme/nomo_theme_mode.dart';
 import 'nomo_backend_busy_screen.dart';
 
@@ -132,7 +133,9 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
     if (user == null && !_onboardingPrefLoaded) {
       return Scaffold(
         resizeToAvoidBottomInset: false,
-        backgroundColor: isWhite ? Colors.white : const Color(0xFF0B1420),
+        backgroundColor: isWhite
+            ? Colors.white
+            : AppColors.darkBackgroundBottom,
         body: const SizedBox.expand(),
       );
     }
@@ -188,7 +191,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
                 customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
                 label: 'フィード',
                 selected: _selectedIndex == 0,
-                activeColor: const Color(0xFFB188FF),
+                activeColor: const Color(0xFF22D7C5),
                 onTap: () => setState(() => _selectedIndex = 0),
               ),
               _TabItem(
