@@ -75,91 +75,108 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
               Expanded(
                 child: ListView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(18, 10, 18, 26),
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 26),
                   children: [
                     if (_hasPhoto) ...[
                       _PostPreviewCard(
                         path: _photoPath!,
                         userName: _previewUserName(user?.name),
                         avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
-                        memo: _memoController.text,
+                        memoController: _memoController,
                         place: _placeController.text,
                         date: _selectedDate,
                         friends: selectedFriends,
+                        onEditDateTime: _pickDateTime,
+                        onMemoChanged: (_) => setState(() {}),
                         onRetake: _openNomoCamera,
                       ),
                       const SizedBox(height: 14),
                     ] else ...[
-                      _PhotoCapturePrompt(onTap: _openNomoCamera),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        child: _PhotoCapturePrompt(onTap: _openNomoCamera),
+                      ),
+                      const SizedBox(height: 14),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        child: _DateTimeBox(
+                          icon: CupertinoIcons.calendar,
+                          iconColor: _AddLogColors.calendarIcon,
+                          label: _dateTimeLabel(_selectedDate),
+                          onTap: _pickDateTime,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        child: _InputBox(
+                          icon: CupertinoIcons.text_quote,
+                          iconColor: _AddLogColors.impressionIcon,
+                          hint: 'コメント（任意）',
+                          controller: _memoController,
+                          maxLines: 3,
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ),
                       const SizedBox(height: 14),
                     ],
-                    _DateTimeBox(
-                      icon: CupertinoIcons.calendar,
-                      iconColor: _AddLogColors.calendarIcon,
-                      label: _dateLabel(_selectedDate),
-                      onTap: _pickDate,
-                    ),
-                    const SizedBox(height: 14),
-                    _InputBox(
-                      icon: CupertinoIcons.text_quote,
-                      iconColor: _AddLogColors.impressionIcon,
-                      hint: 'コメント（任意）',
-                      controller: _memoController,
-                      maxLines: 3,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    const SizedBox(height: 14),
-                    _FriendSelectCard(
-                      search: _InputBox(
-                        icon: CupertinoIcons.search,
-                        iconColor: _AddLogColors.searchIcon,
-                        hint: '誰と？（任意）',
-                        controller: _friendSearchController,
-                        maxLines: 1,
-                        borderless: true,
-                        onChanged: (value) =>
-                            setState(() => _friendSearchQuery = value),
-                        suffix: _friendSearchQuery.isEmpty
-                            ? null
-                            : IconButton(
-                                visualDensity: VisualDensity.compact,
-                                onPressed: () => setState(() {
-                                  _friendSearchController.clear();
-                                  _friendSearchQuery = '';
-                                }),
-                                icon: const NomoGeneratedIcon(
-                                  CupertinoIcons.xmark_circle_fill,
-                                  color: _AddLogColors.clearIcon,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      child: _FriendSelectCard(
+                        search: _InputBox(
+                          icon: CupertinoIcons.search,
+                          iconColor: _AddLogColors.searchIcon,
+                          hint: '誰と？（任意）',
+                          controller: _friendSearchController,
+                          maxLines: 1,
+                          borderless: true,
+                          onChanged: (value) =>
+                              setState(() => _friendSearchQuery = value),
+                          suffix: _friendSearchQuery.isEmpty
+                              ? null
+                              : IconButton(
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: () => setState(() {
+                                    _friendSearchController.clear();
+                                    _friendSearchQuery = '';
+                                  }),
+                                  icon: const NomoGeneratedIcon(
+                                    CupertinoIcons.xmark_circle_fill,
+                                    color: _AddLogColors.clearIcon,
+                                  ),
                                 ),
-                              ),
-                      ),
-                      chips: SizedBox(
-                        height: 58,
-                        child: friendsAsync.when(
-                          data: (friends) => _FriendChips(
-                            friends: _filteredFriends(friends),
-                            selectedIds: _selectedFriendIds,
-                            onChanged: _toggleFriend,
-                            emptyMessage: _friendSearchQuery.trim().isEmpty
-                                ? 'まだフレンズがいません'
-                                : '該当するフレンズがいません',
-                          ),
-                          loading: () => const _LoadingBox(compact: true),
-                          error: (error, stackTrace) => const _ErrorBox(
-                            message: '友達を読み込めませんでした',
-                            compact: true,
+                        ),
+                        chips: SizedBox(
+                          height: 58,
+                          child: friendsAsync.when(
+                            data: (friends) => _FriendChips(
+                              friends: _filteredFriends(friends),
+                              selectedIds: _selectedFriendIds,
+                              onChanged: _toggleFriend,
+                              emptyMessage: _friendSearchQuery.trim().isEmpty
+                                  ? 'まだフレンズがいません'
+                                  : '該当するフレンズがいません',
+                            ),
+                            loading: () => const _LoadingBox(compact: true),
+                            error: (error, stackTrace) => const _ErrorBox(
+                              message: '友達を読み込めませんでした',
+                              compact: true,
+                            ),
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 14),
-                    _InputBox(
-                      icon: CupertinoIcons.location_solid,
-                      iconColor: _AddLogColors.placeIcon,
-                      hint: 'どこで？（任意）',
-                      controller: _placeController,
-                      maxLines: 1,
-                      onChanged: (_) => setState(() {}),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      child: _InputBox(
+                        icon: CupertinoIcons.location_solid,
+                        iconColor: _AddLogColors.placeIcon,
+                        hint: 'どこで？（任意）',
+                        controller: _placeController,
+                        maxLines: 1,
+                        onChanged: (_) => setState(() {}),
+                      ),
                     ),
                   ],
                 ),
@@ -221,7 +238,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
     return true;
   }
 
-  Future<void> _pickDate() async {
+  Future<void> _pickDateTime() async {
     final isWhite = _AddLogColors.isWhite(context);
     final picked = await showDatePicker(
       context: context,
@@ -245,9 +262,35 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
       ),
     );
     if (picked == null) return;
+    if (!mounted) return;
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedDate),
+      builder: (context, child) => Theme(
+        data: (isWhite ? ThemeData.light() : ThemeData.dark()).copyWith(
+          colorScheme: isWhite
+              ? const ColorScheme.light(
+                  primary: _AddLogColors.lime,
+                  surface: Colors.white,
+                  onSurface: _AddLogColors.lightText,
+                )
+              : const ColorScheme.dark(
+                  primary: _AddLogColors.lime,
+                  surface: _AddLogColors.surface,
+                ),
+        ),
+        child: child!,
+      ),
+    );
+    final time = pickedTime ?? TimeOfDay.fromDateTime(_selectedDate);
     setState(
-      () =>
-          _selectedDate = DateTime(picked.year, picked.month, picked.day, 0, 0),
+      () => _selectedDate = DateTime(
+        picked.year,
+        picked.month,
+        picked.day,
+        time.hour,
+        time.minute,
+      ),
     );
   }
 
@@ -324,8 +367,11 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
     return extension;
   }
 
-  static String _dateLabel(DateTime date) =>
-      '${date.year}年${date.month}月${date.day}日（${_weekday(date)}）';
+  static String _dateTimeLabel(DateTime date) {
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '${date.year}年${date.month}月${date.day}日（${_weekday(date)}） $hour:$minute';
+  }
 
   static String _weekday(DateTime date) =>
       const ['月', '火', '水', '木', '金', '土', '日'][date.weekday - 1];
@@ -336,19 +382,10 @@ String _previewUserName(String? name) {
   return normalized.isEmpty ? 'あなた' : normalized;
 }
 
-String _previewCaption({
-  required String memo,
-  required String place,
-  required List<NomoFriend> friends,
-}) {
-  final body = memo.trim();
-  if (body.isNotEmpty) return body;
+String _previewCaptionHint({required String place}) {
   final placeName = place.trim();
-  if (placeName.isNotEmpty) return '$placeNameで飲みログ';
-  if (friends.isNotEmpty) {
-    return '${friends.first.name}${friends.length > 1 ? 'たち' : ''}と飲みログ';
-  }
-  return '今日の飲みログ';
+  if (placeName.isNotEmpty) return placeName;
+  return 'コメントを入力';
 }
 
 class _PhotoCapturePrompt extends StatelessWidget {
@@ -411,30 +448,35 @@ class _PostPreviewCard extends StatelessWidget {
     required this.path,
     required this.userName,
     required this.avatar,
-    required this.memo,
+    required this.memoController,
     required this.place,
     required this.date,
     required this.friends,
+    required this.onEditDateTime,
+    required this.onMemoChanged,
     required this.onRetake,
   });
 
   final String path;
   final String userName;
   final NomoAvatar avatar;
-  final String memo;
+  final TextEditingController memoController;
   final String place;
   final DateTime date;
   final List<NomoFriend> friends;
+  final VoidCallback onEditDateTime;
+  final ValueChanged<String> onMemoChanged;
   final VoidCallback onRetake;
 
   @override
   Widget build(BuildContext context) {
-    final caption = _previewCaption(memo: memo, place: place, friends: friends);
+    final captionHint = _previewCaptionHint(place: place);
+    final isWhite = _AddLogColors.isWhite(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 18),
           child: Row(
             children: [
               Text(
@@ -456,149 +498,361 @@ class _PostPreviewCard extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Container(
-          height: 330,
-          clipBehavior: Clip.antiAlias,
+          width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: .10),
-              width: 1.2,
-            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: .22),
-                blurRadius: 22,
-                offset: const Offset(0, 12),
+                color: Colors.black.withValues(alpha: isWhite ? .12 : .36),
+                blurRadius: 26,
+                offset: const Offset(0, 18),
               ),
             ],
           ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              _PhotoPreviewImage(
-                path: path,
-                fallbackAspectRatio: 4 / 5,
-                fit: BoxFit.cover,
-                expand: true,
-              ),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: .42),
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: .76),
+          child: AspectRatio(
+            aspectRatio: 4 / 5,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                _PhotoPreviewImage(
+                  path: path,
+                  fallbackAspectRatio: 4 / 5,
+                  fit: BoxFit.cover,
+                  expand: true,
+                ),
+                const _FeedSizedPreviewScrim(),
+                Positioned(
+                  left: 14,
+                  top: 14,
+                  right: 14,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: _AddLogColors.lime.withValues(alpha: .28),
+                          shape: BoxShape.circle,
+                        ),
+                        child: NomoAvatarView(avatar: avatar, size: 40),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              userName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15.5,
+                                fontWeight: FontWeight.w900,
+                                height: 1.05,
+                                letterSpacing: -.25,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black54,
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            _PreviewTimeEditor(
+                              label: _previewFeedTime(date),
+                              onTap: onEditDateTime,
+                            ),
+                          ],
+                        ),
+                      ),
+                      NomoGeneratedIcon(
+                        CupertinoIcons.ellipsis,
+                        color: Colors.white.withValues(alpha: .96),
+                        size: 28,
+                      ),
                     ],
-                    stops: const [0, .45, 1],
                   ),
                 ),
-              ),
-              Positioned(
-                left: 14,
-                top: 14,
-                right: 14,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: _AddLogColors.lime.withValues(alpha: .28),
-                        shape: BoxShape.circle,
+                Positioned(
+                  left: 18,
+                  right: 18,
+                  bottom: 15,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _PreviewCaptionField(
+                        controller: memoController,
+                        hint: captionHint,
+                        onChanged: onMemoChanged,
                       ),
-                      child: NomoAvatarView(avatar: avatar, size: 40),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: 12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            userName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w900,
-                              height: 1,
-                            ),
+                          if (friends.isNotEmpty)
+                            _PreviewFriendsPill(friends: friends),
+                          const Spacer(),
+                          const _PreviewOverlayAction(
+                            icon: CupertinoIcons.heart,
+                            label: '0',
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            '投稿プレビュー',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: .72),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                            ),
+                          const SizedBox(width: 13),
+                          const _PreviewOverlayAction(
+                            icon: CupertinoIcons.paperplane,
                           ),
                         ],
                       ),
-                    ),
-                    const NomoGeneratedIcon(
-                      CupertinoIcons.ellipsis,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Positioned(
-                left: 16,
-                right: 16,
-                bottom: 15,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      caption,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        height: 1.18,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.45,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 6,
-                      children: [
-                        _PreviewMetaPill(
-                          icon: CupertinoIcons.calendar,
-                          label: _AddLogScreenState._dateLabel(date),
-                        ),
-                        if (place.trim().isNotEmpty)
-                          _PreviewMetaPill(
-                            icon: CupertinoIcons.location_solid,
-                            label: place.trim(),
-                          ),
-                        _PreviewMetaPill(
-                          icon: CupertinoIcons.person_2_fill,
-                          label: friends.isEmpty
-                              ? 'ひとり飲み'
-                              : friends.map((friend) => friend.name).join('、'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
     );
   }
+}
+
+class _FeedSizedPreviewScrim extends StatelessWidget {
+  const _FeedSizedPreviewScrim();
+
+  @override
+  Widget build(BuildContext context) => const DecoratedBox(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xB2000000),
+          Color(0x1A000000),
+          Color(0x00000000),
+          Color(0xE6000000),
+        ],
+        stops: [0, .23, .50, 1],
+      ),
+    ),
+  );
+}
+
+class _PreviewTimeEditor extends StatelessWidget {
+  const _PreviewTimeEditor({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: '日時を編集',
+    child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 2, right: 10, bottom: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: .78),
+                fontSize: 11.5,
+                fontWeight: FontWeight.w900,
+                height: 1,
+                shadows: const [
+                  Shadow(
+                    color: Colors.black54,
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              CupertinoIcons.pencil,
+              size: 10,
+              color: Colors.white.withValues(alpha: .74),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _PreviewCaptionField extends StatelessWidget {
+  const _PreviewCaptionField({
+    required this.controller,
+    required this.hint,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final String hint;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) => TextField(
+    controller: controller,
+    onChanged: onChanged,
+    keyboardType: TextInputType.multiline,
+    textInputAction: TextInputAction.newline,
+    minLines: 1,
+    maxLines: 3,
+    cursorColor: _AddLogColors.lime,
+    decoration: InputDecoration(
+      isDense: true,
+      border: InputBorder.none,
+      enabledBorder: InputBorder.none,
+      focusedBorder: InputBorder.none,
+      filled: false,
+      fillColor: Colors.transparent,
+      contentPadding: EdgeInsets.zero,
+      hintText: hint,
+      hintStyle: TextStyle(
+        color: Colors.white.withValues(alpha: .72),
+        fontSize: 21,
+        fontWeight: FontWeight.w900,
+        height: 1.12,
+        letterSpacing: -.55,
+        shadows: const [
+          Shadow(color: Colors.black87, blurRadius: 10, offset: Offset(0, 3)),
+        ],
+      ),
+    ),
+    style: const TextStyle(
+      color: Colors.white,
+      fontSize: 21,
+      fontWeight: FontWeight.w900,
+      height: 1.12,
+      letterSpacing: -.55,
+      shadows: [
+        Shadow(color: Colors.black87, blurRadius: 10, offset: Offset(0, 3)),
+      ],
+    ),
+  );
+}
+
+class _PreviewOverlayAction extends StatelessWidget {
+  const _PreviewOverlayAction({required this.icon, this.label = ''});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      NomoPopIcon(icon: icon, color: Colors.white, size: 26, showBubble: false),
+      if (label.isNotEmpty) ...[
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            shadows: [
+              Shadow(
+                color: Colors.black87,
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
+class _PreviewFriendsPill extends StatelessWidget {
+  const _PreviewFriendsPill({required this.friends});
+
+  final List<NomoFriend> friends;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = friends.take(3).toList(growable: false);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(8, 7, 10, 7),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: .24),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: .22)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 28.0 + (visible.length - 1) * 18.0,
+            height: 28,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                for (var index = 0; index < visible.length; index++)
+                  Positioned(
+                    left: index * 18,
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      padding: const EdgeInsets.all(1.5),
+                      decoration: BoxDecoration(
+                        color: visible[index].accentColor.withValues(
+                          alpha: .34,
+                        ),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: .82),
+                          width: 1,
+                        ),
+                      ),
+                      child: NomoAvatarView(
+                        avatar:
+                            visible[index].avatar ?? NomoAvatar.defaultAvatar,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'with',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: .92),
+              fontWeight: FontWeight.w900,
+              shadows: const [
+                Shadow(
+                  color: Colors.black54,
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _previewFeedTime(DateTime date) {
+  final diff = DateTime.now().difference(date);
+  if (diff.inMinutes < 1) return 'たった今';
+  if (diff.inMinutes < 60) return '${diff.inMinutes}分前';
+  if (diff.inHours < 24) return '${diff.inHours}時間前';
+  return '${diff.inDays}日前';
 }
 
 class _PhotoPreviewImage extends StatelessWidget {
@@ -681,43 +935,6 @@ class _PhotoMissingPlaceholder extends StatelessWidget {
     if (expand) return SizedBox.expand(child: child);
     return AspectRatio(aspectRatio: 1, child: child);
   }
-}
-
-class _PreviewMetaPill extends StatelessWidget {
-  const _PreviewMetaPill({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    constraints: const BoxConstraints(maxWidth: 250),
-    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-    decoration: BoxDecoration(
-      color: Colors.black.withValues(alpha: .42),
-      borderRadius: BorderRadius.circular(999),
-      border: Border.all(color: Colors.white.withValues(alpha: .18)),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        NomoGeneratedIcon(icon, color: Colors.white, size: 14),
-        const SizedBox(width: 5),
-        Flexible(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
 }
 
 class _MiniActionButton extends StatelessWidget {
