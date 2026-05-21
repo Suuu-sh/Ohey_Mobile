@@ -281,8 +281,8 @@ class _FeedHeaderOverlay extends StatelessWidget {
         ignoring: isTransparent,
         child: AnimatedOpacity(
           opacity: isTransparent ? 0 : 1,
-          duration: Duration(milliseconds: isTransparent ? 110 : 620),
-          curve: isTransparent ? Curves.easeOut : Curves.easeOutQuart,
+          duration: Duration(milliseconds: isTransparent ? 420 : 620),
+          curve: isTransparent ? Curves.easeOutCubic : Curves.easeOutQuart,
           child: ClipRect(
             child: BackdropFilter(
               filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
