@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -805,35 +807,20 @@ class _CameraFrameMask extends StatelessWidget {
           return Stack(
             fit: StackFit.expand,
             children: [
-              CustomPaint(painter: _CameraFrameMaskPainter(rect)),
-              Positioned(
-                left: rect.left + 14,
-                top: rect.top + 14,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: .46),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: .32),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    child: Text(
-                      label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: .4,
-                      ),
-                    ),
-                  ),
+              CustomPaint(
+                painter: _CameraFrameMaskPainter(
+                  rect,
+                  isLandscape: useLandscapeLayout,
                 ),
               ),
+              if (useLandscapeLayout)
+                _LandscapeFrameBadge(rect: rect)
+              else
+                Positioned(
+                  left: rect.left + 14,
+                  top: rect.top + 14,
+                  child: _FrameLabelPill(label: label),
+                ),
             ],
           );
         },
@@ -843,33 +830,157 @@ class _CameraFrameMask extends StatelessWidget {
 }
 
 class _CameraFrameMaskPainter extends CustomPainter {
-  const _CameraFrameMaskPainter(this.frameRect);
+  const _CameraFrameMaskPainter(this.frameRect, {required this.isLandscape});
 
   final Rect frameRect;
+  final bool isLandscape;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final frame = RRect.fromRectAndRadius(frameRect, const Radius.circular(28));
+    final radius = Radius.circular(isLandscape ? 34 : 28);
+    final frame = RRect.fromRectAndRadius(frameRect, radius);
     final maskPath = Path()
       ..fillType = PathFillType.evenOdd
       ..addRect(Offset.zero & size)
       ..addRRect(frame);
     canvas.drawPath(
       maskPath,
-      Paint()..color = Colors.black.withValues(alpha: .38),
+      Paint()..color = Colors.black.withValues(alpha: isLandscape ? .30 : .38),
     );
+    if (!isLandscape) {
+      canvas.drawRRect(
+        frame,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..color = Colors.white.withValues(alpha: .88),
+      );
+      return;
+    }
+
     canvas.drawRRect(
       frame,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = Colors.white.withValues(alpha: .88),
+        ..strokeWidth = 1.1
+        ..color = Colors.white.withValues(alpha: .20),
     );
+
+    final cornerLength = (math.min(frameRect.width, frameRect.height) * .10)
+        .clamp(34.0, 64.0);
+    final inset = 16.0;
+    final cornerPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.2
+      ..strokeCap = StrokeCap.round
+      ..color = const Color(0xFF28F0E0).withValues(alpha: .96);
+    final glowPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 8
+      ..strokeCap = StrokeCap.round
+      ..color = const Color(0xFF28F0E0).withValues(alpha: .16);
+
+    void drawCorner(Paint paint, bool left, bool top) {
+      final x = left ? frameRect.left + inset : frameRect.right - inset;
+      final y = top ? frameRect.top + inset : frameRect.bottom - inset;
+      final horizontalEnd = left ? x + cornerLength : x - cornerLength;
+      final verticalEnd = top ? y + cornerLength : y - cornerLength;
+      canvas.drawLine(Offset(x, y), Offset(horizontalEnd, y), paint);
+      canvas.drawLine(Offset(x, y), Offset(x, verticalEnd), paint);
+    }
+
+    for (final paint in [glowPaint, cornerPaint]) {
+      drawCorner(paint, true, true);
+      drawCorner(paint, false, true);
+      drawCorner(paint, true, false);
+      drawCorner(paint, false, false);
+    }
   }
 
   @override
   bool shouldRepaint(covariant _CameraFrameMaskPainter oldDelegate) {
-    return oldDelegate.frameRect != frameRect;
+    return oldDelegate.frameRect != frameRect ||
+        oldDelegate.isLandscape != isLandscape;
+  }
+}
+
+class _FrameLabelPill extends StatelessWidget {
+  const _FrameLabelPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: Colors.black.withValues(alpha: .46),
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(color: Colors.white.withValues(alpha: .32)),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 13,
+          fontWeight: FontWeight.w900,
+          letterSpacing: .4,
+        ),
+      ),
+    ),
+  );
+}
+
+class _LandscapeFrameBadge extends StatelessWidget {
+  const _LandscapeFrameBadge({required this.rect});
+
+  final Rect rect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: rect.left + 18,
+      top: rect.top + 18,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(999),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: .34),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: const Color(0xFF28F0E0).withValues(alpha: .58),
+                width: 1.2,
+              ),
+            ),
+            child: const Padding(
+              padding: EdgeInsets.fromLTRB(12, 7, 13, 7),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  NomoGeneratedIcon(
+                    CupertinoIcons.crop,
+                    color: Color(0xFF28F0E0),
+                    size: 16,
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    '16:9 WIDE',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: .9,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
