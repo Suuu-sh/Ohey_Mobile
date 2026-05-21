@@ -53,7 +53,7 @@ class ProfileScreen extends ConsumerWidget {
     final canOpenAdmin = hasAdminEmail || hasAdminAccess;
     final topBackground = isWhite
         ? const Color(0xFF06111D)
-        : AppColors.darkBackgroundTop;
+        : const Color(0xFFF4F2EE);
     final bodyBackground = isWhite
         ? Colors.white
         : AppColors.darkBackgroundBottom;
@@ -668,7 +668,7 @@ class _ProfileTopSheet extends StatelessWidget {
         18,
       ),
       decoration: BoxDecoration(
-        color: isWhite ? const Color(0xFF06111D) : AppColors.darkBackgroundTop,
+        color: isWhite ? const Color(0xFF06111D) : const Color(0xFFF4F2EE),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(34)),
       ),
       child: child,
