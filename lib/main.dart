@@ -17,6 +17,7 @@ import 'core/theme/nomo_theme_mode.dart';
 import 'core/widgets/nomo_tab_shell.dart';
 
 const _openingNomoAsset = 'assets/images/opening_nomo.png';
+const _openingNomoArtworkOffset = Offset(18, 0);
 const _minimumOpeningDuration = Duration(seconds: 1);
 const _openingExitDurationMs = 520;
 
@@ -283,9 +284,15 @@ class _OpeningNomoArtwork extends StatelessWidget {
   Widget build(BuildContext context) {
     final image = _openingNomoImage;
     if (image == null) {
-      return Image.asset(_openingNomoAsset, fit: BoxFit.cover);
+      return Transform.translate(
+        offset: _openingNomoArtworkOffset,
+        child: Image.asset(_openingNomoAsset, fit: BoxFit.cover),
+      );
     }
-    return RawImage(image: image, fit: BoxFit.cover);
+    return Transform.translate(
+      offset: _openingNomoArtworkOffset,
+      child: RawImage(image: image, fit: BoxFit.cover),
+    );
   }
 }
 
