@@ -785,7 +785,7 @@ class _CameraFrameMask extends StatelessWidget {
           final sideReserve = useLandscapeLayout
               ? _landscapeCameraControlsWidth + padding.right + 8
               : 0.0;
-          final horizontalInset = useLandscapeLayout ? 12.0 : 44.0;
+          final horizontalInset = useLandscapeLayout ? 12.0 : 0.0;
           final frameAreaWidth = constraints.maxWidth - sideReserve;
           final maxWidth = frameAreaWidth - horizontalInset;
           final maxHeight = constraints.maxHeight - topReserve - bottomReserve;
