@@ -779,19 +779,27 @@ class _CameraFrameMask extends StatelessWidget {
           final useLandscapeLayout =
               framing == _CameraFraming.landscape &&
               constraints.maxWidth > constraints.maxHeight;
-          final topReserve = padding.top + (useLandscapeLayout ? 10 : 86);
-          final bottomReserve =
-              padding.bottom + (useLandscapeLayout ? 10 : 196);
+          final topReserve = useLandscapeLayout ? 0.0 : padding.top + 86;
+          final bottomReserve = useLandscapeLayout ? 0.0 : padding.bottom + 196;
           final sideReserve = useLandscapeLayout
-              ? _landscapeCameraControlsWidth + padding.right + 8
+              ? _landscapeCameraControlsWidth
               : 0.0;
-          final horizontalInset = useLandscapeLayout ? 12.0 : 0.0;
+          const horizontalInset = 0.0;
           final frameAreaWidth = constraints.maxWidth - sideReserve;
           final maxWidth = frameAreaWidth - horizontalInset;
           final maxHeight = constraints.maxHeight - topReserve - bottomReserve;
-          var frameWidth = maxWidth;
-          var frameHeight = frameWidth / aspectRatio;
-          if (frameHeight > maxHeight) {
+          final desiredLandscapeHeight = constraints.maxHeight;
+          final desiredLandscapeWidth = desiredLandscapeHeight * aspectRatio;
+          var frameWidth = useLandscapeLayout
+              ? desiredLandscapeWidth
+              : maxWidth;
+          var frameHeight = useLandscapeLayout
+              ? desiredLandscapeHeight
+              : frameWidth / aspectRatio;
+          if (frameWidth > maxWidth) {
+            frameWidth = maxWidth;
+            frameHeight = frameWidth / aspectRatio;
+          } else if (frameHeight > maxHeight) {
             frameHeight = maxHeight;
             frameWidth = frameHeight * aspectRatio;
           }
