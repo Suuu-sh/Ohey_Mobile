@@ -64,44 +64,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     return const _FeedBackground(child: SizedBox.expand()).copyWith(
-      child: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                NomoPageHeader.horizontalPadding,
-                NomoPageHeader.topPadding,
-                NomoPageHeader.horizontalPadding,
-                0,
-              ),
-              child: _FeedHeader(
-                hasUnreadNotifications: hasUnreadNotifications,
-                isRefreshing: _isRefreshingFeed,
-                onRefresh: _refreshFeed,
-                onNotifications: () => Navigator.of(context).push(
-                  CupertinoPageRoute<void>(
-                    builder: (_) => const _FeedNotificationsScreen(),
-                  ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: _buildFeedPage(
+              topPadding: _feedHeaderScrollInset(context),
+              items: feedItems,
+              isWhite: isWhite,
+              isLoading: logsAsync.isLoading || friendsAsync.isLoading,
+              onLikePressed: (item) => ref
+                  .read(drinkLogControllerProvider.notifier)
+                  .toggleLike(item.id),
+              onSharePressed: (item) => _shareFeedItem(context, item),
+              onMorePressed: (item) => _showFeedPostActions(context, ref, item),
+            ),
+          ),
+          _FeedHeaderOverlay(
+            isWhite: isWhite,
+            child: _FeedHeader(
+              hasUnreadNotifications: hasUnreadNotifications,
+              isRefreshing: _isRefreshingFeed,
+              onRefresh: _refreshFeed,
+              onNotifications: () => Navigator.of(context).push(
+                CupertinoPageRoute<void>(
+                  builder: (_) => const _FeedNotificationsScreen(),
                 ),
               ),
             ),
-            const SizedBox(height: 14),
-            Expanded(
-              child: _buildFeedPage(
-                items: feedItems,
-                isWhite: isWhite,
-                isLoading: logsAsync.isLoading || friendsAsync.isLoading,
-                onLikePressed: (item) => ref
-                    .read(drinkLogControllerProvider.notifier)
-                    .toggleLike(item.id),
-                onSharePressed: (item) => _shareFeedItem(context, item),
-                onMorePressed: (item) =>
-                    _showFeedPostActions(context, ref, item),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -171,7 +162,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
+double _feedHeaderScrollInset(BuildContext context) {
+  return MediaQuery.paddingOf(context).top +
+      NomoPageHeader.topPadding +
+      NomoPageHeader.height +
+      16;
+}
+
+double _feedHeaderOverlayHeight(BuildContext context) {
+  return _feedHeaderScrollInset(context) + 10;
+}
+
 Widget _buildFeedPage({
+  required double topPadding,
   required List<_FeedItem> items,
   required bool isWhite,
   required bool isLoading,
@@ -180,7 +183,7 @@ Widget _buildFeedPage({
   required ValueChanged<_FeedItem> onMorePressed,
 }) => ListView(
   physics: const BouncingScrollPhysics(),
-  padding: const EdgeInsets.only(top: 2, bottom: 124),
+  padding: EdgeInsets.only(top: topPadding, bottom: 124),
   children: [
     if (isLoading && items.isEmpty)
       const Padding(
@@ -225,6 +228,61 @@ class _FeedBackground extends ConsumerWidget {
         ),
       ),
       child: child,
+    );
+  }
+}
+
+class _FeedHeaderOverlay extends StatelessWidget {
+  const _FeedHeaderOverlay({required this.child, required this.isWhite});
+
+  final Widget child;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final height = _feedHeaderOverlayHeight(context);
+    return Positioned(
+      left: 0,
+      right: 0,
+      top: 0,
+      height: height,
+      child: ClipRect(
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: isWhite
+                    ? [
+                        Colors.white.withValues(alpha: .82),
+                        Colors.white.withValues(alpha: .64),
+                        Colors.white.withValues(alpha: .10),
+                      ]
+                    : [
+                        AppColors.darkBackgroundBottom.withValues(alpha: .82),
+                        AppColors.darkBackgroundMiddle.withValues(alpha: .58),
+                        AppColors.darkBackgroundBottom.withValues(alpha: .08),
+                      ],
+                stops: const [0, .72, 1],
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  NomoPageHeader.horizontalPadding,
+                  NomoPageHeader.topPadding,
+                  NomoPageHeader.horizontalPadding,
+                  0,
+                ),
+                child: child,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
