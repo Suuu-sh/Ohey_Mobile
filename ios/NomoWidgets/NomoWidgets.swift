@@ -160,20 +160,31 @@ private struct MediumStatusContent: View {
 
   var body: some View {
     ZStack(alignment: .trailing) {
-      Text(snapshot.statusLabel)
-        .font(.system(size: 32, weight: .black, design: .rounded))
-        .foregroundStyle(.white)
-        .lineLimit(2)
-        .minimumScaleFactor(0.72)
-        .multilineTextAlignment(.leading)
-        .nomoTextGlow()
-        .frame(maxWidth: 210, alignment: .leading)
-        .padding(.trailing, 22)
+      if !hasEmbeddedStatusTitle {
+        Text(snapshot.statusLabel)
+          .font(.system(size: 32, weight: .black, design: .rounded))
+          .foregroundStyle(.white)
+          .lineLimit(2)
+          .minimumScaleFactor(0.72)
+          .multilineTextAlignment(.leading)
+          .nomoTextGlow()
+          .frame(maxWidth: 210, alignment: .leading)
+          .padding(.trailing, 22)
+      }
     }
     .padding(.leading, 146)
     .padding(.vertical, 12)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
     .nomoWidgetBackground(artwork: .statusMedium(snapshot.statusKey))
+  }
+
+  private var hasEmbeddedStatusTitle: Bool {
+    switch snapshot.statusKey {
+    case "can_drink_today", "want_drink":
+      return true
+    default:
+      return false
+    }
   }
 }
 
