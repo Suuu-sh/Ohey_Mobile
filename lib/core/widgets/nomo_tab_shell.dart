@@ -70,13 +70,10 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
     );
     if (!mounted || result == null) return;
 
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: false,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: .45),
-      builder: (_) => AddLogScreen(initialPhotoPath: result.path),
+    await Navigator.of(context).push<void>(
+      CupertinoPageRoute(
+        builder: (_) => AddLogScreen(initialPhotoPath: result.path),
+      ),
     );
   }
 

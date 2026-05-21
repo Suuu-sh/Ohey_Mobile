@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
@@ -52,155 +53,131 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
   Widget build(BuildContext context) {
     final friendsAsync = ref.watch(friendsProvider);
     final user = ref.watch(nomoUserProvider);
-    final keyboardBottom = MediaQuery.viewInsetsOf(context).bottom;
-    final maxSheetHeight = MediaQuery.sizeOf(context).height * .86;
-    final isWhite = _AddLogColors.isWhite(context);
     final selectedFriends =
         friendsAsync.asData?.value
             .where((friend) => _selectedFriendIds.contains(friend.id))
             .toList(growable: false) ??
         const <NomoFriend>[];
 
-    return AnimatedPadding(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
-      padding: EdgeInsets.only(bottom: keyboardBottom),
-      child: SafeArea(
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: maxSheetHeight),
-            child: Container(
-              margin: const EdgeInsets.all(14),
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
-              decoration: BoxDecoration(
-                color: _AddLogColors.panelFor(context),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: _AddLogColors.lineFor(context)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isWhite ? .10 : .24),
-                    blurRadius: isWhite ? 24 : 30,
-                    offset: Offset(0, isWhite ? 12 : 16),
-                  ),
-                ],
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      backgroundColor: _AddLogColors.pageBackgroundFor(context),
+      body: DecoratedBox(
+        decoration: _AddLogColors.pageDecorationFor(context),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 8, 18, 4),
+                child: _Header(onClose: () => Navigator.of(context).maybePop()),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _Header(onClose: () => Navigator.of(context).maybePop()),
-                  const SizedBox(height: 16),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (_hasPhoto) ...[
-                            _CapturedPhotoPanel(
-                              path: _photoPath!,
-                              onRetake: _openNomoCamera,
-                            ),
-                            const SizedBox(height: 14),
-                            _PostPreviewCard(
-                              path: _photoPath!,
-                              userName: _previewUserName(user?.name),
-                              avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
-                              memo: _memoController.text,
-                              place: _placeController.text,
-                              date: _selectedDate,
-                              friends: selectedFriends,
-                            ),
-                            const SizedBox(height: 14),
-                          ] else ...[
-                            _PhotoCapturePrompt(onTap: _openNomoCamera),
-                            const SizedBox(height: 14),
-                          ],
-                          _DateTimeBox(
-                            icon: CupertinoIcons.calendar,
-                            iconColor: _AddLogColors.calendarIcon,
-                            label: _dateLabel(_selectedDate),
-                            onTap: _pickDate,
-                          ),
-                          const SizedBox(height: 14),
-                          _InputBox(
-                            icon: CupertinoIcons.text_quote,
-                            iconColor: _AddLogColors.impressionIcon,
-                            hint: 'コメント（任意）',
-                            controller: _memoController,
-                            maxLines: 3,
-                            onChanged: (_) => setState(() {}),
-                          ),
-                          const SizedBox(height: 14),
-                          _FriendSelectCard(
-                            search: _InputBox(
-                              icon: CupertinoIcons.search,
-                              iconColor: _AddLogColors.searchIcon,
-                              hint: '誰と？（任意）',
-                              controller: _friendSearchController,
-                              maxLines: 1,
-                              borderless: true,
-                              onChanged: (value) =>
-                                  setState(() => _friendSearchQuery = value),
-                              suffix: _friendSearchQuery.isEmpty
-                                  ? null
-                                  : IconButton(
-                                      visualDensity: VisualDensity.compact,
-                                      onPressed: () => setState(() {
-                                        _friendSearchController.clear();
-                                        _friendSearchQuery = '';
-                                      }),
-                                      icon: const NomoGeneratedIcon(
-                                        CupertinoIcons.xmark_circle_fill,
-                                        color: _AddLogColors.clearIcon,
-                                      ),
-                                    ),
-                            ),
-                            chips: SizedBox(
-                              height: 58,
-                              child: friendsAsync.when(
-                                data: (friends) => _FriendChips(
-                                  friends: _filteredFriends(friends),
-                                  selectedIds: _selectedFriendIds,
-                                  onChanged: _toggleFriend,
-                                  emptyMessage:
-                                      _friendSearchQuery.trim().isEmpty
-                                      ? 'まだフレンズがいません'
-                                      : '該当するフレンズがいません',
-                                ),
-                                loading: () => const _LoadingBox(compact: true),
-                                error: (error, stackTrace) => const _ErrorBox(
-                                  message: '友達を読み込めませんでした',
-                                  compact: true,
+              Expanded(
+                child: ListView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(18, 10, 18, 26),
+                  children: [
+                    if (_hasPhoto) ...[
+                      _PostPreviewCard(
+                        path: _photoPath!,
+                        userName: _previewUserName(user?.name),
+                        avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
+                        memo: _memoController.text,
+                        place: _placeController.text,
+                        date: _selectedDate,
+                        friends: selectedFriends,
+                        onRetake: _openNomoCamera,
+                      ),
+                      const SizedBox(height: 14),
+                    ] else ...[
+                      _PhotoCapturePrompt(onTap: _openNomoCamera),
+                      const SizedBox(height: 14),
+                    ],
+                    _DateTimeBox(
+                      icon: CupertinoIcons.calendar,
+                      iconColor: _AddLogColors.calendarIcon,
+                      label: _dateLabel(_selectedDate),
+                      onTap: _pickDate,
+                    ),
+                    const SizedBox(height: 14),
+                    _InputBox(
+                      icon: CupertinoIcons.text_quote,
+                      iconColor: _AddLogColors.impressionIcon,
+                      hint: 'コメント（任意）',
+                      controller: _memoController,
+                      maxLines: 3,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                    const SizedBox(height: 14),
+                    _FriendSelectCard(
+                      search: _InputBox(
+                        icon: CupertinoIcons.search,
+                        iconColor: _AddLogColors.searchIcon,
+                        hint: '誰と？（任意）',
+                        controller: _friendSearchController,
+                        maxLines: 1,
+                        borderless: true,
+                        onChanged: (value) =>
+                            setState(() => _friendSearchQuery = value),
+                        suffix: _friendSearchQuery.isEmpty
+                            ? null
+                            : IconButton(
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () => setState(() {
+                                  _friendSearchController.clear();
+                                  _friendSearchQuery = '';
+                                }),
+                                icon: const NomoGeneratedIcon(
+                                  CupertinoIcons.xmark_circle_fill,
+                                  color: _AddLogColors.clearIcon,
                                 ),
                               ),
-                            ),
+                      ),
+                      chips: SizedBox(
+                        height: 58,
+                        child: friendsAsync.when(
+                          data: (friends) => _FriendChips(
+                            friends: _filteredFriends(friends),
+                            selectedIds: _selectedFriendIds,
+                            onChanged: _toggleFriend,
+                            emptyMessage: _friendSearchQuery.trim().isEmpty
+                                ? 'まだフレンズがいません'
+                                : '該当するフレンズがいません',
                           ),
-                          const SizedBox(height: 14),
-                          _InputBox(
-                            icon: CupertinoIcons.location_solid,
-                            iconColor: _AddLogColors.placeIcon,
-                            hint: 'どこで？（任意）',
-                            controller: _placeController,
-                            maxLines: 1,
-                            onChanged: (_) => setState(() {}),
+                          loading: () => const _LoadingBox(compact: true),
+                          error: (error, stackTrace) => const _ErrorBox(
+                            message: '友達を読み込めませんでした',
+                            compact: true,
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  _SaveButton(
+                    const SizedBox(height: 14),
+                    _InputBox(
+                      icon: CupertinoIcons.location_solid,
+                      iconColor: _AddLogColors.placeIcon,
+                      hint: 'どこで？（任意）',
+                      controller: _placeController,
+                      maxLines: 1,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ],
+                ),
+              ),
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
+                  child: _SaveButton(
                     label: _hasPhoto ? '飲みログを投稿する' : '写真を撮る',
                     isSaving: _isSaving,
                     onPressed: () => _save(
                       friendsAsync.asData?.value ?? const <NomoFriend>[],
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -429,50 +406,6 @@ class _PhotoCapturePrompt extends StatelessWidget {
   );
 }
 
-class _CapturedPhotoPanel extends StatelessWidget {
-  const _CapturedPhotoPanel({required this.path, required this.onRetake});
-
-  final String path;
-  final VoidCallback onRetake;
-
-  @override
-  Widget build(BuildContext context) => _DarkShell(
-    padding: const EdgeInsets.all(12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Text(
-              '撮った写真',
-              style: TextStyle(
-                color: _AddLogColors.primaryTextFor(context),
-                fontSize: 15,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const Spacer(),
-            _MiniActionButton(
-              icon: CupertinoIcons.camera_rotate_fill,
-              label: '撮り直す',
-              onTap: onRetake,
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: _PhotoPreviewImage(
-            path: path,
-            fallbackAspectRatio: 1,
-            fit: BoxFit.cover,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
 class _PostPreviewCard extends StatelessWidget {
   const _PostPreviewCard({
     required this.path,
@@ -482,6 +415,7 @@ class _PostPreviewCard extends StatelessWidget {
     required this.place,
     required this.date,
     required this.friends,
+    required this.onRetake,
   });
 
   final String path;
@@ -491,6 +425,7 @@ class _PostPreviewCard extends StatelessWidget {
   final String place;
   final DateTime date;
   final List<NomoFriend> friends;
+  final VoidCallback onRetake;
 
   @override
   Widget build(BuildContext context) {
@@ -500,13 +435,23 @@ class _PostPreviewCard extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: Text(
-            '投稿プレビュー',
-            style: TextStyle(
-              color: _AddLogColors.primaryTextFor(context),
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
-            ),
+          child: Row(
+            children: [
+              Text(
+                '投稿プレビュー',
+                style: TextStyle(
+                  color: _AddLogColors.primaryTextFor(context),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const Spacer(),
+              _MiniActionButton(
+                icon: CupertinoIcons.camera_rotate_fill,
+                label: '撮り直す',
+                onTap: onRetake,
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 10),
@@ -825,8 +770,29 @@ class _Header extends StatelessWidget {
     final titleColor = _AddLogColors.primaryTextFor(context);
     return Row(
       children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onClose,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: _AddLogColors.surfaceFor(context),
+              shape: BoxShape.circle,
+              border: Border.all(color: _AddLogColors.lineFor(context)),
+            ),
+            child: Center(
+              child: NomoGeneratedIcon(
+                CupertinoIcons.chevron_left,
+                color: titleColor,
+                size: 26,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
         Text(
-          '飲みログ',
+          '飲みログ作成',
           style: TextStyle(
             color: titleColor,
             fontSize: 24,
@@ -835,14 +801,6 @@ class _Header extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        IconButton(
-          onPressed: onClose,
-          icon: NomoGeneratedIcon(
-            CupertinoIcons.xmark,
-            color: titleColor,
-            size: 28,
-          ),
-        ),
       ],
     );
   }
@@ -1207,7 +1165,6 @@ class _AddLogColors {
   static const lightSubText = Color(0xFF72808D);
   static const lightMuted = Color(0xFF8A96A3);
   static const lightLine = Color(0xFFE0E7EF);
-  static const panel = Color(0xFF08131A);
   static const surface = Color(0xFF14212B);
   static const muted = Color(0xFF99A3AE);
   static const lime = Color(0xFFB8FF00);
@@ -1223,8 +1180,19 @@ class _AddLogColors {
   static bool isWhite(BuildContext context) =>
       Theme.of(context).brightness == Brightness.light;
 
-  static Color panelFor(BuildContext context) =>
-      isWhite(context) ? Colors.white : panel;
+  static Color pageBackgroundFor(BuildContext context) => isWhite(context)
+      ? const Color(0xFFF7F9FC)
+      : AppColors.darkBackgroundBottom;
+
+  static BoxDecoration pageDecorationFor(BuildContext context) => BoxDecoration(
+    gradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: isWhite(context)
+          ? const [Colors.white, Color(0xFFF7F9FC)]
+          : AppColors.darkBackgroundGradient,
+    ),
+  );
 
   static Color surfaceFor(BuildContext context) =>
       isWhite(context) ? Colors.white : surface;
