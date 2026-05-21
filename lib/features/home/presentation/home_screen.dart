@@ -1236,50 +1236,37 @@ class _FeedPostCard extends StatelessWidget {
     final photoPath = item.photoAssetPath;
     final hasPhoto = _isDisplayablePostPhoto(photoPath);
     final caption = _feedCardCaption(item);
-    final isWhite = Theme.of(context).brightness == Brightness.light;
 
     return Semantics(
       label: '${item.userName}の飲みログ',
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isWhite ? .12 : .36),
-              blurRadius: 26,
-              offset: const Offset(0, 18),
+      child: AspectRatio(
+        aspectRatio: 4 / 5,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (hasPhoto)
+              _PostPhoto(path: photoPath!)
+            else
+              _FeedPhotoPlaceholder(accent: item.accent),
+            const _FeedPhotoScrim(),
+            Positioned(
+              left: 14,
+              top: 14,
+              right: 14,
+              child: _FeedCardAuthorBar(item: item, onMore: onMore),
+            ),
+            Positioned(
+              left: 18,
+              right: 18,
+              bottom: 15,
+              child: _FeedCardFooter(
+                item: item,
+                caption: caption,
+                onLike: onLike,
+                onShare: onShare,
+              ),
             ),
           ],
-        ),
-        child: AspectRatio(
-          aspectRatio: 4 / 5,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (hasPhoto)
-                _PostPhoto(path: photoPath!)
-              else
-                _FeedPhotoPlaceholder(accent: item.accent),
-              const _FeedPhotoScrim(),
-              Positioned(
-                left: 14,
-                top: 14,
-                right: 14,
-                child: _FeedCardAuthorBar(item: item, onMore: onMore),
-              ),
-              Positioned(
-                left: 18,
-                right: 18,
-                bottom: 15,
-                child: _FeedCardFooter(
-                  item: item,
-                  caption: caption,
-                  onLike: onLike,
-                  onShare: onShare,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -1557,13 +1544,8 @@ class _FeedPhotoScrim extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xB2000000),
-            Color(0x1A000000),
-            Color(0x00000000),
-            Color(0xE6000000),
-          ],
-          stops: [0, .23, .50, 1],
+          colors: [Color(0x00000000), Color(0x00000000), Color(0xE6000000)],
+          stops: [0, .55, 1],
         ),
       ),
     );
