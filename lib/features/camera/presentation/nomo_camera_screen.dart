@@ -14,6 +14,8 @@ import '../../../core/utils/nomo_photo_orientation.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
 
+const _landscapeCameraControlsWidth = 132.0;
+
 class NomoCameraResult {
   const NomoCameraResult({required this.path, required this.filterName});
 
@@ -202,22 +204,41 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
                   : null,
               onBackToCamera: () => setState(() => _showStoryPreview = false),
             ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: SafeArea(
-                top: false,
-                child: _BottomCameraControls(
-                  isCapturing: _isCapturing,
-                  selectedFraming: _selectedFraming,
-                  onFramingChanged: _setFraming,
-                  onPickAlbum: _pickFromAlbum,
-                  onCapture: _capture,
-                  onFlip: _flipCamera,
+            if (_selectedFraming == _CameraFraming.landscape)
+              Positioned(
+                top: 0,
+                right: 0,
+                bottom: 0,
+                width: _landscapeCameraControlsWidth,
+                child: SafeArea(
+                  left: false,
+                  child: _LandscapeCameraControls(
+                    isCapturing: _isCapturing,
+                    selectedFraming: _selectedFraming,
+                    onFramingChanged: _setFraming,
+                    onPickAlbum: _pickFromAlbum,
+                    onCapture: _capture,
+                    onFlip: _flipCamera,
+                  ),
+                ),
+              )
+            else
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: SafeArea(
+                  top: false,
+                  child: _BottomCameraControls(
+                    isCapturing: _isCapturing,
+                    selectedFraming: _selectedFraming,
+                    onFramingChanged: _setFraming,
+                    onPickAlbum: _pickFromAlbum,
+                    onCapture: _capture,
+                    onFlip: _flipCamera,
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -573,6 +594,7 @@ class _CameraPreviewStage extends StatelessWidget {
               isInitializing: isInitializingCamera,
             ),
           _CameraFrameMask(
+            framing: selectedFraming,
             aspectRatio: selectedFraming.frameAspectRatio,
             label: selectedFraming.label,
           ),
@@ -735,19 +757,34 @@ class _CameraUnavailablePlaceholder extends StatelessWidget {
 }
 
 class _CameraFrameMask extends StatelessWidget {
-  const _CameraFrameMask({required this.aspectRatio, required this.label});
+  const _CameraFrameMask({
+    required this.framing,
+    required this.aspectRatio,
+    required this.label,
+  });
 
+  final _CameraFraming framing;
   final double aspectRatio;
   final String label;
 
   @override
   Widget build(BuildContext context) {
-    final topReserve = MediaQuery.paddingOf(context).top + 86;
-    final bottomReserve = MediaQuery.paddingOf(context).bottom + 196;
+    final padding = MediaQuery.paddingOf(context);
     return IgnorePointer(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final maxWidth = constraints.maxWidth - 44;
+          final useLandscapeLayout =
+              framing == _CameraFraming.landscape &&
+              constraints.maxWidth > constraints.maxHeight;
+          final topReserve = padding.top + (useLandscapeLayout ? 62 : 86);
+          final bottomReserve =
+              padding.bottom + (useLandscapeLayout ? 24 : 196);
+          final sideReserve = useLandscapeLayout
+              ? _landscapeCameraControlsWidth + padding.right + 18
+              : 0.0;
+          final horizontalInset = useLandscapeLayout ? 26.0 : 44.0;
+          final frameAreaWidth = constraints.maxWidth - sideReserve;
+          final maxWidth = frameAreaWidth - horizontalInset;
           final maxHeight = constraints.maxHeight - topReserve - bottomReserve;
           var frameWidth = maxWidth;
           var frameHeight = frameWidth / aspectRatio;
@@ -758,7 +795,9 @@ class _CameraFrameMask extends StatelessWidget {
           if (frameWidth <= 0 || frameHeight <= 0) {
             return const SizedBox.shrink();
           }
-          final left = (constraints.maxWidth - frameWidth) / 2;
+          final left = useLandscapeLayout
+              ? (frameAreaWidth - frameWidth) / 2
+              : (constraints.maxWidth - frameWidth) / 2;
           final availableTop = topReserve + (maxHeight - frameHeight) / 2;
           final top = availableTop < topReserve ? topReserve : availableTop;
           final rect = Rect.fromLTWH(left, top, frameWidth, frameHeight);
@@ -962,17 +1001,66 @@ class _BottomCameraControls extends StatelessWidget {
   }
 }
 
+class _LandscapeCameraControls extends StatelessWidget {
+  const _LandscapeCameraControls({
+    required this.isCapturing,
+    required this.selectedFraming,
+    required this.onFramingChanged,
+    required this.onPickAlbum,
+    required this.onCapture,
+    required this.onFlip,
+  });
+
+  final bool isCapturing;
+  final _CameraFraming selectedFraming;
+  final ValueChanged<_CameraFraming> onFramingChanged;
+  final VoidCallback onPickAlbum;
+  final VoidCallback onCapture;
+  final VoidCallback onFlip;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 12, 14, 12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _FramingModeSelector(
+            selectedFraming: selectedFraming,
+            onChanged: onFramingChanged,
+            axis: Axis.vertical,
+          ),
+          GestureDetector(
+            onTap: onCapture,
+            child: _PlainCaptureButton(isCapturing: isCapturing),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _AlbumButton(onTap: onPickAlbum),
+              _FlipCameraButton(onTap: onFlip),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _FramingModeSelector extends StatelessWidget {
   const _FramingModeSelector({
     required this.selectedFraming,
     required this.onChanged,
+    this.axis = Axis.horizontal,
   });
 
   final _CameraFraming selectedFraming;
   final ValueChanged<_CameraFraming> onChanged;
+  final Axis axis;
 
   @override
   Widget build(BuildContext context) {
+    final isVertical = axis == Axis.vertical;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: .44),
@@ -988,15 +1076,20 @@ class _FramingModeSelector extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(5),
-        child: Row(
+        child: Flex(
+          direction: axis,
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (final framing in _CameraFraming.values)
+            for (final framing in _CameraFraming.values) ...[
               _FramingModeChip(
                 framing: framing,
                 isSelected: framing == selectedFraming,
+                compact: isVertical,
                 onTap: () => onChanged(framing),
               ),
+              if (isVertical && framing != _CameraFraming.values.last)
+                const SizedBox(height: 4),
+            ],
           ],
         ),
       ),
@@ -1009,11 +1102,13 @@ class _FramingModeChip extends StatelessWidget {
     required this.framing,
     required this.isSelected,
     required this.onTap,
+    this.compact = false,
   });
 
   final _CameraFraming framing;
   final bool isSelected;
   final VoidCallback onTap;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -1028,8 +1123,11 @@ class _FramingModeChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
-          constraints: const BoxConstraints(minWidth: 86),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          constraints: BoxConstraints(minWidth: compact ? 74 : 86),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 10 : 14,
+            vertical: compact ? 8 : 9,
+          ),
           decoration: BoxDecoration(
             color: isSelected ? const Color(0xFF28F0E0) : Colors.transparent,
             borderRadius: BorderRadius.circular(999),
