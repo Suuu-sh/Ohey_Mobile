@@ -179,6 +179,7 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
   Widget build(BuildContext context) {
     final avatar =
         ref.watch(nomoUserProvider)?.avatar ?? NomoAvatar.defaultAvatar;
+    final padding = MediaQuery.paddingOf(context);
 
     return PopScope(
       canPop: false,
@@ -211,7 +212,7 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
                 top: 0,
                 right: 0,
                 bottom: 0,
-                width: _landscapeCameraControlsWidth,
+                width: _landscapeCameraControlsWidth + padding.right,
                 child: SafeArea(
                   left: false,
                   child: _LandscapeCameraControls(
@@ -1132,7 +1133,7 @@ class _LandscapeCameraControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 12, 14, 12),
+      padding: const EdgeInsets.fromLTRB(2, 8, 2, 8),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -1146,9 +1147,11 @@ class _LandscapeCameraControls extends StatelessWidget {
             child: _PlainCaptureButton(isCapturing: isCapturing),
           ),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _AlbumButton(onTap: onPickAlbum),
+              const SizedBox(width: 4),
               _FlipCameraButton(onTap: onFlip),
             ],
           ),
