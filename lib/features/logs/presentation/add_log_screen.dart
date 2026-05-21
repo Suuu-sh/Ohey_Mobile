@@ -350,7 +350,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
       throw StateError('写真を追加してください。');
     }
     if (!await nomoIsSquareOrLandscapePhoto(path)) {
-      throw StateError('正方形または横長の写真のみ投稿できます。');
+      throw StateError('正方形または16:9の横長写真のみ投稿できます。');
     }
 
     return _copyPhotoToPermanentStorage(path);

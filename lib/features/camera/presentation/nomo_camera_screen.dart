@@ -321,7 +321,7 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
     if (_selectedFraming != _CameraFraming.landscape) return true;
     final orientation = _currentLandscapeOrientation(controller);
     if (orientation == null) {
-      _showSnack('横長はカメラを横にして撮影してください。');
+      _showSnack('16:9はカメラを横にして撮影してください。');
       return false;
     }
     try {
@@ -464,8 +464,8 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
       return nomoWriteSquarePhotoCopy(path);
     }
     final dimensions = await nomoReadPhotoDimensions(path);
-    if (dimensions.isSquareOrLandscape) return path;
-    _showSnack('横長または正方形の写真を選んでください。');
+    if (dimensions.isLandscape) return nomoWriteLandscapePhotoCopy(path);
+    _showSnack('16:9は横向きの写真を選んでください。');
     return null;
   }
 
@@ -531,7 +531,7 @@ enum _CameraFraming {
 
   String get label => switch (this) {
     square => '1:1',
-    landscape => '横長',
+    landscape => '16:9',
   };
 
   String get description => switch (this) {
@@ -541,12 +541,12 @@ enum _CameraFraming {
 
   double get frameAspectRatio => switch (this) {
     square => 1,
-    landscape => 4 / 3,
+    landscape => 16 / 9,
   };
 
   String get semanticLabel => switch (this) {
     square => '縦撮り 1対1',
-    landscape => '横撮り 横長',
+    landscape => '横撮り 16対9',
   };
 }
 
