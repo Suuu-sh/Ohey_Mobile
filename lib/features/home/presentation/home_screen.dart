@@ -36,6 +36,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isRefreshingFeed = false;
+  bool _isFeedHeaderTransparent = false;
 
   @override
   Widget build(BuildContext context) {
@@ -67,20 +68,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Stack(
         children: [
           Positioned.fill(
-            child: _buildFeedPage(
-              topPadding: _feedHeaderScrollInset(context),
-              items: feedItems,
-              isWhite: isWhite,
-              isLoading: logsAsync.isLoading || friendsAsync.isLoading,
-              onLikePressed: (item) => ref
-                  .read(drinkLogControllerProvider.notifier)
-                  .toggleLike(item.id),
-              onSharePressed: (item) => _shareFeedItem(context, item),
-              onMorePressed: (item) => _showFeedPostActions(context, ref, item),
+            child: NotificationListener<ScrollNotification>(
+              onNotification: _handleFeedScrollNotification,
+              child: _buildFeedPage(
+                topPadding: _feedHeaderScrollInset(context),
+                items: feedItems,
+                isWhite: isWhite,
+                isLoading: logsAsync.isLoading || friendsAsync.isLoading,
+                onLikePressed: (item) => ref
+                    .read(drinkLogControllerProvider.notifier)
+                    .toggleLike(item.id),
+                onSharePressed: (item) => _shareFeedItem(context, item),
+                onMorePressed: (item) =>
+                    _showFeedPostActions(context, ref, item),
+              ),
             ),
           ),
           _FeedHeaderOverlay(
             isWhite: isWhite,
+            isTransparent: _isFeedHeaderTransparent,
             child: _FeedHeader(
               hasUnreadNotifications: hasUnreadNotifications,
               isRefreshing: _isRefreshingFeed,
@@ -95,6 +101,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     );
+  }
+
+  bool _handleFeedScrollNotification(ScrollNotification notification) {
+    if (notification.metrics.axis != Axis.vertical) return false;
+    if (notification is ScrollUpdateNotification) {
+      final delta = notification.scrollDelta ?? 0;
+      if (delta > .5) {
+        _setFeedHeaderTransparent(true);
+      } else if (delta < -.5) {
+        _setFeedHeaderTransparent(false);
+      }
+    } else if (notification is ScrollEndNotification) {
+      _setFeedHeaderTransparent(false);
+    }
+    return false;
+  }
+
+  void _setFeedHeaderTransparent(bool value) {
+    if (_isFeedHeaderTransparent == value || !mounted) return;
+    setState(() => _isFeedHeaderTransparent = value);
   }
 
   Future<void> _refreshFeed() async {
@@ -233,10 +259,15 @@ class _FeedBackground extends ConsumerWidget {
 }
 
 class _FeedHeaderOverlay extends StatelessWidget {
-  const _FeedHeaderOverlay({required this.child, required this.isWhite});
+  const _FeedHeaderOverlay({
+    required this.child,
+    required this.isWhite,
+    required this.isTransparent,
+  });
 
   final Widget child;
   final bool isWhite;
+  final bool isTransparent;
 
   @override
   Widget build(BuildContext context) {
@@ -246,38 +277,52 @@ class _FeedHeaderOverlay extends StatelessWidget {
       right: 0,
       top: 0,
       height: height,
-      child: ClipRect(
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: isWhite
-                    ? [
-                        Colors.white.withValues(alpha: .82),
-                        Colors.white.withValues(alpha: .64),
-                        Colors.white.withValues(alpha: .10),
-                      ]
-                    : [
-                        AppColors.darkBackgroundBottom.withValues(alpha: .82),
-                        AppColors.darkBackgroundMiddle.withValues(alpha: .58),
-                        AppColors.darkBackgroundBottom.withValues(alpha: .08),
-                      ],
-                stops: const [0, .72, 1],
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  NomoPageHeader.horizontalPadding,
-                  NomoPageHeader.topPadding,
-                  NomoPageHeader.horizontalPadding,
-                  0,
+      child: IgnorePointer(
+        ignoring: isTransparent,
+        child: AnimatedOpacity(
+          opacity: isTransparent ? 0 : 1,
+          duration: Duration(milliseconds: isTransparent ? 110 : 230),
+          curve: isTransparent ? Curves.easeOut : Curves.easeOutCubic,
+          child: ClipRect(
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: isWhite
+                        ? [
+                            Colors.white.withValues(alpha: .82),
+                            Colors.white.withValues(alpha: .64),
+                            Colors.white.withValues(alpha: .10),
+                          ]
+                        : [
+                            AppColors.darkBackgroundBottom.withValues(
+                              alpha: .82,
+                            ),
+                            AppColors.darkBackgroundMiddle.withValues(
+                              alpha: .58,
+                            ),
+                            AppColors.darkBackgroundBottom.withValues(
+                              alpha: .08,
+                            ),
+                          ],
+                    stops: const [0, .72, 1],
+                  ),
                 ),
-                child: child,
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      NomoPageHeader.horizontalPadding,
+                      NomoPageHeader.topPadding,
+                      NomoPageHeader.horizontalPadding,
+                      0,
+                    ),
+                    child: child,
+                  ),
+                ),
               ),
             ),
           ),
