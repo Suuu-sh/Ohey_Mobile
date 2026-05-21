@@ -340,8 +340,8 @@ class _FeedSectionEmptyState extends StatelessWidget {
       child: _FeedEmptyState(
         icon: CupertinoIcons.photo_on_rectangle,
         isWhite: isWhite,
-        title: 'フレンズの飲みログはまだありません',
-        message: 'フレンズの投稿が届くとフィードに大きく表示されます。',
+        title: '飲みログはまだありません',
+        message: '自分やフレンズの投稿がフィードに大きく表示されます。',
         accent: _FeedColors.teal,
       ),
     );
@@ -2811,7 +2811,7 @@ List<_FeedItem> _feedItems(
       (item) =>
           !item.isOfficial &&
           item.ownerUserId.isNotEmpty &&
-          friendUserIds.contains(item.ownerUserId),
+          (item.ownedByMe || friendUserIds.contains(item.ownerUserId)),
     )
     .toList(growable: false);
 
