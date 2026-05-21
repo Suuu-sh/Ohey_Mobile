@@ -61,28 +61,7 @@ Future<String> nomoWriteSquarePhotoCopy(String path) async {
 Future<String> nomoWriteLandscapePhotoCopy(String path) async {
   final dimensions = await nomoReadPhotoDimensions(path);
   if (dimensions.isLandscape) return path;
-
-  const targetAspectRatio = 4 / 3;
-  return _nomoWriteCroppedPhotoCopy(
-    path,
-    prefix: 'landscape',
-    sourceRectFor: (width, height) {
-      final sourceAspectRatio = width / height;
-      final cropWidth = sourceAspectRatio > targetAspectRatio
-          ? height * targetAspectRatio
-          : width;
-      final cropHeight = sourceAspectRatio > targetAspectRatio
-          ? height
-          : width / targetAspectRatio;
-      return ui.Rect.fromLTWH(
-        (width - cropWidth) / 2,
-        (height - cropHeight) / 2,
-        cropWidth,
-        cropHeight,
-      );
-    },
-    errorMessage: '写真を横長にできませんでした。',
-  );
+  throw StateError('横長はカメラを横にして撮影してください。');
 }
 
 Future<String> _nomoWriteCroppedPhotoCopy(

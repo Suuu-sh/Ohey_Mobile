@@ -77,17 +77,29 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
   }
 
   Future<void> _applyOrientationForFraming(_CameraFraming framing) async {
-    await SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.portraitUp,
-    ]);
+    await SystemChrome.setPreferredOrientations(
+      framing == _CameraFraming.square
+          ? const [DeviceOrientation.portraitUp]
+          : const [
+              DeviceOrientation.landscapeLeft,
+              DeviceOrientation.landscapeRight,
+            ],
+    );
     final controller = _cameraController;
     if (controller == null || !controller.value.isInitialized) return;
+    await _configureCaptureOrientation(controller, framing);
+  }
+
+  Future<void> _configureCaptureOrientation(
+    CameraController controller,
+    _CameraFraming framing,
+  ) async {
     try {
       if (framing == _CameraFraming.square) {
         await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
-      } else {
-        await controller.unlockCaptureOrientation();
+        return;
       }
+      await controller.unlockCaptureOrientation();
     } on CameraException {
       // Keep the camera usable even if capture orientation locking fails.
     }
@@ -136,15 +148,7 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
         imageFormatGroup: ImageFormatGroup.jpeg,
       );
       await controller.initialize();
-      try {
-        if (_selectedFraming == _CameraFraming.square) {
-          await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
-        } else {
-          await controller.unlockCaptureOrientation();
-        }
-      } on CameraException {
-        // Keep the plain camera usable even if capture orientation locking fails.
-      }
+      await _configureCaptureOrientation(controller, _selectedFraming);
       await controller.setFlashMode(FlashMode.off);
       if (!mounted) {
         await controller.dispose();
@@ -233,6 +237,9 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
       return;
     }
 
+    final canCapture = await _prepareForCapture(controller);
+    if (!canCapture) return;
+
     setState(() => _isCapturing = true);
     try {
       final shot = await controller.takePicture();
@@ -247,6 +254,8 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
       );
     } on CameraException catch (error) {
       if (mounted) _showSnack(_cameraErrorMessage(error));
+    } on StateError catch (error) {
+      if (mounted) _showSnack(error.message);
     } catch (_) {
       if (mounted) _showSnack('写真を処理できませんでした。');
     } finally {
@@ -278,11 +287,40 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
       );
     } on PlatformException catch (error) {
       if (mounted) _showSnack(error.message ?? 'AR写真を撮影できませんでした。');
+    } on StateError catch (error) {
+      if (mounted) _showSnack(error.message);
     } catch (_) {
       if (mounted) _showSnack('AR写真を撮影できませんでした。');
     } finally {
       if (mounted) setState(() => _isCapturing = false);
     }
+  }
+
+  Future<bool> _prepareForCapture(CameraController controller) async {
+    if (_selectedFraming != _CameraFraming.landscape) return true;
+    final orientation = _currentLandscapeOrientation(controller);
+    if (orientation == null) {
+      _showSnack('横長はカメラを横にして撮影してください。');
+      return false;
+    }
+    try {
+      await controller.lockCaptureOrientation(orientation);
+    } on CameraException {
+      // If locking fails, the raw photo validation still prevents portrait posts.
+    }
+    return true;
+  }
+
+  DeviceOrientation? _currentLandscapeOrientation(CameraController controller) {
+    final deviceOrientation = controller.value.deviceOrientation;
+    if (deviceOrientation == DeviceOrientation.landscapeLeft ||
+        deviceOrientation == DeviceOrientation.landscapeRight) {
+      return deviceOrientation;
+    }
+    if (MediaQuery.orientationOf(context) == Orientation.landscape) {
+      return DeviceOrientation.landscapeLeft;
+    }
+    return null;
   }
 
   Future<void> _setFraming(_CameraFraming framing) async {
