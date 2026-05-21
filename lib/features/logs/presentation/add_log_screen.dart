@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
 import '../../../core/widgets/nomo_avatar.dart';
@@ -50,9 +51,15 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
   @override
   Widget build(BuildContext context) {
     final friendsAsync = ref.watch(friendsProvider);
+    final user = ref.watch(nomoUserProvider);
     final keyboardBottom = MediaQuery.viewInsetsOf(context).bottom;
     final maxSheetHeight = MediaQuery.sizeOf(context).height * .86;
     final isWhite = _AddLogColors.isWhite(context);
+    final selectedFriends =
+        friendsAsync.asData?.value
+            .where((friend) => _selectedFriendIds.contains(friend.id))
+            .toList(growable: false) ??
+        const <NomoFriend>[];
 
     return AnimatedPadding(
       duration: const Duration(milliseconds: 220),
@@ -90,6 +97,26 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          if (_hasPhoto) ...[
+                            _CapturedPhotoPanel(
+                              path: _photoPath!,
+                              onRetake: _openNomoCamera,
+                            ),
+                            const SizedBox(height: 14),
+                            _PostPreviewCard(
+                              path: _photoPath!,
+                              userName: _previewUserName(user?.name),
+                              avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
+                              memo: _memoController.text,
+                              place: _placeController.text,
+                              date: _selectedDate,
+                              friends: selectedFriends,
+                            ),
+                            const SizedBox(height: 14),
+                          ] else ...[
+                            _PhotoCapturePrompt(onTap: _openNomoCamera),
+                            const SizedBox(height: 14),
+                          ],
                           _DateTimeBox(
                             icon: CupertinoIcons.calendar,
                             iconColor: _AddLogColors.calendarIcon,
@@ -165,6 +192,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                   ),
                   const SizedBox(height: 18),
                   _SaveButton(
+                    label: _hasPhoto ? '飲みログを投稿する' : '写真を撮る',
                     isSaving: _isSaving,
                     onPressed: () => _save(
                       friendsAsync.asData?.value ?? const <NomoFriend>[],
@@ -249,7 +277,10 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
   Future<void> _save(List<NomoFriend> friends) async {
     if (!_hasPhoto) {
       final hasCapturedPhoto = await _openNomoCamera();
-      if (!hasCapturedPhoto || !mounted) return;
+      if (hasCapturedPhoto && mounted) {
+        NomoToast.show(context, '投稿プレビューを確認してください');
+      }
+      return;
     }
     setState(() => _isSaving = true);
     final selectedFriends = friends
@@ -321,6 +352,467 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
 
   static String _weekday(DateTime date) =>
       const ['月', '火', '水', '木', '金', '土', '日'][date.weekday - 1];
+}
+
+String _previewUserName(String? name) {
+  final normalized = name?.trim() ?? '';
+  return normalized.isEmpty ? 'あなた' : normalized;
+}
+
+String _previewCaption({
+  required String memo,
+  required String place,
+  required List<NomoFriend> friends,
+}) {
+  final body = memo.trim();
+  if (body.isNotEmpty) return body;
+  final placeName = place.trim();
+  if (placeName.isNotEmpty) return '$placeNameで飲みログ';
+  if (friends.isNotEmpty) {
+    return '${friends.first.name}${friends.length > 1 ? 'たち' : ''}と飲みログ';
+  }
+  return '今日の飲みログ';
+}
+
+class _PhotoCapturePrompt extends StatelessWidget {
+  const _PhotoCapturePrompt({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: _DarkShell(
+      padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
+      child: Row(
+        children: [
+          const NomoPopIcon(
+            icon: CupertinoIcons.camera_fill,
+            color: _AddLogColors.lime,
+            size: 38,
+            iconSize: 22,
+            shadow: false,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '写真を追加',
+                  style: TextStyle(
+                    color: _AddLogColors.primaryTextFor(context),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '撮影後に投稿プレビューを確認できます',
+                  style: TextStyle(
+                    color: _AddLogColors.secondaryTextFor(context),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          NomoGeneratedIcon(
+            CupertinoIcons.chevron_right,
+            color: _AddLogColors.secondaryTextFor(context),
+            size: 22,
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _CapturedPhotoPanel extends StatelessWidget {
+  const _CapturedPhotoPanel({required this.path, required this.onRetake});
+
+  final String path;
+  final VoidCallback onRetake;
+
+  @override
+  Widget build(BuildContext context) => _DarkShell(
+    padding: const EdgeInsets.all(12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Text(
+              '撮った写真',
+              style: TextStyle(
+                color: _AddLogColors.primaryTextFor(context),
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const Spacer(),
+            _MiniActionButton(
+              icon: CupertinoIcons.camera_rotate_fill,
+              label: '撮り直す',
+              onTap: onRetake,
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: _PhotoPreviewImage(
+            path: path,
+            fallbackAspectRatio: 1,
+            fit: BoxFit.cover,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _PostPreviewCard extends StatelessWidget {
+  const _PostPreviewCard({
+    required this.path,
+    required this.userName,
+    required this.avatar,
+    required this.memo,
+    required this.place,
+    required this.date,
+    required this.friends,
+  });
+
+  final String path;
+  final String userName;
+  final NomoAvatar avatar;
+  final String memo;
+  final String place;
+  final DateTime date;
+  final List<NomoFriend> friends;
+
+  @override
+  Widget build(BuildContext context) {
+    final caption = _previewCaption(memo: memo, place: place, friends: friends);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: Text(
+            '投稿プレビュー',
+            style: TextStyle(
+              color: _AddLogColors.primaryTextFor(context),
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          height: 330,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: .10),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: .22),
+                blurRadius: 22,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              _PhotoPreviewImage(
+                path: path,
+                fallbackAspectRatio: 4 / 5,
+                fit: BoxFit.cover,
+                expand: true,
+              ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: .42),
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: .76),
+                    ],
+                    stops: const [0, .45, 1],
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 14,
+                top: 14,
+                right: 14,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: _AddLogColors.lime.withValues(alpha: .28),
+                        shape: BoxShape.circle,
+                      ),
+                      child: NomoAvatarView(avatar: avatar, size: 40),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            userName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                              height: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '投稿プレビュー',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: .72),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const NomoGeneratedIcon(
+                      CupertinoIcons.ellipsis,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 15,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      caption,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        height: 1.18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.45,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: [
+                        _PreviewMetaPill(
+                          icon: CupertinoIcons.calendar,
+                          label: _AddLogScreenState._dateLabel(date),
+                        ),
+                        if (place.trim().isNotEmpty)
+                          _PreviewMetaPill(
+                            icon: CupertinoIcons.location_solid,
+                            label: place.trim(),
+                          ),
+                        _PreviewMetaPill(
+                          icon: CupertinoIcons.person_2_fill,
+                          label: friends.isEmpty
+                              ? 'ひとり飲み'
+                              : friends.map((friend) => friend.name).join('、'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PhotoPreviewImage extends StatelessWidget {
+  const _PhotoPreviewImage({
+    required this.path,
+    required this.fallbackAspectRatio,
+    required this.fit,
+    this.expand = false,
+  });
+
+  final String path;
+  final double fallbackAspectRatio;
+  final BoxFit fit;
+  final bool expand;
+
+  @override
+  Widget build(BuildContext context) {
+    final image = Image.file(
+      File(path),
+      width: double.infinity,
+      height: expand ? double.infinity : null,
+      fit: fit,
+      gaplessPlayback: true,
+      errorBuilder: (context, error, stackTrace) =>
+          _PhotoMissingPlaceholder(expand: expand),
+    );
+    if (expand) return image;
+
+    return FutureBuilder<NomoPhotoDimensions>(
+      future: nomoReadPhotoDimensions(path),
+      builder: (context, snapshot) {
+        final dimensions = snapshot.data;
+        final aspectRatio = dimensions == null
+            ? fallbackAspectRatio
+            : _safePhotoAspectRatio(dimensions);
+        return AspectRatio(aspectRatio: aspectRatio, child: image);
+      },
+    );
+  }
+}
+
+double _safePhotoAspectRatio(NomoPhotoDimensions dimensions) {
+  if (dimensions.height <= 0 || dimensions.width <= 0) return 1;
+  final aspectRatio = dimensions.width / dimensions.height;
+  if (aspectRatio < 1) return 1;
+  if (aspectRatio > 1.8) return 1.8;
+  return aspectRatio;
+}
+
+class _PhotoMissingPlaceholder extends StatelessWidget {
+  const _PhotoMissingPlaceholder({required this.expand});
+
+  final bool expand;
+
+  @override
+  Widget build(BuildContext context) {
+    final child = DecoratedBox(
+      decoration: BoxDecoration(color: Colors.black.withValues(alpha: .24)),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            NomoGeneratedIcon(
+              CupertinoIcons.photo,
+              color: _AddLogColors.secondaryTextFor(context),
+              size: 36,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '写真を表示できません',
+              style: TextStyle(
+                color: _AddLogColors.secondaryTextFor(context),
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (expand) return SizedBox.expand(child: child);
+    return AspectRatio(aspectRatio: 1, child: child);
+  }
+}
+
+class _PreviewMetaPill extends StatelessWidget {
+  const _PreviewMetaPill({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    constraints: const BoxConstraints(maxWidth: 250),
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+    decoration: BoxDecoration(
+      color: Colors.black.withValues(alpha: .42),
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(color: Colors.white.withValues(alpha: .18)),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        NomoGeneratedIcon(icon, color: Colors.white, size: 14),
+        const SizedBox(width: 5),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _MiniActionButton extends StatelessWidget {
+  const _MiniActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: _AddLogColors.lime.withValues(alpha: .16),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _AddLogColors.lime.withValues(alpha: .28)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          NomoGeneratedIcon(icon, color: _AddLogColors.lime, size: 15),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              color: _AddLogColors.lime,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _Header extends StatelessWidget {
@@ -648,14 +1140,19 @@ class _DarkShell extends StatelessWidget {
 }
 
 class _SaveButton extends StatelessWidget {
-  const _SaveButton({required this.isSaving, required this.onPressed});
+  const _SaveButton({
+    required this.label,
+    required this.isSaving,
+    required this.onPressed,
+  });
 
+  final String label;
   final bool isSaving;
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) => Nomo3DButton(
-    label: '飲みログを残す',
+    label: label,
     isLoading: isSaving,
     enabled: onPressed != null,
     onTap: onPressed,
