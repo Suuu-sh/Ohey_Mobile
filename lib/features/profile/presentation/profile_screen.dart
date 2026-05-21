@@ -36,7 +36,6 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final logsAsync = ref.watch(drinkLogControllerProvider);
     final user = ref.watch(nomoUserProvider);
     final currentAuthUser = ref.watch(supabaseClientProvider).auth.currentUser;
     final currentAuthUserId = currentAuthUser?.id;
@@ -46,19 +45,12 @@ class ProfileScreen extends ConsumerWidget {
         reservationsAsync.asData?.value ?? const <NomoDrinkInvite>[];
     final incomingInvites =
         incomingInvitesAsync.asData?.value ?? const <NomoDrinkInvite>[];
-    final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     final hasAdminEmail = NomoAvatar.isAdminEmail(currentAuthUser?.email);
     final hasAdminAccess = ref
         .watch(adminAccessProvider)
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
     final canOpenAdmin = hasAdminEmail || hasAdminAccess;
-    final myLogs = logs
-        .where((log) => _isMyUserLog(log, currentAuthUserId))
-        .toList(growable: false);
-    final photoLogs = myLogs
-        .where((log) => (log.photoAssetPath ?? '').trim().isNotEmpty)
-        .toList(growable: false);
     final topBackground = isWhite
         ? const Color(0xFF06111D)
         : AppColors.darkBackgroundTop;
@@ -146,18 +138,7 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 0, 24, 106),
-                            child: SingleChildScrollView(
-                              physics: const BouncingScrollPhysics(),
-                              child: _ProfileDashboard(
-                                isWhite: isWhite,
-                                photoLogs: photoLogs,
-                              ),
-                            ),
-                          ),
-                        ),
+                        Expanded(child: ColoredBox(color: bodyBackground)),
                       ],
                     ),
                   ),
@@ -179,6 +160,14 @@ bool _isMyUserLog(DrinkLog log, String? currentUserId) {
   if (log.ownerUserId.isEmpty) return true;
   return log.ownerUserId == currentUserId;
 }
+
+List<DrinkLog> _photoArchiveLogs(
+  List<DrinkLog> logs,
+  String? currentAuthUserId,
+) => logs
+    .where((log) => _isMyUserLog(log, currentAuthUserId))
+    .where((log) => (log.photoAssetPath ?? '').trim().isNotEmpty)
+    .toList(growable: false);
 
 String? _parseProfileFriendQrPayload(String raw) {
   final value = raw.trim();
@@ -1198,33 +1187,6 @@ class _ProfileSocialSection extends StatelessWidget {
       ),
     ],
   );
-}
-
-class _ProfileDashboard extends StatelessWidget {
-  const _ProfileDashboard({required this.isWhite, required this.photoLogs});
-
-  final bool isWhite;
-  final List<DrinkLog> photoLogs;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        PhotoArchivePreview(
-          logs: photoLogs,
-          isWhite: isWhite,
-          onTap: () => Navigator.of(context).push<void>(
-            CupertinoPageRoute(
-              fullscreenDialog: true,
-              builder: (_) => PhotoArchiveScreen(logs: photoLogs),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class _StatTile extends StatelessWidget {
@@ -2667,6 +2629,7 @@ Future<bool> _requestAdminPortalPassword(BuildContext context) async {
 }
 
 Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
+  final rootContext = context;
   final user = ref.read(nomoUserProvider);
   await showModalBottomSheet<void>(
     context: context,
@@ -2676,6 +2639,15 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
     builder: (sheetContext) => Consumer(
       builder: (context, ref, _) {
         final themeMode = ref.watch(nomoThemeModeProvider);
+        final currentAuthUserId = ref
+            .watch(supabaseClientProvider)
+            .auth
+            .currentUser
+            ?.id;
+        final logs =
+            ref.watch(drinkLogControllerProvider).asData?.value ??
+            const <DrinkLog>[];
+        final photoLogs = _photoArchiveLogs(logs, currentAuthUserId);
         return _SettingsSheetShell(
           user: user,
           onClose: () => Navigator.of(sheetContext).pop(),
@@ -2722,6 +2694,27 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                   context,
                   ref,
                   ref.read(nomoUserProvider),
+                );
+              },
+            ),
+            _SettingsTile(
+              icon: CupertinoIcons.photo_fill_on_rectangle_fill,
+              label: 'フォトアーカイブ',
+              subtitle: photoLogs.isEmpty
+                  ? '写真付きの飲みログを見返す'
+                  : '${photoLogs.length}件の思い出を見返す',
+              accent: const Color(0xFFFF7AB8),
+              onTap: () async {
+                if (sheetContext.mounted) {
+                  Navigator.of(sheetContext).pop();
+                }
+                await Future<void>.delayed(const Duration(milliseconds: 180));
+                if (!rootContext.mounted) return;
+                await Navigator.of(rootContext).push<void>(
+                  CupertinoPageRoute(
+                    fullscreenDialog: true,
+                    builder: (_) => PhotoArchiveScreen(logs: photoLogs),
+                  ),
                 );
               },
             ),
