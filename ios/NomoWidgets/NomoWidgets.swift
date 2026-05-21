@@ -180,7 +180,7 @@ private struct MediumStatusContent: View {
 
   private var hasEmbeddedStatusTitle: Bool {
     switch snapshot.statusKey {
-    case "can_drink_today", "want_drink", "light_drink", "want_drink_hard", "non_alcohol":
+    case "can_drink_today", "want_drink", "light_drink", "want_drink_hard", "non_alcohol", "liver_rest", "busy":
       return true
     default:
       return false
