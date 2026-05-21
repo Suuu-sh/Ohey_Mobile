@@ -2549,7 +2549,9 @@ class _UnsavedProfileButton extends StatelessWidget {
   );
 }
 
-const _adminPortalPassword = 'REMOVED_ADMIN_PORTAL_PASSWORD';
+const _adminPortalPassword = String.fromEnvironment(
+  'NOMO_ADMIN_PORTAL_PASSWORD',
+);
 
 Future<void> _openAdminScreen(BuildContext context) async {
   final isVerified = await _requestAdminPortalPassword(context);
@@ -2579,14 +2581,23 @@ Future<bool> _requestAdminPortalPassword(BuildContext context) async {
                   const SizedBox(height: 12),
                   const Text('管理画面に入るにはパスワードを入力してください。'),
                   const SizedBox(height: 12),
+                  if (_adminPortalPassword.isEmpty) ...[
+                    const Text(
+                      '管理画面パスワードが未設定です。',
+                      style: TextStyle(color: Color(0xFFFF6F9F)),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                   CupertinoTextField(
                     controller: controller,
+                    enabled: _adminPortalPassword.isNotEmpty,
                     autofocus: true,
                     obscureText: true,
                     placeholder: 'パスワード',
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) {
-                      if (controller.text == _adminPortalPassword) {
+                      if (_adminPortalPassword.isNotEmpty &&
+                          controller.text == _adminPortalPassword) {
                         Navigator.of(dialogContext).pop(true);
                         return;
                       }
@@ -2610,7 +2621,8 @@ Future<bool> _requestAdminPortalPassword(BuildContext context) async {
                 CupertinoDialogAction(
                   isDefaultAction: true,
                   onPressed: () {
-                    if (controller.text == _adminPortalPassword) {
+                    if (_adminPortalPassword.isNotEmpty &&
+                        controller.text == _adminPortalPassword) {
                       Navigator.of(dialogContext).pop(true);
                       return;
                     }
