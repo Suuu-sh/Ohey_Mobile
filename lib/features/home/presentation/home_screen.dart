@@ -220,14 +220,11 @@ Widget _buildFeedPage({
       _FeedSectionEmptyState(isWhite: isWhite)
     else
       ...items.map(
-        (item) => Padding(
-          padding: const EdgeInsets.only(bottom: 18),
-          child: _FeedPostCard(
-            item: item,
-            onLike: item.isLikeable ? () => onLikePressed(item) : null,
-            onShare: item.id.isEmpty ? null : () => onSharePressed(item),
-            onMore: item.id.isEmpty ? null : () => onMorePressed(item),
-          ),
+        (item) => _FeedPostCard(
+          item: item,
+          onLike: item.isLikeable ? () => onLikePressed(item) : null,
+          onShare: item.id.isEmpty ? null : () => onSharePressed(item),
+          onMore: item.id.isEmpty ? null : () => onMorePressed(item),
         ),
       ),
   ],
