@@ -1382,65 +1382,97 @@ class _FeedCardFooter extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _FeedOverlayAction(
-                semanticLabel: item.liked ? 'いいねを取り消す' : 'いいね',
-                icon: item.liked
-                    ? CupertinoIcons.heart_fill
-                    : CupertinoIcons.heart,
-                color: item.liked ? const Color(0xFFFF5EA8) : primaryText,
-                onTap: onLike,
-              ),
-              const SizedBox(width: 18),
-              _FeedOverlayAction(
-                semanticLabel: '共有',
-                customIcon: _VectorShareIcon(color: primaryText, size: 27),
-                onTap: onShare,
-              ),
-              const Spacer(),
-              if (item.friends.isNotEmpty)
-                _FeedCompanionInlineButton(
-                  friends: item.friends,
-                  isWhite: isWhite,
+              SizedBox(
+                width: 112,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _FeedOverlayAction(
+                          semanticLabel: item.liked ? 'いいねを取り消す' : 'いいね',
+                          icon: item.liked
+                              ? CupertinoIcons.heart_fill
+                              : CupertinoIcons.heart,
+                          color: item.liked
+                              ? const Color(0xFFFF5EA8)
+                              : primaryText,
+                          onTap: onLike,
+                        ),
+                        const SizedBox(width: 18),
+                        _FeedOverlayAction(
+                          semanticLabel: '共有',
+                          customIcon: _VectorShareIcon(
+                            color: primaryText,
+                            size: 27,
+                          ),
+                          onTap: onShare,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${item.likes}件のいいね',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: primaryText,
+                        fontWeight: FontWeight.w900,
+                        height: 1.15,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+              if (captionBody.isNotEmpty) ...[
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: RichText(
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      text: TextSpan(
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: primaryText,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                          height: 1.28,
+                          letterSpacing: -.16,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: item.userName,
+                            style: const TextStyle(fontWeight: FontWeight.w900),
+                          ),
+                          TextSpan(
+                            text: ' $captionBody',
+                            style: TextStyle(color: secondaryText),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ] else
+                const Spacer(),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            '${item.likes}件のいいね',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: primaryText,
-              fontWeight: FontWeight.w900,
-              height: 1.15,
-            ),
-          ),
-          if (captionBody.isNotEmpty) ...[
-            const SizedBox(height: 5),
-            RichText(
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              text: TextSpan(
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: primaryText,
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w700,
-                  height: 1.32,
-                  letterSpacing: -.16,
-                ),
-                children: [
-                  TextSpan(
-                    text: item.userName,
-                    style: const TextStyle(fontWeight: FontWeight.w900),
-                  ),
-                  TextSpan(
-                    text: ' $captionBody',
-                    style: TextStyle(color: secondaryText),
-                  ),
-                ],
+          if (item.friends.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: _FeedCompanionInlineButton(
+                friends: item.friends,
+                isWhite: isWhite,
               ),
             ),
           ],
