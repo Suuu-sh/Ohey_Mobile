@@ -212,6 +212,7 @@ double _feedHeaderScrollInset(BuildContext context) {
 }
 
 const _feedBottomPageInset = 124.0;
+const _feedSwipeHintAsset = 'assets/images/admin_nomo_icon.png';
 
 Widget _buildFeedPage({
   required double topPadding,
@@ -253,6 +254,7 @@ Widget _buildFeedPage({
         topPadding: topPadding,
         item: item,
         isWhite: isWhite,
+        showSwipeHint: index < items.length - 1,
         onLike: item.isLikeable ? () => onLikePressed(item) : null,
         onShare: item.id.isEmpty ? null : () => onSharePressed(item),
         onMore: item.id.isEmpty ? null : () => onMorePressed(item),
@@ -266,6 +268,7 @@ class _FeedPostPage extends StatelessWidget {
     required this.topPadding,
     required this.item,
     required this.isWhite,
+    required this.showSwipeHint,
     this.onLike,
     this.onShare,
     this.onMore,
@@ -274,23 +277,172 @@ class _FeedPostPage extends StatelessWidget {
   final double topPadding;
   final _FeedItem item;
   final bool isWhite;
+  final bool showSwipeHint;
   final VoidCallback? onLike;
   final VoidCallback? onShare;
   final VoidCallback? onMore;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(top: topPadding, bottom: _feedBottomPageInset),
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: _FeedPostCard(
-          item: item,
-          isWhite: isWhite,
-          onLike: onLike,
-          onShare: onShare,
-          onMore: onMore,
+    return Stack(
+      children: [
+        Padding(
+          padding: EdgeInsets.only(
+            top: topPadding,
+            bottom: _feedBottomPageInset,
+          ),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: _FeedPostCard(
+              item: item,
+              isWhite: isWhite,
+              onLike: onLike,
+              onShare: onShare,
+              onMore: onMore,
+            ),
+          ),
         ),
+        if (showSwipeHint)
+          Positioned(
+            left: 18,
+            right: 18,
+            bottom: _feedBottomPageInset + 7,
+            child: _FeedSwipeHint(isWhite: isWhite),
+          ),
+      ],
+    );
+  }
+}
+
+class _FeedSwipeHint extends StatefulWidget {
+  const _FeedSwipeHint({required this.isWhite});
+
+  final bool isWhite;
+
+  @override
+  State<_FeedSwipeHint> createState() => _FeedSwipeHintState();
+}
+
+class _FeedSwipeHintState extends State<_FeedSwipeHint>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = widget.isWhite ? const Color(0xFF243241) : Colors.white;
+    final subColor = widget.isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .70);
+    final backgroundColor = widget.isWhite
+        ? Colors.white.withValues(alpha: .90)
+        : Colors.white.withValues(alpha: .07);
+    final borderColor = widget.isWhite
+        ? const Color(0xFFDCE4EC)
+        : Colors.white.withValues(alpha: .13);
+
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final progress = Curves.easeInOut.transform(_controller.value);
+          final bob = math.sin(progress * math.pi * 2) * 5;
+          final arrowLift = -8 * progress;
+          final arrowOpacity = (1 - progress).clamp(0.0, 1.0);
+
+          return Opacity(
+            opacity: .92,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Transform.translate(
+                  offset: Offset(0, bob),
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: backgroundColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: borderColor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: .18),
+                          blurRadius: 14,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        _feedSwipeHintAsset,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(10, 6, 9, 6),
+                  decoration: BoxDecoration(
+                    color: backgroundColor,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: borderColor),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: .14),
+                        blurRadius: 18,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '上にスワイプしてね',
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(
+                              color: textColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              height: 1,
+                              letterSpacing: -.18,
+                            ),
+                      ),
+                      const SizedBox(width: 5),
+                      Transform.translate(
+                        offset: Offset(0, arrowLift),
+                        child: Opacity(
+                          opacity: arrowOpacity,
+                          child: Icon(
+                            CupertinoIcons.arrow_up,
+                            color: subColor,
+                            size: 15,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
