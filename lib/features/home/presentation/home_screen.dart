@@ -1249,6 +1249,13 @@ class _FeedPostCard extends StatelessWidget {
             else
               _FeedPhotoPlaceholder(accent: item.accent),
             const _FeedPhotoScrim(),
+            const Positioned(
+              left: 0,
+              top: 0,
+              right: 0,
+              height: 86,
+              child: _FeedImageHeader(),
+            ),
             Positioned(
               left: 14,
               top: 14,
@@ -1544,14 +1551,24 @@ class _FeedPhotoScrim extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0x66000000),
-            Color(0x33000000),
-            Color(0x00000000),
-            Color(0x00000000),
-            Color(0xE6000000),
-          ],
-          stops: [0, .13, .28, .55, 1],
+          colors: [Color(0x00000000), Color(0x00000000), Color(0xE6000000)],
+          stops: [0, .55, 1],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedImageHeader extends StatelessWidget {
+  const _FeedImageHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: .34),
+        border: Border(
+          bottom: BorderSide(color: Colors.white.withValues(alpha: .08)),
         ),
       ),
     );
