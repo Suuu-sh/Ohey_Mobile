@@ -211,10 +211,6 @@ double _feedHeaderScrollInset(BuildContext context) {
   return NomoPageHeader.contentTopInset(context);
 }
 
-double _feedHeaderOverlayHeight(BuildContext context) {
-  return NomoPageHeader.overlayHeight(context);
-}
-
 Widget _buildFeedPage({
   required double topPadding,
   required List<_FeedItem> items,
@@ -284,7 +280,7 @@ class _FeedHeaderOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = _feedHeaderOverlayHeight(context);
+    final height = NomoPageHeader.contentTopInset(context);
     final headerBg = isWhite ? Colors.white : AppColors.darkBackgroundTop;
     return Positioned(
       left: 0,
