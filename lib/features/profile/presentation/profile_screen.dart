@@ -993,7 +993,6 @@ class _ProfileMoodCta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _statusColor(status);
-    final darkColor = Color.lerp(color, Colors.black, .22)!;
     final icon = status == NomoDailyStatus.unselected
         ? CupertinoIcons.smiley
         : _statusIcon(status);
@@ -1012,18 +1011,6 @@ class _ProfileMoodCta extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white.withValues(alpha: .18)),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: .30),
-              blurRadius: 22,
-              offset: const Offset(0, 12),
-            ),
-            BoxShadow(
-              color: darkColor,
-              blurRadius: 0,
-              offset: const Offset(0, 5),
-            ),
-          ],
         ),
         child: Row(
           children: [
