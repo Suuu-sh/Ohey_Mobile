@@ -260,6 +260,10 @@ NomoFriend _friendFromProfileRow(
   Map<String, dynamic> profile, {
   bool isFavorite = false,
 }) {
+  final statusKey = switch (profile['status_key']) {
+    String value when value.trim().isNotEmpty => value,
+    _ => profile['status'] as String?,
+  };
   return NomoFriend(
     id: profile['id'] as String,
     name: (profile['display_name'] as String?) ?? 'Nomo friend',
@@ -270,7 +274,7 @@ NomoFriend _friendFromProfileRow(
     palette: _paletteFromKey(profile['palette'] as String?),
     avatar: NomoAvatar.decode(profile['avatar_url'] as String?),
     isFavorite: isFavorite,
-    statusKey: profile['status_key'] as String?,
+    statusKey: statusKey,
   );
 }
 
