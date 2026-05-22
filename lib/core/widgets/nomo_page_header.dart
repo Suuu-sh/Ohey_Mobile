@@ -15,6 +15,19 @@ class NomoPageHeader extends StatelessWidget {
   static const double titleSize = 34;
   static const double topPadding = 16;
   static const double horizontalPadding = 22;
+  static const double bottomSpacing = 18;
+  static const double overlayFadeExtension = 10;
+
+  static double contentTopInset(BuildContext context) {
+    return MediaQuery.paddingOf(context).top +
+        topPadding +
+        height +
+        bottomSpacing;
+  }
+
+  static double overlayHeight(BuildContext context) {
+    return contentTopInset(context) + overlayFadeExtension;
+  }
 
   final String title;
   final Widget? trailing;

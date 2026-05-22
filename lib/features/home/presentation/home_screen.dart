@@ -87,14 +87,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _FeedHeaderOverlay(
             isWhite: isWhite,
             isTransparent: _isFeedHeaderTransparent,
-            child: _FeedHeader(
-              hasUnreadNotifications: hasUnreadNotifications,
-              isRefreshing: _isRefreshingFeed,
-              onRefresh: _refreshFeed,
-              onNotifications: () => Navigator.of(context).push(
-                CupertinoPageRoute<void>(
-                  builder: (_) => const _FeedNotificationsScreen(),
-                ),
+            child: NomoPageHeader(
+              title: 'フィード',
+              titleColor: _FeedColors.teal,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  NomoHeaderIconButton(
+                    icon: CupertinoIcons.arrow_clockwise,
+                    semanticLabel: 'フィードを更新',
+                    color: _isRefreshingFeed
+                        ? _FeedColors.sub
+                        : _FeedColors.teal,
+                    onTap: _isRefreshingFeed ? () {} : _refreshFeed,
+                  ),
+                  const SizedBox(width: 8),
+                  NomoHeaderIconButton(
+                    icon: CupertinoIcons.bell,
+                    semanticLabel: 'お知らせを開く',
+                    hasDot: hasUnreadNotifications,
+                    color: _FeedColors.teal,
+                    onTap: () => Navigator.of(context).push(
+                      CupertinoPageRoute<void>(
+                        builder: (_) => const _FeedNotificationsScreen(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -188,18 +207,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-const _feedHeaderBottomSpacing = 18.0;
-const _feedHeaderFadeExtension = 10.0;
-
 double _feedHeaderScrollInset(BuildContext context) {
-  return MediaQuery.paddingOf(context).top +
-      NomoPageHeader.topPadding +
-      NomoPageHeader.height +
-      _feedHeaderBottomSpacing;
+  return NomoPageHeader.contentTopInset(context);
 }
 
 double _feedHeaderOverlayHeight(BuildContext context) {
-  return _feedHeaderScrollInset(context) + _feedHeaderFadeExtension;
+  return NomoPageHeader.overlayHeight(context);
 }
 
 Widget _buildFeedPage({
@@ -324,47 +337,6 @@ class _FeedHeaderOverlay extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _FeedHeader extends StatelessWidget {
-  const _FeedHeader({
-    required this.onRefresh,
-    required this.onNotifications,
-    required this.hasUnreadNotifications,
-    required this.isRefreshing,
-  });
-
-  final VoidCallback onRefresh;
-  final VoidCallback onNotifications;
-  final bool hasUnreadNotifications;
-  final bool isRefreshing;
-
-  @override
-  Widget build(BuildContext context) {
-    return NomoPageHeader(
-      title: 'フィード',
-      titleColor: _FeedColors.teal,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          NomoHeaderIconButton(
-            icon: CupertinoIcons.arrow_clockwise,
-            semanticLabel: 'フィードを更新',
-            color: isRefreshing ? _FeedColors.sub : _FeedColors.teal,
-            onTap: isRefreshing ? () {} : onRefresh,
-          ),
-          const SizedBox(width: 8),
-          NomoHeaderIconButton(
-            icon: CupertinoIcons.bell,
-            semanticLabel: 'お知らせを開く',
-            hasDot: hasUnreadNotifications,
-            color: _FeedColors.teal,
-            onTap: onNotifications,
-          ),
-        ],
       ),
     );
   }
