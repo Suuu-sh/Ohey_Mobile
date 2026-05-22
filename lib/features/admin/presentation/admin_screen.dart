@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/supabase_config.dart';
 import '../../../core/data/backend_api_client.dart';
+import '../../../core/models/nomo_user.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../application/admin_controller.dart';
@@ -388,6 +389,14 @@ class _AdminUserCard extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               Text(
+                _adminStatusLabel(user.status),
+                style: const TextStyle(
+                  color: _AdminColors.sub,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
                 user.id,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -513,7 +522,11 @@ Future<void> _showUserSheet(
     text: user?.displayName ?? '',
   );
   var isPlus = user?.isPlus ?? false;
+  var status = _adminNormalizeStatus(
+    user?.status ?? NomoDailyStatus.unselected.key,
+  );
   var saving = false;
+  var didSave = false;
   String? error;
 
   try {
@@ -555,6 +568,16 @@ Future<void> _showUserSheet(
                 const SizedBox(height: 10),
                 _AdminInput(controller: displayNameController, label: '表示名'),
                 const SizedBox(height: 10),
+                _AdminStatusDropdown(
+                  label: 'ステータス',
+                  value: status,
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => status = value);
+                    }
+                  },
+                ),
+                const SizedBox(height: 10),
                 _AdminSwitchRow(
                   label: 'Nomo Plus',
                   value: isPlus,
@@ -588,6 +611,7 @@ Future<void> _showUserSheet(
                               password: passwordController.text.trim(),
                               userId: userIdController.text.trim(),
                               displayName: displayNameController.text.trim(),
+                              status: status,
                               isPlus: isPlus,
                             );
                       } else {
@@ -603,16 +627,14 @@ Future<void> _showUserSheet(
                                   : passwordController.text.trim(),
                               userId: userIdController.text.trim(),
                               displayName: displayNameController.text.trim(),
+                              status: status,
                               isPlus: isPlus,
                             );
                       }
-                      ref.invalidate(adminUsersProvider);
+                      didSave = true;
                       if (sheetContext.mounted) {
                         FocusScope.of(sheetContext).unfocus();
                         Navigator.of(sheetContext).pop();
-                      }
-                      if (context.mounted) {
-                        NomoToast.show(context, 'ユーザーを保存しました。');
                       }
                     } on BackendApiException catch (e) {
                       setState(() {
@@ -633,6 +655,10 @@ Future<void> _showUserSheet(
         ),
       ),
     );
+    if (didSave && context.mounted) {
+      ref.invalidate(adminUsersProvider);
+      NomoToast.show(context, 'ユーザーを保存しました。');
+    }
   } finally {
     await WidgetsBinding.instance.endOfFrame;
     emailController.dispose();
@@ -659,6 +685,7 @@ Future<void> _showPostSheet(
       : (users.isNotEmpty ? users.first.id : '');
   var isOfficial = log?.isOfficial ?? false;
   var saving = false;
+  var didSave = false;
   String? error;
 
   try {
@@ -766,13 +793,10 @@ Future<void> _showPostSheet(
                               isOfficial: isOfficial,
                             );
                       }
-                      ref.invalidate(adminDrinkLogsProvider);
+                      didSave = true;
                       if (sheetContext.mounted) {
                         FocusScope.of(sheetContext).unfocus();
                         Navigator.of(sheetContext).pop();
-                      }
-                      if (context.mounted) {
-                        NomoToast.show(context, '飲みログを保存しました。');
                       }
                     } on BackendApiException catch (e) {
                       setState(() {
@@ -793,6 +817,10 @@ Future<void> _showPostSheet(
         ),
       ),
     );
+    if (didSave && context.mounted) {
+      ref.invalidate(adminDrinkLogsProvider);
+      NomoToast.show(context, '飲みログを保存しました。');
+    }
   } finally {
     await WidgetsBinding.instance.endOfFrame;
     ownerController.dispose();
@@ -1008,6 +1036,122 @@ class _AdminDropdown extends StatelessWidget {
     ],
     onChanged: onChanged,
   );
+}
+
+class _AdminStatusDropdown extends StatelessWidget {
+  const _AdminStatusDropdown({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String value;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = _adminNormalizeStatus(value);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .06),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _AdminColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: _AdminColors.sub,
+              fontWeight: FontWeight.w800,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final status in _adminSelectableStatusKeys)
+                _AdminStatusChip(
+                  label: status.label,
+                  selected: status.key == selected,
+                  onTap: () => onChanged(status.key),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminStatusChip extends StatelessWidget {
+  const _AdminStatusChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected ? _AdminColors.lime : Colors.transparent,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected
+                  ? _AdminColors.lime
+                  : Colors.white.withValues(alpha: .18),
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? const Color(0xFF101820) : Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+const _adminSelectableStatusKeys = <NomoDailyStatus>[
+  NomoDailyStatus.unselected,
+  NomoDailyStatus.canDrinkToday,
+  NomoDailyStatus.lightDrink,
+  NomoDailyStatus.wantDrinkHard,
+  NomoDailyStatus.nonAlcohol,
+  NomoDailyStatus.liverRest,
+  NomoDailyStatus.waitingInvite,
+  NomoDailyStatus.hasPlans,
+];
+
+String _adminStatusLabel(String status) {
+  return nomoDailyStatusFromKey(status).label;
+}
+
+String _adminNormalizeStatus(String status) {
+  return nomoDailyStatusFromKey(status).key;
 }
 
 class _AdminSwitchRow extends StatelessWidget {
