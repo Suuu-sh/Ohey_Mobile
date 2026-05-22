@@ -1220,7 +1220,6 @@ class _FeedPostCard extends StatelessWidget {
     return Semantics(
       label: '${item.userName}の飲みログ',
       child: Container(
-        margin: const EdgeInsets.only(bottom: 18),
         decoration: BoxDecoration(
           color: surfaceColor,
           border: Border.symmetric(
