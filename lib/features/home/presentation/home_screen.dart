@@ -211,6 +211,8 @@ double _feedHeaderScrollInset(BuildContext context) {
   return NomoPageHeader.contentTopInset(context);
 }
 
+const _feedBottomPageInset = 124.0;
+
 Widget _buildFeedPage({
   required double topPadding,
   required List<_FeedItem> items,
@@ -219,29 +221,80 @@ Widget _buildFeedPage({
   required ValueChanged<_FeedItem> onLikePressed,
   required ValueChanged<_FeedItem> onSharePressed,
   required ValueChanged<_FeedItem> onMorePressed,
-}) => ListView(
-  physics: const BouncingScrollPhysics(),
-  padding: EdgeInsets.only(top: topPadding, bottom: 124),
-  children: [
-    if (isLoading && items.isEmpty)
-      const Padding(
-        padding: EdgeInsets.all(36),
-        child: Center(child: CupertinoActivityIndicator()),
-      )
-    else if (items.isEmpty)
-      _FeedSectionEmptyState(isWhite: isWhite)
-    else
-      ...items.map(
-        (item) => _FeedPostCard(
+}) {
+  if (isLoading && items.isEmpty) {
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      padding: EdgeInsets.only(top: topPadding, bottom: _feedBottomPageInset),
+      children: const [
+        Padding(
+          padding: EdgeInsets.all(36),
+          child: Center(child: CupertinoActivityIndicator()),
+        ),
+      ],
+    );
+  }
+
+  if (items.isEmpty) {
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      padding: EdgeInsets.only(top: topPadding, bottom: _feedBottomPageInset),
+      children: [_FeedSectionEmptyState(isWhite: isWhite)],
+    );
+  }
+
+  return PageView.builder(
+    scrollDirection: Axis.vertical,
+    physics: const PageScrollPhysics(parent: BouncingScrollPhysics()),
+    itemCount: items.length,
+    itemBuilder: (context, index) {
+      final item = items[index];
+      return _FeedPostPage(
+        topPadding: topPadding,
+        item: item,
+        isWhite: isWhite,
+        onLike: item.isLikeable ? () => onLikePressed(item) : null,
+        onShare: item.id.isEmpty ? null : () => onSharePressed(item),
+        onMore: item.id.isEmpty ? null : () => onMorePressed(item),
+      );
+    },
+  );
+}
+
+class _FeedPostPage extends StatelessWidget {
+  const _FeedPostPage({
+    required this.topPadding,
+    required this.item,
+    required this.isWhite,
+    this.onLike,
+    this.onShare,
+    this.onMore,
+  });
+
+  final double topPadding;
+  final _FeedItem item;
+  final bool isWhite;
+  final VoidCallback? onLike;
+  final VoidCallback? onShare;
+  final VoidCallback? onMore;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(top: topPadding, bottom: _feedBottomPageInset),
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: _FeedPostCard(
           item: item,
           isWhite: isWhite,
-          onLike: item.isLikeable ? () => onLikePressed(item) : null,
-          onShare: item.id.isEmpty ? null : () => onSharePressed(item),
-          onMore: item.id.isEmpty ? null : () => onMorePressed(item),
+          onLike: onLike,
+          onShare: onShare,
+          onMore: onMore,
         ),
       ),
-  ],
-);
+    );
+  }
+}
 
 class _FeedBackground extends ConsumerWidget {
   const _FeedBackground({required this.child});
