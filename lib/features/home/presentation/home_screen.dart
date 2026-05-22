@@ -1253,7 +1253,7 @@ class _FeedPostCard extends StatelessWidget {
               left: 0,
               top: 0,
               right: 0,
-              height: 86,
+              height: 68,
               child: _FeedImageHeader(),
             ),
             Positioned(
