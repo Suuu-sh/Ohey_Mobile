@@ -1212,7 +1212,7 @@ class _FeedPostCard extends StatelessWidget {
     final photoPath = item.photoAssetPath;
     final hasPhoto = _isDisplayablePostPhoto(photoPath);
     final caption = _feedCardCaption(item);
-    final surfaceColor = isWhite ? Colors.white : const Color(0xFF071320);
+    final surfaceColor = isWhite ? Colors.white : AppColors.darkBackground;
     final borderColor = isWhite
         ? const Color(0xFFE3EAF3)
         : Colors.white.withValues(alpha: .08);
@@ -1943,7 +1943,7 @@ class _FeedNotificationsScreenState
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: isWhite ? Colors.white : const Color(0xFF07131F),
+      backgroundColor: isWhite ? Colors.white : AppColors.darkBackground,
       body: MediaQuery(
         data: MediaQuery.of(
           context,

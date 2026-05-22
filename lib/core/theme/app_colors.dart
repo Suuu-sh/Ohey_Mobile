@@ -25,9 +25,10 @@ class AppColors {
   static const softGray = Color(0xFFF8F9FD);
   static const line = Color(0xFFE9ECF5);
   static const beer = Color(0xFFF5B84B);
-  static const darkBackgroundTop = Color(0xFF172637);
-  static const darkBackgroundMiddle = Color(0xFF101B28);
-  static const darkBackgroundBottom = Color(0xFF0B1420);
+  static const darkBackground = Color(0xFF071320);
+  static const darkBackgroundTop = darkBackground;
+  static const darkBackgroundMiddle = darkBackground;
+  static const darkBackgroundBottom = darkBackground;
 
   static const pastelGradient = [blush, peach, sky];
   static const warmGradient = [Color(0xFFFFE7D6), Color(0xFFFFDDE8)];

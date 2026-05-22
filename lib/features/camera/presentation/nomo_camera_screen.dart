@@ -12,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/nomo_avatar.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/nomo_photo_orientation.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
@@ -1514,5 +1515,5 @@ class _CameraIconButton extends StatelessWidget {
 class _CameraColors {
   const _CameraColors._();
 
-  static const shell = Color(0xFF050B10);
+  static const shell = AppColors.darkBackground;
 }

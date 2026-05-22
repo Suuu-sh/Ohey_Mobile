@@ -56,7 +56,7 @@ class _NomoDemoScreenState extends State<NomoDemoScreen> {
     final slides = _demoSlides;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFF07131F),
+      backgroundColor: AppColors.darkBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
@@ -207,7 +207,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       canPop: false,
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        backgroundColor: const Color(0xFF0D1A22),
+        backgroundColor: AppColors.darkBackground,
         body: SafeArea(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 240),
@@ -1349,7 +1349,7 @@ class _DemoSlide extends StatelessWidget {
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFF132637), Color(0xFF07131F)],
+        colors: AppColors.darkBackgroundGradient,
       ),
       borderRadius: BorderRadius.circular(30),
       border: Border.all(color: Colors.white.withValues(alpha: .10)),

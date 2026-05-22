@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import 'nomo_pop_icon.dart';
 
 class NomoBackendBusyScreen extends StatefulWidget {
@@ -35,7 +36,7 @@ class _NomoBackendBusyScreenState extends State<NomoBackendBusyScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFF071622),
+      backgroundColor: AppColors.darkBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 34),

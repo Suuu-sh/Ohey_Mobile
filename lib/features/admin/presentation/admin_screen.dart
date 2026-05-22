@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/supabase_config.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/nomo_user.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../application/admin_controller.dart';
@@ -1507,7 +1508,7 @@ String _dateLabel(DateTime date) {
 class _AdminColors {
   const _AdminColors._();
 
-  static const bg = Color(0xFF06111D);
+  static const bg = AppColors.darkBackground;
   static const panel = Color(0xFF101B28);
   static const line = Color(0x1EFFFFFF);
   static const sub = Color(0xFF8F9BAB);

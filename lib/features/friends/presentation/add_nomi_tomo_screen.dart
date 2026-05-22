@@ -9,6 +9,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/nomo_avatar.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
@@ -43,7 +44,7 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF142335), Color(0xFF08121D), Color(0xFF03080D)],
+            colors: AppColors.darkBackgroundGradient,
           ),
         ),
         child: SafeArea(
@@ -908,7 +909,7 @@ class _BigPopButton extends StatelessWidget {
 class _ExchangeColors {
   const _ExchangeColors._();
 
-  static const bg = Color(0xFF030B10);
+  static const bg = AppColors.darkBackground;
   static const card = Color(0xFF101D29);
   static const lime = Color(0xFFB8FF00);
   static const teal = Color(0xFF17D1AE);
