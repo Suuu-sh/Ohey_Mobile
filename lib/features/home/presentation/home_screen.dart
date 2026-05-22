@@ -1281,6 +1281,10 @@ class _FeedCardAuthorBar extends StatelessWidget {
     final iconColor = isWhite
         ? const Color(0xFF1E2733)
         : Colors.white.withValues(alpha: .92);
+    final place = item.place.trim();
+    final metadataLabel = place.isEmpty
+        ? item.timeAgo
+        : '${item.timeAgo} ・ $place';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 11, 10, 10),
@@ -1316,7 +1320,7 @@ class _FeedCardAuthorBar extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  item.timeAgo,
+                  metadataLabel,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -1373,12 +1377,7 @@ class _FeedCardFooter extends StatelessWidget {
     final secondaryText = isWhite
         ? const Color(0xFF6D7A89)
         : Colors.white.withValues(alpha: .64);
-    final subtleText = isWhite
-        ? const Color(0xFF8792A0)
-        : Colors.white.withValues(alpha: .48);
     final captionBody = caption.trim();
-    final place = item.place.trim();
-    final showPlace = place.isNotEmpty && place != captionBody;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
@@ -1443,26 +1442,6 @@ class _FeedCardFooter extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-          ],
-          if (showPlace) ...[
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Icon(CupertinoIcons.placemark, color: subtleText, size: 14),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    place,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: subtleText,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ],
             ),
           ],
         ],
@@ -1646,11 +1625,7 @@ class _FeedPlaceholderOrb extends StatelessWidget {
 }
 
 String _feedCardCaption(_FeedItem item) {
-  final body = _duoStyleBody(item).trim();
-  if (body.isNotEmpty) return body;
-  final place = item.place.trim();
-  if (place.isNotEmpty) return place;
-  return '';
+  return _duoStyleBody(item).trim();
 }
 
 class _OfficialVerifiedBadge extends StatelessWidget {
