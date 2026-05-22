@@ -234,6 +234,7 @@ Widget _buildFeedPage({
       ...items.map(
         (item) => _FeedPostCard(
           item: item,
+          isWhite: isWhite,
           onLike: item.isLikeable ? () => onLikePressed(item) : null,
           onShare: item.id.isEmpty ? null : () => onSharePressed(item),
           onMore: item.id.isEmpty ? null : () => onMorePressed(item),
@@ -1194,12 +1195,14 @@ class _FeedCompanionProfileSheet extends StatelessWidget {
 class _FeedPostCard extends StatelessWidget {
   const _FeedPostCard({
     required this.item,
+    required this.isWhite,
     this.onLike,
     this.onShare,
     this.onMore,
   });
 
   final _FeedItem item;
+  final bool isWhite;
   final VoidCallback? onLike;
   final VoidCallback? onShare;
   final VoidCallback? onMore;
@@ -1209,42 +1212,47 @@ class _FeedPostCard extends StatelessWidget {
     final photoPath = item.photoAssetPath;
     final hasPhoto = _isDisplayablePostPhoto(photoPath);
     final caption = _feedCardCaption(item);
+    final surfaceColor = isWhite ? Colors.white : const Color(0xFF071320);
+    final borderColor = isWhite
+        ? const Color(0xFFE3EAF3)
+        : Colors.white.withValues(alpha: .08);
 
     return Semantics(
       label: '${item.userName}の飲みログ',
-      child: AspectRatio(
-        aspectRatio: 4 / 5,
-        child: Stack(
-          fit: StackFit.expand,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 18),
+        decoration: BoxDecoration(
+          color: surfaceColor,
+          border: Border.symmetric(
+            horizontal: BorderSide(color: borderColor, width: 1),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            if (hasPhoto)
-              _PostPhoto(path: photoPath!)
-            else
-              _FeedPhotoPlaceholder(accent: item.accent),
-            const _FeedPhotoScrim(),
-            const Positioned(
-              left: 0,
-              top: 0,
-              right: 0,
-              height: 68,
-              child: _FeedImageHeader(),
-            ),
-            Positioned(
-              left: 14,
-              top: 14,
-              right: 14,
-              child: _FeedCardAuthorBar(item: item, onMore: onMore),
-            ),
-            Positioned(
-              left: 18,
-              right: 18,
-              bottom: 15,
-              child: _FeedCardFooter(
-                item: item,
-                caption: caption,
-                onLike: onLike,
-                onShare: onShare,
+            _FeedCardAuthorBar(item: item, isWhite: isWhite, onMore: onMore),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.symmetric(
+                  horizontal: BorderSide(color: borderColor, width: .8),
+                ),
               ),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: ClipRect(
+                  child: hasPhoto
+                      ? _PostPhoto(path: photoPath!)
+                      : _FeedPhotoPlaceholder(accent: item.accent),
+                ),
+              ),
+            ),
+            _FeedCardFooter(
+              item: item,
+              caption: caption,
+              isWhite: isWhite,
+              onLike: onLike,
+              onShare: onShare,
             ),
           ],
         ),
@@ -1254,86 +1262,92 @@ class _FeedPostCard extends StatelessWidget {
 }
 
 class _FeedCardAuthorBar extends StatelessWidget {
-  const _FeedCardAuthorBar({required this.item, this.onMore});
+  const _FeedCardAuthorBar({
+    required this.item,
+    required this.isWhite,
+    this.onMore,
+  });
 
   final _FeedItem item;
+  final bool isWhite;
   final VoidCallback? onMore;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        _AvatarBubble(avatar: item.avatar, size: 42, glowColor: item.accent),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      item.userName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: Colors.white,
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w900,
-                        height: 1.05,
-                        letterSpacing: -.25,
-                        shadows: const [
-                          Shadow(
-                            color: Colors.black54,
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
+    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
+    final secondaryText = isWhite
+        ? const Color(0xFF778393)
+        : Colors.white.withValues(alpha: .62);
+    final iconColor = isWhite
+        ? const Color(0xFF1E2733)
+        : Colors.white.withValues(alpha: .92);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 11, 10, 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _AvatarBubble(avatar: item.avatar, size: 40, glowColor: item.accent),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        item.userName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: primaryText,
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w900,
+                          height: 1.05,
+                          letterSpacing: -.25,
+                        ),
                       ),
                     ),
-                  ),
-                  if (item.isOfficial) const _OfficialVerifiedBadge(),
-                ],
-              ),
-              const SizedBox(height: 3),
-              Text(
-                item.timeAgo,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Colors.white.withValues(alpha: .78),
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w900,
-                  height: 1,
-                  shadows: const [
-                    Shadow(
-                      color: Colors.black54,
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
+                    if (item.isOfficial) const _OfficialVerifiedBadge(),
                   ],
                 ),
-              ),
-            ],
-          ),
-        ),
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: onMore,
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: NomoPopIcon(
-              icon: CupertinoIcons.ellipsis,
-              color: Colors.white.withValues(alpha: .96),
-              size: 28,
-              showBubble: false,
+                const SizedBox(height: 3),
+                Text(
+                  item.timeAgo,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: secondaryText,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+          Semantics(
+            button: true,
+            label: '投稿メニュー',
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onMore,
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: NomoPopIcon(
+                  icon: CupertinoIcons.ellipsis,
+                  color: iconColor,
+                  size: 27,
+                  showBubble: false,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1342,67 +1356,117 @@ class _FeedCardFooter extends StatelessWidget {
   const _FeedCardFooter({
     required this.item,
     required this.caption,
+    required this.isWhite,
     this.onLike,
     this.onShare,
   });
 
   final _FeedItem item;
   final String caption;
+  final bool isWhite;
   final VoidCallback? onLike;
   final VoidCallback? onShare;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (caption.isNotEmpty) ...[
+    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
+    final secondaryText = isWhite
+        ? const Color(0xFF6D7A89)
+        : Colors.white.withValues(alpha: .64);
+    final subtleText = isWhite
+        ? const Color(0xFF8792A0)
+        : Colors.white.withValues(alpha: .48);
+    final captionBody = caption.trim();
+    final place = item.place.trim();
+    final showPlace = place.isNotEmpty && place != captionBody;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              _FeedOverlayAction(
+                semanticLabel: item.liked ? 'いいねを取り消す' : 'いいね',
+                icon: item.liked
+                    ? CupertinoIcons.heart_fill
+                    : CupertinoIcons.heart,
+                color: item.liked ? const Color(0xFFFF5EA8) : primaryText,
+                onTap: onLike,
+              ),
+              const SizedBox(width: 18),
+              _FeedOverlayAction(
+                semanticLabel: '共有',
+                customIcon: _VectorShareIcon(color: primaryText, size: 27),
+                onTap: onShare,
+              ),
+              const Spacer(),
+              if (item.friends.isNotEmpty)
+                _FeedCompanionInlineButton(
+                  friends: item.friends,
+                  isWhite: isWhite,
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
           Text(
-            caption,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: Colors.white,
-              fontSize: 21,
+            '${item.likes}件のいいね',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: primaryText,
               fontWeight: FontWeight.w900,
-              height: 1.12,
-              letterSpacing: -.55,
-              shadows: const [
-                Shadow(
-                  color: Colors.black87,
-                  blurRadius: 10,
-                  offset: Offset(0, 3),
+              height: 1.15,
+            ),
+          ),
+          if (captionBody.isNotEmpty) ...[
+            const SizedBox(height: 5),
+            RichText(
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              text: TextSpan(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: primaryText,
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w700,
+                  height: 1.32,
+                  letterSpacing: -.16,
+                ),
+                children: [
+                  TextSpan(
+                    text: item.userName,
+                    style: const TextStyle(fontWeight: FontWeight.w900),
+                  ),
+                  TextSpan(
+                    text: ' $captionBody',
+                    style: TextStyle(color: secondaryText),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (showPlace) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Icon(CupertinoIcons.placemark, color: subtleText, size: 14),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    place,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: subtleText,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 12),
-        ],
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            if (item.friends.isNotEmpty)
-              _FeedOverlayFriends(friends: item.friends),
-            const Spacer(),
-            _FeedOverlayAction(
-              semanticLabel: item.liked ? 'いいねを取り消す' : 'いいね',
-              icon: item.liked
-                  ? CupertinoIcons.heart_fill
-                  : CupertinoIcons.heart,
-              label: '${item.likes}',
-              color: item.liked ? const Color(0xFFFF7AB8) : Colors.white,
-              onTap: onLike,
-            ),
-            const SizedBox(width: 13),
-            _FeedOverlayAction(
-              semanticLabel: '共有',
-              customIcon: const _VectorShareIcon(color: Colors.white, size: 25),
-              onTap: onShare,
-            ),
           ],
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -1412,7 +1476,6 @@ class _FeedOverlayAction extends StatelessWidget {
     required this.semanticLabel,
     this.icon,
     this.customIcon,
-    this.label = '',
     this.color = Colors.white,
     this.onTap,
   });
@@ -1420,60 +1483,59 @@ class _FeedOverlayAction extends StatelessWidget {
   final String semanticLabel;
   final IconData? icon;
   final Widget? customIcon;
-  final String label;
   final Color color;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = color;
     return Semantics(
       button: true,
       label: semanticLabel,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            customIcon ??
-                NomoPopIcon(
-                  icon: icon ?? CupertinoIcons.circle,
-                  color: effectiveColor,
-                  size: 26,
-                  showBubble: false,
-                ),
-            if (label.isNotEmpty) ...[
-              const SizedBox(width: 5),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  shadows: const [
-                    Shadow(
-                      color: Colors.black87,
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-              ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              customIcon ??
+                  NomoPopIcon(
+                    icon: icon ?? CupertinoIcons.circle,
+                    color: color,
+                    size: 29,
+                    showBubble: false,
+                  ),
             ],
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _FeedOverlayFriends extends StatelessWidget {
-  const _FeedOverlayFriends({required this.friends});
+class _FeedCompanionInlineButton extends StatelessWidget {
+  const _FeedCompanionInlineButton({
+    required this.friends,
+    required this.isWhite,
+  });
 
   final List<_Companion> friends;
+  final bool isWhite;
 
   @override
   Widget build(BuildContext context) {
+    final textColor = isWhite ? const Color(0xFF344152) : Colors.white;
+    final borderColor = isWhite
+        ? const Color(0xFFE0E7EF)
+        : Colors.white.withValues(alpha: .13);
+    final backgroundColor = isWhite
+        ? const Color(0xFFF4F7FA)
+        : Colors.white.withValues(alpha: .07);
+    final label = friends.length == 1
+        ? '${friends.first.name}と一緒'
+        : '${friends.first.name}ほか${friends.length - 1}人と一緒';
+
     return Semantics(
       button: true,
       label: '一緒に飲んだフレンズを表示',
@@ -1481,67 +1543,34 @@ class _FeedOverlayFriends extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: () => _showFeedCompanionList(context, friends),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(8, 7, 10, 7),
+          padding: const EdgeInsets.fromLTRB(8, 6, 10, 6),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: .24),
+            color: backgroundColor,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: Colors.white.withValues(alpha: .22)),
+            border: Border.all(color: borderColor),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _FriendAvatarStack(friends: friends),
-              const SizedBox(width: 8),
-              Text(
-                'with',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: Colors.white.withValues(alpha: .92),
-                  fontWeight: FontWeight.w900,
-                  shadows: const [
-                    Shadow(
-                      color: Colors.black54,
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 182),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _FriendAvatarStack(friends: friends),
+                const SizedBox(width: 7),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: textColor,
+                      fontWeight: FontWeight.w900,
+                      height: 1.05,
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FeedPhotoScrim extends StatelessWidget {
-  const _FeedPhotoScrim();
-
-  @override
-  Widget build(BuildContext context) {
-    return const DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0x00000000), Color(0x00000000), Color(0xE6000000)],
-          stops: [0, .55, 1],
-        ),
-      ),
-    );
-  }
-}
-
-class _FeedImageHeader extends StatelessWidget {
-  const _FeedImageHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: .34),
-        border: Border(
-          bottom: BorderSide(color: Colors.white.withValues(alpha: .08)),
         ),
       ),
     );
