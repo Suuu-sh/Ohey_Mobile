@@ -188,15 +188,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
+const _feedHeaderBottomSpacing = 18.0;
+const _feedHeaderFadeExtension = 10.0;
+
 double _feedHeaderScrollInset(BuildContext context) {
   return MediaQuery.paddingOf(context).top +
       NomoPageHeader.topPadding +
       NomoPageHeader.height +
-      16;
+      _feedHeaderBottomSpacing;
 }
 
 double _feedHeaderOverlayHeight(BuildContext context) {
-  return _feedHeaderScrollInset(context) + 10;
+  return _feedHeaderScrollInset(context) + _feedHeaderFadeExtension;
 }
 
 Widget _buildFeedPage({
@@ -269,6 +272,7 @@ class _FeedHeaderOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final height = _feedHeaderOverlayHeight(context);
+    final headerBg = isWhite ? Colors.white : AppColors.darkBackgroundTop;
     return Positioned(
       left: 0,
       right: 0,
@@ -290,22 +294,18 @@ class _FeedHeaderOverlay extends StatelessWidget {
                     end: Alignment.bottomCenter,
                     colors: isWhite
                         ? [
-                            Colors.white.withValues(alpha: .82),
-                            Colors.white.withValues(alpha: .64),
-                            Colors.white.withValues(alpha: .10),
+                            headerBg.withValues(alpha: 1),
+                            headerBg.withValues(alpha: .82),
+                            headerBg.withValues(alpha: .20),
                           ]
                         : [
-                            AppColors.darkBackgroundBottom.withValues(
-                              alpha: .82,
-                            ),
+                            headerBg.withValues(alpha: .98),
+                            headerBg.withValues(alpha: .66),
                             AppColors.darkBackgroundMiddle.withValues(
-                              alpha: .58,
-                            ),
-                            AppColors.darkBackgroundBottom.withValues(
-                              alpha: .08,
+                              alpha: .18,
                             ),
                           ],
-                    stops: const [0, .72, 1],
+                    stops: const [0, .74, 1],
                   ),
                 ),
                 child: SafeArea(
