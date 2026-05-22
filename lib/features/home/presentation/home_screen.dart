@@ -1544,8 +1544,14 @@ class _FeedPhotoScrim extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0x00000000), Color(0x00000000), Color(0xE6000000)],
-          stops: [0, .55, 1],
+          colors: [
+            Color(0x66000000),
+            Color(0x33000000),
+            Color(0x00000000),
+            Color(0x00000000),
+            Color(0xE6000000),
+          ],
+          stops: [0, .13, .28, .55, 1],
         ),
       ),
     );
