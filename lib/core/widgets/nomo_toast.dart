@@ -18,31 +18,47 @@ class NomoToast {
   }) {
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
     if (overlay == null) return;
+    final topPadding = MediaQuery.maybeOf(context)?.padding.top ?? 0;
 
     _timer?.cancel();
-    _currentEntry?.remove();
+    _removeCurrentEntry();
 
     late final OverlayEntry entry;
     entry = OverlayEntry(
-      builder: (context) => _NomoToastOverlay(message: message, icon: icon),
+      builder: (context) => _NomoToastOverlay(
+        message: message,
+        icon: icon,
+        topPadding: topPadding,
+      ),
     );
     _currentEntry = entry;
     overlay.insert(entry);
 
     _timer = Timer(duration, () {
       if (_currentEntry == entry) {
-        _currentEntry?.remove();
-        _currentEntry = null;
+        _removeCurrentEntry();
       }
     });
+  }
+
+  static void _removeCurrentEntry() {
+    final entry = _currentEntry;
+    _currentEntry = null;
+    if (entry == null || !entry.mounted) return;
+    entry.remove();
   }
 }
 
 class _NomoToastOverlay extends StatefulWidget {
-  const _NomoToastOverlay({required this.message, required this.icon});
+  const _NomoToastOverlay({
+    required this.message,
+    required this.icon,
+    required this.topPadding,
+  });
 
   final String message;
   final IconData icon;
+  final double topPadding;
 
   @override
   State<_NomoToastOverlay> createState() => _NomoToastOverlayState();
@@ -81,9 +97,8 @@ class _NomoToastOverlayState extends State<_NomoToastOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final top = MediaQuery.of(context).padding.top;
     return Positioned(
-      top: top + 10,
+      top: widget.topPadding + 10,
       left: 16,
       right: 16,
       child: IgnorePointer(

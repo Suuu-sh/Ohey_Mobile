@@ -655,16 +655,16 @@ Future<void> _showUserSheet(
         ),
       ),
     );
-    if (didSave && context.mounted) {
-      ref.invalidate(adminUsersProvider);
-      NomoToast.show(context, 'ユーザーを保存しました。');
-    }
   } finally {
     await WidgetsBinding.instance.endOfFrame;
     emailController.dispose();
     passwordController.dispose();
     userIdController.dispose();
     displayNameController.dispose();
+  }
+  if (didSave && context.mounted) {
+    ref.invalidate(adminUsersProvider);
+    NomoToast.show(context, 'ユーザーを保存しました。');
   }
 }
 
@@ -817,10 +817,6 @@ Future<void> _showPostSheet(
         ),
       ),
     );
-    if (didSave && context.mounted) {
-      ref.invalidate(adminDrinkLogsProvider);
-      NomoToast.show(context, '飲みログを保存しました。');
-    }
   } finally {
     await WidgetsBinding.instance.endOfFrame;
     ownerController.dispose();
@@ -828,6 +824,10 @@ Future<void> _showPostSheet(
     memoController.dispose();
     linkController.dispose();
     photoController.dispose();
+  }
+  if (didSave && context.mounted) {
+    ref.invalidate(adminDrinkLogsProvider);
+    NomoToast.show(context, '飲みログを保存しました。');
   }
 }
 
