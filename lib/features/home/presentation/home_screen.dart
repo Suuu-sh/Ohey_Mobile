@@ -212,7 +212,6 @@ double _feedHeaderScrollInset(BuildContext context) {
 }
 
 const _feedBottomPageInset = 124.0;
-const _feedSwipeHintAsset = 'assets/images/admin_nomo_icon.png';
 
 Widget _buildFeedPage({
   required double topPadding,
@@ -304,9 +303,9 @@ class _FeedPostPage extends StatelessWidget {
         ),
         if (showSwipeHint)
           Positioned(
-            left: 18,
-            right: 18,
-            bottom: _feedBottomPageInset + 7,
+            left: 12,
+            right: 12,
+            bottom: _feedBottomPageInset - 9,
             child: _FeedSwipeHint(isWhite: isWhite),
           ),
       ],
@@ -332,7 +331,7 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 3600),
     )..repeat();
   }
 
@@ -344,107 +343,270 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
 
   @override
   Widget build(BuildContext context) {
-    final textColor = widget.isWhite ? const Color(0xFF243241) : Colors.white;
-    final subColor = widget.isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .70);
-    final backgroundColor = widget.isWhite
-        ? Colors.white.withValues(alpha: .90)
-        : Colors.white.withValues(alpha: .07);
-    final borderColor = widget.isWhite
-        ? const Color(0xFFDCE4EC)
-        : Colors.white.withValues(alpha: .13);
-
     return IgnorePointer(
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          final progress = Curves.easeInOut.transform(_controller.value);
-          final bob = math.sin(progress * math.pi * 2) * 5;
-          final arrowLift = -8 * progress;
-          final arrowOpacity = (1 - progress).clamp(0.0, 1.0);
+      child: SizedBox(
+        height: 60,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                final loop = _controller.value;
+                final walk = .5 - .5 * math.cos(loop * math.pi * 2);
+                final step = math.sin(loop * math.pi * 10);
+                final bob = math.sin(loop * math.pi * 10).abs() * 2.5;
+                final groupWidth = math.min(constraints.maxWidth, 168.0);
+                final travel = math.max(0.0, constraints.maxWidth - groupWidth);
+                final left = travel * walk;
+                final arrowLift = -7 * walk;
+                final arrowOpacity = (.42 + .58 * (1 - walk)).clamp(0.0, 1.0);
 
-          return Opacity(
-            opacity: .92,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Transform.translate(
-                  offset: Offset(0, bob),
-                  child: Container(
-                    width: 38,
-                    height: 38,
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: backgroundColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: borderColor),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: .18),
-                          blurRadius: 14,
-                          offset: const Offset(0, 8),
+                return Transform.translate(
+                  offset: Offset(left, 0),
+                  child: SizedBox(
+                    width: groupWidth,
+                    height: 60,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Positioned(
+                          left: 47,
+                          bottom: 18,
+                          child: _NomoSpeechBubble(
+                            isWhite: widget.isWhite,
+                            arrowLift: arrowLift,
+                            arrowOpacity: arrowOpacity,
+                          ),
+                        ),
+                        Positioned(
+                          left: 4,
+                          bottom: 0,
+                          child: Transform.translate(
+                            offset: Offset(0, -bob),
+                            child: _WalkingNomo(step: step),
+                          ),
                         ),
                       ],
                     ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        _feedSwipeHintAsset,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(10, 6, 9, 6),
-                  decoration: BoxDecoration(
-                    color: backgroundColor,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: borderColor),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: .14),
-                        blurRadius: 18,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '上にスワイプしてね',
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              color: textColor,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                              height: 1,
-                              letterSpacing: -.18,
-                            ),
-                      ),
-                      const SizedBox(width: 5),
-                      Transform.translate(
-                        offset: Offset(0, arrowLift),
-                        child: Opacity(
-                          opacity: arrowOpacity,
-                          child: Icon(
-                            CupertinoIcons.arrow_up,
-                            color: subColor,
-                            size: 15,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
+  }
+}
+
+class _NomoSpeechBubble extends StatelessWidget {
+  const _NomoSpeechBubble({
+    required this.isWhite,
+    required this.arrowLift,
+    required this.arrowOpacity,
+  });
+
+  final bool isWhite;
+  final double arrowLift;
+  final double arrowOpacity;
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = isWhite ? const Color(0xFF243241) : Colors.white;
+    final iconColor = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .70);
+    final backgroundColor = isWhite
+        ? Colors.white.withValues(alpha: .92)
+        : Colors.white.withValues(alpha: .08);
+    final borderColor = isWhite
+        ? const Color(0xFFDCE4EC)
+        : Colors.white.withValues(alpha: .14);
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned(
+          left: 5,
+          bottom: -4,
+          child: Transform.rotate(
+            angle: math.pi / 4,
+            child: Container(
+              width: 9,
+              height: 9,
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                border: Border(
+                  right: BorderSide(color: borderColor),
+                  bottom: BorderSide(color: borderColor),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.fromLTRB(10, 6, 9, 6),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: borderColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: .16),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '上にスワイプ',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: textColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                  letterSpacing: -.18,
+                ),
+              ),
+              const SizedBox(width: 5),
+              Transform.translate(
+                offset: Offset(0, arrowLift),
+                child: Opacity(
+                  opacity: arrowOpacity,
+                  child: Icon(
+                    CupertinoIcons.arrow_up,
+                    color: iconColor,
+                    size: 15,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _WalkingNomo extends StatelessWidget {
+  const _WalkingNomo({required this.step});
+
+  final double step;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 48,
+      height: 56,
+      child: CustomPaint(painter: _WalkingNomoPainter(step: step)),
+    );
+  }
+}
+
+class _WalkingNomoPainter extends CustomPainter {
+  const _WalkingNomoPainter({required this.step});
+
+  final double step;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final sx = size.width / 48;
+    final sy = size.height / 56;
+    canvas.save();
+    canvas.scale(sx, sy);
+
+    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: .20);
+    canvas.drawOval(const Rect.fromLTWH(9, 50, 30, 5), shadowPaint);
+
+    final legPaint = Paint()
+      ..color = const Color(0xFFFF4CAF)
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+    final shoePaint = Paint()..color = const Color(0xFF111723);
+    final leftFoot = Offset(20 - step * 4, 51);
+    final rightFoot = Offset(30 + step * 4, 51);
+    canvas.drawLine(const Offset(21, 38), leftFoot, legPaint);
+    canvas.drawLine(const Offset(28, 38), rightFoot, legPaint);
+    canvas.drawOval(
+      Rect.fromCenter(center: leftFoot, width: 8, height: 4),
+      shoePaint,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: rightFoot, width: 8, height: 4),
+      shoePaint,
+    );
+
+    final armPaint = Paint()
+      ..color = const Color(0xFFFF4CAF)
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(const Offset(13, 29), Offset(8, 34 + step * 3), armPaint);
+    canvas.drawLine(const Offset(35, 29), Offset(40, 34 - step * 3), armPaint);
+
+    final bodyPaint = Paint()
+      ..shader = ui.Gradient.linear(
+        const Offset(14, 12),
+        const Offset(38, 44),
+        const [Color(0xFFFF6FC5), Color(0xFFFF1493)],
+      );
+    final outlinePaint = Paint()
+      ..color = const Color(0xFFFFB7DF).withValues(alpha: .45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    final body = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(10, 12, 30, 34),
+      const Radius.circular(18),
+    );
+    canvas.drawRRect(body.shift(const Offset(0, 1.5)), shadowPaint);
+    canvas.drawRRect(body, bodyPaint);
+    canvas.drawRRect(body.deflate(.6), outlinePaint);
+
+    final stemPaint = Paint()
+      ..color = const Color(0xFF78F018)
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(const Offset(26, 14), const Offset(29, 8), stemPaint);
+    final leafPaint = Paint()
+      ..shader = ui.Gradient.linear(
+        const Offset(25, 3),
+        const Offset(39, 12),
+        const [Color(0xFFB9FF1E), Color(0xFF62D810)],
+      );
+    canvas.save();
+    canvas.translate(32, 7);
+    canvas.rotate(-.34);
+    canvas.drawOval(const Rect.fromLTWH(-9, -5, 18, 10), leafPaint);
+    canvas.restore();
+
+    final eyePaint = Paint()..color = const Color(0xFF111723);
+    final highlightPaint = Paint()..color = Colors.white;
+    canvas.drawOval(const Rect.fromLTWH(16, 24, 8, 12), eyePaint);
+    canvas.drawOval(const Rect.fromLTWH(27, 24, 8, 12), eyePaint);
+    canvas.drawOval(const Rect.fromLTWH(18, 25, 3.5, 3.5), highlightPaint);
+    canvas.drawOval(const Rect.fromLTWH(29, 25, 3.5, 3.5), highlightPaint);
+
+    final mouthPaint = Paint()
+      ..color = const Color(0xFF111723)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      const Rect.fromLTWH(20, 33, 10, 7),
+      .15,
+      math.pi - .3,
+      false,
+      mouthPaint,
+    );
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _WalkingNomoPainter oldDelegate) {
+    return oldDelegate.step != step;
   }
 }
 
