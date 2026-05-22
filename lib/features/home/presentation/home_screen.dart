@@ -267,6 +267,8 @@ class _FeedBackground extends ConsumerWidget {
   }
 }
 
+const _feedOverlayHeaderAlignmentOffset = 9.0;
+
 class _FeedHeaderOverlay extends StatelessWidget {
   const _FeedHeaderOverlay({
     required this.child,
@@ -317,16 +319,19 @@ class _FeedHeaderOverlay extends StatelessWidget {
                     stops: const [0, .74, 1],
                   ),
                 ),
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      NomoPageHeader.horizontalPadding,
-                      NomoPageHeader.topPadding,
-                      NomoPageHeader.horizontalPadding,
-                      0,
+                child: Transform.translate(
+                  offset: const Offset(0, -_feedOverlayHeaderAlignmentOffset),
+                  child: SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        NomoPageHeader.horizontalPadding,
+                        NomoPageHeader.topPadding,
+                        NomoPageHeader.horizontalPadding,
+                        0,
+                      ),
+                      child: child,
                     ),
-                    child: child,
                   ),
                 ),
               ),
