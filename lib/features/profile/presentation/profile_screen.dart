@@ -997,57 +997,46 @@ class _ProfileMoodCta extends StatelessWidget {
         ? CupertinoIcons.smiley
         : _statusIcon(status);
 
-    return GestureDetector(
+    return Nomo3DButtonSurface(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        height: 60,
-        padding: const EdgeInsets.fromLTRB(16, 8, 14, 8),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color.lerp(color, Colors.white, .16)!, color],
+      height: 60,
+      radius: 20,
+      color: color,
+      outerShadows: const <BoxShadow>[],
+      padding: const EdgeInsets.fromLTRB(16, 8, 14, 8),
+      child: Row(
+        children: [
+          _ProfileMoodCtaIcon(
+            icon: icon,
+            color: status == NomoDailyStatus.unselected ? Colors.white : color,
+            muted: status == NomoDailyStatus.unselected,
           ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: .18)),
-        ),
-        child: Row(
-          children: [
-            _ProfileMoodCtaIcon(
-              icon: icon,
-              color: status == NomoDailyStatus.unselected
-                  ? Colors.white
-                  : color,
-              muted: status == NomoDailyStatus.unselected,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                status == NomoDailyStatus.unselected
-                    ? '今日の気分を設定する'
-                    : status.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 15,
-                  letterSpacing: -.2,
-                ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              status == NomoDailyStatus.unselected
+                  ? '今日の気分を設定する'
+                  : status.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 15,
+                letterSpacing: -.2,
               ),
             ),
-            NomoPopIcon(
-              icon: CupertinoIcons.chevron_right,
-              color: Colors.white,
-              foregroundColor: Colors.white,
-              size: 28,
-              iconSize: 24,
-              showBubble: false,
-              shadow: false,
-            ),
-          ],
-        ),
+          ),
+          NomoPopIcon(
+            icon: CupertinoIcons.chevron_right,
+            color: Colors.white,
+            foregroundColor: Colors.white,
+            size: 28,
+            iconSize: 24,
+            showBubble: false,
+            shadow: false,
+          ),
+        ],
       ),
     );
   }
