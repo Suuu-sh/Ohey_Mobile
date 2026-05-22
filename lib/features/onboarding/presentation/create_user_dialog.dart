@@ -1247,7 +1247,7 @@ String _friendlyAuthError(String message) {
     return _networkAuthErrorMessage;
   }
   if (lower.contains('invalid login credentials')) {
-    return 'メールアドレスまたはパスワードが違います。dev環境は本番アカウントとは別なので、初回は「アカウントがない方はこちら」から新規登録してください。';
+    return 'メールアドレスまたはパスワードが違います。入力内容を確認するか、アカウントをお持ちでない場合は新規登録してください。';
   }
   if (lower.contains('email not confirmed')) {
     return 'メール確認がまだです。確認メールのリンクを開いてからログインしてください。';
