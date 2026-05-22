@@ -299,8 +299,8 @@ class _AddTabIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AnimatedScale(
     duration: const Duration(milliseconds: 180),
-    scale: .98,
-    child: CustomPaint(size: const Size(56, 54), painter: const _AddPainter()),
+    scale: 1,
+    child: CustomPaint(size: const Size(58, 56), painter: const _AddPainter()),
   );
 }
 
@@ -311,49 +311,102 @@ class _AddPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromCenter(
       center: Offset(size.width / 2, size.height * .50),
-      width: 50,
-      height: 50,
+      width: 52,
+      height: 52,
     );
-    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(20));
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(21));
     final path = Path()..addRRect(rrect);
 
     canvas.drawShadow(
       path,
-      const Color(0xFFC8F400).withValues(alpha: .36),
-      12,
+      const Color(0xFFFF4FB5).withValues(alpha: .46),
+      16,
       true,
     );
 
-    final shadowPaint = Paint()
-      ..color = const Color(0xFF72A600).withValues(alpha: .24);
-    canvas.drawRRect(rrect.shift(const Offset(0, 3)), shadowPaint);
+    canvas.drawRRect(
+      rrect.shift(const Offset(0, 4)),
+      Paint()..color = const Color(0xFF8E1A59).withValues(alpha: .42),
+    );
+    canvas.drawRRect(
+      rrect.shift(const Offset(0, 2)),
+      Paint()..color = const Color(0xFFC51D7A).withValues(alpha: .34),
+    );
 
     final fill = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFFDFFF22), Color(0xFF9AF21A)],
+        colors: [
+          Color(0xFFFFB8DD),
+          Color(0xFFFF4FB5),
+          Color(0xFFE91E8F),
+          Color(0xFFB91472),
+        ],
+        stops: [0, .42, .72, 1],
       ).createShader(rect);
     canvas.drawRRect(rrect, fill);
+
+    final bevel = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.white.withValues(alpha: .54),
+          Colors.white.withValues(alpha: .08),
+          const Color(0xFF7E104E).withValues(alpha: .22),
+        ],
+        stops: const [0, .46, 1],
+      ).createShader(rect);
+    canvas.drawRRect(rrect.deflate(2.2), bevel);
 
     canvas.drawRRect(
       rrect,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.4
-        ..color = Colors.white.withValues(alpha: .26),
+        ..strokeWidth = 1.8
+        ..color = Colors.white.withValues(alpha: .62),
     );
 
-    final shine = Paint()..color = Colors.white.withValues(alpha: .26);
-    canvas.drawCircle(Offset(size.width * .34, size.height * .28), 5, shine);
+    canvas.drawRRect(
+      rrect.deflate(3.2),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.1
+        ..color = const Color(0xFFFFD7EC).withValues(alpha: .44),
+    );
+
+    final shine = Paint()..color = Colors.white.withValues(alpha: .36);
+    canvas.drawCircle(Offset(size.width * .34, size.height * .28), 5.4, shine);
+    canvas.drawCircle(
+      Offset(size.width * .42, size.height * .22),
+      2.2,
+      Paint()..color = Colors.white.withValues(alpha: .48),
+    );
 
     final plus = Paint()
-      ..color = const Color(0xFF06111D)
+      ..color = Colors.white.withValues(alpha: .96)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 4.8;
+      ..strokeWidth = 5.4;
     final center = Offset(size.width / 2, size.height * .50);
+    final plusShadow = Paint()
+      ..color = const Color(0xFF7A0E4B).withValues(alpha: .42)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = 6.2;
+    canvas.drawLine(
+      Offset(center.dx - 12, center.dy + 2),
+      Offset(center.dx + 12, center.dy + 2),
+      plusShadow,
+    );
+    canvas.drawLine(
+      Offset(center.dx, center.dy - 10),
+      Offset(center.dx, center.dy + 14),
+      plusShadow,
+    );
     canvas.drawLine(
       Offset(center.dx - 12, center.dy),
       Offset(center.dx + 12, center.dy),
