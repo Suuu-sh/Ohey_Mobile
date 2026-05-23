@@ -73,10 +73,12 @@ Future<void> _showEditProfileSheet(
             userIdController.text.trim() != initialUserId.trim() ||
             avatar.encode() != initialAvatar.encode();
 
-        void closeSheet() {
+        Future<void> closeSheet() async {
           if (closing || !sheetContext.mounted) return;
           closing = true;
           FocusManager.instance.primaryFocus?.unfocus();
+          await Future<void>.delayed(const Duration(milliseconds: 80));
+          if (!sheetContext.mounted) return;
           Navigator.of(sheetContext).pop();
         }
 
@@ -84,7 +86,7 @@ Future<void> _showEditProfileSheet(
           if (saving || closing) return;
           FocusManager.instance.primaryFocus?.unfocus();
           if (!hasChanges()) {
-            closeSheet();
+            await closeSheet();
             return;
           }
 
@@ -98,7 +100,7 @@ Future<void> _showEditProfileSheet(
             case _UnsavedProfileAction.save:
               await saveProfile();
             case _UnsavedProfileAction.discard:
-              closeSheet();
+              await closeSheet();
             case _UnsavedProfileAction.cancel:
               break;
           }
@@ -206,8 +208,10 @@ Future<void> _showEditProfileSheet(
       },
     ),
   );
-  controller.dispose();
-  userIdController.dispose();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    controller.dispose();
+    userIdController.dispose();
+  });
 }
 
 enum _UnsavedProfileAction { save, discard, cancel }
