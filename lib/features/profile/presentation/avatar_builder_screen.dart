@@ -360,20 +360,26 @@ class _AvatarBackgroundPreview extends StatelessWidget {
             ),
           ),
         ),
-        Positioned(
-          left: large ? 26 : 14,
-          top: large ? 22 : 12,
-          child: _BackgroundBubble(
-            size: large ? 74 : 38,
-            color: Colors.white.withValues(alpha: .22),
+        Opacity(
+          opacity: avatar.background == 0 ? .18 : .10,
+          child: ExcludeSemantics(
+            child: Image.asset(
+              'assets/images/profile_header_scene.png',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            ),
           ),
         ),
-        Positioned(
-          right: large ? 24 : 10,
-          bottom: large ? 22 : 14,
-          child: _BackgroundBubble(
-            size: large ? 96 : 48,
-            color: Colors.white.withValues(alpha: .18),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.white.withValues(alpha: .18),
+                Colors.white.withValues(alpha: .36),
+              ],
+            ),
           ),
         ),
         Center(
@@ -382,20 +388,6 @@ class _AvatarBackgroundPreview extends StatelessWidget {
       ],
     );
   }
-}
-
-class _BackgroundBubble extends StatelessWidget {
-  const _BackgroundBubble({required this.size, required this.color});
-
-  final double size;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-  );
 }
 
 enum _UnsavedAvatarAction { save, discard, cancel }
