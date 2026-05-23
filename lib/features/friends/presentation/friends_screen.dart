@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
-import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
 import '../../../core/theme/app_colors.dart';
@@ -39,10 +38,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     HapticFeedback.selectionClick();
     setState(() => _isRefreshingFriends = true);
     try {
-      await Future.wait([
-        ref.refresh(friendsProvider.future),
-        ref.refresh(drinkLogControllerProvider.future),
-      ]);
+      final _ = await ref.refresh(friendsProvider.future);
       if (!mounted) return;
       NomoToast.show(
         context,
@@ -95,7 +91,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final logsAsync = ref.watch(drinkLogControllerProvider);
     final friendsAsync = ref.watch(friendsProvider);
     final user = ref.watch(nomoUserProvider);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
@@ -153,24 +148,18 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               ),
               const SizedBox(height: 18),
               Expanded(
-                child: logsAsync.when(
-                  loading: () => const _LoadingState(label: '飲みログを読み込み中...'),
+                child: friendsAsync.when(
+                  loading: () => const _LoadingState(label: '友達を読み込み中...'),
                   error: (error, stackTrace) =>
-                      _ErrorState(title: '飲みログを読み込めませんでした', message: '$error'),
-                  data: (logs) => friendsAsync.when(
-                    loading: () => const _LoadingState(label: '友達を読み込み中...'),
-                    error: (error, stackTrace) =>
-                        _ErrorState(title: '友達を読み込めませんでした', message: '$error'),
-                    data: (friends) => _FriendsList(
-                      logs: logs,
-                      friends: friends,
-                      userAvatar: user?.avatar ?? NomoAvatar.defaultAvatar,
-                      selectedFilter: _selectedFilter,
-                      favoriteOverrides: _favoriteOverrides,
-                      onFavoriteToggle: (friend, isFavorite) =>
-                          _onToggleFavorite(context, friend, isFavorite),
-                      onInvite: (friend) => _sendDrinkInvite(friend),
-                    ),
+                      _ErrorState(title: '友達を読み込めませんでした', message: '$error'),
+                  data: (friends) => _FriendsList(
+                    friends: friends,
+                    userAvatar: user?.avatar ?? NomoAvatar.defaultAvatar,
+                    selectedFilter: _selectedFilter,
+                    favoriteOverrides: _favoriteOverrides,
+                    onFavoriteToggle: (friend, isFavorite) =>
+                        _onToggleFavorite(context, friend, isFavorite),
+                    onInvite: (friend) => _sendDrinkInvite(friend),
                   ),
                 ),
               ),
@@ -323,7 +312,6 @@ class _FilterChip extends StatelessWidget {
 
 class _FriendsList extends StatelessWidget {
   const _FriendsList({
-    required this.logs,
     required this.friends,
     required this.userAvatar,
     required this.selectedFilter,
@@ -332,7 +320,6 @@ class _FriendsList extends StatelessWidget {
     required this.onInvite,
   });
 
-  final List<DrinkLog> logs;
   final List<NomoFriend> friends;
   final NomoAvatar userAvatar;
   final _FriendFilterType selectedFilter;
@@ -342,7 +329,6 @@ class _FriendsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final counts = _monthlyFriendCounts(logs, friends);
     final decorated = [
       for (var i = 0; i < friends.length; i++)
         _DecoratedFriend(
@@ -351,7 +337,6 @@ class _FriendsList extends StatelessWidget {
             favoriteOverrides[friends[i].id] ?? friends[i].isFavorite,
           ),
           status: _statusForFriend(friends[i], i),
-          count: _displayCount(friends[i], counts),
         ),
     ];
     final filtered = decorated.where((item) {
@@ -360,7 +345,7 @@ class _FriendsList extends StatelessWidget {
         _FriendFilterType.drinkable => _isDrinkableStatus(item.status),
         _FriendFilterType.favorite => item.friend.isFavorite,
       };
-    }).toList()..sort((a, b) => b.count.compareTo(a.count));
+    }).toList();
 
     if (filtered.isEmpty) {
       return _EmptyFriendsState(
@@ -380,7 +365,6 @@ class _FriendsList extends StatelessWidget {
         return _FriendCard(
           friend: item.friend,
           status: item.status,
-          count: item.count,
           onFavoriteToggle: () =>
               onFavoriteToggle(item.friend, !item.friend.isFavorite),
           onInvite: () => onInvite(item.friend),
@@ -391,15 +375,10 @@ class _FriendsList extends StatelessWidget {
 }
 
 class _DecoratedFriend {
-  const _DecoratedFriend({
-    required this.friend,
-    required this.status,
-    required this.count,
-  });
+  const _DecoratedFriend({required this.friend, required this.status});
 
   final NomoFriend friend;
   final _FriendStatus status;
-  final int count;
 }
 
 NomoFriend _friendWithFavorite(NomoFriend friend, bool isFavorite) {
@@ -556,14 +535,12 @@ class _FriendCard extends StatelessWidget {
   const _FriendCard({
     required this.friend,
     required this.status,
-    required this.count,
     required this.onFavoriteToggle,
     required this.onInvite,
   });
 
   final NomoFriend friend;
   final _FriendStatus status;
-  final int count;
   final VoidCallback onFavoriteToggle;
   final VoidCallback onInvite;
 
@@ -573,11 +550,11 @@ class _FriendCard extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
     return Container(
-      constraints: const BoxConstraints(minHeight: 124),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      constraints: const BoxConstraints(minHeight: 98),
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
       decoration: BoxDecoration(
         color: isWhite ? Colors.white : _FriendsColors.block,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isWhite
               ? const Color(0xFFDCE4EC)
@@ -592,16 +569,17 @@ class _FriendCard extends StatelessWidget {
         ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: 72,
-            height: 78,
+            width: 62,
+            height: 66,
             child: NomoAvatarView(
               avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
-              size: 72,
+              size: 62,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -617,7 +595,7 @@ class _FriendCard extends StatelessWidget {
                         style: TextStyle(
                           color: ink,
                           fontWeight: FontWeight.w900,
-                          fontSize: 22,
+                          fontSize: 20,
                           letterSpacing: -.4,
                         ),
                       ),
@@ -630,8 +608,8 @@ class _FriendCard extends StatelessWidget {
                         behavior: HitTestBehavior.opaque,
                         onTap: onFavoriteToggle,
                         child: SizedBox(
-                          width: 36,
-                          height: 36,
+                          width: 34,
+                          height: 34,
                           child: Center(
                             child: _FavoriteStarIcon(
                               filled: friend.isFavorite,
@@ -647,24 +625,17 @@ class _FriendCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 7),
                 _StatusPill(status: status, accent: accent),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _CountBadge(count: count, accent: accent),
-              const SizedBox(height: 10),
-              _InviteButton(
-                status: status,
-                accent: accent,
-                name: friend.name,
-                onInvite: onInvite,
-              ),
-            ],
+          const SizedBox(width: 10),
+          _InviteButton(
+            status: status,
+            accent: accent,
+            name: friend.name,
+            onInvite: onInvite,
           ),
         ],
       ),
@@ -777,59 +748,6 @@ class _FavoriteStarPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _FavoriteStarPainter oldDelegate) {
     return oldDelegate.filled != filled || oldDelegate.color != color;
-  }
-}
-
-class _CountBadge extends StatelessWidget {
-  const _CountBadge({required this.count, required this.accent});
-
-  final int count;
-  final Color accent;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    return Container(
-      width: 80,
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 9),
-      decoration: BoxDecoration(
-        color: isWhite ? const Color(0xFFF7F9FB) : _FriendsColors.block,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isWhite
-              ? const Color(0xFFDCE4EC)
-              : Colors.white.withValues(alpha: .08),
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '$count回',
-                style: TextStyle(
-                  color: isWhite ? const Color(0xFF101820) : Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 15,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 3),
-          Text(
-            '今月の飲みログ',
-            style: TextStyle(
-              color: isWhite
-                  ? const Color(0xFF687481)
-                  : Colors.white.withValues(alpha: .55),
-              fontWeight: FontWeight.w800,
-              fontSize: 9,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -986,27 +904,6 @@ NomoAvatar _fallbackAvatarForFriend(NomoFriend friend) {
     mouth: (hash ~/ 11) % NomoAvatar.mouthStyles.length,
     accessory: (hash ~/ 13) % NomoAvatar.accessoryStyles.length,
   );
-}
-
-int _displayCount(NomoFriend friend, Map<String, int> counts) {
-  final realCount = counts[friend.id] ?? 0;
-  if (realCount > 0) return realCount;
-  return friend.monthlyCount ?? 0;
-}
-
-Map<String, int> _monthlyFriendCounts(
-  List<DrinkLog> logs,
-  List<NomoFriend> friends,
-) {
-  final now = DateTime.now();
-  final month = DateTime(now.year, now.month);
-  final counts = <String, int>{for (final friend in friends) friend.id: 0};
-  for (final log in logs.where((log) => log.isInMonth(month))) {
-    for (final friend in log.friends) {
-      counts.update(friend.id, (value) => value + 1, ifAbsent: () => 1);
-    }
-  }
-  return counts;
 }
 
 class _FriendsColors {
