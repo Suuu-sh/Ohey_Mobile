@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_gender.dart';
+import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 
@@ -146,15 +147,20 @@ class _UnsavedAvatarSheet extends StatelessWidget {
   Widget build(BuildContext context) => SafeArea(
     child: Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFFFFFF), Color(0xFFFFF8F1)],
+        ),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: _AvatarColors.line),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: .16),
-            blurRadius: 30,
-            offset: const Offset(0, 14),
+            color: Colors.black.withValues(alpha: .14),
+            blurRadius: 32,
+            offset: const Offset(0, 16),
           ),
         ],
       ),
@@ -162,40 +168,109 @@ class _UnsavedAvatarSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'アバターの変更を保存する？',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: _AvatarColors.ink,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            '保存せずに閉じると、変更前のアバターに戻ります。',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: _AvatarColors.dim,
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              height: 1.45,
+          Center(
+            child: Container(
+              width: 44,
+              height: 5,
+              decoration: BoxDecoration(
+                color: _AvatarColors.line,
+                borderRadius: BorderRadius.circular(999),
+              ),
             ),
           ),
           const SizedBox(height: 18),
-          _UnsavedAvatarButton(
+          const Row(
+            children: [
+              NomoPopIcon(
+                icon: CupertinoIcons.person_crop_circle_fill,
+                color: _AvatarColors.coral,
+                size: 48,
+                iconSize: 25,
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '変更を保存しますか？',
+                      style: TextStyle(
+                        color: _AvatarColors.ink,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.4,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '閉じる前にアバターの変更を保存できます',
+                      style: TextStyle(
+                        color: _AvatarColors.dim,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(13),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFEEF5),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: _AvatarColors.coral.withValues(alpha: .18),
+              ),
+            ),
+            child: const Row(
+              children: [
+                NomoGeneratedIcon(
+                  CupertinoIcons.info_circle_fill,
+                  color: _AvatarColors.coral,
+                  size: 20,
+                ),
+                SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    '保存しない場合は、変更前のアバターに戻ります。',
+                    style: TextStyle(
+                      color: _AvatarColors.ink,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          Nomo3DButton(
             label: '保存して閉じる',
             icon: CupertinoIcons.check_mark_circled_solid,
             color: _AvatarColors.coral,
-            textColor: Colors.white,
+            foregroundColor: Colors.white,
+            shadowColor: const Color(0xFFD95F88),
+            height: 52,
+            radius: 22,
+            fontSize: 15,
             onTap: () => Navigator.of(context).pop(_UnsavedAvatarAction.save),
           ),
           const SizedBox(height: 10),
-          _UnsavedAvatarButton(
+          Nomo3DButton(
             label: '変更を戻す',
             icon: CupertinoIcons.arrow_uturn_left,
-            color: const Color(0xFFFFF2F7),
-            textColor: _AvatarColors.coral,
+            color: const Color(0xFFFFEEF5),
+            foregroundColor: _AvatarColors.coral,
+            shadowColor: const Color(0xFFE8D7DE),
+            height: 48,
+            radius: 21,
+            fontSize: 14,
+            useGradient: false,
             onTap: () =>
                 Navigator.of(context).pop(_UnsavedAvatarAction.discard),
           ),
@@ -207,51 +282,9 @@ class _UnsavedAvatarSheet extends StatelessWidget {
               '編集を続ける',
               style: TextStyle(
                 color: _AvatarColors.dim,
+                fontSize: 14,
                 fontWeight: FontWeight.w900,
               ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _UnsavedAvatarButton extends StatelessWidget {
-  const _UnsavedAvatarButton({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.textColor,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final Color color;
-  final Color textColor;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          NomoGeneratedIcon(icon, color: textColor, size: 22),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
             ),
           ),
         ],
