@@ -267,6 +267,8 @@ NomoFriend _friendFromProfileRow(
     avatar: NomoAvatar.decode(profile['avatar_url'] as String?),
     isFavorite: isFavorite,
     statusKey: statusKey,
+    totalDrinkCount: (profile['total_drink_count'] as num?)?.toInt(),
+    lastDrinkAt: DateTime.tryParse((profile['last_drink_at'] as String?) ?? ''),
   );
 }
 

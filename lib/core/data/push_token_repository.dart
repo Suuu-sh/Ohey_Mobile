@@ -27,11 +27,13 @@ class PushTokenRepository {
 
   Future<void> registerToken(String token) async {
     if (!hasSignedInUser || token.trim().isEmpty) return;
-    await _client.put('/v1/me/push-token', {
-      'token': token,
-      'platform': currentPushPlatformKey(),
-    });
+    await _client.put('/v1/me/push-token', pushTokenPayload(token));
   }
 }
 
 String currentPushPlatformKey() => Platform.isAndroid ? 'android' : 'ios';
+
+Map<String, dynamic> pushTokenPayload(String token) => {
+  'token': token,
+  'platform': currentPushPlatformKey(),
+};

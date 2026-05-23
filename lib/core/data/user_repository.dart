@@ -57,13 +57,15 @@ class UserRepository {
     required NomoGender gender,
     NomoAvatar? avatar,
   }) async {
-    await _client.put('/v1/me/profile', {
-      'user_id': userId,
-      'display_name': name,
-      'gender': gender.key,
-      'character_key': 'avatar',
-      'avatar_url': avatar?.encode() ?? '',
-    });
+    await _client.put(
+      '/v1/me/profile',
+      createProfilePayload(
+        name: name,
+        userId: userId,
+        gender: gender,
+        avatar: avatar,
+      ),
+    );
   }
 
   Future<void> updateProfile({
@@ -71,12 +73,10 @@ class UserRepository {
     required String userId,
     NomoAvatar? avatar,
   }) async {
-    await _client.patch('/v1/me/profile', {
-      'user_id': userId,
-      'display_name': name,
-      'character_key': 'avatar',
-      'avatar_url': avatar?.encode() ?? '',
-    });
+    await _client.patch(
+      '/v1/me/profile',
+      updateProfilePayload(name: name, userId: userId, avatar: avatar),
+    );
   }
 
   Future<void> updateDailyStatus(NomoDailyStatus status) async {
@@ -117,4 +117,32 @@ String _todayIsoDate() {
   return '${now.year.toString().padLeft(4, '0')}-'
       '${now.month.toString().padLeft(2, '0')}-'
       '${now.day.toString().padLeft(2, '0')}';
+}
+
+Map<String, dynamic> createProfilePayload({
+  required String name,
+  required String userId,
+  required NomoGender gender,
+  NomoAvatar? avatar,
+}) {
+  return {
+    'user_id': userId,
+    'display_name': name,
+    'gender': gender.key,
+    'character_key': 'avatar',
+    'avatar_url': avatar?.encode() ?? '',
+  };
+}
+
+Map<String, dynamic> updateProfilePayload({
+  required String name,
+  required String userId,
+  NomoAvatar? avatar,
+}) {
+  return {
+    'user_id': userId,
+    'display_name': name,
+    'character_key': 'avatar',
+    'avatar_url': avatar?.encode() ?? '',
+  };
 }

@@ -55,13 +55,12 @@ class AuthRepository {
       email: email,
       password: password,
       emailRedirectTo: SupabaseConfig.authRedirectUrl,
-      data: {
-        'user_id': userId,
-        'display_name': displayName,
-        'gender': gender.key,
-        'character_key': 'avatar',
-        'avatar_url': avatar.encode(),
-      },
+      data: authProfileMetadata(
+        userId: userId,
+        displayName: displayName,
+        gender: gender,
+        avatar: avatar,
+      ),
     );
   }
 }
@@ -71,5 +70,20 @@ String authOAuthScopes(OAuthProvider provider) {
     OAuthProvider.google => 'email profile',
     OAuthProvider.apple => 'name email',
     _ => 'email profile',
+  };
+}
+
+Map<String, dynamic> authProfileMetadata({
+  required String userId,
+  required String displayName,
+  required NomoGender gender,
+  required NomoAvatar avatar,
+}) {
+  return {
+    'user_id': userId,
+    'display_name': displayName,
+    'gender': gender.key,
+    'character_key': 'avatar',
+    'avatar_url': avatar.encode(),
   };
 }

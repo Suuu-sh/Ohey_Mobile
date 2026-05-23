@@ -340,61 +340,43 @@ class _TodayInviteEmpty extends StatelessWidget {
 
 String _recommendationReasonFor(_DecoratedFriend item) {
   final friend = item.friend;
-  if (friend.monthlyCount == null || friend.monthlyCount == 0) {
+  if ((friend.totalDrinkCount ?? 0) == 0) {
     return 'おすすめの理由：まだ行ったことない';
   }
-  if (friend.monthlyCount == 1) {
-    return 'おすすめの理由：最近あまり行ってない';
+  if (friend.isFavorite && _daysSinceLastDrink(friend) >= 30) {
+    return 'おすすめの理由：お気に入りだけど30日以上行ってない';
   }
-  if (friend.isFavorite) {
-    return 'おすすめの理由：お気に入り';
-  }
-  if (friend.isOnline == true) {
-    return 'おすすめの理由：いま反応しやすそう';
-  }
-  if (item.status.label == '今日飲める') {
+  if (friend.statusKey == 'can_drink_today') {
     return 'おすすめの理由：今日飲めそう';
   }
-  if (item.status.label == 'ノンアルなら') {
+  if (friend.statusKey == 'non_alcohol') {
     return 'おすすめの理由：軽く誘いやすい';
   }
-  final reasons = const [
-    'おすすめの理由：1ヶ月行ってない',
-    'おすすめの理由：最近誘いやすそう',
-    'おすすめの理由：久しぶりに飲めそう',
-    'おすすめの理由：今夜の気分に合いそう',
-  ];
-  final seed = friend.id.codeUnits.fold<int>(
-    friend.name.length,
-    (sum, value) => sum + value,
-  );
-  return reasons[seed % reasons.length];
+  return 'おすすめの理由：誘いやすい状態';
 }
 
 bool _isRecommendedFriend(_DecoratedFriend item) {
-  if (!_isDrinkableStatus(item.status)) {
-    return false;
-  }
   final friend = item.friend;
-  return friend.monthlyCount == null ||
-      friend.monthlyCount == 0 ||
-      friend.monthlyCount == 1 ||
-      friend.isFavorite ||
-      friend.isOnline == true ||
-      item.status.label == '今日飲める' ||
-      item.status.label == 'ノンアルなら';
+  return (friend.totalDrinkCount ?? 0) == 0 ||
+      (friend.isFavorite && _daysSinceLastDrink(friend) >= 30) ||
+      friend.statusKey == 'can_drink_today' ||
+      friend.statusKey == 'non_alcohol';
 }
 
 int _recommendationScoreFor(_DecoratedFriend item) {
   final friend = item.friend;
   var score = 0;
-  if (friend.monthlyCount == null || friend.monthlyCount == 0) score += 90;
-  if (friend.monthlyCount == 1) score += 70;
-  if (friend.isFavorite) score += 45;
-  if (friend.isOnline == true) score += 35;
-  if (item.status.label == '今日飲める') score += 30;
-  if (item.status.label == 'ノンアルなら') score += 20;
+  if ((friend.totalDrinkCount ?? 0) == 0) score += 100;
+  if (friend.isFavorite && _daysSinceLastDrink(friend) >= 30) score += 80;
+  if (friend.statusKey == 'can_drink_today') score += 60;
+  if (friend.statusKey == 'non_alcohol') score += 50;
   return score;
+}
+
+int _daysSinceLastDrink(NomoFriend friend) {
+  final lastDrinkAt = friend.lastDrinkAt;
+  if (lastDrinkAt == null) return 1 << 30;
+  return DateTime.now().difference(lastDrinkAt).inDays;
 }
 
 class _AddFriendsPromoCard extends StatelessWidget {
@@ -663,6 +645,8 @@ NomoFriend _friendWithFavorite(NomoFriend friend, bool isFavorite) {
     gender: friend.gender,
     avatar: friend.avatar,
     monthlyCount: friend.monthlyCount,
+    totalDrinkCount: friend.totalDrinkCount,
+    lastDrinkAt: friend.lastDrinkAt,
     statusKey: friend.statusKey,
     isOnline: friend.isOnline,
     isFavorite: isFavorite,

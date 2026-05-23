@@ -20,6 +20,8 @@ class NomoFriend {
     this.gender = NomoGender.unspecified,
     this.avatar,
     this.monthlyCount,
+    this.totalDrinkCount,
+    this.lastDrinkAt,
     this.statusKey,
     this.isOnline,
     this.isFavorite = false,
@@ -35,6 +37,8 @@ class NomoFriend {
   final NomoGender gender;
   final NomoAvatar? avatar;
   final int? monthlyCount;
+  final int? totalDrinkCount;
+  final DateTime? lastDrinkAt;
   final String? statusKey;
   final bool? isOnline;
   final bool isFavorite;

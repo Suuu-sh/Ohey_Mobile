@@ -20,10 +20,19 @@ import '../../profile/presentation/avatar_builder_screen.dart';
 part 'create_user_auth_helpers.dart';
 part 'create_user_demo.dart';
 part 'create_user_demo_screen.dart';
-part 'create_user_shell_widgets.dart';
-part 'create_user_form_widgets.dart';
+part 'create_user_step_shell_widgets.dart';
+part 'create_user_relogin_widgets.dart';
+part 'create_user_signup_shell_widgets.dart';
+part 'create_user_account_choice_widgets.dart';
+part 'create_user_profile_form_widgets.dart';
+part 'create_user_text_field_widgets.dart';
+part 'create_user_social_auth_widgets.dart';
+part 'create_user_message_widgets.dart';
 part 'create_user_profile_actions.dart';
-part 'create_user_pages.dart';
+part 'create_user_intro_page.dart';
+part 'create_user_account_choice_page.dart';
+part 'create_user_auth_pages.dart';
+part 'create_user_profile_page.dart';
 part 'create_user_auth_actions.dart';
 
 enum _OnboardingStep { intro, accountChoice, auth, profile }

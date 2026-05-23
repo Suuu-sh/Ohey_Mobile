@@ -3,11 +3,29 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nomo/core/data/auth_repository.dart';
 import 'package:nomo/core/data/push_token_repository.dart';
 import 'package:nomo/core/data/user_repository.dart';
+import 'package:nomo/core/models/nomo_avatar.dart';
+import 'package:nomo/core/models/nomo_gender.dart';
 
 void main() {
   test('authOAuthScopes returns provider-specific safe scopes', () {
     expect(authOAuthScopes(OAuthProvider.google), 'email profile');
     expect(authOAuthScopes(OAuthProvider.apple), 'name email');
+  });
+
+  test('authProfileMetadata uses only profile fields accepted by backend', () {
+    final payload = authProfileMetadata(
+      userId: 'nomo_user',
+      displayName: 'Nomo User',
+      gender: NomoGender.female,
+      avatar: NomoAvatar.defaultAvatar,
+    );
+
+    expect(payload['user_id'], 'nomo_user');
+    expect(payload['display_name'], 'Nomo User');
+    expect(payload['gender'], 'female');
+    expect(payload['character_key'], 'avatar');
+    expect(payload['avatar_url'], isA<String>());
+    expect(payload.keys, hasLength(5));
   });
 
   test('Nomo user id helpers validate and derive stable defaults', () {
@@ -20,7 +38,38 @@ void main() {
     );
   });
 
-  test('push platform helper emits supported API platform key', () {
+  test('profile payload helpers keep create and update scopes explicit', () {
+    expect(
+      createProfilePayload(
+        name: 'Nomo User',
+        userId: 'nomo_user',
+        gender: NomoGender.male,
+      ),
+      <String, dynamic>{
+        'user_id': 'nomo_user',
+        'display_name': 'Nomo User',
+        'gender': 'male',
+        'character_key': 'avatar',
+        'avatar_url': '',
+      },
+    );
+
+    expect(
+      updateProfilePayload(name: 'Renamed', userId: 'renamed_user'),
+      <String, dynamic>{
+        'user_id': 'renamed_user',
+        'display_name': 'Renamed',
+        'character_key': 'avatar',
+        'avatar_url': '',
+      },
+    );
+  });
+
+  test('push platform and payload helpers emit supported API platform key', () {
     expect(currentPushPlatformKey(), isIn(<String>['ios', 'android']));
+    expect(pushTokenPayload('device-token'), <String, dynamic>{
+      'token': 'device-token',
+      'platform': currentPushPlatformKey(),
+    });
   });
 }
