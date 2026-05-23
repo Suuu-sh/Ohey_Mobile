@@ -310,8 +310,8 @@ class _SaveButton extends StatelessWidget {
     onTap: onPressed,
     height: 56,
     radius: 22,
-    color: const Color(0xFF35DCC4),
-    shadowColor: const Color(0xFF35DCC4),
+    color: AppColors.primaryAction,
+    shadowColor: AppColors.primaryActionShadow,
     fontSize: 15,
     useGradient: false,
   );

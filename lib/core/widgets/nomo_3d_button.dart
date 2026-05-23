@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import '../theme/app_colors.dart';
 import 'nomo_pop_icon.dart';
 
 class Nomo3DButton extends StatelessWidget {
@@ -10,7 +12,7 @@ class Nomo3DButton extends StatelessWidget {
     this.icon,
     this.height = 58,
     this.radius = 24,
-    this.color = const Color(0xFF12C9A4),
+    this.color = AppColors.primaryAction,
     this.foregroundColor = Colors.white,
     this.shadowColor,
     this.disabledColor,
@@ -50,9 +52,9 @@ class Nomo3DButton extends StatelessWidget {
     this.icon,
     this.height = 58,
     this.radius = 24,
-    this.color = const Color(0xFFFF5F8F),
+    this.color = AppColors.danger,
     this.foregroundColor = Colors.white,
-    this.shadowColor = const Color(0xFFC9416D),
+    this.shadowColor = AppColors.dangerShadow,
     this.disabledColor,
     this.disabledOpacity = 1,
     this.trailing,
@@ -135,7 +137,7 @@ class Nomo3DButtonSurface extends StatefulWidget {
     required this.onTap,
     this.height = 58,
     this.radius = 24,
-    this.color = const Color(0xFF12C9A4),
+    this.color = AppColors.primaryAction,
     this.bottomColor,
     this.disabledColor,
     this.disabledOpacity = 1,

@@ -233,9 +233,9 @@ class _NomoProfilePreviewSheetState extends State<_NomoProfilePreviewSheet> {
               enabled: _canRequest,
               height: 54,
               radius: 22,
-              color: _canRequest ? const Color(0xFF22D7C5) : _statusColor,
+              color: _canRequest ? AppColors.primaryAction : _statusColor,
               shadowColor: _canRequest
-                  ? const Color(0xFF109F91)
+                  ? AppColors.primaryActionShadow
                   : _statusColor.withValues(alpha: .62),
               fontSize: 15,
             ),

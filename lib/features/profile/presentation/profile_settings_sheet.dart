@@ -416,7 +416,7 @@ class _SheetPrimaryButton extends StatelessWidget {
       height: 54,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color(0xFF12C9A4),
+        color: AppColors.primaryAction,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: Colors.white.withValues(alpha: .16),

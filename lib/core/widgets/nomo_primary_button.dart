@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 import 'nomo_3d_button.dart';
 
 class NomoPrimaryButton extends StatelessWidget {
@@ -26,8 +28,8 @@ class NomoPrimaryButton extends StatelessWidget {
       onTap: onPressed,
       height: 58,
       radius: 24,
-      color: const Color(0xFF12C9A4),
-      shadowColor: const Color(0xFF079078),
+      color: AppColors.primaryAction,
+      shadowColor: AppColors.primaryActionShadow,
       fontSize: 16,
     );
   }
