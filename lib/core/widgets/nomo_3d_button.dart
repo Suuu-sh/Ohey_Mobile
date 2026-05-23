@@ -88,7 +88,7 @@ class Nomo3DButton extends StatelessWidget {
   }
 }
 
-class Nomo3DButtonSurface extends StatelessWidget {
+class Nomo3DButtonSurface extends StatefulWidget {
   const Nomo3DButtonSurface({
     super.key,
     required this.child,
@@ -129,15 +129,30 @@ class Nomo3DButtonSurface extends StatelessWidget {
   final AlignmentGeometry alignment;
 
   @override
+  State<Nomo3DButtonSurface> createState() => _Nomo3DButtonSurfaceState();
+}
+
+class _Nomo3DButtonSurfaceState extends State<Nomo3DButtonSurface> {
+  bool _isPressed = false;
+
+  void _setPressed(bool value) {
+    if (_isPressed == value || !mounted) {
+      return;
+    }
+    setState(() => _isPressed = value);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final canTap = enabled && onTap != null && !isLoading;
-    final isUnavailable = !enabled || onTap == null;
-    final base = isUnavailable && disabledColor != null
-        ? disabledColor!
-        : color;
-    final bottom = bottomColor ?? Color.lerp(base, Colors.black, .28)!;
-    final opacity = isUnavailable && disabledColor != null
-        ? disabledOpacity
+    final canTap = widget.enabled && widget.onTap != null && !widget.isLoading;
+    final isUnavailable = !widget.enabled || widget.onTap == null;
+    final isPressed = canTap && _isPressed;
+    final base = isUnavailable && widget.disabledColor != null
+        ? widget.disabledColor!
+        : widget.color;
+    final bottom = widget.bottomColor ?? Color.lerp(base, Colors.black, .28)!;
+    final opacity = isUnavailable && widget.disabledColor != null
+        ? widget.disabledOpacity
         : 1.0;
 
     return LayoutBuilder(
@@ -146,36 +161,41 @@ class Nomo3DButtonSurface extends StatelessWidget {
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: canTap ? onTap : null,
+          onTapDown: canTap ? (_) => _setPressed(true) : null,
+          onTapUp: canTap ? (_) => _setPressed(false) : null,
+          onTapCancel: canTap ? () => _setPressed(false) : null,
+          onTap: canTap ? widget.onTap : null,
           child: Opacity(
             opacity: opacity,
             child: Container(
               width: expandsWidth ? double.infinity : null,
-              height: height + 7,
+              height: widget.height + 7,
               decoration: BoxDecoration(
                 color: bottom,
-                borderRadius: BorderRadius.circular(radius + 1),
+                borderRadius: BorderRadius.circular(widget.radius + 1),
                 boxShadow:
-                    outerShadows ??
+                    widget.outerShadows ??
                     [
                       BoxShadow(
-                        color: base.withValues(alpha: .22),
-                        blurRadius: 22,
-                        offset: const Offset(0, 10),
+                        color: base.withValues(alpha: isPressed ? .12 : .22),
+                        blurRadius: isPressed ? 12 : 22,
+                        offset: Offset(0, isPressed ? 5 : 10),
                       ),
                     ],
               ),
               child: Align(
                 alignment: Alignment.topCenter,
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 140),
+                  duration: const Duration(milliseconds: 90),
+                  curve: Curves.easeOutCubic,
+                  transform: Matrix4.translationValues(0, isPressed ? 6 : 0, 0),
                   width: expandsWidth ? double.infinity : null,
-                  height: height,
-                  alignment: alignment,
-                  padding: padding,
+                  height: widget.height,
+                  alignment: widget.alignment,
+                  padding: widget.padding,
                   decoration: BoxDecoration(
-                    color: useGradient ? null : base,
-                    gradient: useGradient
+                    color: widget.useGradient ? null : base,
+                    gradient: widget.useGradient
                         ? LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -188,22 +208,26 @@ class Nomo3DButtonSurface extends StatelessWidget {
                           )
                         : null,
                     boxShadow:
-                        innerShadows ??
+                        widget.innerShadows ??
                         [
                           BoxShadow(
-                            color: base.withValues(alpha: .22),
-                            blurRadius: 18,
-                            spreadRadius: 1,
+                            color: base.withValues(
+                              alpha: isPressed ? .12 : .22,
+                            ),
+                            blurRadius: isPressed ? 10 : 18,
+                            spreadRadius: isPressed ? 0 : 1,
                             offset: const Offset(0, 0),
                           ),
                         ],
-                    borderRadius: BorderRadius.circular(radius),
+                    borderRadius: BorderRadius.circular(widget.radius),
                     border: Border.all(
-                      color: borderColor ?? Colors.white.withValues(alpha: .18),
-                      width: borderWidth,
+                      color:
+                          widget.borderColor ??
+                          Colors.white.withValues(alpha: .18),
+                      width: widget.borderWidth,
                     ),
                   ),
-                  child: child,
+                  child: widget.child,
                 ),
               ),
             ),
