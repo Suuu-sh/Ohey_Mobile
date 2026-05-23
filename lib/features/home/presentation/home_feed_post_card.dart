@@ -280,63 +280,54 @@ class _FeedCardFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
+    final secondaryText = isWhite
+        ? const Color(0xFF778393)
+        : Colors.white.withValues(alpha: .62);
+    final likeAccent = item.liked ? AppColors.danger : AppColors.primaryAction;
+    final shareAccent = item.isOfficial
+        ? AppColors.info
+        : item.ownedByMe
+        ? AppColors.invite
+        : AppColors.primaryAction;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+      padding: const EdgeInsets.fromLTRB(14, 11, 14, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(
-                width: 112,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _FeedOverlayAction(
-                          semanticLabel: item.liked ? 'いいねを取り消す' : 'いいね',
-                          icon: item.liked
-                              ? CupertinoIcons.heart_fill
-                              : CupertinoIcons.heart,
-                          color: item.liked
-                              ? const Color(0xFFFF5EA8)
-                              : primaryText,
-                          onTap: onLike,
-                        ),
-                        const SizedBox(width: 18),
-                        _FeedOverlayAction(
-                          semanticLabel: '共有',
-                          customIcon: _VectorShareIcon(
-                            color: primaryText,
-                            size: 27,
-                          ),
-                          onTap: onShare,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '${item.likes}件のいいね',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: primaryText,
-                        fontWeight: FontWeight.w900,
-                        height: 1.15,
-                      ),
-                    ),
-                  ],
-                ),
+              _FeedActionPill(
+                semanticLabel: item.liked ? 'いいねを取り消す' : 'いいねで反応',
+                icon: item.liked
+                    ? CupertinoIcons.heart_fill
+                    : CupertinoIcons.heart,
+                label: _feedLikeActionLabel(item),
+                color: likeAccent,
+                isWhite: isWhite,
+                onTap: onLike,
+              ),
+              const SizedBox(width: 8),
+              _FeedActionPill(
+                semanticLabel: item.isOfficial
+                    ? '公式投稿を詳しく見る'
+                    : item.ownedByMe
+                    ? '思い出を共有'
+                    : '投稿を共有',
+                customIcon: item.isOfficial
+                    ? null
+                    : _VectorShareIcon(color: shareAccent, size: 18),
+                icon: item.isOfficial ? CupertinoIcons.doc_text_fill : null,
+                label: _feedShareActionLabel(item),
+                color: shareAccent,
+                isWhite: isWhite,
+                onTap: onShare,
               ),
               const Spacer(),
               if (item.friends.isNotEmpty) ...[
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 _FeedCompanionInlineButton(
                   friends: item.friends,
                   isWhite: isWhite,
@@ -344,37 +335,62 @@ class _FeedCardFooter extends StatelessWidget {
               ],
             ],
           ),
+          const SizedBox(height: 8),
+          Text(
+            _feedReactionSummary(item),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: item.likes > 0 ? primaryText : secondaryText,
+              fontWeight: FontWeight.w900,
+              height: 1.15,
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _FeedOverlayAction extends StatelessWidget {
-  const _FeedOverlayAction({
+class _FeedActionPill extends StatelessWidget {
+  const _FeedActionPill({
     required this.semanticLabel,
+    required this.label,
+    required this.color,
+    required this.isWhite,
     this.icon,
     this.customIcon,
-    this.color = Colors.white,
     this.onTap,
   });
 
   final String semanticLabel;
+  final String label;
   final IconData? icon;
   final Widget? customIcon;
   final Color color;
+  final bool isWhite;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final textColor = isWhite
+        ? Color.lerp(color, Colors.black, .22)!
+        : Colors.white;
     return Semantics(
       button: true,
       label: semanticLabel,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(10, 7, 12, 7),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: isWhite ? .12 : .20),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: color.withValues(alpha: isWhite ? .28 : .34),
+            ),
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -382,9 +398,19 @@ class _FeedOverlayAction extends StatelessWidget {
                   NomoPopIcon(
                     icon: icon ?? CupertinoIcons.circle,
                     color: color,
-                    size: 29,
+                    size: 19,
+                    iconSize: 16,
                     showBubble: false,
                   ),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                ),
+              ),
             ],
           ),
         ),
@@ -526,6 +552,35 @@ class _FeedPlaceholderOrb extends StatelessWidget {
 
 String _feedCardCaption(_FeedItem item) {
   return _duoStyleBody(item).trim();
+}
+
+String _feedLikeActionLabel(_FeedItem item) {
+  if (item.isOfficial) return item.liked ? '保存済み' : '参考になった';
+  if (item.ownedByMe) return item.liked ? 'いいね済み' : 'いいね';
+  return item.liked ? '反応済み' : 'いいねで反応';
+}
+
+String _feedShareActionLabel(_FeedItem item) {
+  if (item.isOfficial) return '詳しく見る';
+  if (item.ownedByMe) return '思い出を共有';
+  return '共有';
+}
+
+String _feedReactionSummary(_FeedItem item) {
+  if (item.isOfficial) {
+    return item.likes > 0 ? '${item.likes}人がチェックしました' : 'Nomoからのお知らせです';
+  }
+  if (item.likes <= 0) {
+    return item.ownedByMe ? 'まだリアクションはありません' : '最初にリアクションしよう';
+  }
+  final companion = item.friends.isNotEmpty
+      ? item.friends.first.name.trim()
+      : '';
+  if (companion.isNotEmpty && item.likes > 1) {
+    return '$companionほか${item.likes - 1}人がいいね';
+  }
+  if (companion.isNotEmpty) return '$companionがいいね';
+  return '${item.likes}件のいいね';
 }
 
 class _FeedPostKindBadge extends StatelessWidget {
