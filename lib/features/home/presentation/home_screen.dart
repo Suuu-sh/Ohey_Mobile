@@ -140,6 +140,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               title: 'フィード',
               titleColor: _FeedColors.teal,
               titleOffset: const Offset(0, -54),
+              trailingOffset: const Offset(0, -54),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

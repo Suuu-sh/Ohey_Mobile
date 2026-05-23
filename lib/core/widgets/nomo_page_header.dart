@@ -10,6 +10,7 @@ class NomoPageHeader extends StatelessWidget {
     this.trailing,
     this.titleColor,
     this.titleOffset = Offset.zero,
+    this.trailingOffset = Offset.zero,
   });
 
   static const double height = 52;
@@ -34,6 +35,7 @@ class NomoPageHeader extends StatelessWidget {
   final Widget? trailing;
   final Color? titleColor;
   final Offset titleOffset;
+  final Offset trailingOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +71,10 @@ class NomoPageHeader extends StatelessWidget {
               ),
             ),
           ),
-          if (trailing != null) ...[const SizedBox(width: 12), trailing!],
+          if (trailing != null) ...[
+            const SizedBox(width: 12),
+            Transform.translate(offset: trailingOffset, child: trailing!),
+          ],
         ],
       ),
     );
