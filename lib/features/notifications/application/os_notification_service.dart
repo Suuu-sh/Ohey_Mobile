@@ -4,6 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/models/nomo_drink_invite.dart';
 import '../data/notification_repository.dart';
 
 final osNotificationServiceProvider = Provider<OsNotificationService>((ref) {
@@ -80,6 +81,36 @@ class OsNotificationService {
     if (newest.isAfter(lastNotifiedAt)) {
       await prefs.setString(_lastNotifiedKey, newest.toIso8601String());
     }
+  }
+
+  Future<void> showDrinkInviteReceived(NomoDrinkInvite invite) async {
+    await _initialize();
+
+    final prefs = await SharedPreferences.getInstance();
+    final notifiedKey = 'nomo_notified_drink_invite_${invite.id}';
+    if (prefs.getBool(notifiedKey) ?? false) return;
+
+    await _plugin.show(
+      id: invite.id.hashCode,
+      title: '${invite.fromUser.name}から飲みのお誘い',
+      body: '今日飲みに行かない？アプリで返信できます。',
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'nomo_notifications',
+          'Nomo通知',
+          channelDescription: 'フレンド申請、飲み誘い、いいねなどのNomo通知',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
+      payload: 'drink_invite:${invite.id}',
+    );
+    await prefs.setBool(notifiedKey, true);
   }
 
   Future<void> _initialize() async {

@@ -5,17 +5,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/camera/presentation/nomo_camera_screen.dart';
+import '../../features/friends/application/drink_invite_controller.dart';
 import '../../features/friends/presentation/friends_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/logs/presentation/add_log_screen.dart';
+import '../../features/notifications/application/notification_controller.dart';
+import '../../features/notifications/application/os_notification_service.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/onboarding/presentation/create_user_dialog.dart';
 import '../application/nomo_user_controller.dart';
 import '../data/nomo_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
+import '../models/nomo_drink_invite.dart';
 import '../theme/app_colors.dart';
 import '../theme/nomo_theme_mode.dart';
+import 'nomo_3d_button.dart';
 import 'nomo_backend_busy_screen.dart';
+import 'nomo_pop_icon.dart';
+import 'nomo_toast.dart';
 
 class NomoTabShell extends ConsumerStatefulWidget {
   const NomoTabShell({super.key});
@@ -24,17 +31,36 @@ class NomoTabShell extends ConsumerStatefulWidget {
   ConsumerState<NomoTabShell> createState() => _NomoTabShellState();
 }
 
-class _NomoTabShellState extends ConsumerState<NomoTabShell> {
+class _NomoTabShellState extends ConsumerState<NomoTabShell>
+    with WidgetsBindingObserver {
   int _selectedIndex = 0;
   bool _didScheduleProfileRestore = false;
   bool _didAttemptProfileRestore = false;
   bool _isOnboardingSeen = false;
   bool _onboardingPrefLoaded = false;
+  bool _isDrinkInviteModalOpen = false;
+  String? _lastPresentedDrinkInviteId;
+  final Set<String> _notifiedDrinkInviteIds = <String>{};
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadOnboardingPref();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    _lastPresentedDrinkInviteId = null;
+    ref.invalidate(incomingDrinkInvitesProvider);
+    ref.invalidate(notificationControllerProvider);
   }
 
   Future<void> _loadOnboardingPref() async {
@@ -77,6 +103,55 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
     );
   }
 
+  void _handleIncomingDrinkInvites(List<NomoDrinkInvite> invites) {
+    if (ref.read(nomoUserProvider) == null) return;
+    final pendingInvites = invites
+        .where((invite) => invite.status == NomoDrinkInviteStatus.pending)
+        .toList(growable: false);
+    if (pendingInvites.isEmpty) return;
+
+    for (final invite in pendingInvites) {
+      if (!_notifiedDrinkInviteIds.add(invite.id)) continue;
+      ref.read(osNotificationServiceProvider).showDrinkInviteReceived(invite);
+    }
+
+    final invite = pendingInvites.first;
+    if (_isDrinkInviteModalOpen || _lastPresentedDrinkInviteId == invite.id) {
+      return;
+    }
+    _lastPresentedDrinkInviteId = invite.id;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isDrinkInviteModalOpen) return;
+      _showIncomingDrinkInviteModal(invite);
+    });
+  }
+
+  Future<void> _showIncomingDrinkInviteModal(NomoDrinkInvite invite) async {
+    _isDrinkInviteModalOpen = true;
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        useSafeArea: true,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        barrierColor: Colors.black.withValues(alpha: .62),
+        builder: (_) => _IncomingDrinkInviteSheet(
+          invite: invite,
+          onAccept: () async {
+            await ref.read(drinkInviteControllerProvider).accept(invite.id);
+            ref.invalidate(notificationControllerProvider);
+          },
+          onReject: () async {
+            await ref.read(drinkInviteControllerProvider).reject(invite.id);
+            ref.invalidate(notificationControllerProvider);
+          },
+        ),
+      );
+    } finally {
+      _isDrinkInviteModalOpen = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(nomoUserProvider);
@@ -84,8 +159,14 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
     ref.watch(supabaseAuthStateProvider);
     final hasSession =
         ref.watch(supabaseClientProvider).auth.currentSession != null;
+    final incomingDrinkInvitesAsync = ref.watch(incomingDrinkInvitesProvider);
+    ref.listen<AsyncValue<List<NomoDrinkInvite>>>(
+      incomingDrinkInvitesProvider,
+      (previous, next) => next.whenData(_handleIncomingDrinkInvites),
+    );
 
     if (user != null) {
+      incomingDrinkInvitesAsync.whenData(_handleIncomingDrinkInvites);
       _didAttemptProfileRestore = false;
       _didScheduleProfileRestore = false;
       if (_onboardingPrefLoaded && !_isOnboardingSeen) {
@@ -230,6 +311,209 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _IncomingDrinkInviteSheet extends StatefulWidget {
+  const _IncomingDrinkInviteSheet({
+    required this.invite,
+    required this.onAccept,
+    required this.onReject,
+  });
+
+  final NomoDrinkInvite invite;
+  final Future<void> Function() onAccept;
+  final Future<void> Function() onReject;
+
+  @override
+  State<_IncomingDrinkInviteSheet> createState() =>
+      _IncomingDrinkInviteSheetState();
+}
+
+class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
+  String? _busyAction;
+
+  Future<void> _submit({required bool accept}) async {
+    if (_busyAction != null) return;
+    setState(() => _busyAction = accept ? 'accept' : 'reject');
+    try {
+      if (accept) {
+        await widget.onAccept();
+      } else {
+        await widget.onReject();
+      }
+      if (!mounted) return;
+      NomoToast.show(context, accept ? '飲み誘いを承認しました' : '飲み誘いを見送りました');
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        accept
+            ? '承認できませんでした。時間をおいてもう一度お試しください。'
+            : '見送りできませんでした。時間をおいてもう一度お試しください。',
+      );
+      setState(() => _busyAction = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final from = widget.invite.fromUser;
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+        decoration: BoxDecoration(
+          color: const Color(0xFF071622),
+          borderRadius: BorderRadius.circular(34),
+          border: Border.all(color: Colors.white.withValues(alpha: .10)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .32),
+              blurRadius: 30,
+              offset: const Offset(0, 18),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: .22),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const NomoPopIcon(
+                  icon: CupertinoIcons.calendar_badge_plus,
+                  color: Color(0xFFC08BFF),
+                  size: 54,
+                  iconSize: 29,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${from.name}から飲みのお誘い',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.4,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFC08BFF).withValues(alpha: .14),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: const Color(
+                              0xFFC08BFF,
+                            ).withValues(alpha: .26),
+                          ),
+                        ),
+                        child: const Text(
+                          '返信待ち',
+                          style: TextStyle(
+                            color: Color(0xFFC08BFF),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                CupertinoButton(
+                  minimumSize: const Size(42, 42),
+                  padding: EdgeInsets.zero,
+                  onPressed: _busyAction == null
+                      ? () => Navigator.of(context).pop()
+                      : null,
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      CupertinoIcons.xmark,
+                      color: Colors.white,
+                      size: 21,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .045),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: Colors.white.withValues(alpha: .08)),
+              ),
+              child: Text(
+                '${from.name}さんが今日の飲みに誘っています。\n承認すると今日の飲み予定に追加されます。',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: .78),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  height: 1.45,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Nomo3DButton(
+              label: '承認して飲みに行く',
+              icon: CupertinoIcons.checkmark_circle_fill,
+              onTap: () => _submit(accept: true),
+              isLoading: _busyAction == 'accept',
+              enabled: _busyAction == null,
+              height: 54,
+              radius: 22,
+              color: const Color(0xFFFF4FB5),
+              shadowColor: const Color(0xFFB91472),
+              fontSize: 15,
+            ),
+            const SizedBox(height: 10),
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: _busyAction == null
+                  ? () => _submit(accept: false)
+                  : null,
+              child: Text(
+                _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: .60),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
