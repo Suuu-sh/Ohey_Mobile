@@ -70,8 +70,8 @@ class ProfileScreen extends ConsumerWidget {
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
     final canOpenAdmin = hasAdminEmail || hasAdminAccess;
     final topBackground = isWhite
-        ? const Color(0xFF06111D)
-        : const Color(0xFFF4F2EE);
+        ? Colors.white
+        : AppColors.darkBackgroundBottom;
     final bodyBackground = isWhite
         ? Colors.white
         : AppColors.darkBackgroundBottom;
@@ -107,6 +107,7 @@ class ProfileScreen extends ConsumerWidget {
                     child: Column(
                       children: [
                         _PageHeader(
+                          isWhite: isWhite,
                           canOpenAdmin: canOpenAdmin,
                           onSettings: () => _showSettingsSheet(context, ref),
                           onAdmin: () => _openAdminScreen(context),

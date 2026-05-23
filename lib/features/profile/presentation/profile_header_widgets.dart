@@ -2,28 +2,31 @@ part of 'profile_screen.dart';
 
 class _PageHeader extends StatelessWidget {
   const _PageHeader({
+    required this.isWhite,
     required this.canOpenAdmin,
     required this.onSettings,
     required this.onAdmin,
   });
 
+  final bool isWhite;
   final bool canOpenAdmin;
   final VoidCallback onSettings;
   final VoidCallback onAdmin;
 
   @override
   Widget build(BuildContext context) {
+    final headerColor = isWhite ? const Color(0xFF101820) : Colors.white;
     return NomoPageHeader(
       title: 'マイページ',
-      titleColor: Colors.white,
+      titleColor: headerColor,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (canOpenAdmin) ...[
-            _ProfileAdminButton(onTap: onAdmin),
+            _ProfileAdminButton(isWhite: isWhite, onTap: onAdmin),
             const SizedBox(width: 2),
           ],
-          _ProfileSettingsButton(onTap: onSettings),
+          _ProfileSettingsButton(isWhite: isWhite, onTap: onSettings),
         ],
       ),
     );
@@ -31,8 +34,9 @@ class _PageHeader extends StatelessWidget {
 }
 
 class _ProfileAdminButton extends StatelessWidget {
-  const _ProfileAdminButton({required this.onTap});
+  const _ProfileAdminButton({required this.isWhite, required this.onTap});
 
+  final bool isWhite;
   final VoidCallback onTap;
 
   @override
@@ -51,7 +55,7 @@ class _ProfileAdminButton extends StatelessWidget {
           child: Center(
             child: NomoGeneratedIcon(
               CupertinoIcons.lock_shield_fill,
-              color: Colors.white,
+              color: isWhite ? const Color(0xFF101820) : Colors.white,
               size: 36,
             ),
           ),
@@ -62,8 +66,9 @@ class _ProfileAdminButton extends StatelessWidget {
 }
 
 class _ProfileSettingsButton extends StatelessWidget {
-  const _ProfileSettingsButton({required this.onTap});
+  const _ProfileSettingsButton({required this.isWhite, required this.onTap});
 
+  final bool isWhite;
   final VoidCallback onTap;
 
   @override
@@ -82,7 +87,7 @@ class _ProfileSettingsButton extends StatelessWidget {
           child: Center(
             child: NomoGeneratedIcon(
               CupertinoIcons.gear_alt,
-              color: Colors.white,
+              color: isWhite ? const Color(0xFF101820) : Colors.white,
               size: 38,
             ),
           ),
@@ -108,7 +113,7 @@ class _ProfileTopSheet extends StatelessWidget {
         18,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF03101E).withValues(alpha: .08),
+        color: Colors.transparent,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(34)),
       ),
       child: child,
@@ -134,7 +139,7 @@ class _SimpleHero extends StatelessWidget {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: isWhite ? const Color(0xFF06111D) : const Color(0xFFF4F2EE),
+        color: isWhite ? Colors.white : const Color(0xFF101D25),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Column(
@@ -148,7 +153,7 @@ class _SimpleHero extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Opacity(
-                    opacity: isWhite ? .90 : .58,
+                    opacity: isWhite ? .18 : .58,
                     child: ExcludeSemantics(
                       child: Image.asset(
                         'assets/images/profile_header_scene.png',
@@ -164,8 +169,8 @@ class _SimpleHero extends StatelessWidget {
                         end: Alignment.bottomCenter,
                         colors: isWhite
                             ? [
-                                const Color(0xFF101B28).withValues(alpha: .36),
-                                const Color(0xFF06111D).withValues(alpha: .64),
+                                Colors.white.withValues(alpha: .60),
+                                Colors.white.withValues(alpha: .92),
                               ]
                             : [
                                 const Color(0xFFFFFFFF).withValues(alpha: .22),
