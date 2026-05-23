@@ -100,7 +100,7 @@ class BackendApiClient {
       throw const BackendApiException('ログインが必要です。');
     }
     if (!AuthSessionGuard.isTokenForCurrentProject(token)) {
-      throw const BackendApiException('ログイン情報を更新してください。もう一度ログインしてください。');
+      throw const BackendApiException('もう一度ログインしてね。');
     }
 
     final uri = _baseUri.replace(

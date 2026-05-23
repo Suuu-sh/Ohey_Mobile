@@ -31,8 +31,8 @@ class _NomoProfilePreviewSheetState extends State<_NomoProfilePreviewSheet> {
     }
     return switch (widget.requestState) {
       NomoFriendRequestState.outgoing => 'フレンズ申請を送信済みです。相手の承認を待っています。',
-      NomoFriendRequestState.incoming => 'この人からフレンズ申請が届いています。承認するとフレンズになります。',
-      NomoFriendRequestState.none => 'フレンズ申請を送って、承認されたら飲みログや予約でつながれます。',
+      NomoFriendRequestState.incoming => 'フレンズ申請が届いています。',
+      NomoFriendRequestState.none => '申請して、飲みログでつながろう。',
     };
   }
 

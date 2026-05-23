@@ -133,7 +133,7 @@ class _FeedNotificationsScreenState
                           icon: CupertinoIcons.exclamationmark_triangle,
                           isWhite: isWhite,
                           title: 'お知らせを読み込めませんでした',
-                          message: '時間をおいてもう一度お試しください。',
+                          message: 'あとでもう一度試してね。',
                           accent: const Color(0xFFFF75B5),
                         )
                       else if ((notifications ?? const []).isEmpty)
@@ -213,7 +213,7 @@ class _FeedNotificationsScreenState
   ) async {
     final drinkInviteId = notification.drinkInviteId;
     if (drinkInviteId == null || drinkInviteId.isEmpty) {
-      NomoToast.show(context, 'この飲み予定を開けなかったよ。少し時間をおいて試してみてね。');
+      NomoToast.show(context, 'この飲み予定を開けなかったよ。あとでもう一度試してね。');
       return;
     }
 
@@ -442,7 +442,7 @@ class _FriendRequestNotificationSheetState
       if (!mounted) return;
       NomoToast.show(
         context,
-        accept ? '承認できなかったよ。少し時間をおいて試してみてね。' : '見送りできなかったよ。少し時間をおいて試してみてね。',
+        accept ? '承認できなかったよ。あとでもう一度試してね。' : '見送りできなかったよ。あとでもう一度試してね。',
       );
       setState(() => _busyAction = null);
     }
@@ -569,7 +569,7 @@ class _FriendRequestNotificationSheetState
               ),
               child: Text(
                 _isPending
-                    ? '${widget.notification.message}\n承認するとフレンズになり、飲みログや飲み予定でつながれます。'
+                    ? widget.notification.message
                     : widget.notification.message,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: .78),
@@ -667,7 +667,7 @@ class _DrinkInviteNotificationSheetState
       if (!mounted) return;
       NomoToast.show(
         context,
-        accept ? '承認できなかったよ。少し時間をおいて試してみてね。' : '見送りできなかったよ。少し時間をおいて試してみてね。',
+        accept ? '承認できなかったよ。あとでもう一度試してね。' : '見送りできなかったよ。あとでもう一度試してね。',
       );
       setState(() => _busyAction = null);
     }
@@ -794,7 +794,7 @@ class _DrinkInviteNotificationSheetState
               ),
               child: Text(
                 _isPending
-                    ? '${widget.notification.message}\n承認すると今日の飲み予定に追加されます。'
+                    ? widget.notification.message
                     : widget.notification.message,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: .78),

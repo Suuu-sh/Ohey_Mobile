@@ -822,7 +822,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
           );
       if (!mounted) return;
       setState(() {
-        _notice = 'パスワード再設定メールを送信しました。メール内のリンクから再設定してください。';
+        _notice = '再設定メールを送ったよ。リンクを開いてね。';
       });
     } on AuthException catch (e) {
       if (!mounted) return;
@@ -1094,7 +1094,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                       ),
                       SizedBox(height: compact ? 6 : 12),
                       Text(
-                        'フレンズリストに表示する名前・性別と自分だけのアバターを作ってね。',
+                        '名前とアバターを作ってね。',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: .66),
                           fontSize: compact ? 12 : 15,
@@ -1304,7 +1304,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
         if (res.session == null) {
           if (mounted) {
             setState(() {
-              _notice = '確認メールを送信しました。メール内のリンクを開いてからログインしてください。';
+              _notice = '確認メールを送ったよ。リンクを開いてね。';
             });
           }
           return;
@@ -1325,7 +1325,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _error = 'プロフィールを作れなかったよ。少し時間をおいて試してみてね');
+        setState(() => _error = '作成できなかったよ。あとでもう一度試してね');
       }
     } finally {
       if (mounted) setState(() => _isBusy = false);

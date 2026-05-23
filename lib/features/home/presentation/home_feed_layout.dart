@@ -343,7 +343,7 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
                       ),
                       const SizedBox(height: 7),
                       Text(
-                        'フィードは1枚ずつめくって見られます。\n気になる投稿は下のボタンから反応できます。',
+                        '1枚ずつめくって、気になる投稿に反応しよう。',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: subColor,
@@ -955,7 +955,6 @@ class _FeedHeaderOverlay extends StatelessWidget {
                           ? Colors.white
                           : AppColors.darkBackgroundBottom,
                       accentColor: _FeedColors.teal,
-                      imageTopOffset: -118,
                       topShadeOpacity: .12,
                       fadeStartOpacity: .92,
                     ),
@@ -999,7 +998,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
         icon: CupertinoIcons.photo_on_rectangle,
         isWhite: isWhite,
         title: '飲みログはまだありません',
-        message: 'まずは今日の一杯や思い出を残して、フィードを動かしましょう。',
+        message: '今日の一杯から残してみよう。',
         accent: _FeedColors.teal,
         action: SizedBox(
           width: 220,
@@ -1049,7 +1048,7 @@ Future<void> _showFeedPostActions(
         if (context.mounted) NomoToast.show(context, '飲みログを削除しました');
       } catch (error) {
         if (context.mounted) {
-          NomoToast.show(context, '飲みログを削除できなかったよ。少し時間をおいて試してみてね');
+          NomoToast.show(context, '削除できなかったよ。あとでもう一度試してね');
         }
       }
     case _FeedPostAction.report:
@@ -1058,7 +1057,7 @@ Future<void> _showFeedPostActions(
         if (context.mounted) NomoToast.show(context, '飲みログを報告しました');
       } catch (error) {
         if (context.mounted) {
-          NomoToast.show(context, '飲みログを報告できなかったよ。少し時間をおいて試してみてね');
+          NomoToast.show(context, '報告できなかったよ。あとでもう一度試してね');
         }
       }
   }

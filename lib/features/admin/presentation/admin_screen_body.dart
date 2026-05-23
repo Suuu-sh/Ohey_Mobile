@@ -57,7 +57,7 @@ class _AdminAccessContent extends ConsumerWidget {
         child: CupertinoActivityIndicator(color: _AdminColors.lime),
       ),
       error: (error, _) => _AdminErrorState(
-        message: '管理者確認がうまくいかなかったよ。少し時間をおいて試してみてね',
+        message: '確認できなかったよ。あとでもう一度試してね',
         onRetry: () => ref.invalidate(adminAccessProvider),
       ),
     );

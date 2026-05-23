@@ -200,7 +200,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             setState(() => _favoriteOverrides[friend.id] = previous);
           }
           if (!context.mounted) return;
-          NomoToast.show(context, 'お気に入り設定を変えられなかったよ。少し時間をおいて試してみてね');
+          NomoToast.show(context, '変更できなかったよ。あとでもう一度試してね');
         });
   }
 
@@ -211,7 +211,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       NomoToast.show(context, '${friend.name}に飲み招待を送りました。');
     } catch (error) {
       if (!mounted) return;
-      NomoToast.show(context, '招待を送れなかったよ。少し時間をおいて試してみてね');
+      NomoToast.show(context, '招待を送れなかったよ。あとでもう一度試してね');
     }
   }
 
@@ -315,7 +315,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                         loading: () =>
                             const _LoadingState(label: 'フレンズを読み込み中...'),
                         error: (error, stackTrace) => _ErrorState(
-                          title: 'フレンズを読み込めなかったよ。少し時間をおいて試してみてね',
+                          title: '読み込めなかったよ。あとでもう一度試してね',
                           message: '$error',
                         ),
                         data: (friends) => _FriendsList(

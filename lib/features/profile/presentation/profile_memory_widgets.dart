@@ -66,7 +66,7 @@ Future<void> _showEditProfileSheet(
             if (!sheetContext.mounted) return;
             setState(() {
               saving = false;
-              error = '保存できなかったよ。少し時間をおいて試してみてね';
+              error = '保存できなかったよ。あとでもう一度試してね';
             });
           }
         }

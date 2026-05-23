@@ -47,7 +47,7 @@ class _FriendsList extends StatelessWidget {
         avatar: userAvatar,
         message: friends.isEmpty ? 'フレンズがいません' : 'この条件のフレンズはいません',
         subtitle: friends.isEmpty
-            ? 'QRコードかユーザーIDで、最初のフレンズを追加しましょう'
+            ? 'QRコードかIDでフレンズを追加しよう'
             : selectedCustomFilter == null
             ? '別の条件を選ぶと見つかるかも'
             : 'フィルターを長押しすると編集できます',

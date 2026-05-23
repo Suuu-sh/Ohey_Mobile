@@ -120,7 +120,7 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      NomoToast.show(context, '検索できなかったよ。少し時間をおいて試してみてね');
+      NomoToast.show(context, '検索できなかったよ。あとでもう一度試してね');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -153,7 +153,7 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
       NomoToast.show(context, '${profile.displayName}をフレンズに追加しました。');
     } catch (e) {
       if (!mounted) return;
-      NomoToast.show(context, 'フレンズ追加がうまくいかなかったよ。少し時間をおいて試してみてね');
+      NomoToast.show(context, '追加できなかったよ。あとでもう一度試してね');
     }
   }
 }
@@ -193,7 +193,7 @@ class _ExchangeHeader extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'QRコードかユーザーIDで、Nomoのフレンズにつながろう。',
+              'QRコードかIDでフレンズにつながろう。',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: .56),
                 fontSize: 13,

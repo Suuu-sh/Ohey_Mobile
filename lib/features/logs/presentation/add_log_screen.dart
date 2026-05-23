@@ -167,7 +167,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                             ),
                             loading: () => const _LoadingBox(compact: true),
                             error: (error, stackTrace) => const _ErrorBox(
-                              message: 'フレンズを読み込めなかったよ。少し時間をおいて試してみてね',
+                              message: '読み込めなかったよ。あとでもう一度試してね',
                               compact: true,
                             ),
                           ),
@@ -195,7 +195,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
                   child: _SaveButton(
-                    label: _hasPhoto ? '飲みログを投稿する' : '写真を撮る',
+                    label: _hasPhoto ? '飲みログを投稿する' : '写真なしで保存する',
                     isSaving: _isSaving,
                     onPressed: () => _save(
                       friendsAsync.asData?.value ?? const <NomoFriend>[],

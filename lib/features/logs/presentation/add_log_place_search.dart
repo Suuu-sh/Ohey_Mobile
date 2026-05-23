@@ -464,8 +464,8 @@ String _formatPlaceDistance(double meters) {
 String _placeSearchErrorMessage(Object error) {
   if (error is PlatformException) {
     return switch (error.code) {
-      'permission_denied' => '位置情報の利用が許可されていません。設定アプリでNomoの位置情報を許可してください。',
-      'location_unavailable' => '現在地を取得できませんでした。少し移動するか、時間をおいてもう一度試してください。',
+      'permission_denied' => '設定アプリで位置情報を許可してね。',
+      'location_unavailable' => '現在地を取れなかったよ。あとで試してね。',
       'not_available' => 'この端末では現在地からのお店検索を利用できません。',
       _ => error.message ?? '位置情報からお店を検索できませんでした。',
     };

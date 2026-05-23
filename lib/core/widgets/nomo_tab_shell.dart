@@ -550,7 +550,7 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                       ),
                     ),
                     child: Text(
-                      '${from.name}さんが今日の飲みに誘っています。\n承認すると今日の飲み予定に追加されます。',
+                      '${from.name}さんから飲み予定が届いたよ。',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: .82),
                         fontSize: 14,

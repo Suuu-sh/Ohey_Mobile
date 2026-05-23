@@ -299,11 +299,11 @@ Future<void> showMyQrDialog(
       if (e.statusCode == 409) {
         NomoToast.show(sheetContext, 'すでに申請済みです');
       } else {
-        NomoToast.show(sheetContext, '申請を送れなかったよ。少し時間をおいて試してみてね');
+        NomoToast.show(sheetContext, '申請を送れなかったよ。あとでもう一度試してね');
       }
     } catch (e) {
       if (!sheetContext.mounted) return;
-      NomoToast.show(sheetContext, '申請を送れなかったよ。少し時間をおいて試してみてね');
+      NomoToast.show(sheetContext, '申請を送れなかったよ。あとでもう一度試してね');
     }
   }
 
@@ -356,11 +356,11 @@ Future<void> showMyQrDialog(
       if (e.statusCode == 404) {
         NomoToast.show(dialogContext, '@$query は見つかりませんでした');
       } else {
-        NomoToast.show(dialogContext, '検索できなかったよ。少し時間をおいて試してみてね');
+        NomoToast.show(dialogContext, '検索できなかったよ。あとでもう一度試してね');
       }
     } catch (e) {
       if (!dialogContext.mounted) return;
-      NomoToast.show(dialogContext, '検索できなかったよ。少し時間をおいて試してみてね');
+      NomoToast.show(dialogContext, '検索できなかったよ。あとでもう一度試してね');
     }
   }
 
@@ -480,7 +480,7 @@ Future<void> _respondDrinkInvite(
     NomoToast.show(context, accept ? '飲み予定が成立しました。' : '招待を見送りました。');
   } catch (error) {
     if (!context.mounted) return;
-    NomoToast.show(context, '返信できなかったよ。少し時間をおいて試してみてね');
+    NomoToast.show(context, '返信できなかったよ。あとでもう一度試してね');
   }
 }
 

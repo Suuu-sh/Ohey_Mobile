@@ -790,7 +790,7 @@ class _ArchiveEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '写真付きで飲みログを投稿すると、インスタのアーカイブみたいにここで見返せます。',
+              '写真付きの飲みログをここで見返せます。',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: subColor,

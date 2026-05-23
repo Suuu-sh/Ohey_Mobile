@@ -190,7 +190,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!mounted) return;
       NomoToast.show(
         context,
-        'フィードを更新できなかったよ。少し時間をおいて試してみてね',
+        '更新できなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.arrow_clockwise,
       );
     } finally {
@@ -228,7 +228,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!context.mounted) return;
       NomoToast.show(
         context,
-        '共有を始められなかったよ。少し時間をおいて試してみてね',
+        '共有を始められなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.square_arrow_up,
       );
     }

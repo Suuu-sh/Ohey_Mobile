@@ -138,7 +138,7 @@ extension _AddLogScreenActions on _AddLogScreenState {
     } catch (error) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      NomoToast.show(context, '飲みログを保存できなかったよ。少し時間をおいて試してみてね');
+      NomoToast.show(context, '保存できなかったよ。あとでもう一度試してね');
     }
   }
 

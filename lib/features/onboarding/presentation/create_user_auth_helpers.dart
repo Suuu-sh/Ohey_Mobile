@@ -35,10 +35,10 @@ String _friendlyAuthError(String message) {
     return _networkAuthErrorMessage;
   }
   if (lower.contains('invalid login credentials')) {
-    return 'メールアドレスまたはパスワードが違います。入力内容を確認するか、アカウントをお持ちでない場合は新規登録してください。';
+    return 'メールアドレスかパスワードを確認してね。';
   }
   if (lower.contains('email not confirmed')) {
-    return 'メール確認がまだです。確認メールのリンクを開いてからログインしてください。';
+    return '確認メールのリンクを開いてね。';
   }
   return message;
 }
@@ -46,10 +46,10 @@ String _friendlyAuthError(String message) {
 String _friendlyUnexpectedAuthError(Object error) {
   final lower = error.toString().toLowerCase();
   if (_isNetworkAuthError(lower)) return _networkAuthErrorMessage;
-  return 'ログインに失敗しました。時間をおいてもう一度お試しください。';
+  return 'ログインに失敗しました。あとでもう一度試してね。';
 }
 
-const _networkAuthErrorMessage = 'サーバーに接続できませんでした。通信環境を確認して、もう一度お試しください。';
+const _networkAuthErrorMessage = '接続できなかったよ。通信環境を確認してね。';
 
 bool _isNetworkAuthError(String lowerMessage) {
   return lowerMessage.contains('socketexception') ||

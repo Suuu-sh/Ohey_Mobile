@@ -76,7 +76,7 @@ class _AdminPostEditorSheetState extends ConsumerState<_AdminPostEditorSheet> {
                   ? const _AdminInfoBox(
                       key: ValueKey('official-info'),
                       title: 'Nomo公式として投稿します',
-                      message: '投稿者は自動で公式アカウントになります。全ユーザーのフィードに表示されます。',
+                      message: '公式アカウントとして全員に表示されます。',
                     )
                   : _AdminOwnerField(
                       key: const ValueKey('owner-field'),
