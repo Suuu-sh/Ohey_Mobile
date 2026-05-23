@@ -213,50 +213,128 @@ class _UnsavedProfileSheet extends StatelessWidget {
   Widget build(BuildContext context) => SafeArea(
     child: Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
       decoration: BoxDecoration(
-        color: const Color(0xFF071622),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: _ProfileColors.line),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF0B1D2B), Color(0xFF06131F)],
+        ),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.white12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .34),
+            blurRadius: 32,
+            offset: const Offset(0, 16),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'プロフィールの変更を保存する？',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '保存せずに閉じると、変更前のプロフィールに戻ります。',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: .62),
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              height: 1.45,
+          Center(
+            child: Container(
+              width: 44,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .18),
+                borderRadius: BorderRadius.circular(999),
+              ),
             ),
           ),
           const SizedBox(height: 18),
-          _UnsavedProfileButton(
+          const Row(
+            children: [
+              NomoPopIcon(
+                icon: CupertinoIcons.person_crop_circle_fill,
+                color: Color(0xFF20D0B4),
+                size: 48,
+                iconSize: 25,
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '変更を保存しますか？',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.4,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '閉じる前にプロフィールの変更を保存できます',
+                      style: TextStyle(
+                        color: _ProfileColors.sub,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(13),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: .055),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withValues(alpha: .08)),
+            ),
+            child: Row(
+              children: [
+                const NomoGeneratedIcon(
+                  CupertinoIcons.info_circle_fill,
+                  color: Color(0xFF20D0B4),
+                  size: 20,
+                ),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    '保存しない場合は、変更前のプロフィールに戻ります。',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: .72),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          Nomo3DButton(
             label: '保存して閉じる',
             icon: CupertinoIcons.check_mark_circled_solid,
             color: const Color(0xFF20D0B4),
-            textColor: Colors.white,
+            foregroundColor: Colors.white,
+            shadowColor: const Color(0xFF0C8B7A),
+            height: 52,
+            radius: 22,
+            fontSize: 15,
             onTap: () => Navigator.of(context).pop(_UnsavedProfileAction.save),
           ),
           const SizedBox(height: 10),
-          _UnsavedProfileButton(
+          Nomo3DButton(
             label: '変更を戻す',
             icon: CupertinoIcons.arrow_uturn_left,
             color: Colors.white.withValues(alpha: .07),
-            textColor: Colors.white,
+            foregroundColor: Colors.white,
+            shadowColor: Colors.black.withValues(alpha: .30),
+            height: 48,
+            radius: 21,
+            fontSize: 14,
+            useGradient: false,
             onTap: () =>
                 Navigator.of(context).pop(_UnsavedProfileAction.discard),
           ),
@@ -268,51 +346,9 @@ class _UnsavedProfileSheet extends StatelessWidget {
               '編集を続ける',
               style: TextStyle(
                 color: _ProfileColors.sub,
+                fontSize: 14,
                 fontWeight: FontWeight.w900,
               ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _UnsavedProfileButton extends StatelessWidget {
-  const _UnsavedProfileButton({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.textColor,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final Color color;
-  final Color textColor;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          NomoGeneratedIcon(icon, color: textColor, size: 22),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
             ),
           ),
         ],
