@@ -1528,107 +1528,118 @@ class _AddFriendsPromoCard extends StatelessWidget {
           onTap();
         },
         child: Container(
-          height: 126,
+          height: 106,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(28),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: isWhite
-                  ? const [Color(0xFF153746), Color(0xFF071F30)]
-                  : const [Color(0xFF0D3442), Color(0xFF071D2F)],
+                  ? const [Color(0xFF123D4A), Color(0xFF092334)]
+                  : const [Color(0xFF0B3240), Color(0xFF071A2B)],
             ),
             border: Border.all(
-              color: const Color(0xFF36E1D0).withValues(alpha: 0.18),
+              color: const Color(0xFF37DFCF).withValues(alpha: 0.22),
             ),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF1FE4C9).withValues(alpha: 0.12),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
           child: Stack(
             children: [
               Positioned(
-                right: -24,
-                top: -28,
+                left: -34,
+                bottom: -54,
                 child: Container(
-                  width: 150,
-                  height: 150,
+                  width: 140,
+                  height: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: _FriendsColors.lime.withValues(alpha: 0.05),
                   ),
                 ),
               ),
-              const Positioned(
-                right: 20,
-                top: 13,
-                bottom: 10,
-                child: _DrinkGlassesIllustration(),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(28, 22, 160, 18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'フレンズを追加しよう！',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.92),
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.6,
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 18, 18),
+                  child: Row(
+                    children: [
+                      const _FriendPromoAvatarStack(),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'フレンズを追加しよう',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.94),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 7),
+                            Text(
+                              '友達を増やして、もっと楽しく飲もう',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.68),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.1,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      '友達を増やして、\nもっと楽しく飲もう！',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.72),
-                        fontSize: 15,
-                        height: 1.42,
-                        fontWeight: FontWeight.w800,
+                      const SizedBox(width: 12),
+                      Container(
+                        height: 46,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(23),
+                          color: _FriendsColors.lime,
+                          boxShadow: [
+                            BoxShadow(
+                              color: _FriendsColors.lime.withValues(
+                                alpha: 0.25,
+                              ),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '追加',
+                              style: TextStyle(
+                                color: Color(0xFF0B2A22),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            NomoGeneratedIcon(
+                              CupertinoIcons.chevron_right,
+                              color: Color(0xFF0B2A22),
+                              size: 18,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              Positioned(
-                right: 126,
-                top: 0,
-                bottom: 0,
-                child: Center(
-                  child: Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          _FriendsColors.lime.withValues(alpha: 0.22),
-                          _FriendsColors.lime.withValues(alpha: 0.08),
-                        ],
-                      ),
-                      border: Border.all(
-                        color: _FriendsColors.lime.withValues(alpha: 0.24),
-                      ),
-                    ),
-                    child: Center(
-                      child: NomoGeneratedIcon(
-                        CupertinoIcons.chevron_right,
-                        color: _FriendsColors.lime,
-                        size: 31,
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ),
@@ -1640,113 +1651,98 @@ class _AddFriendsPromoCard extends StatelessWidget {
   }
 }
 
-class _DrinkGlassesIllustration extends StatelessWidget {
-  const _DrinkGlassesIllustration();
+class _FriendPromoAvatarStack extends StatelessWidget {
+  const _FriendPromoAvatarStack();
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 142,
-      height: 104,
-      child: CustomPaint(painter: _DrinkGlassesPainter()),
+    return SizedBox(
+      width: 72,
+      height: 58,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: 24,
+            top: 8,
+            child: _PromoAvatarBubble(
+              color: const Color(0xFF7C5CFF),
+              icon: CupertinoIcons.person_fill,
+            ),
+          ),
+          Positioned(
+            left: 0,
+            top: 0,
+            child: _PromoAvatarBubble(
+              color: const Color(0xFF24D8B0),
+              icon: CupertinoIcons.person_2_fill,
+              isPrimary: true,
+            ),
+          ),
+          Positioned(
+            right: -2,
+            top: -2,
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _FriendsColors.lime,
+                border: Border.all(color: const Color(0xFF0B3240), width: 3),
+              ),
+              child: const Center(
+                child: NomoGeneratedIcon(
+                  CupertinoIcons.plus,
+                  color: Color(0xFF0B2A22),
+                  size: 13,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _DrinkGlassesPainter extends CustomPainter {
-  const _DrinkGlassesPainter();
+class _PromoAvatarBubble extends StatelessWidget {
+  const _PromoAvatarBubble({
+    required this.color,
+    required this.icon,
+    this.isPrimary = false,
+  });
+
+  final Color color;
+  final IconData icon;
+  final bool isPrimary;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final confetti = Paint()
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round;
-    void line(Offset from, Offset to, Color color) {
-      canvas.drawLine(from, to, confetti..color = color);
-    }
-
-    line(const Offset(74, 16), const Offset(69, 4), const Color(0xFF56F0B0));
-    line(const Offset(87, 18), const Offset(95, 8), const Color(0xFF7DEEFF));
-    line(const Offset(15, 40), const Offset(7, 34), const Color(0xFFB8FF00));
-    line(const Offset(121, 26), const Offset(128, 21), const Color(0xFF58E0C3));
-    line(const Offset(111, 84), const Offset(117, 91), const Color(0xFFB8FF00));
-    line(const Offset(33, 16), const Offset(27, 10), const Color(0xFFB46BFF));
-    canvas.drawCircle(
-      const Offset(42, 6),
-      3.2,
-      Paint()..color = const Color(0xFFB8FF00),
-    );
-    canvas.drawCircle(
-      const Offset(13, 77),
-      3,
-      Paint()..color = const Color(0xFF7DEEFF),
-    );
-    canvas.drawCircle(
-      const Offset(132, 61),
-      3,
-      Paint()..color = const Color(0xFF5DEBD2),
-    );
-
-    _drawCup(
-      canvas,
-      center: const Offset(57, 61),
-      fill: const Color(0xFFB8FF00),
-      angle: 0.2,
-    );
-    _drawCup(
-      canvas,
-      center: const Offset(98, 62),
-      fill: const Color(0xFFE568FF),
-      angle: -0.22,
+  Widget build(BuildContext context) {
+    final size = isPrimary ? 50.0 : 44.0;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        border: Border.all(color: const Color(0xFF072130), width: 4),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.28),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Center(
+        child: NomoGeneratedIcon(
+          icon,
+          color: Colors.white,
+          size: isPrimary ? 22 : 19,
+        ),
+      ),
     );
   }
-
-  void _drawCup(
-    Canvas canvas, {
-    required Offset center,
-    required Color fill,
-    required double angle,
-  }) {
-    canvas.save();
-    canvas.translate(center.dx, center.dy);
-    canvas.rotate(angle);
-
-    final cupRect = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(-22, -39, 44, 70),
-      const Radius.circular(8),
-    );
-    final glassPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.38)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round;
-    canvas.drawRRect(cupRect, glassPaint);
-
-    final drinkRect = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(-15, -5, 30, 28),
-      const Radius.circular(6),
-    );
-    canvas.drawRRect(drinkRect, Paint()..color = fill.withValues(alpha: 0.9));
-    canvas.drawRRect(
-      drinkRect,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white.withValues(alpha: 0.18), Colors.transparent],
-        ).createShader(drinkRect.outerRect),
-    );
-
-    final bubblePaint = Paint()..color = Colors.black.withValues(alpha: 0.28);
-    for (final offset in const [Offset(-5, 1), Offset(8, 5), Offset(-1, 12)]) {
-      canvas.drawCircle(offset, 2, bubblePaint);
-    }
-
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _DecoratedFriend {
