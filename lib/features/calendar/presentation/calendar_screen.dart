@@ -135,12 +135,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         ),
                         const SizedBox(height: 18),
                         _MonthHeader(month: _month, onMove: _moveMonth),
-                        const SizedBox(height: 12),
-                        _NextDrinkPlanCard(
-                          reservations: todayReservations,
-                          isWhite: isWhite,
-                          onCreatePlan: widget.onCreatePlan,
-                        ),
                       ],
                     ),
                   ),
@@ -249,92 +243,6 @@ class _ArrowButton extends StatelessWidget {
             fontWeight: FontWeight.w900,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _NextDrinkPlanCard extends StatelessWidget {
-  const _NextDrinkPlanCard({
-    required this.reservations,
-    required this.isWhite,
-    required this.onCreatePlan,
-  });
-
-  final List<NomoDrinkInvite> reservations;
-  final bool isWhite;
-  final VoidCallback? onCreatePlan;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasPlan = reservations.isNotEmpty;
-    final accent = hasPlan ? AppColors.success : AppColors.primaryAction;
-    final title = hasPlan ? '今日の飲み予定あり' : '次の飲み予定を作ろう';
-    final message = hasPlan
-        ? '${_reservationFriendLabel(reservations)}との予定があります'
-        : '空いている日に予定を入れると、カレンダーで見つけやすくなります。';
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      decoration: BoxDecoration(
-        color: isWhite
-            ? Colors.white.withValues(alpha: .92)
-            : const Color(0xFF102233).withValues(alpha: .88),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: accent.withValues(alpha: .36)),
-        boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: isWhite ? .12 : .18),
-            blurRadius: 22,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          NomoPopIcon(
-            icon: hasPlan
-                ? CupertinoIcons.checkmark_seal_fill
-                : CupertinoIcons.calendar_badge_plus,
-            color: accent,
-            size: 46,
-            iconSize: 24,
-          ),
-          const SizedBox(width: 11),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: isWhite ? const Color(0xFF101820) : Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.25,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  message,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isWhite
-                        ? const Color(0xFF657282)
-                        : Colors.white.withValues(alpha: .64),
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
-                    height: 1.25,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (!hasPlan) ...[
-            const SizedBox(width: 10),
-            _MiniCalendarCta(label: '作る', accent: accent, onTap: onCreatePlan),
-          ],
-        ],
       ),
     );
   }
