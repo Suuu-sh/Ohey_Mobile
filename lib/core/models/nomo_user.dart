@@ -55,24 +55,14 @@ extension NomoDailyStatusX on NomoDailyStatus {
     NomoDailyStatus.liverRest ||
     NomoDailyStatus.hasPlans => false,
   };
-
-  String get legacyCompatibleKey => switch (this) {
-    NomoDailyStatus.unselected => 'unselected',
-    NomoDailyStatus.liverRest || NomoDailyStatus.hasPlans => 'busy',
-    NomoDailyStatus.canDrinkToday ||
-    NomoDailyStatus.lightDrink ||
-    NomoDailyStatus.wantDrinkHard ||
-    NomoDailyStatus.nonAlcohol ||
-    NomoDailyStatus.waitingInvite => 'want_drink',
-  };
 }
 
 NomoDailyStatus nomoDailyStatusFromKey(String? key) => switch (key) {
-  'want_drink' || 'can_drink_today' => NomoDailyStatus.canDrinkToday,
+  'can_drink_today' => NomoDailyStatus.canDrinkToday,
   'light_drink' => NomoDailyStatus.lightDrink,
   'want_drink_hard' => NomoDailyStatus.wantDrinkHard,
   'non_alcohol' => NomoDailyStatus.nonAlcohol,
-  'busy' || 'liver_rest' => NomoDailyStatus.liverRest,
+  'liver_rest' => NomoDailyStatus.liverRest,
   'waiting_invite' => NomoDailyStatus.waitingInvite,
   'has_plans' => NomoDailyStatus.hasPlans,
   _ => NomoDailyStatus.unselected,

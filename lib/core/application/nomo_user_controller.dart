@@ -134,20 +134,10 @@ class NomoUserController extends Notifier<NomoUser?> {
       throw StateError('Login is required before updating daily status.');
     }
 
-    try {
-      await client.put('/v1/daily-status', {
-        'status_date': _todayIsoDate(),
-        'status': status.key,
-      });
-    } on BackendApiException catch (error) {
-      final shouldRetryWithLegacyKey =
-          error.statusCode == 400 && status.legacyCompatibleKey != status.key;
-      if (!shouldRetryWithLegacyKey) rethrow;
-      await client.put('/v1/daily-status', {
-        'status_date': _todayIsoDate(),
-        'status': status.legacyCompatibleKey,
-      });
-    }
+    await client.put('/v1/daily-status', {
+      'status_date': _todayIsoDate(),
+      'status': status.key,
+    });
 
     state =
         (state ?? NomoUser(name: 'mi-mu', userId: _defaultUserId(authUserId)))

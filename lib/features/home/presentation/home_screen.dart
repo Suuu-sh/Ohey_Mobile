@@ -3676,40 +3676,14 @@ class _Companion {
 }
 
 String _companionStatusLabel(String? statusKey) {
-  final legacy = switch (statusKey) {
-    'available' => '今ヒマ',
-    'last_train' => '終電までなら',
-    'want_drink' => '飲みたい気分',
-    'busy' => '休肝日',
-    'unset' => '未設定',
-    _ => null,
-  };
-  if (legacy != null) return legacy;
   return nomoDailyStatusFromKey(statusKey).label;
 }
 
 String _companionStatusMessage(String? statusKey) {
-  final legacy = switch (statusKey) {
-    'available' => '今日なら行けるよ〜！',
-    'last_train' => '軽く飲めるかも！',
-    'want_drink' => '誰か誘って〜！',
-    'busy' => '今日はお休み中...',
-    'unset' => 'ステータス未設定',
-    _ => null,
-  };
-  if (legacy != null) return legacy;
   return nomoDailyStatusFromKey(statusKey).description;
 }
 
 IconData _companionStatusIcon(String? statusKey) {
-  final legacy = switch (statusKey) {
-    'available' => CupertinoIcons.hand_thumbsup_fill,
-    'last_train' => CupertinoIcons.clock_fill,
-    'want_drink' => Icons.local_bar_rounded,
-    'busy' => CupertinoIcons.moon_fill,
-    _ => null,
-  };
-  if (legacy != null) return legacy;
   final status = nomoDailyStatusFromKey(statusKey);
   return switch (status) {
     NomoDailyStatus.canDrinkToday => CupertinoIcons.checkmark_circle_fill,
@@ -3724,14 +3698,6 @@ IconData _companionStatusIcon(String? statusKey) {
 }
 
 Color _companionStatusColor(String? statusKey) {
-  final legacy = switch (statusKey) {
-    'available' => const Color(0xFF9AF21A),
-    'last_train' => const Color(0xFF58D6FF),
-    'want_drink' => const Color(0xFFFFC857),
-    'busy' => const Color(0xFFFF5EA8),
-    _ => null,
-  };
-  if (legacy != null) return legacy;
   final status = nomoDailyStatusFromKey(statusKey);
   return switch (status) {
     NomoDailyStatus.canDrinkToday => const Color(0xFF9AF21A),

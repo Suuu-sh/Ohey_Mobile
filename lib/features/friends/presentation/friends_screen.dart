@@ -547,14 +547,7 @@ class _EmptyFriendsState extends StatelessWidget {
 
 bool _isDrinkableStatus(_FriendStatus status) {
   return switch (status.label) {
-    '今ヒマ' ||
-    '終電までなら' ||
-    '飲みたい気分' ||
-    '今日飲める' ||
-    '軽く一杯なら' ||
-    'しっかり飲みたい' ||
-    'ノンアルなら' ||
-    '誘われ待ち' => true,
+    '今日飲める' || '軽く一杯なら' || 'しっかり飲みたい' || 'ノンアルなら' || '誘われ待ち' => true,
     _ => false,
   };
 }
@@ -1132,16 +1125,6 @@ _FriendStatus _statusForFriend(NomoFriend friend, int _) {
       return const _FriendStatus(label: '予定あり', enabled: false);
     case 'unselected' || 'unset' || null || '':
       return const _FriendStatus(label: '未設定', enabled: false);
-    // Legacy daily status keys kept only for old rows. They are displayed as
-    // status labels, not as free-form comments.
-    case 'available':
-      return const _FriendStatus(label: '今ヒマ', enabled: true);
-    case 'last_train':
-      return const _FriendStatus(label: '終電までなら', enabled: true);
-    case 'want_drink':
-      return const _FriendStatus(label: '飲みたい気分', enabled: true);
-    case 'busy':
-      return const _FriendStatus(label: '休肝日', enabled: false);
   }
 
   return const _FriendStatus(label: '未設定', enabled: false);
