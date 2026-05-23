@@ -773,6 +773,7 @@ class _FeedHeaderOverlay extends StatelessWidget {
                       ? Colors.white
                       : AppColors.darkBackgroundBottom,
                   accentColor: _FeedColors.teal,
+                  imageTopOffset: -72,
                   topShadeOpacity: .12,
                   fadeStartOpacity: .92,
                 ),
