@@ -69,7 +69,7 @@ class ProfileScreen extends ConsumerWidget {
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
     final canOpenAdmin = hasAdminEmail || hasAdminAccess;
     const topBackground = Colors.white;
-    const bodyBackground = Colors.white;
+    const bodyBackground = Color(0xFFF7F9FB);
     final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 390;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -119,7 +119,7 @@ class ProfileScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           ColoredBox(
-                            color: Colors.white,
+                            color: bodyBackground,
                             child: Padding(
                               padding: const EdgeInsets.fromLTRB(
                                 24,
