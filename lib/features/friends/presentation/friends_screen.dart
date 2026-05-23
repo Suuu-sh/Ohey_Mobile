@@ -319,6 +319,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           favoriteOverrides: _favoriteOverrides,
                           onFavoriteToggle: (friend, isFavorite) =>
                               _onToggleFavorite(context, friend, isFavorite),
+                          onAddFriend: _openAddFriend,
                           onInvite: (friend) => _sendDrinkInvite(friend),
                         ),
                       ),
@@ -1441,6 +1442,7 @@ class _FriendsList extends StatelessWidget {
     required this.selectedCustomFilter,
     required this.favoriteOverrides,
     required this.onFavoriteToggle,
+    required this.onAddFriend,
     required this.onInvite,
   });
 
@@ -1450,6 +1452,7 @@ class _FriendsList extends StatelessWidget {
   final _CustomFriendFilter? selectedCustomFilter;
   final Map<String, bool> favoriteOverrides;
   final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
+  final VoidCallback onAddFriend;
   final ValueChanged<NomoFriend> onInvite;
 
   @override
@@ -1488,9 +1491,12 @@ class _FriendsList extends StatelessWidget {
     return ListView.separated(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 116),
-      itemCount: filtered.length,
+      itemCount: filtered.length + 1,
       separatorBuilder: (_, _) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
+        if (index == filtered.length) {
+          return _AddFriendsPromoCard(onTap: onAddFriend);
+        }
         final item = filtered[index];
         return _FriendCard(
           friend: item.friend,
@@ -1502,6 +1508,245 @@ class _FriendsList extends StatelessWidget {
       },
     );
   }
+}
+
+class _AddFriendsPromoCard extends StatelessWidget {
+  const _AddFriendsPromoCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return Semantics(
+      button: true,
+      label: 'フレンズを追加',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Container(
+          height: 126,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(30),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isWhite
+                  ? const [Color(0xFF153746), Color(0xFF071F30)]
+                  : const [Color(0xFF0D3442), Color(0xFF071D2F)],
+            ),
+            border: Border.all(
+              color: const Color(0xFF36E1D0).withValues(alpha: 0.18),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1FE4C9).withValues(alpha: 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -24,
+                top: -28,
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.08),
+                  ),
+                ),
+              ),
+              const Positioned(
+                right: 20,
+                top: 13,
+                bottom: 10,
+                child: _DrinkGlassesIllustration(),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(28, 22, 160, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'フレンズを追加しよう！',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.92),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.6,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '友達を増やして、\nもっと楽しく飲もう！',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.72),
+                        fontSize: 15,
+                        height: 1.42,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                right: 126,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          _FriendsColors.lime.withValues(alpha: 0.22),
+                          _FriendsColors.lime.withValues(alpha: 0.08),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: _FriendsColors.lime.withValues(alpha: 0.24),
+                      ),
+                    ),
+                    child: Center(
+                      child: NomoGeneratedIcon(
+                        CupertinoIcons.chevron_right,
+                        color: _FriendsColors.lime,
+                        size: 31,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DrinkGlassesIllustration extends StatelessWidget {
+  const _DrinkGlassesIllustration();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 142,
+      height: 104,
+      child: CustomPaint(painter: _DrinkGlassesPainter()),
+    );
+  }
+}
+
+class _DrinkGlassesPainter extends CustomPainter {
+  const _DrinkGlassesPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final confetti = Paint()
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+    void line(Offset from, Offset to, Color color) {
+      canvas.drawLine(from, to, confetti..color = color);
+    }
+
+    line(const Offset(74, 16), const Offset(69, 4), const Color(0xFF56F0B0));
+    line(const Offset(87, 18), const Offset(95, 8), const Color(0xFF7DEEFF));
+    line(const Offset(15, 40), const Offset(7, 34), const Color(0xFFB8FF00));
+    line(const Offset(121, 26), const Offset(128, 21), const Color(0xFF58E0C3));
+    line(const Offset(111, 84), const Offset(117, 91), const Color(0xFFB8FF00));
+    line(const Offset(33, 16), const Offset(27, 10), const Color(0xFFB46BFF));
+    canvas.drawCircle(
+      const Offset(42, 6),
+      3.2,
+      Paint()..color = const Color(0xFFB8FF00),
+    );
+    canvas.drawCircle(
+      const Offset(13, 77),
+      3,
+      Paint()..color = const Color(0xFF7DEEFF),
+    );
+    canvas.drawCircle(
+      const Offset(132, 61),
+      3,
+      Paint()..color = const Color(0xFF5DEBD2),
+    );
+
+    _drawCup(
+      canvas,
+      center: const Offset(57, 61),
+      fill: const Color(0xFFB8FF00),
+      angle: 0.2,
+    );
+    _drawCup(
+      canvas,
+      center: const Offset(98, 62),
+      fill: const Color(0xFFE568FF),
+      angle: -0.22,
+    );
+  }
+
+  void _drawCup(
+    Canvas canvas, {
+    required Offset center,
+    required Color fill,
+    required double angle,
+  }) {
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(angle);
+
+    final cupRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(-22, -39, 44, 70),
+      const Radius.circular(8),
+    );
+    final glassPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.38)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawRRect(cupRect, glassPaint);
+
+    final drinkRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(-15, -5, 30, 28),
+      const Radius.circular(6),
+    );
+    canvas.drawRRect(drinkRect, Paint()..color = fill.withValues(alpha: 0.9));
+    canvas.drawRRect(
+      drinkRect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white.withValues(alpha: 0.18), Colors.transparent],
+        ).createShader(drinkRect.outerRect),
+    );
+
+    final bubblePaint = Paint()..color = Colors.black.withValues(alpha: 0.28);
+    for (final offset in const [Offset(-5, 1), Offset(8, 5), Offset(-1, 12)]) {
+      canvas.drawCircle(offset, 2, bubblePaint);
+    }
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _DecoratedFriend {
