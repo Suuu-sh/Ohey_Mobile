@@ -1,16 +1,5 @@
 part of 'create_user_dialog.dart';
 
-String _oauthScopes(OAuthProvider provider) {
-  switch (provider) {
-    case OAuthProvider.apple:
-      return 'name email';
-    case OAuthProvider.google:
-      return 'email profile';
-    default:
-      return '';
-  }
-}
-
 bool _hasValidPassword(String password) =>
     password.length >= _minPasswordLength;
 

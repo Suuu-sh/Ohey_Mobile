@@ -7,9 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
-import '../../../core/config/supabase_config.dart';
 import '../../../core/data/nomo_last_account_store.dart';
-import '../../../core/data/supabase_client_provider.dart';
+import '../../../core/data/auth_repository.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_gender.dart';
 import '../../../core/theme/app_colors.dart';
@@ -72,7 +71,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   @override
   void initState() {
     super.initState();
-    final session = Supabase.instance.client.auth.currentSession;
+    final session = ref.read(authRepositoryProvider).currentSession;
     if (session != null) {
       _step = _OnboardingStep.profile;
       _emailController.text = session.user.email ?? '';
@@ -81,18 +80,19 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _step = _OnboardingStep.auth;
     }
     _showAuthForm = !widget.startAtLogin;
-    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((
-      event,
-    ) {
-      if (!mounted) return;
-      final session = event.session;
-      if (session != null &&
-          (event.event == AuthChangeEvent.signedIn ||
-              event.event == AuthChangeEvent.tokenRefreshed ||
-              event.event == AuthChangeEvent.initialSession)) {
-        unawaited(_handleOAuthSession(session));
-      }
-    });
+    _authSubscription = ref
+        .read(authRepositoryProvider)
+        .onAuthStateChange
+        .listen((event) {
+          if (!mounted) return;
+          final session = event.session;
+          if (session != null &&
+              (event.event == AuthChangeEvent.signedIn ||
+                  event.event == AuthChangeEvent.tokenRefreshed ||
+                  event.event == AuthChangeEvent.initialSession)) {
+            unawaited(_handleOAuthSession(session));
+          }
+        });
     _loadLastAccount();
   }
 
@@ -705,13 +705,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     });
 
     try {
-      await ref
-          .read(supabaseClientProvider)
-          .auth
-          .resetPasswordForEmail(
-            email,
-            redirectTo: SupabaseConfig.authRedirectUrl,
-          );
+      await ref.read(authRepositoryProvider).resetPasswordForEmail(email);
       if (!mounted) return;
       setState(() {
         _notice = '再設定メールを送ったよ。リンクを開いてね。';
@@ -737,14 +731,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _notice = null;
     });
     try {
-      await ref
-          .read(supabaseClientProvider)
-          .auth
-          .signInWithOAuth(
-            provider,
-            redirectTo: SupabaseConfig.authRedirectUrl,
-            scopes: _oauthScopes(provider),
-          );
+      await ref.read(authRepositoryProvider).signInWithOAuth(provider);
       if (!mounted) return;
       setState(() {
         _notice = '$providerLabel認証を完了するとNomoに戻ります。';
@@ -1122,7 +1109,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _notice = null;
     });
     try {
-      final supabase = ref.read(supabaseClientProvider);
+      final authRepository = ref.read(authRepositoryProvider);
       final email = _emailController.text.trim();
       final password = _passwordController.text;
       if (email.isEmpty || !_hasValidPassword(password)) {
@@ -1130,7 +1117,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       }
 
       if (_isLogin) {
-        await supabase.auth.signInWithPassword(
+        await authRepository.signInWithPassword(
           email: email,
           password: password,
         );
@@ -1141,7 +1128,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
           await _saveLastAccount(email);
           return;
         }
-        _hydrateProfileFromAuthMetadata(supabase.auth.currentUser);
+        _hydrateProfileFromAuthMetadata(authRepository.currentUser);
       } else {
         _goToSignupProfileStep();
         return;
@@ -1174,24 +1161,20 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _notice = null;
     });
     try {
-      final supabase = ref.read(supabaseClientProvider);
-      if (supabase.auth.currentSession == null) {
+      final authRepository = ref.read(authRepositoryProvider);
+      if (authRepository.currentSession == null) {
         final email = _emailController.text.trim();
         final password = _passwordController.text;
         if (email.isEmpty || !_hasValidPassword(password)) {
           throw const AuthException(_emailPasswordRequirementMessage);
         }
-        final res = await supabase.auth.signUp(
+        final res = await authRepository.signUpWithProfileMetadata(
           email: email,
           password: password,
-          emailRedirectTo: SupabaseConfig.authRedirectUrl,
-          data: {
-            'user_id': userId,
-            'display_name': name,
-            'gender': gender.key,
-            'character_key': 'avatar',
-            'avatar_url': _avatar.encode(),
-          },
+          userId: userId,
+          displayName: name,
+          gender: gender,
+          avatar: _avatar,
         );
         if (res.session == null) {
           if (mounted) {
