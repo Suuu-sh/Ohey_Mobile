@@ -42,8 +42,33 @@ class _ErrorState extends StatelessWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context) =>
-      NomoStateView.error(message: '$title\n$message');
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
+      padding: const EdgeInsets.only(bottom: 116),
+      children: [
+        SizedBox(
+          height: 360,
+          child: Center(
+            child: NomoEmptyState(
+              visual: const _FriendsErrorVisual(),
+              title: title,
+              message: message,
+              titleColor: isWhite ? const Color(0xFF1B2633) : Colors.white,
+              messageColor: isWhite
+                  ? const Color(0xFF6D7784)
+                  : Colors.white.withValues(alpha: .58),
+              padding: EdgeInsets.zero,
+              spacing: 14,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _FriendsLoadingVisual extends StatelessWidget {
@@ -164,6 +189,75 @@ class _LoadingMascotBubble extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _FriendsErrorVisual extends StatelessWidget {
+  const _FriendsErrorVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return SizedBox(
+      width: 150,
+      height: 126,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 116,
+            height: 116,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFFFF6B8A).withValues(alpha: .20),
+                  _FriendsColors.lime.withValues(alpha: .07),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+          _LoadingMascotBubble(
+            size: 88,
+            color: const Color(0xFFFF8AB1),
+            borderColor: isWhite ? Colors.white : _FriendsColors.bg,
+            avatar: const NomoAvatar(
+              skin: 1,
+              hair: 4,
+              shirt: 6,
+              eyes: 1,
+              mouth: 2,
+              accessory: 0,
+            ),
+          ),
+          Positioned(
+            right: 16,
+            bottom: 12,
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFFF6B8A),
+                border: Border.all(
+                  color: isWhite ? Colors.white : _FriendsColors.bg,
+                  width: 4,
+                ),
+              ),
+              child: const Center(
+                child: NomoGeneratedIcon(
+                  CupertinoIcons.exclamationmark,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
