@@ -1,7 +1,7 @@
 part of 'home_screen.dart';
 
 double _feedHeaderScrollInset(BuildContext context) {
-  return NomoPageHeader.contentTopInset(context);
+  return NomoPageHeader.contentTopInset(context) + 12;
 }
 
 const _feedBottomPageInset = 124.0;
