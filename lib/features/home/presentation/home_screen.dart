@@ -1917,15 +1917,20 @@ class _FeedPostCard extends StatelessWidget {
               child: AspectRatio(
                 aspectRatio: 1,
                 child: ClipRect(
-                  child: hasPhoto
-                      ? _PostPhoto(path: photoPath!)
-                      : _FeedPhotoPlaceholder(accent: item.accent),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      hasPhoto
+                          ? _PostPhoto(path: photoPath!)
+                          : _FeedPhotoPlaceholder(accent: item.accent),
+                      _FeedPhotoCaptionOverlay(caption: caption),
+                    ],
+                  ),
                 ),
               ),
             ),
             _FeedCardFooter(
               item: item,
-              caption: caption,
               isWhite: isWhite,
               onLike: onLike,
               onShare: onShare,
@@ -1933,6 +1938,71 @@ class _FeedPostCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FeedPhotoCaptionOverlay extends StatelessWidget {
+  const _FeedPhotoCaptionOverlay({required this.caption});
+
+  final String caption;
+
+  @override
+  Widget build(BuildContext context) {
+    final body = caption.trim();
+    if (body.isEmpty) return const SizedBox.shrink();
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final lineTop = constraints.maxHeight * .52;
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned(
+              left: 0,
+              right: 0,
+              top: lineTop,
+              child: Container(
+                height: 2.5,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: .78),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: .44),
+                      blurRadius: 12,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 18,
+              right: 18,
+              top: math.max(14.0, lineTop - 50),
+              child: Text(
+                body,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  height: 1.04,
+                  letterSpacing: -.7,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black87,
+                      blurRadius: 12,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -2035,14 +2105,12 @@ class _FeedCardAuthorBar extends StatelessWidget {
 class _FeedCardFooter extends StatelessWidget {
   const _FeedCardFooter({
     required this.item,
-    required this.caption,
     required this.isWhite,
     this.onLike,
     this.onShare,
   });
 
   final _FeedItem item;
-  final String caption;
   final bool isWhite;
   final VoidCallback? onLike;
   final VoidCallback? onShare;
@@ -2050,10 +2118,6 @@ class _FeedCardFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
-    final secondaryText = isWhite
-        ? const Color(0xFF6D7A89)
-        : Colors.white.withValues(alpha: .64);
-    final captionBody = caption.trim();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
@@ -2061,6 +2125,16 @@ class _FeedCardFooter extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (item.friends.isNotEmpty) ...[
+            Align(
+              alignment: Alignment.centerRight,
+              child: _FeedCompanionInlineButton(
+                friends: item.friends,
+                isWhite: isWhite,
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -2108,50 +2182,9 @@ class _FeedCardFooter extends StatelessWidget {
                   ],
                 ),
               ),
-              if (captionBody.isNotEmpty) ...[
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: RichText(
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      text: TextSpan(
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: primaryText,
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w700,
-                          height: 1.28,
-                          letterSpacing: -.16,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: item.userName,
-                            style: const TextStyle(fontWeight: FontWeight.w900),
-                          ),
-                          TextSpan(
-                            text: ' $captionBody',
-                            style: TextStyle(color: secondaryText),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ] else
-                const Spacer(),
+              const Spacer(),
             ],
           ),
-          if (item.friends.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: _FeedCompanionInlineButton(
-                friends: item.friends,
-                isWhite: isWhite,
-              ),
-            ),
-          ],
         ],
       ),
     );

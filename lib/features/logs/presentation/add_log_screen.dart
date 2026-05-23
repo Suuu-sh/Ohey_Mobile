@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -552,23 +553,26 @@ class _PostPreviewCard extends StatelessWidget {
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: ClipRect(
-                    child: _PhotoPreviewImage(
-                      path: path,
-                      fallbackAspectRatio: 1,
-                      fit: BoxFit.cover,
-                      expand: true,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        _PhotoPreviewImage(
+                          path: path,
+                          fallbackAspectRatio: 1,
+                          fit: BoxFit.cover,
+                          expand: true,
+                        ),
+                        _PreviewPhotoCaptionEditor(
+                          controller: memoController,
+                          hint: _previewCaptionHint(place: place),
+                          onChanged: onMemoChanged,
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-              _PreviewFooter(
-                userName: userName,
-                controller: memoController,
-                hint: _previewCaptionHint(place: place),
-                friends: friends,
-                isWhite: isWhite,
-                onChanged: onMemoChanged,
-              ),
+              _PreviewFooter(friends: friends, isWhite: isWhite),
             ],
           ),
         ),
@@ -702,29 +706,112 @@ class _PreviewTimeEditor extends StatelessWidget {
   );
 }
 
-class _PreviewFooter extends StatelessWidget {
-  const _PreviewFooter({
-    required this.userName,
+class _PreviewPhotoCaptionEditor extends StatelessWidget {
+  const _PreviewPhotoCaptionEditor({
     required this.controller,
     required this.hint,
-    required this.friends,
-    required this.isWhite,
     required this.onChanged,
   });
 
-  final String userName;
   final TextEditingController controller;
   final String hint;
-  final List<NomoFriend> friends;
-  final bool isWhite;
   final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final lineTop = constraints.maxHeight * .52;
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned(
+              left: 0,
+              right: 0,
+              top: lineTop,
+              child: Container(
+                height: 2.5,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: .78),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: .44),
+                      blurRadius: 12,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 18,
+              right: 18,
+              top: math.max(14.0, lineTop - 55),
+              child: TextField(
+                controller: controller,
+                onChanged: onChanged,
+                keyboardType: TextInputType.multiline,
+                textInputAction: TextInputAction.newline,
+                minLines: 1,
+                maxLines: 2,
+                cursorColor: _AddLogColors.lime,
+                decoration: InputDecoration(
+                  isDense: true,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  filled: false,
+                  fillColor: Colors.transparent,
+                  contentPadding: EdgeInsets.zero,
+                  hintText: hint,
+                  hintStyle: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(
+                        color: Colors.white.withValues(alpha: .76),
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        height: 1.04,
+                        letterSpacing: -.7,
+                        shadows: const [
+                          Shadow(
+                            color: Colors.black87,
+                            blurRadius: 12,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                ),
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  height: 1.04,
+                  letterSpacing: -.7,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black87,
+                      blurRadius: 12,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _PreviewFooter extends StatelessWidget {
+  const _PreviewFooter({required this.friends, required this.isWhite});
+
+  final List<NomoFriend> friends;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
     final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
-    final secondaryText = isWhite
-        ? const Color(0xFF6D7A89)
-        : Colors.white.withValues(alpha: .64);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
@@ -732,6 +819,13 @@ class _PreviewFooter extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (friends.isNotEmpty) ...[
+            Align(
+              alignment: Alignment.centerRight,
+              child: _PreviewFriendsPill(friends: friends, isWhite: isWhite),
+            ),
+            const SizedBox(height: 8),
+          ],
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -772,109 +866,13 @@ class _PreviewFooter extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: _PreviewCaptionEditor(
-                    userName: userName,
-                    controller: controller,
-                    hint: hint,
-                    primaryText: primaryText,
-                    secondaryText: secondaryText,
-                    onChanged: onChanged,
-                  ),
-                ),
-              ),
+              const Spacer(),
             ],
           ),
-          if (friends.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: _PreviewFriendsPill(friends: friends, isWhite: isWhite),
-            ),
-          ],
         ],
       ),
     );
   }
-}
-
-class _PreviewCaptionEditor extends StatelessWidget {
-  const _PreviewCaptionEditor({
-    required this.userName,
-    required this.controller,
-    required this.hint,
-    required this.primaryText,
-    required this.secondaryText,
-    required this.onChanged,
-  });
-
-  final String userName;
-  final TextEditingController controller;
-  final String hint;
-  final Color primaryText;
-  final Color secondaryText;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Flexible(
-        flex: 0,
-        child: Text(
-          userName,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: primaryText,
-            fontSize: 14.5,
-            fontWeight: FontWeight.w900,
-            height: 1.28,
-            letterSpacing: -.16,
-          ),
-        ),
-      ),
-      const SizedBox(width: 5),
-      Expanded(
-        child: TextField(
-          controller: controller,
-          onChanged: onChanged,
-          keyboardType: TextInputType.multiline,
-          textInputAction: TextInputAction.newline,
-          minLines: 1,
-          maxLines: 3,
-          cursorColor: _AddLogColors.lime,
-          decoration: InputDecoration(
-            isDense: true,
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            filled: false,
-            fillColor: Colors.transparent,
-            contentPadding: EdgeInsets.zero,
-            hintText: hint,
-            hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: secondaryText.withValues(alpha: .74),
-              fontSize: 14.5,
-              fontWeight: FontWeight.w700,
-              height: 1.28,
-              letterSpacing: -.16,
-            ),
-          ),
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: secondaryText,
-            fontSize: 14.5,
-            fontWeight: FontWeight.w700,
-            height: 1.28,
-            letterSpacing: -.16,
-          ),
-        ),
-      ),
-    ],
-  );
 }
 
 class _PreviewFooterAction extends StatelessWidget {
