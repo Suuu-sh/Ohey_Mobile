@@ -17,6 +17,7 @@ part 'admin_user_editor.dart';
 part 'admin_post_editor.dart';
 part 'admin_form_widgets.dart';
 part 'admin_shared_widgets.dart';
+part 'admin_screen_body.dart';
 
 enum _AdminSection { users, posts, notifications }
 
@@ -32,8 +33,6 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final access = ref.watch(adminAccessProvider);
-
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: _AdminColors.bg,
@@ -41,44 +40,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-          child: Column(
-            children: [
-              _AdminHeader(onClose: () => Navigator.of(context).pop()),
-              const SizedBox(height: 16),
-              access.when(
-                data: (allowed) => allowed
-                    ? _AdminSegmentedControl(
-                        section: _section,
-                        onChanged: (section) =>
-                            setState(() => _section = section),
-                      )
-                    : const SizedBox.shrink(),
-                loading: () => const SizedBox.shrink(),
-                error: (_, _) => const SizedBox.shrink(),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: access.when(
-                  data: (allowed) {
-                    if (!allowed) return const _AdminDeniedState();
-                    return switch (_section) {
-                      _AdminSection.users => _AdminUsersPane(ref: ref),
-                      _AdminSection.posts => _AdminPostsPane(ref: ref),
-                      _AdminSection.notifications => _AdminNotificationsPane(
-                        ref: ref,
-                      ),
-                    };
-                  },
-                  loading: () => const Center(
-                    child: CupertinoActivityIndicator(color: _AdminColors.lime),
-                  ),
-                  error: (error, _) => _AdminErrorState(
-                    message: '管理者確認がうまくいかなかったよ。少し時間をおいて試してみてね',
-                    onRetry: () => ref.invalidate(adminAccessProvider),
-                  ),
-                ),
-              ),
-            ],
+          child: _AdminBody(
+            section: _section,
+            onSectionChanged: (section) => setState(() => _section = section),
           ),
         ),
       ),
