@@ -136,7 +136,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
         icon: CupertinoIcons.photo_on_rectangle,
         isWhite: isWhite,
         title: '飲みログはまだありません',
-        message: '今日の一杯から残してみよう。',
+        message: '写真つきの飲みログがフィードに表示されます。記録だけのログはカレンダーで確認できます。',
         accent: _FeedColors.teal,
         action: SizedBox(
           width: 220,
