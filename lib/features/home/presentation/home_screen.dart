@@ -305,7 +305,7 @@ class _FeedPostPage extends StatelessWidget {
           Positioned(
             left: 12,
             right: 12,
-            bottom: _feedBottomPageInset + 16,
+            bottom: _feedBottomPageInset + 4,
             child: _FeedSwipeHint(isWhite: isWhite),
           ),
       ],
