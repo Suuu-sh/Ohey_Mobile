@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,6 +36,8 @@ class NomoTabShell extends ConsumerStatefulWidget {
 
 class _NomoTabShellState extends ConsumerState<NomoTabShell>
     with WidgetsBindingObserver {
+  static const _invitePollInterval = Duration(seconds: 15);
+
   int _selectedIndex = 0;
   bool _didScheduleProfileRestore = false;
   bool _didAttemptProfileRestore = false;
@@ -40,6 +45,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
   bool _onboardingPrefLoaded = false;
   bool _isDrinkInviteModalOpen = false;
   String? _lastPresentedDrinkInviteId;
+  Timer? _invitePollTimer;
   final Set<String> _notifiedDrinkInviteIds = <String>{};
 
   @override
@@ -51,12 +57,19 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
 
   @override
   void dispose() {
+    _invitePollTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _startInvitePolling();
+    } else {
+      _invitePollTimer?.cancel();
+      _invitePollTimer = null;
+    }
     if (state != AppLifecycleState.resumed) return;
     _lastPresentedDrinkInviteId = null;
     ref.invalidate(incomingDrinkInvitesProvider);
@@ -126,6 +139,20 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     });
   }
 
+  void _startInvitePolling() {
+    if (!mounted || ref.read(nomoUserProvider) == null) return;
+    if (_invitePollTimer?.isActive ?? false) return;
+    _invitePollTimer = Timer.periodic(_invitePollInterval, (_) {
+      if (!mounted || ref.read(nomoUserProvider) == null) {
+        _invitePollTimer?.cancel();
+        _invitePollTimer = null;
+        return;
+      }
+      ref.invalidate(incomingDrinkInvitesProvider);
+      ref.invalidate(notificationControllerProvider);
+    });
+  }
+
   Future<void> _showIncomingDrinkInviteModal(NomoDrinkInvite invite) async {
     _isDrinkInviteModalOpen = true;
     try {
@@ -133,6 +160,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
         context: context,
         useSafeArea: true,
         isScrollControlled: true,
+        useRootNavigator: true,
         backgroundColor: Colors.transparent,
         barrierColor: Colors.black.withValues(alpha: .62),
         builder: (_) => _IncomingDrinkInviteSheet(
@@ -166,6 +194,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     );
 
     if (user != null) {
+      _startInvitePolling();
       incomingDrinkInvitesAsync.whenData(_handleIncomingDrinkInvites);
       _didAttemptProfileRestore = false;
       _didScheduleProfileRestore = false;
@@ -205,10 +234,14 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     }
 
     if (user == null && hasSession && !_didAttemptProfileRestore) {
+      _invitePollTimer?.cancel();
+      _invitePollTimer = null;
       return const NomoBackendBusyScreen();
     }
 
     if (user == null && !_onboardingPrefLoaded) {
+      _invitePollTimer?.cancel();
+      _invitePollTimer = null;
       return Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: isWhite
@@ -219,6 +252,8 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     }
 
     if (user == null) {
+      _invitePollTimer?.cancel();
+      _invitePollTimer = null;
       return CreateUserDialog(startAtLogin: _isOnboardingSeen);
     }
 
@@ -364,159 +399,295 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
   Widget build(BuildContext context) {
     final from = widget.invite.fromUser;
     return SafeArea(
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-        decoration: BoxDecoration(
-          color: const Color(0xFF071622),
-          borderRadius: BorderRadius.circular(34),
-          border: Border.all(color: Colors.white.withValues(alpha: .10)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: .32),
-              blurRadius: 30,
-              offset: const Offset(0, 18),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 620),
+        curve: Curves.elasticOut,
+        builder: (context, value, child) {
+          return Transform.translate(
+            offset: Offset(0, (1 - value) * 38),
+            child: Transform.scale(
+              scale: .88 + value * .12,
+              child: Opacity(opacity: value.clamp(0, 1), child: child),
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 44,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .22),
-                  borderRadius: BorderRadius.circular(999),
-                ),
+          );
+        },
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF31104F), Color(0xFF071622)],
+            ),
+            borderRadius: BorderRadius.circular(34),
+            border: Border.all(color: Colors.white.withValues(alpha: .14)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF4FB5).withValues(alpha: .24),
+                blurRadius: 36,
+                offset: const Offset(0, 10),
               ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const NomoPopIcon(
-                  icon: CupertinoIcons.calendar_badge_plus,
-                  color: Color(0xFFC08BFF),
-                  size: 54,
-                  iconSize: 29,
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              BoxShadow(
+                color: Colors.black.withValues(alpha: .34),
+                blurRadius: 30,
+                offset: const Offset(0, 18),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              const Positioned.fill(child: _InviteCelebrationBurst()),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: .22),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
                     children: [
-                      Text(
-                        '${from.name}から飲みのお誘い',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 19,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.4,
+                      const NomoPopIcon(
+                        icon: CupertinoIcons.sparkles,
+                        color: Color(0xFFFFD84D),
+                        size: 54,
+                        iconSize: 29,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              '飲みのお誘いが届いたよ！',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Color(0xFFFFF4B8),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -.2,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              '${from.name}から飲みのお誘い',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 19,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -.4,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFFFF4FB5,
+                                ).withValues(alpha: .16),
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(
+                                  color: const Color(
+                                    0xFFFFD84D,
+                                  ).withValues(alpha: .34),
+                                ),
+                              ),
+                              child: const Text(
+                                '返信待ち',
+                                style: TextStyle(
+                                  color: Color(0xFFFFD84D),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFC08BFF).withValues(alpha: .14),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: const Color(
-                              0xFFC08BFF,
-                            ).withValues(alpha: .26),
+                      CupertinoButton(
+                        minimumSize: const Size(42, 42),
+                        padding: EdgeInsets.zero,
+                        onPressed: _busyAction == null
+                            ? () => Navigator.of(context).pop()
+                            : null,
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: .08),
+                            shape: BoxShape.circle,
                           ),
-                        ),
-                        child: const Text(
-                          '返信待ち',
-                          style: TextStyle(
-                            color: Color(0xFFC08BFF),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
+                          child: const Icon(
+                            CupertinoIcons.xmark,
+                            color: Colors.white,
+                            size: 21,
                           ),
                         ),
                       ),
                     ],
                   ),
-                ),
-                CupertinoButton(
-                  minimumSize: const Size(42, 42),
-                  padding: EdgeInsets.zero,
-                  onPressed: _busyAction == null
-                      ? () => Navigator.of(context).pop()
-                      : null,
-                  child: Container(
-                    width: 42,
-                    height: 42,
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .08),
-                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: .06),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: .10),
+                      ),
                     ),
-                    child: const Icon(
-                      CupertinoIcons.xmark,
-                      color: Colors.white,
-                      size: 21,
+                    child: Text(
+                      '${from.name}さんが今日の飲みに誘っています。\n承認すると今日の飲み予定に追加されます。',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: .82),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        height: 1.45,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .045),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: Colors.white.withValues(alpha: .08)),
+                  const SizedBox(height: 18),
+                  Nomo3DButton(
+                    label: '承認して飲みに行く',
+                    icon: CupertinoIcons.checkmark_circle_fill,
+                    onTap: () => _submit(accept: true),
+                    isLoading: _busyAction == 'accept',
+                    enabled: _busyAction == null,
+                    height: 54,
+                    radius: 22,
+                    color: const Color(0xFFFF4FB5),
+                    shadowColor: const Color(0xFFB91472),
+                    fontSize: 15,
+                  ),
+                  const SizedBox(height: 10),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: _busyAction == null
+                        ? () => _submit(accept: false)
+                        : null,
+                    child: Text(
+                      _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: .60),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              child: Text(
-                '${from.name}さんが今日の飲みに誘っています。\n承認すると今日の飲み予定に追加されます。',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: .78),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  height: 1.45,
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Nomo3DButton(
-              label: '承認して飲みに行く',
-              icon: CupertinoIcons.checkmark_circle_fill,
-              onTap: () => _submit(accept: true),
-              isLoading: _busyAction == 'accept',
-              enabled: _busyAction == null,
-              height: 54,
-              radius: 22,
-              color: const Color(0xFFFF4FB5),
-              shadowColor: const Color(0xFFB91472),
-              fontSize: 15,
-            ),
-            const SizedBox(height: 10),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: _busyAction == null
-                  ? () => _submit(accept: false)
-                  : null,
-              child: Text(
-                _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: .60),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+}
+
+class _InviteCelebrationBurst extends StatefulWidget {
+  const _InviteCelebrationBurst();
+
+  @override
+  State<_InviteCelebrationBurst> createState() =>
+      _InviteCelebrationBurstState();
+}
+
+class _InviteCelebrationBurstState extends State<_InviteCelebrationBurst>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) => CustomPaint(
+          painter: _InviteCelebrationPainter(progress: _controller.value),
+        ),
+      ),
+    );
+  }
+}
+
+class _InviteCelebrationPainter extends CustomPainter {
+  const _InviteCelebrationPainter({required this.progress});
+
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width * .50, size.height * .16);
+    final colors = [
+      const Color(0xFFFFD84D),
+      const Color(0xFFFF4FB5),
+      const Color(0xFFC08BFF),
+      const Color(0xFF9AF21A),
+      Colors.white,
+    ];
+    for (var i = 0; i < 24; i++) {
+      final angle = (math.pi * 2 / 24) * i - math.pi / 2;
+      final distance = 18 + progress * (58 + (i % 5) * 9);
+      final offset =
+          center + Offset(math.cos(angle), math.sin(angle)) * distance;
+      final opacity = (1 - progress).clamp(0.0, 1.0);
+      final paint = Paint()
+        ..color = colors[i % colors.length].withValues(alpha: opacity * .90)
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round;
+      if (i.isEven) {
+        canvas.drawLine(
+          offset,
+          offset + Offset(math.cos(angle), math.sin(angle)) * 9,
+          paint,
+        );
+      } else {
+        canvas.drawCircle(offset, 2.2 + (i % 3), paint);
+      }
+    }
+
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFFFF4FB5).withValues(alpha: .22 * (1 - progress * .4)),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCircle(center: center, radius: 130));
+    canvas.drawCircle(center, 130, glowPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _InviteCelebrationPainter oldDelegate) {
+    return oldDelegate.progress != progress;
   }
 }
 
