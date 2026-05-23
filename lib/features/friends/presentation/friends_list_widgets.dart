@@ -49,20 +49,30 @@ class _FriendsList extends StatelessWidget {
     final hasRecommendations = recommendations.isNotEmpty;
 
     if (filtered.isEmpty) {
-      return _EmptyFriendsState(
-        avatar: userAvatar,
-        message: friends.isEmpty ? 'フレンズがいません' : 'この条件のフレンズはいません',
-        subtitle: friends.isEmpty
-            ? 'QRコードかIDでフレンズを追加しよう'
-            : selectedCustomFilter == null
-            ? '別の条件を選ぶと見つかるかも'
-            : 'フィルターを長押しすると編集できます',
-        onAddFriend: onAddFriend,
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        padding: const EdgeInsets.only(bottom: 116),
+        children: [
+          _EmptyFriendsState(
+            avatar: userAvatar,
+            message: friends.isEmpty ? 'フレンズがいません' : 'この条件のフレンズはいません',
+            subtitle: friends.isEmpty
+                ? 'QRコードかIDでフレンズを追加しよう'
+                : selectedCustomFilter == null
+                ? '別の条件を選ぶと見つかるかも'
+                : 'フィルターを長押しすると編集できます',
+            onAddFriend: onAddFriend,
+          ),
+        ],
       );
     }
 
     return ListView.separated(
-      physics: const BouncingScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
       padding: const EdgeInsets.only(bottom: 116),
       itemCount: filtered.length + 1 + (hasRecommendations ? 1 : 0),
       separatorBuilder: (_, _) => const SizedBox(height: 14),
