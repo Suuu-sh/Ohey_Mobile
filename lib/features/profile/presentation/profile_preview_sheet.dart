@@ -8,9 +8,9 @@ class _NomoProfilePreviewSheet extends StatefulWidget {
     required this.onRequest,
   });
 
-  final _NomoSearchProfile profile;
+  final NomoFriendProfile profile;
   final bool alreadyFriend;
-  final _FriendRequestState requestState;
+  final NomoFriendRequestState requestState;
   final Future<void> Function() onRequest;
 
   @override
@@ -22,34 +22,35 @@ class _NomoProfilePreviewSheetState extends State<_NomoProfilePreviewSheet> {
   bool _busy = false;
 
   bool get _canRequest =>
-      !widget.alreadyFriend && widget.requestState == _FriendRequestState.none;
+      !widget.alreadyFriend &&
+      widget.requestState == NomoFriendRequestState.none;
 
   String get _statusMessage {
     if (widget.alreadyFriend) {
       return 'すでにフレンズです。飲みログに一緒に残せます。';
     }
     return switch (widget.requestState) {
-      _FriendRequestState.outgoing => 'フレンズ申請を送信済みです。相手の承認を待っています。',
-      _FriendRequestState.incoming => 'この人からフレンズ申請が届いています。承認するとフレンズになります。',
-      _FriendRequestState.none => 'フレンズ申請を送って、承認されたら飲みログや予約でつながれます。',
+      NomoFriendRequestState.outgoing => 'フレンズ申請を送信済みです。相手の承認を待っています。',
+      NomoFriendRequestState.incoming => 'この人からフレンズ申請が届いています。承認するとフレンズになります。',
+      NomoFriendRequestState.none => 'フレンズ申請を送って、承認されたら飲みログや予約でつながれます。',
     };
   }
 
   String get _buttonLabel {
     if (widget.alreadyFriend) return 'フレンズです';
     return switch (widget.requestState) {
-      _FriendRequestState.outgoing => '申請済み',
-      _FriendRequestState.incoming => '申請が届いています',
-      _FriendRequestState.none => 'フレンズ申請を送る',
+      NomoFriendRequestState.outgoing => '申請済み',
+      NomoFriendRequestState.incoming => '申請が届いています',
+      NomoFriendRequestState.none => 'フレンズ申請を送る',
     };
   }
 
   IconData get _statusIcon {
     if (widget.alreadyFriend) return CupertinoIcons.checkmark_seal_fill;
     return switch (widget.requestState) {
-      _FriendRequestState.none => CupertinoIcons.paperplane_fill,
-      _FriendRequestState.outgoing => CupertinoIcons.clock_fill,
-      _FriendRequestState.incoming =>
+      NomoFriendRequestState.none => CupertinoIcons.paperplane_fill,
+      NomoFriendRequestState.outgoing => CupertinoIcons.clock_fill,
+      NomoFriendRequestState.incoming =>
         CupertinoIcons.person_crop_circle_badge_checkmark,
     };
   }
@@ -57,9 +58,9 @@ class _NomoProfilePreviewSheetState extends State<_NomoProfilePreviewSheet> {
   Color get _statusColor {
     if (widget.alreadyFriend) return const Color(0xFF9AF21A);
     return switch (widget.requestState) {
-      _FriendRequestState.none => const Color(0xFF22D7C5),
-      _FriendRequestState.outgoing => const Color(0xFFFFD166),
-      _FriendRequestState.incoming => const Color(0xFFC08BFF),
+      NomoFriendRequestState.none => const Color(0xFF22D7C5),
+      NomoFriendRequestState.outgoing => const Color(0xFFFFD166),
+      NomoFriendRequestState.incoming => const Color(0xFFC08BFF),
     };
   }
 
@@ -148,7 +149,7 @@ class _NomoProfilePreviewSheetState extends State<_NomoProfilePreviewSheet> {
                   ),
                   child: ClipOval(
                     child: NomoAvatarView(
-                      avatar: widget.profile.avatar ?? NomoAvatar.defaultAvatar,
+                      avatar: widget.profile.avatar,
                       size: 126,
                     ),
                   ),

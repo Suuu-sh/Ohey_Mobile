@@ -27,6 +27,7 @@ import '../../../core/widgets/nomo_toast.dart';
 import '../../admin/application/admin_controller.dart';
 import '../../admin/presentation/admin_screen.dart';
 import '../../friends/presentation/add_nomi_tomo_screen.dart';
+import '../../friends/data/friend_repository.dart';
 import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../onboarding/presentation/create_user_dialog.dart';
@@ -209,61 +210,6 @@ String? _parseProfileFriendQrPayload(String raw) {
   return null;
 }
 
-enum _FriendRequestState { none, outgoing, incoming }
-
-class _FriendRelationshipStatus {
-  const _FriendRelationshipStatus({
-    required this.alreadyFriend,
-    required this.requestState,
-  });
-
-  final bool alreadyFriend;
-  final _FriendRequestState requestState;
-}
-
-Future<_FriendRelationshipStatus> _friendRelationshipStatus(
-  WidgetRef ref,
-  String friendId,
-) async {
-  final row = await ref
-      .read(backendApiClientProvider)
-      .getRow('/v1/friend-requests/status', query: {'friend_id': friendId});
-  final requestState = switch (row['request_state'] as String?) {
-    'outgoing' => _FriendRequestState.outgoing,
-    'incoming' => _FriendRequestState.incoming,
-    _ => _FriendRequestState.none,
-  };
-  return _FriendRelationshipStatus(
-    alreadyFriend: (row['already_friend'] as bool?) ?? false,
-    requestState: requestState,
-  );
-}
-
-class _NomoSearchProfile {
-  const _NomoSearchProfile({
-    required this.id,
-    required this.displayName,
-    required this.userId,
-    this.avatar,
-  });
-
-  factory _NomoSearchProfile.fromRow(Map<String, dynamic> row) {
-    return _NomoSearchProfile(
-      id: row['id'] as String,
-      displayName: (row['display_name'] as String?)?.trim().isNotEmpty == true
-          ? (row['display_name'] as String).trim()
-          : 'Nomo friend',
-      userId: (row['user_id'] as String?) ?? '',
-      avatar: NomoAvatar.decode(row['avatar_url'] as String?),
-    );
-  }
-
-  final String id;
-  final String displayName;
-  final String userId;
-  final NomoAvatar? avatar;
-}
-
 const _qrSaverChannel = MethodChannel('nomo/qr_saver');
 
 Future<Uint8List> _createQrPngBytes(String payload) async {
@@ -329,10 +275,10 @@ Future<void> showMyQrDialog(
 
   Future<void> sendFriendRequest(
     BuildContext sheetContext,
-    _NomoSearchProfile profile,
+    NomoFriendProfile profile,
   ) async {
-    final client = ref.read(backendApiClientProvider);
-    final currentUserId = client.currentUserId;
+    final repository = ref.read(friendRepositoryProvider);
+    final currentUserId = repository.currentUserId;
     if (currentUserId == null || currentUserId.isEmpty) {
       NomoToast.show(sheetContext, 'フレンズ申請にはログインが必要です');
       return;
@@ -343,7 +289,7 @@ Future<void> showMyQrDialog(
     }
 
     try {
-      await client.post('/v1/friend-requests', {'to_user_id': profile.id});
+      await repository.sendFriendRequest(profile.id);
       if (!sheetContext.mounted) return;
       Navigator.of(sheetContext).pop();
       if (!context.mounted) return;
@@ -371,26 +317,26 @@ Future<void> showMyQrDialog(
       return;
     }
 
-    final client = ref.read(backendApiClientProvider);
-    final currentUserId = client.currentUserId;
+    final repository = ref.read(friendRepositoryProvider);
+    final currentUserId = repository.currentUserId;
     if (currentUserId == null || currentUserId.isEmpty) {
       NomoToast.show(dialogContext, 'フレンズ追加にはログインが必要です');
       return;
     }
 
     try {
-      final row = await client.getRow(
-        '/v1/profiles/by-user-id/${Uri.encodeComponent(query)}',
-      );
+      final profile = await repository.findProfileByUserId(query);
       if (!dialogContext.mounted) return;
-
-      final profile = _NomoSearchProfile.fromRow(row);
+      if (profile == null) {
+        NomoToast.show(dialogContext, '@$query は見つかりませんでした');
+        return;
+      }
       if (profile.id == currentUserId) {
         NomoToast.show(dialogContext, '自分自身は追加できません');
         return;
       }
 
-      final relationship = await _friendRelationshipStatus(ref, profile.id);
+      final relationship = await repository.relationshipStatus(profile.id);
       if (!dialogContext.mounted) return;
       await showModalBottomSheet<void>(
         context: dialogContext,

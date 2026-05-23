@@ -8,7 +8,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/config/supabase_config.dart';
-import '../../../core/data/backend_api_client.dart';
 import '../../../core/data/nomo_last_account_store.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/nomo_avatar.dart';
@@ -1388,22 +1387,8 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     );
   }
 
-  Future<String?> _latestDisplayName(String? fallback) async {
-    final client = ref.read(backendApiClientProvider);
-    final authUserId = client.currentUserId;
-    if (authUserId == null || authUserId.isEmpty) return fallback;
-
-    try {
-      final row = await client.get('/v1/me/profile');
-      final profile = row is Map ? Map<String, dynamic>.from(row) : null;
-      final displayName = (profile?['display_name'] as String?)?.trim();
-      if (displayName != null && displayName.isNotEmpty) {
-        return displayName;
-      }
-    } catch (_) {
-      // Re-login can still proceed even if refreshing the cached label fails.
-    }
-    return fallback;
+  Future<String?> _latestDisplayName(String? fallback) {
+    return ref.read(nomoUserProvider.notifier).latestDisplayName(fallback);
   }
 
   Future<void> _openAvatarBuilder() async {

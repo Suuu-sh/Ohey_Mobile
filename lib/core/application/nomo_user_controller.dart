@@ -48,6 +48,21 @@ class NomoUserController extends Notifier<NomoUser?> {
     return true;
   }
 
+  Future<String?> latestDisplayName(String? fallback) async {
+    final client = ref.read(backendApiClientProvider);
+    final authUserId = client.currentUserId;
+    if (authUserId == null || authUserId.isEmpty) return fallback;
+
+    try {
+      final row = await client.getRow('/v1/me/profile');
+      final displayName = (row['display_name'] as String?)?.trim();
+      if (displayName != null && displayName.isNotEmpty) return displayName;
+    } catch (_) {
+      // Re-login can still proceed even if refreshing the cached label fails.
+    }
+    return fallback;
+  }
+
   Future<void> createUser({
     required String name,
     required String userId,

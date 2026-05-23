@@ -7,13 +7,13 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
-import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../logs/application/drink_log_controller.dart';
+import '../data/friend_repository.dart';
 
 class AddNomiTomoScreen extends ConsumerStatefulWidget {
   const AddNomiTomoScreen({super.key});
@@ -126,27 +126,17 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
     }
   }
 
-  Future<_FriendProfile?> _findProfileByUserId(String userId) async {
-    final client = ref.read(backendApiClientProvider);
-    if (client.currentUserId == null) {
+  Future<NomoFriendProfile?> _findProfileByUserId(String userId) async {
+    final repository = ref.read(friendRepositoryProvider);
+    if (repository.currentUserId == null) {
       throw StateError('フレンズ追加にはログインが必要です。');
     }
-    final exactUserId = userId.trim();
-    if (exactUserId.isEmpty) return null;
-    try {
-      final row = await client.getRow(
-        '/v1/profiles/by-user-id/${Uri.encodeComponent(exactUserId)}',
-      );
-      return _FriendProfile.fromRow(row);
-    } on BackendApiException catch (error) {
-      if (error.statusCode == 404) return null;
-      rethrow;
-    }
+    return repository.findProfileByUserId(userId);
   }
 
-  Future<void> _addFriend(_FriendProfile profile) async {
-    final client = ref.read(backendApiClientProvider);
-    final currentUserId = client.currentUserId;
+  Future<void> _addFriend(NomoFriendProfile profile) async {
+    final repository = ref.read(friendRepositoryProvider);
+    final currentUserId = repository.currentUserId;
     if (currentUserId == null || currentUserId.isEmpty) {
       NomoToast.show(context, 'フレンズ追加にはログインが必要です。');
       return;
@@ -156,7 +146,7 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
       return;
     }
     try {
-      await client.post('/v1/friends', {'friend_id': profile.id});
+      await repository.addFriend(profile.id);
       ref.invalidate(friendsProvider);
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -179,29 +169,6 @@ String? parseFriendQrPayload(String raw) {
   }
   if (RegExp(r'^[A-Za-z0-9_]{3,24}$').hasMatch(value)) return value;
   return null;
-}
-
-class _FriendProfile {
-  const _FriendProfile({
-    required this.id,
-    required this.userId,
-    required this.displayName,
-    required this.avatar,
-  });
-
-  final String id;
-  final String userId;
-  final String displayName;
-  final NomoAvatar avatar;
-
-  factory _FriendProfile.fromRow(Map<String, dynamic> row) => _FriendProfile(
-    id: row['id'] as String,
-    userId: (row['user_id'] as String?) ?? '',
-    displayName: (row['display_name'] as String?) ?? 'Nomo friend',
-    avatar:
-        NomoAvatar.decode(row['avatar_url'] as String?) ??
-        NomoAvatar.defaultAvatar,
-  );
 }
 
 class _ExchangeHeader extends StatelessWidget {
@@ -579,7 +546,7 @@ class _ExchangeActionCard extends StatelessWidget {
 class _UserSearchResultSheet extends StatelessWidget {
   const _UserSearchResultSheet({required this.profile, required this.onAdd});
 
-  final _FriendProfile profile;
+  final NomoFriendProfile profile;
   final VoidCallback onAdd;
 
   @override
