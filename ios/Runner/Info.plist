@@ -28,6 +28,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>app.nomo.nomo</string>
+				<string>app.nomo.nomo.dev</string>
 			</array>
 		</dict>
 	</array>

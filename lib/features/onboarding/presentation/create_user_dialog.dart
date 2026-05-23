@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
@@ -163,6 +164,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   List<NomoLastAccount> _lastAccounts = const <NomoLastAccount>[];
   String? _error;
   String? _notice;
+  StreamSubscription<AuthState>? _authSubscription;
 
   @override
   void initState() {
@@ -176,6 +178,18 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _step = _OnboardingStep.auth;
     }
     _showAuthForm = !widget.startAtLogin;
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((
+      event,
+    ) {
+      if (!mounted) return;
+      final session = event.session;
+      if (session != null &&
+          (event.event == AuthChangeEvent.signedIn ||
+              event.event == AuthChangeEvent.tokenRefreshed ||
+              event.event == AuthChangeEvent.initialSession)) {
+        unawaited(_handleOAuthSession(session));
+      }
+    });
     _loadLastAccount();
   }
 
@@ -197,6 +211,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     _passwordController.dispose();
     _userIdController.dispose();
     _nameController.dispose();
+    _authSubscription?.cancel();
     _demoController.dispose();
     super.dispose();
   }
@@ -506,14 +521,14 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                   label: 'GOOGLEで登録',
                   height: socialHeight,
                   mark: const _GoogleMark(),
-                  onTap: () => _showComingSoonSnack('Google登録は今後対応予定です。'),
+                  onTap: () => _startOAuthAuth(OAuthProvider.google, 'Google'),
                 ),
                 SizedBox(height: compact ? 10 : 14),
                 _SocialLoginButton(
                   label: 'APPLEで登録',
                   height: socialHeight,
                   mark: const _AppleMark(),
-                  onTap: () => _showComingSoonSnack('Apple登録は今後対応予定です。'),
+                  onTap: () => _startOAuthAuth(OAuthProvider.apple, 'Apple'),
                 ),
               ],
             ],
@@ -646,14 +661,14 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                 label: 'GOOGLEでログイン',
                 height: socialHeight,
                 mark: const _GoogleMark(),
-                onTap: () => _showComingSoonSnack('Googleログインは今後対応予定です。'),
+                onTap: () => _startOAuthAuth(OAuthProvider.google, 'Google'),
               ),
               SizedBox(height: socialGap),
               _SocialLoginButton(
                 label: 'APPLEでログイン',
                 height: socialHeight,
                 mark: const _AppleMark(),
-                onTap: () => _showComingSoonSnack('Appleログインは今後対応予定です。'),
+                onTap: () => _startOAuthAuth(OAuthProvider.apple, 'Apple'),
               ),
               SizedBox(height: termsGap),
               Text(
@@ -821,10 +836,143 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     }
   }
 
-  void _showComingSoonSnack(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+  Future<void> _startOAuthAuth(
+    OAuthProvider provider,
+    String providerLabel,
+  ) async {
+    setState(() {
+      _isBusy = true;
+      _error = null;
+      _notice = null;
+    });
+    try {
+      await ref
+          .read(supabaseClientProvider)
+          .auth
+          .signInWithOAuth(
+            provider,
+            redirectTo: SupabaseConfig.authRedirectUrl,
+          );
+      if (!mounted) return;
+      setState(() {
+        _notice = '$providerLabel認証を完了するとNomoに戻ります。';
+      });
+    } on AuthException catch (e) {
+      if (mounted) setState(() => _error = _friendlyAuthError(e.message));
+    } catch (e) {
+      if (mounted) setState(() => _error = '$providerLabel認証を開始できませんでした: $e');
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
+  }
+
+  Future<void> _handleOAuthSession(Session session) async {
+    if (_isBusy) return;
+    setState(() {
+      _isBusy = true;
+      _error = null;
+      _notice = null;
+    });
+    try {
+      final loaded = await ref
+          .read(nomoUserProvider.notifier)
+          .loadFromBackendProfile();
+      if (loaded) {
+        await _saveLastAccount(session.user.email ?? '');
+        return;
+      }
+      _emailController.text = session.user.email ?? _emailController.text;
+      _hydrateProfileFromAuthMetadata(session.user);
+      if (_nameController.text.trim().isEmpty) {
+        _nameController.text = _displayNameFromOAuth(session.user) ?? '';
+      }
+      if (mounted) {
+        setState(() {
+          _step = _OnboardingStep.profile;
+          _showAuthForm = true;
+          _notice = 'プロフィールを作成すると登録が完了します。';
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = _friendlyUnexpectedAuthError(e));
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
+  }
+
+  Future<void> _showAccountManagementSheet() async {
+    final accounts = await NomoLastAccountStore.loadAccounts();
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF17182C),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'アカウント管理',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (accounts.isEmpty)
+                Text(
+                  '保存済みアカウントはありません。',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .68),
+                    fontWeight: FontWeight.w800,
+                  ),
+                )
+              else
+                for (final account in accounts)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      account.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    subtitle: Text(
+                      account.email,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: .58),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(
+                        CupertinoIcons.trash,
+                        color: AppColors.coral,
+                      ),
+                      onPressed: () async {
+                        await NomoLastAccountStore.remove(account.email);
+                        if (context.mounted) Navigator.of(context).pop();
+                        await _loadLastAccount();
+                      },
+                    ),
+                  ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('閉じる'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildReLogin(BuildContext context, List<NomoLastAccount> accounts) {
@@ -882,9 +1030,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                 height: compact ? 40 : 48,
                 child: TextButton(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('アカウント管理は今後対応予定です。')),
-                    );
+                    _showAccountManagementSheet();
                   },
                   child: Text(
                     'アカウント管理',
@@ -1239,6 +1385,21 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       setState(() => _avatar = result);
     }
   }
+}
+
+String? _displayNameFromOAuth(User user) {
+  final metadata = user.userMetadata;
+  final candidates = [
+    metadata?['display_name'],
+    metadata?['full_name'],
+    metadata?['name'],
+    user.email?.split('@').first,
+  ];
+  for (final candidate in candidates) {
+    final value = candidate?.toString().trim();
+    if (value != null && value.isNotEmpty) return value;
+  }
+  return null;
 }
 
 String _friendlyAuthError(String message) {

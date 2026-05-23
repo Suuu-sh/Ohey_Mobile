@@ -103,6 +103,37 @@ class NomoLastAccountStore {
     }
   }
 
+  static Future<void> remove(String email) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.isEmpty) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final accounts = (await loadAccounts())
+        .where((item) => item.email.toLowerCase() != normalizedEmail)
+        .take(maxAccounts)
+        .toList(growable: false);
+    await prefs.setString(
+      accountsKey,
+      jsonEncode(accounts.map((item) => item.toJson()).toList(growable: false)),
+    );
+
+    if (accounts.isEmpty) {
+      await prefs.remove(nameKey);
+      await prefs.remove(emailKey);
+      await prefs.remove(avatarKey);
+      return;
+    }
+
+    final latest = accounts.first;
+    await prefs.setString(nameKey, latest.name);
+    await prefs.setString(emailKey, latest.email);
+    if (latest.avatar == null) {
+      await prefs.remove(avatarKey);
+    } else {
+      await prefs.setString(avatarKey, latest.avatar!.encode());
+    }
+  }
+
   static NomoLastAccount? _legacyAccountFromPrefs(SharedPreferences prefs) {
     final email = prefs.getString(emailKey)?.trim();
     if (email == null || email.isEmpty) return null;
