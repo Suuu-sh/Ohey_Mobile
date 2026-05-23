@@ -94,6 +94,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     ? Colors.white
                     : AppColors.darkBackgroundBottom,
                 accentColor: const Color(0xFF20B9FF),
+                alignment: const Alignment(0.72, -1),
                 imageTopOffset: -86,
                 topShadeOpacity: .12,
                 fadeStartOpacity: .92,
