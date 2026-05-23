@@ -173,15 +173,16 @@ class _Nomo3DButtonSurfaceState extends State<Nomo3DButtonSurface> {
               decoration: BoxDecoration(
                 color: bottom,
                 borderRadius: BorderRadius.circular(widget.radius + 1),
-                boxShadow:
-                    widget.outerShadows ??
-                    [
-                      BoxShadow(
-                        color: base.withValues(alpha: isPressed ? .12 : .22),
-                        blurRadius: isPressed ? 12 : 22,
-                        offset: Offset(0, isPressed ? 5 : 10),
-                      ),
-                    ],
+                boxShadow: isPressed
+                    ? const []
+                    : widget.outerShadows ??
+                          [
+                            BoxShadow(
+                              color: base.withValues(alpha: .22),
+                              blurRadius: 22,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
               ),
               child: Align(
                 alignment: Alignment.topCenter,
@@ -207,18 +208,17 @@ class _Nomo3DButtonSurfaceState extends State<Nomo3DButtonSurface> {
                             stops: const [0, .55, 1],
                           )
                         : null,
-                    boxShadow:
-                        widget.innerShadows ??
-                        [
-                          BoxShadow(
-                            color: base.withValues(
-                              alpha: isPressed ? .12 : .22,
-                            ),
-                            blurRadius: isPressed ? 10 : 18,
-                            spreadRadius: isPressed ? 0 : 1,
-                            offset: const Offset(0, 0),
-                          ),
-                        ],
+                    boxShadow: isPressed
+                        ? const []
+                        : widget.innerShadows ??
+                              [
+                                BoxShadow(
+                                  color: base.withValues(alpha: .22),
+                                  blurRadius: 18,
+                                  spreadRadius: 1,
+                                  offset: const Offset(0, 0),
+                                ),
+                              ],
                     borderRadius: BorderRadius.circular(widget.radius),
                     border: Border.all(
                       color:
