@@ -15,7 +15,6 @@ Future<void> _showEditProfileSheet(
   final gender = user?.gender ?? NomoGender.unspecified;
   var saving = false;
   var closing = false;
-  var showingUnsavedPrompt = false;
   String? error;
 
   await showModalBottomSheet<void>(
@@ -82,19 +81,18 @@ Future<void> _showEditProfileSheet(
         }
 
         Future<void> requestClose() async {
-          if (saving || closing || showingUnsavedPrompt) return;
+          if (saving || closing) return;
           FocusManager.instance.primaryFocus?.unfocus();
           if (!hasChanges()) {
             closeSheet();
             return;
           }
 
-          showingUnsavedPrompt = true;
           final action = await showCupertinoModalPopup<_UnsavedProfileAction>(
-            context: context,
+            context: sheetContext,
+            useRootNavigator: true,
             builder: (context) => const _UnsavedProfileSheet(),
           );
-          showingUnsavedPrompt = false;
           if (!sheetContext.mounted || action == null) return;
           switch (action) {
             case _UnsavedProfileAction.save:
