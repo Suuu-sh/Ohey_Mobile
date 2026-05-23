@@ -53,6 +53,41 @@ class BackendApiClient {
     return _send('DELETE', path);
   }
 
+  Future<List<Map<String, dynamic>>> getRows(
+    String path, {
+    Map<String, String>? query,
+  }) async {
+    return rowsFrom(await get(path, query: query));
+  }
+
+  Future<Map<String, dynamic>> getRow(
+    String path, {
+    Map<String, String>? query,
+  }) async {
+    return mapFrom(await get(path, query: query));
+  }
+
+  Future<Map<String, dynamic>> postRow(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    return mapFrom(await post(path, body));
+  }
+
+  static List<Map<String, dynamic>> rowsFrom(dynamic value) {
+    return (value as List<dynamic>? ?? const [])
+        .whereType<Map>()
+        .map((row) => Map<String, dynamic>.from(row))
+        .toList(growable: false);
+  }
+
+  static Map<String, dynamic> mapFrom(dynamic value) {
+    if (value is Map) {
+      return Map<String, dynamic>.from(value);
+    }
+    throw const FormatException('Backend response format is invalid.');
+  }
+
   Future<dynamic> _send(
     String method,
     String path, {

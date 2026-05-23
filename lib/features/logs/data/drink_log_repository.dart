@@ -43,12 +43,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
 
   @override
   Future<List<DrinkLog>> fetchLogs() async {
-    final response = await _client.get('/v1/drink-logs');
-    final rows = (response as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map((row) => Map<String, dynamic>.from(row))
-        .toList(growable: false);
-
+    final rows = await _client.getRows('/v1/drink-logs');
     return Future.wait(rows.map(_drinkLogFromRow));
   }
 
@@ -67,7 +62,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
     final response = liked
         ? await _client.put('/v1/drink-logs/$logId/like', const {})
         : await _client.delete('/v1/drink-logs/$logId/like');
-    final row = Map<String, dynamic>.from(response as Map);
+    final row = BackendApiClient.mapFrom(response);
     return DrinkLogLikeState(
       likeCount: (row['like_count'] as num?)?.toInt() ?? 0,
       likedByMe: (row['liked_by_me'] as bool?) ?? liked,
@@ -81,14 +76,10 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       throw StateError('友達を読み込むにはログインが必要です。');
     }
 
-    final response = await _client.get(
+    final rows = await _client.getRows(
       '/v1/friends',
       query: {'date': _todayIsoDate()},
     );
-    final rows = (response as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map((row) => Map<String, dynamic>.from(row))
-        .toList(growable: false);
 
     return rows
         .map<NomoFriend>((row) {
@@ -111,7 +102,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
     final uploadedPhotoPath = await _uploadLocalPhotoIfNeeded(
       log.photoAssetPath,
     );
-    final response = await _client.post('/v1/drink-logs', {
+    final row = await _client.postRow('/v1/drink-logs', {
       'drank_at': log.date.toUtc().toIso8601String(),
       'place_name': log.place,
       'memo': log.memo,
@@ -120,7 +111,6 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
           .map((friend) => friend.id)
           .toList(growable: false),
     });
-    final row = Map<String, dynamic>.from(response as Map);
 
     return DrinkLog(
       id: row['id'] as String,

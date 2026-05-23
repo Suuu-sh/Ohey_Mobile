@@ -40,12 +40,8 @@ class AdminController {
   }
 
   Future<List<AdminUserProfile>> listUsers() async {
-    final data = await _client.get('/v1/admin/users');
-    return (data as List<dynamic>)
-        .map(
-          (item) => AdminUserProfile.fromJson(Map<String, dynamic>.from(item)),
-        )
-        .toList(growable: false);
+    final rows = await _client.getRows('/v1/admin/users');
+    return rows.map(AdminUserProfile.fromJson).toList(growable: false);
   }
 
   Future<void> createUser({
@@ -97,10 +93,8 @@ class AdminController {
   }
 
   Future<List<AdminDrinkLog>> listDrinkLogs() async {
-    final data = await _client.get('/v1/admin/drink-logs');
-    return (data as List<dynamic>)
-        .map((item) => AdminDrinkLog.fromJson(Map<String, dynamic>.from(item)))
-        .toList(growable: false);
+    final rows = await _client.getRows('/v1/admin/drink-logs');
+    return rows.map(AdminDrinkLog.fromJson).toList(growable: false);
   }
 
   Future<void> createDrinkLog({
@@ -158,7 +152,7 @@ class AdminController {
     required List<String> recipientUserIds,
     String? systemKey,
   }) async {
-    final data = await _client.post('/v1/admin/notifications', {
+    final row = await _client.postRow('/v1/admin/notifications', {
       'title': title,
       'message': message,
       'send_to_all': sendToAll,
@@ -166,7 +160,7 @@ class AdminController {
       if (systemKey != null && systemKey.trim().isNotEmpty)
         'system_key': systemKey.trim(),
     });
-    return AdminNotificationResult.fromJson(Map<String, dynamic>.from(data));
+    return AdminNotificationResult.fromJson(row);
   }
 }
 
