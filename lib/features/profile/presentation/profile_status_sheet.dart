@@ -33,21 +33,88 @@ class _ProfileStatusSheetContentState
   }
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      for (final status in _selectableDailyStatuses) ...[
-        _ProfileStatusOption(
-          status: status,
-          selected: status == widget.selected,
-          saving: _savingStatus == status,
-          disabled: _savingStatus != null,
-          onTap: () => _selectStatus(status),
-        ),
-        const SizedBox(height: 10),
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final isUnset = widget.selected == NomoDailyStatus.unselected;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _ProfileStatusHelpCard(isWhite: isWhite, isUnset: isUnset),
+        const SizedBox(height: 14),
+        for (final status in _selectableDailyStatuses) ...[
+          _ProfileStatusOption(
+            status: status,
+            selected: status == widget.selected,
+            saving: _savingStatus == status,
+            disabled: _savingStatus != null,
+            onTap: () => _selectStatus(status),
+          ),
+          const SizedBox(height: 10),
+        ],
       ],
-    ],
-  );
+    );
+  }
+}
+
+class _ProfileStatusHelpCard extends StatelessWidget {
+  const _ProfileStatusHelpCard({required this.isWhite, required this.isUnset});
+
+  final bool isWhite;
+  final bool isUnset;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = isUnset ? AppColors.primaryAction : AppColors.invite;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: isWhite ? .12 : .16),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: accent.withValues(alpha: .34)),
+      ),
+      child: Row(
+        children: [
+          NomoPopIcon(
+            icon: isUnset
+                ? CupertinoIcons.exclamationmark_bubble_fill
+                : CupertinoIcons.checkmark_circle_fill,
+            color: accent,
+            size: 42,
+            iconSize: 23,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isUnset ? '未設定だと誘われにくいかも' : 'ステータス設定中',
+                  style: TextStyle(
+                    color: isWhite ? const Color(0xFF17212B) : Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '今日飲めるか、休みたいかを出しておくとフレンズが誘いやすくなります。',
+                  style: TextStyle(
+                    color: isWhite
+                        ? const Color(0xFF667381)
+                        : Colors.white.withValues(alpha: .64),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ProfileStatusOption extends StatelessWidget {

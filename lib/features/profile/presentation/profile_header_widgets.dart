@@ -476,18 +476,38 @@ class _ProfileMoodCta extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Expanded(
-            child: Text(
-              status == NomoDailyStatus.unselected
-                  ? 'ステータスを設定する'
-                  : status.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 15,
-                letterSpacing: -.2,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  status == NomoDailyStatus.unselected
+                      ? 'ステータスを設定する'
+                      : status.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                    letterSpacing: -.2,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  status == NomoDailyStatus.unselected
+                      ? '未設定だと誘われにくいかも'
+                      : 'フレンズが今日誘いやすくなります',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .70),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                    letterSpacing: -.1,
+                  ),
+                ),
+              ],
             ),
           ),
           NomoPopIcon(
@@ -721,7 +741,9 @@ class _ProfileStatusHomeCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  unset ? '今日誘いやすいかをフレンズに伝えられます' : status.description,
+                  unset
+                      ? '未設定だと誘われにくいかも。今日誘いやすいかをフレンズに伝えましょう。'
+                      : 'フレンズが今日誘いやすくなります。${status.description}',
                   style: TextStyle(
                     color: isWhite
                         ? const Color(0xFF667381)
