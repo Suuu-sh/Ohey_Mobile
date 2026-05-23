@@ -729,7 +729,7 @@ class _WalkingNomoPainter extends CustomPainter {
       canvas.rotate(-.16);
     }
 
-    final shoePaint = Paint()..color = const Color(0xFF111723);
+    final shoePaint = Paint()..color = const Color(0xFFFF4CAF);
     final legStride = isSleeping ? 0.0 : step;
     final backFoot = Offset(20 - legStride * 2.8, isSleeping ? 49.5 : 50.5);
     final frontFoot = Offset(30 + legStride * 3.2, isSleeping ? 49.5 : 50.5);
