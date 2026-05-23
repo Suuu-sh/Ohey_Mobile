@@ -15,6 +15,7 @@ import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
+import '../../../core/widgets/nomo_state_view.dart';
 import '../../../core/utils/nomo_photo_orientation.dart';
 import '../../camera/presentation/nomo_camera_screen.dart';
 import '../application/drink_log_controller.dart';

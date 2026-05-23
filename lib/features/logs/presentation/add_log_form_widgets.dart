@@ -323,14 +323,8 @@ class _LoadingBox extends StatelessWidget {
   final bool compact;
 
   @override
-  Widget build(BuildContext context) => _DarkShell(
-    padding: EdgeInsets.all(compact ? 10 : 16),
-    child: Center(
-      child: CupertinoActivityIndicator(
-        color: _AddLogColors.primaryTextFor(context),
-      ),
-    ),
-  );
+  Widget build(BuildContext context) =>
+      NomoStateView.loading(message: '読み込み中...', compact: compact);
 }
 
 class _ErrorBox extends StatelessWidget {
@@ -340,16 +334,8 @@ class _ErrorBox extends StatelessWidget {
   final bool compact;
 
   @override
-  Widget build(BuildContext context) => _DarkShell(
-    padding: EdgeInsets.all(compact ? 10 : 16),
-    child: Text(
-      message,
-      style: TextStyle(
-        color: _AddLogColors.mutedTextFor(context),
-        fontWeight: FontWeight.w900,
-      ),
-    ),
-  );
+  Widget build(BuildContext context) =>
+      NomoStateView.error(message: message, compact: compact);
 }
 
 class _AddLogColors {

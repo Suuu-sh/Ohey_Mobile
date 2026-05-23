@@ -14,91 +14,14 @@ class _MyQrCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _DarkCard(
     padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
-    child: Column(
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: _ExchangeColors.teal.withValues(alpha: .15),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                  color: _ExchangeColors.teal.withValues(alpha: .28),
-                ),
-              ),
-              child: NomoAvatarView(avatar: avatar, size: 58),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'あなたのNomo QR',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.3,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '相手に見せて飲みとも交換',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .48),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const _PopBadge(
-              icon: CupertinoIcons.qrcode,
-              color: _ExchangeColors.lime,
-            ),
-          ],
-        ),
-        const SizedBox(height: 18),
-        Container(
-          width: 202,
-          height: 202,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: _ExchangeColors.lime.withValues(alpha: .20),
-                blurRadius: 30,
-                offset: const Offset(0, 12),
-              ),
-            ],
-          ),
-          child: userId == null
-              ? const Center(child: Text('ログインが必要です'))
-              : QrImageView(data: payload, version: QrVersions.auto),
-        ),
-        const SizedBox(height: 14),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: .07),
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: Colors.white.withValues(alpha: .08)),
-          ),
-          child: Text(
-            '@${userId ?? '-'}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              letterSpacing: .2,
-            ),
-          ),
-        ),
-      ],
+    child: NomoQrDisplayCard(
+      title: 'あなたのNomo QR',
+      subtitle: '相手に見せて飲みとも交換',
+      handle: '@${userId ?? '-'}',
+      payload: userId == null ? null : payload,
+      avatar: avatar,
+      accentColor: _ExchangeColors.lime,
+      cardColor: _ExchangeColors.card,
     ),
   );
 }
@@ -187,46 +110,14 @@ class _ExchangeActionCard extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => NomoActionCard(
+    icon: icon,
+    title: title,
+    subtitle: subtitle,
+    accent: accent,
     onTap: onTap,
-    child: _DarkCard(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          _PopBadge(icon: icon, color: accent),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: .50),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          NomoGeneratedIcon(
-            CupertinoIcons.chevron_right,
-            color: accent,
-            size: 22,
-          ),
-        ],
-      ),
-    ),
+    childBuilder: (context, child) =>
+        _DarkCard(padding: const EdgeInsets.all(16), child: child),
   );
 }
 
@@ -237,68 +128,15 @@ class _UserSearchResultSheet extends StatelessWidget {
   final VoidCallback onAdd;
 
   @override
-  Widget build(BuildContext context) => SafeArea(
-    top: false,
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(22, 12, 22, 24),
-        decoration: BoxDecoration(
-          color: _ExchangeColors.card,
-          borderRadius: BorderRadius.circular(34),
-          border: Border.all(color: Colors.white.withValues(alpha: .10)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 54,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .22),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Container(
-              padding: const EdgeInsets.all(7),
-              decoration: BoxDecoration(
-                color: _ExchangeColors.teal.withValues(alpha: .14),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: _ExchangeColors.teal.withValues(alpha: .35),
-                ),
-              ),
-              child: NomoAvatarView(avatar: profile.avatar, size: 96),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              profile.displayName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '@${profile.userId} を飲みともに追加しますか？',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: .52),
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 20),
-            _BigPopButton(
-              label: '飲みともに追加する',
-              icon: CupertinoIcons.person_badge_plus_fill,
-              onTap: onAdd,
-            ),
-          ],
-        ),
-      ),
-    ),
+  Widget build(BuildContext context) => NomoProfileResultSheet(
+    avatar: profile.avatar,
+    displayName: profile.displayName,
+    subtitle: '@${profile.userId} を飲みともに追加しますか？',
+    actionLabel: '飲みともに追加する',
+    actionIcon: CupertinoIcons.person_badge_plus_fill,
+    onAction: onAdd,
+    backgroundColor: _ExchangeColors.card,
+    accentColor: _ExchangeColors.teal,
   );
 }
 

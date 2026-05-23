@@ -176,53 +176,6 @@ class _MiniPopButton extends StatelessWidget {
   );
 }
 
-class _BigPopButton extends StatelessWidget {
-  const _BigPopButton({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      height: 58,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: _ExchangeColors.teal,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0xFF079078),
-            offset: Offset(0, 7),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          NomoGeneratedIcon(icon, color: _ExchangeColors.bg, size: 22),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: _ExchangeColors.bg,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
 class _ExchangeColors {
   const _ExchangeColors._();
 
