@@ -331,7 +331,7 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 11200),
+      duration: const Duration(milliseconds: 40000),
     )..repeat();
   }
 
@@ -445,10 +445,10 @@ double _easeInOut(double value) {
 }
 
 _NomoSwipeHintMotion _nomoSwipeHintMotion(double loop, double travel) {
-  if (loop < .31) {
-    final p = _segmentProgress(loop, 0, .31);
+  if (loop < .24) {
+    final p = _segmentProgress(loop, 0, .24);
     final eased = _easeInOut(p);
-    final step = math.sin(eased * math.pi * 5);
+    final step = math.sin(eased * math.pi * 8);
     return _NomoSwipeHintMotion(
       left: travel * (.04 + .58 * eased),
       step: step,
@@ -460,8 +460,8 @@ _NomoSwipeHintMotion _nomoSwipeHintMotion(double loop, double travel) {
     );
   }
 
-  if (loop < .43) {
-    final p = _segmentProgress(loop, .31, .43);
+  if (loop < .36) {
+    final p = _segmentProgress(loop, .24, .36);
     return _NomoSwipeHintMotion(
       left: travel * .62 + math.sin(p * math.pi * 2) * 3,
       step: math.sin(p * math.pi * 2) * .18,
@@ -473,8 +473,8 @@ _NomoSwipeHintMotion _nomoSwipeHintMotion(double loop, double travel) {
     );
   }
 
-  if (loop < .57) {
-    final p = _segmentProgress(loop, .43, .57);
+  if (loop < .47) {
+    final p = _segmentProgress(loop, .36, .47);
     final hop = math.sin(p * math.pi * 2).abs();
     final lean = math.sin(p * math.pi * 4);
     return _NomoSwipeHintMotion(
@@ -488,10 +488,10 @@ _NomoSwipeHintMotion _nomoSwipeHintMotion(double loop, double travel) {
     );
   }
 
-  if (loop < .70) {
-    final p = _segmentProgress(loop, .57, .70);
+  if (loop < .65) {
+    final p = _segmentProgress(loop, .47, .65);
     final eased = _easeInOut(p);
-    final step = math.sin(eased * math.pi * 3);
+    final step = math.sin(eased * math.pi * 5);
     return _NomoSwipeHintMotion(
       left: travel * (.62 + .25 * eased),
       step: step,
@@ -503,9 +503,9 @@ _NomoSwipeHintMotion _nomoSwipeHintMotion(double loop, double travel) {
     );
   }
 
-  if (loop < .84) {
-    final p = _segmentProgress(loop, .70, .84);
-    final breathe = math.sin(p * math.pi * 4);
+  if (loop < .90) {
+    final p = _segmentProgress(loop, .65, .90);
+    final breathe = math.sin(p * math.pi * 6);
     return _NomoSwipeHintMotion(
       left: travel * .87,
       step: 0,
@@ -517,7 +517,7 @@ _NomoSwipeHintMotion _nomoSwipeHintMotion(double loop, double travel) {
     );
   }
 
-  final p = _segmentProgress(loop, .84, 1);
+  final p = _segmentProgress(loop, .90, 1);
   final eased = _easeInOut(p);
   final step = math.sin(eased * math.pi * 4);
   return _NomoSwipeHintMotion(
