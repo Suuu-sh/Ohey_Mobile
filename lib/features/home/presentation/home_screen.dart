@@ -331,7 +331,7 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3600),
+      duration: const Duration(milliseconds: 5200),
     )..repeat();
   }
 
@@ -353,8 +353,9 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
               builder: (context, child) {
                 final loop = _controller.value;
                 final walk = .5 - .5 * math.cos(loop * math.pi * 2);
-                final step = math.sin(loop * math.pi * 10);
-                final bob = math.sin(loop * math.pi * 10).abs() * 2.5;
+                final facingRight = loop <= .5;
+                final step = math.sin(loop * math.pi * 8);
+                final bob = math.sin(loop * math.pi * 8).abs() * 1.4;
                 final groupWidth = math.min(constraints.maxWidth, 168.0);
                 final travel = math.max(0.0, constraints.maxWidth - groupWidth);
                 final left = travel * walk;
@@ -383,7 +384,10 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
                           bottom: 0,
                           child: Transform.translate(
                             offset: Offset(0, -bob),
-                            child: _WalkingNomo(step: step),
+                            child: _WalkingNomo(
+                              step: step,
+                              facingRight: facingRight,
+                            ),
                           ),
                         ),
                       ],
@@ -492,24 +496,28 @@ class _NomoSpeechBubble extends StatelessWidget {
 }
 
 class _WalkingNomo extends StatelessWidget {
-  const _WalkingNomo({required this.step});
+  const _WalkingNomo({required this.step, required this.facingRight});
 
   final double step;
+  final bool facingRight;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 48,
       height: 56,
-      child: CustomPaint(painter: _WalkingNomoPainter(step: step)),
+      child: CustomPaint(
+        painter: _WalkingNomoPainter(step: step, facingRight: facingRight),
+      ),
     );
   }
 }
 
 class _WalkingNomoPainter extends CustomPainter {
-  const _WalkingNomoPainter({required this.step});
+  const _WalkingNomoPainter({required this.step, required this.facingRight});
 
   final double step;
+  final bool facingRight;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -521,34 +529,51 @@ class _WalkingNomoPainter extends CustomPainter {
     final shadowPaint = Paint()..color = Colors.black.withValues(alpha: .20);
     canvas.drawOval(const Rect.fromLTWH(9, 50, 30, 5), shadowPaint);
 
+    if (!facingRight) {
+      canvas.translate(48, 0);
+      canvas.scale(-1, 1);
+    }
+
     final legPaint = Paint()
       ..color = const Color(0xFFFF4CAF)
       ..strokeWidth = 5
       ..strokeCap = StrokeCap.round;
     final shoePaint = Paint()..color = const Color(0xFF111723);
-    final leftFoot = Offset(20 - step * 4, 51);
-    final rightFoot = Offset(30 + step * 4, 51);
-    canvas.drawLine(const Offset(21, 38), leftFoot, legPaint);
-    canvas.drawLine(const Offset(28, 38), rightFoot, legPaint);
+    final backFoot = Offset(20 - step * 3.6, 51);
+    final frontFoot = Offset(30 + step * 4.2, 51);
+    canvas.drawLine(const Offset(21, 38), backFoot, legPaint);
+    canvas.drawLine(const Offset(29, 38), frontFoot, legPaint);
     canvas.drawOval(
-      Rect.fromCenter(center: leftFoot, width: 8, height: 4),
+      Rect.fromCenter(center: backFoot, width: 8, height: 4),
       shoePaint,
     );
     canvas.drawOval(
-      Rect.fromCenter(center: rightFoot, width: 8, height: 4),
+      Rect.fromCenter(center: frontFoot, width: 8, height: 4),
       shoePaint,
     );
 
-    final armPaint = Paint()
-      ..color = const Color(0xFFFF4CAF)
-      ..strokeWidth = 4
+    final backArmPaint = Paint()
+      ..color = const Color(0xFFD4147C).withValues(alpha: .66)
+      ..strokeWidth = 3.2
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(const Offset(13, 29), Offset(8, 34 + step * 3), armPaint);
-    canvas.drawLine(const Offset(35, 29), Offset(40, 34 - step * 3), armPaint);
+    final frontArmPaint = Paint()
+      ..color = const Color(0xFFFF4CAF)
+      ..strokeWidth = 4.2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      const Offset(18, 30),
+      Offset(12, 35 + step * 2.7),
+      backArmPaint,
+    );
+    canvas.drawLine(
+      const Offset(34, 30),
+      Offset(40, 35 - step * 2.7),
+      frontArmPaint,
+    );
 
     final bodyPaint = Paint()
       ..shader = ui.Gradient.linear(
-        const Offset(14, 12),
+        const Offset(12, 12),
         const Offset(38, 44),
         const [Color(0xFFFF6FC5), Color(0xFFFF1493)],
       );
@@ -556,37 +581,42 @@ class _WalkingNomoPainter extends CustomPainter {
       ..color = const Color(0xFFFFB7DF).withValues(alpha: .45)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
-    final body = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(10, 12, 30, 34),
-      const Radius.circular(18),
-    );
-    canvas.drawRRect(body.shift(const Offset(0, 1.5)), shadowPaint);
-    canvas.drawRRect(body, bodyPaint);
-    canvas.drawRRect(body.deflate(.6), outlinePaint);
+    final body = Path()
+      ..moveTo(24, 12)
+      ..cubicTo(34, 11, 41, 20, 40, 31)
+      ..cubicTo(39, 42, 30, 47, 19, 45)
+      ..cubicTo(10, 43, 8, 34, 10, 25)
+      ..cubicTo(12, 17, 16, 13, 24, 12)
+      ..close();
+    canvas.drawPath(body.shift(const Offset(0, 1.5)), shadowPaint);
+    canvas.drawPath(body, bodyPaint);
+    canvas.drawPath(body, outlinePaint);
 
     final stemPaint = Paint()
       ..color = const Color(0xFF78F018)
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(const Offset(26, 14), const Offset(29, 8), stemPaint);
+    canvas.drawLine(const Offset(27, 14), const Offset(31, 8), stemPaint);
     final leafPaint = Paint()
       ..shader = ui.Gradient.linear(
-        const Offset(25, 3),
-        const Offset(39, 12),
+        const Offset(28, 2),
+        const Offset(42, 11),
         const [Color(0xFFB9FF1E), Color(0xFF62D810)],
       );
     canvas.save();
-    canvas.translate(32, 7);
+    canvas.translate(35, 7);
     canvas.rotate(-.34);
     canvas.drawOval(const Rect.fromLTWH(-9, -5, 18, 10), leafPaint);
     canvas.restore();
 
     final eyePaint = Paint()..color = const Color(0xFF111723);
     final highlightPaint = Paint()..color = Colors.white;
-    canvas.drawOval(const Rect.fromLTWH(16, 24, 8, 12), eyePaint);
-    canvas.drawOval(const Rect.fromLTWH(27, 24, 8, 12), eyePaint);
-    canvas.drawOval(const Rect.fromLTWH(18, 25, 3.5, 3.5), highlightPaint);
-    canvas.drawOval(const Rect.fromLTWH(29, 25, 3.5, 3.5), highlightPaint);
+    canvas.drawOval(
+      const Rect.fromLTWH(20.5, 25.5, 5, 9),
+      Paint()..color = const Color(0xFF111723).withValues(alpha: .22),
+    );
+    canvas.drawOval(const Rect.fromLTWH(29, 23, 8.5, 13), eyePaint);
+    canvas.drawOval(const Rect.fromLTWH(31, 24, 3.7, 3.7), highlightPaint);
 
     final mouthPaint = Paint()
       ..color = const Color(0xFF111723)
@@ -594,9 +624,9 @@ class _WalkingNomoPainter extends CustomPainter {
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
     canvas.drawArc(
-      const Rect.fromLTWH(20, 33, 10, 7),
-      .15,
-      math.pi - .3,
+      const Rect.fromLTWH(34, 34, 6, 5),
+      math.pi * .14,
+      math.pi * .7,
       false,
       mouthPaint,
     );
@@ -606,7 +636,7 @@ class _WalkingNomoPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _WalkingNomoPainter oldDelegate) {
-    return oldDelegate.step != step;
+    return oldDelegate.step != step || oldDelegate.facingRight != facingRight;
   }
 }
 
