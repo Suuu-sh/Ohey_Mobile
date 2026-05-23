@@ -1382,31 +1382,62 @@ class _AdminDropdown extends StatelessWidget {
   final ValueChanged<String?> onChanged;
 
   @override
-  Widget build(BuildContext context) => DropdownButtonFormField<String>(
-    initialValue: value.isEmpty ? null : value,
-    dropdownColor: const Color(0xFF101B28),
-    decoration: InputDecoration(
-      labelText: '飲みログのユーザー',
-      labelStyle: const TextStyle(color: _AdminColors.sub),
-      filled: true,
-      fillColor: Colors.white.withValues(alpha: .06),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
-    ),
-    items: [
-      for (final user in users)
-        DropdownMenuItem(
-          value: user.id,
-          child: Text(
-            '${user.displayName} @${user.userId}',
-            style: const TextStyle(
-              color: Colors.white,
+  Widget build(BuildContext context) {
+    final values = users.map((user) => user.id).toSet();
+    final selectedValue = values.contains(value) ? value : null;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 6, 10, 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .06),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _AdminColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '飲みログのユーザー',
+            style: TextStyle(
+              color: _AdminColors.sub,
+              fontSize: 12,
               fontWeight: FontWeight.w800,
             ),
           ),
-        ),
-    ],
-    onChanged: onChanged,
-  );
+          DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: selectedValue,
+              isExpanded: true,
+              dropdownColor: const Color(0xFF101B28),
+              iconEnabledColor: _AdminColors.lime,
+              hint: const Text(
+                '投稿者を選択',
+                style: TextStyle(
+                  color: _AdminColors.sub,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              items: [
+                for (final user in users)
+                  DropdownMenuItem(
+                    value: user.id,
+                    child: Text(
+                      '${user.displayName} @${user.userId}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+              ],
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _AdminStatusDropdown extends StatelessWidget {
