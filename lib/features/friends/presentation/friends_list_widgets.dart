@@ -350,7 +350,7 @@ class _TodayInviteEmpty extends StatelessWidget {
 
 String _recommendationReasonFor(_DecoratedFriend item) {
   final friend = item.friend;
-  if ((friend.totalDrinkCount ?? 0) == 0) {
+  if (friend.totalDrinkCount == 0) {
     return 'おすすめの理由：まだ行ったことない';
   }
   if (friend.isFavorite && _daysSinceLastDrink(friend) >= 30) {
@@ -367,7 +367,7 @@ String _recommendationReasonFor(_DecoratedFriend item) {
 
 bool _isRecommendedFriend(_DecoratedFriend item) {
   final friend = item.friend;
-  return (friend.totalDrinkCount ?? 0) == 0 ||
+  return friend.totalDrinkCount == 0 ||
       (friend.isFavorite && _daysSinceLastDrink(friend) >= 30) ||
       friend.statusKey == 'can_drink_today' ||
       friend.statusKey == 'non_alcohol';
@@ -376,7 +376,7 @@ bool _isRecommendedFriend(_DecoratedFriend item) {
 int _recommendationScoreFor(_DecoratedFriend item) {
   final friend = item.friend;
   var score = 0;
-  if ((friend.totalDrinkCount ?? 0) == 0) score += 100;
+  if (friend.totalDrinkCount == 0) score += 100;
   if (friend.isFavorite && _daysSinceLastDrink(friend) >= 30) score += 80;
   if (friend.statusKey == 'can_drink_today') score += 60;
   if (friend.statusKey == 'non_alcohol') score += 50;
