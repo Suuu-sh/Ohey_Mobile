@@ -50,7 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const _feedSwipeTutorialSeenKey = 'nomo_feed_swipe_tutorial_seen';
 
   bool _isRefreshingFeed = false;
-  bool _isFeedHeaderTransparent = false;
+  int _currentFeedPageIndex = 0;
   bool _isFeedSwipeTutorialSeen = true;
 
   @override
@@ -105,28 +105,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Stack(
         children: [
           Positioned.fill(
-            child: NotificationListener<ScrollNotification>(
-              onNotification: _handleFeedScrollNotification,
-              child: _buildFeedPage(
-                topPadding: _feedHeaderScrollInset(context),
-                items: feedItems,
-                isWhite: isWhite,
-                isLoading: logsAsync.isLoading || friendsAsync.isLoading,
-                onLikePressed: (item) => ref
-                    .read(drinkLogControllerProvider.notifier)
-                    .toggleLike(item.id),
-                onSharePressed: (item) => _shareFeedItem(context, item),
-                showSwipeTutorial:
-                    !_isFeedSwipeTutorialSeen && feedItems.length > 1,
-                onSwipeTutorialDismissed: _markFeedSwipeTutorialSeen,
-                onMorePressed: (item) =>
-                    _showFeedPostActions(context, ref, item),
-              ),
+            child: _buildFeedPage(
+              topPadding: _feedHeaderScrollInset(context),
+              items: feedItems,
+              isWhite: isWhite,
+              isLoading: logsAsync.isLoading || friendsAsync.isLoading,
+              onPageChanged: _handleFeedPageChanged,
+              onLikePressed: (item) => ref
+                  .read(drinkLogControllerProvider.notifier)
+                  .toggleLike(item.id),
+              onSharePressed: (item) => _shareFeedItem(context, item),
+              showSwipeTutorial:
+                  !_isFeedSwipeTutorialSeen && feedItems.length > 1,
+              onSwipeTutorialDismissed: _markFeedSwipeTutorialSeen,
+              onMorePressed: (item) => _showFeedPostActions(context, ref, item),
             ),
           ),
           _FeedHeaderOverlay(
             isWhite: isWhite,
-            isTransparent: _isFeedHeaderTransparent,
+            isCondensed: _currentFeedPageIndex > 0,
             child: NomoPageHeader(
               title: 'フィード',
               titleColor: _FeedColors.teal,
@@ -162,24 +159,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  bool _handleFeedScrollNotification(ScrollNotification notification) {
-    if (notification.metrics.axis != Axis.vertical) return false;
-    if (notification is ScrollUpdateNotification) {
-      final delta = notification.scrollDelta ?? 0;
-      if (delta > .5) {
-        _setFeedHeaderTransparent(true);
-      } else if (delta < -.5) {
-        _setFeedHeaderTransparent(false);
-      }
-    } else if (notification is ScrollEndNotification) {
-      _setFeedHeaderTransparent(false);
+  void _handleFeedPageChanged(int index) {
+    if (_currentFeedPageIndex == index || !mounted) return;
+    setState(() => _currentFeedPageIndex = index);
+    if (index > 0) {
+      _markFeedSwipeTutorialSeen();
     }
-    return false;
-  }
-
-  void _setFeedHeaderTransparent(bool value) {
-    if (_isFeedHeaderTransparent == value || !mounted) return;
-    setState(() => _isFeedHeaderTransparent = value);
   }
 
   Future<void> _refreshFeed() async {

@@ -13,6 +13,7 @@ Widget _buildFeedPage({
   required bool isLoading,
   required bool showSwipeTutorial,
   required VoidCallback onSwipeTutorialDismissed,
+  required ValueChanged<int> onPageChanged,
   required ValueChanged<_FeedItem> onLikePressed,
   required ValueChanged<_FeedItem> onSharePressed,
   required ValueChanged<_FeedItem> onMorePressed,
@@ -40,9 +41,7 @@ Widget _buildFeedPage({
 
   return PageView.builder(
     scrollDirection: Axis.vertical,
-    onPageChanged: (index) {
-      if (index > 0) onSwipeTutorialDismissed();
-    },
+    onPageChanged: onPageChanged,
     physics: const PageScrollPhysics(parent: BouncingScrollPhysics()),
     itemCount: items.length,
     itemBuilder: (context, index) {
@@ -907,12 +906,12 @@ class _FeedHeaderOverlay extends StatelessWidget {
   const _FeedHeaderOverlay({
     required this.child,
     required this.isWhite,
-    required this.isTransparent,
+    required this.isCondensed,
   });
 
   final Widget child;
   final bool isWhite;
-  final bool isTransparent;
+  final bool isCondensed;
 
   @override
   Widget build(BuildContext context) {
@@ -923,38 +922,52 @@ class _FeedHeaderOverlay extends StatelessWidget {
       top: 0,
       height: height,
       child: IgnorePointer(
-        ignoring: isTransparent,
-        child: AnimatedOpacity(
-          opacity: isTransparent ? 0 : 1,
-          duration: Duration(milliseconds: isTransparent ? 420 : 620),
-          curve: isTransparent ? Curves.easeOutCubic : Curves.easeOutQuart,
+        ignoring: false,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 360),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            color: (isWhite ? Colors.white : AppColors.darkBackgroundBottom)
+                .withValues(alpha: isCondensed ? .76 : 0),
+          ),
           child: ClipRect(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                NomoSceneHeaderBackdrop(
-                  assetPath: 'assets/images/feed_header_scene.png',
-                  fadeColor: isWhite
-                      ? Colors.white
-                      : AppColors.darkBackgroundBottom,
-                  accentColor: _FeedColors.teal,
-                  imageTopOffset: -72,
-                  topShadeOpacity: .12,
-                  fadeStartOpacity: .92,
-                ),
-                SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      NomoPageHeader.horizontalPadding,
-                      NomoPageHeader.topPadding,
-                      NomoPageHeader.horizontalPadding,
-                      0,
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(
+                sigmaX: isCondensed ? 14 : 0,
+                sigmaY: isCondensed ? 14 : 0,
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  AnimatedOpacity(
+                    opacity: isCondensed ? .34 : 1,
+                    duration: const Duration(milliseconds: 360),
+                    curve: Curves.easeOutCubic,
+                    child: NomoSceneHeaderBackdrop(
+                      assetPath: 'assets/images/feed_header_scene.png',
+                      fadeColor: isWhite
+                          ? Colors.white
+                          : AppColors.darkBackgroundBottom,
+                      accentColor: _FeedColors.teal,
+                      imageTopOffset: -72,
+                      topShadeOpacity: .12,
+                      fadeStartOpacity: .92,
                     ),
-                    child: child,
                   ),
-                ),
-              ],
+                  SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        NomoPageHeader.horizontalPadding,
+                        NomoPageHeader.topPadding,
+                        NomoPageHeader.horizontalPadding,
+                        0,
+                      ),
+                      child: child,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
