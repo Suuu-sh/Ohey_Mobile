@@ -10,6 +10,7 @@ import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
+import '../../../core/widgets/nomo_empty_state.dart';
 import '../../logs/application/drink_log_controller.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -240,45 +241,32 @@ class _CalendarEmptyAction extends StatelessWidget {
               : Colors.white.withValues(alpha: .08),
         ),
       ),
-      child: Column(
-        children: [
-          Text(
-            'この月の飲みログはまだありません',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isWhite ? const Color(0xFF101820) : Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-            ),
+      child: NomoEmptyState(
+        visual: NomoPopIcon(
+          icon: CupertinoIcons.calendar,
+          color: AppColors.primaryAction,
+          size: 52,
+        ),
+        title: 'この月の飲みログはまだありません',
+        message: '予定や思い出を残すと、カレンダーにマークが付きます。',
+        titleColor: isWhite ? const Color(0xFF101820) : Colors.white,
+        messageColor: isWhite
+            ? const Color(0xFF657282)
+            : Colors.white.withValues(alpha: .62),
+        padding: EdgeInsets.zero,
+        action: SizedBox(
+          width: 190,
+          child: Nomo3DButton(
+            label: '飲み予定を作る',
+            icon: CupertinoIcons.calendar_badge_plus,
+            onTap: onTap,
+            height: 46,
+            radius: 21,
+            color: AppColors.primaryAction,
+            shadowColor: AppColors.primaryActionShadow,
+            fontSize: 13,
           ),
-          const SizedBox(height: 7),
-          Text(
-            '予定や思い出を残すと、カレンダーにマークが付きます。',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isWhite
-                  ? const Color(0xFF657282)
-                  : Colors.white.withValues(alpha: .62),
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            width: 190,
-            child: Nomo3DButton(
-              label: '飲み予定を作る',
-              icon: CupertinoIcons.calendar_badge_plus,
-              onTap: onTap,
-              height: 46,
-              radius: 21,
-              color: AppColors.primaryAction,
-              shadowColor: AppColors.primaryActionShadow,
-              fontSize: 13,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

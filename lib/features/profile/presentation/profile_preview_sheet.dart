@@ -75,176 +75,20 @@ class _NomoProfilePreviewSheetState extends State<_NomoProfilePreviewSheet> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-        decoration: BoxDecoration(
-          color: const Color(0xFF071622),
-          borderRadius: BorderRadius.circular(34),
-          border: Border.all(color: Colors.white.withValues(alpha: .10)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: .32),
-              blurRadius: 30,
-              offset: const Offset(0, 18),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 44,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .22),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-            const SizedBox(height: 14),
-            Align(
-              alignment: Alignment.centerRight,
-              child: GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .08),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const NomoGeneratedIcon(
-                    CupertinoIcons.xmark,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 156,
-                  height: 156,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF22D7C5), Color(0xFFFFD166)],
-                    ),
-                  ),
-                ),
-                Container(
-                  width: 146,
-                  height: 146,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF4F2EE),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 5),
-                  ),
-                  child: ClipOval(
-                    child: NomoAvatarView(
-                      avatar: widget.profile.avatar,
-                      size: 126,
-                    ),
-                  ),
-                ),
-                const Positioned(
-                  right: 16,
-                  top: 18,
-                  child: NomoGeneratedIcon(
-                    CupertinoIcons.sparkles,
-                    color: Color(0xFFFFD166),
-                    size: 28,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              widget.profile.displayName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.8,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .08),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: Colors.white.withValues(alpha: .10)),
-              ),
-              child: Text(
-                '@${widget.profile.userId}',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: .68),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .045),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: Colors.white.withValues(alpha: .08)),
-              ),
-              child: Row(
-                children: [
-                  NomoPopIcon(
-                    icon: _statusIcon,
-                    color: _statusColor,
-                    size: 38,
-                    showBubble: false,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      _statusMessage,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: .74),
-                        fontWeight: FontWeight.w800,
-                        height: 1.45,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-            Nomo3DButton(
-              label: _buttonLabel,
-              icon: _canRequest ? CupertinoIcons.paperplane_fill : _statusIcon,
-              onTap: _canRequest ? _sendRequest : null,
-              isLoading: _busy,
-              enabled: _canRequest,
-              height: 54,
-              radius: 22,
-              color: _canRequest ? AppColors.primaryAction : _statusColor,
-              shadowColor: _canRequest
-                  ? AppColors.primaryActionShadow
-                  : _statusColor.withValues(alpha: .62),
-              fontSize: 15,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => NomoProfileResultSheet(
+    avatar: widget.profile.avatar,
+    displayName: widget.profile.displayName,
+    subtitle: '@${widget.profile.userId}',
+    statusMessage: _statusMessage,
+    statusIcon: _statusIcon,
+    statusColor: _statusColor,
+    actionLabel: _buttonLabel,
+    actionIcon: _canRequest ? CupertinoIcons.paperplane_fill : _statusIcon,
+    onAction: _canRequest ? _sendRequest : () {},
+    backgroundColor: const Color(0xFF071622),
+    accentColor: _canRequest ? AppColors.primaryAction : _statusColor,
+    onClose: () => Navigator.of(context).pop(),
+  );
 }
 
 class _MyQrCard extends StatelessWidget {

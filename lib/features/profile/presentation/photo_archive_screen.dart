@@ -7,6 +7,7 @@ import '../../../core/models/drink_log.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
+import '../../../core/widgets/nomo_empty_state.dart';
 
 part 'photo_archive_visuals.dart';
 part 'photo_archive_detail_widgets.dart';

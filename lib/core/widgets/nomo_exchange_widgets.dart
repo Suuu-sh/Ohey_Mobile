@@ -198,6 +198,10 @@ class NomoProfileResultSheet extends StatelessWidget {
     required this.onAction,
     required this.backgroundColor,
     required this.accentColor,
+    this.statusMessage,
+    this.statusIcon,
+    this.statusColor,
+    this.onClose,
   });
 
   final NomoAvatar avatar;
@@ -208,6 +212,10 @@ class NomoProfileResultSheet extends StatelessWidget {
   final VoidCallback onAction;
   final Color backgroundColor;
   final Color accentColor;
+  final String? statusMessage;
+  final IconData? statusIcon;
+  final Color? statusColor;
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -233,6 +241,28 @@ class NomoProfileResultSheet extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
+            if (onClose != null) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: onClose,
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const NomoGeneratedIcon(
+                      CupertinoIcons.xmark,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 18),
             Container(
               padding: const EdgeInsets.all(7),
@@ -260,6 +290,41 @@ class NomoProfileResultSheet extends StatelessWidget {
                 fontWeight: FontWeight.w800,
               ),
             ),
+            if (statusMessage != null) ...[
+              const SizedBox(height: 18),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: .045),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: .08),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    NomoPopIcon(
+                      icon: statusIcon ?? CupertinoIcons.info_circle_fill,
+                      color: statusColor ?? accentColor,
+                      size: 38,
+                      showBubble: false,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        statusMessage!,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: .74),
+                          fontWeight: FontWeight.w800,
+                          height: 1.45,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 20),
             GestureDetector(
               onTap: onAction,

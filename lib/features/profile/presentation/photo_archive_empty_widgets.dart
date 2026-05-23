@@ -40,60 +40,35 @@ class _ArchiveEmptyState extends StatelessWidget {
   final bool isWhite;
 
   @override
-  Widget build(BuildContext context) {
-    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
-    final subColor = isWhite ? const Color(0xFF7A8490) : Colors.white60;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFFF6FA8), Color(0xFFFFC46B)],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFF6FA8).withValues(alpha: .24),
-                    blurRadius: 24,
-                    offset: const Offset(0, 14),
-                  ),
-                ],
-              ),
-              child: const NomoGeneratedIcon(
-                CupertinoIcons.photo_on_rectangle,
-                color: Colors.white,
-                size: 42,
-              ),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              'まだ写真がありません',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: titleColor,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '写真付きの飲みログをここで見返せます。',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: subColor,
-                fontWeight: FontWeight.w800,
-                height: 1.45,
-              ),
-            ),
-          ],
+  Widget build(BuildContext context) => NomoEmptyState(
+    visual: Container(
+      width: 96,
+      height: 96,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFF6FA8), Color(0xFFFFC46B)],
         ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF6FA8).withValues(alpha: .24),
+            blurRadius: 24,
+            offset: const Offset(0, 14),
+          ),
+        ],
       ),
-    );
-  }
+      child: const NomoGeneratedIcon(
+        CupertinoIcons.photo_on_rectangle,
+        color: Colors.white,
+        size: 42,
+      ),
+    ),
+    title: 'まだ写真がありません',
+    message: '写真付きの飲みログをここで見返せます。',
+    titleColor: isWhite ? const Color(0xFF101820) : Colors.white,
+    messageColor: isWhite ? const Color(0xFF7A8490) : Colors.white60,
+    padding: const EdgeInsets.symmetric(horizontal: 30),
+  );
 }
 
 List<DrinkLog> _archivePreviewLogs(List<DrinkLog> sorted) {

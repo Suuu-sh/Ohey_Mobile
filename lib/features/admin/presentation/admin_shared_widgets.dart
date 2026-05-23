@@ -638,14 +638,16 @@ class _AdminEmptyState extends StatelessWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: Text(
-      message,
-      style: const TextStyle(
-        color: _AdminColors.sub,
-        fontWeight: FontWeight.w800,
-      ),
+  Widget build(BuildContext context) => NomoEmptyState(
+    visual: const NomoGeneratedIcon(
+      CupertinoIcons.tray,
+      color: _AdminColors.lime,
+      size: 46,
     ),
+    title: message,
+    message: '条件を変えるか、あとでもう一度確認してください。',
+    titleColor: Colors.white,
+    messageColor: _AdminColors.sub,
   );
 }
 
@@ -656,23 +658,8 @@ class _AdminErrorState extends StatelessWidget {
   final VoidCallback onRetry;
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          message,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: _AdminColors.pink,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 12),
-        _AdminSmallButton(label: '再読み込み', onTap: onRetry),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) =>
+      NomoStateView.error(message: message, compact: false);
 }
 
 String _dateLabel(DateTime date) {
