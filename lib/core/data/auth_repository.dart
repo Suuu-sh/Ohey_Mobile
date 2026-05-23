@@ -32,7 +32,7 @@ class AuthRepository {
     return _supabase.auth.signInWithOAuth(
       provider,
       redirectTo: SupabaseConfig.authRedirectUrl,
-      scopes: _oauthScopes(provider),
+      scopes: authOAuthScopes(provider),
     );
   }
 
@@ -66,7 +66,7 @@ class AuthRepository {
   }
 }
 
-String _oauthScopes(OAuthProvider provider) {
+String authOAuthScopes(OAuthProvider provider) {
   return switch (provider) {
     OAuthProvider.google => 'email profile',
     OAuthProvider.apple => 'name email',

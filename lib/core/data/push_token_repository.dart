@@ -29,7 +29,9 @@ class PushTokenRepository {
     if (!hasSignedInUser || token.trim().isEmpty) return;
     await _client.put('/v1/me/push-token', {
       'token': token,
-      'platform': Platform.isAndroid ? 'android' : 'ios',
+      'platform': currentPushPlatformKey(),
     });
   }
 }
+
+String currentPushPlatformKey() => Platform.isAndroid ? 'android' : 'ios';
