@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../config/admin_config.dart';
+
 class NomoAvatar {
   const NomoAvatar({
     required this.skin,
@@ -41,8 +43,7 @@ class NomoAvatar {
     isAdmin: true,
   );
 
-  static bool isAdminEmail(String? email) =>
-      (email ?? '').trim().toLowerCase() == 'yisshiki39@gmail.com';
+  static bool isAdminEmail(String? email) => AdminConfig.isAdminEmail(email);
 
   static NomoAvatar random() {
     final random = Random();

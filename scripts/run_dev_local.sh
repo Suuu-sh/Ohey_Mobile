@@ -12,6 +12,7 @@ fi
 : "${SUPABASE_URL:?SUPABASE_URL is required. Put it in .env.local or export it.}"
 : "${SUPABASE_PUBLISHABLE_KEY:?SUPABASE_PUBLISHABLE_KEY is required. Put it in .env.local or export it.}"
 SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-app.nomo.nomo://login-callback/}"
+NOMO_ADMIN_EMAILS="${NOMO_ADMIN_EMAILS:-}"
 
 # Run Nomo locally against dev-nomo Supabase and a local Go backend on :8080.
 flutter run \
@@ -20,4 +21,5 @@ flutter run \
   --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
   --dart-define=SUPABASE_AUTH_REDIRECT_URL="$SUPABASE_AUTH_REDIRECT_URL" \
   --dart-define=NOMO_BACKEND_URL="${NOMO_BACKEND_URL:-http://localhost:8080}" \
+  --dart-define=NOMO_ADMIN_EMAILS="$NOMO_ADMIN_EMAILS" \
   "$@"
