@@ -255,6 +255,321 @@ class _ArrowButton extends StatelessWidget {
   }
 }
 
+class _NextDrinkPlanCard extends StatelessWidget {
+  const _NextDrinkPlanCard({
+    required this.reservations,
+    required this.isWhite,
+    required this.onCreatePlan,
+  });
+
+  final List<NomoDrinkInvite> reservations;
+  final bool isWhite;
+  final VoidCallback? onCreatePlan;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPlan = reservations.isNotEmpty;
+    final accent = hasPlan ? AppColors.success : AppColors.primaryAction;
+    final title = hasPlan ? '今日の飲み予定あり' : '次の飲み予定を作ろう';
+    final message = hasPlan
+        ? '${_reservationFriendLabel(reservations)}との予定があります'
+        : '空いている日に予定を入れると、カレンダーで見つけやすくなります。';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: BoxDecoration(
+        color: isWhite
+            ? Colors.white.withValues(alpha: .92)
+            : const Color(0xFF102233).withValues(alpha: .88),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: accent.withValues(alpha: .36)),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: isWhite ? .12 : .18),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          NomoPopIcon(
+            icon: hasPlan
+                ? CupertinoIcons.checkmark_seal_fill
+                : CupertinoIcons.calendar_badge_plus,
+            color: accent,
+            size: 46,
+            iconSize: 24,
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isWhite ? const Color(0xFF101820) : Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.25,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  message,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isWhite
+                        ? const Color(0xFF657282)
+                        : Colors.white.withValues(alpha: .64),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (!hasPlan) ...[
+            const SizedBox(width: 10),
+            _MiniCalendarCta(label: '作る', accent: accent, onTap: onCreatePlan),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SelectedDayPanel extends StatelessWidget {
+  const _SelectedDayPanel({
+    required this.day,
+    required this.logs,
+    required this.plans,
+    required this.isWhite,
+    required this.onCreatePlan,
+  });
+
+  final DateTime day;
+  final List<DrinkLog> logs;
+  final List<NomoDrinkInvite> plans;
+  final bool isWhite;
+  final VoidCallback? onCreatePlan;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      decoration: BoxDecoration(
+        color: isWhite
+            ? Colors.white
+            : const Color(0xFF122233).withValues(alpha: .82),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isWhite
+              ? const Color(0xFFDCE4EC)
+              : Colors.white.withValues(alpha: .08),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${day.month}/${day.day} の予定と飲みログ',
+            style: TextStyle(
+              color: isWhite ? const Color(0xFF101820) : Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _CalendarSectionLabel(label: '予定', accent: AppColors.primaryAction),
+          const SizedBox(height: 7),
+          if (plans.isNotEmpty)
+            _CalendarInfoRow(
+              icon: CupertinoIcons.calendar_today,
+              accent: AppColors.success,
+              text: '${_reservationFriendLabel(plans)}との飲み予定',
+              isWhite: isWhite,
+            )
+          else
+            _CalendarEmptyRow(
+              text: 'この日の飲み予定はまだありません',
+              buttonLabel: 'この日に作る',
+              isWhite: isWhite,
+              onTap: onCreatePlan,
+            ),
+          const SizedBox(height: 12),
+          _CalendarSectionLabel(label: '飲みログ', accent: const Color(0xFF54D7FF)),
+          const SizedBox(height: 7),
+          if (logs.isNotEmpty)
+            ...logs
+                .take(3)
+                .map(
+                  (log) => _CalendarInfoRow(
+                    icon: CupertinoIcons.photo_fill_on_rectangle_fill,
+                    accent: const Color(0xFF54D7FF),
+                    text: log.memo.trim().isEmpty
+                        ? '飲みログを残しました'
+                        : log.memo.trim(),
+                    isWhite: isWhite,
+                  ),
+                )
+          else
+            _CalendarEmptyRow(
+              text: 'この日の飲みログはまだありません',
+              buttonLabel: '飲みログを残す',
+              isWhite: isWhite,
+              onTap: onCreatePlan,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CalendarSectionLabel extends StatelessWidget {
+  const _CalendarSectionLabel({required this.label, required this.accent});
+
+  final String label;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Container(
+        width: 8,
+        height: 8,
+        decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+      ),
+      const SizedBox(width: 6),
+      Text(
+        label,
+        style: TextStyle(
+          color: accent,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    ],
+  );
+}
+
+class _CalendarInfoRow extends StatelessWidget {
+  const _CalendarInfoRow({
+    required this.icon,
+    required this.accent,
+    required this.text,
+    required this.isWhite,
+  });
+
+  final IconData icon;
+  final Color accent;
+  final String text;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 7),
+    child: Row(
+      children: [
+        NomoGeneratedIcon(icon, color: accent, size: 19),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: isWhite ? const Color(0xFF344152) : Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _CalendarEmptyRow extends StatelessWidget {
+  const _CalendarEmptyRow({
+    required this.text,
+    required this.buttonLabel,
+    required this.isWhite,
+    required this.onTap,
+  });
+
+  final String text;
+  final String buttonLabel;
+  final bool isWhite;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: Text(
+          text,
+          style: TextStyle(
+            color: isWhite
+                ? const Color(0xFF657282)
+                : Colors.white.withValues(alpha: .62),
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+      const SizedBox(width: 10),
+      _MiniCalendarCta(
+        label: buttonLabel,
+        accent: AppColors.primaryAction,
+        onTap: onTap,
+      ),
+    ],
+  );
+}
+
+class _MiniCalendarCta extends StatelessWidget {
+  const _MiniCalendarCta({
+    required this.label,
+    required this.accent,
+    this.onTap,
+  });
+
+  final String label;
+  final Color accent;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: accent,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Color(0xFF06111D),
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    ),
+  );
+}
+
+String _reservationFriendLabel(List<NomoDrinkInvite> reservations) {
+  if (reservations.isEmpty) return 'フレンズ';
+  final first = reservations.first.fromUser.name;
+  if (reservations.length == 1) return first;
+  return '$firstほか${reservations.length - 1}人';
+}
+
 class _CalendarEmptyAction extends StatelessWidget {
   const _CalendarEmptyAction({required this.onTap});
 
@@ -400,8 +715,7 @@ class _PlayfulMonthGrid extends StatelessWidget {
                   final day = DateTime(month.year, month.month, dayNumber);
                   final marker = inMonth ? markers[dayNumber] : null;
                   final isToday = inMonth && _isSameDate(DateTime.now(), day);
-                  final hasPlan =
-                      isToday && todayReservations.isNotEmpty;
+                  final hasPlan = isToday && todayReservations.isNotEmpty;
                   return _DayTile(
                     day: displayDay,
                     date: day,
@@ -432,7 +746,6 @@ class _PlayfulMonthGrid extends StatelessWidget {
     }
     return markers;
   }
-
 }
 
 class _DayTile extends StatelessWidget {
@@ -476,104 +789,104 @@ class _DayTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
-      decoration: BoxDecoration(
-        color: isSelected
-            ? (isWhite ? const Color(0xFFEAF8FF) : const Color(0xFF123047))
-            : isWhite
-            ? Colors.white
-            : const Color(0xFF122233).withValues(alpha: .82),
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(
-          color: hasPlan
-              ? AppColors.primaryAction
-              : isSelected
-              ? const Color(0xFF54D7FF)
+        duration: const Duration(milliseconds: 160),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isWhite ? const Color(0xFFEAF8FF) : const Color(0xFF123047))
               : isWhite
-              ? const Color(0xFFDCE4EC)
-              : Colors.white.withValues(alpha: .06),
-          width: isSelected || hasPlan ? 2 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .05 : .20),
-            blurRadius: 12,
-            offset: const Offset(0, 8),
+              ? Colors.white
+              : const Color(0xFF122233).withValues(alpha: .82),
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(
+            color: hasPlan
+                ? AppColors.primaryAction
+                : isSelected
+                ? const Color(0xFF54D7FF)
+                : isWhite
+                ? const Color(0xFFDCE4EC)
+                : Colors.white.withValues(alpha: .06),
+            width: isSelected || hasPlan ? 2 : 1,
           ),
-        ],
-      ),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned.fill(
-            child: Align(
-              alignment: marker == null
-                  ? Alignment.center
-                  : Alignment.topCenter,
-              child: Padding(
-                padding: EdgeInsets.only(top: marker == null ? 0 : 8),
-                child: Container(
-                  width: isToday ? 36 : null,
-                  height: isToday ? 36 : null,
-                  alignment: Alignment.center,
-                  decoration: isToday
-                      ? BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFFB7F51A),
-                            width: 3,
-                          ),
-                        )
-                      : null,
-                  child: Text(
-                    '$day',
-                    style: TextStyle(
-                      color: isToday && !isWhite ? Colors.white : dayColor,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isWhite ? .05 : .20),
+              blurRadius: 12,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: Align(
+                alignment: marker == null
+                    ? Alignment.center
+                    : Alignment.topCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(top: marker == null ? 0 : 8),
+                  child: Container(
+                    width: isToday ? 36 : null,
+                    height: isToday ? 36 : null,
+                    alignment: Alignment.center,
+                    decoration: isToday
+                        ? BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFB7F51A),
+                              width: 3,
+                            ),
+                          )
+                        : null,
+                    child: Text(
+                      '$day',
+                      style: TextStyle(
+                        color: isToday && !isWhite ? Colors.white : dayColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          if (hasPlan)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: marker == null ? 7 : 28,
-              child: NomoGeneratedIcon(
-                CupertinoIcons.calendar_badge_plus,
-                color: AppColors.primaryAction,
-                size: 22,
-              ),
-            ),
-          if (marker != null) ...[
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 8,
-              child: NomoGeneratedIcon(
-                CupertinoIcons.person_crop_circle_fill,
-                color: marker!.accent,
-                size: 26,
-              ),
-            ),
-            Positioned(
-              right: 10,
-              top: 16,
-              child: Container(
-                width: 9,
-                height: 9,
-                decoration: BoxDecoration(
-                  color: marker!.accent,
-                  shape: BoxShape.circle,
+            if (hasPlan)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: marker == null ? 7 : 28,
+                child: NomoGeneratedIcon(
+                  CupertinoIcons.calendar_badge_plus,
+                  color: AppColors.primaryAction,
+                  size: 22,
                 ),
               ),
-            ),
+            if (marker != null) ...[
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 8,
+                child: NomoGeneratedIcon(
+                  CupertinoIcons.person_crop_circle_fill,
+                  color: marker!.accent,
+                  size: 26,
+                ),
+              ),
+              Positioned(
+                right: 10,
+                top: 16,
+                child: Container(
+                  width: 9,
+                  height: 9,
+                  decoration: BoxDecoration(
+                    color: marker!.accent,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ],
           ],
-        ],
-      ),
+        ),
       ),
     );
   }
@@ -585,8 +898,8 @@ class _Marker {
   final Color accent;
 }
 
-
 bool _isSameDate(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
 
-DateTime _dateOnly(DateTime value) => DateTime(value.year, value.month, value.day);
+DateTime _dateOnly(DateTime value) =>
+    DateTime(value.year, value.month, value.day);
