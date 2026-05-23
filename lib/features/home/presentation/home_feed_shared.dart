@@ -83,7 +83,8 @@ List<_FeedItem> _feedItems(
     .where(
       (item) =>
           item.isOfficial ||
-          (item.ownerUserId.isNotEmpty &&
+          (_isDisplayablePostPhoto(item.photoAssetPath) &&
+              item.ownerUserId.isNotEmpty &&
               (item.ownedByMe || friendUserIds.contains(item.ownerUserId))),
     )
     .toList(growable: false);
