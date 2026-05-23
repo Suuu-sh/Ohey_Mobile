@@ -1,4 +1,3 @@
-import 'package:characters/characters.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/optimistic_update.dart';
@@ -98,7 +97,7 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
       date: date,
       friends: friends,
       place: place.trim(),
-      memo: memo.trim().characters.take(15).toString(),
+      memo: String.fromCharCodes(memo.trim().runes.take(15)),
       photoAssetPath: photoAssetPath,
     );
 
