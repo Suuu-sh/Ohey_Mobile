@@ -116,6 +116,9 @@ extension _AddLogScreenActions on _AddLogScreenState {
         .toList(growable: false);
     try {
       final photoPath = await _photoPathForSave();
+      final previousLogs =
+          ref.read(drinkLogControllerProvider).asData?.value ??
+          const <DrinkLog>[];
       await ref
           .read(drinkLogControllerProvider.notifier)
           .addLog(
@@ -127,12 +130,43 @@ extension _AddLogScreenActions on _AddLogScreenState {
           );
       if (!mounted) return;
       setState(() => _isSaving = false);
+      final monthlyCount = _monthlyLogCountAfterSave(previousLogs);
+      await _showDrinkLogSuccessSheet(
+        friends: selectedFriends,
+        monthlyCount: monthlyCount,
+      );
+      if (!mounted) return;
       Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
       setState(() => _isSaving = false);
       NomoToast.show(context, '保存できなかったよ。あとでもう一度試してね');
     }
+  }
+
+  int _monthlyLogCountAfterSave(List<DrinkLog> previousLogs) {
+    final countBefore = previousLogs.where((log) {
+      if (log.isOfficial) return false;
+      return log.date.year == _selectedDate.year &&
+          log.date.month == _selectedDate.month;
+    }).length;
+    return countBefore + 1;
+  }
+
+  Future<void> _showDrinkLogSuccessSheet({
+    required List<NomoFriend> friends,
+    required int monthlyCount,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: .62),
+      builder: (_) =>
+          _DrinkLogSuccessSheet(friends: friends, monthlyCount: monthlyCount),
+    );
   }
 
   Future<String?> _photoPathForSave() async {

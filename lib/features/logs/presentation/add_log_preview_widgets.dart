@@ -855,3 +855,155 @@ class _PlaceSearchButton extends StatelessWidget {
     ),
   );
 }
+
+class _DrinkLogSuccessSheet extends StatefulWidget {
+  const _DrinkLogSuccessSheet({
+    required this.friends,
+    required this.monthlyCount,
+  });
+
+  final List<NomoFriend> friends;
+  final int monthlyCount;
+
+  @override
+  State<_DrinkLogSuccessSheet> createState() => _DrinkLogSuccessSheetState();
+}
+
+class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String get _friendSummary {
+    if (widget.friends.isEmpty) return '自分だけの思い出に追加しました';
+    final first = widget.friends.first.name;
+    final others = widget.friends.length - 1;
+    if (others <= 0) return '$firstとの思い出に追加しました';
+    return '$firstほか$others人との思い出に追加しました';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final background = isWhite ? Colors.white : const Color(0xFF071320);
+    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .64);
+
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        padding: const EdgeInsets.fromLTRB(20, 22, 20, 18),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(34),
+          border: Border.all(
+            color: isWhite
+                ? const Color(0xFFDCE4EC)
+                : Colors.white.withValues(alpha: .12),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primaryAction.withValues(alpha: .20),
+              blurRadius: 36,
+              offset: const Offset(0, 14),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                final scale =
+                    .78 + Curves.elasticOut.transform(_controller.value) * .22;
+                return Transform.scale(scale: scale, child: child);
+              },
+              child: const NomoPopIcon(
+                icon: CupertinoIcons.checkmark_alt,
+                color: AppColors.primaryAction,
+                size: 70,
+                iconSize: 38,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              '飲みログを残しました！',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: ink,
+                fontSize: 23,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.7,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '今月${widget.monthlyCount}回目の飲みログです',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.primaryAction,
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              _friendSummary,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: sub,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Expanded(
+                  child: Nomo3DButton.secondary(
+                    label: '閉じる',
+                    onTap: () => Navigator.of(context).pop(),
+                    height: 48,
+                    radius: 22,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Nomo3DButton(
+                    label: 'フィードへ',
+                    icon: CupertinoIcons.house_fill,
+                    onTap: () => Navigator.of(context).pop(),
+                    height: 48,
+                    radius: 22,
+                    color: AppColors.primaryAction,
+                    shadowColor: AppColors.primaryActionShadow,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
