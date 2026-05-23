@@ -1334,70 +1334,48 @@ class _AddPainter extends CustomPainter {
 
     canvas.drawShadow(
       path,
-      const Color(0xFFFF4FB5).withValues(alpha: .46),
-      16,
+      const Color(0xFFFF4FB5).withValues(alpha: .26),
+      11,
       true,
     );
 
     canvas.drawRRect(
-      rrect.shift(const Offset(0, 4)),
-      Paint()..color = const Color(0xFF8E1A59).withValues(alpha: .42),
-    );
-    canvas.drawRRect(
-      rrect.shift(const Offset(0, 2)),
-      Paint()..color = const Color(0xFFC51D7A).withValues(alpha: .34),
+      rrect.shift(const Offset(0, 3)),
+      Paint()..color = const Color(0xFF9E1C63).withValues(alpha: .30),
     );
 
     final fill = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
-          Color(0xFFFFB8DD),
-          Color(0xFFFF4FB5),
-          Color(0xFFE91E8F),
-          Color(0xFFB91472),
-        ],
-        stops: [0, .42, .72, 1],
+        colors: [Color(0xFFFF8FC5), Color(0xFFFF4FB5), Color(0xFFE92B96)],
+        stops: [0, .55, 1],
       ).createShader(rect);
     canvas.drawRRect(rrect, fill);
 
-    final bevel = Paint()
+    final softDepth = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Colors.white.withValues(alpha: .54),
-          Colors.white.withValues(alpha: .08),
-          const Color(0xFF7E104E).withValues(alpha: .22),
+          Colors.white.withValues(alpha: .16),
+          Colors.transparent,
+          const Color(0xFF9B155F).withValues(alpha: .18),
         ],
-        stops: const [0, .46, 1],
+        stops: const [0, .48, 1],
       ).createShader(rect);
-    canvas.drawRRect(rrect.deflate(2.2), bevel);
+    canvas.drawRRect(rrect.deflate(1.4), softDepth);
 
     canvas.drawRRect(
       rrect,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.8
-        ..color = Colors.white.withValues(alpha: .62),
+        ..strokeWidth = 1.2
+        ..color = Colors.white.withValues(alpha: .34),
     );
 
-    canvas.drawRRect(
-      rrect.deflate(3.2),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.1
-        ..color = const Color(0xFFFFD7EC).withValues(alpha: .44),
-    );
-
-    final shine = Paint()..color = Colors.white.withValues(alpha: .36);
-    canvas.drawCircle(Offset(size.width * .34, size.height * .28), 5.4, shine);
-    canvas.drawCircle(
-      Offset(size.width * .42, size.height * .22),
-      2.2,
-      Paint()..color = Colors.white.withValues(alpha: .48),
-    );
+    final shine = Paint()..color = Colors.white.withValues(alpha: .18);
+    canvas.drawCircle(Offset(size.width * .35, size.height * .29), 4.2, shine);
 
     final plus = Paint()
       ..color = Colors.white.withValues(alpha: .96)
