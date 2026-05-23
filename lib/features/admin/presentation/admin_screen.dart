@@ -719,7 +719,6 @@ class _AdminUserEditorScreenState
                   : _passwordController.text.trim(),
               userId: _userIdController.text.trim(),
               displayName: _displayNameController.text.trim(),
-              gender: _gender,
               status: _status,
               isPlus: _isPlus,
             );
@@ -802,13 +801,19 @@ class _AdminUserEditorScreenState
               const SizedBox(height: 10),
               _AdminInput(controller: _displayNameController, label: '表示名'),
               const SizedBox(height: 10),
-              _AdminGenderDropdown(
-                label: '性別',
-                value: _gender,
-                onChanged: (value) {
-                  if (value != null) setState(() => _gender = value);
-                },
-              ),
+              if (user == null)
+                _AdminGenderDropdown(
+                  label: '性別',
+                  value: _gender,
+                  onChanged: (value) {
+                    if (value != null) setState(() => _gender = value);
+                  },
+                )
+              else
+                _AdminReadOnlyInfoRow(
+                  label: '性別',
+                  value: _adminGenderLabel(user.gender),
+                ),
               const SizedBox(height: 10),
               _AdminStatusDropdown(
                 label: 'ステータス',
@@ -1504,6 +1509,44 @@ class _AdminGenderDropdown extends StatelessWidget {
       ),
     );
   }
+}
+
+class _AdminReadOnlyInfoRow extends StatelessWidget {
+  const _AdminReadOnlyInfoRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: .06),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: _AdminColors.line),
+    ),
+    child: Row(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: _AdminColors.sub,
+            fontWeight: FontWeight.w800,
+            fontSize: 12,
+          ),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _AdminStatusChip extends StatelessWidget {

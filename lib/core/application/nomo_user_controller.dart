@@ -90,7 +90,6 @@ class NomoUserController extends Notifier<NomoUser?> {
   Future<void> updateProfile({
     required String name,
     required String userId,
-    required NomoGender gender,
     NomoAvatar? avatar,
   }) async {
     final client = ref.read(backendApiClientProvider);
@@ -115,7 +114,6 @@ class NomoUserController extends Notifier<NomoUser?> {
     await client.patch('/v1/me/profile', {
       'user_id': normalizedUserId,
       'display_name': trimmed,
-      'gender': gender.key,
       'character_key': 'avatar',
       'avatar_url': profileAvatar?.encode() ?? '',
     });
@@ -130,7 +128,6 @@ class NomoUserController extends Notifier<NomoUser?> {
             .copyWith(
               name: trimmed,
               userId: normalizedUserId,
-              gender: gender,
               avatar: profileAvatar,
             );
   }

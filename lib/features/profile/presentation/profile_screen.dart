@@ -1976,9 +1976,8 @@ Future<void> _showEditProfileSheet(
   final initialName = user?.name ?? '';
   final initialUserId = user?.userId ?? '';
   final initialAvatar = user?.avatar ?? NomoAvatar.defaultAvatar;
-  final initialGender = user?.gender ?? NomoGender.unspecified;
   var avatar = user?.avatar ?? NomoAvatar.defaultAvatar;
-  var gender = initialGender;
+  final gender = user?.gender ?? NomoGender.unspecified;
   var saving = false;
   String? error;
 
@@ -2020,7 +2019,6 @@ Future<void> _showEditProfileSheet(
             await userController.updateProfile(
               name: name,
               userId: userId,
-              gender: gender,
               avatar: avatar,
             );
             if (sheetContext.mounted) {
@@ -2041,7 +2039,6 @@ Future<void> _showEditProfileSheet(
         bool hasChanges() =>
             controller.text.trim() != initialName.trim() ||
             userIdController.text.trim() != initialUserId.trim() ||
-            gender != initialGender ||
             avatar.encode() != initialAvatar.encode();
 
         Future<void> requestClose() async {
@@ -2118,18 +2115,6 @@ Future<void> _showEditProfileSheet(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                  ),
-                  const SizedBox(height: 16),
-                  _ProfileGenderSelector(
-                    selectedGender: gender,
-                    enabled: !saving,
-                    onChanged: (value) {
-                      setState(() {
-                        gender = value;
-                        avatar = avatar.normalizedForGender(value);
-                        error = null;
-                      });
-                    },
                   ),
                   const SizedBox(height: 16),
                   _AvatarEditCard(
@@ -2361,7 +2346,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
             _SettingsTile(
               icon: CupertinoIcons.person_crop_circle,
               label: 'プロフィール編集',
-              subtitle: '名前・ID・性別・アバターを変更',
+              subtitle: '名前・ID・アバターを変更',
               accent: const Color(0xFF21D6C4),
               onTap: () async {
                 if (sheetContext.mounted) {
@@ -2708,140 +2693,6 @@ class _ProfileStatusOption extends StatelessWidget {
                 color: selected ? color : ink.withValues(alpha: .22),
                 size: 24,
               ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileGenderSelector extends StatelessWidget {
-  const _ProfileGenderSelector({
-    required this.selectedGender,
-    required this.enabled,
-    required this.onChanged,
-  });
-
-  final NomoGender selectedGender;
-  final bool enabled;
-  final ValueChanged<NomoGender> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final labelColor = isWhite ? const Color(0xFF101820) : Colors.white;
-    final subColor = isWhite
-        ? const Color(0xFF687481)
-        : Colors.white.withValues(alpha: .58);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '性別',
-          style: TextStyle(
-            color: labelColor,
-            fontWeight: FontWeight.w900,
-            fontSize: 13,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'フレンズページの男性/女性フィルターに使われます。',
-          style: TextStyle(
-            color: subColor,
-            fontWeight: FontWeight.w800,
-            fontSize: 11,
-          ),
-        ),
-        const SizedBox(height: 9),
-        Row(
-          children: [
-            for (var i = 0; i < selectableNomoGenders.length; i++) ...[
-              Expanded(
-                child: _ProfileGenderOption(
-                  gender: selectableNomoGenders[i],
-                  selected: selectedGender == selectableNomoGenders[i],
-                  enabled: enabled,
-                  onTap: () => onChanged(selectableNomoGenders[i]),
-                ),
-              ),
-              if (i != selectableNomoGenders.length - 1)
-                const SizedBox(width: 10),
-            ],
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _ProfileGenderOption extends StatelessWidget {
-  const _ProfileGenderOption({
-    required this.gender,
-    required this.selected,
-    required this.enabled,
-    required this.onTap,
-  });
-
-  final NomoGender gender;
-  final bool selected;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final accent = gender == NomoGender.male
-        ? const Color(0xFF18AFFF)
-        : const Color(0xFFFF5AA6);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: enabled ? onTap : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        height: 52,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected
-              ? accent
-              : isWhite
-              ? const Color(0xFFF6F8FA)
-              : Colors.white.withValues(alpha: .06),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: selected
-                ? Colors.white.withValues(alpha: .18)
-                : isWhite
-                ? const Color(0xFFDDE4EA)
-                : _ProfileColors.line,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            NomoGeneratedIcon(
-              gender == NomoGender.male
-                  ? CupertinoIcons.person_fill
-                  : CupertinoIcons.person_crop_circle_fill,
-              color: selected
-                  ? Colors.white
-                  : isWhite
-                  ? const Color(0xFF101820)
-                  : Colors.white,
-              size: 18,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              gender.label,
-              style: TextStyle(
-                color: selected
-                    ? Colors.white
-                    : isWhite
-                    ? const Color(0xFF101820)
-                    : Colors.white,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
           ],
         ),
       ),

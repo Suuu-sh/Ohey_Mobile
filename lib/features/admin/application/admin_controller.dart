@@ -74,14 +74,12 @@ class AdminController {
     String? password,
     required String userId,
     required String displayName,
-    required String gender,
     required String status,
     required bool isPlus,
   }) async {
     final body = <String, dynamic>{
       'user_id': userId,
       'display_name': displayName,
-      'gender': gender,
       'status': status,
       'is_plus': isPlus,
     };
