@@ -403,18 +403,25 @@ class _SelectedDayPanel extends StatelessWidget {
           _CalendarSectionLabel(label: '飲みログ', accent: const Color(0xFF54D7FF)),
           const SizedBox(height: 7),
           if (logs.isNotEmpty)
-            ...logs
-                .take(3)
-                .map(
-                  (log) => _CalendarInfoRow(
-                    icon: CupertinoIcons.photo_fill_on_rectangle_fill,
-                    accent: const Color(0xFF54D7FF),
-                    text: log.memo.trim().isEmpty
-                        ? '飲みログを残しました'
-                        : log.memo.trim(),
-                    isWhite: isWhite,
-                  ),
-                )
+            ...logs.take(3).map((log) {
+              final isPrivateRecord =
+                  log.photoAssetPath == null ||
+                  log.photoAssetPath!.trim().isEmpty;
+              return _CalendarInfoRow(
+                icon: isPrivateRecord
+                    ? CupertinoIcons.lock_fill
+                    : CupertinoIcons.photo_fill_on_rectangle_fill,
+                accent: isPrivateRecord
+                    ? AppColors.success
+                    : const Color(0xFF54D7FF),
+                text: log.memo.trim().isEmpty
+                    ? (isPrivateRecord ? '記録だけ保存しました' : '飲みログを残しました')
+                    : log.memo.trim(),
+                isWhite: isWhite,
+                badgeLabel: isPrivateRecord ? '記録のみ' : null,
+                badgeColor: AppColors.success,
+              );
+            })
           else
             _CalendarEmptyRow(
               text: 'この日の飲みログはまだありません',
@@ -461,12 +468,16 @@ class _CalendarInfoRow extends StatelessWidget {
     required this.accent,
     required this.text,
     required this.isWhite,
+    this.badgeLabel,
+    this.badgeColor,
   });
 
   final IconData icon;
   final Color accent;
   final String text;
   final bool isWhite;
+  final String? badgeLabel;
+  final Color? badgeColor;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -487,7 +498,46 @@ class _CalendarInfoRow extends StatelessWidget {
             ),
           ),
         ),
+        if (badgeLabel != null) ...[
+          const SizedBox(width: 8),
+          _CalendarLogBadge(
+            label: badgeLabel!,
+            color: badgeColor ?? accent,
+            isWhite: isWhite,
+          ),
+        ],
       ],
+    ),
+  );
+}
+
+class _CalendarLogBadge extends StatelessWidget {
+  const _CalendarLogBadge({
+    required this.label,
+    required this.color,
+    required this.isWhite,
+  });
+
+  final String label;
+  final Color color;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: isWhite ? .13 : .20),
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(color: color.withValues(alpha: isWhite ? .26 : .34)),
+    ),
+    child: Text(
+      label,
+      style: TextStyle(
+        color: isWhite ? Color.lerp(color, Colors.black, .22)! : Colors.white,
+        fontSize: 10.5,
+        fontWeight: FontWeight.w900,
+        height: 1,
+      ),
     ),
   );
 }
