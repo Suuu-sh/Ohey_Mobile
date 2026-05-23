@@ -14,6 +14,7 @@ import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
+import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/models/nomo_friend.dart';
 import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/app_colors.dart';
@@ -33,6 +34,9 @@ import '../../notifications/application/notification_controller.dart';
 import '../../notifications/data/notification_repository.dart';
 
 part 'home_feed_layout.dart';
+part 'home_feed_invite_banner.dart';
+part 'home_feed_background.dart';
+part 'home_feed_tutorial.dart';
 part 'home_feed_actions.dart';
 part 'home_feed_companions.dart';
 part 'home_feed_post_card.dart';
@@ -83,6 +87,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final friendsAsync = ref.watch(friendsProvider);
     final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
     final user = ref.watch(nomoUserProvider);
+    final incomingInvites =
+        ref.watch(incomingDrinkInvitesProvider).asData?.value ??
+        const <NomoDrinkInvite>[];
+    final todayReservations =
+        ref.watch(todayReservationsProvider).asData?.value ??
+        const <NomoDrinkInvite>[];
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     final currentUserId = ref
         .watch(supabaseClientProvider)
@@ -156,6 +166,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
+          if (incomingInvites.isNotEmpty || todayReservations.isNotEmpty)
+            _FeedInviteBanner(
+              isWhite: isWhite,
+              invite: incomingInvites.isNotEmpty ? incomingInvites.first : null,
+              reservation:
+                  incomingInvites.isEmpty && todayReservations.isNotEmpty
+                  ? todayReservations.first
+                  : null,
+              currentUserId: currentUserId,
+              onOpenNotifications: () => Navigator.of(context).push(
+                CupertinoPageRoute<void>(
+                  builder: (_) => const _FeedNotificationsScreen(),
+                ),
+              ),
+            ),
         ],
       ),
     );

@@ -246,62 +246,80 @@ class _ProfileReservationStrip extends StatelessWidget {
     final reservedFriends = reservations
         .map((invite) => invite.otherUser(currentUserId!))
         .toList(growable: false);
+    final friendText = reservedFriends.isEmpty
+        ? '飲み予定が成立しています'
+        : '${reservedFriends.first.name}${reservedFriends.length > 1 ? 'ほか${reservedFriends.length - 1}人' : ''}との飲み予定があります';
     return Container(
-      height: 72,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      constraints: const BoxConstraints(minHeight: 86),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: isWhite
-            ? const Color(0xFFF2F6FA)
-            : Colors.white.withValues(alpha: .045),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isWhite
-              ? const Color(0xFFDCE5EE)
-              : Colors.white.withValues(alpha: .10),
-        ),
-        boxShadow: isWhite
-            ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: .06),
-                  blurRadius: 18,
-                  offset: const Offset(0, 10),
-                ),
-              ]
-            : null,
+        color: isWhite ? const Color(0xFFF6FFF2) : const Color(0xFF102614),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: AppColors.success.withValues(alpha: .42)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.success.withValues(alpha: isWhite ? .16 : .22),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          _ReservedAvatar(avatar: userAvatar, label: '自分'),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Icon(
-              CupertinoIcons.checkmark_seal_fill,
-              color: _ProfileColors.lime,
-              size: 22,
+          NomoPopIcon(
+            icon: CupertinoIcons.checkmark_seal_fill,
+            color: AppColors.success,
+            size: 44,
+            iconSize: 23,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '今日の予定あり',
+                  style: TextStyle(
+                    color: AppColors.success,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  friendText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isWhite ? const Color(0xFF27313B) : Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
           ),
-          Expanded(
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 118,
+            height: 56,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                for (var i = 0; i < reservedFriends.length.clamp(0, 4); i++)
+                Positioned(
+                  left: 0,
+                  child: _ReservedAvatar(avatar: userAvatar, label: '自分'),
+                ),
+                for (var i = 0; i < reservedFriends.length.clamp(0, 2); i++)
                   Positioned(
-                    left: i * 34,
-                    top: 10,
+                    left: 40 + i * 32,
                     child: _ReservedAvatar(
                       avatar: reservedFriends[i].avatar,
                       label: reservedFriends[i].name,
                     ),
                   ),
               ],
-            ),
-          ),
-          Text(
-            '予約成立',
-            style: TextStyle(
-              color: isWhite ? const Color(0xFF27313B) : Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 14,
             ),
           ),
         ],
@@ -333,49 +351,82 @@ class _IncomingInviteCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isWhite ? const Color(0xFFF2F6FA) : const Color(0xFF102336),
-        borderRadius: BorderRadius.circular(24),
+        color: isWhite ? const Color(0xFFFFF5F1) : const Color(0xFF2B1714),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(
-          color: isWhite
-              ? const Color(0xFFDCE5EE)
-              : _ProfileColors.lime.withValues(alpha: .22),
+          color: AppColors.primaryAction.withValues(alpha: .44),
         ),
-        boxShadow: isWhite
-            ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: .06),
-                  blurRadius: 18,
-                  offset: const Offset(0, 10),
-                ),
-              ]
-            : null,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryAction.withValues(
+              alpha: isWhite ? .16 : .24,
+            ),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Row(
         children: [
+          NomoPopIcon(
+            icon: CupertinoIcons.bell_fill,
+            color: AppColors.primaryAction,
+            size: 44,
+            iconSize: 23,
+          ),
+          const SizedBox(width: 10),
           _ReservedAvatar(avatar: from.avatar, label: from.name),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              '${from.name}から飲み招待',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isWhite ? const Color(0xFF27313B) : Colors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 14,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '返信待ち',
+                  style: TextStyle(
+                    color: AppColors.primaryAction,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${from.name}から飲みのお誘い',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isWhite ? const Color(0xFF27313B) : Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '返事すると今日の予定に追加されます',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isWhite
+                        ? const Color(0xFF6D7884)
+                        : Colors.white.withValues(alpha: .62),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
             ),
           ),
+          const SizedBox(width: 8),
           _InviteResponseButton(
-            label: 'OK',
-            color: _ProfileColors.lime,
+            label: '参加',
+            color: AppColors.primaryAction,
             onTap: onAccept,
           ),
           const SizedBox(width: 8),
           _InviteResponseButton(
             label: 'あとで',
             color: isWhite
-                ? const Color(0xFFE8EEF5)
+                ? Colors.white.withValues(alpha: .86)
                 : Colors.white.withValues(alpha: .10),
             textColor: isWhite
                 ? const Color(0xFF637181)
