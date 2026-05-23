@@ -56,7 +56,6 @@ Widget _buildFeedPage({
         topPadding: topPadding,
         item: item,
         isWhite: isWhite,
-        showSwipeHint: index < items.length - 1,
         showSwipeTutorial: showSwipeTutorial && index == 0,
         onSwipeTutorialDismissed: onSwipeTutorialDismissed,
         onLike: item.isLikeable ? () => onLikePressed(item) : null,
@@ -72,7 +71,6 @@ class _FeedPostPage extends StatelessWidget {
     required this.topPadding,
     required this.item,
     required this.isWhite,
-    required this.showSwipeHint,
     required this.showSwipeTutorial,
     required this.onSwipeTutorialDismissed,
     this.onLike,
@@ -83,7 +81,6 @@ class _FeedPostPage extends StatelessWidget {
   final double topPadding;
   final _FeedItem item;
   final bool isWhite;
-  final bool showSwipeHint;
   final bool showSwipeTutorial;
   final VoidCallback onSwipeTutorialDismissed;
   final VoidCallback? onLike;
@@ -110,13 +107,6 @@ class _FeedPostPage extends StatelessWidget {
             ),
           ),
         ),
-        if (showSwipeHint)
-          Positioned(
-            left: 12,
-            right: 12,
-            bottom: _feedBottomPageInset + 4,
-            child: _FeedSwipeHint(isWhite: isWhite),
-          ),
         if (showSwipeTutorial)
           Positioned.fill(
             child: _FeedSwipeTutorialOverlay(
