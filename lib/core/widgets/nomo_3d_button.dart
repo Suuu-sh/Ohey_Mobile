@@ -23,6 +23,46 @@ class Nomo3DButton extends StatelessWidget {
     this.useGradient = true,
   });
 
+  const Nomo3DButton.secondary({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.icon,
+    this.height = 58,
+    this.radius = 24,
+    this.color = const Color(0xFF52606B),
+    this.foregroundColor = Colors.white,
+    this.shadowColor = const Color(0xFF35434D),
+    this.disabledColor,
+    this.disabledOpacity = 1,
+    this.trailing,
+    this.isLoading = false,
+    this.enabled = true,
+    this.padding = const EdgeInsets.symmetric(horizontal: 18),
+    this.fontSize = 16,
+    this.useGradient = false,
+  });
+
+  const Nomo3DButton.destructive({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.icon,
+    this.height = 58,
+    this.radius = 24,
+    this.color = const Color(0xFFFF5F8F),
+    this.foregroundColor = Colors.white,
+    this.shadowColor = const Color(0xFFC9416D),
+    this.disabledColor,
+    this.disabledOpacity = 1,
+    this.trailing,
+    this.isLoading = false,
+    this.enabled = true,
+    this.padding = const EdgeInsets.symmetric(horizontal: 18),
+    this.fontSize = 16,
+    this.useGradient = true,
+  });
+
   final String label;
   final VoidCallback? onTap;
   final IconData? icon;
@@ -171,7 +211,7 @@ class _Nomo3DButtonSurfaceState extends State<Nomo3DButtonSurface> {
               width: expandsWidth ? double.infinity : null,
               height: widget.height + 7,
               decoration: BoxDecoration(
-                color: bottom,
+                color: isPressed ? Colors.transparent : bottom,
                 borderRadius: BorderRadius.circular(widget.radius + 1),
                 boxShadow: isPressed
                     ? const []
