@@ -35,7 +35,7 @@ extension NomoDailyStatusX on NomoDailyStatus {
   };
 
   String get description => switch (this) {
-    NomoDailyStatus.unselected => '今日の飲みステータスを非表示にします。',
+    NomoDailyStatus.unselected => 'ステータス未設定のまま、誘いは受けられます。',
     NomoDailyStatus.canDrinkToday => '今夜の誘いを受けやすい状態です。',
     NomoDailyStatus.lightDrink => '短時間・少量なら行ける状態です。',
     NomoDailyStatus.wantDrinkHard => 'しっかり飲みに行きたい気分です。',
@@ -46,14 +46,13 @@ extension NomoDailyStatusX on NomoDailyStatus {
   };
 
   bool get isAvailable => switch (this) {
+    NomoDailyStatus.unselected ||
     NomoDailyStatus.canDrinkToday ||
     NomoDailyStatus.lightDrink ||
     NomoDailyStatus.wantDrinkHard ||
     NomoDailyStatus.nonAlcohol ||
     NomoDailyStatus.waitingInvite => true,
-    NomoDailyStatus.unselected ||
-    NomoDailyStatus.liverRest ||
-    NomoDailyStatus.hasPlans => false,
+    NomoDailyStatus.liverRest || NomoDailyStatus.hasPlans => false,
   };
 }
 

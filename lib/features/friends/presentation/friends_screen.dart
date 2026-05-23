@@ -1559,10 +1559,10 @@ _FriendStatus _statusForFriend(NomoFriend friend, int _) {
     case 'has_plans':
       return const _FriendStatus(label: '予定あり', enabled: false);
     case 'unselected' || 'unset' || null || '':
-      return const _FriendStatus(label: '未設定', enabled: false);
+      return const _FriendStatus(label: '未設定', enabled: true);
   }
 
-  return const _FriendStatus(label: '未設定', enabled: false);
+  return const _FriendStatus(label: '未設定', enabled: true);
 }
 
 Color _accentForFriend(NomoFriend friend) {
