@@ -1952,57 +1952,34 @@ class _FeedPhotoCaptionOverlay extends StatelessWidget {
     final body = caption.trim();
     if (body.isEmpty) return const SizedBox.shrink();
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final lineTop = constraints.maxHeight * .52;
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned(
-              left: 0,
-              right: 0,
-              top: lineTop,
-              child: Container(
-                height: 2.5,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: .78),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: .44),
-                      blurRadius: 12,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
+    return Center(
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(minHeight: 48),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+        color: Colors.black.withValues(alpha: .46),
+        alignment: Alignment.center,
+        child: Text(
+          body,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: Colors.white,
+            fontSize: 23,
+            fontWeight: FontWeight.w900,
+            height: 1.05,
+            letterSpacing: -.65,
+            shadows: const [
+              Shadow(
+                color: Colors.black87,
+                blurRadius: 10,
+                offset: Offset(0, 2),
               ),
-            ),
-            Positioned(
-              left: 18,
-              right: 18,
-              top: math.max(14.0, lineTop - 50),
-              child: Text(
-                body,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  height: 1.04,
-                  letterSpacing: -.7,
-                  shadows: const [
-                    Shadow(
-                      color: Colors.black87,
-                      blurRadius: 12,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

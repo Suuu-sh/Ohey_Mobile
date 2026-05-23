@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -719,86 +718,62 @@ class _PreviewPhotoCaptionEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final lineTop = constraints.maxHeight * .52;
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned(
-              left: 0,
-              right: 0,
-              top: lineTop,
-              child: Container(
-                height: 2.5,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: .78),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: .44),
-                      blurRadius: 12,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+    return Center(
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(minHeight: 48),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        color: Colors.black.withValues(alpha: .46),
+        alignment: Alignment.center,
+        child: TextField(
+          controller: controller,
+          onChanged: onChanged,
+          keyboardType: TextInputType.text,
+          textInputAction: TextInputAction.done,
+          maxLines: 1,
+          textAlign: TextAlign.center,
+          textAlignVertical: TextAlignVertical.center,
+          cursorColor: _AddLogColors.lime,
+          decoration: InputDecoration(
+            isDense: true,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            filled: false,
+            fillColor: Colors.transparent,
+            contentPadding: EdgeInsets.zero,
+            hintText: hint,
+            hintStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Colors.white.withValues(alpha: .76),
+              fontSize: 23,
+              fontWeight: FontWeight.w900,
+              height: 1.05,
+              letterSpacing: -.65,
+              shadows: const [
+                Shadow(
+                  color: Colors.black87,
+                  blurRadius: 10,
+                  offset: Offset(0, 2),
                 ),
-              ),
+              ],
             ),
-            Positioned(
-              left: 18,
-              right: 18,
-              top: math.max(14.0, lineTop - 55),
-              child: TextField(
-                controller: controller,
-                onChanged: onChanged,
-                keyboardType: TextInputType.multiline,
-                textInputAction: TextInputAction.newline,
-                minLines: 1,
-                maxLines: 2,
-                cursorColor: _AddLogColors.lime,
-                decoration: InputDecoration(
-                  isDense: true,
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  filled: false,
-                  fillColor: Colors.transparent,
-                  contentPadding: EdgeInsets.zero,
-                  hintText: hint,
-                  hintStyle: Theme.of(context).textTheme.headlineSmall
-                      ?.copyWith(
-                        color: Colors.white.withValues(alpha: .76),
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        height: 1.04,
-                        letterSpacing: -.7,
-                        shadows: const [
-                          Shadow(
-                            color: Colors.black87,
-                            blurRadius: 12,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                ),
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  height: 1.04,
-                  letterSpacing: -.7,
-                  shadows: const [
-                    Shadow(
-                      color: Colors.black87,
-                      blurRadius: 12,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
-                ),
+          ),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: Colors.white,
+            fontSize: 23,
+            fontWeight: FontWeight.w900,
+            height: 1.05,
+            letterSpacing: -.65,
+            shadows: const [
+              Shadow(
+                color: Colors.black87,
+                blurRadius: 10,
+                offset: Offset(0, 2),
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
