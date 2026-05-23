@@ -14,6 +14,8 @@ Future<void> _showEditProfileSheet(
   var avatar = user?.avatar ?? NomoAvatar.defaultAvatar;
   final gender = user?.gender ?? NomoGender.unspecified;
   var saving = false;
+  var closing = false;
+  var showingUnsavedPrompt = false;
   String? error;
 
   await showModalBottomSheet<void>(
@@ -40,10 +42,6 @@ Future<void> _showEditProfileSheet(
           }
           if (!RegExp(r'^[a-zA-Z0-9_]{3,24}$').hasMatch(userId)) {
             setState(() => error = 'ユーザーIDは半角英数字と_で3〜24文字にしてください。');
-            return;
-          }
-          if (gender == NomoGender.unspecified) {
-            setState(() => error = '性別を選択してください。');
             return;
           }
           setState(() {
@@ -76,23 +74,33 @@ Future<void> _showEditProfileSheet(
             userIdController.text.trim() != initialUserId.trim() ||
             avatar.encode() != initialAvatar.encode();
 
+        void closeSheet() {
+          if (closing || !sheetContext.mounted) return;
+          closing = true;
+          FocusManager.instance.primaryFocus?.unfocus();
+          Navigator.of(sheetContext).pop();
+        }
+
         Future<void> requestClose() async {
-          if (saving) return;
+          if (saving || closing || showingUnsavedPrompt) return;
+          FocusManager.instance.primaryFocus?.unfocus();
           if (!hasChanges()) {
-            Navigator.of(sheetContext).pop();
+            closeSheet();
             return;
           }
 
+          showingUnsavedPrompt = true;
           final action = await showCupertinoModalPopup<_UnsavedProfileAction>(
-            context: sheetContext,
+            context: context,
             builder: (context) => const _UnsavedProfileSheet(),
           );
+          showingUnsavedPrompt = false;
           if (!sheetContext.mounted || action == null) return;
           switch (action) {
             case _UnsavedProfileAction.save:
               await saveProfile();
             case _UnsavedProfileAction.discard:
-              Navigator.of(sheetContext).pop();
+              closeSheet();
             case _UnsavedProfileAction.cancel:
               break;
           }
