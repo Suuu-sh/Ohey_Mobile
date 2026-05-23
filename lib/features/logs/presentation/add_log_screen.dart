@@ -166,7 +166,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                             ),
                             loading: () => const _LoadingBox(compact: true),
                             error: (error, stackTrace) => const _ErrorBox(
-                              message: '友達を読み込めませんでした',
+                              message: 'フレンズを読み込めなかったよ。少し時間をおいて試してみてね',
                               compact: true,
                             ),
                           ),
@@ -344,7 +344,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      NomoToast.show(context, '飲みログを保存できませんでした: $error');
+      NomoToast.show(context, '飲みログを保存できなかったよ。少し時間をおいて試してみてね');
     }
   }
 

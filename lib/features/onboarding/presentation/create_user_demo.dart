@@ -4,25 +4,25 @@ const _demoSlides = [
   _DemoSlideData(
     step: '1 / 4',
     title: 'Nomoで飲みログを\nかわいく残そう',
-    subtitle: '今月、誰と何回飲みに行ったかを飲みログでゆるく残そう。健康管理ではなく、友達との思い出を楽しく残すSNSです。',
+    subtitle: '今月、誰と何回飲みに行ったかを飲みログでゆるく残そう。健康管理ではなく、フレンズとの思い出を楽しく残すSNSです。',
     kind: _DemoKind.hero,
   ),
   _DemoSlideData(
     step: '2 / 4',
     title: 'プロフィールと\nアバターを作ろう',
-    subtitle: '名前と自分らしいアバターを設定。飲み友リストや飲みログにあなたのアイコンとして表示されます。',
+    subtitle: '名前と自分らしいアバターを設定。飲みともリストや飲みログにあなたのアイコンとして表示されます。',
     kind: _DemoKind.profile,
   ),
   _DemoSlideData(
     step: '3 / 4',
     title: '飲み会の思い出を\n飲みログに残そう',
-    subtitle: '場所、飲み友、日付、メモを残して、カレンダーで今月の交流を振り返れます。',
+    subtitle: '場所、飲みとも、日付、メモを残して、カレンダーで今月の交流を振り返れます。',
     kind: _DemoKind.log,
   ),
   _DemoSlideData(
     step: '4 / 4',
-    title: '飲み友とつながって\nまた誘おう',
-    subtitle: 'QRやユーザーIDで飲み友を追加。今月よく飲んだ友達や、今日誘える友達が見つかります。',
+    title: '飲みともとつながって\nまた誘おう',
+    subtitle: 'QRやユーザーIDで飲みともを追加。今月よく飲んだフレンズや、今日誘えるフレンズが見つかります。',
     kind: _DemoKind.friends,
   ),
 ];
@@ -238,7 +238,7 @@ class _LogDemoVisual extends StatelessWidget {
         SizedBox(height: 14),
         _DemoRow(
           icon: CupertinoIcons.person_2_fill,
-          label: '一緒に飲んだ友達',
+          label: '一緒に飲んだフレンズ',
           value: '5人',
         ),
         SizedBox(height: 14),
@@ -288,7 +288,7 @@ class _FriendsDemoVisual extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
         ),
         child: const Text(
-          '飲み友を追加する',
+          '飲みともを追加する',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
         ),
       ),

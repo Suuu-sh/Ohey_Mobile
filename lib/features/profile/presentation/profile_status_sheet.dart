@@ -28,7 +28,7 @@ class _ProfileStatusSheetContentState
     } catch (e) {
       if (!mounted) return;
       setState(() => _savingStatus = null);
-      NomoToast.show(context, '設定できませんでした: $e');
+      NomoToast.show(context, '設定できなかったよ。少し時間をおいて試してみてね');
     }
   }
 

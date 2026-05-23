@@ -93,7 +93,7 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
     if (!mounted || payload == null) return;
     final userId = parseFriendQrPayload(payload);
     if (userId == null) {
-      NomoToast.show(context, 'Nomoの友達QRではありません。');
+      NomoToast.show(context, 'NomoのフレンズQRではありません。');
       return;
     }
     await _openResult(userId);
@@ -120,7 +120,7 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      NomoToast.show(context, '検索できませんでした: $e');
+      NomoToast.show(context, '検索できなかったよ。少し時間をおいて試してみてね');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -129,7 +129,7 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
   Future<_FriendProfile?> _findProfileByUserId(String userId) async {
     final client = ref.read(backendApiClientProvider);
     if (client.currentUserId == null) {
-      throw StateError('友達追加にはログインが必要です。');
+      throw StateError('フレンズ追加にはログインが必要です。');
     }
     final exactUserId = userId.trim();
     if (exactUserId.isEmpty) return null;
@@ -148,7 +148,7 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
     final client = ref.read(backendApiClientProvider);
     final currentUserId = client.currentUserId;
     if (currentUserId == null || currentUserId.isEmpty) {
-      NomoToast.show(context, '友達追加にはログインが必要です。');
+      NomoToast.show(context, 'フレンズ追加にはログインが必要です。');
       return;
     }
     if (profile.id == currentUserId) {
@@ -160,10 +160,10 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
       ref.invalidate(friendsProvider);
       if (!mounted) return;
       Navigator.of(context).pop();
-      NomoToast.show(context, '${profile.displayName}を友達に追加しました。');
+      NomoToast.show(context, '${profile.displayName}をフレンズに追加しました。');
     } catch (e) {
       if (!mounted) return;
-      NomoToast.show(context, '友達追加に失敗しました: $e');
+      NomoToast.show(context, 'フレンズ追加がうまくいかなかったよ。少し時間をおいて試してみてね');
     }
   }
 }
@@ -217,7 +217,7 @@ class _ExchangeHeader extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '飲み友交換',
+              '飲みとも交換',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
@@ -391,7 +391,7 @@ class _MyQrCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '相手に見せて飲み友交換',
+                    '相手に見せて飲みとも交換',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: .48),
                       fontSize: 12,
@@ -629,7 +629,7 @@ class _UserSearchResultSheet extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '@${profile.userId} を飲み友に追加しますか？',
+              '@${profile.userId} を飲みともに追加しますか？',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: .52),
                 fontWeight: FontWeight.w800,
@@ -637,7 +637,7 @@ class _UserSearchResultSheet extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             _BigPopButton(
-              label: '飲み友に追加する',
+              label: '飲みともに追加する',
               icon: CupertinoIcons.person_badge_plus_fill,
               onTap: onAdd,
             ),

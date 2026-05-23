@@ -213,7 +213,7 @@ class _FeedNotificationsScreenState
   ) async {
     final drinkInviteId = notification.drinkInviteId;
     if (drinkInviteId == null || drinkInviteId.isEmpty) {
-      NomoToast.show(context, 'この飲み誘いを開けませんでした。もう一度お試しください。');
+      NomoToast.show(context, 'この飲み予定を開けなかったよ。少し時間をおいて試してみてね。');
       return;
     }
 
@@ -442,9 +442,7 @@ class _FriendRequestNotificationSheetState
       if (!mounted) return;
       NomoToast.show(
         context,
-        accept
-            ? '承認できませんでした。時間をおいてもう一度お試しください。'
-            : '見送りできませんでした。時間をおいてもう一度お試しください。',
+        accept ? '承認できなかったよ。少し時間をおいて試してみてね。' : '見送りできなかったよ。少し時間をおいて試してみてね。',
       );
       setState(() => _busyAction = null);
     }
@@ -571,7 +569,7 @@ class _FriendRequestNotificationSheetState
               ),
               child: Text(
                 _isPending
-                    ? '${widget.notification.message}\n承認するとフレンズになり、飲みログや飲み予約でつながれます。'
+                    ? '${widget.notification.message}\n承認するとフレンズになり、飲みログや飲み予定でつながれます。'
                     : widget.notification.message,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: .78),
@@ -663,15 +661,13 @@ class _DrinkInviteNotificationSheetState
         await widget.onReject();
       }
       if (!mounted) return;
-      NomoToast.show(context, accept ? '飲み誘いを承認しました' : '飲み誘いを見送りました');
+      NomoToast.show(context, accept ? '飲み予定を受け取りました' : '飲み予定を見送りました');
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
       NomoToast.show(
         context,
-        accept
-            ? '承認できませんでした。時間をおいてもう一度お試しください。'
-            : '見送りできませんでした。時間をおいてもう一度お試しください。',
+        accept ? '承認できなかったよ。少し時間をおいて試してみてね。' : '見送りできなかったよ。少し時間をおいて試してみてね。',
       );
       setState(() => _busyAction = null);
     }

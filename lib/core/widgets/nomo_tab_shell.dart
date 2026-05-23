@@ -262,10 +262,10 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       extendBody: true,
       body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+        minimum: const EdgeInsets.fromLTRB(16, 0, 16, 10),
         child: Container(
-          height: 94,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          height: 82,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -279,7 +279,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
                     : const Color(0xFF06111D).withValues(alpha: .94),
               ],
             ),
-            borderRadius: BorderRadius.circular(42),
+            borderRadius: BorderRadius.circular(34),
             border: Border.all(
               color: isWhite
                   ? const Color(0xFFDCE3EA)
@@ -287,14 +287,14 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: .34),
-                blurRadius: 34,
-                offset: const Offset(0, 18),
+                color: Colors.black.withValues(alpha: isWhite ? .12 : .24),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
               ),
               BoxShadow(
-                color: const Color(0xFFC8F400).withValues(alpha: .08),
-                blurRadius: 52,
-                offset: const Offset(0, 8),
+                color: const Color(0xFFC8F400).withValues(alpha: .04),
+                blurRadius: 30,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -317,7 +317,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
               Expanded(
                 child: Center(
                   child: Transform.translate(
-                    offset: const Offset(0, -2),
+                    offset: const Offset(0, -8),
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: _openDrinkLogFlow,
@@ -381,15 +381,13 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
         await widget.onReject();
       }
       if (!mounted) return;
-      NomoToast.show(context, accept ? '飲み誘いを承認しました' : '飲み誘いを見送りました');
+      NomoToast.show(context, accept ? '飲み予定を受け取りました' : '飲み予定を見送りました');
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
       NomoToast.show(
         context,
-        accept
-            ? '承認できませんでした。時間をおいてもう一度お試しください。'
-            : '見送りできませんでした。時間をおいてもう一度お試しください。',
+        accept ? '承認できなかったよ。少し時間をおいて試してみてね。' : '見送りできなかったよ。少し時間をおいて試してみてね。',
       );
       setState(() => _busyAction = null);
     }
@@ -708,7 +706,7 @@ class _TabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labelColor = selected ? activeColor : const Color(0xFFA5ADBC);
+    final labelColor = selected ? activeColor : const Color(0xFF99A2B3);
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -717,25 +715,25 @@ class _TabItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              height: 42,
+              height: 34,
               child: Center(child: customIcon ?? const SizedBox.shrink()),
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 2),
             Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: labelColor,
-                fontSize: 12,
+                fontSize: 11,
                 height: 1,
-                fontWeight: selected ? FontWeight.w900 : FontWeight.w800,
+                fontWeight: selected ? FontWeight.w900 : FontWeight.w700,
                 letterSpacing: -.4,
                 shadows: selected
                     ? [
                         Shadow(
                           color: activeColor.withValues(alpha: .34),
-                          blurRadius: 14,
+                          blurRadius: 8,
                         ),
                       ]
                     : null,
@@ -755,7 +753,7 @@ class _AddTabIcon extends StatelessWidget {
   Widget build(BuildContext context) => AnimatedScale(
     duration: const Duration(milliseconds: 180),
     scale: 1,
-    child: CustomPaint(size: const Size(58, 56), painter: const _AddPainter()),
+    child: CustomPaint(size: const Size(58, 58), painter: const _AddPainter()),
   );
 }
 
@@ -766,16 +764,16 @@ class _AddPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromCenter(
       center: Offset(size.width / 2, size.height * .50),
-      width: 52,
-      height: 52,
+      width: 54,
+      height: 54,
     );
     final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(21));
     final path = Path()..addRRect(rrect);
 
     canvas.drawShadow(
       path,
-      const Color(0xFFFF4FB5).withValues(alpha: .46),
-      16,
+      const Color(0xFFFF4FB5).withValues(alpha: .38),
+      14,
       true,
     );
 
@@ -887,8 +885,8 @@ class _PopTabIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AnimatedScale(
     duration: const Duration(milliseconds: 180),
-    scale: selected ? 1.08 : .95,
-    child: CustomPaint(size: const Size(48, 42), painter: painter),
+    scale: selected ? 1.02 : .82,
+    child: CustomPaint(size: const Size(42, 36), painter: painter),
   );
 }
 

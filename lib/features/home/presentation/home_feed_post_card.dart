@@ -660,7 +660,7 @@ bool _isDisplayablePostPhoto(String? path) {
 String _duoStyleBody(_FeedItem item) {
   if (item.isOfficial) {
     return switch (item.prop) {
-      _PostProp.spark => 'Nomoで飲み友との思い出をもっと楽しく残せるようになったよ！',
+      _PostProp.spark => 'Nomoで飲みともとの思い出をもっと楽しく残せるようになったよ！',
       _PostProp.ticket => 'フレンズと一緒に今月の飲みログをふり返ろう。',
       _ => item.body,
     };

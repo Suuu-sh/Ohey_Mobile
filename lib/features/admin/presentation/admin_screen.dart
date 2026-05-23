@@ -73,7 +73,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                     child: CupertinoActivityIndicator(color: _AdminColors.lime),
                   ),
                   error: (error, _) => _AdminErrorState(
-                    message: '管理者確認に失敗しました: $error',
+                    message: '管理者確認がうまくいかなかったよ。少し時間をおいて試してみてね',
                     onRetry: () => ref.invalidate(adminAccessProvider),
                   ),
                 ),

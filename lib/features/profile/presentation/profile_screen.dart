@@ -354,11 +354,11 @@ Future<void> showMyQrDialog(
       if (e.statusCode == 409) {
         NomoToast.show(sheetContext, 'すでに申請済みです');
       } else {
-        NomoToast.show(sheetContext, '申請を送れませんでした: ${e.message}');
+        NomoToast.show(sheetContext, '申請を送れなかったよ。少し時間をおいて試してみてね');
       }
     } catch (e) {
       if (!sheetContext.mounted) return;
-      NomoToast.show(sheetContext, '申請を送れませんでした: $e');
+      NomoToast.show(sheetContext, '申請を送れなかったよ。少し時間をおいて試してみてね');
     }
   }
 
@@ -375,7 +375,7 @@ Future<void> showMyQrDialog(
     final client = ref.read(backendApiClientProvider);
     final currentUserId = client.currentUserId;
     if (currentUserId == null || currentUserId.isEmpty) {
-      NomoToast.show(dialogContext, '友達追加にはログインが必要です');
+      NomoToast.show(dialogContext, 'フレンズ追加にはログインが必要です');
       return;
     }
 
@@ -413,11 +413,11 @@ Future<void> showMyQrDialog(
       if (e.statusCode == 404) {
         NomoToast.show(dialogContext, '@$query は見つかりませんでした');
       } else {
-        NomoToast.show(dialogContext, '検索できませんでした: ${e.message}');
+        NomoToast.show(dialogContext, '検索できなかったよ。少し時間をおいて試してみてね');
       }
     } catch (e) {
       if (!dialogContext.mounted) return;
-      NomoToast.show(dialogContext, '検索できませんでした: $e');
+      NomoToast.show(dialogContext, '検索できなかったよ。少し時間をおいて試してみてね');
     }
   }
 
@@ -431,7 +431,7 @@ Future<void> showMyQrDialog(
     if (!dialogContext.mounted || payload == null) return;
     final userId = _parseProfileFriendQrPayload(payload);
     if (userId == null) {
-      NomoToast.show(dialogContext, 'Nomoの友達QRではありません');
+      NomoToast.show(dialogContext, 'NomoのフレンズQRではありません');
       return;
     }
     await searchAndShowProfileByUserId(dialogContext, userId);
@@ -534,10 +534,10 @@ Future<void> _respondDrinkInvite(
       await controller.reject(invite.id);
     }
     if (!context.mounted) return;
-    NomoToast.show(context, accept ? '飲み予約が成立しました。' : '招待を見送りました。');
+    NomoToast.show(context, accept ? '飲み予定が成立しました。' : '招待を見送りました。');
   } catch (error) {
     if (!context.mounted) return;
-    NomoToast.show(context, '返信できませんでした: $error');
+    NomoToast.show(context, '返信できなかったよ。少し時間をおいて試してみてね');
   }
 }
 

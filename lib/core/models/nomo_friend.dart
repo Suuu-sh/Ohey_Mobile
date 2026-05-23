@@ -69,5 +69,5 @@ String nomiTomoStatusMessage(NomoFriend friend, int count) {
   if (count == 0) return '${friend.name}とはまだ今月飲んでないよ。そろそろ誘ってみる？';
   if (count <= 2) return '${friend.name}との夜が少しずつ増えてきた。次もゆるく乾杯しよ。';
   if (count <= 5) return '${friend.name}との思い出がきらきら増殖中。いいペース！';
-  return '${friend.name}とは今月かなり仲良し。飲み友メーター満タン！';
+  return '${friend.name}とは今月かなり仲良し。飲みともメーター満タン！';
 }

@@ -1095,7 +1095,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                       ),
                       SizedBox(height: compact ? 6 : 12),
                       Text(
-                        '友達リストに表示する名前・性別と自分だけのアバターを作ってね。',
+                        'フレンズリストに表示する名前・性別と自分だけのアバターを作ってね。',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: .66),
                           fontSize: compact ? 12 : 15,
@@ -1326,7 +1326,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _error = 'プロフィール作成に失敗しました: $e');
+        setState(() => _error = 'プロフィールを作れなかったよ。少し時間をおいて試してみてね');
       }
     } finally {
       if (mounted) setState(() => _isBusy = false);

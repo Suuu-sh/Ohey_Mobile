@@ -152,7 +152,7 @@ class _AddFriendsPromoCard extends StatelessWidget {
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            '友達を増やして、もっと楽しく飲もう',
+                            'フレンズを増やして、もっと楽しく飲もう',
                             maxLines: 1,
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.68),

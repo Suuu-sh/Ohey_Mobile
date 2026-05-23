@@ -73,7 +73,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
   Future<List<NomoFriend>> fetchFriends() async {
     final userId = _client.currentUserId;
     if (userId == null || userId.isEmpty) {
-      throw StateError('友達を読み込むにはログインが必要です。');
+      throw StateError('フレンズを読み込むにはログインが必要です。');
     }
 
     final rows = await _client.getRows(
@@ -87,7 +87,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
               ? row['user_b']
               : row['user_a'];
           if (other is! Map) {
-            throw const FormatException('友達データの形式が不正です。');
+            throw const FormatException('フレンズデータの形式が不正です。');
           }
           return _friendFromProfile(
             Map<String, dynamic>.from(other),

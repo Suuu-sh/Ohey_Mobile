@@ -848,7 +848,7 @@ Future<void> _showFeedPostActions(
         if (context.mounted) NomoToast.show(context, '飲みログを削除しました');
       } catch (error) {
         if (context.mounted) {
-          NomoToast.show(context, '飲みログを削除できませんでした: $error');
+          NomoToast.show(context, '飲みログを削除できなかったよ。少し時間をおいて試してみてね');
         }
       }
     case _FeedPostAction.report:
@@ -857,7 +857,7 @@ Future<void> _showFeedPostActions(
         if (context.mounted) NomoToast.show(context, '飲みログを報告しました');
       } catch (error) {
         if (context.mounted) {
-          NomoToast.show(context, '飲みログを報告できませんでした: $error');
+          NomoToast.show(context, '飲みログを報告できなかったよ。少し時間をおいて試してみてね');
         }
       }
   }
