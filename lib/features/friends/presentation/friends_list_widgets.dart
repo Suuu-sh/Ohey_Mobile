@@ -349,18 +349,6 @@ class _AddFriendsPromoCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Positioned(
-            left: -34,
-            bottom: -54,
-            child: Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _FriendsColors.lime.withValues(alpha: 0.05),
-              ),
-            ),
-          ),
           Positioned.fill(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 18, 18),
@@ -453,7 +441,14 @@ class _FriendPromoAvatarStack extends StatelessWidget {
             top: 8,
             child: _PromoAvatarBubble(
               color: const Color(0xFF7C5CFF),
-              icon: CupertinoIcons.person_fill,
+              avatar: const NomoAvatar(
+                skin: 0,
+                hair: 3,
+                shirt: 4,
+                eyes: 1,
+                mouth: 1,
+                accessory: 0,
+              ),
             ),
           ),
           Positioned(
@@ -461,7 +456,14 @@ class _FriendPromoAvatarStack extends StatelessWidget {
             top: 0,
             child: _PromoAvatarBubble(
               color: const Color(0xFF24D8B0),
-              icon: CupertinoIcons.person_2_fill,
+              avatar: const NomoAvatar(
+                skin: 5,
+                hair: 1,
+                shirt: 8,
+                eyes: 2,
+                mouth: 0,
+                accessory: 1,
+              ),
               isPrimary: true,
             ),
           ),
@@ -494,12 +496,12 @@ class _FriendPromoAvatarStack extends StatelessWidget {
 class _PromoAvatarBubble extends StatelessWidget {
   const _PromoAvatarBubble({
     required this.color,
-    required this.icon,
+    required this.avatar,
     this.isPrimary = false,
   });
 
   final Color color;
-  final IconData icon;
+  final NomoAvatar avatar;
   final bool isPrimary;
 
   @override
@@ -512,19 +514,19 @@ class _PromoAvatarBubble extends StatelessWidget {
         shape: BoxShape.circle,
         color: color,
         border: Border.all(color: const Color(0xFF072130), width: 4),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.28),
-            blurRadius: 14,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
-      child: Center(
-        child: NomoGeneratedIcon(
-          icon,
-          color: Colors.white,
-          size: isPrimary ? 22 : 19,
+      child: ClipOval(
+        child: Container(
+          color: color,
+          alignment: Alignment.center,
+          child: Transform.translate(
+            offset: Offset(0, isPrimary ? 5 : 4),
+            child: NomoAvatarView(
+              avatar: avatar,
+              size: isPrimary ? 46 : 40,
+              showBody: true,
+            ),
+          ),
         ),
       ),
     );
