@@ -859,159 +859,228 @@ Future<void> _showPostSheet(
 }) async {
   final users =
       ref.read(adminUsersProvider).asData?.value ?? const <AdminUserProfile>[];
-  final placeController = TextEditingController(text: log?.placeName ?? '');
-  final memoController = TextEditingController(text: log?.memo ?? '');
-  final linkController = TextEditingController(text: log?.linkUrl ?? '');
-  final photoController = TextEditingController(text: log?.photoPath ?? '');
-  final ownerController = TextEditingController(text: log?.ownerUserId ?? '');
-  var ownerUserId = log != null && !log.isOfficial
-      ? log.ownerUserId
-      : (users.isNotEmpty ? users.first.id : '');
-  var isOfficial = log?.isOfficial ?? false;
-  var saving = false;
-  var didSave = false;
-  String? error;
+  final didSave = await showModalBottomSheet<bool>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _AdminPostEditorSheet(log: log, users: users),
+  );
 
-  try {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (sheetContext, setState) => _AdminSheet(
-          title: log == null ? '飲みログ作成' : '飲みログ編集',
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+  if (didSave == true && context.mounted) {
+    ref.invalidate(adminDrinkLogsProvider);
+    NomoToast.show(context, '飲みログを保存しました。');
+  }
+}
+
+class _AdminPostEditorSheet extends ConsumerStatefulWidget {
+  const _AdminPostEditorSheet({required this.log, required this.users});
+
+  final AdminDrinkLog? log;
+  final List<AdminUserProfile> users;
+
+  @override
+  ConsumerState<_AdminPostEditorSheet> createState() =>
+      _AdminPostEditorSheetState();
+}
+
+class _AdminPostEditorSheetState extends ConsumerState<_AdminPostEditorSheet> {
+  late final TextEditingController _placeController;
+  late final TextEditingController _memoController;
+  late final TextEditingController _linkController;
+  late final TextEditingController _photoController;
+  late final TextEditingController _ownerController;
+  late String _ownerUserId;
+  late bool _isOfficial;
+  bool _saving = false;
+  String? _error;
+
+  AdminDrinkLog? get _log => widget.log;
+
+  @override
+  void initState() {
+    super.initState();
+    final log = _log;
+    _placeController = TextEditingController(text: log?.placeName ?? '');
+    _memoController = TextEditingController(text: log?.memo ?? '');
+    _linkController = TextEditingController(text: log?.linkUrl ?? '');
+    _photoController = TextEditingController(text: log?.photoPath ?? '');
+    _ownerController = TextEditingController(text: log?.ownerUserId ?? '');
+    _ownerUserId = log != null && !log.isOfficial
+        ? log.ownerUserId
+        : (widget.users.isNotEmpty ? widget.users.first.id : '');
+    _isOfficial = log?.isOfficial ?? false;
+  }
+
+  @override
+  void dispose() {
+    _ownerController.dispose();
+    _placeController.dispose();
+    _memoController.dispose();
+    _linkController.dispose();
+    _photoController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final log = _log;
+
+    return _AdminSheet(
+      title: log == null ? '飲みログ作成' : '飲みログ編集',
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _AdminSwitchRow(
+              label: '公式投稿として表示',
+              value: _isOfficial,
+              onChanged: (value) => setState(() => _isOfficial = value),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _AdminSwitchRow(
-                  label: '公式投稿として表示',
-                  value: isOfficial,
-                  onChanged: (value) => setState(() => isOfficial = value),
-                ),
-                const SizedBox(height: 10),
-                if (isOfficial)
-                  const _AdminInfoBox(
-                    title: 'Nomo公式として投稿します',
-                    message: '投稿者は自動で公式アカウントになります。全ユーザーのフィードに表示されます。',
-                  )
-                else if (users.isEmpty)
-                  _AdminInput(
-                    label: 'owner_user_id',
-                    controller: ownerController,
-                    onChanged: (value) => ownerUserId = value,
-                  )
-                else
-                  _AdminDropdown(
-                    value: ownerUserId,
-                    users: users,
-                    onChanged: (value) {
-                      if (value != null) setState(() => ownerUserId = value);
-                    },
-                  ),
-                const SizedBox(height: 10),
-                _AdminInput(controller: placeController, label: '場所'),
-                const SizedBox(height: 10),
-                _AdminInput(
-                  controller: memoController,
-                  label: 'メモ',
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 10),
-                _AdminInput(
-                  controller: linkController,
-                  label: 'リンクURL（任意・公式投稿の詳しく見る）',
-                  keyboardType: TextInputType.url,
-                ),
-                const SizedBox(height: 10),
-                _AdminInput(
-                  controller: photoController,
-                  label: '画像URL/アセットパス（任意・公式投稿の画像）',
-                  keyboardType: TextInputType.url,
-                ),
-                if (error != null) ...[
-                  const SizedBox(height: 10),
-                  Text(
-                    error!,
-                    style: const TextStyle(
-                      color: _AdminColors.pink,
-                      fontWeight: FontWeight.w800,
+            const SizedBox(height: 10),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 120),
+              switchInCurve: Curves.easeOut,
+              switchOutCurve: Curves.easeIn,
+              child: _isOfficial
+                  ? const _AdminInfoBox(
+                      key: ValueKey('official-info'),
+                      title: 'Nomo公式として投稿します',
+                      message: '投稿者は自動で公式アカウントになります。全ユーザーのフィードに表示されます。',
+                    )
+                  : _AdminOwnerField(
+                      key: const ValueKey('owner-field'),
+                      users: widget.users,
+                      ownerUserId: _ownerUserId,
+                      ownerController: _ownerController,
+                      onOwnerTextChanged: (value) => _ownerUserId = value,
+                      onOwnerSelected: (value) {
+                        if (value != null) {
+                          setState(() => _ownerUserId = value);
+                        }
+                      },
                     ),
-                  ),
-                ],
-                const SizedBox(height: 16),
-                _AdminPrimaryButton(
-                  label: log == null ? '作成する' : '保存する',
-                  busy: saving,
-                  onTap: () async {
-                    setState(() {
-                      saving = true;
-                      error = null;
-                    });
-                    try {
-                      if (log == null) {
-                        await ref
-                            .read(adminControllerProvider)
-                            .createDrinkLog(
-                              ownerUserId: isOfficial ? null : ownerUserId,
-                              placeName: placeController.text.trim(),
-                              memo: memoController.text.trim(),
-                              linkUrl: linkController.text.trim(),
-                              photoPath: photoController.text.trim(),
-                              isOfficial: isOfficial,
-                            );
-                      } else {
-                        await ref
-                            .read(adminControllerProvider)
-                            .updateDrinkLog(
-                              id: log.id,
-                              ownerUserId: isOfficial ? null : ownerUserId,
-                              placeName: placeController.text.trim(),
-                              memo: memoController.text.trim(),
-                              linkUrl: linkController.text.trim(),
-                              photoPath: photoController.text.trim(),
-                              isOfficial: isOfficial,
-                            );
-                      }
-                      didSave = true;
-                      if (sheetContext.mounted) {
-                        FocusScope.of(sheetContext).unfocus();
-                        Navigator.of(sheetContext).pop();
-                      }
-                    } on BackendApiException catch (e) {
-                      setState(() {
-                        saving = false;
-                        error = e.message;
-                      });
-                    } catch (e) {
-                      setState(() {
-                        saving = false;
-                        error = '$e';
-                      });
-                    }
-                  },
-                ),
-              ],
             ),
-          ),
+            const SizedBox(height: 10),
+            _AdminInput(controller: _placeController, label: '場所'),
+            const SizedBox(height: 10),
+            _AdminInput(controller: _memoController, label: 'メモ', maxLines: 3),
+            const SizedBox(height: 10),
+            _AdminInput(
+              controller: _linkController,
+              label: 'リンクURL（任意・公式投稿の詳しく見る）',
+              keyboardType: TextInputType.url,
+            ),
+            const SizedBox(height: 10),
+            _AdminInput(
+              controller: _photoController,
+              label: '画像URL/アセットパス（任意・公式投稿の画像）',
+              keyboardType: TextInputType.url,
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                _error!,
+                style: const TextStyle(
+                  color: _AdminColors.pink,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            _AdminPrimaryButton(
+              label: log == null ? '作成する' : '保存する',
+              busy: _saving,
+              onTap: _save,
+            ),
+          ],
         ),
       ),
     );
-  } finally {
-    await WidgetsBinding.instance.endOfFrame;
-    ownerController.dispose();
-    placeController.dispose();
-    memoController.dispose();
-    linkController.dispose();
-    photoController.dispose();
   }
-  if (didSave && context.mounted) {
-    ref.invalidate(adminDrinkLogsProvider);
-    NomoToast.show(context, '飲みログを保存しました。');
+
+  Future<void> _save() async {
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      final log = _log;
+      if (log == null) {
+        await ref
+            .read(adminControllerProvider)
+            .createDrinkLog(
+              ownerUserId: _isOfficial ? null : _ownerUserId,
+              placeName: _placeController.text.trim(),
+              memo: _memoController.text.trim(),
+              linkUrl: _linkController.text.trim(),
+              photoPath: _photoController.text.trim(),
+              isOfficial: _isOfficial,
+            );
+      } else {
+        await ref
+            .read(adminControllerProvider)
+            .updateDrinkLog(
+              id: log.id,
+              ownerUserId: _isOfficial ? null : _ownerUserId,
+              placeName: _placeController.text.trim(),
+              memo: _memoController.text.trim(),
+              linkUrl: _linkController.text.trim(),
+              photoPath: _photoController.text.trim(),
+              isOfficial: _isOfficial,
+            );
+      }
+      if (!mounted) return;
+      FocusScope.of(context).unfocus();
+      Navigator.of(context).pop(true);
+    } on BackendApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _error = e.message;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _error = '$e';
+      });
+    }
+  }
+}
+
+class _AdminOwnerField extends StatelessWidget {
+  const _AdminOwnerField({
+    super.key,
+    required this.users,
+    required this.ownerUserId,
+    required this.ownerController,
+    required this.onOwnerTextChanged,
+    required this.onOwnerSelected,
+  });
+
+  final List<AdminUserProfile> users;
+  final String ownerUserId;
+  final TextEditingController ownerController;
+  final ValueChanged<String> onOwnerTextChanged;
+  final ValueChanged<String?> onOwnerSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    if (users.isEmpty) {
+      return _AdminInput(
+        label: 'owner_user_id',
+        controller: ownerController,
+        onChanged: onOwnerTextChanged,
+      );
+    }
+    return _AdminDropdown(
+      value: ownerUserId,
+      users: users,
+      onChanged: onOwnerSelected,
+    );
   }
 }
 
@@ -1696,7 +1765,7 @@ class _AdminSwitchRow extends StatelessWidget {
 }
 
 class _AdminInfoBox extends StatelessWidget {
-  const _AdminInfoBox({required this.title, required this.message});
+  const _AdminInfoBox({super.key, required this.title, required this.message});
 
   final String title;
   final String message;
