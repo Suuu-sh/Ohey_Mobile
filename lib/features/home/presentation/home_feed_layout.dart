@@ -14,6 +14,7 @@ Widget _buildFeedPage({
   required bool showSwipeTutorial,
   required VoidCallback onSwipeTutorialDismissed,
   required ValueChanged<int> onPageChanged,
+  required VoidCallback onAddLogPressed,
   required ValueChanged<_FeedItem> onLikePressed,
   required ValueChanged<_FeedItem> onSharePressed,
   required ValueChanged<_FeedItem> onMorePressed,
@@ -35,7 +36,12 @@ Widget _buildFeedPage({
     return ListView(
       physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.only(top: topPadding, bottom: _feedBottomPageInset),
-      children: [_FeedSectionEmptyState(isWhite: isWhite)],
+      children: [
+        _FeedSectionEmptyState(
+          isWhite: isWhite,
+          onAddLogPressed: onAddLogPressed,
+        ),
+      ],
     );
   }
 
@@ -977,9 +983,13 @@ class _FeedHeaderOverlay extends StatelessWidget {
 }
 
 class _FeedSectionEmptyState extends StatelessWidget {
-  const _FeedSectionEmptyState({required this.isWhite});
+  const _FeedSectionEmptyState({
+    required this.isWhite,
+    required this.onAddLogPressed,
+  });
 
   final bool isWhite;
+  final VoidCallback onAddLogPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -989,8 +999,21 @@ class _FeedSectionEmptyState extends StatelessWidget {
         icon: CupertinoIcons.photo_on_rectangle,
         isWhite: isWhite,
         title: '飲みログはまだありません',
-        message: '自分やフレンズの投稿がフィードに大きく表示されます。',
+        message: 'まずは今日の一杯や思い出を残して、フィードを動かしましょう。',
         accent: _FeedColors.teal,
+        action: SizedBox(
+          width: 220,
+          child: Nomo3DButton(
+            label: '最初の飲みログを残す',
+            icon: CupertinoIcons.camera_fill,
+            onTap: onAddLogPressed,
+            height: 50,
+            radius: 22,
+            color: AppColors.primaryAction,
+            shadowColor: AppColors.primaryActionShadow,
+            fontSize: 14,
+          ),
+        ),
       ),
     );
   }

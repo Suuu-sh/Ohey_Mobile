@@ -47,10 +47,11 @@ class _FriendsList extends StatelessWidget {
         avatar: userAvatar,
         message: friends.isEmpty ? 'フレンズがいません' : 'この条件のフレンズはいません',
         subtitle: friends.isEmpty
-            ? '右上の＋からフレンズを追加しよう'
+            ? 'QRコードかユーザーIDで、最初のフレンズを追加しましょう'
             : selectedCustomFilter == null
             ? '別の条件を選ぶと見つかるかも'
             : 'フィルターを長押しすると編集できます',
+        onAddFriend: onAddFriend,
       );
     }
 
@@ -351,11 +352,13 @@ class _EmptyFriendsState extends StatelessWidget {
     required this.avatar,
     required this.message,
     required this.subtitle,
+    required this.onAddFriend,
   });
 
   final NomoAvatar avatar;
   final String message;
   final String subtitle;
+  final VoidCallback onAddFriend;
 
   @override
   Widget build(BuildContext context) {
@@ -374,8 +377,53 @@ class _EmptyFriendsState extends StatelessWidget {
               : Colors.white.withValues(alpha: .58),
           padding: EdgeInsets.zero,
           spacing: 14,
+          action: message == 'フレンズがいません'
+              ? _EmptyFriendsActions(onAddFriend: onAddFriend)
+              : null,
         ),
       ),
+    );
+  }
+}
+
+class _EmptyFriendsActions extends StatelessWidget {
+  const _EmptyFriendsActions({required this.onAddFriend});
+
+  final VoidCallback onAddFriend;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: 118,
+          child: Nomo3DButton(
+            label: 'QRで追加',
+            icon: CupertinoIcons.qrcode_viewfinder,
+            onTap: onAddFriend,
+            height: 44,
+            radius: 20,
+            color: AppColors.primaryAction,
+            shadowColor: AppColors.primaryActionShadow,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 118,
+          child: Nomo3DButton.secondary(
+            label: 'IDで追加',
+            icon: CupertinoIcons.at,
+            onTap: onAddFriend,
+            height: 44,
+            radius: 20,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            fontSize: 12,
+          ),
+        ),
+      ],
     );
   }
 }

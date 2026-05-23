@@ -478,7 +478,7 @@ class _ProfileMoodCta extends StatelessWidget {
           Expanded(
             child: Text(
               status == NomoDailyStatus.unselected
-                  ? '今日の気分を設定する'
+                  ? 'ステータスを設定する'
                   : status.label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

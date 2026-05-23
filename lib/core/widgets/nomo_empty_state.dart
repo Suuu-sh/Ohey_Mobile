@@ -10,6 +10,7 @@ class NomoEmptyState extends StatelessWidget {
     this.messageColor,
     this.padding = const EdgeInsets.all(30),
     this.spacing = 16,
+    this.action,
   });
 
   final Widget visual;
@@ -19,6 +20,7 @@ class NomoEmptyState extends StatelessWidget {
   final Color? messageColor;
   final EdgeInsetsGeometry padding;
   final double spacing;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +58,7 @@ class NomoEmptyState extends StatelessWidget {
                 height: 1.45,
               ),
             ),
+            if (action != null) ...[const SizedBox(height: 18), action!],
           ],
         ),
       ),

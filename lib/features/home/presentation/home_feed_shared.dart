@@ -7,6 +7,7 @@ class _FeedEmptyState extends StatelessWidget {
     required this.message,
     this.isWhite = false,
     this.accent = _FeedColors.teal,
+    this.action,
   });
 
   final IconData icon;
@@ -14,6 +15,7 @@ class _FeedEmptyState extends StatelessWidget {
   final String message;
   final bool isWhite;
   final Color accent;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) => NomoEmptyState(
@@ -24,6 +26,7 @@ class _FeedEmptyState extends StatelessWidget {
     messageColor: isWhite
         ? const Color(0xFF6E7783)
         : Colors.white.withValues(alpha: .55),
+    action: action,
   );
 }
 

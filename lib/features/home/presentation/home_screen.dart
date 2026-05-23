@@ -40,7 +40,9 @@ part 'home_notifications.dart';
 part 'home_feed_shared.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.onAddLogPressed});
+
+  final VoidCallback? onAddLogPressed;
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -111,6 +113,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               isWhite: isWhite,
               isLoading: logsAsync.isLoading || friendsAsync.isLoading,
               onPageChanged: _handleFeedPageChanged,
+              onAddLogPressed: widget.onAddLogPressed ?? () {},
               onLikePressed: (item) => ref
                   .read(drinkLogControllerProvider.notifier)
                   .toggleLike(item.id),

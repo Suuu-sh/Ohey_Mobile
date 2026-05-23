@@ -93,11 +93,11 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     );
   }
 
-  static const _pages = [
-    HomeScreen(),
-    FriendsScreen(),
-    CalendarScreen(),
-    ProfileScreen(),
+  List<Widget> get _pages => [
+    HomeScreen(onAddLogPressed: _openDrinkLogFlow),
+    const FriendsScreen(),
+    CalendarScreen(onCreatePlan: _openDrinkLogFlow),
+    const ProfileScreen(),
   ];
 
   Future<void> _openDrinkLogFlow() async {
