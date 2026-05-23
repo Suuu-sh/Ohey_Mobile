@@ -136,6 +136,10 @@ class _SimpleHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final joinedMonth = '${now.year}/${now.month.toString().padLeft(2, '0')}';
+    final displayAvatar = avatar ?? NomoAvatar.defaultAvatar;
+    final backgroundColors =
+        NomoAvatar.backgroundGradients[displayAvatar.background %
+            NomoAvatar.backgroundGradients.length];
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -152,8 +156,19 @@ class _SimpleHero extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: backgroundColors,
+                      ),
+                    ),
+                  ),
                   Opacity(
-                    opacity: isWhite ? .18 : .58,
+                    opacity: displayAvatar.background == 0
+                        ? (isWhite ? .18 : .58)
+                        : .10,
                     child: ExcludeSemantics(
                       child: Image.asset(
                         'assets/images/profile_header_scene.png',
@@ -167,23 +182,15 @@ class _SimpleHero extends StatelessWidget {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: isWhite
-                            ? [
-                                Colors.white.withValues(alpha: .60),
-                                Colors.white.withValues(alpha: .92),
-                              ]
-                            : [
-                                const Color(0xFFFFFFFF).withValues(alpha: .22),
-                                const Color(0xFFE7E4E0).withValues(alpha: .44),
-                              ],
+                        colors: [
+                          Colors.white.withValues(alpha: isWhite ? .18 : .08),
+                          Colors.white.withValues(alpha: isWhite ? .36 : .16),
+                        ],
                       ),
                     ),
                   ),
                   Center(
-                    child: NomoAvatarView(
-                      avatar: avatar ?? NomoAvatar.defaultAvatar,
-                      size: 194,
-                    ),
+                    child: NomoAvatarView(avatar: displayAvatar, size: 194),
                   ),
                 ],
               ),

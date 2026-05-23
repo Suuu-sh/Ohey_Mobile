@@ -13,6 +13,7 @@ class NomoAvatar {
     required this.eyes,
     required this.mouth,
     required this.accessory,
+    this.background = 0,
     this.isAdmin = false,
   });
 
@@ -22,6 +23,7 @@ class NomoAvatar {
   final int eyes;
   final int mouth;
   final int accessory;
+  final int background;
   final bool isAdmin;
 
   static const defaultAvatar = NomoAvatar(
@@ -31,6 +33,7 @@ class NomoAvatar {
     eyes: 0,
     mouth: 0,
     accessory: 0,
+    background: 0,
   );
 
   /// Mascot avatar used only for official Nomo posts.
@@ -41,6 +44,7 @@ class NomoAvatar {
     eyes: 2,
     mouth: 1,
     accessory: 1,
+    background: 1,
     isAdmin: true,
   );
 
@@ -56,20 +60,25 @@ class NomoAvatar {
       eyes: random.nextInt(eyeStyles.length),
       mouth: random.nextInt(mouthStyles.length),
       accessory: random.nextInt(accessoryStyles.length),
+      background: random.nextInt(backgroundStyles.length),
     );
   }
 
   String encode() => isAdmin
       ? 'nomo_avatar:admin:v1'
-      : 'nomo_avatar:v1:$skin:$hair:$shirt:$eyes:$mouth:$accessory';
+      : 'nomo_avatar:v2:$skin:$hair:$shirt:$eyes:$mouth:$accessory:$background';
 
   static NomoAvatar? decode(String? value, {bool allowAdmin = false}) {
     if (value == 'nomo_avatar:admin:v1') {
       return allowAdmin ? adminAvatar : null;
     }
-    if (value == null || !value.startsWith('nomo_avatar:v1:')) return null;
+    if (value == null ||
+        (!value.startsWith('nomo_avatar:v1:') &&
+            !value.startsWith('nomo_avatar:v2:'))) {
+      return null;
+    }
     final parts = value.split(':');
-    if (parts.length != 8) return null;
+    if (parts.length != 8 && parts.length != 9) return null;
     int parse(int index, int max) {
       final raw = int.tryParse(parts[index]) ?? 0;
       return raw.clamp(0, max - 1).toInt();
@@ -82,6 +91,7 @@ class NomoAvatar {
       eyes: parse(5, eyeStyles.length),
       mouth: parse(6, mouthStyles.length),
       accessory: parse(7, accessoryStyles.length),
+      background: parts.length >= 9 ? parse(8, backgroundStyles.length) : 0,
     );
   }
 
@@ -92,6 +102,7 @@ class NomoAvatar {
     int? eyes,
     int? mouth,
     int? accessory,
+    int? background,
   }) {
     return NomoAvatar(
       skin: skin ?? this.skin,
@@ -100,6 +111,7 @@ class NomoAvatar {
       eyes: eyes ?? this.eyes,
       mouth: mouth ?? this.mouth,
       accessory: accessory ?? this.accessory,
+      background: background ?? this.background,
       isAdmin: isAdmin,
     );
   }
@@ -110,6 +122,22 @@ class NomoAvatar {
     if (hairOptions.contains(hair)) return this;
     return copyWith(hair: hairOptions.first);
   }
+
+  static const backgroundStyles = [
+    'Dream room',
+    'Night friends',
+    'Mint cafe',
+    'Pink pop',
+    'Blue glow',
+  ];
+
+  static const backgroundGradients = [
+    [Color(0xFFF8FBFF), Color(0xFFEAF1F8)],
+    [Color(0xFF071320), Color(0xFF17324A)],
+    [Color(0xFFE8FFF7), Color(0xFFB8F3E6)],
+    [Color(0xFFFFEEF6), Color(0xFFFFC9E1)],
+    [Color(0xFFE9F6FF), Color(0xFFBFE6FF)],
+  ];
 
   static const skinColors = [
     Color(0xFFFFD8C2),
