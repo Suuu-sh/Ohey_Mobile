@@ -165,7 +165,7 @@ class _TodayInviteSection extends StatelessWidget {
             _TodayInviteEmpty(isWhite: isWhite)
           else
             SizedBox(
-              height: 158,
+              height: 196,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
