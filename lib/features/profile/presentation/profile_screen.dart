@@ -62,14 +62,15 @@ class ProfileScreen extends ConsumerWidget {
         const <DrinkLog>[];
     final myLogs = _myProfileLogs(logs, currentAuthUserId);
     final photoLogs = _photoArchiveLogs(logs, currentAuthUserId);
-    const isWhite = true;
+    const headerIsWhite = true;
+    const bodyIsWhite = false;
     final hasAdminEmail = NomoAvatar.isAdminEmail(currentAuthUser?.email);
     final hasAdminAccess = ref
         .watch(adminAccessProvider)
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
     final canOpenAdmin = hasAdminEmail || hasAdminAccess;
     const topBackground = Colors.white;
-    const bodyBackground = Color(0xFFF7F9FB);
+    const bodyBackground = AppColors.darkBackgroundBottom;
     final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 390;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -98,14 +99,14 @@ class ProfileScreen extends ConsumerWidget {
                     child: Column(
                       children: [
                         _PageHeader(
-                          isWhite: isWhite,
+                          isWhite: headerIsWhite,
                           canOpenAdmin: canOpenAdmin,
                           onSettings: () => _showSettingsSheet(context, ref),
                           onAdmin: () => _openAdminScreen(context),
                         ),
                         const SizedBox(height: 14),
                         _SimpleHero(
-                          isWhite: isWhite,
+                          isWhite: headerIsWhite,
                           name: user?.name ?? 'ユーザー名',
                           avatar: user?.avatar,
                         ),
@@ -133,7 +134,7 @@ class ProfileScreen extends ConsumerWidget {
                                   if (reservations.isNotEmpty ||
                                       incomingInvites.isNotEmpty) ...[
                                     _ProfileReservationStrip(
-                                      isWhite: isWhite,
+                                      isWhite: bodyIsWhite,
                                       userAvatar: user?.avatar,
                                       currentUserId: currentAuthUserId,
                                       reservations: reservations,
@@ -166,7 +167,7 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           Expanded(
                             child: _ProfileActivityHome(
-                              isWhite: isWhite,
+                              isWhite: bodyIsWhite,
                               logs: myLogs,
                               photoLogs: photoLogs,
                               status:
