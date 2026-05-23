@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/nomo_avatar.dart';
@@ -26,11 +29,126 @@ class FriendsScreen extends ConsumerStatefulWidget {
 
 class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   _FriendFilterType _selectedFilter = _FriendFilterType.all;
+  String? _selectedCustomFilterId;
+  String? _customFilterUserId;
+  List<_CustomFriendFilter> _customFilters = const [];
   bool _isRefreshingFriends = false;
   final Map<String, bool> _favoriteOverrides = {};
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _syncCustomFiltersForUser(ref.read(nomoUserProvider)?.userId);
+      }
+    });
+  }
+
   void _openAddFriend() {
     showMyQrDialog(context, ref.read(nomoUserProvider), ref);
+  }
+
+  void _syncCustomFiltersForUser(String? userId) {
+    if (_customFilterUserId == userId) return;
+    _customFilterUserId = userId;
+    if (mounted) {
+      setState(() {
+        _customFilters = const [];
+        _selectedCustomFilterId = null;
+      });
+    }
+    if (userId != null && userId.trim().isNotEmpty) {
+      _loadCustomFilters(userId);
+    }
+  }
+
+  Future<void> _loadCustomFilters(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_customFilterStorageKey(userId));
+    final filters = _decodeCustomFilters(raw);
+    if (!mounted || _customFilterUserId != userId) return;
+    setState(() {
+      _customFilters = filters;
+      if (_selectedCustomFilterId != null &&
+          !_customFilters.any(
+            (filter) => filter.id == _selectedCustomFilterId,
+          )) {
+        _selectedCustomFilterId = null;
+        _selectedFilter = _FriendFilterType.all;
+      }
+    });
+  }
+
+  Future<void> _persistCustomFilters() async {
+    final userId = _customFilterUserId;
+    if (userId == null || userId.trim().isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _customFilterStorageKey(userId),
+      jsonEncode([for (final filter in _customFilters) filter.toJson()]),
+    );
+  }
+
+  Future<void> _openCustomFilterSheet({_CustomFriendFilter? filter}) async {
+    final friends =
+        ref.read(friendsProvider).asData?.value ?? const <NomoFriend>[];
+    if (friends.isEmpty) {
+      NomoToast.show(context, 'フレンズを追加するとフィルターを作れます');
+      return;
+    }
+    HapticFeedback.selectionClick();
+    final isWhite = ref.read(nomoThemeModeProvider).isWhite;
+    final result = await showModalBottomSheet<_CustomFilterSheetResult>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: .58),
+      builder: (_) => _CustomFilterSheet(
+        friends: friends,
+        initialFilter: filter,
+        isWhite: isWhite,
+      ),
+    );
+    if (!mounted || result == null) return;
+
+    switch (result.action) {
+      case _CustomFilterSheetAction.save:
+        final saved = result.filter!;
+        setState(() {
+          final index = _customFilters.indexWhere(
+            (item) => item.id == saved.id,
+          );
+          if (index == -1) {
+            _customFilters = [..._customFilters, saved];
+          } else {
+            _customFilters = [
+              for (var i = 0; i < _customFilters.length; i++)
+                if (i == index) saved else _customFilters[i],
+            ];
+          }
+          _selectedCustomFilterId = saved.id;
+        });
+        await _persistCustomFilters();
+        if (mounted) NomoToast.show(context, 'フィルターを保存しました');
+        break;
+      case _CustomFilterSheetAction.delete:
+        final filterId = result.filterId!;
+        setState(() {
+          _customFilters = [
+            for (final item in _customFilters)
+              if (item.id != filterId) item,
+          ];
+          if (_selectedCustomFilterId == filterId) {
+            _selectedCustomFilterId = null;
+            _selectedFilter = _FriendFilterType.all;
+          }
+        });
+        await _persistCustomFilters();
+        if (mounted) NomoToast.show(context, 'フィルターを削除しました');
+        break;
+    }
   }
 
   Future<void> _refreshFriends() async {
@@ -94,6 +212,15 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     final friendsAsync = ref.watch(friendsProvider);
     final user = ref.watch(nomoUserProvider);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
+    if (_customFilterUserId != user?.userId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _syncCustomFiltersForUser(user?.userId);
+      });
+    }
+    final selectedCustomFilter = _findCustomFilter(
+      _selectedCustomFilterId,
+      _customFilters,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -144,7 +271,18 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               const SizedBox(height: 18),
               _FilterBar(
                 selected: _selectedFilter,
-                onChanged: (filter) => setState(() => _selectedFilter = filter),
+                selectedCustomFilterId: _selectedCustomFilterId,
+                customFilters: _customFilters,
+                onChanged: (filter) => setState(() {
+                  _selectedFilter = filter;
+                  _selectedCustomFilterId = null;
+                }),
+                onCustomChanged: (filter) => setState(() {
+                  _selectedCustomFilterId = filter.id;
+                }),
+                onCustomLongPress: (filter) =>
+                    _openCustomFilterSheet(filter: filter),
+                onCreateCustom: () => _openCustomFilterSheet(),
               ),
               const SizedBox(height: 18),
               Expanded(
@@ -156,6 +294,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                     friends: friends,
                     userAvatar: user?.avatar ?? NomoAvatar.defaultAvatar,
                     selectedFilter: _selectedFilter,
+                    selectedCustomFilter: selectedCustomFilter,
                     favoriteOverrides: _favoriteOverrides,
                     onFavoriteToggle: (friend, isFavorite) =>
                         _onToggleFavorite(context, friend, isFavorite),
@@ -174,10 +313,23 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 enum _FriendFilterType { all, drinkable, favorite }
 
 class _FilterBar extends StatelessWidget {
-  const _FilterBar({required this.selected, required this.onChanged});
+  const _FilterBar({
+    required this.selected,
+    required this.selectedCustomFilterId,
+    required this.customFilters,
+    required this.onChanged,
+    required this.onCustomChanged,
+    required this.onCustomLongPress,
+    required this.onCreateCustom,
+  });
 
   final _FriendFilterType selected;
+  final String? selectedCustomFilterId;
+  final List<_CustomFriendFilter> customFilters;
   final ValueChanged<_FriendFilterType> onChanged;
+  final ValueChanged<_CustomFriendFilter> onCustomChanged;
+  final ValueChanged<_CustomFriendFilter> onCustomLongPress;
+  final VoidCallback onCreateCustom;
 
   @override
   Widget build(BuildContext context) {
@@ -193,11 +345,31 @@ class _FilterBar extends StatelessWidget {
               _FilterChip(
                 label: _filters[i].label,
                 accent: _filters[i].accent,
-                selected: selected == _filters[i].type,
+                selected:
+                    selectedCustomFilterId == null &&
+                    selected == _filters[i].type,
                 onTap: () => onChanged(_filters[i].type),
               ),
-              if (i != _filters.length - 1) const SizedBox(width: 10),
+              const SizedBox(width: 10),
             ],
+            for (var i = 0; i < customFilters.length; i++) ...[
+              _FilterChip(
+                label: customFilters[i].name,
+                accent: _customFilterAccent(i),
+                selected: selectedCustomFilterId == customFilters[i].id,
+                icon: CupertinoIcons.person_2_fill,
+                onTap: () => onCustomChanged(customFilters[i]),
+                onLongPress: () => onCustomLongPress(customFilters[i]),
+              ),
+              const SizedBox(width: 10),
+            ],
+            _FilterChip(
+              label: '作成',
+              accent: _FriendsColors.lime,
+              selected: false,
+              icon: CupertinoIcons.plus,
+              onTap: onCreateCustom,
+            ),
           ],
         ),
       ),
@@ -218,18 +390,120 @@ class _FriendFilter {
   final Color accent;
 }
 
+class _CustomFriendFilter {
+  const _CustomFriendFilter({
+    required this.id,
+    required this.name,
+    required this.friendIds,
+  });
+
+  final String id;
+  final String name;
+  final List<String> friendIds;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'friendIds': friendIds,
+  };
+
+  static _CustomFriendFilter? fromJson(Object? value) {
+    if (value is! Map) return null;
+    final id = (value['id'] as String?)?.trim();
+    final name = (value['name'] as String?)?.trim();
+    final rawFriendIds = value['friendIds'];
+    if (id == null || id.isEmpty || name == null || name.isEmpty) {
+      return null;
+    }
+    final friendIds = rawFriendIds is List
+        ? [
+            for (final friendId in rawFriendIds)
+              if (friendId is String && friendId.trim().isNotEmpty)
+                friendId.trim(),
+          ]
+        : const <String>[];
+    if (friendIds.isEmpty) return null;
+    return _CustomFriendFilter(id: id, name: name, friendIds: friendIds);
+  }
+}
+
+enum _CustomFilterSheetAction { save, delete }
+
+class _CustomFilterSheetResult {
+  const _CustomFilterSheetResult._({
+    required this.action,
+    this.filter,
+    this.filterId,
+  });
+
+  const _CustomFilterSheetResult.save(_CustomFriendFilter filter)
+    : this._(action: _CustomFilterSheetAction.save, filter: filter);
+
+  const _CustomFilterSheetResult.delete(String filterId)
+    : this._(action: _CustomFilterSheetAction.delete, filterId: filterId);
+
+  final _CustomFilterSheetAction action;
+  final _CustomFriendFilter? filter;
+  final String? filterId;
+}
+
+String _customFilterStorageKey(String userId) =>
+    'nomo_custom_friend_filters_v1_$userId';
+
+List<_CustomFriendFilter> _decodeCustomFilters(String? raw) {
+  if (raw == null || raw.trim().isEmpty) return const [];
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is! List) return const [];
+    final filters = <_CustomFriendFilter>[];
+    for (final item in decoded) {
+      final filter = _CustomFriendFilter.fromJson(item);
+      if (filter != null) filters.add(filter);
+    }
+    return filters;
+  } catch (_) {
+    return const [];
+  }
+}
+
+_CustomFriendFilter? _findCustomFilter(
+  String? id,
+  List<_CustomFriendFilter> filters,
+) {
+  if (id == null) return null;
+  for (final filter in filters) {
+    if (filter.id == id) return filter;
+  }
+  return null;
+}
+
+const _customFilterAccents = [
+  Color(0xFFC08BFF),
+  Color(0xFF18AFFF),
+  Color(0xFFFF5AA6),
+  Color(0xFFFFA700),
+  Color(0xFF46E68A),
+];
+
+Color _customFilterAccent(int index) =>
+    _customFilterAccents[index % _customFilterAccents.length];
+
 class _FilterChip extends StatelessWidget {
   const _FilterChip({
     required this.label,
     required this.accent,
     required this.selected,
     required this.onTap,
+    this.icon,
+    this.onLongPress,
   });
 
   final String label;
   final Color accent;
   final bool selected;
   final VoidCallback onTap;
+  final IconData? icon;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -246,6 +520,7 @@ class _FilterChip extends StatelessWidget {
         : const Color(0xFF152536);
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOutCubic,
@@ -290,6 +565,18 @@ class _FilterChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (icon != null) ...[
+                NomoGeneratedIcon(
+                  icon!,
+                  color: selected
+                      ? _FriendsColors.bg
+                      : isWhite
+                      ? const Color(0xFF101820)
+                      : Colors.white,
+                  size: 15,
+                ),
+                const SizedBox(width: 7),
+              ],
               Text(
                 label,
                 style: TextStyle(
@@ -310,11 +597,397 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
+class _CustomFilterSheet extends StatefulWidget {
+  const _CustomFilterSheet({
+    required this.friends,
+    required this.isWhite,
+    this.initialFilter,
+  });
+
+  final List<NomoFriend> friends;
+  final bool isWhite;
+  final _CustomFriendFilter? initialFilter;
+
+  @override
+  State<_CustomFilterSheet> createState() => _CustomFilterSheetState();
+}
+
+class _CustomFilterSheetState extends State<_CustomFilterSheet> {
+  late final TextEditingController _nameController;
+  late Set<String> _selectedFriendIds;
+  String? _errorText;
+
+  bool get _isEditing => widget.initialFilter != null;
+
+  bool get _canSave =>
+      _nameController.text.trim().isNotEmpty && _selectedFriendIds.isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController =
+        TextEditingController(text: widget.initialFilter?.name ?? '')
+          ..addListener(() {
+            setState(() => _errorText = null);
+          });
+    _selectedFriendIds = {...?widget.initialFilter?.friendIds};
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  void _toggleFriend(String friendId) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      if (!_selectedFriendIds.add(friendId)) {
+        _selectedFriendIds.remove(friendId);
+      }
+      _errorText = null;
+    });
+  }
+
+  void _save() {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      setState(() => _errorText = 'フィルター名を入力してね');
+      return;
+    }
+    if (_selectedFriendIds.isEmpty) {
+      setState(() => _errorText = 'フレンズを1人以上選んでね');
+      return;
+    }
+    final existingOrder = {
+      for (var i = 0; i < widget.friends.length; i++) widget.friends[i].id: i,
+    };
+    final friendIds = _selectedFriendIds.toList()
+      ..sort(
+        (a, b) =>
+            (existingOrder[a] ?? 9999).compareTo(existingOrder[b] ?? 9999),
+      );
+    Navigator.of(context).pop(
+      _CustomFilterSheetResult.save(
+        _CustomFriendFilter(
+          id:
+              widget.initialFilter?.id ??
+              DateTime.now().microsecondsSinceEpoch.toString(),
+          name: name,
+          friendIds: friendIds,
+        ),
+      ),
+    );
+  }
+
+  void _delete() {
+    final filter = widget.initialFilter;
+    if (filter == null) return;
+    HapticFeedback.mediumImpact();
+    Navigator.of(context).pop(_CustomFilterSheetResult.delete(filter.id));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = widget.isWhite;
+    final bg = isWhite ? Colors.white : const Color(0xFF071622);
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF687481)
+        : Colors.white.withValues(alpha: .62);
+    final fieldBg = isWhite
+        ? const Color(0xFFF2F6FA)
+        : Colors.white.withValues(alpha: .07);
+    final listHeight = (widget.friends.length * 62.0).clamp(124.0, 330.0);
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: isWhite
+                ? const Color(0xFFDCE4EC)
+                : Colors.white.withValues(alpha: .12),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isWhite ? .12 : .34),
+              blurRadius: 28,
+              offset: const Offset(0, 16),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: isWhite
+                      ? const Color(0xFFD5DEE8)
+                      : Colors.white.withValues(alpha: .22),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                NomoPopIcon(
+                  icon: _isEditing
+                      ? CupertinoIcons.slider_horizontal_3
+                      : CupertinoIcons.person_2_fill,
+                  color: _FriendsColors.lime,
+                  size: 48,
+                  iconSize: 26,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _isEditing ? 'フィルター編集' : 'フィルター作成',
+                        style: TextStyle(
+                          color: ink,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.4,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'よく誘うメンバーだけをまとめられます',
+                        style: TextStyle(
+                          color: sub,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _nameController,
+              textInputAction: TextInputAction.done,
+              cursorColor: _FriendsColors.lime,
+              style: TextStyle(
+                color: ink,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+              ),
+              decoration: InputDecoration(
+                hintText: '例：いつメン',
+                hintStyle: TextStyle(color: sub, fontWeight: FontWeight.w800),
+                filled: true,
+                fillColor: fieldBg,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 13,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              '表示するフレンズ',
+              style: TextStyle(
+                color: ink,
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: listHeight,
+              child: ListView.separated(
+                physics: const BouncingScrollPhysics(),
+                itemCount: widget.friends.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  final friend = widget.friends[index];
+                  final selected = _selectedFriendIds.contains(friend.id);
+                  return _CustomFilterFriendRow(
+                    friend: friend,
+                    selected: selected,
+                    isWhite: isWhite,
+                    onTap: () => _toggleFriend(friend.id),
+                  );
+                },
+              ),
+            ),
+            if (_errorText != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                _errorText!,
+                style: const TextStyle(
+                  color: Color(0xFFFF6B8A),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            Nomo3DButton(
+              label: _isEditing ? '保存する' : '作成する',
+              icon: CupertinoIcons.checkmark_circle_fill,
+              onTap: _canSave ? _save : null,
+              enabled: _canSave,
+              height: 48,
+              radius: 20,
+              color: _FriendsColors.lime,
+              foregroundColor: _FriendsColors.bg,
+              shadowColor: const Color(0xFF77A600),
+              fontSize: 14,
+            ),
+            if (_isEditing) ...[
+              const SizedBox(height: 8),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 36),
+                onPressed: _delete,
+                child: const Text(
+                  '削除する',
+                  style: TextStyle(
+                    color: Color(0xFFFF6B8A),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomFilterFriendRow extends StatelessWidget {
+  const _CustomFilterFriendRow({
+    required this.friend,
+    required this.selected,
+    required this.isWhite,
+    required this.onTap,
+  });
+
+  final NomoFriend friend;
+  final bool selected;
+  final bool isWhite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF687481)
+        : Colors.white.withValues(alpha: .62);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected
+              ? _FriendsColors.lime.withValues(alpha: isWhite ? .18 : .14)
+              : isWhite
+              ? const Color(0xFFF7F9FB)
+              : Colors.white.withValues(alpha: .055),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: selected
+                ? _FriendsColors.lime.withValues(alpha: .62)
+                : isWhite
+                ? const Color(0xFFDCE4EC)
+                : Colors.white.withValues(alpha: .08),
+          ),
+        ),
+        child: Row(
+          children: [
+            NomoAvatarView(
+              avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
+              size: 42,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    friend.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: ink,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _statusForFriend(friend, 0).label,
+                    style: TextStyle(
+                      color: sub,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: selected ? _FriendsColors.lime : Colors.transparent,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: selected
+                      ? _FriendsColors.lime
+                      : isWhite
+                      ? const Color(0xFFB8C4D0)
+                      : Colors.white.withValues(alpha: .24),
+                  width: 1.5,
+                ),
+              ),
+              child: selected
+                  ? const Center(
+                      child: NomoGeneratedIcon(
+                        CupertinoIcons.checkmark,
+                        color: _FriendsColors.bg,
+                        size: 18,
+                      ),
+                    )
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _FriendsList extends StatelessWidget {
   const _FriendsList({
     required this.friends,
     required this.userAvatar,
     required this.selectedFilter,
+    required this.selectedCustomFilter,
     required this.favoriteOverrides,
     required this.onFavoriteToggle,
     required this.onInvite,
@@ -323,6 +996,7 @@ class _FriendsList extends StatelessWidget {
   final List<NomoFriend> friends;
   final NomoAvatar userAvatar;
   final _FriendFilterType selectedFilter;
+  final _CustomFriendFilter? selectedCustomFilter;
   final Map<String, bool> favoriteOverrides;
   final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
   final ValueChanged<NomoFriend> onInvite;
@@ -339,7 +1013,11 @@ class _FriendsList extends StatelessWidget {
           status: _statusForFriend(friends[i], i),
         ),
     ];
+    final customFriendIds = selectedCustomFilter?.friendIds.toSet();
     final filtered = decorated.where((item) {
+      if (customFriendIds != null) {
+        return customFriendIds.contains(item.friend.id);
+      }
       return switch (selectedFilter) {
         _FriendFilterType.all => true,
         _FriendFilterType.drinkable => _isDrinkableStatus(item.status),
@@ -351,7 +1029,11 @@ class _FriendsList extends StatelessWidget {
       return _EmptyFriendsState(
         avatar: userAvatar,
         message: friends.isEmpty ? 'フレンズがいません' : 'この条件のフレンズはいません',
-        subtitle: friends.isEmpty ? '右上の＋からフレンズを追加しよう' : '別の条件を選ぶと見つかるかも',
+        subtitle: friends.isEmpty
+            ? '右上の＋からフレンズを追加しよう'
+            : selectedCustomFilter == null
+            ? '別の条件を選ぶと見つかるかも'
+            : 'フィルターを長押しすると編集できます',
       );
     }
 
