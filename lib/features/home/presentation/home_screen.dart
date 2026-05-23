@@ -54,6 +54,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const _feedSwipeTutorialSeenKey = 'nomo_feed_swipe_tutorial_seen';
+  static const _instagramShareChannel = MethodChannel('nomo/instagram_share');
 
   bool _isRefreshingFeed = false;
   int _currentFeedPageIndex = 0;
@@ -225,36 +226,89 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _shareFeedItem(BuildContext context, _FeedItem item) async {
-    final renderBox = context.findRenderObject() as RenderBox?;
-    final shareOrigin = renderBox == null
-        ? null
-        : renderBox.localToGlobal(Offset.zero) & renderBox.size;
+    final destination = item.isOfficial
+        ? _FeedShareDestination.other
+        : await showModalBottomSheet<_FeedShareDestination>(
+            context: context,
+            useSafeArea: true,
+            backgroundColor: Colors.transparent,
+            barrierColor: Colors.black.withValues(alpha: .58),
+            builder: (_) => const _FeedShareDestinationSheet(),
+          );
+    if (!context.mounted || destination == null) return;
+
     try {
       final imagePath = await _createStoryShareImage(item);
-      final result = await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(imagePath, mimeType: 'image/png')],
-          fileNameOverrides: [
-            item.isOfficial ? 'nomo_official_post.png' : 'nomo_drink_log.png',
-          ],
-          title: item.isOfficial ? 'Nomo公式投稿を共有' : '飲みログを共有',
-          subject: item.isOfficial ? 'Nomo公式のお知らせ' : 'Nomoの飲みログ',
-          sharePositionOrigin: shareOrigin,
-        ),
-      );
-      if (!context.mounted) return;
-      if (result.status == ShareResultStatus.unavailable) {
-        NomoToast.show(
-          context,
-          '共有できるアプリが見つかりませんでした。',
-          icon: CupertinoIcons.square_arrow_up,
-        );
+      if (!mounted) return;
+      switch (destination) {
+        case _FeedShareDestination.instagram:
+          await _shareFeedImageToInstagram(this.context, imagePath);
+        case _FeedShareDestination.other:
+          await _shareFeedImageWithSystemSheet(this.context, item, imagePath);
       }
-    } catch (error) {
+    } catch (_) {
       if (!context.mounted) return;
       NomoToast.show(
         context,
         '共有を始められなかったよ。あとでもう一度試してね',
+        icon: CupertinoIcons.square_arrow_up,
+      );
+    }
+  }
+
+  Future<void> _shareFeedImageToInstagram(
+    BuildContext context,
+    String imagePath,
+  ) async {
+    try {
+      await _instagramShareChannel.invokeMethod<void>('shareStory', {
+        'imagePath': imagePath,
+      });
+      if (!context.mounted) return;
+      NomoToast.show(
+        context,
+        'Instagramで投稿を仕上げてね',
+        icon: CupertinoIcons.camera_fill,
+      );
+    } on PlatformException catch (error) {
+      if (!context.mounted) return;
+      if (error.code == 'instagram_unavailable') {
+        NomoToast.show(
+          context,
+          'Instagramアプリが見つかりませんでした',
+          icon: CupertinoIcons.camera_fill,
+        );
+        return;
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _shareFeedImageWithSystemSheet(
+    BuildContext context,
+    _FeedItem item,
+    String imagePath,
+  ) async {
+    final renderBox = context.findRenderObject() as RenderBox?;
+    final shareOrigin = renderBox == null
+        ? null
+        : renderBox.localToGlobal(Offset.zero) & renderBox.size;
+    final result = await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(imagePath, mimeType: 'image/png')],
+        fileNameOverrides: [
+          item.isOfficial ? 'nomo_official_post.png' : 'nomo_drink_log.png',
+        ],
+        title: item.isOfficial ? 'Nomo公式投稿を共有' : '飲みログを共有',
+        subject: item.isOfficial ? 'Nomo公式のお知らせ' : 'Nomoの飲みログ',
+        sharePositionOrigin: shareOrigin,
+      ),
+    );
+    if (!context.mounted) return;
+    if (result.status == ShareResultStatus.unavailable) {
+      NomoToast.show(
+        context,
+        '共有できるアプリが見つかりませんでした。',
         icon: CupertinoIcons.square_arrow_up,
       );
     }

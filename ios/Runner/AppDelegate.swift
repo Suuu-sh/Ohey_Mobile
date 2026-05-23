@@ -10,6 +10,7 @@ import WidgetKit
   private var qrSaverChannel: FlutterMethodChannel?
   private var widgetSyncChannel: FlutterMethodChannel?
   private var placeSearchChannel: FlutterMethodChannel?
+  private var instagramShareChannel: FlutterMethodChannel?
   private var placeSearchLocationManager: CLLocationManager?
   private var placeSearchLocationCompletion: ((CLLocation?, FlutterError?) -> Void)?
   private var didRequestPlaceSearchLocation = false
@@ -25,6 +26,7 @@ import WidgetKit
       registerQrSaverChannel(on: controller.binaryMessenger)
       registerWidgetSyncChannel(on: controller.binaryMessenger)
       registerPlaceSearchChannel(on: controller.binaryMessenger)
+      registerInstagramShareChannel(on: controller.binaryMessenger)
     }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -39,6 +41,9 @@ import WidgetKit
     }
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoPlaceSearch") {
       registerPlaceSearchChannel(on: registrar.messenger())
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoInstagramShare") {
+      registerInstagramShareChannel(on: registrar.messenger())
     }
     if !didRegisterArAvatarCameraViewFactory,
        let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoArAvatarCamera") {
@@ -95,6 +100,18 @@ import WidgetKit
       switch call.method {
       case "searchNearby":
         self?.searchNearbyPlaces(call.arguments, result: result)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+  }
+
+  private func registerInstagramShareChannel(on messenger: FlutterBinaryMessenger) {
+    instagramShareChannel = FlutterMethodChannel(name: "nomo/instagram_share", binaryMessenger: messenger)
+    instagramShareChannel?.setMethodCallHandler { [weak self] call, result in
+      switch call.method {
+      case "shareStory":
+        self?.shareInstagramStory(call.arguments, result: result)
       default:
         result(FlutterMethodNotImplemented)
       }
@@ -388,6 +405,49 @@ import WidgetKit
       PHPhotoLibrary.requestAuthorization(for: .addOnly, handler: completion)
     } else {
       PHPhotoLibrary.requestAuthorization(completion)
+    }
+  }
+
+  private func shareInstagramStory(_ arguments: Any?, result: @escaping FlutterResult) {
+    guard
+      let payload = arguments as? [String: Any],
+      let imagePath = payload["imagePath"] as? String,
+      !imagePath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    else {
+      result(FlutterError(code: "invalid_payload", message: "Invalid Instagram share payload.", details: nil))
+      return
+    }
+
+    guard let instagramUrl = URL(string: "instagram-stories://share") else {
+      result(FlutterError(code: "invalid_url", message: "Invalid Instagram URL.", details: nil))
+      return
+    }
+
+    guard UIApplication.shared.canOpenURL(instagramUrl) else {
+      result(FlutterError(code: "instagram_unavailable", message: "Instagram app is not installed.", details: nil))
+      return
+    }
+
+    do {
+      let imageData = try Data(contentsOf: URL(fileURLWithPath: imagePath))
+      let pasteboardItems: [[String: Any]] = [[
+        "com.instagram.sharedSticker.backgroundImage": imageData
+      ]]
+      let options: [UIPasteboard.OptionsKey: Any] = [
+        .expirationDate: Date().addingTimeInterval(300)
+      ]
+      UIPasteboard.general.setItems(pasteboardItems, options: options)
+      UIApplication.shared.open(instagramUrl, options: [:]) { success in
+        DispatchQueue.main.async {
+          if success {
+            result(nil)
+          } else {
+            result(FlutterError(code: "open_failed", message: "Failed to open Instagram.", details: nil))
+          }
+        }
+      }
+    } catch {
+      result(FlutterError(code: "image_read_failed", message: error.localizedDescription, details: nil))
     }
   }
 }

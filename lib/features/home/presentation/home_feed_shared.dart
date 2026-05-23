@@ -1,5 +1,183 @@
 part of 'home_screen.dart';
 
+enum _FeedShareDestination { instagram, other }
+
+class _FeedShareDestinationSheet extends StatelessWidget {
+  const _FeedShareDestinationSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final background = isWhite ? Colors.white : const Color(0xFF071320);
+    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .62);
+
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(
+            color: isWhite
+                ? const Color(0xFFDCE4EC)
+                : Colors.white.withValues(alpha: .12),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .28),
+              blurRadius: 32,
+              offset: const Offset(0, 16),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: sub.withValues(alpha: .34),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '思い出を共有',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: ink,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.6,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Instagram用のストーリー画像として投稿できます。',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: sub,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 18),
+            _FeedShareDestinationTile(
+              icon: CupertinoIcons.camera_fill,
+              color: const Color(0xFFFF4FB5),
+              title: 'Instagramに投稿',
+              subtitle: 'ストーリーズ編集画面を開く',
+              onTap: () =>
+                  Navigator.of(context).pop(_FeedShareDestination.instagram),
+            ),
+            const SizedBox(height: 10),
+            _FeedShareDestinationTile(
+              icon: CupertinoIcons.square_arrow_up,
+              color: AppColors.info,
+              title: 'その他で共有',
+              subtitle: '画像として共有する',
+              onTap: () =>
+                  Navigator.of(context).pop(_FeedShareDestination.other),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedShareDestinationTile extends StatelessWidget {
+  const _FeedShareDestinationTile({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .58);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? const Color(0xFFF6F8FA)
+              : Colors.white.withValues(alpha: .055),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isWhite
+                ? const Color(0xFFE0E6ED)
+                : Colors.white.withValues(alpha: .10),
+          ),
+        ),
+        child: Row(
+          children: [
+            NomoPopIcon(icon: icon, color: color, size: 46, iconSize: 25),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: ink,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: sub,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      height: 1.25,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            NomoGeneratedIcon(
+              CupertinoIcons.chevron_right,
+              color: sub,
+              size: 22,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _FeedEmptyState extends StatelessWidget {
   const _FeedEmptyState({
     required this.icon,
