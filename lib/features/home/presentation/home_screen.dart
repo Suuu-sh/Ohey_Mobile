@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
@@ -46,8 +47,33 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  static const _feedSwipeTutorialSeenKey = 'nomo_feed_swipe_tutorial_seen';
+
   bool _isRefreshingFeed = false;
   bool _isFeedHeaderTransparent = false;
+  bool _isFeedSwipeTutorialSeen = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFeedSwipeTutorialSeen();
+  }
+
+  Future<void> _loadFeedSwipeTutorialSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _isFeedSwipeTutorialSeen =
+          prefs.getBool(_feedSwipeTutorialSeenKey) ?? false;
+    });
+  }
+
+  Future<void> _markFeedSwipeTutorialSeen() async {
+    if (_isFeedSwipeTutorialSeen) return;
+    setState(() => _isFeedSwipeTutorialSeen = true);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_feedSwipeTutorialSeenKey, true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +116,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     .read(drinkLogControllerProvider.notifier)
                     .toggleLike(item.id),
                 onSharePressed: (item) => _shareFeedItem(context, item),
+                showSwipeTutorial:
+                    !_isFeedSwipeTutorialSeen && feedItems.length > 1,
+                onSwipeTutorialDismissed: _markFeedSwipeTutorialSeen,
                 onMorePressed: (item) =>
                     _showFeedPostActions(context, ref, item),
               ),

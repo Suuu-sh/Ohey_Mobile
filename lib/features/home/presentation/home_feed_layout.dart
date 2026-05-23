@@ -11,6 +11,8 @@ Widget _buildFeedPage({
   required List<_FeedItem> items,
   required bool isWhite,
   required bool isLoading,
+  required bool showSwipeTutorial,
+  required VoidCallback onSwipeTutorialDismissed,
   required ValueChanged<_FeedItem> onLikePressed,
   required ValueChanged<_FeedItem> onSharePressed,
   required ValueChanged<_FeedItem> onMorePressed,
@@ -38,6 +40,9 @@ Widget _buildFeedPage({
 
   return PageView.builder(
     scrollDirection: Axis.vertical,
+    onPageChanged: (index) {
+      if (index > 0) onSwipeTutorialDismissed();
+    },
     physics: const PageScrollPhysics(parent: BouncingScrollPhysics()),
     itemCount: items.length,
     itemBuilder: (context, index) {
@@ -47,6 +52,8 @@ Widget _buildFeedPage({
         item: item,
         isWhite: isWhite,
         showSwipeHint: index < items.length - 1,
+        showSwipeTutorial: showSwipeTutorial && index == 0,
+        onSwipeTutorialDismissed: onSwipeTutorialDismissed,
         onLike: item.isLikeable ? () => onLikePressed(item) : null,
         onShare: item.id.isEmpty ? null : () => onSharePressed(item),
         onMore: item.id.isEmpty ? null : () => onMorePressed(item),
@@ -61,6 +68,8 @@ class _FeedPostPage extends StatelessWidget {
     required this.item,
     required this.isWhite,
     required this.showSwipeHint,
+    required this.showSwipeTutorial,
+    required this.onSwipeTutorialDismissed,
     this.onLike,
     this.onShare,
     this.onMore,
@@ -70,6 +79,8 @@ class _FeedPostPage extends StatelessWidget {
   final _FeedItem item;
   final bool isWhite;
   final bool showSwipeHint;
+  final bool showSwipeTutorial;
+  final VoidCallback onSwipeTutorialDismissed;
   final VoidCallback? onLike;
   final VoidCallback? onShare;
   final VoidCallback? onMore;
@@ -100,6 +111,13 @@ class _FeedPostPage extends StatelessWidget {
             right: 12,
             bottom: _feedBottomPageInset + 4,
             child: _FeedSwipeHint(isWhite: isWhite),
+          ),
+        if (showSwipeTutorial)
+          Positioned.fill(
+            child: _FeedSwipeTutorialOverlay(
+              isWhite: isWhite,
+              onDismissed: onSwipeTutorialDismissed,
+            ),
           ),
       ],
     );
@@ -145,7 +163,7 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
               animation: _controller,
               builder: (context, child) {
                 final loop = _controller.value;
-                final groupWidth = math.min(constraints.maxWidth, 168.0);
+                final groupWidth = math.min(constraints.maxWidth, 188.0);
                 final travel = math.max(0.0, constraints.maxWidth - groupWidth);
                 final motion = _nomoSwipeHintMotion(loop, travel);
                 final arrowPulse = .5 - .5 * math.cos(loop * math.pi * 4);
@@ -164,7 +182,7 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
                       clipBehavior: Clip.none,
                       children: [
                         Positioned(
-                          left: 47,
+                          left: 45,
                           bottom: 18,
                           child: _NomoSpeechBubble(
                             isWhite: widget.isWhite,
@@ -201,6 +219,153 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
               },
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedSwipeTutorialOverlay extends StatefulWidget {
+  const _FeedSwipeTutorialOverlay({
+    required this.isWhite,
+    required this.onDismissed,
+  });
+
+  final bool isWhite;
+  final VoidCallback onDismissed;
+
+  @override
+  State<_FeedSwipeTutorialOverlay> createState() =>
+      _FeedSwipeTutorialOverlayState();
+}
+
+class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1700),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final panelBackground = widget.isWhite
+        ? Colors.white.withValues(alpha: .95)
+        : const Color(0xFF0D1824).withValues(alpha: .94);
+    final titleColor = widget.isWhite ? const Color(0xFF20303D) : Colors.white;
+    final subColor = widget.isWhite
+        ? const Color(0xFF657282)
+        : Colors.white.withValues(alpha: .68);
+    final borderColor = widget.isWhite
+        ? const Color(0xFFDDE6EE)
+        : Colors.white.withValues(alpha: .14);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: widget.onDismissed,
+      onVerticalDragEnd: (_) => widget.onDismissed(),
+      child: ColoredBox(
+        color: Colors.black.withValues(alpha: widget.isWhite ? .08 : .18),
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: NomoPageHeader.contentTopInset(context) + 18,
+              bottom: _feedBottomPageInset + 88,
+            ),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: panelBackground,
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(color: borderColor),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: .18),
+                      blurRadius: 28,
+                      offset: const Offset(0, 14),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, child) {
+                          final lift =
+                              -10 *
+                              Curves.easeInOut.transform(_controller.value);
+                          return Transform.translate(
+                            offset: Offset(0, lift),
+                            child: child,
+                          );
+                        },
+                        child: const NomoPopIcon(
+                          icon: CupertinoIcons.arrow_up,
+                          color: Color(0xFF22D7C5),
+                          size: 54,
+                          iconSize: 28,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        '上にスワイプで次の投稿へ',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: titleColor,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -.5,
+                            ),
+                      ),
+                      const SizedBox(height: 7),
+                      Text(
+                        'フィードは1枚ずつめくって見られます。\n気になる投稿は下のボタンから反応できます。',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: subColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          height: 1.45,
+                          letterSpacing: -.15,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: widget.onDismissed,
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF22D7C5),
+                          textStyle: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        child: const Text('わかった'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -422,7 +587,7 @@ class _NomoSpeechBubble extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '上にスワイプ',
+                '上にスワイプで次へ',
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   color: textColor,
                   fontSize: 12,
