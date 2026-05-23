@@ -221,6 +221,10 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       _selectedCustomFilterId,
       _customFilters,
     );
+    final friends = friendsAsync.asData?.value;
+    final drinkableFriendCount = friends == null
+        ? null
+        : _drinkableFriendCount(friends);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -244,9 +248,10 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              NomoPageHeader(
-                title: 'フレンズ',
-                titleColor: _FriendsColors.lime,
+              _FriendsHeroHeader(
+                isWhite: isWhite,
+                friendCount: friends?.length,
+                drinkableCount: drinkableFriendCount,
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -268,7 +273,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               _FilterBar(
                 selected: _selectedFilter,
                 selectedCustomFilterId: _selectedCustomFilterId,
@@ -304,6 +309,176 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendsHeroHeader extends StatelessWidget {
+  const _FriendsHeroHeader({
+    required this.isWhite,
+    required this.trailing,
+    required this.friendCount,
+    required this.drinkableCount,
+  });
+
+  final bool isWhite;
+  final Widget trailing;
+  final int? friendCount;
+  final int? drinkableCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final friendLabel = friendCount == null
+        ? 'フレンズを読み込み中'
+        : '$friendCount人のフレンズ';
+    final drinkableLabel = drinkableCount == null
+        ? '今夜の予定を確認中'
+        : drinkableCount! > 0
+        ? '$drinkableCount人が飲めるかも'
+        : '誘えるフレンズを探そう';
+
+    return Container(
+      height: 174,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(34),
+        border: Border.all(
+          color: isWhite
+              ? Colors.white.withValues(alpha: .78)
+              : _FriendsColors.lime.withValues(alpha: .13),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _FriendsColors.lime.withValues(alpha: isWhite ? .16 : .10),
+            blurRadius: 24,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ExcludeSemantics(
+            child: Image.asset(
+              'assets/images/friends_header_scene.png',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFF03101E).withValues(alpha: .42),
+                  const Color(0xFF03101E).withValues(alpha: .08),
+                  const Color(0xFF03101E).withValues(alpha: .72),
+                ],
+                stops: const [0, .46, 1],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 16,
+            right: 12,
+            top: 14,
+            child: NomoPageHeader(
+              title: 'フレンズ',
+              titleColor: _FriendsColors.lime,
+              trailing: trailing,
+            ),
+          ),
+          Positioned(
+            left: 18,
+            right: 18,
+            bottom: 16,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '今夜もゆるっと集合',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .96),
+                    fontSize: 15,
+                    height: 1.15,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.3,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    _FriendsHeaderPill(
+                      icon: CupertinoIcons.person_2_fill,
+                      label: friendLabel,
+                    ),
+                    _FriendsHeaderPill(
+                      icon: CupertinoIcons.star_fill,
+                      label: drinkableLabel,
+                      emphasized: drinkableCount != null && drinkableCount! > 0,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendsHeaderPill extends StatelessWidget {
+  const _FriendsHeaderPill({
+    required this.icon,
+    required this.label,
+    this.emphasized = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool emphasized;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = emphasized ? const Color(0xFF04131F) : Colors.white;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: emphasized
+            ? _FriendsColors.lime.withValues(alpha: .92)
+            : Colors.white.withValues(alpha: .14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: emphasized
+              ? Colors.white.withValues(alpha: .24)
+              : Colors.white.withValues(alpha: .16),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: foreground),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                color: foreground,
+                fontSize: 11,
+                height: 1,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.2,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1527,6 +1702,12 @@ bool _isDrinkableStatus(_FriendStatus status) {
     '今日飲める' || 'ノンアルなら' || '未設定' => true,
     _ => false,
   };
+}
+
+int _drinkableFriendCount(List<NomoFriend> friends) {
+  return friends
+      .where((friend) => _isDrinkableStatus(_statusForFriend(friend, 0)))
+      .length;
 }
 
 class _FriendCard extends StatelessWidget {

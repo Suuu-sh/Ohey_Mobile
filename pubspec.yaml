@@ -89,6 +89,7 @@ flutter:
     - assets/images/opening_nomo.png
     - assets/images/backend_busy_nomo.png
     - assets/images/admin_nomo_icon.png
+    - assets/images/friends_header_scene.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
