@@ -41,6 +41,12 @@ class _FriendsList extends StatelessWidget {
         _FriendFilterType.all => true,
       };
     }).toList();
+    final recommendations = decorated.where(_isRecommendedFriend).toList()
+      ..sort(
+        (a, b) =>
+            _recommendationScoreFor(b).compareTo(_recommendationScoreFor(a)),
+      );
+    final hasRecommendations = recommendations.isNotEmpty;
 
     if (filtered.isEmpty) {
       return _EmptyFriendsState(
@@ -58,16 +64,20 @@ class _FriendsList extends StatelessWidget {
     return ListView.separated(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 116),
-      itemCount: filtered.length + 2,
+      itemCount: filtered.length + 1 + (hasRecommendations ? 1 : 0),
       separatorBuilder: (_, _) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
-        if (index == 0) {
-          return _TodayInviteSection(friends: decorated, onInvite: onInvite);
+        if (hasRecommendations && index == 0) {
+          return _TodayInviteSection(
+            friends: recommendations,
+            onInvite: onInvite,
+          );
         }
-        if (index == filtered.length + 1) {
+        final friendIndex = index - (hasRecommendations ? 1 : 0);
+        if (friendIndex == filtered.length) {
           return _AddFriendsPromoCard(onTap: onAddFriend);
         }
-        final item = filtered[index - 1];
+        final item = filtered[friendIndex];
         return _FriendCard(
           friend: item.friend,
           status: item.status,
@@ -88,10 +98,7 @@ class _TodayInviteSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final candidates = friends
-        .where((item) => item.status.enabled)
-        .take(8)
-        .toList();
+    final candidates = friends.take(8).toList();
     final blocked = friends
         .where((item) => !item.status.enabled)
         .take(2)
@@ -336,8 +343,20 @@ String _recommendationReasonFor(_DecoratedFriend item) {
   if (friend.monthlyCount == null || friend.monthlyCount == 0) {
     return 'おすすめの理由：まだ行ったことない';
   }
+  if (friend.monthlyCount == 1) {
+    return 'おすすめの理由：最近あまり行ってない';
+  }
   if (friend.isFavorite) {
     return 'おすすめの理由：お気に入り';
+  }
+  if (friend.isOnline == true) {
+    return 'おすすめの理由：いま反応しやすそう';
+  }
+  if (item.status.label == '今日飲める') {
+    return 'おすすめの理由：今日飲めそう';
+  }
+  if (item.status.label == 'ノンアルなら') {
+    return 'おすすめの理由：軽く誘いやすい';
   }
   final reasons = const [
     'おすすめの理由：1ヶ月行ってない',
@@ -350,6 +369,32 @@ String _recommendationReasonFor(_DecoratedFriend item) {
     (sum, value) => sum + value,
   );
   return reasons[seed % reasons.length];
+}
+
+bool _isRecommendedFriend(_DecoratedFriend item) {
+  if (!_isDrinkableStatus(item.status)) {
+    return false;
+  }
+  final friend = item.friend;
+  return friend.monthlyCount == null ||
+      friend.monthlyCount == 0 ||
+      friend.monthlyCount == 1 ||
+      friend.isFavorite ||
+      friend.isOnline == true ||
+      item.status.label == '今日飲める' ||
+      item.status.label == 'ノンアルなら';
+}
+
+int _recommendationScoreFor(_DecoratedFriend item) {
+  final friend = item.friend;
+  var score = 0;
+  if (friend.monthlyCount == null || friend.monthlyCount == 0) score += 90;
+  if (friend.monthlyCount == 1) score += 70;
+  if (friend.isFavorite) score += 45;
+  if (friend.isOnline == true) score += 35;
+  if (item.status.label == '今日飲める') score += 30;
+  if (item.status.label == 'ノンアルなら') score += 20;
+  return score;
 }
 
 class _AddFriendsPromoCard extends StatelessWidget {
