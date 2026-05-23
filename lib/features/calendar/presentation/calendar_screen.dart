@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/models/drink_log.dart';
+import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_page_header.dart';
@@ -11,6 +12,7 @@ import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_empty_state.dart';
+import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -24,11 +26,13 @@ class CalendarScreen extends ConsumerStatefulWidget {
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   late DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
+  late DateTime _selectedDay = _dateOnly(DateTime.now());
   double _monthDragOffset = 0;
 
   void _moveMonth(int offset) {
     setState(() {
       _month = DateTime(_month.year, _month.month + offset);
+      _selectedDay = DateTime(_month.year, _month.month, 1);
     });
   }
 
@@ -63,8 +67,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
     final userLogs = logs.where((log) => !log.isOfficial);
     final monthlyLogs = userLogs.where((log) => log.isInMonth(_month)).toList();
+    final todayReservations =
+        ref.watch(todayReservationsProvider).asData?.value ??
+        const <NomoDrinkInvite>[];
+    final selectedLogs = userLogs
+        .where((log) => _isSameDate(log.date, _selectedDay))
+        .toList(growable: false);
+    final selectedPlans = _isSameDate(_selectedDay, DateTime.now())
+        ? todayReservations
+        : const <NomoDrinkInvite>[];
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
-    final headerBackgroundHeight = NomoPageHeader.contentTopInset(context) + 36;
+    final headerBackgroundHeight =
+        NomoPageHeader.contentTopInset(context) + 100;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -97,7 +111,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 alignment: const Alignment(0.72, -1),
                 imageTopOffset: -86,
                 topShadeOpacity: .12,
-                fadeStartOpacity: .92,
+                fadeStartOpacity: .88,
               ),
             ),
             SafeArea(
@@ -121,6 +135,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         ),
                         const SizedBox(height: 18),
                         _MonthHeader(month: _month, onMove: _moveMonth),
+                        const SizedBox(height: 12),
+                        _NextDrinkPlanCard(
+                          reservations: todayReservations,
+                          isWhite: isWhite,
+                          onCreatePlan: widget.onCreatePlan,
+                        ),
                       ],
                     ),
                   ),
@@ -138,9 +158,24 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         ),
                         child: Column(
                           children: [
-                            _PlayfulMonthGrid(month: _month, logs: monthlyLogs),
+                            _PlayfulMonthGrid(
+                              month: _month,
+                              selectedDay: _selectedDay,
+                              logs: monthlyLogs,
+                              todayReservations: todayReservations,
+                              onSelectDay: (day) =>
+                                  setState(() => _selectedDay = day),
+                            ),
+                            const SizedBox(height: 14),
+                            _SelectedDayPanel(
+                              day: _selectedDay,
+                              logs: selectedLogs,
+                              plans: selectedPlans,
+                              isWhite: isWhite,
+                              onCreatePlan: widget.onCreatePlan,
+                            ),
                             if (monthlyLogs.isEmpty) ...[
-                              const SizedBox(height: 18),
+                              const SizedBox(height: 14),
                               _CalendarEmptyAction(onTap: widget.onCreatePlan),
                             ],
                           ],
@@ -274,10 +309,19 @@ class _CalendarEmptyAction extends StatelessWidget {
 }
 
 class _PlayfulMonthGrid extends StatelessWidget {
-  const _PlayfulMonthGrid({required this.month, required this.logs});
+  const _PlayfulMonthGrid({
+    required this.month,
+    required this.selectedDay,
+    required this.logs,
+    required this.todayReservations,
+    required this.onSelectDay,
+  });
 
   final DateTime month;
+  final DateTime selectedDay;
   final List<DrinkLog> logs;
+  final List<NomoDrinkInvite> todayReservations;
+  final ValueChanged<DateTime> onSelectDay;
 
   static const _markerColors = [
     Color(0xFFB7F51A),
@@ -355,13 +399,19 @@ class _PlayfulMonthGrid extends StatelessWidget {
                             : dayNumber - daysInMonth);
                   final day = DateTime(month.year, month.month, dayNumber);
                   final marker = inMonth ? markers[dayNumber] : null;
-                  final isToday = inMonth && _isSameDay(DateTime.now(), day);
+                  final isToday = inMonth && _isSameDate(DateTime.now(), day);
+                  final hasPlan =
+                      isToday && todayReservations.isNotEmpty;
                   return _DayTile(
                     day: displayDay,
+                    date: day,
                     inMonth: inMonth,
                     marker: marker,
                     isToday: isToday,
+                    isSelected: inMonth && _isSameDate(selectedDay, day),
+                    hasPlan: hasPlan,
                     column: index % 7,
+                    onTap: inMonth ? () => onSelectDay(day) : null,
                   );
                 },
               ),
@@ -383,24 +433,30 @@ class _PlayfulMonthGrid extends StatelessWidget {
     return markers;
   }
 
-  bool _isSameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
 }
 
 class _DayTile extends StatelessWidget {
   const _DayTile({
     required this.day,
+    required this.date,
     required this.inMonth,
     required this.marker,
     required this.isToday,
+    required this.isSelected,
+    required this.hasPlan,
     required this.column,
+    this.onTap,
   });
 
   final int day;
+  final DateTime date;
   final bool inMonth;
   final _Marker? marker;
   final bool isToday;
+  final bool isSelected;
+  final bool hasPlan;
   final int column;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -417,17 +473,26 @@ class _DayTile extends StatelessWidget {
         ? const Color(0xFF101820)
         : Colors.white;
 
-    return AnimatedContainer(
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
       duration: const Duration(milliseconds: 160),
       decoration: BoxDecoration(
-        color: isWhite
+        color: isSelected
+            ? (isWhite ? const Color(0xFFEAF8FF) : const Color(0xFF123047))
+            : isWhite
             ? Colors.white
             : const Color(0xFF122233).withValues(alpha: .82),
         borderRadius: BorderRadius.circular(13),
         border: Border.all(
-          color: isWhite
+          color: hasPlan
+              ? AppColors.primaryAction
+              : isSelected
+              ? const Color(0xFF54D7FF)
+              : isWhite
               ? const Color(0xFFDCE4EC)
               : Colors.white.withValues(alpha: .06),
+          width: isSelected || hasPlan ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -472,6 +537,17 @@ class _DayTile extends StatelessWidget {
               ),
             ),
           ),
+          if (hasPlan)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: marker == null ? 7 : 28,
+              child: NomoGeneratedIcon(
+                CupertinoIcons.calendar_badge_plus,
+                color: AppColors.primaryAction,
+                size: 22,
+              ),
+            ),
           if (marker != null) ...[
             Positioned(
               left: 0,
@@ -498,6 +574,7 @@ class _DayTile extends StatelessWidget {
           ],
         ],
       ),
+      ),
     );
   }
 }
@@ -507,3 +584,9 @@ class _Marker {
 
   final Color accent;
 }
+
+
+bool _isSameDate(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
+DateTime _dateOnly(DateTime value) => DateTime(value.year, value.month, value.day);
