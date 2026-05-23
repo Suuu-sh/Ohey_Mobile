@@ -60,7 +60,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final userLogs = logs.where((log) => !log.isOfficial);
     final monthlyLogs = userLogs.where((log) => log.isInMonth(_month)).toList();
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
-    final headerBackgroundHeight = NomoPageHeader.sceneBackdropHeight(context);
+    final headerBackgroundHeight = NomoPageHeader.contentTopInset(context);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -90,7 +90,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     ? Colors.white
                     : AppColors.darkBackgroundBottom,
                 accentColor: const Color(0xFF20B9FF),
-                imageTopOffset: -54,
+                imageTopOffset: -86,
                 topShadeOpacity: .12,
                 fadeStartOpacity: .92,
               ),
