@@ -718,62 +718,80 @@ class _PreviewPhotoCaptionEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(minHeight: 48),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-        color: Colors.black.withValues(alpha: .46),
-        alignment: Alignment.center,
-        child: TextField(
-          controller: controller,
-          onChanged: onChanged,
-          keyboardType: TextInputType.text,
-          textInputAction: TextInputAction.done,
-          maxLines: 1,
-          textAlign: TextAlign.center,
-          textAlignVertical: TextAlignVertical.center,
-          cursorColor: _AddLogColors.lime,
-          decoration: InputDecoration(
-            isDense: true,
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            filled: false,
-            fillColor: Colors.transparent,
-            contentPadding: EdgeInsets.zero,
-            hintText: hint,
-            hintStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.white.withValues(alpha: .76),
-              fontSize: 23,
-              fontWeight: FontWeight.w900,
-              height: 1.05,
-              letterSpacing: -.65,
-              shadows: const [
-                Shadow(
-                  color: Colors.black87,
-                  blurRadius: 10,
-                  offset: Offset(0, 2),
+    const bandHeight = 52.0;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final top = constraints.maxHeight > bandHeight
+            ? (constraints.maxHeight - bandHeight) / 2
+            : 0.0;
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned(
+              left: 0,
+              right: 0,
+              top: top,
+              height: bandHeight,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                color: Colors.black.withValues(alpha: .46),
+                alignment: Alignment.center,
+                child: TextField(
+                  controller: controller,
+                  onChanged: onChanged,
+                  keyboardType: TextInputType.text,
+                  textInputAction: TextInputAction.done,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                  textAlignVertical: TextAlignVertical.center,
+                  cursorColor: _AddLogColors.lime,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    filled: false,
+                    fillColor: Colors.transparent,
+                    contentPadding: EdgeInsets.zero,
+                    hintText: hint,
+                    hintStyle: Theme.of(context).textTheme.headlineSmall
+                        ?.copyWith(
+                          color: Colors.white.withValues(alpha: .76),
+                          fontSize: 23,
+                          fontWeight: FontWeight.w900,
+                          height: 1.05,
+                          letterSpacing: -.65,
+                          shadows: const [
+                            Shadow(
+                              color: Colors.black87,
+                              blurRadius: 10,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                  ),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontSize: 23,
+                    fontWeight: FontWeight.w900,
+                    height: 1.05,
+                    letterSpacing: -.65,
+                    shadows: const [
+                      Shadow(
+                        color: Colors.black87,
+                        blurRadius: 10,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ),
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            color: Colors.white,
-            fontSize: 23,
-            fontWeight: FontWeight.w900,
-            height: 1.05,
-            letterSpacing: -.65,
-            shadows: const [
-              Shadow(
-                color: Colors.black87,
-                blurRadius: 10,
-                offset: Offset(0, 2),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
