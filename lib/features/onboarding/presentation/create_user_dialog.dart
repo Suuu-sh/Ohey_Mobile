@@ -852,6 +852,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
           .signInWithOAuth(
             provider,
             redirectTo: SupabaseConfig.authRedirectUrl,
+            scopes: _oauthScopes(provider),
           );
       if (!mounted) return;
       setState(() {
@@ -1384,6 +1385,17 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     if (result != null && mounted) {
       setState(() => _avatar = result);
     }
+  }
+}
+
+String _oauthScopes(OAuthProvider provider) {
+  switch (provider) {
+    case OAuthProvider.apple:
+      return 'name email';
+    case OAuthProvider.google:
+      return 'email profile';
+    default:
+      return '';
   }
 }
 
