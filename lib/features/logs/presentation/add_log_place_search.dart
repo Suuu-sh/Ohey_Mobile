@@ -1,16 +1,15 @@
 part of 'add_log_screen.dart';
 
-class _PlaceSearchScreen extends StatefulWidget {
+class _PlaceSearchScreen extends ConsumerStatefulWidget {
   const _PlaceSearchScreen({required this.initialQuery});
 
   final String initialQuery;
 
   @override
-  State<_PlaceSearchScreen> createState() => _PlaceSearchScreenState();
+  ConsumerState<_PlaceSearchScreen> createState() => _PlaceSearchScreenState();
 }
 
-class _PlaceSearchScreenState extends State<_PlaceSearchScreen> {
-  final _service = const NomoPlaceSearchService();
+class _PlaceSearchScreenState extends ConsumerState<_PlaceSearchScreen> {
   late final TextEditingController _queryController;
   Timer? _debounce;
   List<NomoPlaceSearchResult> _places = const [];
@@ -46,7 +45,9 @@ class _PlaceSearchScreenState extends State<_PlaceSearchScreen> {
       _errorMessage = null;
     });
     try {
-      final places = await _service.searchNearby(query: query);
+      final places = await ref
+          .read(nomoPlaceSearchServiceProvider)
+          .searchNearby(query: query);
       if (!mounted || generation != _searchGeneration) return;
       setState(() {
         _places = places;

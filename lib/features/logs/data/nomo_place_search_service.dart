@@ -1,4 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+
+final nomoPlaceSearchServiceProvider = Provider<NomoPlaceSearchService>((ref) {
+  return const NomoPlaceSearchService();
+});
 
 class NomoPlaceSearchResult {
   const NomoPlaceSearchResult({

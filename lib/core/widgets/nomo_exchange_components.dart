@@ -6,6 +6,10 @@ import '../models/nomo_avatar.dart';
 import 'nomo_avatar.dart';
 import 'nomo_pop_icon.dart';
 
+/// QR exchange display used by friend/profile exchange flows.
+///
+/// Keep this scoped to QR identity exchange; use generic cards or
+/// [NomoActionTile] for non-exchange settings/actions.
 class NomoQrDisplayCard extends StatelessWidget {
   const NomoQrDisplayCard({
     super.key,
@@ -123,6 +127,10 @@ class NomoQrDisplayCard extends StatelessWidget {
   }
 }
 
+/// Action card for the Nomo friend-exchange flow.
+///
+/// This is intentionally more branded than [NomoActionTile], which remains the
+/// generic bottom-sheet/action-list tile.
 class NomoExchangeActionCard extends StatelessWidget {
   const NomoExchangeActionCard({
     super.key,
@@ -187,6 +195,10 @@ class NomoExchangeActionCard extends StatelessWidget {
   }
 }
 
+/// Bottom sheet for showing a found profile and a primary relationship action.
+///
+/// Use this for friend/profile search results; use feature-specific sheets for
+/// complex forms or multi-step actions.
 class NomoProfileResultSheet extends StatelessWidget {
   const NomoProfileResultSheet({
     super.key,

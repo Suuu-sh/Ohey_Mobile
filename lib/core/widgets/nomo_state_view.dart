@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+/// Compact loading/error/empty state block for panels and list sections.
+///
+/// Prefer [NomoEmptyState] for full-screen or illustration-rich empty pages.
 class NomoStateView extends StatelessWidget {
   const NomoStateView.loading({
     super.key,
