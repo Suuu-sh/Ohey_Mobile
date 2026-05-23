@@ -51,8 +51,10 @@ class NomoPushNotificationService {
         unawaited(_registerCurrentToken());
       });
     } on Object catch (error, stackTrace) {
-      debugPrint('Nomo push setup skipped: $error');
-      debugPrintStack(stackTrace: stackTrace);
+      if (kDebugMode) {
+        debugPrint('Nomo push setup skipped.');
+        debugPrintStack(stackTrace: stackTrace);
+      }
     }
   }
 
