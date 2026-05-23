@@ -11,6 +11,55 @@ extension _AddLogScreenLayout on _AddLogScreenState {
             .where((friend) => _selectedFriendIds.contains(friend.id))
             .toList(growable: false) ??
         const <NomoFriend>[];
+    final friendEditor = _FriendSelectCard(
+      search: _InputBox(
+        icon: CupertinoIcons.search,
+        iconColor: _AddLogColors.searchIcon,
+        hint: '誰と？（任意）',
+        controller: _friendSearchController,
+        maxLines: 1,
+        borderless: true,
+        onChanged: (value) => setState(() => _friendSearchQuery = value),
+        suffix: _friendSearchQuery.isEmpty
+            ? null
+            : IconButton(
+                visualDensity: VisualDensity.compact,
+                onPressed: () => setState(() {
+                  _friendSearchController.clear();
+                  _friendSearchQuery = '';
+                }),
+                icon: const NomoGeneratedIcon(
+                  CupertinoIcons.xmark_circle_fill,
+                  color: _AddLogColors.clearIcon,
+                ),
+              ),
+      ),
+      chips: SizedBox(
+        height: 58,
+        child: friendsAsync.when(
+          data: (friends) => _FriendChips(
+            friends: _filteredFriends(friends),
+            selectedIds: _selectedFriendIds,
+            onChanged: _toggleFriend,
+            emptyMessage: _friendSearchQuery.trim().isEmpty
+                ? 'まだフレンズがいません'
+                : '該当するフレンズがいません',
+          ),
+          loading: () => const _LoadingBox(compact: true),
+          error: (error, stackTrace) =>
+              const _ErrorBox(message: '読み込めなかったよ。あとでもう一度試してね', compact: true),
+        ),
+      ),
+    );
+    final placeEditor = _InputBox(
+      icon: CupertinoIcons.location_solid,
+      iconColor: _AddLogColors.placeIcon,
+      hint: 'どこで？（任意）',
+      controller: _placeController,
+      maxLines: 1,
+      onChanged: (_) => setState(() {}),
+      suffix: _PlaceSearchButton(onTap: _openPlaceSearch),
+    );
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -39,6 +88,8 @@ extension _AddLogScreenLayout on _AddLogScreenState {
                         place: _placeController.text,
                         date: _selectedDate,
                         friends: selectedFriends,
+                        friendEditor: friendEditor,
+                        placeEditor: placeEditor,
                         onEditDateTime: _pickDateTime,
                         onMemoChanged: (_) => setState(() {}),
                         onRetake: _openNomoCamera,
@@ -74,65 +125,17 @@ extension _AddLogScreenLayout on _AddLogScreenState {
                       ),
                       const SizedBox(height: 14),
                     ],
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      child: _FriendSelectCard(
-                        search: _InputBox(
-                          icon: CupertinoIcons.search,
-                          iconColor: _AddLogColors.searchIcon,
-                          hint: '誰と？（任意）',
-                          controller: _friendSearchController,
-                          maxLines: 1,
-                          borderless: true,
-                          onChanged: (value) =>
-                              setState(() => _friendSearchQuery = value),
-                          suffix: _friendSearchQuery.isEmpty
-                              ? null
-                              : IconButton(
-                                  visualDensity: VisualDensity.compact,
-                                  onPressed: () => setState(() {
-                                    _friendSearchController.clear();
-                                    _friendSearchQuery = '';
-                                  }),
-                                  icon: const NomoGeneratedIcon(
-                                    CupertinoIcons.xmark_circle_fill,
-                                    color: _AddLogColors.clearIcon,
-                                  ),
-                                ),
-                        ),
-                        chips: SizedBox(
-                          height: 58,
-                          child: friendsAsync.when(
-                            data: (friends) => _FriendChips(
-                              friends: _filteredFriends(friends),
-                              selectedIds: _selectedFriendIds,
-                              onChanged: _toggleFriend,
-                              emptyMessage: _friendSearchQuery.trim().isEmpty
-                                  ? 'まだフレンズがいません'
-                                  : '該当するフレンズがいません',
-                            ),
-                            loading: () => const _LoadingBox(compact: true),
-                            error: (error, stackTrace) => const _ErrorBox(
-                              message: '読み込めなかったよ。あとでもう一度試してね',
-                              compact: true,
-                            ),
-                          ),
-                        ),
+                    if (!_hasPhoto) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        child: friendEditor,
                       ),
-                    ),
-                    const SizedBox(height: 14),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      child: _InputBox(
-                        icon: CupertinoIcons.location_solid,
-                        iconColor: _AddLogColors.placeIcon,
-                        hint: 'どこで？（任意）',
-                        controller: _placeController,
-                        maxLines: 1,
-                        onChanged: (_) => setState(() {}),
-                        suffix: _PlaceSearchButton(onTap: _openPlaceSearch),
+                      const SizedBox(height: 14),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        child: placeEditor,
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

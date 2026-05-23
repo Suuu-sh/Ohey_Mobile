@@ -75,6 +75,8 @@ class _PostPreviewCard extends StatelessWidget {
     required this.place,
     required this.date,
     required this.friends,
+    required this.friendEditor,
+    required this.placeEditor,
     required this.onEditDateTime,
     required this.onMemoChanged,
     required this.onRetake,
@@ -87,6 +89,8 @@ class _PostPreviewCard extends StatelessWidget {
   final String place;
   final DateTime date;
   final List<NomoFriend> friends;
+  final Widget friendEditor;
+  final Widget placeEditor;
   final VoidCallback onEditDateTime;
   final ValueChanged<String> onMemoChanged;
   final VoidCallback onRetake;
@@ -178,6 +182,11 @@ class _PostPreviewCard extends StatelessWidget {
                 ),
               ),
               _PreviewFooter(friends: friends, isWhite: isWhite),
+              _PreviewInlineEditors(
+                friendEditor: friendEditor,
+                placeEditor: placeEditor,
+                isWhite: isWhite,
+              ),
             ],
           ),
         ),
@@ -472,6 +481,39 @@ class _PreviewFooter extends StatelessWidget {
       ),
     );
   }
+}
+
+class _PreviewInlineEditors extends StatelessWidget {
+  const _PreviewInlineEditors({
+    required this.friendEditor,
+    required this.placeEditor,
+    required this.isWhite,
+  });
+
+  final Widget friendEditor;
+  final Widget placeEditor;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      border: Border(
+        top: BorderSide(
+          color: isWhite
+              ? const Color(0xFFE3EAF3)
+              : Colors.white.withValues(alpha: .08),
+          width: .8,
+        ),
+      ),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [friendEditor, const SizedBox(height: 10), placeEditor],
+      ),
+    ),
+  );
 }
 
 class _PreviewFooterAction extends StatelessWidget {
