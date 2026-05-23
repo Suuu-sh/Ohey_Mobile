@@ -23,15 +23,17 @@ class NomoUserController extends Notifier<NomoUser?> {
 
     Map<String, dynamic> row;
     try {
-      row = _asMap(await client.get('/v1/me/profile'));
+      row = await client.getRow('/v1/me/profile');
     } on BackendApiException catch (error) {
       if (error.statusCode == 404) return false;
       rethrow;
     }
 
-    final statusRow = _firstMapOrNull(
-      await client.get('/v1/daily-status', query: {'date': _todayIsoDate()}),
+    final statusRows = await client.getRows(
+      '/v1/daily-status',
+      query: {'date': _todayIsoDate()},
     );
+    final statusRow = statusRows.isEmpty ? null : statusRows.first;
 
     state = NomoUser(
       name: (row['display_name'] as String?)?.trim().isNotEmpty == true
@@ -182,20 +184,4 @@ String _todayIsoDate() {
 String _defaultUserId(String authUserId) {
   final compact = authUserId.replaceAll('-', '');
   return 'nomo_${compact.substring(0, compact.length < 12 ? compact.length : 12)}';
-}
-
-Map<String, dynamic> _asMap(Object? value) {
-  if (value is Map) return Map<String, dynamic>.from(value);
-  if (value is List && value.isNotEmpty && value.first is Map) {
-    return Map<String, dynamic>.from(value.first as Map);
-  }
-  throw const FormatException('プロフィールデータの形式が不正です。');
-}
-
-Map<String, dynamic>? _firstMapOrNull(Object? value) {
-  if (value is Map) return Map<String, dynamic>.from(value);
-  if (value is List && value.isNotEmpty && value.first is Map) {
-    return Map<String, dynamic>.from(value.first as Map);
-  }
-  return null;
 }

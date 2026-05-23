@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/optimistic_update.dart';
 import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_friend.dart';
 import '../data/drink_log_repository.dart';
@@ -34,28 +35,31 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
       likedByMe: nextLiked,
       likeCount: (current.likeCount + (nextLiked ? 1 : -1)).clamp(0, 1 << 31),
     );
-    state = AsyncValue.data([
-      for (var i = 0; i < previous.length; i++)
-        i == index ? optimistic : previous[i],
-    ]);
-
     try {
-      final likeState = await ref
-          .read(drinkLogRepositoryProvider)
-          .setLike(logId, liked: nextLiked);
-      final latest = state.asData?.value ?? previous;
-      state = AsyncValue.data([
-        for (final log in latest)
-          if (log.id == logId)
-            log.copyWith(
-              likeCount: likeState.likeCount,
-              likedByMe: likeState.likedByMe,
-            )
-          else
-            log,
-      ]);
+      await runOptimistic<DrinkLogLikeState>(
+        apply: () => state = AsyncValue.data([
+          for (var i = 0; i < previous.length; i++)
+            i == index ? optimistic : previous[i],
+        ]),
+        rollback: () => state = AsyncValue.data(previous),
+        commit: () => ref
+            .read(drinkLogRepositoryProvider)
+            .setLike(logId, liked: nextLiked),
+        confirm: (likeState) {
+          final latest = state.asData?.value ?? previous;
+          state = AsyncValue.data([
+            for (final log in latest)
+              if (log.id == logId)
+                log.copyWith(
+                  likeCount: likeState.likeCount,
+                  likedByMe: likeState.likedByMe,
+                )
+              else
+                log,
+          ]);
+        },
+      );
     } catch (error, stackTrace) {
-      state = AsyncValue.data(previous);
       Error.throwWithStackTrace(error, stackTrace);
     }
   }
@@ -116,9 +120,13 @@ class FriendsController {
     required String friendId,
     required bool isFavorite,
   }) async {
-    await _ref
-        .read(drinkLogRepositoryProvider)
-        .setFriendFavorite(friendId, isFavorite: isFavorite);
-    _ref.invalidate(friendsProvider);
+    await runOptimistic<void>(
+      apply: () => _ref.invalidate(friendsProvider),
+      rollback: () => _ref.invalidate(friendsProvider),
+      commit: () => _ref
+          .read(drinkLogRepositoryProvider)
+          .setFriendFavorite(friendId, isFavorite: isFavorite),
+      confirm: (_) => _ref.invalidate(friendsProvider),
+    );
   }
 }

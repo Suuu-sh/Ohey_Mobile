@@ -225,10 +225,9 @@ Future<_FriendRelationshipStatus> _friendRelationshipStatus(
   WidgetRef ref,
   String friendId,
 ) async {
-  final data = await ref
+  final row = await ref
       .read(backendApiClientProvider)
-      .get('/v1/friend-requests/status', query: {'friend_id': friendId});
-  final row = data is Map ? Map<String, dynamic>.from(data) : const {};
+      .getRow('/v1/friend-requests/status', query: {'friend_id': friendId});
   final requestState = switch (row['request_state'] as String?) {
     'outgoing' => _FriendRequestState.outgoing,
     'incoming' => _FriendRequestState.incoming,
@@ -380,14 +379,12 @@ Future<void> showMyQrDialog(
     }
 
     try {
-      final row = await client.get(
+      final row = await client.getRow(
         '/v1/profiles/by-user-id/${Uri.encodeComponent(query)}',
       );
       if (!dialogContext.mounted) return;
 
-      final profile = _NomoSearchProfile.fromRow(
-        Map<String, dynamic>.from(row),
-      );
+      final profile = _NomoSearchProfile.fromRow(row);
       if (profile.id == currentUserId) {
         NomoToast.show(dialogContext, '自分自身は追加できません');
         return;

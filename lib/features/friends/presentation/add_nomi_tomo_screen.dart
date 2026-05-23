@@ -134,10 +134,10 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
     final exactUserId = userId.trim();
     if (exactUserId.isEmpty) return null;
     try {
-      final row = await client.get(
+      final row = await client.getRow(
         '/v1/profiles/by-user-id/${Uri.encodeComponent(exactUserId)}',
       );
-      return _FriendProfile.fromRow(Map<String, dynamic>.from(row as Map));
+      return _FriendProfile.fromRow(row);
     } on BackendApiException catch (error) {
       if (error.statusCode == 404) return null;
       rethrow;

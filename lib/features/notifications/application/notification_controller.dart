@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/optimistic_update.dart';
+
 import 'os_notification_service.dart';
 import '../data/notification_repository.dart';
 
@@ -28,41 +30,73 @@ class NotificationController extends AsyncNotifier<List<NomoNotification>> {
   Future<void> markAllRead() async {
     final current = state.asData?.value ?? const <NomoNotification>[];
     if (!current.any((notification) => notification.isUnread)) return;
-    await ref.read(notificationRepositoryProvider).markAllRead();
-    ref.invalidateSelf();
+    await runOptimistic<void>(
+      apply: () => state = AsyncValue.data([
+        for (final notification in current) notification.markRead(),
+      ]),
+      rollback: () => state = AsyncValue.data(current),
+      commit: () => ref.read(notificationRepositoryProvider).markAllRead(),
+      confirm: (_) => ref.invalidateSelf(),
+    );
   }
 
   Future<void> acceptFriendRequest(String friendRequestId) async {
-    await ref
-        .read(notificationRepositoryProvider)
-        .updateFriendRequest(
-          friendRequestId: friendRequestId,
-          status: 'accepted',
-        );
-    ref.invalidateSelf();
+    await _respondToNotification(
+      id: friendRequestId,
+      update: () => ref
+          .read(notificationRepositoryProvider)
+          .updateFriendRequest(
+            friendRequestId: friendRequestId,
+            status: 'accepted',
+          ),
+    );
   }
 
   Future<void> rejectFriendRequest(String friendRequestId) async {
-    await ref
-        .read(notificationRepositoryProvider)
-        .updateFriendRequest(
-          friendRequestId: friendRequestId,
-          status: 'rejected',
-        );
-    ref.invalidateSelf();
+    await _respondToNotification(
+      id: friendRequestId,
+      update: () => ref
+          .read(notificationRepositoryProvider)
+          .updateFriendRequest(
+            friendRequestId: friendRequestId,
+            status: 'rejected',
+          ),
+    );
   }
 
   Future<void> acceptDrinkInvite(String drinkInviteId) async {
-    await ref
-        .read(notificationRepositoryProvider)
-        .updateDrinkInvite(drinkInviteId: drinkInviteId, status: 'accepted');
-    ref.invalidateSelf();
+    await _respondToNotification(
+      id: drinkInviteId,
+      update: () => ref
+          .read(notificationRepositoryProvider)
+          .updateDrinkInvite(drinkInviteId: drinkInviteId, status: 'accepted'),
+    );
   }
 
   Future<void> rejectDrinkInvite(String drinkInviteId) async {
-    await ref
-        .read(notificationRepositoryProvider)
-        .updateDrinkInvite(drinkInviteId: drinkInviteId, status: 'rejected');
-    ref.invalidateSelf();
+    await _respondToNotification(
+      id: drinkInviteId,
+      update: () => ref
+          .read(notificationRepositoryProvider)
+          .updateDrinkInvite(drinkInviteId: drinkInviteId, status: 'rejected'),
+    );
+  }
+
+  Future<void> _respondToNotification({
+    required String id,
+    required Future<void> Function() update,
+  }) async {
+    final previous = state.asData?.value ?? const <NomoNotification>[];
+    await runOptimistic<void>(
+      apply: () => state = AsyncValue.data([
+        for (final notification in previous)
+          if (notification.friendRequestId != id &&
+              notification.drinkInviteId != id)
+            notification,
+      ]),
+      rollback: () => state = AsyncValue.data(previous),
+      commit: update,
+      confirm: (_) => ref.invalidateSelf(),
+    );
   }
 }

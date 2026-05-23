@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/optimistic_update.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_drink_invite.dart';
@@ -26,22 +27,41 @@ class DrinkInviteController {
   final Ref _ref;
 
   Future<void> sendTodayInvite(String friendId) async {
-    await _ref.read(drinkInviteRepositoryProvider).sendTodayInvite(friendId);
-    _invalidate();
+    await runOptimistic<void>(
+      apply: _invalidate,
+      rollback: _invalidate,
+      commit: () =>
+          _ref.read(drinkInviteRepositoryProvider).sendTodayInvite(friendId),
+      confirm: (_) => _invalidate(),
+    );
   }
 
   Future<void> accept(String inviteId) async {
-    await _ref
-        .read(drinkInviteRepositoryProvider)
-        .respond(inviteId: inviteId, status: NomoDrinkInviteStatus.accepted);
-    _invalidate();
+    await _respondOptimistically(
+      inviteId: inviteId,
+      status: NomoDrinkInviteStatus.accepted,
+    );
   }
 
   Future<void> reject(String inviteId) async {
-    await _ref
-        .read(drinkInviteRepositoryProvider)
-        .respond(inviteId: inviteId, status: NomoDrinkInviteStatus.rejected);
-    _invalidate();
+    await _respondOptimistically(
+      inviteId: inviteId,
+      status: NomoDrinkInviteStatus.rejected,
+    );
+  }
+
+  Future<void> _respondOptimistically({
+    required String inviteId,
+    required NomoDrinkInviteStatus status,
+  }) async {
+    await runOptimistic<void>(
+      apply: _invalidate,
+      rollback: _invalidate,
+      commit: () => _ref
+          .read(drinkInviteRepositoryProvider)
+          .respond(inviteId: inviteId, status: status),
+      confirm: (_) => _invalidate(),
+    );
   }
 
   void _invalidate() {
@@ -88,29 +108,21 @@ class DrinkInviteRepository {
   Future<List<NomoDrinkInvite>> fetchTodayReservations() async {
     final userId = _userId;
     if (userId == null) return const [];
-    final rows = await _client.get(
+    final rows = await _client.getRows(
       '/v1/drink-invites/today-reservations',
       query: {'date': _todayIsoDate()},
     );
-    return _inviteRows(rows);
+    return rows.map(_inviteFromRow).toList(growable: false);
   }
 
   Future<List<NomoDrinkInvite>> fetchIncomingPendingInvites() async {
     final userId = _userId;
     if (userId == null) return const [];
-    final rows = await _client.get(
+    final rows = await _client.getRows(
       '/v1/drink-invites/incoming-pending',
       query: {'date': _todayIsoDate()},
     );
-    return _inviteRows(rows);
-  }
-
-  List<NomoDrinkInvite> _inviteRows(Object? value) {
-    final rows = value is List ? value : const <Object?>[];
-    return rows
-        .whereType<Map>()
-        .map((row) => _inviteFromRow(Map<String, dynamic>.from(row)))
-        .toList(growable: false);
+    return rows.map(_inviteFromRow).toList(growable: false);
   }
 
   NomoDrinkInvite _inviteFromRow(Map<String, dynamic> row) {
