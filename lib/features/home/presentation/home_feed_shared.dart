@@ -83,8 +83,8 @@ class _FeedShareDestinationSheet extends StatelessWidget {
             _FeedShareDestinationTile(
               icon: CupertinoIcons.square_arrow_up,
               color: AppColors.info,
-              title: 'その他で共有',
-              subtitle: '画像として共有する',
+              title: '他のアプリに共有',
+              subtitle: 'X・LINEなどで送る',
               onTap: () =>
                   Navigator.of(context).pop(_FeedShareDestination.other),
             ),
