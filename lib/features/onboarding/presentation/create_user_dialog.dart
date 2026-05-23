@@ -23,9 +23,14 @@ enum _OnboardingStep { intro, accountChoice, auth, profile }
 
 enum _RegistrationStep { email, password }
 
+enum _SocialAuthIntent { signup, login }
+
 const _authPink = AppColors.coral;
 const _authPinkShadow = Color(0xFFE05F83);
 const _authPinkInk = Color(0xFF2B1320);
+const _minPasswordLength = 6;
+const _emailPasswordRequirementMessage =
+    'メールアドレスと$_minPasswordLength文字以上のパスワードを入力してください。';
 
 class CreateUserDialog extends ConsumerStatefulWidget {
   const CreateUserDialog({super.key, this.startAtLogin = false});
@@ -412,7 +417,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   Widget _buildSignupStep(BuildContext context) {
     final isEmailStep = _registrationStep == _RegistrationStep.email;
     final canContinue = _emailController.text.trim().isNotEmpty && !_isBusy;
-    final canRegister = _passwordController.text.length >= 6 && !_isBusy;
+    final canRegister = _hasValidPassword(_passwordController.text) && !_isBusy;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -519,18 +524,11 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
               ],
               if (isEmailStep) ...[
                 const Spacer(),
-                _SocialLoginButton(
-                  label: 'GOOGLEで登録',
+                _SocialAuthButtons(
+                  intent: _SocialAuthIntent.signup,
                   height: socialHeight,
-                  mark: const _GoogleMark(),
-                  onTap: () => _startOAuthAuth(OAuthProvider.google, 'Google'),
-                ),
-                SizedBox(height: compact ? 10 : 14),
-                _SocialLoginButton(
-                  label: 'APPLEで登録',
-                  height: socialHeight,
-                  mark: const _AppleMark(),
-                  onTap: () => _startOAuthAuth(OAuthProvider.apple, 'Apple'),
+                  gap: compact ? 10 : 14,
+                  onTap: _startOAuthAuth,
                 ),
               ],
             ],
@@ -543,7 +541,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   Widget _buildPlainLogin(BuildContext context) {
     final isEmailStep = _loginStep == _RegistrationStep.email;
     final canContinue = _emailController.text.trim().isNotEmpty && !_isBusy;
-    final canSubmit = _passwordController.text.length >= 6 && !_isBusy;
+    final canSubmit = _hasValidPassword(_passwordController.text) && !_isBusy;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -659,18 +657,11 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                 ),
               ],
               const Spacer(),
-              _SocialLoginButton(
-                label: 'GOOGLEでログイン',
+              _SocialAuthButtons(
+                intent: _SocialAuthIntent.login,
                 height: socialHeight,
-                mark: const _GoogleMark(),
-                onTap: () => _startOAuthAuth(OAuthProvider.google, 'Google'),
-              ),
-              SizedBox(height: socialGap),
-              _SocialLoginButton(
-                label: 'APPLEでログイン',
-                height: socialHeight,
-                mark: const _AppleMark(),
-                onTap: () => _startOAuthAuth(OAuthProvider.apple, 'Apple'),
+                gap: socialGap,
+                onTap: _startOAuthAuth,
               ),
               SizedBox(height: termsGap),
               Text(
@@ -786,8 +777,8 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   void _goToSignupProfileStep() {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
-    if (email.isEmpty || password.length < 6) {
-      setState(() => _error = 'メールアドレスと6文字以上のパスワードを入力してください。');
+    if (email.isEmpty || !_hasValidPassword(password)) {
+      setState(() => _error = _emailPasswordRequirementMessage);
       return;
     }
     setState(() {
@@ -834,7 +825,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       setState(() => _error = _friendlyAuthError(e.message));
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = 'パスワード再設定メールを送信できませんでした: $e');
+      setState(() => _error = _friendlyUnexpectedAuthError(e));
     } finally {
       if (mounted) setState(() => _isBusy = false);
     }
@@ -865,7 +856,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     } on AuthException catch (e) {
       if (mounted) setState(() => _error = _friendlyAuthError(e.message));
     } catch (e) {
-      if (mounted) setState(() => _error = '$providerLabel認証を開始できませんでした: $e');
+      if (mounted) setState(() => _error = _friendlyUnexpectedAuthError(e));
     } finally {
       if (mounted) setState(() => _isBusy = false);
     }
@@ -1238,8 +1229,8 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       final supabase = ref.read(supabaseClientProvider);
       final email = _emailController.text.trim();
       final password = _passwordController.text;
-      if (email.isEmpty || password.length < 6) {
-        throw const AuthException('メールアドレスと6文字以上のパスワードを入力してください。');
+      if (email.isEmpty || !_hasValidPassword(password)) {
+        throw const AuthException(_emailPasswordRequirementMessage);
       }
 
       if (_isLogin) {
@@ -1291,8 +1282,8 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       if (supabase.auth.currentSession == null) {
         final email = _emailController.text.trim();
         final password = _passwordController.text;
-        if (email.isEmpty || password.length < 6) {
-          throw const AuthException('メールアドレスと6文字以上のパスワードを入力してください。');
+        if (email.isEmpty || !_hasValidPassword(password)) {
+          throw const AuthException(_emailPasswordRequirementMessage);
         }
         final res = await supabase.auth.signUp(
           email: email,
@@ -1441,6 +1432,9 @@ String _oauthScopes(OAuthProvider provider) {
       return '';
   }
 }
+
+bool _hasValidPassword(String password) =>
+    password.length >= _minPasswordLength;
 
 String? _displayNameFromOAuth(User user) {
   final metadata = user.userMetadata;
@@ -2724,6 +2718,43 @@ class _SocialLoginButton extends StatelessWidget {
         ),
       ],
     ),
+  );
+}
+
+class _SocialAuthButtons extends StatelessWidget {
+  const _SocialAuthButtons({
+    required this.intent,
+    required this.height,
+    required this.gap,
+    required this.onTap,
+  });
+
+  final _SocialAuthIntent intent;
+  final double height;
+  final double gap;
+  final Future<void> Function(OAuthProvider provider, String providerLabel)
+  onTap;
+
+  String get _actionLabel => intent == _SocialAuthIntent.signup ? '登録' : 'ログイン';
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      _SocialLoginButton(
+        label: 'GOOGLEで$_actionLabel',
+        height: height,
+        mark: const _GoogleMark(),
+        onTap: () => onTap(OAuthProvider.google, 'Google'),
+      ),
+      SizedBox(height: gap),
+      _SocialLoginButton(
+        label: 'APPLEで$_actionLabel',
+        height: height,
+        mark: const _AppleMark(),
+        onTap: () => onTap(OAuthProvider.apple, 'Apple'),
+      ),
+    ],
   );
 }
 

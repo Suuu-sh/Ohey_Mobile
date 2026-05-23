@@ -16,12 +16,17 @@ class NomoPageHeader extends StatelessWidget {
   static const double topPadding = 16;
   static const double horizontalPadding = 22;
   static const double bottomSpacing = 18;
+  static const double sceneBackdropBodyHeight = 178;
 
   static double contentTopInset(BuildContext context) {
     return MediaQuery.paddingOf(context).top +
         topPadding +
         height +
         bottomSpacing;
+  }
+
+  static double sceneBackdropHeight(BuildContext context) {
+    return MediaQuery.paddingOf(context).top + sceneBackdropBodyHeight;
   }
 
   final String title;

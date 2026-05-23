@@ -60,7 +60,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final userLogs = logs.where((log) => !log.isOfficial);
     final monthlyLogs = userLogs.where((log) => log.isInMonth(_month)).toList();
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
-    final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 178;
+    final headerBackgroundHeight = NomoPageHeader.sceneBackdropHeight(context);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(

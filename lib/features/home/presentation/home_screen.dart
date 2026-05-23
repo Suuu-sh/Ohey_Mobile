@@ -209,7 +209,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 double _feedHeaderScrollInset(BuildContext context) {
-  return NomoPageHeader.contentTopInset(context);
+  return NomoPageHeader.sceneBackdropHeight(context);
 }
 
 const _feedBottomPageInset = 124.0;
@@ -959,7 +959,7 @@ class _FeedHeaderOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.paddingOf(context).top + 178;
+    final height = NomoPageHeader.sceneBackdropHeight(context);
     final fadeColor = isWhite ? Colors.white : AppColors.darkBackgroundMiddle;
     return Positioned(
       left: 0,
