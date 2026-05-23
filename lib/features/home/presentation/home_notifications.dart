@@ -137,21 +137,11 @@ class _FeedNotificationsScreenState
                           accent: const Color(0xFFFF75B5),
                         )
                       else if ((notifications ?? const []).isEmpty)
-                        _FeedEmptyState(
-                          icon: CupertinoIcons.bell,
-                          isWhite: isWhite,
-                          title: 'まだお知らせはありません',
-                          message: 'フレンズの反応がここに届きます。',
-                        )
+                        _NotificationEmptyState(isWhite: isWhite)
                       else
-                        ...notifications!.map(
-                          (notification) => _NotificationTile(
-                            notification: notification,
-                            isWhite: isWhite,
-                            onTap: notification.canOpen
-                                ? () => _openNotification(notification)
-                                : null,
-                          ),
+                        ..._buildNotificationSections(
+                          notifications!,
+                          isWhite: isWhite,
                         ),
                     ],
                   ),
@@ -162,6 +152,60 @@ class _FeedNotificationsScreenState
         ),
       ),
     );
+  }
+
+  List<Widget> _buildNotificationSections(
+    List<_FeedNotification> notifications, {
+    required bool isWhite,
+  }) {
+    final actionItems = notifications
+        .where((notification) => notification.requiresAction)
+        .toList(growable: false);
+    final recentItems = notifications
+        .where((notification) => !notification.requiresAction)
+        .toList(growable: false);
+
+    return [
+      if (actionItems.isNotEmpty) ...[
+        _NotificationSectionHeader(
+          title: '対応が必要',
+          message: '飲み招待やフレンズ申請はここから返事できます',
+          count: actionItems.length,
+          accent: AppColors.primaryAction,
+          isWhite: isWhite,
+        ),
+        ...actionItems.map(
+          (notification) => _NotificationTile(
+            notification: notification,
+            isWhite: isWhite,
+            priority: true,
+            onTap: notification.canOpen
+                ? () => _openNotification(notification)
+                : null,
+          ),
+        ),
+        const SizedBox(height: 12),
+      ],
+      _NotificationSectionHeader(
+        title: '最近のお知らせ',
+        message: actionItems.isEmpty ? '新しい反応や予定がここに届きます' : 'いいね・公式通知・返信済みはこちら',
+        count: recentItems.length,
+        accent: AppColors.invite,
+        isWhite: isWhite,
+      ),
+      if (recentItems.isEmpty)
+        _NotificationSectionEmptyNote(isWhite: isWhite)
+      else
+        ...recentItems.map(
+          (notification) => _NotificationTile(
+            notification: notification,
+            isWhite: isWhite,
+            onTap: notification.canOpen
+                ? () => _openNotification(notification)
+                : null,
+          ),
+        ),
+    ];
   }
 
   Future<void> _openNotification(_FeedNotification notification) async {
@@ -243,27 +287,179 @@ class _FeedNotificationsScreenState
   }
 }
 
+class _NotificationSectionHeader extends StatelessWidget {
+  const _NotificationSectionHeader({
+    required this.title,
+    required this.message,
+    required this.count,
+    required this.accent,
+    required this.isWhite,
+  });
+
+  final String title;
+  final String message;
+  final int count;
+  final Color accent;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final titleColor = isWhite ? const Color(0xFF27313B) : Colors.white;
+    final messageColor = isWhite
+        ? const Color(0xFF778393)
+        : Colors.white.withValues(alpha: .58);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, 8, 2, 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: titleColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.35,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: isWhite ? .14 : .20),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        '$count',
+                        style: TextStyle(
+                          color: accent,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  message,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: messageColor,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationSectionEmptyNote extends StatelessWidget {
+  const _NotificationSectionEmptyNote({required this.isWhite});
+
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: isWhite
+          ? const Color(0xFFF3F7FA)
+          : Colors.white.withValues(alpha: .045),
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(
+        color: isWhite
+            ? const Color(0xFFE1E8F1)
+            : Colors.white.withValues(alpha: .08),
+      ),
+    ),
+    child: Text(
+      '対応が必要なお知らせはありません。招待や申請が届いたら上に表示されます。',
+      style: TextStyle(
+        color: isWhite
+            ? const Color(0xFF617281)
+            : Colors.white.withValues(alpha: .62),
+        fontSize: 12,
+        fontWeight: FontWeight.w800,
+        height: 1.35,
+      ),
+    ),
+  );
+}
+
+class _NotificationEmptyState extends StatelessWidget {
+  const _NotificationEmptyState({required this.isWhite});
+
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) => _FeedEmptyState(
+    icon: CupertinoIcons.bell,
+    isWhite: isWhite,
+    title: 'まだお知らせはありません',
+    message: 'フレンズを追加したり飲みログを残すと、反応や招待がここに届きます。',
+    action: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'まずはフレンズ追加か飲みログ作成から始めよう',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: isWhite
+                ? const Color(0xFF778393)
+                : Colors.white.withValues(alpha: .56),
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 class _NotificationTile extends StatelessWidget {
   const _NotificationTile({
     required this.notification,
     required this.isWhite,
+    this.priority = false,
     this.onTap,
   });
 
   final _FeedNotification notification;
   final bool isWhite;
+  final bool priority;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = isWhite
+    final resolved = notification.isResolvedAction;
+    final cardColor = priority
+        ? (isWhite ? const Color(0xFFFFF5F1) : const Color(0xFF2A1716))
+        : isWhite
         ? (notification.unread
               ? const Color(0xFFEBF5F5)
               : const Color(0xFFEEF3FA))
         : notification.unread
         ? _FeedColors.card.withValues(alpha: .86)
         : _FeedColors.card.withValues(alpha: .52);
-    final cardBorderColor = isWhite
+    final cardBorderColor = priority
+        ? notification.accent.withValues(alpha: isWhite ? .36 : .30)
+        : isWhite
         ? const Color(0xFFE1E8F1)
         : Colors.white.withValues(alpha: .11);
     final messageColor = isWhite
@@ -277,111 +473,125 @@ class _NotificationTile extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: _feedCardDecoration(radius: 22).copyWith(
         color: cardColor,
-        border: Border.all(color: cardBorderColor, width: 1.2),
+        border: Border.all(color: cardBorderColor, width: priority ? 1.5 : 1.2),
+        boxShadow: priority
+            ? [
+                BoxShadow(
+                  color: notification.accent.withValues(
+                    alpha: isWhite ? .14 : .20,
+                  ),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ]
+            : null,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          NomoPopIcon(
-            icon: notification.icon,
-            color: notification.accent,
-            size: 38,
-            iconSize: 21,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        notification.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+      child: Opacity(
+        opacity: resolved ? .62 : 1,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            NomoPopIcon(
+              icon: notification.icon,
+              color: notification.accent,
+              size: 38,
+              iconSize: 21,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          notification.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: titleColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      if (notification.unread)
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: _FeedColors.teal,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    notification.message,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: messageColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      height: 1.35,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        notification.timeAgo,
                         style: TextStyle(
-                          color: titleColor,
-                          fontSize: 13,
+                          color: timeColor,
+                          fontSize: 11,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                    ),
-                    if (notification.unread)
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: _FeedColors.teal,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  notification.message,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: messageColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      notification.timeAgo,
-                      style: TextStyle(
-                        color: timeColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    if (notification.actionLabel != null) ...[
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: notification.accent.withValues(
-                                alpha: isWhite ? .14 : .18,
+                      if (notification.actionLabel != null) ...[
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
                               ),
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(
+                              decoration: BoxDecoration(
                                 color: notification.accent.withValues(
-                                  alpha: isWhite ? .24 : .30,
+                                  alpha: isWhite ? .14 : .18,
+                                ),
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(
+                                  color: notification.accent.withValues(
+                                    alpha: isWhite ? .24 : .30,
+                                  ),
                                 ),
                               ),
-                            ),
-                            child: Text(
-                              notification.actionLabel!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: notification.accent,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900,
+                              child: Text(
+                                notification.actionLabel!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: notification.accent,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
 

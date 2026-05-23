@@ -326,6 +326,26 @@ class _FeedNotification {
     return false;
   }
 
+  bool get requiresAction {
+    if (kind == 'friend_request_received') {
+      return friendRequestStatus == null || friendRequestStatus == 'pending';
+    }
+    if (kind == 'drink_invite_received') {
+      return drinkInviteStatus == null || drinkInviteStatus == 'pending';
+    }
+    return false;
+  }
+
+  bool get isResolvedAction {
+    if (kind == 'friend_request_received') {
+      return friendRequestStatus != null && friendRequestStatus != 'pending';
+    }
+    if (kind == 'drink_invite_received') {
+      return drinkInviteStatus != null && drinkInviteStatus != 'pending';
+    }
+    return false;
+  }
+
   String? get actionLabel {
     if (kind == 'friend_request_received') {
       return switch (friendRequestStatus) {
