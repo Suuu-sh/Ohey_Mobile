@@ -23,7 +23,6 @@ import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
-import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_exchange_components.dart';
 import '../../admin/application/admin_controller.dart';
@@ -93,11 +92,7 @@ class ProfileScreen extends ConsumerWidget {
               right: 0,
               top: 0,
               height: headerBackgroundHeight,
-              child: NomoSceneHeaderBackdrop(
-                assetPath: 'assets/images/profile_header_scene.png',
-                fadeColor: topBackground,
-                accentColor: _ProfileColors.pink,
-              ),
+              child: ColoredBox(color: topBackground),
             ),
             SafeArea(
               bottom: false,
