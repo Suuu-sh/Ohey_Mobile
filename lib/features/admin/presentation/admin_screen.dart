@@ -10,6 +10,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../application/admin_controller.dart';
+import '../data/admin_repository.dart';
 
 part 'admin_header_panes.dart';
 part 'admin_cards.dart';

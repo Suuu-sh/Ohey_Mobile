@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../data/backend_api_client.dart';
+import '../data/user_repository.dart';
 import '../data/nomo_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
 import '../models/nomo_avatar.dart';
@@ -17,50 +17,16 @@ class NomoUserController extends Notifier<NomoUser?> {
   NomoUser? build() => null;
 
   Future<bool> loadFromBackendProfile() async {
-    final client = ref.read(backendApiClientProvider);
-    final userId = client.currentUserId;
-    if (userId == null || userId.isEmpty) return false;
-
-    Map<String, dynamic> row;
-    try {
-      row = await client.getRow('/v1/me/profile');
-    } on BackendApiException catch (error) {
-      if (error.statusCode == 404) return false;
-      rethrow;
-    }
-
-    final statusRows = await client.getRows(
-      '/v1/daily-status',
-      query: {'date': _todayIsoDate()},
-    );
-    final statusRow = statusRows.isEmpty ? null : statusRows.first;
-
-    state = NomoUser(
-      name: (row['display_name'] as String?)?.trim().isNotEmpty == true
-          ? row['display_name'] as String
-          : 'mi-mu',
-      userId: (row['user_id'] as String?) ?? _defaultUserId(userId),
-      gender: nomoGenderFromKey(row['gender'] as String?),
-      avatar: NomoAvatar.decode(row['avatar_url'] as String?),
-      dailyStatus: nomoDailyStatusFromKey(statusRow?['status'] as String?),
-      isPlus: (row['is_plus'] as bool?) ?? false,
-    );
+    final user = await ref
+        .read(userRepositoryProvider)
+        .fetchCurrentUserProfile();
+    if (user == null) return false;
+    state = user;
     return true;
   }
 
-  Future<String?> latestDisplayName(String? fallback) async {
-    final client = ref.read(backendApiClientProvider);
-    final authUserId = client.currentUserId;
-    if (authUserId == null || authUserId.isEmpty) return fallback;
-
-    try {
-      final row = await client.getRow('/v1/me/profile');
-      final displayName = (row['display_name'] as String?)?.trim();
-      if (displayName != null && displayName.isNotEmpty) return displayName;
-    } catch (_) {
-      // Re-login can still proceed even if refreshing the cached label fails.
-    }
-    return fallback;
+  Future<String?> latestDisplayName(String? fallback) {
+    return ref.read(userRepositoryProvider).latestDisplayName(fallback);
   }
 
   Future<void> createUser({
@@ -69,8 +35,8 @@ class NomoUserController extends Notifier<NomoUser?> {
     required NomoGender gender,
     NomoAvatar? avatar,
   }) async {
-    final client = ref.read(backendApiClientProvider);
-    final authUserId = client.currentUserId;
+    final repository = ref.read(userRepositoryProvider);
+    final authUserId = repository.currentUserId;
     if (authUserId == null || authUserId.isEmpty) {
       throw StateError('Login is required before creating a Nomo user.');
     }
@@ -80,7 +46,7 @@ class NomoUserController extends Notifier<NomoUser?> {
     if (trimmed.isEmpty) {
       throw ArgumentError.value(name, 'name', 'Profile name is required.');
     }
-    if (!_isValidUserId(normalizedUserId)) {
+    if (!isValidNomoUserId(normalizedUserId)) {
       throw ArgumentError.value(
         userId,
         'userId',
@@ -88,13 +54,12 @@ class NomoUserController extends Notifier<NomoUser?> {
       );
     }
     final profileAvatar = avatar;
-    await client.put('/v1/me/profile', {
-      'user_id': normalizedUserId,
-      'display_name': trimmed,
-      'gender': gender.key,
-      'character_key': 'avatar',
-      'avatar_url': profileAvatar?.encode() ?? '',
-    });
+    await repository.createProfile(
+      name: trimmed,
+      userId: normalizedUserId,
+      gender: gender,
+      avatar: profileAvatar,
+    );
 
     state = NomoUser(
       name: trimmed,
@@ -109,8 +74,8 @@ class NomoUserController extends Notifier<NomoUser?> {
     required String userId,
     NomoAvatar? avatar,
   }) async {
-    final client = ref.read(backendApiClientProvider);
-    final authUserId = client.currentUserId;
+    final repository = ref.read(userRepositoryProvider);
+    final authUserId = repository.currentUserId;
     if (authUserId == null || authUserId.isEmpty) {
       throw StateError('Login is required before updating a Nomo user.');
     }
@@ -120,7 +85,7 @@ class NomoUserController extends Notifier<NomoUser?> {
     if (trimmed.isEmpty) {
       throw ArgumentError.value(name, 'name', 'Profile name is required.');
     }
-    if (!_isValidUserId(normalizedUserId)) {
+    if (!isValidNomoUserId(normalizedUserId)) {
       throw ArgumentError.value(
         userId,
         'userId',
@@ -128,19 +93,18 @@ class NomoUserController extends Notifier<NomoUser?> {
       );
     }
     final profileAvatar = avatar;
-    await client.patch('/v1/me/profile', {
-      'user_id': normalizedUserId,
-      'display_name': trimmed,
-      'character_key': 'avatar',
-      'avatar_url': profileAvatar?.encode() ?? '',
-    });
+    await repository.updateProfile(
+      name: trimmed,
+      userId: normalizedUserId,
+      avatar: profileAvatar,
+    );
 
     state =
         (state ??
                 NomoUser(
                   name: trimmed,
                   avatar: profileAvatar,
-                  userId: _defaultUserId(authUserId),
+                  userId: defaultNomoUserId(authUserId),
                 ))
             .copyWith(
               name: trimmed,
@@ -150,19 +114,17 @@ class NomoUserController extends Notifier<NomoUser?> {
   }
 
   Future<void> updateDailyStatus(NomoDailyStatus status) async {
-    final client = ref.read(backendApiClientProvider);
-    final authUserId = client.currentUserId;
+    final repository = ref.read(userRepositoryProvider);
+    final authUserId = repository.currentUserId;
     if (authUserId == null || authUserId.isEmpty) {
       throw StateError('Login is required before updating daily status.');
     }
 
-    await client.put('/v1/daily-status', {
-      'status_date': _todayIsoDate(),
-      'status': status.key,
-    });
+    await repository.updateDailyStatus(status);
 
     state =
-        (state ?? NomoUser(name: 'mi-mu', userId: _defaultUserId(authUserId)))
+        (state ??
+                NomoUser(name: 'mi-mu', userId: defaultNomoUserId(authUserId)))
             .copyWith(dailyStatus: status);
   }
 
@@ -186,17 +148,4 @@ class NomoUserController extends Notifier<NomoUser?> {
       state = null;
     }
   }
-}
-
-bool _isValidUserId(String userId) =>
-    RegExp(r'^[a-zA-Z0-9_]{3,24}$').hasMatch(userId);
-
-String _todayIsoDate() {
-  final now = DateTime.now();
-  return '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-}
-
-String _defaultUserId(String authUserId) {
-  final compact = authUserId.replaceAll('-', '');
-  return 'nomo_${compact.substring(0, compact.length < 12 ? compact.length : 12)}';
 }
