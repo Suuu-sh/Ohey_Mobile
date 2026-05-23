@@ -131,13 +131,13 @@ extension _AddLogScreenActions on _AddLogScreenState {
       if (!mounted) return;
       setState(() => _isSaving = false);
       final monthlyCount = _monthlyLogCountAfterSave(previousLogs);
-      await _showDrinkLogSuccessSheet(
+      final openCalendar = await _showDrinkLogSuccessSheet(
         friends: selectedFriends,
         monthlyCount: monthlyCount,
         isPrivateRecord: photoPath == null,
       );
       if (!mounted) return;
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(openCalendar);
     } catch (error) {
       if (!mounted) return;
       setState(() => _isSaving = false);
@@ -154,12 +154,12 @@ extension _AddLogScreenActions on _AddLogScreenState {
     return countBefore + 1;
   }
 
-  Future<void> _showDrinkLogSuccessSheet({
+  Future<bool> _showDrinkLogSuccessSheet({
     required List<NomoFriend> friends,
     required int monthlyCount,
     required bool isPrivateRecord,
   }) async {
-    await showModalBottomSheet<void>(
+    final openCalendar = await showModalBottomSheet<bool>(
       context: context,
       useSafeArea: true,
       isDismissible: false,
@@ -172,6 +172,7 @@ extension _AddLogScreenActions on _AddLogScreenState {
         isPrivateRecord: isPrivateRecord,
       ),
     );
+    return openCalendar ?? false;
   }
 
   Future<String?> _photoPathForSave() async {

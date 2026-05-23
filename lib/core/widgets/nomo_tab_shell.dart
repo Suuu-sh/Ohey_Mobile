@@ -121,9 +121,12 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       case _DrinkLogStartAction.camera:
         await _openCameraDrinkLogFlow();
       case _DrinkLogStartAction.noPhoto:
-        await Navigator.of(
+        final openCalendar = await Navigator.of(
           context,
-        ).push<void>(CupertinoPageRoute(builder: (_) => const AddLogScreen()));
+        ).push<bool>(CupertinoPageRoute(builder: (_) => const AddLogScreen()));
+        if (mounted && openCalendar == true) {
+          setState(() => _selectedIndex = 2);
+        }
       case _DrinkLogStartAction.plan:
         await _openDrinkPlanFlow();
       case _DrinkLogStartAction.gallery:

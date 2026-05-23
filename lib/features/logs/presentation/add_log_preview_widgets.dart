@@ -346,6 +346,8 @@ class _PreviewPhotoCaptionEditor extends StatelessWidget {
                 alignment: Alignment.center,
                 child: TextField(
                   controller: controller,
+                  maxLength: _drinkLogCommentMaxLength,
+                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
                   onChanged: onChanged,
                   keyboardType: TextInputType.text,
                   textInputAction: TextInputAction.done,
@@ -361,6 +363,7 @@ class _PreviewPhotoCaptionEditor extends StatelessWidget {
                     filled: false,
                     fillColor: Colors.transparent,
                     contentPadding: EdgeInsets.zero,
+                    counterText: '',
                     hintText: hint,
                     hintStyle: Theme.of(context).textTheme.headlineSmall
                         ?.copyWith(
@@ -892,11 +895,11 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
 
   String get _friendSummary {
     if (widget.isPrivateRecord) {
-      if (widget.friends.isEmpty) return 'フィードには投稿せず、カレンダーに記録しました';
+      if (widget.friends.isEmpty) return 'フィードには投稿せず、カレンダーで確認できます';
       final first = widget.friends.first.name;
       final others = widget.friends.length - 1;
-      if (others <= 0) return '$firstとの記録をカレンダーに追加しました';
-      return '$firstほか$others人との記録をカレンダーに追加しました';
+      if (others <= 0) return '$firstとの記録はカレンダーで確認できます';
+      return '$firstほか$others人との記録はカレンダーで確認できます';
     }
     if (widget.friends.isEmpty) return '自分だけの思い出に追加しました';
     final first = widget.friends.first.name;
@@ -995,7 +998,7 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
                 Expanded(
                   child: Nomo3DButton.secondary(
                     label: '閉じる',
-                    onTap: () => Navigator.of(context).pop(),
+                    onTap: () => Navigator.of(context).pop(false),
                     height: 48,
                     radius: 22,
                     fontSize: 14,
@@ -1008,7 +1011,8 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
                     icon: widget.isPrivateRecord
                         ? CupertinoIcons.calendar_today
                         : CupertinoIcons.house_fill,
-                    onTap: () => Navigator.of(context).pop(),
+                    onTap: () =>
+                        Navigator.of(context).pop(widget.isPrivateRecord),
                     height: 48,
                     radius: 22,
                     color: widget.isPrivateRecord
