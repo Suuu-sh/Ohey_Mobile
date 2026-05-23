@@ -13,6 +13,7 @@ import '../../features/camera/presentation/nomo_camera_screen.dart';
 import '../../features/friends/application/drink_invite_controller.dart';
 import '../../features/friends/presentation/friends_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/logs/application/drink_log_controller.dart';
 import '../../features/logs/presentation/add_log_screen.dart';
 import '../../features/notifications/application/notification_controller.dart';
 import '../../features/notifications/application/os_notification_service.dart';
@@ -21,10 +22,13 @@ import '../../features/onboarding/presentation/create_user_dialog.dart';
 import '../application/nomo_user_controller.dart';
 import '../data/nomo_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
+import '../models/nomo_avatar.dart';
 import '../models/nomo_drink_invite.dart';
+import '../models/nomo_friend.dart';
 import '../theme/app_colors.dart';
 import '../theme/nomo_theme_mode.dart';
 import 'nomo_3d_button.dart';
+import 'nomo_avatar.dart';
 import 'nomo_backend_busy_screen.dart';
 import 'nomo_pop_icon.dart';
 import 'nomo_toast.dart';
@@ -98,7 +102,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
   List<Widget> get _pages => [
     HomeScreen(onAddLogPressed: _openDrinkLogFlow),
     const FriendsScreen(),
-    CalendarScreen(onCreatePlan: _openDrinkLogFlow),
+    CalendarScreen(onCreatePlan: _openDrinkPlanFlow),
     const ProfileScreen(),
   ];
 
@@ -117,13 +121,25 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       case _DrinkLogStartAction.camera:
         await _openCameraDrinkLogFlow();
       case _DrinkLogStartAction.noPhoto:
-      case _DrinkLogStartAction.plan:
         await Navigator.of(
           context,
         ).push<void>(CupertinoPageRoute(builder: (_) => const AddLogScreen()));
+      case _DrinkLogStartAction.plan:
+        await _openDrinkPlanFlow();
       case _DrinkLogStartAction.gallery:
         await _openGalleryDrinkLogFlow();
     }
+  }
+
+  Future<void> _openDrinkPlanFlow() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: .58),
+      builder: (_) => const _DrinkPlanCreateSheet(),
+    );
   }
 
   Future<void> _openCameraDrinkLogFlow() async {
@@ -390,6 +406,314 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       ),
     );
   }
+}
+
+class _DrinkPlanCreateSheet extends ConsumerStatefulWidget {
+  const _DrinkPlanCreateSheet();
+
+  @override
+  ConsumerState<_DrinkPlanCreateSheet> createState() =>
+      _DrinkPlanCreateSheetState();
+}
+
+class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
+  String? _sendingFriendId;
+
+  Future<void> _sendInvite(NomoFriend friend) async {
+    if (_sendingFriendId != null) return;
+    HapticFeedback.selectionClick();
+    setState(() => _sendingFriendId = friend.id);
+    try {
+      await ref.read(drinkInviteControllerProvider).sendTodayInvite(friend.id);
+      ref.invalidate(todayReservationsProvider);
+      ref.invalidate(incomingDrinkInvitesProvider);
+      if (!mounted) return;
+      NomoToast.show(context, '${friend.name}に飲み予定を送りました');
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(context, '飲み予定を作れなかったよ。あとでもう一度試してね');
+      setState(() => _sendingFriendId = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final friendsAsync = ref.watch(friendsProvider);
+    final background = isWhite ? Colors.white : const Color(0xFF071320);
+    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .62);
+
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(
+            color: isWhite
+                ? const Color(0xFFDCE4EC)
+                : Colors.white.withValues(alpha: .12),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .28),
+              blurRadius: 32,
+              offset: const Offset(0, 16),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: sub.withValues(alpha: .34),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                NomoPopIcon(
+                  icon: CupertinoIcons.calendar_badge_plus,
+                  color: AppColors.primaryAction,
+                  size: 48,
+                  iconSize: 25,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '飲み予定を作る',
+                        style: TextStyle(
+                          color: ink,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.6,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '今日誘うフレンズを選んで、飲み予定を送ります。',
+                        style: TextStyle(
+                          color: sub,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            friendsAsync.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 34),
+                child: Center(child: CupertinoActivityIndicator()),
+              ),
+              error: (error, stackTrace) => _DrinkPlanEmptyMessage(
+                isWhite: isWhite,
+                message: 'フレンズを読み込めませんでした。あとでもう一度試してね。',
+              ),
+              data: (friends) {
+                if (friends.isEmpty) {
+                  return _DrinkPlanEmptyMessage(
+                    isWhite: isWhite,
+                    message: '飲み予定を送るには、まずフレンズを追加してください。',
+                  );
+                }
+                final visibleFriends = friends.take(6).toList(growable: false);
+                return ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 390),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: visibleFriends.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final friend = visibleFriends[index];
+                      return _DrinkPlanFriendTile(
+                        friend: friend,
+                        isWhite: isWhite,
+                        isSending: _sendingFriendId == friend.id,
+                        disabled: _sendingFriendId != null,
+                        onTap: () => _sendInvite(friend),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DrinkPlanFriendTile extends StatelessWidget {
+  const _DrinkPlanFriendTile({
+    required this.friend,
+    required this.isWhite,
+    required this.isSending,
+    required this.disabled,
+    required this.onTap,
+  });
+
+  final NomoFriend friend;
+  final bool isWhite;
+  final bool isSending;
+  final bool disabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .58);
+    return Opacity(
+      opacity: disabled && !isSending ? .52 : 1,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: disabled ? null : onTap,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
+          decoration: BoxDecoration(
+            color: isWhite
+                ? const Color(0xFFF6F8FA)
+                : Colors.white.withValues(alpha: .055),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isWhite
+                  ? const Color(0xFFE0E6ED)
+                  : Colors.white.withValues(alpha: .10),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: friend.accentColor.withValues(alpha: .20),
+                  shape: BoxShape.circle,
+                ),
+                child: ClipOval(
+                  child: NomoAvatarView(
+                    avatar: friend.avatar ?? NomoAvatar.defaultAvatar,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      friend.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      friend.vibe.trim().isEmpty
+                          ? 'Nomoフレンズ'
+                          : '@${friend.vibe}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryAction,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: isSending
+                    ? const CupertinoActivityIndicator(radius: 7)
+                    : const Text(
+                        '誘う',
+                        style: TextStyle(
+                          color: Color(0xFF06111D),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DrinkPlanEmptyMessage extends StatelessWidget {
+  const _DrinkPlanEmptyMessage({required this.isWhite, required this.message});
+
+  final bool isWhite;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: isWhite
+          ? const Color(0xFFF6F8FA)
+          : Colors.white.withValues(alpha: .055),
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(
+        color: isWhite
+            ? const Color(0xFFE0E6ED)
+            : Colors.white.withValues(alpha: .10),
+      ),
+    ),
+    child: Text(
+      message,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: isWhite
+            ? const Color(0xFF667381)
+            : Colors.white.withValues(alpha: .62),
+        fontSize: 13,
+        fontWeight: FontWeight.w800,
+        height: 1.35,
+      ),
+    ),
+  );
 }
 
 enum _DrinkLogStartAction { camera, noPhoto, gallery, plan }
