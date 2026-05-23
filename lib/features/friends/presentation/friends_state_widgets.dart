@@ -6,8 +6,33 @@ class _LoadingState extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) =>
-      SizedBox(height: 180, child: NomoStateView.loading(message: label));
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
+      padding: const EdgeInsets.only(bottom: 116),
+      children: [
+        SizedBox(
+          height: 360,
+          child: Center(
+            child: NomoEmptyState(
+              visual: const _FriendsLoadingVisual(),
+              title: 'フレンズを読み込み中...',
+              message: 'かわいいフレンズたちを呼んでいます',
+              titleColor: isWhite ? const Color(0xFF1B2633) : Colors.white,
+              messageColor: isWhite
+                  ? const Color(0xFF6D7784)
+                  : Colors.white.withValues(alpha: .58),
+              padding: EdgeInsets.zero,
+              spacing: 14,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _ErrorState extends StatelessWidget {
@@ -19,6 +44,129 @@ class _ErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       NomoStateView.error(message: '$title\n$message');
+}
+
+class _FriendsLoadingVisual extends StatelessWidget {
+  const _FriendsLoadingVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return SizedBox(
+      width: 156,
+      height: 128,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  _FriendsColors.lime.withValues(alpha: .24),
+                  _FriendsColors.lime.withValues(alpha: .06),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 16,
+            bottom: 6,
+            child: _LoadingMascotBubble(
+              size: 82,
+              color: const Color(0xFF34E1C3),
+              borderColor: isWhite ? Colors.white : _FriendsColors.bg,
+              avatar: const NomoAvatar(
+                skin: 5,
+                hair: 1,
+                shirt: 8,
+                eyes: 2,
+                mouth: 0,
+                accessory: 1,
+              ),
+            ),
+          ),
+          Positioned(
+            right: 12,
+            top: 18,
+            child: _LoadingMascotBubble(
+              size: 66,
+              color: const Color(0xFF7C5CFF),
+              borderColor: isWhite ? Colors.white : _FriendsColors.bg,
+              avatar: const NomoAvatar(
+                skin: 0,
+                hair: 3,
+                shirt: 4,
+                eyes: 1,
+                mouth: 1,
+                accessory: 0,
+              ),
+            ),
+          ),
+          Positioned(
+            right: 8,
+            bottom: 14,
+            child: CupertinoActivityIndicator(
+              radius: 12,
+              color: isWhite ? const Color(0xFF1B2633) : Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadingMascotBubble extends StatelessWidget {
+  const _LoadingMascotBubble({
+    required this.size,
+    required this.color,
+    required this.borderColor,
+    required this.avatar,
+  });
+
+  final double size;
+  final Color color;
+  final Color borderColor;
+  final NomoAvatar avatar;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        border: Border.all(color: borderColor, width: 5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: .22),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Container(
+          color: color,
+          alignment: Alignment.center,
+          child: Transform.translate(
+            offset: Offset(0, size * .08),
+            child: NomoAvatarView(
+              avatar: avatar,
+              size: size * .9,
+              showBody: true,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _FriendStatus {
