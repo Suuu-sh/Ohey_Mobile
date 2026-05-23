@@ -15,6 +15,7 @@ import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/models/nomo_gender.dart';
+import '../../../core/models/nomo_friend.dart';
 import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
@@ -56,6 +57,11 @@ class ProfileScreen extends ConsumerWidget {
         reservationsAsync.asData?.value ?? const <NomoDrinkInvite>[];
     final incomingInvites =
         incomingInvitesAsync.asData?.value ?? const <NomoDrinkInvite>[];
+    final logs =
+        ref.watch(drinkLogControllerProvider).asData?.value ??
+        const <DrinkLog>[];
+    final myLogs = _myProfileLogs(logs, currentAuthUserId);
+    final photoLogs = _photoArchiveLogs(logs, currentAuthUserId);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     final hasAdminEmail = NomoAvatar.isAdminEmail(currentAuthUser?.email);
     final hasAdminAccess = ref
@@ -167,7 +173,25 @@ class ProfileScreen extends ConsumerWidget {
                               ),
                             ),
                           ),
-                          Expanded(child: ColoredBox(color: bodyBackground)),
+                          Expanded(
+                            child: _ProfileActivityHome(
+                              isWhite: isWhite,
+                              logs: myLogs,
+                              photoLogs: photoLogs,
+                              status:
+                                  user?.dailyStatus ??
+                                  NomoDailyStatus.unselected,
+                              onStatusTap: () =>
+                                  _showProfileStatusSheet(context, ref),
+                              onArchiveTap: () => Navigator.of(context).push(
+                                CupertinoPageRoute<void>(
+                                  fullscreenDialog: true,
+                                  builder: (_) =>
+                                      PhotoArchiveScreen(logs: photoLogs),
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -190,6 +214,12 @@ bool _isMyUserLog(DrinkLog log, String? currentUserId) {
   if (log.ownerUserId.isEmpty) return true;
   return log.ownerUserId == currentUserId;
 }
+
+List<DrinkLog> _myProfileLogs(List<DrinkLog> logs, String? currentAuthUserId) =>
+    logs
+        .where((log) => _isMyUserLog(log, currentAuthUserId))
+        .toList(growable: false)
+      ..sort((a, b) => b.date.compareTo(a.date));
 
 List<DrinkLog> _photoArchiveLogs(
   List<DrinkLog> logs,

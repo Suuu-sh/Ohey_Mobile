@@ -549,3 +549,523 @@ class _ProfileMoodCtaIcon extends StatelessWidget {
     ),
   );
 }
+
+class _ProfileActivityHome extends StatelessWidget {
+  const _ProfileActivityHome({
+    required this.isWhite,
+    required this.logs,
+    required this.photoLogs,
+    required this.status,
+    required this.onStatusTap,
+    required this.onArchiveTap,
+  });
+
+  final bool isWhite;
+  final List<DrinkLog> logs;
+  final List<DrinkLog> photoLogs;
+  final NomoDailyStatus status;
+  final VoidCallback onStatusTap;
+  final VoidCallback onArchiveTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final monthlyLogs = logs.where((log) => log.isInMonth(now)).toList();
+    final topFriends = _topProfileFriends(monthlyLogs);
+    final recentLogs = logs.take(3).toList(growable: false);
+
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(24, 2, 24, 132),
+      children: [
+        Text(
+          '飲み活動',
+          style: TextStyle(
+            color: isWhite ? const Color(0xFF17212B) : Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _ProfileStatCard(
+                isWhite: isWhite,
+                icon: CupertinoIcons.chart_bar_fill,
+                color: AppColors.primaryAction,
+                label: '今月の飲みログ',
+                value: '${monthlyLogs.length}件',
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _ProfileStatCard(
+                isWhite: isWhite,
+                icon: CupertinoIcons.photo_fill_on_rectangle_fill,
+                color: const Color(0xFFFF7AB8),
+                label: '写真アーカイブ',
+                value: '${photoLogs.length}枚',
+                onTap: onArchiveTap,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _ProfileStatusHomeCard(
+          isWhite: isWhite,
+          status: status,
+          onTap: onStatusTap,
+        ),
+        const SizedBox(height: 12),
+        _ProfileTopFriendsCard(isWhite: isWhite, friends: topFriends),
+        const SizedBox(height: 12),
+        _ProfileRecentLogsCard(isWhite: isWhite, logs: recentLogs),
+      ],
+    );
+  }
+}
+
+class _ProfileStatCard extends StatelessWidget {
+  const _ProfileStatCard({
+    required this.isWhite,
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.value,
+    this.onTap,
+  });
+
+  final bool isWhite;
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String value;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProfileActivityCard(
+      isWhite: isWhite,
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NomoPopIcon(icon: icon, color: color, size: 42, iconSize: 23),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: TextStyle(
+              color: isWhite ? const Color(0xFF17212B) : Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.6,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: isWhite
+                  ? const Color(0xFF667381)
+                  : Colors.white.withValues(alpha: .58),
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileStatusHomeCard extends StatelessWidget {
+  const _ProfileStatusHomeCard({
+    required this.isWhite,
+    required this.status,
+    required this.onTap,
+  });
+
+  final bool isWhite;
+  final NomoDailyStatus status;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _statusColor(status);
+    final unset = status == NomoDailyStatus.unselected;
+    return _ProfileActivityCard(
+      isWhite: isWhite,
+      onTap: onTap,
+      child: Row(
+        children: [
+          NomoPopIcon(
+            icon: unset ? CupertinoIcons.smiley : _statusIcon(status),
+            color: unset ? AppColors.primaryAction : color,
+            size: 46,
+            iconSize: 25,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  unset ? 'ステータスを設定する' : status.label,
+                  style: TextStyle(
+                    color: isWhite ? const Color(0xFF17212B) : Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  unset ? '今日誘いやすいかをフレンズに伝えられます' : status.description,
+                  style: TextStyle(
+                    color: isWhite
+                        ? const Color(0xFF667381)
+                        : Colors.white.withValues(alpha: .58),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          NomoGeneratedIcon(
+            CupertinoIcons.chevron_right,
+            color: isWhite
+                ? const Color(0xFF98A3AF)
+                : Colors.white.withValues(alpha: .44),
+            size: 22,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileTopFriendsCard extends StatelessWidget {
+  const _ProfileTopFriendsCard({required this.isWhite, required this.friends});
+
+  final bool isWhite;
+  final List<_ProfileFriendCount> friends;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProfileActivityCard(
+      isWhite: isWhite,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _ProfileActivitySectionTitle(
+            isWhite: isWhite,
+            title: 'よく飲むフレンズ',
+            icon: CupertinoIcons.person_2_fill,
+            color: AppColors.invite,
+          ),
+          const SizedBox(height: 12),
+          if (friends.isEmpty)
+            _ProfileActivityEmptyText(
+              isWhite: isWhite,
+              text: 'フレンズと飲みログを残すと、ここに表示されます。',
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final item in friends)
+                  _ProfileFriendChip(isWhite: isWhite, item: item),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileRecentLogsCard extends StatelessWidget {
+  const _ProfileRecentLogsCard({required this.isWhite, required this.logs});
+
+  final bool isWhite;
+  final List<DrinkLog> logs;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProfileActivityCard(
+      isWhite: isWhite,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _ProfileActivitySectionTitle(
+            isWhite: isWhite,
+            title: '最近の飲みログ',
+            icon: CupertinoIcons.clock_fill,
+            color: AppColors.warning,
+          ),
+          const SizedBox(height: 10),
+          if (logs.isEmpty)
+            _ProfileActivityEmptyText(
+              isWhite: isWhite,
+              text: '飲みログを残すと、最近の活動がここに並びます。',
+            )
+          else
+            for (var i = 0; i < logs.length; i++) ...[
+              _ProfileRecentLogRow(isWhite: isWhite, log: logs[i]),
+              if (i != logs.length - 1) const SizedBox(height: 10),
+            ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileActivityCard extends StatelessWidget {
+  const _ProfileActivityCard({
+    required this.isWhite,
+    required this.child,
+    this.onTap,
+  });
+
+  final bool isWhite;
+  final Widget child;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final card = Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isWhite ? Colors.white : Colors.white.withValues(alpha: .055),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isWhite
+              ? const Color(0xFFE0E6ED)
+              : Colors.white.withValues(alpha: .10),
+        ),
+        boxShadow: isWhite
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : null,
+      ),
+      child: child,
+    );
+    if (onTap == null) return card;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: card,
+    );
+  }
+}
+
+class _ProfileActivitySectionTitle extends StatelessWidget {
+  const _ProfileActivitySectionTitle({
+    required this.isWhite,
+    required this.title,
+    required this.icon,
+    required this.color,
+  });
+
+  final bool isWhite;
+  final String title;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        NomoGeneratedIcon(icon, color: color, size: 22),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: TextStyle(
+            color: isWhite ? const Color(0xFF17212B) : Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileActivityEmptyText extends StatelessWidget {
+  const _ProfileActivityEmptyText({required this.isWhite, required this.text});
+
+  final bool isWhite;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text,
+    style: TextStyle(
+      color: isWhite
+          ? const Color(0xFF667381)
+          : Colors.white.withValues(alpha: .58),
+      fontSize: 12,
+      fontWeight: FontWeight.w800,
+      height: 1.4,
+    ),
+  );
+}
+
+class _ProfileFriendChip extends StatelessWidget {
+  const _ProfileFriendChip({required this.isWhite, required this.item});
+
+  final bool isWhite;
+  final _ProfileFriendCount item;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+    decoration: BoxDecoration(
+      color: isWhite
+          ? const Color(0xFFF6F8FA)
+          : Colors.white.withValues(alpha: .06),
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(
+        color: isWhite
+            ? const Color(0xFFE0E6ED)
+            : Colors.white.withValues(alpha: .10),
+      ),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        NomoAvatarView(
+          avatar: item.friend.avatar ?? NomoAvatar.defaultAvatar,
+          size: 24,
+        ),
+        const SizedBox(width: 7),
+        Text(
+          '${item.friend.name} ${item.count}回',
+          style: TextStyle(
+            color: isWhite ? const Color(0xFF17212B) : Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _ProfileRecentLogRow extends StatelessWidget {
+  const _ProfileRecentLogRow({required this.isWhite, required this.log});
+
+  final bool isWhite;
+  final DrinkLog log;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = log.place.trim().isNotEmpty
+        ? log.place.trim()
+        : log.memo.trim().isNotEmpty
+        ? log.memo.trim()
+        : '飲みログ';
+    final subtitle = log.friends.isEmpty
+        ? _profileDateLabel(log.date)
+        : log.friendNames;
+    return Row(
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: AppColors.primaryAction.withValues(alpha: .16),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: NomoGeneratedIcon(
+            (log.photoAssetPath ?? '').trim().isEmpty
+                ? CupertinoIcons.doc_text_fill
+                : CupertinoIcons.photo_fill,
+            color: AppColors.primaryAction,
+            size: 24,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isWhite ? const Color(0xFF17212B) : Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isWhite
+                      ? const Color(0xFF667381)
+                      : Colors.white.withValues(alpha: .58),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Text(
+          _profileShortDateLabel(log.date),
+          style: TextStyle(
+            color: isWhite
+                ? const Color(0xFF98A3AF)
+                : Colors.white.withValues(alpha: .44),
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileFriendCount {
+  const _ProfileFriendCount({required this.friend, required this.count});
+
+  final NomoFriend friend;
+  final int count;
+}
+
+List<_ProfileFriendCount> _topProfileFriends(List<DrinkLog> logs) {
+  final counts = <String, ({NomoFriend friend, int count})>{};
+  for (final log in logs) {
+    for (final friend in log.friends) {
+      final current = counts[friend.id];
+      counts[friend.id] = (friend: friend, count: (current?.count ?? 0) + 1);
+    }
+  }
+  final result = counts.values
+      .map(
+        (entry) =>
+            _ProfileFriendCount(friend: entry.friend, count: entry.count),
+      )
+      .toList(growable: false);
+  result.sort((a, b) => b.count.compareTo(a.count));
+  return result.take(3).toList(growable: false);
+}
+
+String _profileDateLabel(DateTime date) =>
+    '${date.month}/${date.day} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+
+String _profileShortDateLabel(DateTime date) => '${date.month}/${date.day}';
