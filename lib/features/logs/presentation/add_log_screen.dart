@@ -487,8 +487,11 @@ class _PostPreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final captionHint = _previewCaptionHint(place: place);
     final isWhite = _AddLogColors.isWhite(context);
+    final surfaceColor = isWhite ? Colors.white : AppColors.darkBackground;
+    final borderColor = isWhite
+        ? const Color(0xFFE3EAF3)
+        : Colors.white.withValues(alpha: .08);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -517,119 +520,56 @@ class _PostPreviewCard extends StatelessWidget {
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
+            color: surfaceColor,
+            border: Border.symmetric(
+              horizontal: BorderSide(color: borderColor, width: 1),
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isWhite ? .12 : .36),
-                blurRadius: 26,
-                offset: const Offset(0, 18),
+                color: Colors.black.withValues(alpha: isWhite ? .08 : .18),
+                blurRadius: 22,
+                offset: const Offset(0, 12),
               ),
             ],
           ),
-          child: AspectRatio(
-            aspectRatio: 4 / 5,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                _PhotoPreviewImage(
-                  path: path,
-                  fallbackAspectRatio: 4 / 5,
-                  fit: BoxFit.cover,
-                  expand: true,
-                ),
-                const _FeedSizedPreviewScrim(),
-                Positioned(
-                  left: 14,
-                  top: 14,
-                  right: 14,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 42,
-                        height: 42,
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: _AddLogColors.lime.withValues(alpha: .28),
-                          shape: BoxShape.circle,
-                        ),
-                        child: NomoAvatarView(avatar: avatar, size: 40),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              userName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15.5,
-                                fontWeight: FontWeight.w900,
-                                height: 1.05,
-                                letterSpacing: -.25,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black54,
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            _PreviewTimeEditor(
-                              label: _previewFeedTime(date),
-                              onTap: onEditDateTime,
-                            ),
-                          ],
-                        ),
-                      ),
-                      NomoGeneratedIcon(
-                        CupertinoIcons.ellipsis,
-                        color: Colors.white.withValues(alpha: .96),
-                        size: 28,
-                      ),
-                    ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _PreviewAuthorBar(
+                userName: userName,
+                avatar: avatar,
+                isWhite: isWhite,
+                metadata: _previewMetadata(date: date, place: place),
+                onEditDateTime: onEditDateTime,
+              ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.symmetric(
+                    horizontal: BorderSide(color: borderColor, width: .8),
                   ),
                 ),
-                Positioned(
-                  left: 18,
-                  right: 18,
-                  bottom: 15,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _PreviewCaptionField(
-                        controller: memoController,
-                        hint: captionHint,
-                        onChanged: onMemoChanged,
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (friends.isNotEmpty)
-                            _PreviewFriendsPill(friends: friends),
-                          const Spacer(),
-                          const _PreviewOverlayAction(
-                            icon: CupertinoIcons.heart,
-                            label: '0',
-                          ),
-                          const SizedBox(width: 13),
-                          const _PreviewOverlayAction(
-                            icon: CupertinoIcons.paperplane,
-                          ),
-                        ],
-                      ),
-                    ],
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: ClipRect(
+                    child: _PhotoPreviewImage(
+                      path: path,
+                      fallbackAspectRatio: 1,
+                      fit: BoxFit.cover,
+                      expand: true,
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+              _PreviewFooter(
+                userName: userName,
+                controller: memoController,
+                hint: _previewCaptionHint(place: place),
+                friends: friends,
+                isWhite: isWhite,
+                onChanged: onMemoChanged,
+              ),
+            ],
           ),
         ),
       ],
@@ -637,31 +577,97 @@ class _PostPreviewCard extends StatelessWidget {
   }
 }
 
-class _FeedSizedPreviewScrim extends StatelessWidget {
-  const _FeedSizedPreviewScrim();
+class _PreviewAuthorBar extends StatelessWidget {
+  const _PreviewAuthorBar({
+    required this.userName,
+    required this.avatar,
+    required this.isWhite,
+    required this.metadata,
+    required this.onEditDateTime,
+  });
+
+  final String userName;
+  final NomoAvatar avatar;
+  final bool isWhite;
+  final String metadata;
+  final VoidCallback onEditDateTime;
 
   @override
-  Widget build(BuildContext context) => const DecoratedBox(
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Color(0xB2000000),
-          Color(0x1A000000),
-          Color(0x00000000),
-          Color(0xE6000000),
+  Widget build(BuildContext context) {
+    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
+    final secondaryText = isWhite
+        ? const Color(0xFF778393)
+        : Colors.white.withValues(alpha: .62);
+    final iconColor = isWhite
+        ? const Color(0xFF1E2733)
+        : Colors.white.withValues(alpha: .92);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 11, 10, 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  _AddLogColors.lime.withValues(alpha: .34),
+                  _AddLogColors.lime.withValues(alpha: .09),
+                ],
+              ),
+            ),
+            child: NomoAvatarView(avatar: avatar, size: 38.5),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  userName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: primaryText,
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w900,
+                    height: 1.05,
+                    letterSpacing: -.25,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                _PreviewTimeEditor(
+                  label: metadata,
+                  color: secondaryText,
+                  onTap: onEditDateTime,
+                ),
+              ],
+            ),
+          ),
+          NomoGeneratedIcon(
+            CupertinoIcons.ellipsis,
+            color: iconColor,
+            size: 27,
+          ),
         ],
-        stops: [0, .23, .50, 1],
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _PreviewTimeEditor extends StatelessWidget {
-  const _PreviewTimeEditor({required this.label, required this.onTap});
+  const _PreviewTimeEditor({
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   final String label;
+  final Color color;
   final VoidCallback onTap;
 
   @override
@@ -680,26 +686,15 @@ class _PreviewTimeEditor extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: .78),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: color,
                 fontSize: 11.5,
                 fontWeight: FontWeight.w900,
                 height: 1,
-                shadows: const [
-                  Shadow(
-                    color: Colors.black54,
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ],
               ),
             ),
             const SizedBox(width: 4),
-            Icon(
-              CupertinoIcons.pencil,
-              size: 10,
-              color: Colors.white.withValues(alpha: .74),
-            ),
+            Icon(CupertinoIcons.pencil, size: 10, color: color),
           ],
         ),
       ),
@@ -707,161 +702,347 @@ class _PreviewTimeEditor extends StatelessWidget {
   );
 }
 
-class _PreviewCaptionField extends StatelessWidget {
-  const _PreviewCaptionField({
+class _PreviewFooter extends StatelessWidget {
+  const _PreviewFooter({
+    required this.userName,
     required this.controller,
     required this.hint,
+    required this.friends,
+    required this.isWhite,
     required this.onChanged,
   });
 
+  final String userName;
   final TextEditingController controller;
   final String hint;
+  final List<NomoFriend> friends;
+  final bool isWhite;
   final ValueChanged<String> onChanged;
 
   @override
-  Widget build(BuildContext context) => TextField(
-    controller: controller,
-    onChanged: onChanged,
-    keyboardType: TextInputType.multiline,
-    textInputAction: TextInputAction.newline,
-    minLines: 1,
-    maxLines: 3,
-    cursorColor: _AddLogColors.lime,
-    decoration: InputDecoration(
-      isDense: true,
-      border: InputBorder.none,
-      enabledBorder: InputBorder.none,
-      focusedBorder: InputBorder.none,
-      filled: false,
-      fillColor: Colors.transparent,
-      contentPadding: EdgeInsets.zero,
-      hintText: hint,
-      hintStyle: TextStyle(
-        color: Colors.white.withValues(alpha: .72),
-        fontSize: 21,
-        fontWeight: FontWeight.w900,
-        height: 1.12,
-        letterSpacing: -.55,
-        shadows: const [
-          Shadow(color: Colors.black87, blurRadius: 10, offset: Offset(0, 3)),
-        ],
-      ),
-    ),
-    style: const TextStyle(
-      color: Colors.white,
-      fontSize: 21,
-      fontWeight: FontWeight.w900,
-      height: 1.12,
-      letterSpacing: -.55,
-      shadows: [
-        Shadow(color: Colors.black87, blurRadius: 10, offset: Offset(0, 3)),
-      ],
-    ),
-  );
-}
+  Widget build(BuildContext context) {
+    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
+    final secondaryText = isWhite
+        ? const Color(0xFF6D7A89)
+        : Colors.white.withValues(alpha: .64);
 
-class _PreviewOverlayAction extends StatelessWidget {
-  const _PreviewOverlayAction({required this.icon, this.label = ''});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      NomoPopIcon(icon: icon, color: Colors.white, size: 26, showBubble: false),
-      if (label.isNotEmpty) ...[
-        const SizedBox(width: 5),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-            shadows: [
-              Shadow(
-                color: Colors.black87,
-                blurRadius: 8,
-                offset: Offset(0, 2),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 112,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _PreviewFooterAction(
+                          icon: CupertinoIcons.heart,
+                          color: primaryText,
+                        ),
+                        const SizedBox(width: 18),
+                        _PreviewFooterAction(
+                          customIcon: _PreviewShareIcon(
+                            color: primaryText,
+                            size: 27,
+                          ),
+                          color: primaryText,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '0件のいいね',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: primaryText,
+                        fontWeight: FontWeight.w900,
+                        height: 1.15,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: _PreviewCaptionEditor(
+                    userName: userName,
+                    controller: controller,
+                    hint: hint,
+                    primaryText: primaryText,
+                    secondaryText: secondaryText,
+                    onChanged: onChanged,
+                  ),
+                ),
               ),
             ],
           ),
+          if (friends.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: _PreviewFriendsPill(friends: friends, isWhite: isWhite),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PreviewCaptionEditor extends StatelessWidget {
+  const _PreviewCaptionEditor({
+    required this.userName,
+    required this.controller,
+    required this.hint,
+    required this.primaryText,
+    required this.secondaryText,
+    required this.onChanged,
+  });
+
+  final String userName;
+  final TextEditingController controller;
+  final String hint;
+  final Color primaryText;
+  final Color secondaryText;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Flexible(
+        flex: 0,
+        child: Text(
+          userName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: primaryText,
+            fontSize: 14.5,
+            fontWeight: FontWeight.w900,
+            height: 1.28,
+            letterSpacing: -.16,
+          ),
         ),
-      ],
+      ),
+      const SizedBox(width: 5),
+      Expanded(
+        child: TextField(
+          controller: controller,
+          onChanged: onChanged,
+          keyboardType: TextInputType.multiline,
+          textInputAction: TextInputAction.newline,
+          minLines: 1,
+          maxLines: 3,
+          cursorColor: _AddLogColors.lime,
+          decoration: InputDecoration(
+            isDense: true,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            filled: false,
+            fillColor: Colors.transparent,
+            contentPadding: EdgeInsets.zero,
+            hintText: hint,
+            hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: secondaryText.withValues(alpha: .74),
+              fontSize: 14.5,
+              fontWeight: FontWeight.w700,
+              height: 1.28,
+              letterSpacing: -.16,
+            ),
+          ),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: secondaryText,
+            fontSize: 14.5,
+            fontWeight: FontWeight.w700,
+            height: 1.28,
+            letterSpacing: -.16,
+          ),
+        ),
+      ),
     ],
   );
 }
 
+class _PreviewFooterAction extends StatelessWidget {
+  const _PreviewFooterAction({this.icon, this.customIcon, required this.color});
+
+  final IconData? icon;
+  final Widget? customIcon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child:
+        customIcon ??
+        NomoPopIcon(
+          icon: icon ?? CupertinoIcons.circle,
+          color: color,
+          size: 29,
+          showBubble: false,
+        ),
+  );
+}
+
+class _PreviewShareIcon extends StatelessWidget {
+  const _PreviewShareIcon({required this.color, required this.size});
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: size,
+    child: CustomPaint(painter: _PreviewShareIconPainter(color)),
+  );
+}
+
+class _PreviewShareIconPainter extends CustomPainter {
+  const _PreviewShareIconPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = w * .105;
+
+    final tray = Path()
+      ..moveTo(w * .22, h * .62)
+      ..lineTo(w * .22, h * .76)
+      ..quadraticBezierTo(w * .22, h * .86, w * .32, h * .86)
+      ..lineTo(w * .68, h * .86)
+      ..quadraticBezierTo(w * .78, h * .86, w * .78, h * .76)
+      ..lineTo(w * .78, h * .62);
+    canvas.drawPath(tray, stroke);
+
+    canvas.drawLine(Offset(w * .50, h * .66), Offset(w * .50, h * .16), stroke);
+    canvas.drawLine(Offset(w * .34, h * .31), Offset(w * .50, h * .16), stroke);
+    canvas.drawLine(Offset(w * .66, h * .31), Offset(w * .50, h * .16), stroke);
+  }
+
+  @override
+  bool shouldRepaint(covariant _PreviewShareIconPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
 class _PreviewFriendsPill extends StatelessWidget {
-  const _PreviewFriendsPill({required this.friends});
+  const _PreviewFriendsPill({required this.friends, required this.isWhite});
+
+  final List<NomoFriend> friends;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = isWhite ? const Color(0xFF344152) : Colors.white;
+    final borderColor = isWhite
+        ? const Color(0xFFE0E7EF)
+        : Colors.white.withValues(alpha: .13);
+    final backgroundColor = isWhite
+        ? const Color(0xFFF4F7FA)
+        : Colors.white.withValues(alpha: .07);
+    final label = friends.length == 1
+        ? '${friends.first.name}と一緒'
+        : '${friends.first.name}ほか${friends.length - 1}人と一緒';
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(8, 6, 10, 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: borderColor),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 182),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _PreviewFriendAvatarStack(friends: friends),
+            const SizedBox(width: 7),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w900,
+                  height: 1.05,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewFriendAvatarStack extends StatelessWidget {
+  const _PreviewFriendAvatarStack({required this.friends});
 
   final List<NomoFriend> friends;
 
   @override
   Widget build(BuildContext context) {
     final visible = friends.take(3).toList(growable: false);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(8, 7, 10, 7),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: .24),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: .22)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    return SizedBox(
+      width: 24.0 + (visible.length - 1) * 15.0,
+      height: 24,
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          SizedBox(
-            width: 28.0 + (visible.length - 1) * 18.0,
-            height: 28,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                for (var index = 0; index < visible.length; index++)
-                  Positioned(
-                    left: index * 18,
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      padding: const EdgeInsets.all(1.5),
-                      decoration: BoxDecoration(
-                        color: visible[index].accentColor.withValues(
-                          alpha: .34,
-                        ),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: .82),
-                          width: 1,
-                        ),
-                      ),
-                      child: NomoAvatarView(
-                        avatar:
-                            visible[index].avatar ?? NomoAvatar.defaultAvatar,
-                        size: 28,
-                      ),
-                    ),
+          for (var index = 0; index < visible.length; index++)
+            Positioned(
+              left: index * 15,
+              child: Container(
+                width: 24,
+                height: 24,
+                padding: const EdgeInsets.all(1.4),
+                decoration: BoxDecoration(
+                  color: visible[index].accentColor.withValues(alpha: .34),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: .78),
+                    width: 1,
                   ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'with',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: .92),
-              fontWeight: FontWeight.w900,
-              shadows: const [
-                Shadow(
-                  color: Colors.black54,
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
                 ),
-              ],
+                child: NomoAvatarView(
+                  avatar: visible[index].avatar ?? NomoAvatar.defaultAvatar,
+                  size: 24,
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );
   }
+}
+
+String _previewMetadata({required DateTime date, required String place}) {
+  final trimmedPlace = place.trim();
+  final time = _previewFeedTime(date);
+  return trimmedPlace.isEmpty ? time : '$time ・ $trimmedPlace';
 }
 
 String _previewFeedTime(DateTime date) {
