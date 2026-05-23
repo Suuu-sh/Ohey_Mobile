@@ -729,22 +729,22 @@ class _WalkingNomoPainter extends CustomPainter {
       canvas.rotate(-.16);
     }
 
-    final legPaint = Paint()
-      ..color = const Color(0xFFFF4CAF)
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round;
     final shoePaint = Paint()..color = const Color(0xFF111723);
     final legStride = isSleeping ? 0.0 : step;
-    final backFoot = Offset(20 - legStride * 3.6, isSleeping ? 50 : 51);
-    final frontFoot = Offset(30 + legStride * 4.2, isSleeping ? 50 : 51);
-    canvas.drawLine(const Offset(21, 38), backFoot, legPaint);
-    canvas.drawLine(const Offset(29, 38), frontFoot, legPaint);
-    canvas.drawOval(
-      Rect.fromCenter(center: backFoot, width: 8, height: 4),
+    final backFoot = Offset(20 - legStride * 2.8, isSleeping ? 49.5 : 50.5);
+    final frontFoot = Offset(30 + legStride * 3.2, isSleeping ? 49.5 : 50.5);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: backFoot, width: 6.5, height: 5),
+        const Radius.circular(3),
+      ),
       shoePaint,
     );
-    canvas.drawOval(
-      Rect.fromCenter(center: frontFoot, width: 8, height: 4),
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: frontFoot, width: 6.5, height: 5),
+        const Radius.circular(3),
+      ),
       shoePaint,
     );
 
