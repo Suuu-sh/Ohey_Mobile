@@ -310,7 +310,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   }
 }
 
-enum _FriendFilterType { all, drinkable, favorite }
+enum _FriendFilterType { all }
 
 class _FilterBar extends StatelessWidget {
   const _FilterBar({
@@ -379,8 +379,6 @@ class _FilterBar extends StatelessWidget {
 
 const _filters = [
   _FriendFilter('みんな', _FriendFilterType.all, Color(0xFFB8FF00)),
-  _FriendFilter('今日飲める', _FriendFilterType.drinkable, Color(0xFFFF5AA6)),
-  _FriendFilter('お気に入り', _FriendFilterType.favorite, Color(0xFFFFA700)),
 ];
 
 class _FriendFilter {
@@ -1315,8 +1313,6 @@ class _FriendsList extends StatelessWidget {
       }
       return switch (selectedFilter) {
         _FriendFilterType.all => true,
-        _FriendFilterType.drinkable => _isDrinkableStatus(item.status),
-        _FriendFilterType.favorite => item.friend.isFavorite,
       };
     }).toList();
 
