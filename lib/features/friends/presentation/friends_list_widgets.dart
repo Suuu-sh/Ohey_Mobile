@@ -58,13 +58,16 @@ class _FriendsList extends StatelessWidget {
     return ListView.separated(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 116),
-      itemCount: filtered.length + 1,
+      itemCount: filtered.length + 2,
       separatorBuilder: (_, _) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
-        if (index == filtered.length) {
+        if (index == 0) {
+          return _TodayInviteSection(friends: decorated, onInvite: onInvite);
+        }
+        if (index == filtered.length + 1) {
           return _AddFriendsPromoCard(onTap: onAddFriend);
         }
-        final item = filtered[index];
+        final item = filtered[index - 1];
         return _FriendCard(
           friend: item.friend,
           status: item.status,
@@ -75,6 +78,242 @@ class _FriendsList extends StatelessWidget {
       },
     );
   }
+}
+
+class _TodayInviteSection extends StatelessWidget {
+  const _TodayInviteSection({required this.friends, required this.onInvite});
+
+  final List<_DecoratedFriend> friends;
+  final ValueChanged<NomoFriend> onInvite;
+
+  @override
+  Widget build(BuildContext context) {
+    final candidates = friends
+        .where((item) => item.status.enabled)
+        .take(8)
+        .toList();
+    final blocked = friends
+        .where((item) => !item.status.enabled)
+        .take(2)
+        .toList();
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .60);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
+      decoration: BoxDecoration(
+        color: isWhite ? Colors.white : const Color(0xFF101B28),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(
+          color: isWhite
+              ? const Color(0xFFDCE4EC)
+              : Colors.white.withValues(alpha: .08),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isWhite ? .05 : .22),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const NomoPopIcon(
+                icon: CupertinoIcons.sparkles,
+                color: AppColors.primaryAction,
+                size: 42,
+                iconSize: 22,
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '今日誘えそう',
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.4,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'ステータスを見て、今夜声をかけやすいフレンズを表示しています。',
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          if (candidates.isEmpty)
+            _TodayInviteEmpty(isWhite: isWhite)
+          else
+            SizedBox(
+              height: 136,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: candidates.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 10),
+                itemBuilder: (context, index) => _TodayInviteCandidateCard(
+                  item: candidates[index],
+                  onInvite: () => onInvite(candidates[index].friend),
+                ),
+              ),
+            ),
+          if (blocked.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final item in blocked)
+                  _TodayInviteBlockedChip(item: item, isWhite: isWhite),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _TodayInviteCandidateCard extends StatelessWidget {
+  const _TodayInviteCandidateCard({required this.item, required this.onInvite});
+
+  final _DecoratedFriend item;
+  final VoidCallback onInvite;
+
+  @override
+  Widget build(BuildContext context) {
+    final friend = item.friend;
+    final accent = _accentForFriend(friend);
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    return Container(
+      width: 150,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isWhite
+            ? const Color(0xFFF7F9FB)
+            : Colors.white.withValues(alpha: .055),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: isWhite
+              ? const Color(0xFFE0E6ED)
+              : Colors.white.withValues(alpha: .10),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              NomoAvatarView(
+                avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
+                size: 38,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  friend.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _StatusPill(status: item.status, accent: accent),
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            child: Nomo3DButton(
+              label: '誘う',
+              icon: CupertinoIcons.paperplane_fill,
+              onTap: onInvite,
+              height: 34,
+              radius: 17,
+              color: AppColors.primaryAction,
+              shadowColor: AppColors.primaryActionShadow,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TodayInviteBlockedChip extends StatelessWidget {
+  const _TodayInviteBlockedChip({required this.item, required this.isWhite});
+
+  final _DecoratedFriend item;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: isWhite
+            ? const Color(0xFFF2F4F7)
+            : Colors.white.withValues(alpha: .05),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        '${item.friend.name}: ${item.status.reason}',
+        style: TextStyle(
+          color: isWhite
+              ? const Color(0xFF667381)
+              : Colors.white.withValues(alpha: .56),
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _TodayInviteEmpty extends StatelessWidget {
+  const _TodayInviteEmpty({required this.isWhite});
+
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    '今日は誘えそうなフレンズがまだいません。ステータスが更新されるとここに出ます。',
+    style: TextStyle(
+      color: isWhite
+          ? const Color(0xFF667381)
+          : Colors.white.withValues(alpha: .58),
+      fontSize: 12,
+      fontWeight: FontWeight.w800,
+      height: 1.4,
+    ),
+  );
 }
 
 class _AddFriendsPromoCard extends StatelessWidget {

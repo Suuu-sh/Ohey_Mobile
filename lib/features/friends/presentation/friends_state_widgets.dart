@@ -69,27 +69,52 @@ class _ErrorState extends StatelessWidget {
 }
 
 class _FriendStatus {
-  const _FriendStatus({required this.label, required this.enabled});
+  const _FriendStatus({
+    required this.label,
+    required this.enabled,
+    required this.reason,
+  });
 
   final String label;
   final bool enabled;
+  final String reason;
 }
 
 _FriendStatus _statusForFriend(NomoFriend friend, int _) {
   switch (friend.statusKey) {
     case 'can_drink_today':
-      return const _FriendStatus(label: '今日飲める', enabled: true);
+      return const _FriendStatus(
+        label: '今日飲める',
+        enabled: true,
+        reason: '今夜誘いやすい状態です',
+      );
     case 'non_alcohol':
-      return const _FriendStatus(label: 'ノンアルなら', enabled: true);
+      return const _FriendStatus(
+        label: 'ノンアルなら',
+        enabled: true,
+        reason: 'ノンアル参加なら誘えます',
+      );
     case 'liver_rest':
-      return const _FriendStatus(label: '休肝日', enabled: false);
+      return const _FriendStatus(
+        label: '休肝日',
+        enabled: false,
+        reason: '今日は飲みを控えたい日です',
+      );
     case 'has_plans':
-      return const _FriendStatus(label: '予定あり', enabled: false);
+      return const _FriendStatus(
+        label: '予定あり',
+        enabled: false,
+        reason: '今日は予定が入っています',
+      );
     case 'unselected' || 'unset' || null || '':
-      return const _FriendStatus(label: '未設定', enabled: true);
+      return const _FriendStatus(
+        label: '未設定',
+        enabled: true,
+        reason: '未設定だけど誘えます',
+      );
   }
 
-  return const _FriendStatus(label: '未設定', enabled: true);
+  return const _FriendStatus(label: '未設定', enabled: true, reason: '未設定だけど誘えます');
 }
 
 Color _accentForFriend(NomoFriend friend) {
