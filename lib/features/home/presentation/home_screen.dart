@@ -209,7 +209,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 double _feedHeaderScrollInset(BuildContext context) {
-  return NomoPageHeader.sceneBackdropHeight(context);
+  return NomoPageHeader.contentTopInset(context);
 }
 
 const _feedBottomPageInset = 124.0;
