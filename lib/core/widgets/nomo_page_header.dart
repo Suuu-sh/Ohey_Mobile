@@ -9,6 +9,7 @@ class NomoPageHeader extends StatelessWidget {
     required this.title,
     this.trailing,
     this.titleColor,
+    this.titleOffset = Offset.zero,
   });
 
   static const double height = 52;
@@ -32,6 +33,7 @@ class NomoPageHeader extends StatelessWidget {
   final String title;
   final Widget? trailing;
   final Color? titleColor;
+  final Offset titleOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -45,22 +47,25 @@ class NomoPageHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            child: Text(
-              title,
-              textAlign: TextAlign.left,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              strutStyle: const StrutStyle(
-                fontSize: titleSize,
-                height: 1,
-                forceStrutHeight: true,
-              ),
-              style: TextStyle(
-                color: color,
-                fontSize: titleSize,
-                height: 1,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1.2,
+            child: Transform.translate(
+              offset: titleOffset,
+              child: Text(
+                title,
+                textAlign: TextAlign.left,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                strutStyle: const StrutStyle(
+                  fontSize: titleSize,
+                  height: 1,
+                  forceStrutHeight: true,
+                ),
+                style: TextStyle(
+                  color: color,
+                  fontSize: titleSize,
+                  height: 1,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1.2,
+                ),
               ),
             ),
           ),
