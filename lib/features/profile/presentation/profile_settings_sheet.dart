@@ -424,7 +424,7 @@ class _SheetPrimaryButton extends StatelessWidget {
         ),
         boxShadow: const [
           BoxShadow(
-            color: Color(0xFF079078),
+            color: AppColors.primaryActionShadow,
             offset: Offset(0, 7),
             blurRadius: 0,
           ),
