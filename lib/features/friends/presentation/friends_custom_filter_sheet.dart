@@ -229,6 +229,14 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
       _drinkableOnly ||
       _onlineOnly;
 
+  int get _criteriaCount =>
+      _selectedFriendIds.length +
+      _selectedStatusKeys.length +
+      _selectedGenderKeys.length +
+      (_favoriteOnly ? 1 : 0) +
+      (_drinkableOnly ? 1 : 0) +
+      (_onlineOnly ? 1 : 0);
+
   @override
   void initState() {
     super.initState();
@@ -371,6 +379,13 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
         ),
         decoration: BoxDecoration(
           color: bg,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isWhite
+                ? const [Colors.white, Color(0xFFF7FAFD)]
+                : const [Color(0xFF0B1D2B), Color(0xFF06131F)],
+          ),
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
             color: isWhite
@@ -438,6 +453,17 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                     ],
                   ),
                 ),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(42, 42),
+                  borderRadius: BorderRadius.circular(18),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: NomoGeneratedIcon(
+                    CupertinoIcons.xmark,
+                    color: sub,
+                    size: 24,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -474,6 +500,17 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                           borderSide: BorderSide.none,
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    _FilterSummaryCard(
+                      criteriaCount: _criteriaCount,
+                      friendCount: _selectedFriendIds.length,
+                      statusCount: _selectedStatusKeys.length,
+                      genderCount: _selectedGenderKeys.length,
+                      favoriteOnly: _favoriteOnly,
+                      drinkableOnly: _drinkableOnly,
+                      onlineOnly: _onlineOnly,
+                      isWhite: isWhite,
                     ),
                     const SizedBox(height: 16),
                     _FilterSectionTitle(
@@ -680,6 +717,143 @@ class _FilterSectionTitle extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _FilterSummaryCard extends StatelessWidget {
+  const _FilterSummaryCard({
+    required this.criteriaCount,
+    required this.friendCount,
+    required this.statusCount,
+    required this.genderCount,
+    required this.favoriteOnly,
+    required this.drinkableOnly,
+    required this.onlineOnly,
+    required this.isWhite,
+  });
+
+  final int criteriaCount;
+  final int friendCount;
+  final int statusCount;
+  final int genderCount;
+  final bool favoriteOnly;
+  final bool drinkableOnly;
+  final bool onlineOnly;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF687481)
+        : Colors.white.withValues(alpha: .62);
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isWhite
+            ? const Color(0xFFF7F9FB)
+            : Colors.white.withValues(alpha: .055),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: criteriaCount == 0
+              ? isWhite
+                    ? const Color(0xFFDCE4EC)
+                    : Colors.white.withValues(alpha: .10)
+              : _FriendsColors.lime.withValues(alpha: .38),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: criteriaCount == 0
+                  ? sub.withValues(alpha: .12)
+                  : _FriendsColors.lime,
+            ),
+            child: Center(
+              child: NomoGeneratedIcon(
+                criteriaCount == 0
+                    ? CupertinoIcons.slider_horizontal_3
+                    : CupertinoIcons.checkmark,
+                color: criteriaCount == 0 ? sub : _FriendsColors.bg,
+                size: 21,
+              ),
+            ),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  criteriaCount == 0
+                      ? 'まだ条件が選ばれていません'
+                      : '$criteriaCount件の条件を選択中',
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    if (friendCount > 0) _FilterSummaryPill('$friendCount人'),
+                    if (statusCount > 0)
+                      _FilterSummaryPill('ステータス$statusCount件'),
+                    if (genderCount > 0) _FilterSummaryPill('性別$genderCount件'),
+                    if (favoriteOnly) const _FilterSummaryPill('お気に入り'),
+                    if (drinkableOnly) const _FilterSummaryPill('今日誘える'),
+                    if (onlineOnly) const _FilterSummaryPill('オンライン'),
+                    if (criteriaCount == 0)
+                      Text(
+                        '条件を1つ以上選ぶと保存できます',
+                        style: TextStyle(
+                          color: sub,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilterSummaryPill extends StatelessWidget {
+  const _FilterSummaryPill(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: _FriendsColors.lime.withValues(alpha: .18),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: _FriendsColors.lime,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
     );
   }
 }
