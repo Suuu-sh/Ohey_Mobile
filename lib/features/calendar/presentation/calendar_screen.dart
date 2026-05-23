@@ -9,9 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
-import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
-import '../../../core/widgets/nomo_empty_state.dart';
 import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 
@@ -168,10 +166,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             isWhite: isWhite,
                             onCreatePlan: widget.onCreatePlan,
                           ),
-                          if (monthlyLogs.isEmpty) ...[
-                            const SizedBox(height: 14),
-                            _CalendarEmptyAction(onTap: widget.onCreatePlan),
-                          ],
                         ],
                       ),
                     ),
@@ -525,59 +519,6 @@ String _reservationFriendLabel(List<NomoDrinkInvite> reservations) {
   final first = reservations.first.fromUser.name;
   if (reservations.length == 1) return first;
   return '$firstほか${reservations.length - 1}人';
-}
-
-class _CalendarEmptyAction extends StatelessWidget {
-  const _CalendarEmptyAction({required this.onTap});
-
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
-      decoration: BoxDecoration(
-        color: isWhite
-            ? Colors.white
-            : const Color(0xFF122233).withValues(alpha: .82),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isWhite
-              ? const Color(0xFFDCE4EC)
-              : Colors.white.withValues(alpha: .08),
-        ),
-      ),
-      child: NomoEmptyState(
-        visual: NomoPopIcon(
-          icon: CupertinoIcons.calendar,
-          color: AppColors.primaryAction,
-          size: 52,
-        ),
-        title: 'この月の飲みログはまだありません',
-        message: '予定や思い出を残すと、カレンダーにマークが付きます。',
-        titleColor: isWhite ? const Color(0xFF101820) : Colors.white,
-        messageColor: isWhite
-            ? const Color(0xFF657282)
-            : Colors.white.withValues(alpha: .62),
-        padding: EdgeInsets.zero,
-        action: SizedBox(
-          width: 190,
-          child: Nomo3DButton(
-            label: '飲み予定を作る',
-            icon: CupertinoIcons.calendar_badge_plus,
-            onTap: onTap,
-            height: 46,
-            radius: 21,
-            color: AppColors.primaryAction,
-            shadowColor: AppColors.primaryActionShadow,
-            fontSize: 13,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _PlayfulMonthGrid extends StatelessWidget {
