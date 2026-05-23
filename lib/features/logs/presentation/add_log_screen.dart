@@ -794,15 +794,8 @@ class _PreviewFooter extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (friends.isNotEmpty) ...[
-            Align(
-              alignment: Alignment.centerRight,
-              child: _PreviewFriendsPill(friends: friends, isWhite: isWhite),
-            ),
-            const SizedBox(height: 8),
-          ],
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               SizedBox(
                 width: 112,
@@ -842,6 +835,10 @@ class _PreviewFooter extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              if (friends.isNotEmpty) ...[
+                const SizedBox(width: 10),
+                _PreviewFriendsPill(friends: friends, isWhite: isWhite),
+              ],
             ],
           ),
         ],

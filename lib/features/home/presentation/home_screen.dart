@@ -2102,18 +2102,8 @@ class _FeedCardFooter extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (item.friends.isNotEmpty) ...[
-            Align(
-              alignment: Alignment.centerRight,
-              child: _FeedCompanionInlineButton(
-                friends: item.friends,
-                isWhite: isWhite,
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               SizedBox(
                 width: 112,
@@ -2160,6 +2150,13 @@ class _FeedCardFooter extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              if (item.friends.isNotEmpty) ...[
+                const SizedBox(width: 10),
+                _FeedCompanionInlineButton(
+                  friends: item.friends,
+                  isWhite: isWhite,
+                ),
+              ],
             ],
           ),
         ],
