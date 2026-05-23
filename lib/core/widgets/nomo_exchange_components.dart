@@ -123,8 +123,8 @@ class NomoQrDisplayCard extends StatelessWidget {
   }
 }
 
-class NomoActionCard extends StatelessWidget {
-  const NomoActionCard({
+class NomoExchangeActionCard extends StatelessWidget {
+  const NomoExchangeActionCard({
     super.key,
     required this.icon,
     required this.title,

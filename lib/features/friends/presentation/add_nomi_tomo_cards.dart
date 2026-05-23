@@ -110,7 +110,7 @@ class _ExchangeActionCard extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => NomoActionCard(
+  Widget build(BuildContext context) => NomoExchangeActionCard(
     icon: icon,
     title: title,
     subtitle: subtitle,

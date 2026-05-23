@@ -10,7 +10,7 @@ import '../../../core/models/nomo_avatar.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_toast.dart';
-import '../../../core/widgets/nomo_exchange_widgets.dart';
+import '../../../core/widgets/nomo_exchange_components.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../data/friend_repository.dart';
 
