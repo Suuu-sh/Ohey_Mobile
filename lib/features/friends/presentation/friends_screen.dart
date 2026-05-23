@@ -222,143 +222,127 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       _selectedCustomFilterId,
       _customFilters,
     );
-    final friends = friendsAsync.asData?.value;
-    final drinkableFriendCount = friends == null
-        ? null
-        : _drinkableFriendCount(friends);
+    final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 178;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: isWhite
-              ? const [Colors.white, Colors.white, Color(0xFFF7F9FB)]
-              : AppColors.darkBackgroundGradient,
-        ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            NomoPageHeader.horizontalPadding,
-            NomoPageHeader.topPadding,
-            NomoPageHeader.horizontalPadding,
-            0,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isWhite
+                ? const [Colors.white, Colors.white, Color(0xFFF7F9FB)]
+                : AppColors.darkBackgroundGradient,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _FriendsHeroHeader(
-                isWhite: isWhite,
-                friendCount: friends?.length,
-                drinkableCount: drinkableFriendCount,
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: headerBackgroundHeight,
+              child: _FriendsHeaderBackdrop(isWhite: isWhite),
+            ),
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  NomoPageHeader.horizontalPadding,
+                  6,
+                  NomoPageHeader.horizontalPadding,
+                  0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    NomoHeaderIconButton(
-                      icon: CupertinoIcons.arrow_clockwise,
-                      semanticLabel: 'フレンズを更新',
-                      color: _isRefreshingFriends
-                          ? _FriendsColors.muted
-                          : _FriendsColors.lime,
-                      onTap: _isRefreshingFriends ? () {} : _refreshFriends,
+                    NomoPageHeader(
+                      title: 'フレンズ',
+                      titleColor: _FriendsColors.lime,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          NomoHeaderIconButton(
+                            icon: CupertinoIcons.arrow_clockwise,
+                            semanticLabel: 'フレンズを更新',
+                            color: _isRefreshingFriends
+                                ? _FriendsColors.muted
+                                : _FriendsColors.lime,
+                            onTap: _isRefreshingFriends
+                                ? () {}
+                                : _refreshFriends,
+                          ),
+                          const SizedBox(width: 8),
+                          NomoHeaderIconButton(
+                            icon: CupertinoIcons.plus,
+                            semanticLabel: 'フレンズを追加',
+                            color: _FriendsColors.lime,
+                            onTap: _openAddFriend,
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    NomoHeaderIconButton(
-                      icon: CupertinoIcons.plus,
-                      semanticLabel: 'フレンズを追加',
-                      color: _FriendsColors.lime,
-                      onTap: _openAddFriend,
+                    const SizedBox(height: 14),
+                    _FilterBar(
+                      selected: _selectedFilter,
+                      selectedCustomFilterId: _selectedCustomFilterId,
+                      customFilters: _customFilters,
+                      onChanged: (filter) => setState(() {
+                        _selectedFilter = filter;
+                        _selectedCustomFilterId = null;
+                      }),
+                      onCustomChanged: (filter) => setState(() {
+                        _selectedCustomFilterId = filter.id;
+                      }),
+                      onCustomLongPress: (filter) =>
+                          _openCustomFilterSheet(filter: filter),
+                      onCreateCustom: () => _openCustomFilterSheet(),
+                    ),
+                    const SizedBox(height: 18),
+                    Expanded(
+                      child: friendsAsync.when(
+                        loading: () =>
+                            const _LoadingState(label: '友達を読み込み中...'),
+                        error: (error, stackTrace) => _ErrorState(
+                          title: '友達を読み込めませんでした',
+                          message: '$error',
+                        ),
+                        data: (friends) => _FriendsList(
+                          friends: friends,
+                          userAvatar: user?.avatar ?? NomoAvatar.defaultAvatar,
+                          selectedFilter: _selectedFilter,
+                          selectedCustomFilter: selectedCustomFilter,
+                          favoriteOverrides: _favoriteOverrides,
+                          onFavoriteToggle: (friend, isFavorite) =>
+                              _onToggleFavorite(context, friend, isFavorite),
+                          onInvite: (friend) => _sendDrinkInvite(friend),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-              _FilterBar(
-                selected: _selectedFilter,
-                selectedCustomFilterId: _selectedCustomFilterId,
-                customFilters: _customFilters,
-                onChanged: (filter) => setState(() {
-                  _selectedFilter = filter;
-                  _selectedCustomFilterId = null;
-                }),
-                onCustomChanged: (filter) => setState(() {
-                  _selectedCustomFilterId = filter.id;
-                }),
-                onCustomLongPress: (filter) =>
-                    _openCustomFilterSheet(filter: filter),
-                onCreateCustom: () => _openCustomFilterSheet(),
-              ),
-              const SizedBox(height: 18),
-              Expanded(
-                child: friendsAsync.when(
-                  loading: () => const _LoadingState(label: '友達を読み込み中...'),
-                  error: (error, stackTrace) =>
-                      _ErrorState(title: '友達を読み込めませんでした', message: '$error'),
-                  data: (friends) => _FriendsList(
-                    friends: friends,
-                    userAvatar: user?.avatar ?? NomoAvatar.defaultAvatar,
-                    selectedFilter: _selectedFilter,
-                    selectedCustomFilter: selectedCustomFilter,
-                    favoriteOverrides: _favoriteOverrides,
-                    onFavoriteToggle: (friend, isFavorite) =>
-                        _onToggleFavorite(context, friend, isFavorite),
-                    onInvite: (friend) => _sendDrinkInvite(friend),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _FriendsHeroHeader extends StatelessWidget {
-  const _FriendsHeroHeader({
-    required this.isWhite,
-    required this.trailing,
-    required this.friendCount,
-    required this.drinkableCount,
-  });
+class _FriendsHeaderBackdrop extends StatelessWidget {
+  const _FriendsHeaderBackdrop({required this.isWhite});
 
   final bool isWhite;
-  final Widget trailing;
-  final int? friendCount;
-  final int? drinkableCount;
 
   @override
   Widget build(BuildContext context) {
-    final friendLabel = friendCount == null
-        ? 'フレンズを読み込み中'
-        : '$friendCount人のフレンズ';
-    final drinkableLabel = drinkableCount == null
-        ? '今夜の予定を確認中'
-        : drinkableCount! > 0
-        ? '$drinkableCount人が飲めるかも'
-        : '誘えるフレンズを探そう';
-
-    return Container(
-      height: 174,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(34),
-        border: Border.all(
-          color: isWhite
-              ? Colors.white.withValues(alpha: .78)
-              : _FriendsColors.lime.withValues(alpha: .13),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _FriendsColors.lime.withValues(alpha: isWhite ? .16 : .10),
-            blurRadius: 24,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
+    final fadeColor = isWhite ? Colors.white : AppColors.darkBackgroundBottom;
+    return IgnorePointer(
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -366,7 +350,20 @@ class _FriendsHeroHeader extends StatelessWidget {
             child: Image.asset(
               'assets/images/friends_header_scene.png',
               fit: BoxFit.cover,
-              alignment: Alignment.center,
+              alignment: Alignment.topCenter,
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment.topLeft,
+                radius: 1.05,
+                colors: [
+                  _FriendsColors.lime.withValues(alpha: .18),
+                  Colors.transparent,
+                ],
+                stops: const [.06, 1],
+              ),
             ),
           ),
           DecoratedBox(
@@ -375,112 +372,30 @@ class _FriendsHeroHeader extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFF03101E).withValues(alpha: .42),
-                  const Color(0xFF03101E).withValues(alpha: .08),
-                  const Color(0xFF03101E).withValues(alpha: .72),
+                  const Color(0xFF03101E).withValues(alpha: .12),
+                  const Color(0xFF03101E).withValues(alpha: .06),
+                  fadeColor.withValues(alpha: .92),
+                  fadeColor,
                 ],
-                stops: const [0, .46, 1],
+                stops: const [0, .48, .84, 1],
               ),
             ),
           ),
-          Positioned(
-            left: 16,
-            right: 12,
-            top: 14,
-            child: NomoPageHeader(
-              title: 'フレンズ',
-              titleColor: _FriendsColors.lime,
-              trailing: trailing,
-            ),
-          ),
-          Positioned(
-            left: 18,
-            right: 18,
-            bottom: 16,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '今夜もゆるっと集合',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: .96),
-                    fontSize: 15,
-                    height: 1.15,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.3,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 6,
-                  children: [
-                    _FriendsHeaderPill(
-                      icon: CupertinoIcons.person_2_fill,
-                      label: friendLabel,
-                    ),
-                    _FriendsHeaderPill(
-                      icon: CupertinoIcons.star_fill,
-                      label: drinkableLabel,
-                      emphasized: drinkableCount != null && drinkableCount! > 0,
-                    ),
-                  ],
-                ),
-              ],
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  const Color(0xFF03101E).withValues(alpha: .26),
+                  Colors.transparent,
+                  const Color(0xFF03101E).withValues(alpha: .16),
+                ],
+                stops: const [0, .48, 1],
+              ),
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _FriendsHeaderPill extends StatelessWidget {
-  const _FriendsHeaderPill({
-    required this.icon,
-    required this.label,
-    this.emphasized = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool emphasized;
-
-  @override
-  Widget build(BuildContext context) {
-    final foreground = emphasized ? const Color(0xFF04131F) : Colors.white;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: emphasized
-            ? _FriendsColors.lime.withValues(alpha: .92)
-            : Colors.white.withValues(alpha: .14),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: emphasized
-              ? Colors.white.withValues(alpha: .24)
-              : Colors.white.withValues(alpha: .16),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 13, color: foreground),
-            const SizedBox(width: 5),
-            Text(
-              label,
-              style: TextStyle(
-                color: foreground,
-                fontSize: 11,
-                height: 1,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.2,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1774,12 +1689,6 @@ bool _isDrinkableStatus(_FriendStatus status) {
     '今日飲める' || 'ノンアルなら' || '未設定' => true,
     _ => false,
   };
-}
-
-int _drinkableFriendCount(List<NomoFriend> friends) {
-  return friends
-      .where((friend) => _isDrinkableStatus(_statusForFriend(friend, 0)))
-      .length;
 }
 
 class _FriendCard extends StatelessWidget {
