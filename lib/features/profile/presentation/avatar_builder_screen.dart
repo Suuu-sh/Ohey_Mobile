@@ -2,20 +2,28 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/models/nomo_avatar.dart';
+import '../../../core/models/nomo_gender.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 
 class AvatarBuilderScreen extends StatefulWidget {
-  const AvatarBuilderScreen({super.key, required this.initialAvatar});
+  const AvatarBuilderScreen({
+    super.key,
+    required this.initialAvatar,
+    this.gender = NomoGender.unspecified,
+  });
 
   final NomoAvatar initialAvatar;
+  final NomoGender gender;
 
   @override
   State<AvatarBuilderScreen> createState() => _AvatarBuilderScreenState();
 }
 
 class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
-  late NomoAvatar _avatar = widget.initialAvatar;
+  late NomoAvatar _avatar = widget.initialAvatar.normalizedForGender(
+    widget.gender,
+  );
   _AvatarTab _tab = _AvatarTab.face;
 
   bool get _hasChanges => _avatar.encode() != widget.initialAvatar.encode();
@@ -58,7 +66,9 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
               _Header(
                 onClose: _handleClose,
                 onDone: () => Navigator.of(context).pop(_avatar),
-                onRandom: () => setState(() => _avatar = NomoAvatar.random()),
+                onRandom: () => setState(
+                  () => _avatar = NomoAvatar.random(gender: widget.gender),
+                ),
               ),
               Expanded(
                 child: Column(
@@ -88,7 +98,9 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
                                 icon: CupertinoIcons.shuffle,
                                 label: 'ランダム',
                                 onTap: () => setState(
-                                  () => _avatar = NomoAvatar.random(),
+                                  () => _avatar = NomoAvatar.random(
+                                    gender: widget.gender,
+                                  ),
                                 ),
                               ),
                             ),
@@ -108,6 +120,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
                         child: _OptionsPanel(
                           tab: _tab,
                           avatar: _avatar,
+                          gender: widget.gender,
                           onChanged: (avatar) =>
                               setState(() => _avatar = avatar),
                         ),
@@ -498,11 +511,13 @@ class _OptionsPanel extends StatelessWidget {
   const _OptionsPanel({
     required this.tab,
     required this.avatar,
+    required this.gender,
     required this.onChanged,
   });
 
   final _AvatarTab tab;
   final NomoAvatar avatar;
+  final NomoGender gender;
   final ValueChanged<NomoAvatar> onChanged;
 
   @override
@@ -552,7 +567,7 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('髪型'),
           _ChoiceGrid(
-            count: NomoAvatar.hairStyles.length,
+            indices: NomoAvatar.selectableHairIndicesForGender(gender),
             selected: avatar.hair,
             label: (i) => NomoAvatar.hairStyles[i],
             builder: (i) => NomoAvatarView(
@@ -665,39 +680,47 @@ class _ColorRow extends StatelessWidget {
 
 class _ChoiceGrid extends StatelessWidget {
   const _ChoiceGrid({
-    required this.count,
     required this.selected,
     required this.label,
     required this.builder,
     required this.onTap,
+    this.count,
+    this.indices,
   });
 
-  final int count;
+  final int? count;
+  final List<int>? indices;
   final int selected;
   final String Function(int) label;
   final Widget Function(int) builder;
   final ValueChanged<int> onTap;
 
   @override
-  Widget build(BuildContext context) => GridView.builder(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    itemCount: count,
-    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 3,
-      mainAxisSpacing: 14,
-      crossAxisSpacing: 14,
-      childAspectRatio: .86,
-    ),
-    itemBuilder: (context, i) => GestureDetector(
-      onTap: () => onTap(i),
-      child: _ChoiceTile(
-        selected: selected == i,
-        label: label(i),
-        preview: builder(i),
+  Widget build(BuildContext context) {
+    final items = indices ?? [for (var i = 0; i < (count ?? 0); i++) i];
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: items.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        childAspectRatio: .86,
       ),
-    ),
-  );
+      itemBuilder: (context, itemIndex) {
+        final i = items[itemIndex];
+        return GestureDetector(
+          onTap: () => onTap(i),
+          child: _ChoiceTile(
+            selected: selected == i,
+            label: label(i),
+            preview: builder(i),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _ChoiceTile extends StatelessWidget {

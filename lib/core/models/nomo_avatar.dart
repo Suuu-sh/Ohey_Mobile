@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../config/admin_config.dart';
+import 'nomo_gender.dart';
 
 class NomoAvatar {
   const NomoAvatar({
@@ -45,11 +46,12 @@ class NomoAvatar {
 
   static bool isAdminEmail(String? email) => AdminConfig.isAdminEmail(email);
 
-  static NomoAvatar random() {
+  static NomoAvatar random({NomoGender gender = NomoGender.unspecified}) {
     final random = Random();
+    final hairOptions = selectableHairIndicesForGender(gender);
     return NomoAvatar(
       skin: random.nextInt(skinColors.length),
-      hair: random.nextInt(hairStyles.length),
+      hair: hairOptions[random.nextInt(hairOptions.length)],
       shirt: random.nextInt(shirtColors.length),
       eyes: random.nextInt(eyeStyles.length),
       mouth: random.nextInt(mouthStyles.length),
@@ -102,6 +104,13 @@ class NomoAvatar {
     );
   }
 
+  NomoAvatar normalizedForGender(NomoGender gender) {
+    if (isAdmin) return this;
+    final hairOptions = selectableHairIndicesForGender(gender);
+    if (hairOptions.contains(hair)) return this;
+    return copyWith(hair: hairOptions.first);
+  }
+
   static const skinColors = [
     Color(0xFFFFD8C2),
     Color(0xFFE9A985),
@@ -147,4 +156,16 @@ class NomoAvatar {
   static const eyeStyles = ['まる目', 'にこ目', 'きらきら', 'ぱっちり'];
   static const mouthStyles = ['スマイル', 'にっこり', 'むにゅ'];
   static const accessoryStyles = ['なし', 'メガネ', 'マスク', 'チーク'];
+
+  static const maleHairIndices = [0, 1, 2, 3, 5];
+  static const femaleHairIndices = [1, 4, 6, 7, 8];
+
+  static List<int> selectableHairIndicesForGender(NomoGender gender) =>
+      switch (gender) {
+        NomoGender.male => maleHairIndices,
+        NomoGender.female => femaleHairIndices,
+        NomoGender.unspecified => [
+          for (var i = 0; i < hairStyles.length; i++) i,
+        ],
+      };
 }

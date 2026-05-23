@@ -1195,6 +1195,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                         onChanged: (gender) {
                           setState(() {
                             _gender = gender;
+                            _avatar = _avatar.normalizedForGender(gender);
                             _error = null;
                             _notice = null;
                           });
@@ -1410,10 +1411,18 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   }
 
   Future<void> _openAvatarBuilder() async {
+    if (_gender == NomoGender.unspecified) {
+      setState(() {
+        _error = '先に性別を選択してください。';
+        _notice = null;
+      });
+      return;
+    }
     final result = await Navigator.of(context).push<NomoAvatar>(
       CupertinoPageRoute(
         fullscreenDialog: true,
-        builder: (_) => AvatarBuilderScreen(initialAvatar: _avatar),
+        builder: (_) =>
+            AvatarBuilderScreen(initialAvatar: _avatar, gender: _gender),
       ),
     );
     if (result != null && mounted) {

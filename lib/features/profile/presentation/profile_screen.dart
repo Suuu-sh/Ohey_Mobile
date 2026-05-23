@@ -2126,6 +2126,7 @@ Future<void> _showEditProfileSheet(
                     onChanged: (value) {
                       setState(() {
                         gender = value;
+                        avatar = avatar.normalizedForGender(value);
                         error = null;
                       });
                     },
@@ -2146,6 +2147,7 @@ Future<void> _showEditProfileSheet(
                                     fullscreenDialog: true,
                                     builder: (_) => AvatarBuilderScreen(
                                       initialAvatar: avatar,
+                                      gender: gender,
                                     ),
                                   ),
                                 );

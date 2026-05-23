@@ -1475,7 +1475,7 @@ class _CustomFilterFriendRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${friend.gender.label}・${_statusForFriend(friend, 0).label}',
+                    _statusForFriend(friend, 0).label,
                     style: TextStyle(
                       color: sub,
                       fontSize: 11,
