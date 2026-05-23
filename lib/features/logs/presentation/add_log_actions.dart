@@ -110,13 +110,6 @@ extension _AddLogScreenActions on _AddLogScreenState {
   }
 
   Future<void> _save(List<NomoFriend> friends) async {
-    if (!_hasPhoto) {
-      final hasCapturedPhoto = await _openNomoCamera();
-      if (hasCapturedPhoto && mounted) {
-        NomoToast.show(context, '投稿プレビューを確認してください');
-      }
-      return;
-    }
     setState(() => _isSaving = true);
     final selectedFriends = friends
         .where((friend) => _selectedFriendIds.contains(friend.id))
@@ -142,11 +135,9 @@ extension _AddLogScreenActions on _AddLogScreenState {
     }
   }
 
-  Future<String> _photoPathForSave() async {
+  Future<String?> _photoPathForSave() async {
     final path = _photoPath;
-    if (path == null || path.isEmpty) {
-      throw StateError('写真を追加してください。');
-    }
+    if (path == null || path.isEmpty) return null;
     if (!await nomoIsSquareOrLandscapePhoto(path)) {
       throw StateError('正方形または16:9の横長写真のみ投稿できます。');
     }

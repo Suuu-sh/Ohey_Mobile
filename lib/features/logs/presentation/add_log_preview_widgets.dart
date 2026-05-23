@@ -36,7 +36,7 @@ class _PhotoCapturePrompt extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '写真を追加',
+                  '写真を追加（任意）',
                   style: TextStyle(
                     color: _AddLogColors.primaryTextFor(context),
                     fontSize: 15,
@@ -45,7 +45,7 @@ class _PhotoCapturePrompt extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '撮影後に投稿プレビューを確認できます',
+                  '写真なしでも保存できます。撮る場合はこちら',
                   style: TextStyle(
                     color: _AddLogColors.secondaryTextFor(context),
                     fontSize: 12,

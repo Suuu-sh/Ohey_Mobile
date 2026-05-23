@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/calendar/presentation/calendar_screen.dart';
@@ -101,6 +103,30 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
   ];
 
   Future<void> _openDrinkLogFlow() async {
+    final action = await showModalBottomSheet<_DrinkLogStartAction>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: .58),
+      builder: (_) => const _DrinkLogStartSheet(),
+    );
+    if (!mounted || action == null) return;
+
+    switch (action) {
+      case _DrinkLogStartAction.camera:
+        await _openCameraDrinkLogFlow();
+      case _DrinkLogStartAction.noPhoto:
+      case _DrinkLogStartAction.plan:
+        await Navigator.of(
+          context,
+        ).push<void>(CupertinoPageRoute(builder: (_) => const AddLogScreen()));
+      case _DrinkLogStartAction.gallery:
+        await _openGalleryDrinkLogFlow();
+    }
+  }
+
+  Future<void> _openCameraDrinkLogFlow() async {
     final result = await Navigator.of(context).push<NomoCameraResult>(
       CupertinoPageRoute(
         fullscreenDialog: true,
@@ -112,6 +138,20 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     await Navigator.of(context).push<void>(
       CupertinoPageRoute(
         builder: (_) => AddLogScreen(initialPhotoPath: result.path),
+      ),
+    );
+  }
+
+  Future<void> _openGalleryDrinkLogFlow() async {
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 92,
+    );
+    if (!mounted || picked == null) return;
+
+    await Navigator.of(context).push<void>(
+      CupertinoPageRoute(
+        builder: (_) => AddLogScreen(initialPhotoPath: picked.path),
       ),
     );
   }
@@ -346,6 +386,201 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+enum _DrinkLogStartAction { camera, noPhoto, gallery, plan }
+
+class _DrinkLogStartSheet extends StatelessWidget {
+  const _DrinkLogStartSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final background = isWhite ? Colors.white : const Color(0xFF071320);
+    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .62);
+
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(
+            color: isWhite
+                ? const Color(0xFFDCE4EC)
+                : Colors.white.withValues(alpha: .12),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .28),
+              blurRadius: 32,
+              offset: const Offset(0, 16),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: sub.withValues(alpha: .34),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'どう残しますか？',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: ink,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.6,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '写真なしでも、あとからでも飲みログを残せます。',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: sub,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 18),
+            _DrinkLogStartTile(
+              icon: CupertinoIcons.camera_fill,
+              color: AppColors.primaryAction,
+              title: '写真を撮って残す',
+              subtitle: '今の一杯を撮影して投稿',
+              onTap: () =>
+                  Navigator.of(context).pop(_DrinkLogStartAction.camera),
+            ),
+            const SizedBox(height: 10),
+            _DrinkLogStartTile(
+              icon: CupertinoIcons.text_badge_plus,
+              color: AppColors.invite,
+              title: '写真なしで残す',
+              subtitle: '場所・フレンズ・コメントだけで記録',
+              onTap: () =>
+                  Navigator.of(context).pop(_DrinkLogStartAction.noPhoto),
+            ),
+            const SizedBox(height: 10),
+            _DrinkLogStartTile(
+              icon: CupertinoIcons.photo_on_rectangle,
+              color: AppColors.info,
+              title: '過去の写真から残す',
+              subtitle: 'ライブラリの写真を使って投稿',
+              onTap: () =>
+                  Navigator.of(context).pop(_DrinkLogStartAction.gallery),
+            ),
+            const SizedBox(height: 10),
+            _DrinkLogStartTile(
+              icon: CupertinoIcons.calendar_badge_plus,
+              color: AppColors.warning,
+              title: '飲み予定を作る',
+              subtitle: 'これからの予定を先にメモ',
+              onTap: () => Navigator.of(context).pop(_DrinkLogStartAction.plan),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DrinkLogStartTile extends StatelessWidget {
+  const _DrinkLogStartTile({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .58);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? const Color(0xFFF6F8FA)
+              : Colors.white.withValues(alpha: .055),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isWhite
+                ? const Color(0xFFE0E6ED)
+                : Colors.white.withValues(alpha: .10),
+          ),
+        ),
+        child: Row(
+          children: [
+            NomoPopIcon(icon: icon, color: color, size: 46, iconSize: 25),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: ink,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: sub,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      height: 1.25,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            NomoGeneratedIcon(
+              CupertinoIcons.chevron_right,
+              color: sub,
+              size: 22,
+            ),
+          ],
         ),
       ),
     );
