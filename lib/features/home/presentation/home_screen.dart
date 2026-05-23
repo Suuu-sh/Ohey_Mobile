@@ -331,7 +331,7 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 5200),
+      duration: const Duration(milliseconds: 11200),
     )..repeat();
   }
 
@@ -352,18 +352,18 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
               animation: _controller,
               builder: (context, child) {
                 final loop = _controller.value;
-                final walk = .5 - .5 * math.cos(loop * math.pi * 2);
-                final facingRight = loop <= .5;
-                final step = math.sin(loop * math.pi * 8);
-                final bob = math.sin(loop * math.pi * 8).abs() * 1.4;
                 final groupWidth = math.min(constraints.maxWidth, 168.0);
                 final travel = math.max(0.0, constraints.maxWidth - groupWidth);
-                final left = travel * walk;
-                final arrowLift = -7 * walk;
-                final arrowOpacity = (.42 + .58 * (1 - walk)).clamp(0.0, 1.0);
+                final motion = _nomoSwipeHintMotion(loop, travel);
+                final arrowPulse = .5 - .5 * math.cos(loop * math.pi * 4);
+                final arrowLift = -7 * arrowPulse;
+                final arrowOpacity = (.44 + .56 * (1 - arrowPulse)).clamp(
+                  0.0,
+                  1.0,
+                );
 
                 return Transform.translate(
-                  offset: Offset(left, 0),
+                  offset: Offset(motion.left, 0),
                   child: SizedBox(
                     width: groupWidth,
                     height: 60,
@@ -382,14 +382,25 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
                         Positioned(
                           left: 4,
                           bottom: 0,
-                          child: Transform.translate(
-                            offset: Offset(0, -bob),
+                          child: Transform.rotate(
+                            angle: motion.tilt,
                             child: _WalkingNomo(
-                              step: step,
-                              facingRight: facingRight,
+                              step: motion.step,
+                              verticalOffset: motion.verticalOffset,
+                              facingRight: motion.facingRight,
+                              mood: motion.mood,
+                              moodProgress: motion.moodProgress,
                             ),
                           ),
                         ),
+                        if (motion.mood == _WalkingNomoMood.sleep)
+                          Positioned(
+                            left: 38,
+                            bottom: 42,
+                            child: _NomoSleepMarks(
+                              progress: motion.moodProgress,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -397,6 +408,158 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
               },
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _NomoSwipeHintMotion {
+  const _NomoSwipeHintMotion({
+    required this.left,
+    required this.step,
+    required this.verticalOffset,
+    required this.tilt,
+    required this.facingRight,
+    required this.mood,
+    required this.moodProgress,
+  });
+
+  final double left;
+  final double step;
+  final double verticalOffset;
+  final double tilt;
+  final bool facingRight;
+  final _WalkingNomoMood mood;
+  final double moodProgress;
+}
+
+enum _WalkingNomoMood { walk, lookAround, hop, sleep }
+
+double _segmentProgress(double value, double start, double end) {
+  return ((value - start) / (end - start)).clamp(0.0, 1.0);
+}
+
+double _easeInOut(double value) {
+  return Curves.easeInOutCubic.transform(value.clamp(0.0, 1.0));
+}
+
+_NomoSwipeHintMotion _nomoSwipeHintMotion(double loop, double travel) {
+  if (loop < .31) {
+    final p = _segmentProgress(loop, 0, .31);
+    final eased = _easeInOut(p);
+    final step = math.sin(eased * math.pi * 5);
+    return _NomoSwipeHintMotion(
+      left: travel * (.04 + .58 * eased),
+      step: step,
+      verticalOffset: -step.abs() * 1.15,
+      tilt: math.sin(eased * math.pi * 2) * .025,
+      facingRight: true,
+      mood: _WalkingNomoMood.walk,
+      moodProgress: p,
+    );
+  }
+
+  if (loop < .43) {
+    final p = _segmentProgress(loop, .31, .43);
+    return _NomoSwipeHintMotion(
+      left: travel * .62 + math.sin(p * math.pi * 2) * 3,
+      step: math.sin(p * math.pi * 2) * .18,
+      verticalOffset: -math.sin(p * math.pi).abs() * .55,
+      tilt: math.sin(p * math.pi * 2) * .045,
+      facingRight: p < .58,
+      mood: _WalkingNomoMood.lookAround,
+      moodProgress: p,
+    );
+  }
+
+  if (loop < .57) {
+    final p = _segmentProgress(loop, .43, .57);
+    final hop = math.sin(p * math.pi * 2).abs();
+    final lean = math.sin(p * math.pi * 4);
+    return _NomoSwipeHintMotion(
+      left: travel * .62 + math.sin(p * math.pi * 2) * 4,
+      step: lean * .35,
+      verticalOffset: -hop * 12,
+      tilt: lean * .08,
+      facingRight: true,
+      mood: _WalkingNomoMood.hop,
+      moodProgress: p,
+    );
+  }
+
+  if (loop < .70) {
+    final p = _segmentProgress(loop, .57, .70);
+    final eased = _easeInOut(p);
+    final step = math.sin(eased * math.pi * 3);
+    return _NomoSwipeHintMotion(
+      left: travel * (.62 + .25 * eased),
+      step: step,
+      verticalOffset: -step.abs() * 1.05,
+      tilt: math.sin(eased * math.pi * 2) * .02,
+      facingRight: true,
+      mood: _WalkingNomoMood.walk,
+      moodProgress: p,
+    );
+  }
+
+  if (loop < .84) {
+    final p = _segmentProgress(loop, .70, .84);
+    final breathe = math.sin(p * math.pi * 4);
+    return _NomoSwipeHintMotion(
+      left: travel * .87,
+      step: 0,
+      verticalOffset: breathe * .45,
+      tilt: -.18 + breathe * .015,
+      facingRight: true,
+      mood: _WalkingNomoMood.sleep,
+      moodProgress: p,
+    );
+  }
+
+  final p = _segmentProgress(loop, .84, 1);
+  final eased = _easeInOut(p);
+  final step = math.sin(eased * math.pi * 4);
+  return _NomoSwipeHintMotion(
+    left: travel * (.87 - .83 * eased),
+    step: step,
+    verticalOffset: -step.abs() * 1.1,
+    tilt: math.sin(eased * math.pi * 2) * .025,
+    facingRight: false,
+    mood: _WalkingNomoMood.walk,
+    moodProgress: p,
+  );
+}
+
+class _NomoSleepMarks extends StatelessWidget {
+  const _NomoSleepMarks({required this.progress});
+
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final opacity = (.35 + .65 * math.sin(progress * math.pi).abs()).clamp(
+      0.0,
+      1.0,
+    );
+    return Transform.translate(
+      offset: Offset(0, -progress * 5),
+      child: Opacity(
+        opacity: opacity,
+        child: Text(
+          'Zzz',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.4,
+            shadows: [
+              Shadow(
+                color: const Color(0xFF162130).withValues(alpha: .55),
+                blurRadius: 6,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -496,28 +659,52 @@ class _NomoSpeechBubble extends StatelessWidget {
 }
 
 class _WalkingNomo extends StatelessWidget {
-  const _WalkingNomo({required this.step, required this.facingRight});
+  const _WalkingNomo({
+    required this.step,
+    required this.verticalOffset,
+    required this.facingRight,
+    required this.mood,
+    required this.moodProgress,
+  });
 
   final double step;
+  final double verticalOffset;
   final bool facingRight;
+  final _WalkingNomoMood mood;
+  final double moodProgress;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 48,
-      height: 56,
-      child: CustomPaint(
-        painter: _WalkingNomoPainter(step: step, facingRight: facingRight),
+    return Transform.translate(
+      offset: Offset(0, verticalOffset),
+      child: SizedBox(
+        width: 48,
+        height: 56,
+        child: CustomPaint(
+          painter: _WalkingNomoPainter(
+            step: step,
+            facingRight: facingRight,
+            mood: mood,
+            moodProgress: moodProgress,
+          ),
+        ),
       ),
     );
   }
 }
 
 class _WalkingNomoPainter extends CustomPainter {
-  const _WalkingNomoPainter({required this.step, required this.facingRight});
+  const _WalkingNomoPainter({
+    required this.step,
+    required this.facingRight,
+    required this.mood,
+    required this.moodProgress,
+  });
 
   final double step;
   final bool facingRight;
+  final _WalkingNomoMood mood;
+  final double moodProgress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -534,13 +721,22 @@ class _WalkingNomoPainter extends CustomPainter {
       canvas.scale(-1, 1);
     }
 
+    final isSleeping = mood == _WalkingNomoMood.sleep;
+    final isHopping = mood == _WalkingNomoMood.hop;
+    final isLookingAround = mood == _WalkingNomoMood.lookAround;
+    if (isSleeping) {
+      canvas.translate(2, 6);
+      canvas.rotate(-.16);
+    }
+
     final legPaint = Paint()
       ..color = const Color(0xFFFF4CAF)
       ..strokeWidth = 5
       ..strokeCap = StrokeCap.round;
     final shoePaint = Paint()..color = const Color(0xFF111723);
-    final backFoot = Offset(20 - step * 3.6, 51);
-    final frontFoot = Offset(30 + step * 4.2, 51);
+    final legStride = isSleeping ? 0.0 : step;
+    final backFoot = Offset(20 - legStride * 3.6, isSleeping ? 50 : 51);
+    final frontFoot = Offset(30 + legStride * 4.2, isSleeping ? 50 : 51);
     canvas.drawLine(const Offset(21, 38), backFoot, legPaint);
     canvas.drawLine(const Offset(29, 38), frontFoot, legPaint);
     canvas.drawOval(
@@ -560,14 +756,18 @@ class _WalkingNomoPainter extends CustomPainter {
       ..color = const Color(0xFFFF4CAF)
       ..strokeWidth = 4.2
       ..strokeCap = StrokeCap.round;
+    final armSwing = isSleeping ? 0.0 : step;
+    final hopArmLift = isHopping
+        ? math.sin(moodProgress * math.pi * 2).abs() * 5
+        : 0.0;
     canvas.drawLine(
       const Offset(18, 30),
-      Offset(12, 35 + step * 2.7),
+      Offset(12, 35 + armSwing * 2.7 - hopArmLift),
       backArmPaint,
     );
     canvas.drawLine(
       const Offset(34, 30),
-      Offset(40, 35 - step * 2.7),
+      Offset(40, 35 - armSwing * 2.7 - hopArmLift),
       frontArmPaint,
     );
 
@@ -588,6 +788,9 @@ class _WalkingNomoPainter extends CustomPainter {
       ..cubicTo(10, 43, 8, 34, 10, 25)
       ..cubicTo(12, 17, 16, 13, 24, 12)
       ..close();
+    if (isLookingAround) {
+      canvas.translate(math.sin(moodProgress * math.pi * 2) * 1.1, 0);
+    }
     canvas.drawPath(body.shift(const Offset(0, 1.5)), shadowPaint);
     canvas.drawPath(body, bodyPaint);
     canvas.drawPath(body, outlinePaint);
@@ -611,12 +814,40 @@ class _WalkingNomoPainter extends CustomPainter {
 
     final eyePaint = Paint()..color = const Color(0xFF111723);
     final highlightPaint = Paint()..color = Colors.white;
-    canvas.drawOval(
-      const Rect.fromLTWH(20.5, 25.5, 5, 9),
-      Paint()..color = const Color(0xFF111723).withValues(alpha: .22),
-    );
-    canvas.drawOval(const Rect.fromLTWH(29, 23, 8.5, 13), eyePaint);
-    canvas.drawOval(const Rect.fromLTWH(31, 24, 3.7, 3.7), highlightPaint);
+    if (isSleeping) {
+      final sleepEyePaint = Paint()
+        ..color = const Color(0xFF111723)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(
+        const Offset(21, 30),
+        const Offset(26, 30),
+        sleepEyePaint,
+      );
+      canvas.drawLine(
+        const Offset(31, 29),
+        const Offset(37, 29),
+        sleepEyePaint,
+      );
+    } else {
+      final sleepyBlink = isLookingAround && moodProgress > .62;
+      canvas.drawOval(
+        const Rect.fromLTWH(20.5, 25.5, 5, 9),
+        Paint()..color = const Color(0xFF111723).withValues(alpha: .22),
+      );
+      if (sleepyBlink) {
+        final blinkPaint = Paint()
+          ..color = const Color(0xFF111723)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.8
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(const Offset(29, 30), const Offset(37, 30), blinkPaint);
+      } else {
+        canvas.drawOval(const Rect.fromLTWH(29, 23, 8.5, 13), eyePaint);
+        canvas.drawOval(const Rect.fromLTWH(31, 24, 3.7, 3.7), highlightPaint);
+      }
+    }
 
     final mouthPaint = Paint()
       ..color = const Color(0xFF111723)
@@ -631,12 +862,61 @@ class _WalkingNomoPainter extends CustomPainter {
       mouthPaint,
     );
 
+    if (isSleeping) {
+      _drawSleepingMarks(canvas, moodProgress);
+    } else if (isHopping) {
+      _drawHopSpark(canvas, moodProgress);
+    }
+
     canvas.restore();
+  }
+
+  void _drawSleepingMarks(Canvas canvas, double progress) {
+    final zOpacity = (.30 + .70 * math.sin(progress * math.pi).abs()).clamp(
+      0.0,
+      1.0,
+    );
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: 'Zz',
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: zOpacity),
+          fontSize: 9,
+          fontWeight: FontWeight.w900,
+          shadows: [
+            Shadow(
+              color: const Color(0xFF162130).withValues(alpha: .40),
+              blurRadius: 5,
+            ),
+          ],
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    textPainter.paint(canvas, Offset(32, 5 - progress * 3));
+  }
+
+  void _drawHopSpark(Canvas canvas, double progress) {
+    final sparklePaint = Paint()
+      ..color = const Color(0xFFB9FF1E).withValues(
+        alpha: (.35 + .55 * math.sin(progress * math.pi * 2).abs()).clamp(
+          0.0,
+          1.0,
+        ),
+      )
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round;
+    final y = 12 + math.sin(progress * math.pi * 2).abs() * 3;
+    canvas.drawLine(Offset(12, y), Offset(12, y + 6), sparklePaint);
+    canvas.drawLine(Offset(9, y + 3), Offset(15, y + 3), sparklePaint);
   }
 
   @override
   bool shouldRepaint(covariant _WalkingNomoPainter oldDelegate) {
-    return oldDelegate.step != step || oldDelegate.facingRight != facingRight;
+    return oldDelegate.step != step ||
+        oldDelegate.facingRight != facingRight ||
+        oldDelegate.mood != mood ||
+        oldDelegate.moodProgress != moodProgress;
   }
 }
 
