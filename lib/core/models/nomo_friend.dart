@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import 'nomo_avatar.dart';
+import 'nomo_gender.dart';
 
 enum NomiTomoKind { bunny, cat, bear, penguin, puppy, cloud }
 
@@ -16,6 +17,7 @@ class NomoFriend {
     required this.characterAssetPath,
     required this.kind,
     required this.palette,
+    this.gender = NomoGender.unspecified,
     this.avatar,
     this.monthlyCount,
     this.statusKey,
@@ -30,6 +32,7 @@ class NomoFriend {
   final String characterAssetPath;
   final NomiTomoKind kind;
   final NomiTomoPalette palette;
+  final NomoGender gender;
   final NomoAvatar? avatar;
   final int? monthlyCount;
   final String? statusKey;

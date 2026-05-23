@@ -12,6 +12,7 @@ import '../../../core/data/backend_api_client.dart';
 import '../../../core/data/nomo_last_account_store.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/nomo_avatar.dart';
+import '../../../core/models/nomo_gender.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
@@ -151,6 +152,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   final _nameController = TextEditingController();
   final _demoController = PageController();
   NomoAvatar _avatar = NomoAvatar.defaultAvatar;
+  NomoGender _gender = NomoGender.unspecified;
   _OnboardingStep _step = _OnboardingStep.intro;
   int _demoPage = 0;
   bool _isLogin = true;
@@ -711,6 +713,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _userIdController.clear();
       _nameController.clear();
       _avatar = NomoAvatar.defaultAvatar;
+      _gender = NomoGender.unspecified;
       _error = null;
       _notice = null;
     });
@@ -791,6 +794,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       _userIdController.clear();
       _nameController.clear();
       _avatar = NomoAvatar.defaultAvatar;
+      _gender = NomoGender.unspecified;
       _step = _OnboardingStep.profile;
       _error = null;
       _notice = null;
@@ -1055,6 +1059,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     final canSubmit =
         _isValidUserId(_userIdController.text.trim()) &&
         _nameController.text.trim().isNotEmpty &&
+        _gender != NomoGender.unspecified &&
         !_isBusy;
 
     return LayoutBuilder(
@@ -1094,7 +1099,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                       ),
                       SizedBox(height: compact ? 6 : 12),
                       Text(
-                        '友達リストに表示する名前と自分だけのアバターを作ってね。',
+                        '友達リストに表示する名前・性別と自分だけのアバターを作ってね。',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: .66),
                           fontSize: compact ? 12 : 15,
@@ -1182,6 +1187,19 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
                           },
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      _SignupGenderSelector(
+                        selectedGender: _gender,
+                        enabled: !_isBusy,
+                        compact: compact,
+                        onChanged: (gender) {
+                          setState(() {
+                            _gender = gender;
+                            _error = null;
+                            _notice = null;
+                          });
+                        },
+                      ),
                       if (_error != null) ...[
                         const SizedBox(height: 10),
                         _DarkMessageText(_error!, isError: true),
@@ -1260,6 +1278,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     if (!_validateRegistrationProfile()) return;
     final userId = _userIdController.text.trim();
     final name = _nameController.text.trim();
+    final gender = _gender;
 
     setState(() {
       _isBusy = true;
@@ -1281,6 +1300,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
           data: {
             'user_id': userId,
             'display_name': name,
+            'gender': gender.key,
             'character_key': 'avatar',
             'avatar_url': _avatar.encode(),
           },
@@ -1296,7 +1316,12 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       }
       await ref
           .read(nomoUserProvider.notifier)
-          .createUser(name: name, userId: userId, avatar: _avatar);
+          .createUser(
+            name: name,
+            userId: userId,
+            gender: gender,
+            avatar: _avatar,
+          );
       await _saveLastAccount(_emailController.text.trim());
     } on AuthException catch (e) {
       if (mounted) {
@@ -1328,6 +1353,13 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       });
       return false;
     }
+    if (_gender == NomoGender.unspecified) {
+      setState(() {
+        _error = '性別を選択してください。';
+        _notice = null;
+      });
+      return false;
+    }
     return true;
   }
 
@@ -1337,6 +1369,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     final userId = metadata['user_id'] as String?;
     final displayName = metadata['display_name'] as String?;
     final avatarUrl = metadata['avatar_url'] as String?;
+    final gender = nomoGenderFromKey(metadata['gender'] as String?);
     if (userId != null && _userIdController.text.trim().isEmpty) {
       _userIdController.text = userId;
     }
@@ -1345,6 +1378,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     }
     final avatar = NomoAvatar.decode(avatarUrl);
     if (avatar != null) _avatar = avatar;
+    if (gender != NomoGender.unspecified) _gender = gender;
   }
 
   Future<void> _saveLastAccount(String email) async {
@@ -2458,6 +2492,113 @@ class _SignupProfileTextField extends StatelessWidget {
       ],
     ),
   );
+}
+
+class _SignupGenderSelector extends StatelessWidget {
+  const _SignupGenderSelector({
+    required this.selectedGender,
+    required this.enabled,
+    required this.compact,
+    required this.onChanged,
+  });
+
+  final NomoGender selectedGender;
+  final bool enabled;
+  final bool compact;
+  final ValueChanged<NomoGender> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      for (var i = 0; i < selectableNomoGenders.length; i++) ...[
+        Expanded(
+          child: _SignupGenderOption(
+            gender: selectableNomoGenders[i],
+            selected: selectedGender == selectableNomoGenders[i],
+            enabled: enabled,
+            compact: compact,
+            onTap: () => onChanged(selectableNomoGenders[i]),
+          ),
+        ),
+        if (i != selectableNomoGenders.length - 1) const SizedBox(width: 10),
+      ],
+    ],
+  );
+}
+
+class _SignupGenderOption extends StatelessWidget {
+  const _SignupGenderOption({
+    required this.gender,
+    required this.selected,
+    required this.enabled,
+    required this.compact,
+    required this.onTap,
+  });
+
+  final NomoGender gender;
+  final bool selected;
+  final bool enabled;
+  final bool compact;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = gender == NomoGender.male
+        ? const Color(0xFF18AFFF)
+        : const Color(0xFFFF5AA6);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: enabled ? onTap : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOutCubic,
+        height: compact ? 48 : 58,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: selected
+              ? accent.withValues(alpha: .92)
+              : const Color(0xFF132630).withValues(alpha: .74),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: selected
+                ? Colors.white.withValues(alpha: .26)
+                : Colors.white.withValues(alpha: .18),
+            width: 2,
+          ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: accent.withValues(alpha: .28),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            NomoGeneratedIcon(
+              gender == NomoGender.male
+                  ? CupertinoIcons.person_fill
+                  : CupertinoIcons.person_crop_circle_fill,
+              color: Colors.white,
+              size: compact ? 18 : 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              gender.label,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: compact ? 15 : 17,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _PlainLoginTextField extends StatelessWidget {

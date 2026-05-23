@@ -4,8 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/backend_api_client.dart';
 import '../data/nomo_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
-import '../models/nomo_user.dart';
 import '../models/nomo_avatar.dart';
+import '../models/nomo_gender.dart';
+import '../models/nomo_user.dart';
 
 final nomoUserProvider = NotifierProvider<NomoUserController, NomoUser?>(
   NomoUserController.new,
@@ -37,6 +38,7 @@ class NomoUserController extends Notifier<NomoUser?> {
           ? row['display_name'] as String
           : 'mi-mu',
       userId: (row['user_id'] as String?) ?? _defaultUserId(userId),
+      gender: nomoGenderFromKey(row['gender'] as String?),
       avatar: NomoAvatar.decode(row['avatar_url'] as String?),
       dailyStatus: nomoDailyStatusFromKey(statusRow?['status'] as String?),
       isPlus: (row['is_plus'] as bool?) ?? false,
@@ -47,6 +49,7 @@ class NomoUserController extends Notifier<NomoUser?> {
   Future<void> createUser({
     required String name,
     required String userId,
+    required NomoGender gender,
     NomoAvatar? avatar,
   }) async {
     final client = ref.read(backendApiClientProvider);
@@ -71,6 +74,7 @@ class NomoUserController extends Notifier<NomoUser?> {
     await client.put('/v1/me/profile', {
       'user_id': normalizedUserId,
       'display_name': trimmed,
+      'gender': gender.key,
       'character_key': 'avatar',
       'avatar_url': profileAvatar?.encode() ?? '',
     });
@@ -79,12 +83,14 @@ class NomoUserController extends Notifier<NomoUser?> {
       name: trimmed,
       avatar: profileAvatar,
       userId: normalizedUserId,
+      gender: gender,
     );
   }
 
   Future<void> updateProfile({
     required String name,
     required String userId,
+    required NomoGender gender,
     NomoAvatar? avatar,
   }) async {
     final client = ref.read(backendApiClientProvider);
@@ -109,6 +115,7 @@ class NomoUserController extends Notifier<NomoUser?> {
     await client.patch('/v1/me/profile', {
       'user_id': normalizedUserId,
       'display_name': trimmed,
+      'gender': gender.key,
       'character_key': 'avatar',
       'avatar_url': profileAvatar?.encode() ?? '',
     });
@@ -123,6 +130,7 @@ class NomoUserController extends Notifier<NomoUser?> {
             .copyWith(
               name: trimmed,
               userId: normalizedUserId,
+              gender: gender,
               avatar: profileAvatar,
             );
   }

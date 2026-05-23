@@ -7,6 +7,7 @@ import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
+import '../../../core/models/nomo_gender.dart';
 
 final drinkLogRepositoryProvider = Provider<DrinkLogRepository>((ref) {
   return BackendDrinkLogRepository(
@@ -272,6 +273,7 @@ NomoFriend _friendFromProfileRow(
     characterAssetPath: '',
     kind: NomiTomoKind.cloud,
     palette: _paletteFromKey(profile['palette'] as String?),
+    gender: nomoGenderFromKey(profile['gender'] as String?),
     avatar: NomoAvatar.decode(profile['avatar_url'] as String?),
     isFavorite: isFavorite,
     statusKey: statusKey,

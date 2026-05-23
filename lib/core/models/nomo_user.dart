@@ -1,4 +1,5 @@
 import 'nomo_avatar.dart';
+import 'nomo_gender.dart';
 
 enum NomoDailyStatus {
   unselected,
@@ -53,6 +54,7 @@ class NomoUser {
   const NomoUser({
     required this.name,
     required this.userId,
+    this.gender = NomoGender.unspecified,
     this.dailyStatus = NomoDailyStatus.unselected,
     this.isPlus = false,
     this.avatar,
@@ -60,6 +62,7 @@ class NomoUser {
 
   final String name;
   final String userId;
+  final NomoGender gender;
   final NomoDailyStatus dailyStatus;
   final bool isPlus;
   final NomoAvatar? avatar;
@@ -67,6 +70,7 @@ class NomoUser {
   NomoUser copyWith({
     String? name,
     String? userId,
+    NomoGender? gender,
     NomoDailyStatus? dailyStatus,
     bool? isPlus,
     NomoAvatar? avatar,
@@ -74,6 +78,7 @@ class NomoUser {
     return NomoUser(
       name: name ?? this.name,
       userId: userId ?? this.userId,
+      gender: gender ?? this.gender,
       dailyStatus: dailyStatus ?? this.dailyStatus,
       isPlus: isPlus ?? this.isPlus,
       avatar: avatar ?? this.avatar,

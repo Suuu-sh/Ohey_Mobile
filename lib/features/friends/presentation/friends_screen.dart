@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
+import '../../../core/models/nomo_gender.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
@@ -569,6 +570,7 @@ class _CustomFriendFilter {
     required this.name,
     this.friendIds = const [],
     this.statusKeys = const [],
+    this.genderKeys = const [],
     this.favoriteOnly = false,
     this.drinkableOnly = false,
     this.onlineOnly = false,
@@ -578,6 +580,7 @@ class _CustomFriendFilter {
   final String name;
   final List<String> friendIds;
   final List<String> statusKeys;
+  final List<String> genderKeys;
   final bool favoriteOnly;
   final bool drinkableOnly;
   final bool onlineOnly;
@@ -585,6 +588,7 @@ class _CustomFriendFilter {
   bool get hasCriteria =>
       friendIds.isNotEmpty ||
       statusKeys.isNotEmpty ||
+      genderKeys.isNotEmpty ||
       favoriteOnly ||
       drinkableOnly ||
       onlineOnly;
@@ -594,6 +598,7 @@ class _CustomFriendFilter {
     'name': name,
     'friendIds': friendIds,
     'statusKeys': statusKeys,
+    'genderKeys': genderKeys,
     'favoriteOnly': favoriteOnly,
     'drinkableOnly': drinkableOnly,
     'onlineOnly': onlineOnly,
@@ -605,6 +610,7 @@ class _CustomFriendFilter {
     final name = (value['name'] as String?)?.trim();
     final rawFriendIds = value['friendIds'];
     final rawStatusKeys = value['statusKeys'];
+    final rawGenderKeys = value['genderKeys'];
     if (id == null || id.isEmpty || name == null || name.isEmpty) {
       return null;
     }
@@ -622,11 +628,19 @@ class _CustomFriendFilter {
                 statusKey.trim(),
           ]
         : const <String>[];
+    final genderKeys = rawGenderKeys is List
+        ? [
+            for (final genderKey in rawGenderKeys)
+              if (genderKey is String && _isSelectableGenderKey(genderKey))
+                genderKey.trim().toLowerCase(),
+          ]
+        : const <String>[];
     final filter = _CustomFriendFilter(
       id: id,
       name: name,
       friendIds: friendIds,
       statusKeys: statusKeys,
+      genderKeys: genderKeys,
       favoriteOnly: value['favoriteOnly'] == true,
       drinkableOnly: value['drinkableOnly'] == true,
       onlineOnly: value['onlineOnly'] == true,
@@ -658,6 +672,10 @@ class _CustomFilterSheetResult {
 
 String _customFilterStorageKey(String userId) =>
     'nomo_custom_friend_filters_v1_$userId';
+
+bool _isSelectableGenderKey(String key) => selectableNomoGenders.any(
+  (gender) => gender.key == key.trim().toLowerCase(),
+);
 
 List<_CustomFriendFilter> _decodeCustomFilters(String? raw) {
   if (raw == null || raw.trim().isEmpty) return const [];
@@ -845,6 +863,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
   late final TextEditingController _nameController;
   late Set<String> _selectedFriendIds;
   late Set<String> _selectedStatusKeys;
+  late Set<String> _selectedGenderKeys;
   late bool _favoriteOnly;
   late bool _drinkableOnly;
   late bool _onlineOnly;
@@ -857,6 +876,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
   bool get _hasCriteria =>
       _selectedFriendIds.isNotEmpty ||
       _selectedStatusKeys.isNotEmpty ||
+      _selectedGenderKeys.isNotEmpty ||
       _favoriteOnly ||
       _drinkableOnly ||
       _onlineOnly;
@@ -871,6 +891,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
           });
     _selectedFriendIds = {...?widget.initialFilter?.friendIds};
     _selectedStatusKeys = {...?widget.initialFilter?.statusKeys};
+    _selectedGenderKeys = {...?widget.initialFilter?.genderKeys};
     _favoriteOnly = widget.initialFilter?.favoriteOnly ?? false;
     _drinkableOnly = widget.initialFilter?.drinkableOnly ?? false;
     _onlineOnly = widget.initialFilter?.onlineOnly ?? false;
@@ -897,6 +918,16 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
     setState(() {
       if (!_selectedStatusKeys.add(statusKey)) {
         _selectedStatusKeys.remove(statusKey);
+      }
+      _errorText = null;
+    });
+  }
+
+  void _toggleGender(String genderKey) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      if (!_selectedGenderKeys.add(genderKey)) {
+        _selectedGenderKeys.remove(genderKey);
       }
       _errorText = null;
     });
@@ -938,6 +969,14 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
       ..sort(
         (a, b) => (statusOrder[a] ?? 9999).compareTo(statusOrder[b] ?? 9999),
       );
+    final genderOrder = {
+      for (var i = 0; i < selectableNomoGenders.length; i++)
+        selectableNomoGenders[i].key: i,
+    };
+    final genderKeys = _selectedGenderKeys.toList()
+      ..sort(
+        (a, b) => (genderOrder[a] ?? 9999).compareTo(genderOrder[b] ?? 9999),
+      );
     Navigator.of(context).pop(
       _CustomFilterSheetResult.save(
         _CustomFriendFilter(
@@ -947,6 +986,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
           name: name,
           friendIds: friendIds,
           statusKeys: statusKeys,
+          genderKeys: genderKeys,
           favoriteOnly: _favoriteOnly,
           drinkableOnly: _drinkableOnly,
           onlineOnly: _onlineOnly,
@@ -1040,7 +1080,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        'メンバー・ステータス・お気に入りで絞り込めます',
+                        'メンバー・性別・ステータス・お気に入りで絞り込めます',
                         style: TextStyle(
                           color: sub,
                           fontSize: 12,
@@ -1132,6 +1172,33 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                             setter: (value) => _onlineOnly = value,
                           ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _FilterSectionTitle(
+                      label: '性別',
+                      helper: '何も選ばない場合は男女どちらも対象です',
+                      color: ink,
+                      helperColor: sub,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final gender in selectableNomoGenders)
+                          _CriteriaToggleChip(
+                            label: gender.label,
+                            icon: gender == NomoGender.male
+                                ? CupertinoIcons.person_fill
+                                : CupertinoIcons.person_crop_circle_fill,
+                            selected: _selectedGenderKeys.contains(gender.key),
+                            accent: gender == NomoGender.male
+                                ? const Color(0xFF18AFFF)
+                                : const Color(0xFFFF5AA6),
+                            isWhite: isWhite,
+                            onTap: () => _toggleGender(gender.key),
+                          ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -1408,7 +1475,7 @@ class _CustomFilterFriendRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _statusForFriend(friend, 0).label,
+                    '${friend.gender.label}・${_statusForFriend(friend, 0).label}',
                     style: TextStyle(
                       color: sub,
                       fontSize: 11,
@@ -1538,6 +1605,10 @@ bool _matchesCustomFilter(_DecoratedFriend item, _CustomFriendFilter filter) {
       !filter.statusKeys.contains(_normalizedStatusKey(item.friend))) {
     return false;
   }
+  if (filter.genderKeys.isNotEmpty &&
+      !filter.genderKeys.contains(item.friend.gender.key)) {
+    return false;
+  }
   if (filter.favoriteOnly && !item.friend.isFavorite) return false;
   if (filter.drinkableOnly && !_isDrinkableStatus(item.status)) return false;
   if (filter.onlineOnly && item.friend.isOnline != true) return false;
@@ -1564,6 +1635,7 @@ NomoFriend _friendWithFavorite(NomoFriend friend, bool isFavorite) {
     characterAssetPath: friend.characterAssetPath,
     kind: friend.kind,
     palette: friend.palette,
+    gender: friend.gender,
     avatar: friend.avatar,
     monthlyCount: friend.monthlyCount,
     statusKey: friend.statusKey,

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/supabase_config.dart';
 import '../../../core/data/backend_api_client.dart';
+import '../../../core/models/nomo_gender.dart';
 import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
@@ -497,7 +498,7 @@ class _AdminUserCard extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               Text(
-                _adminStatusLabel(user.status),
+                '${_adminGenderLabel(user.gender)} / ${_adminStatusLabel(user.status)}',
                 style: const TextStyle(
                   color: _AdminColors.sub,
                   fontWeight: FontWeight.w800,
@@ -652,6 +653,7 @@ class _AdminUserEditorScreenState
   late final TextEditingController _userIdController;
   late final TextEditingController _displayNameController;
   late bool _isPlus;
+  late String _gender;
   late String _status;
   bool _saving = false;
   String? _error;
@@ -669,6 +671,7 @@ class _AdminUserEditorScreenState
       text: user?.displayName ?? '',
     );
     _isPlus = user?.isPlus ?? false;
+    _gender = _adminNormalizeGender(user?.gender ?? NomoGender.unspecified.key);
     _status = _adminNormalizeStatus(
       user?.status ?? NomoDailyStatus.unselected.key,
     );
@@ -699,6 +702,7 @@ class _AdminUserEditorScreenState
               password: _passwordController.text.trim(),
               userId: _userIdController.text.trim(),
               displayName: _displayNameController.text.trim(),
+              gender: _gender,
               status: _status,
               isPlus: _isPlus,
             );
@@ -715,6 +719,7 @@ class _AdminUserEditorScreenState
                   : _passwordController.text.trim(),
               userId: _userIdController.text.trim(),
               displayName: _displayNameController.text.trim(),
+              gender: _gender,
               status: _status,
               isPlus: _isPlus,
             );
@@ -796,6 +801,14 @@ class _AdminUserEditorScreenState
               _AdminInput(controller: _userIdController, label: 'ユーザーID'),
               const SizedBox(height: 10),
               _AdminInput(controller: _displayNameController, label: '表示名'),
+              const SizedBox(height: 10),
+              _AdminGenderDropdown(
+                label: '性別',
+                value: _gender,
+                onChanged: (value) {
+                  if (value != null) setState(() => _gender = value);
+                },
+              ),
               const SizedBox(height: 10),
               _AdminStatusDropdown(
                 label: 'ステータス',
@@ -1442,6 +1455,57 @@ class _AdminStatusDropdown extends StatelessWidget {
   }
 }
 
+class _AdminGenderDropdown extends StatelessWidget {
+  const _AdminGenderDropdown({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String value;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = _adminNormalizeGender(value);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .06),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _AdminColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: _AdminColors.sub,
+              fontWeight: FontWeight.w800,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final gender in _adminSelectableGenders)
+                _AdminStatusChip(
+                  label: gender.label,
+                  selected: gender.key == selected,
+                  onTap: () => onChanged(gender.key),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _AdminStatusChip extends StatelessWidget {
   const _AdminStatusChip({
     required this.label,
@@ -1496,12 +1560,26 @@ const _adminSelectableStatusKeys = <NomoDailyStatus>[
   NomoDailyStatus.hasPlans,
 ];
 
+const _adminSelectableGenders = <NomoGender>[
+  NomoGender.unspecified,
+  NomoGender.male,
+  NomoGender.female,
+];
+
 String _adminStatusLabel(String status) {
   return nomoDailyStatusFromKey(status).label;
 }
 
+String _adminGenderLabel(String gender) {
+  return nomoGenderFromKey(gender).label;
+}
+
 String _adminNormalizeStatus(String status) {
   return nomoDailyStatusFromKey(status).key;
+}
+
+String _adminNormalizeGender(String gender) {
+  return nomoGenderFromKey(gender).key;
 }
 
 class _AdminSwitchRow extends StatelessWidget {

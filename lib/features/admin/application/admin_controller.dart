@@ -53,6 +53,7 @@ class AdminController {
     required String password,
     required String userId,
     required String displayName,
+    required String gender,
     required String status,
     required bool isPlus,
   }) async {
@@ -61,6 +62,7 @@ class AdminController {
       'password': password,
       'user_id': userId,
       'display_name': displayName,
+      'gender': gender,
       'status': status,
       'is_plus': isPlus,
     });
@@ -72,12 +74,14 @@ class AdminController {
     String? password,
     required String userId,
     required String displayName,
+    required String gender,
     required String status,
     required bool isPlus,
   }) async {
     final body = <String, dynamic>{
       'user_id': userId,
       'display_name': displayName,
+      'gender': gender,
       'status': status,
       'is_plus': isPlus,
     };
@@ -173,6 +177,7 @@ class AdminUserProfile {
     required this.id,
     required this.userId,
     required this.displayName,
+    required this.gender,
     required this.status,
     required this.isPlus,
     this.avatarUrl,
@@ -183,6 +188,7 @@ class AdminUserProfile {
   final String userId;
   final String displayName;
   final String? avatarUrl;
+  final String gender;
   final String status;
   final bool isPlus;
   final DateTime? createdAt;
@@ -193,6 +199,7 @@ class AdminUserProfile {
       userId: json['user_id'] as String? ?? '',
       displayName: json['display_name'] as String? ?? 'Nomo user',
       avatarUrl: json['avatar_url'] as String?,
+      gender: json['gender'] as String? ?? 'unspecified',
       status: json['status'] as String? ?? 'unselected',
       isPlus: json['is_plus'] as bool? ?? false,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? ''),

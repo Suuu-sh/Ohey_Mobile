@@ -4,6 +4,7 @@ import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/models/nomo_friend.dart';
+import '../../../core/models/nomo_gender.dart';
 
 final drinkInviteRepositoryProvider = Provider<DrinkInviteRepository>((ref) {
   return DrinkInviteRepository(ref.watch(backendApiClientProvider));
@@ -137,6 +138,7 @@ class DrinkInviteRepository {
       characterAssetPath: '',
       kind: NomiTomoKind.cloud,
       palette: NomiTomoPalette.mint,
+      gender: nomoGenderFromKey(profile['gender'] as String?),
       avatar: NomoAvatar.decode(profile['avatar_url'] as String?),
     );
   }
