@@ -27,9 +27,7 @@ class NomoCameraResult {
 }
 
 class NomoCameraScreen extends ConsumerStatefulWidget {
-  const NomoCameraScreen({super.key, this.returnPhoto = false});
-
-  final bool returnPhoto;
+  const NomoCameraScreen({super.key});
 
   @override
   ConsumerState<NomoCameraScreen> createState() => _NomoCameraScreenState();
@@ -50,7 +48,6 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
       ? _CameraFilter.avatar
       : _CameraFilter.original;
   _CameraFraming _selectedFraming = _CameraFraming.square;
-  bool _showStoryPreview = false;
   bool _isClosing = false;
 
   bool get _canUseArFilters =>
@@ -194,7 +191,6 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
           fit: StackFit.expand,
           children: [
             _CameraPreviewStage(
-              showStoryPreview: _showStoryPreview,
               onClose: _closeCamera,
               cameraController: _cameraController,
               selectedFilter: _selectedFilter,
@@ -206,7 +202,6 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
                   _canUseArFilters && _selectedFraming.allowsArFilters
                   ? _selectNextFilter
                   : null,
-              onBackToCamera: () => setState(() => _showStoryPreview = false),
             ),
             if (_selectedFraming == _CameraFraming.landscape)
               Positioned(
@@ -270,10 +265,6 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
       final shot = await controller.takePicture();
       if (!mounted) return;
       final outputPath = await _photoPathForSelectedFraming(shot.path);
-      if (!widget.returnPhoto) {
-        setState(() => _showStoryPreview = true);
-        return;
-      }
       await _closeCamera(
         NomoCameraResult(path: outputPath, filterName: _plainFilterName),
       );
@@ -300,10 +291,6 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
       final path = await controller.capture();
       if (!mounted) return;
       final outputPath = await _photoPathForSelectedFraming(path);
-      if (!widget.returnPhoto) {
-        setState(() => _showStoryPreview = true);
-        return;
-      }
       await _closeCamera(
         NomoCameraResult(
           path: outputPath,
@@ -415,7 +402,6 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
 
     setState(() {
       _selectedFilter = filter;
-      _showStoryPreview = false;
       _isInitializingCamera = !willUseAr;
     });
 
@@ -449,10 +435,6 @@ class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
       if (picked == null || !mounted) return;
       final outputPath = await _photoPathFromAlbum(picked.path);
       if (outputPath == null || !mounted) return;
-      if (!widget.returnPhoto) {
-        setState(() => _showStoryPreview = true);
-        return;
-      }
       await _closeCamera(
         NomoCameraResult(path: outputPath, filterName: _plainFilterName),
       );
@@ -556,7 +538,6 @@ enum _CameraFraming {
 
 class _CameraPreviewStage extends StatelessWidget {
   const _CameraPreviewStage({
-    required this.showStoryPreview,
     required this.cameraController,
     required this.selectedFilter,
     required this.selectedFraming,
@@ -565,10 +546,8 @@ class _CameraPreviewStage extends StatelessWidget {
     required this.onArViewCreated,
     required this.onToggleFilter,
     required this.onClose,
-    required this.onBackToCamera,
   });
 
-  final bool showStoryPreview;
   final CameraController? cameraController;
   final _CameraFilter selectedFilter;
   final _CameraFraming selectedFraming;
@@ -577,7 +556,6 @@ class _CameraPreviewStage extends StatelessWidget {
   final ValueChanged<_ArAvatarCameraController> onArViewCreated;
   final VoidCallback? onToggleFilter;
   final VoidCallback onClose;
-  final VoidCallback onBackToCamera;
 
   @override
   Widget build(BuildContext context) {
@@ -602,7 +580,6 @@ class _CameraPreviewStage extends StatelessWidget {
             aspectRatio: selectedFraming.frameAspectRatio,
             label: selectedFraming.label,
           ),
-          if (showStoryPreview) _StoryPreviewOverlay(onClose: onBackToCamera),
           _TopCameraControls(onClose: onClose),
           if (onToggleFilter != null)
             _FilterToggleButton(
@@ -1300,68 +1277,6 @@ class _AlbumButton extends StatelessWidget {
         color: Colors.white,
         size: 34,
         showBubble: false,
-      ),
-    );
-  }
-}
-
-class _StoryPreviewOverlay extends StatelessWidget {
-  const _StoryPreviewOverlay({required this.onClose});
-
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: DecoratedBox(
-        decoration: BoxDecoration(color: Colors.black.withValues(alpha: .28)),
-        child: Center(
-          child: Container(
-            width: 260,
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .94),
-              borderRadius: BorderRadius.circular(26),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  '撮影しました',
-                  style: TextStyle(
-                    color: Color(0xFF101820),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'フィルターなしの通常カメラで撮影しています。',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Color(0xFF66717D),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                CupertinoButton(
-                  minimumSize: Size.zero,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 10,
-                  ),
-                  borderRadius: BorderRadius.circular(999),
-                  color: const Color(0xFF101820),
-                  onPressed: onClose,
-                  child: const Text(
-                    'カメラに戻る',
-                    style: TextStyle(fontWeight: FontWeight.w900),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

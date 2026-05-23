@@ -65,7 +65,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell> {
     final result = await Navigator.of(context).push<NomoCameraResult>(
       CupertinoPageRoute(
         fullscreenDialog: true,
-        builder: (_) => const NomoCameraScreen(returnPhoto: true),
+        builder: (_) => const NomoCameraScreen(),
       ),
     );
     if (!mounted || result == null) return;

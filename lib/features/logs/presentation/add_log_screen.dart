@@ -232,7 +232,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
     final result = await Navigator.of(context).push<NomoCameraResult>(
       CupertinoPageRoute(
         fullscreenDialog: true,
-        builder: (_) => const NomoCameraScreen(returnPhoto: true),
+        builder: (_) => const NomoCameraScreen(),
       ),
     );
     if (result == null || !mounted) return false;
