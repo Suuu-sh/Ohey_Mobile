@@ -478,22 +478,16 @@ class _ProfileColors {
 
 Color _statusColor(NomoDailyStatus status) => switch (status) {
   NomoDailyStatus.canDrinkToday => _ProfileColors.lime,
-  NomoDailyStatus.lightDrink => const Color(0xFF58D6FF),
-  NomoDailyStatus.wantDrinkHard => const Color(0xFFFFC857),
   NomoDailyStatus.nonAlcohol => const Color(0xFF5DEBD3),
   NomoDailyStatus.liverRest => _ProfileColors.pink,
-  NomoDailyStatus.waitingInvite => const Color(0xFFC08BFF),
   NomoDailyStatus.hasPlans => const Color(0xFFB8C1CD),
   NomoDailyStatus.unselected => _ProfileColors.sub,
 };
 
 IconData _statusIcon(NomoDailyStatus status) => switch (status) {
   NomoDailyStatus.canDrinkToday => CupertinoIcons.checkmark_circle_fill,
-  NomoDailyStatus.lightDrink => CupertinoIcons.clock_fill,
-  NomoDailyStatus.wantDrinkHard => Icons.local_bar_rounded,
   NomoDailyStatus.nonAlcohol => CupertinoIcons.drop_fill,
   NomoDailyStatus.liverRest => CupertinoIcons.moon_fill,
-  NomoDailyStatus.waitingInvite => CupertinoIcons.bell_fill,
   NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
   NomoDailyStatus.unselected => CupertinoIcons.circle,
 };
@@ -521,11 +515,8 @@ Future<void> _respondDrinkInvite(
 
 const _selectableDailyStatuses = <NomoDailyStatus>[
   NomoDailyStatus.canDrinkToday,
-  NomoDailyStatus.lightDrink,
-  NomoDailyStatus.wantDrinkHard,
   NomoDailyStatus.nonAlcohol,
   NomoDailyStatus.liverRest,
-  NomoDailyStatus.waitingInvite,
   NomoDailyStatus.hasPlans,
 ];
 

@@ -3713,11 +3713,8 @@ IconData _companionStatusIcon(String? statusKey) {
   final status = nomoDailyStatusFromKey(statusKey);
   return switch (status) {
     NomoDailyStatus.canDrinkToday => CupertinoIcons.checkmark_circle_fill,
-    NomoDailyStatus.lightDrink => CupertinoIcons.clock_fill,
-    NomoDailyStatus.wantDrinkHard => Icons.local_bar_rounded,
     NomoDailyStatus.nonAlcohol => CupertinoIcons.drop_fill,
     NomoDailyStatus.liverRest => CupertinoIcons.moon_fill,
-    NomoDailyStatus.waitingInvite => CupertinoIcons.bell_fill,
     NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
     NomoDailyStatus.unselected => CupertinoIcons.circle,
   };
@@ -3727,11 +3724,8 @@ Color _companionStatusColor(String? statusKey) {
   final status = nomoDailyStatusFromKey(statusKey);
   return switch (status) {
     NomoDailyStatus.canDrinkToday => const Color(0xFF9AF21A),
-    NomoDailyStatus.lightDrink => const Color(0xFF58D6FF),
-    NomoDailyStatus.wantDrinkHard => const Color(0xFFFFC857),
     NomoDailyStatus.nonAlcohol => const Color(0xFF5DEBD3),
     NomoDailyStatus.liverRest => const Color(0xFFFF5EA8),
-    NomoDailyStatus.waitingInvite => const Color(0xFFC08BFF),
     NomoDailyStatus.hasPlans => const Color(0xFFB8C1CD),
     NomoDailyStatus.unselected => _FeedColors.sub,
   };

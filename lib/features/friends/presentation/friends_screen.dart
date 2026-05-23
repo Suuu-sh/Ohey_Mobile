@@ -538,13 +538,10 @@ class _FriendStatusOption {
 
 const _statusOptions = [
   _FriendStatusOption(key: 'can_drink_today', label: '今日飲める', enabled: true),
-  _FriendStatusOption(key: 'light_drink', label: '軽く一杯なら', enabled: true),
-  _FriendStatusOption(key: 'want_drink_hard', label: 'しっかり飲みたい', enabled: true),
   _FriendStatusOption(key: 'non_alcohol', label: 'ノンアルなら', enabled: true),
-  _FriendStatusOption(key: 'waiting_invite', label: '誘われ待ち', enabled: true),
   _FriendStatusOption(key: 'liver_rest', label: '休肝日', enabled: false),
   _FriendStatusOption(key: 'has_plans', label: '予定あり', enabled: false),
-  _FriendStatusOption(key: 'unset', label: '未設定', enabled: false),
+  _FriendStatusOption(key: 'unset', label: '未設定', enabled: true),
 ];
 
 class _FilterChip extends StatelessWidget {
@@ -1379,10 +1376,7 @@ bool _matchesCustomFilter(_DecoratedFriend item, _CustomFriendFilter filter) {
 String _normalizedStatusKey(NomoFriend friend) {
   return switch (friend.statusKey) {
     'can_drink_today' => 'can_drink_today',
-    'light_drink' => 'light_drink',
-    'want_drink_hard' => 'want_drink_hard',
     'non_alcohol' => 'non_alcohol',
-    'waiting_invite' => 'waiting_invite',
     'liver_rest' => 'liver_rest',
     'has_plans' => 'has_plans',
     _ => 'unset',
@@ -1534,7 +1528,7 @@ class _EmptyFriendsState extends StatelessWidget {
 
 bool _isDrinkableStatus(_FriendStatus status) {
   return switch (status.label) {
-    '今日飲める' || '軽く一杯なら' || 'しっかり飲みたい' || 'ノンアルなら' || '誘われ待ち' => true,
+    '今日飲める' || 'ノンアルなら' || '未設定' => true,
     _ => false,
   };
 }
@@ -1872,14 +1866,8 @@ _FriendStatus _statusForFriend(NomoFriend friend, int _) {
   switch (friend.statusKey) {
     case 'can_drink_today':
       return const _FriendStatus(label: '今日飲める', enabled: true);
-    case 'light_drink':
-      return const _FriendStatus(label: '軽く一杯なら', enabled: true);
-    case 'want_drink_hard':
-      return const _FriendStatus(label: 'しっかり飲みたい', enabled: true);
     case 'non_alcohol':
       return const _FriendStatus(label: 'ノンアルなら', enabled: true);
-    case 'waiting_invite':
-      return const _FriendStatus(label: '誘われ待ち', enabled: true);
     case 'liver_rest':
       return const _FriendStatus(label: '休肝日', enabled: false);
     case 'has_plans':
