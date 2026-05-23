@@ -91,7 +91,8 @@ Prepare local dart-define files:
 ```sh
 cp config/firebase/dev.json.example config/firebase/dev.json
 cp config/firebase/prod.json.example config/firebase/prod.json
-# Fill FIREBASE_* / SUPABASE_* values from Firebase and Supabase.
+# Fill FIREBASE_* / SUPABASE_* / NOMO_* values from Firebase, Supabase, and secrets.
+dart scripts/check_dart_define_keys.dart config/firebase/dev.json config/firebase/prod.json
 ```
 
 Run dev builds with:
