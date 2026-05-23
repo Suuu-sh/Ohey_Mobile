@@ -199,7 +199,7 @@ class _SimpleHero extends StatelessWidget {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(18, 13, 18, 14),
-            color: isWhite ? Colors.white : const Color(0xFF101D25),
+            color: AppColors.darkBackgroundBottom,
             child: Center(
               child: Text(
                 '$name ・ $joinedMonth 参加',
@@ -207,7 +207,7 @@ class _SimpleHero extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: isWhite ? const Color(0xFF59636E) : _ProfileColors.sub,
+                  color: Colors.white.withValues(alpha: .72),
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.4,
                 ),
