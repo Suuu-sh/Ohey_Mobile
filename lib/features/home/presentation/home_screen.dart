@@ -139,7 +139,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: NomoPageHeader(
               title: 'フィード',
               titleColor: _FeedColors.teal,
-              titleOffset: const Offset(0, -22),
+              titleOffset: const Offset(0, -54),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
