@@ -394,17 +394,36 @@ class _CustomFriendFilter {
   const _CustomFriendFilter({
     required this.id,
     required this.name,
-    required this.friendIds,
+    this.friendIds = const [],
+    this.statusKeys = const [],
+    this.favoriteOnly = false,
+    this.drinkableOnly = false,
+    this.onlineOnly = false,
   });
 
   final String id;
   final String name;
   final List<String> friendIds;
+  final List<String> statusKeys;
+  final bool favoriteOnly;
+  final bool drinkableOnly;
+  final bool onlineOnly;
+
+  bool get hasCriteria =>
+      friendIds.isNotEmpty ||
+      statusKeys.isNotEmpty ||
+      favoriteOnly ||
+      drinkableOnly ||
+      onlineOnly;
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
     'friendIds': friendIds,
+    'statusKeys': statusKeys,
+    'favoriteOnly': favoriteOnly,
+    'drinkableOnly': drinkableOnly,
+    'onlineOnly': onlineOnly,
   };
 
   static _CustomFriendFilter? fromJson(Object? value) {
@@ -412,6 +431,7 @@ class _CustomFriendFilter {
     final id = (value['id'] as String?)?.trim();
     final name = (value['name'] as String?)?.trim();
     final rawFriendIds = value['friendIds'];
+    final rawStatusKeys = value['statusKeys'];
     if (id == null || id.isEmpty || name == null || name.isEmpty) {
       return null;
     }
@@ -422,8 +442,24 @@ class _CustomFriendFilter {
                 friendId.trim(),
           ]
         : const <String>[];
-    if (friendIds.isEmpty) return null;
-    return _CustomFriendFilter(id: id, name: name, friendIds: friendIds);
+    final statusKeys = rawStatusKeys is List
+        ? [
+            for (final statusKey in rawStatusKeys)
+              if (statusKey is String && statusKey.trim().isNotEmpty)
+                statusKey.trim(),
+          ]
+        : const <String>[];
+    final filter = _CustomFriendFilter(
+      id: id,
+      name: name,
+      friendIds: friendIds,
+      statusKeys: statusKeys,
+      favoriteOnly: value['favoriteOnly'] == true,
+      drinkableOnly: value['drinkableOnly'] == true,
+      onlineOnly: value['onlineOnly'] == true,
+    );
+    if (!filter.hasCriteria) return null;
+    return filter;
   }
 }
 
@@ -487,6 +523,29 @@ const _customFilterAccents = [
 
 Color _customFilterAccent(int index) =>
     _customFilterAccents[index % _customFilterAccents.length];
+
+class _FriendStatusOption {
+  const _FriendStatusOption({
+    required this.key,
+    required this.label,
+    required this.enabled,
+  });
+
+  final String key;
+  final String label;
+  final bool enabled;
+}
+
+const _statusOptions = [
+  _FriendStatusOption(key: 'can_drink_today', label: '今日飲める', enabled: true),
+  _FriendStatusOption(key: 'light_drink', label: '軽く一杯なら', enabled: true),
+  _FriendStatusOption(key: 'want_drink_hard', label: 'しっかり飲みたい', enabled: true),
+  _FriendStatusOption(key: 'non_alcohol', label: 'ノンアルなら', enabled: true),
+  _FriendStatusOption(key: 'waiting_invite', label: '誘われ待ち', enabled: true),
+  _FriendStatusOption(key: 'liver_rest', label: '休肝日', enabled: false),
+  _FriendStatusOption(key: 'has_plans', label: '予定あり', enabled: false),
+  _FriendStatusOption(key: 'unset', label: '未設定', enabled: false),
+];
 
 class _FilterChip extends StatelessWidget {
   const _FilterChip({
@@ -615,12 +674,22 @@ class _CustomFilterSheet extends StatefulWidget {
 class _CustomFilterSheetState extends State<_CustomFilterSheet> {
   late final TextEditingController _nameController;
   late Set<String> _selectedFriendIds;
+  late Set<String> _selectedStatusKeys;
+  late bool _favoriteOnly;
+  late bool _drinkableOnly;
+  late bool _onlineOnly;
   String? _errorText;
 
   bool get _isEditing => widget.initialFilter != null;
 
-  bool get _canSave =>
-      _nameController.text.trim().isNotEmpty && _selectedFriendIds.isNotEmpty;
+  bool get _canSave => _nameController.text.trim().isNotEmpty && _hasCriteria;
+
+  bool get _hasCriteria =>
+      _selectedFriendIds.isNotEmpty ||
+      _selectedStatusKeys.isNotEmpty ||
+      _favoriteOnly ||
+      _drinkableOnly ||
+      _onlineOnly;
 
   @override
   void initState() {
@@ -631,6 +700,10 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
             setState(() => _errorText = null);
           });
     _selectedFriendIds = {...?widget.initialFilter?.friendIds};
+    _selectedStatusKeys = {...?widget.initialFilter?.statusKeys};
+    _favoriteOnly = widget.initialFilter?.favoriteOnly ?? false;
+    _drinkableOnly = widget.initialFilter?.drinkableOnly ?? false;
+    _onlineOnly = widget.initialFilter?.onlineOnly ?? false;
   }
 
   @override
@@ -649,23 +722,51 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
     });
   }
 
+  void _toggleStatus(String statusKey) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      if (!_selectedStatusKeys.add(statusKey)) {
+        _selectedStatusKeys.remove(statusKey);
+      }
+      _errorText = null;
+    });
+  }
+
+  void _setBoolCondition({
+    required bool value,
+    required ValueChanged<bool> setter,
+  }) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      setter(!value);
+      _errorText = null;
+    });
+  }
+
   void _save() {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       setState(() => _errorText = 'フィルター名を入力してね');
       return;
     }
-    if (_selectedFriendIds.isEmpty) {
-      setState(() => _errorText = 'フレンズを1人以上選んでね');
+    if (!_hasCriteria) {
+      setState(() => _errorText = '条件を1つ以上選んでね');
       return;
     }
     final existingOrder = {
       for (var i = 0; i < widget.friends.length; i++) widget.friends[i].id: i,
     };
+    final statusOrder = {
+      for (var i = 0; i < _statusOptions.length; i++) _statusOptions[i].key: i,
+    };
     final friendIds = _selectedFriendIds.toList()
       ..sort(
         (a, b) =>
             (existingOrder[a] ?? 9999).compareTo(existingOrder[b] ?? 9999),
+      );
+    final statusKeys = _selectedStatusKeys.toList()
+      ..sort(
+        (a, b) => (statusOrder[a] ?? 9999).compareTo(statusOrder[b] ?? 9999),
       );
     Navigator.of(context).pop(
       _CustomFilterSheetResult.save(
@@ -675,6 +776,10 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
               DateTime.now().microsecondsSinceEpoch.toString(),
           name: name,
           friendIds: friendIds,
+          statusKeys: statusKeys,
+          favoriteOnly: _favoriteOnly,
+          drinkableOnly: _drinkableOnly,
+          onlineOnly: _onlineOnly,
         ),
       ),
     );
@@ -698,13 +803,14 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
     final fieldBg = isWhite
         ? const Color(0xFFF2F6FA)
         : Colors.white.withValues(alpha: .07);
-    final listHeight = (widget.friends.length * 62.0).clamp(124.0, 330.0);
-
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: Container(
         margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
         padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * .88,
+        ),
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(30),
@@ -764,7 +870,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        'よく誘うメンバーだけをまとめられます',
+                        'メンバー・ステータス・お気に入りで絞り込めます',
                         style: TextStyle(
                           color: sub,
                           fontSize: 12,
@@ -777,56 +883,133 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
               ],
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: _nameController,
-              textInputAction: TextInputAction.done,
-              cursorColor: _FriendsColors.lime,
-              style: TextStyle(
-                color: ink,
-                fontSize: 16,
-                fontWeight: FontWeight.w900,
-              ),
-              decoration: InputDecoration(
-                hintText: '例：いつメン',
-                hintStyle: TextStyle(color: sub, fontWeight: FontWeight.w800),
-                filled: true,
-                fillColor: fieldBg,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 13,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              '表示するフレンズ',
-              style: TextStyle(
-                color: ink,
-                fontSize: 13,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: listHeight,
-              child: ListView.separated(
+            Flexible(
+              child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                itemCount: widget.friends.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 8),
-                itemBuilder: (context, index) {
-                  final friend = widget.friends[index];
-                  final selected = _selectedFriendIds.contains(friend.id);
-                  return _CustomFilterFriendRow(
-                    friend: friend,
-                    selected: selected,
-                    isWhite: isWhite,
-                    onTap: () => _toggleFriend(friend.id),
-                  );
-                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: _nameController,
+                      textInputAction: TextInputAction.done,
+                      cursorColor: _FriendsColors.lime,
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: '例：いつメン / 休肝日以外',
+                        hintStyle: TextStyle(
+                          color: sub,
+                          fontWeight: FontWeight.w800,
+                        ),
+                        filled: true,
+                        fillColor: fieldBg,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 13,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _FilterSectionTitle(
+                      label: '絞り込み条件',
+                      helper: '複数選ぶとすべてに当てはまるフレンズだけ表示します',
+                      color: ink,
+                      helperColor: sub,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _CriteriaToggleChip(
+                          label: 'お気に入りのみ',
+                          icon: CupertinoIcons.star_fill,
+                          selected: _favoriteOnly,
+                          accent: const Color(0xFFFFC700),
+                          isWhite: isWhite,
+                          onTap: () => _setBoolCondition(
+                            value: _favoriteOnly,
+                            setter: (value) => _favoriteOnly = value,
+                          ),
+                        ),
+                        _CriteriaToggleChip(
+                          label: '今日誘える',
+                          icon: CupertinoIcons.paperplane_fill,
+                          selected: _drinkableOnly,
+                          accent: const Color(0xFF12C9A4),
+                          isWhite: isWhite,
+                          onTap: () => _setBoolCondition(
+                            value: _drinkableOnly,
+                            setter: (value) => _drinkableOnly = value,
+                          ),
+                        ),
+                        _CriteriaToggleChip(
+                          label: 'オンライン',
+                          icon: CupertinoIcons.circle_fill,
+                          selected: _onlineOnly,
+                          accent: const Color(0xFF18AFFF),
+                          isWhite: isWhite,
+                          onTap: () => _setBoolCondition(
+                            value: _onlineOnly,
+                            setter: (value) => _onlineOnly = value,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _FilterSectionTitle(
+                      label: 'ステータス',
+                      helper: '何も選ばない場合は全ステータスが対象です',
+                      color: ink,
+                      helperColor: sub,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final option in _statusOptions)
+                          _CriteriaToggleChip(
+                            label: option.label,
+                            selected: _selectedStatusKeys.contains(option.key),
+                            accent: option.enabled
+                                ? _FriendsColors.lime
+                                : _FriendsColors.muted,
+                            isWhite: isWhite,
+                            onTap: () => _toggleStatus(option.key),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _FilterSectionTitle(
+                      label: 'フレンズ',
+                      helper: '何も選ばない場合は全員が対象です',
+                      color: ink,
+                      helperColor: sub,
+                    ),
+                    const SizedBox(height: 8),
+                    for (var i = 0; i < widget.friends.length; i++) ...[
+                      _CustomFilterFriendRow(
+                        friend: widget.friends[i],
+                        selected: _selectedFriendIds.contains(
+                          widget.friends[i].id,
+                        ),
+                        isWhite: isWhite,
+                        onTap: () => _toggleFriend(widget.friends[i].id),
+                      ),
+                      if (i != widget.friends.length - 1)
+                        const SizedBox(height: 8),
+                    ],
+                  ],
+                ),
               ),
             ),
             if (_errorText != null) ...[
@@ -869,6 +1052,122 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterSectionTitle extends StatelessWidget {
+  const _FilterSectionTitle({
+    required this.label,
+    required this.helper,
+    required this.color,
+    required this.helperColor,
+  });
+
+  final String label;
+  final String helper;
+  final Color color;
+  final Color helperColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          helper,
+          style: TextStyle(
+            color: helperColor,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CriteriaToggleChip extends StatelessWidget {
+  const _CriteriaToggleChip({
+    required this.label,
+    required this.selected,
+    required this.accent,
+    required this.isWhite,
+    required this.onTap,
+    this.icon,
+  });
+
+  final String label;
+  final bool selected;
+  final Color accent;
+  final bool isWhite;
+  final VoidCallback onTap;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = selected
+        ? _FriendsColors.bg
+        : isWhite
+        ? const Color(0xFF101820)
+        : Colors.white;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected
+              ? accent
+              : isWhite
+              ? const Color(0xFFF7F9FB)
+              : Colors.white.withValues(alpha: .055),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected
+                ? Colors.white.withValues(alpha: .20)
+                : isWhite
+                ? const Color(0xFFDCE4EC)
+                : Colors.white.withValues(alpha: .10),
+          ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: accent.withValues(alpha: .20),
+                    blurRadius: 16,
+                    offset: const Offset(0, 7),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              NomoGeneratedIcon(icon!, color: ink, size: 15),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                color: ink,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
           ],
         ),
       ),
@@ -1013,10 +1312,9 @@ class _FriendsList extends StatelessWidget {
           status: _statusForFriend(friends[i], i),
         ),
     ];
-    final customFriendIds = selectedCustomFilter?.friendIds.toSet();
     final filtered = decorated.where((item) {
-      if (customFriendIds != null) {
-        return customFriendIds.contains(item.friend.id);
+      if (selectedCustomFilter != null) {
+        return _matchesCustomFilter(item, selectedCustomFilter!);
       }
       return switch (selectedFilter) {
         _FriendFilterType.all => true,
@@ -1061,6 +1359,34 @@ class _DecoratedFriend {
 
   final NomoFriend friend;
   final _FriendStatus status;
+}
+
+bool _matchesCustomFilter(_DecoratedFriend item, _CustomFriendFilter filter) {
+  if (filter.friendIds.isNotEmpty &&
+      !filter.friendIds.contains(item.friend.id)) {
+    return false;
+  }
+  if (filter.statusKeys.isNotEmpty &&
+      !filter.statusKeys.contains(_normalizedStatusKey(item.friend))) {
+    return false;
+  }
+  if (filter.favoriteOnly && !item.friend.isFavorite) return false;
+  if (filter.drinkableOnly && !_isDrinkableStatus(item.status)) return false;
+  if (filter.onlineOnly && item.friend.isOnline != true) return false;
+  return true;
+}
+
+String _normalizedStatusKey(NomoFriend friend) {
+  return switch (friend.statusKey) {
+    'can_drink_today' => 'can_drink_today',
+    'light_drink' => 'light_drink',
+    'want_drink_hard' => 'want_drink_hard',
+    'non_alcohol' => 'non_alcohol',
+    'waiting_invite' => 'waiting_invite',
+    'liver_rest' => 'liver_rest',
+    'has_plans' => 'has_plans',
+    _ => 'unset',
+  };
 }
 
 NomoFriend _friendWithFavorite(NomoFriend friend, bool isFavorite) {
