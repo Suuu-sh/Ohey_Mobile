@@ -2479,7 +2479,7 @@ void _showMemoryDetail(BuildContext context, DrinkLog? log) {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _MemoryRow(log: log, onTap: () {}),
+          _MemoryRow(log: log),
           if (comment.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(
@@ -3146,14 +3146,13 @@ class _SheetPrimaryButton extends StatelessWidget {
 }
 
 class _MemoryRow extends StatelessWidget {
-  const _MemoryRow({required this.log, required this.onTap});
+  const _MemoryRow({required this.log, this.onTap});
   final DrinkLog log;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
+  Widget build(BuildContext context) {
+    final row = Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: .05),
@@ -3203,8 +3202,11 @@ class _MemoryRow extends StatelessWidget {
           ),
         ],
       ),
-    ),
-  );
+    );
+
+    if (onTap == null) return row;
+    return GestureDetector(onTap: onTap, child: row);
+  }
 }
 
 InputDecoration _profileInputDecoration(String hint, {required bool isWhite}) =>
