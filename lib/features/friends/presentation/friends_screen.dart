@@ -253,7 +253,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
                   NomoPageHeader.horizontalPadding,
-                  6,
+                  NomoPageHeader.topPadding,
                   NomoPageHeader.horizontalPadding,
                   0,
                 ),
