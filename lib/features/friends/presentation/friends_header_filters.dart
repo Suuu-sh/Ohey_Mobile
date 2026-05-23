@@ -7,62 +7,12 @@ class _FriendsHeaderBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fadeColor = isWhite ? Colors.white : AppColors.darkBackgroundBottom;
-    return IgnorePointer(
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          ExcludeSemantics(
-            child: Image.asset(
-              'assets/images/friends_header_scene.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-            ),
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.topLeft,
-                radius: 1.05,
-                colors: [
-                  _FriendsColors.lime.withValues(alpha: .18),
-                  Colors.transparent,
-                ],
-                stops: const [.06, 1],
-              ),
-            ),
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFF03101E).withValues(alpha: .12),
-                  const Color(0xFF03101E).withValues(alpha: .06),
-                  fadeColor.withValues(alpha: .92),
-                  fadeColor,
-                ],
-                stops: const [0, .48, .84, 1],
-              ),
-            ),
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  const Color(0xFF03101E).withValues(alpha: .26),
-                  Colors.transparent,
-                  const Color(0xFF03101E).withValues(alpha: .16),
-                ],
-                stops: const [0, .48, 1],
-              ),
-            ),
-          ),
-        ],
-      ),
+    return NomoSceneHeaderBackdrop(
+      assetPath: 'assets/images/friends_header_scene.png',
+      fadeColor: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
+      accentColor: _FriendsColors.lime,
+      topShadeOpacity: .12,
+      fadeStartOpacity: .92,
     );
   }
 }
