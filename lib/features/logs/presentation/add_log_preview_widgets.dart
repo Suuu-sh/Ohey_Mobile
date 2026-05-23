@@ -860,10 +860,12 @@ class _DrinkLogSuccessSheet extends StatefulWidget {
   const _DrinkLogSuccessSheet({
     required this.friends,
     required this.monthlyCount,
+    required this.isPrivateRecord,
   });
 
   final List<NomoFriend> friends;
   final int monthlyCount;
+  final bool isPrivateRecord;
 
   @override
   State<_DrinkLogSuccessSheet> createState() => _DrinkLogSuccessSheetState();
@@ -889,6 +891,13 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
   }
 
   String get _friendSummary {
+    if (widget.isPrivateRecord) {
+      if (widget.friends.isEmpty) return 'フィードには投稿せず、カレンダーに記録しました';
+      final first = widget.friends.first.name;
+      final others = widget.friends.length - 1;
+      if (others <= 0) return '$firstとの記録をカレンダーに追加しました';
+      return '$firstほか$others人との記録をカレンダーに追加しました';
+    }
     if (widget.friends.isEmpty) return '自分だけの思い出に追加しました';
     final first = widget.friends.first.name;
     final others = widget.friends.length - 1;
@@ -935,16 +944,18 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
                     .78 + Curves.elasticOut.transform(_controller.value) * .22;
                 return Transform.scale(scale: scale, child: child);
               },
-              child: const NomoPopIcon(
+              child: NomoPopIcon(
                 icon: CupertinoIcons.checkmark_alt,
-                color: AppColors.primaryAction,
+                color: widget.isPrivateRecord
+                    ? AppColors.success
+                    : AppColors.primaryAction,
                 size: 70,
                 iconSize: 38,
               ),
             ),
             const SizedBox(height: 14),
             Text(
-              '飲みログを残しました！',
+              widget.isPrivateRecord ? '記録しました！' : '飲みログを残しました！',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: ink,
@@ -955,10 +966,14 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
             ),
             const SizedBox(height: 8),
             Text(
-              '今月${widget.monthlyCount}回目の飲みログです',
+              widget.isPrivateRecord
+                  ? 'カレンダーに追加しました'
+                  : '今月${widget.monthlyCount}回目の飲みログです',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppColors.primaryAction,
+                color: widget.isPrivateRecord
+                    ? AppColors.success
+                    : AppColors.primaryAction,
                 fontSize: 15,
                 fontWeight: FontWeight.w900,
               ),
@@ -989,13 +1004,19 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
                 const SizedBox(width: 10),
                 Expanded(
                   child: Nomo3DButton(
-                    label: 'フィードへ',
-                    icon: CupertinoIcons.house_fill,
+                    label: widget.isPrivateRecord ? 'カレンダーへ' : 'フィードへ',
+                    icon: widget.isPrivateRecord
+                        ? CupertinoIcons.calendar_today
+                        : CupertinoIcons.house_fill,
                     onTap: () => Navigator.of(context).pop(),
                     height: 48,
                     radius: 22,
-                    color: AppColors.primaryAction,
-                    shadowColor: AppColors.primaryActionShadow,
+                    color: widget.isPrivateRecord
+                        ? AppColors.success
+                        : AppColors.primaryAction,
+                    shadowColor: widget.isPrivateRecord
+                        ? AppColors.successShadow
+                        : AppColors.primaryActionShadow,
                     fontSize: 14,
                   ),
                 ),

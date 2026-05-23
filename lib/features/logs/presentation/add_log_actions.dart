@@ -134,6 +134,7 @@ extension _AddLogScreenActions on _AddLogScreenState {
       await _showDrinkLogSuccessSheet(
         friends: selectedFriends,
         monthlyCount: monthlyCount,
+        isPrivateRecord: photoPath == null,
       );
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -156,6 +157,7 @@ extension _AddLogScreenActions on _AddLogScreenState {
   Future<void> _showDrinkLogSuccessSheet({
     required List<NomoFriend> friends,
     required int monthlyCount,
+    required bool isPrivateRecord,
   }) async {
     await showModalBottomSheet<void>(
       context: context,
@@ -164,8 +166,11 @@ extension _AddLogScreenActions on _AddLogScreenState {
       enableDrag: false,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .62),
-      builder: (_) =>
-          _DrinkLogSuccessSheet(friends: friends, monthlyCount: monthlyCount),
+      builder: (_) => _DrinkLogSuccessSheet(
+        friends: friends,
+        monthlyCount: monthlyCount,
+        isPrivateRecord: isPrivateRecord,
+      ),
     );
   }
 
