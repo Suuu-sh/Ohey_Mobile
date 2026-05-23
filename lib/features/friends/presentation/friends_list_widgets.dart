@@ -137,7 +137,7 @@ class _TodayInviteSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '今日誘えそう',
+                      'おすすめ',
                       style: TextStyle(
                         color: ink,
                         fontSize: 18,
@@ -147,7 +147,7 @@ class _TodayInviteSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'ステータスを見て、今夜声をかけやすいフレンズを表示しています。',
+                      '最近の雰囲気から、声をかけたいフレンズを表示しています。',
                       style: TextStyle(
                         color: sub,
                         fontSize: 12,
@@ -165,7 +165,7 @@ class _TodayInviteSection extends StatelessWidget {
             _TodayInviteEmpty(isWhite: isWhite)
           else
             SizedBox(
-              height: 136,
+              height: 158,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
@@ -206,6 +206,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
     final accent = _accentForFriend(friend);
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final reason = _recommendationReasonFor(item);
     return Container(
       width: 150,
       padding: const EdgeInsets.all(12),
@@ -246,7 +247,21 @@ class _TodayInviteCandidateCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _StatusPill(status: item.status, accent: accent),
-          const Spacer(),
+          const SizedBox(height: 8),
+          Text(
+            reason,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: isWhite
+                  ? const Color(0xFF667381)
+                  : Colors.white.withValues(alpha: .58),
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              height: 1.25,
+            ),
+          ),
+          const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: Nomo3DButton(
@@ -314,6 +329,27 @@ class _TodayInviteEmpty extends StatelessWidget {
       height: 1.4,
     ),
   );
+}
+
+String _recommendationReasonFor(_DecoratedFriend item) {
+  final friend = item.friend;
+  if (friend.monthlyCount == null || friend.monthlyCount == 0) {
+    return 'おすすめの理由：まだ行ったことない';
+  }
+  if (friend.isFavorite) {
+    return 'おすすめの理由：お気に入り';
+  }
+  final reasons = const [
+    'おすすめの理由：1ヶ月行ってない',
+    'おすすめの理由：最近誘いやすそう',
+    'おすすめの理由：久しぶりに飲めそう',
+    'おすすめの理由：今夜の気分に合いそう',
+  ];
+  final seed = friend.id.codeUnits.fold<int>(
+    friend.name.length,
+    (sum, value) => sum + value,
+  );
+  return reasons[seed % reasons.length];
 }
 
 class _AddFriendsPromoCard extends StatelessWidget {
