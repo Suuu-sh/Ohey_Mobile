@@ -1518,140 +1518,114 @@ class _AddFriendsPromoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    return Semantics(
-      button: true,
-      label: 'フレンズを追加',
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          HapticFeedback.selectionClick();
-          onTap();
-        },
-        child: Container(
-          height: 106,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isWhite
-                  ? const [Color(0xFF123D4A), Color(0xFF092334)]
-                  : const [Color(0xFF0B3240), Color(0xFF071A2B)],
-            ),
-            border: Border.all(
-              color: const Color(0xFF37DFCF).withValues(alpha: 0.22),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF1FE4C9).withValues(alpha: 0.12),
-                blurRadius: 22,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                left: -34,
-                bottom: -54,
-                child: Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _FriendsColors.lime.withValues(alpha: 0.05),
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 18, 18),
-                  child: Row(
-                    children: [
-                      const _FriendPromoAvatarStack(),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                'フレンズを追加しよう',
-                                maxLines: 1,
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.94),
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 7),
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                '友達を増やして、もっと楽しく飲もう',
-                                maxLines: 1,
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.68),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.1,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        height: 46,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(23),
-                          color: _FriendsColors.lime,
-                          boxShadow: [
-                            BoxShadow(
-                              color: _FriendsColors.lime.withValues(
-                                alpha: 0.25,
-                              ),
-                              blurRadius: 16,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '追加',
-                              style: TextStyle(
-                                color: Color(0xFF0B2A22),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            NomoGeneratedIcon(
-                              CupertinoIcons.chevron_right,
-                              color: Color(0xFF0B2A22),
-                              size: 18,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+    return Container(
+      height: 106,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isWhite
+              ? const [Color(0xFF123D4A), Color(0xFF092334)]
+              : const [Color(0xFF0B3240), Color(0xFF071A2B)],
         ),
+        border: Border.all(
+          color: const Color(0xFF37DFCF).withValues(alpha: 0.22),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1FE4C9).withValues(alpha: 0.12),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: -34,
+            bottom: -54,
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _FriendsColors.lime.withValues(alpha: 0.05),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 18, 18),
+              child: Row(
+                children: [
+                  const _FriendPromoAvatarStack(),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'フレンズを追加しよう',
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.94),
+                              fontSize: 19,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 7),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            '友達を増やして、もっと楽しく飲もう',
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.68),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.1,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 76,
+                    child: Semantics(
+                      button: true,
+                      label: 'フレンズを追加',
+                      child: Nomo3DButton(
+                        label: '追加',
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          onTap();
+                        },
+                        height: 40,
+                        radius: 20,
+                        color: _FriendsColors.lime,
+                        foregroundColor: const Color(0xFF0B2A22),
+                        shadowColor: const Color(0xFF77A600),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
