@@ -149,37 +149,36 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       onHorizontalDragStart: _handleMonthDragStart,
                       onHorizontalDragUpdate: _handleMonthDragUpdate,
                       onHorizontalDragEnd: _handleMonthDragEnd,
-                      child: Padding(
+                      child: ListView(
+                        physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.fromLTRB(
                           NomoPageHeader.horizontalPadding,
                           14,
                           NomoPageHeader.horizontalPadding,
-                          148,
+                          164,
                         ),
-                        child: Column(
-                          children: [
-                            _PlayfulMonthGrid(
-                              month: _month,
-                              selectedDay: _selectedDay,
-                              logs: monthlyLogs,
-                              todayReservations: todayReservations,
-                              onSelectDay: (day) =>
-                                  setState(() => _selectedDay = day),
-                            ),
+                        children: [
+                          _PlayfulMonthGrid(
+                            month: _month,
+                            selectedDay: _selectedDay,
+                            logs: monthlyLogs,
+                            todayReservations: todayReservations,
+                            onSelectDay: (day) =>
+                                setState(() => _selectedDay = day),
+                          ),
+                          const SizedBox(height: 14),
+                          _SelectedDayPanel(
+                            day: _selectedDay,
+                            logs: selectedLogs,
+                            plans: selectedPlans,
+                            isWhite: isWhite,
+                            onCreatePlan: widget.onCreatePlan,
+                          ),
+                          if (monthlyLogs.isEmpty) ...[
                             const SizedBox(height: 14),
-                            _SelectedDayPanel(
-                              day: _selectedDay,
-                              logs: selectedLogs,
-                              plans: selectedPlans,
-                              isWhite: isWhite,
-                              onCreatePlan: widget.onCreatePlan,
-                            ),
-                            if (monthlyLogs.isEmpty) ...[
-                              const SizedBox(height: 14),
-                              _CalendarEmptyAction(onTap: widget.onCreatePlan),
-                            ],
+                            _CalendarEmptyAction(onTap: widget.onCreatePlan),
                           ],
-                        ),
+                        ],
                       ),
                     ),
                   ),
