@@ -62,18 +62,14 @@ class ProfileScreen extends ConsumerWidget {
         const <DrinkLog>[];
     final myLogs = _myProfileLogs(logs, currentAuthUserId);
     final photoLogs = _photoArchiveLogs(logs, currentAuthUserId);
-    final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
+    const isWhite = true;
     final hasAdminEmail = NomoAvatar.isAdminEmail(currentAuthUser?.email);
     final hasAdminAccess = ref
         .watch(adminAccessProvider)
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
     final canOpenAdmin = hasAdminEmail || hasAdminAccess;
-    final topBackground = isWhite
-        ? Colors.white
-        : AppColors.darkBackgroundBottom;
-    final bodyBackground = isWhite
-        ? Colors.white
-        : AppColors.darkBackgroundBottom;
+    const topBackground = Colors.white;
+    const bodyBackground = Colors.white;
     final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 390;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -123,9 +119,7 @@ class ProfileScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           ColoredBox(
-                            color: isWhite
-                                ? Colors.white
-                                : AppColors.darkBackgroundBottom,
+                            color: Colors.white,
                             child: Padding(
                               padding: const EdgeInsets.fromLTRB(
                                 24,
