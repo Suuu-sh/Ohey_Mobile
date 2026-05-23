@@ -5,6 +5,7 @@ import 'package:nomo/core/data/push_token_repository.dart';
 import 'package:nomo/core/data/user_repository.dart';
 import 'package:nomo/core/models/nomo_avatar.dart';
 import 'package:nomo/core/models/nomo_gender.dart';
+import 'package:nomo/features/friends/data/friend_repository.dart';
 
 void main() {
   test('authOAuthScopes returns provider-specific safe scopes', () {
@@ -63,6 +64,33 @@ void main() {
         'avatar_url': '',
       },
     );
+  });
+
+  test('friend profile parser trims fallback fields safely', () {
+    final profile = NomoFriendProfile.fromRow(<String, dynamic>{
+      'id': 'friend-id',
+      'user_id': 'friend_user',
+      'display_name': '  ',
+      'avatar_url': null,
+    });
+
+    expect(profile.id, 'friend-id');
+    expect(profile.userId, 'friend_user');
+    expect(profile.displayName, 'Nomo friend');
+    expect(profile.avatar, NomoAvatar.defaultAvatar);
+  });
+
+  test('friend relationship parser defaults unknown states to none', () {
+    final outgoing = NomoFriendRelationshipStatus.fromRow(<String, dynamic>{
+      'already_friend': false,
+      'request_state': 'outgoing',
+    });
+    final unknown = NomoFriendRelationshipStatus.fromRow(<String, dynamic>{});
+
+    expect(outgoing.alreadyFriend, isFalse);
+    expect(outgoing.requestState, NomoFriendRequestState.outgoing);
+    expect(unknown.alreadyFriend, isFalse);
+    expect(unknown.requestState, NomoFriendRequestState.none);
   });
 
   test('push platform and payload helpers emit supported API platform key', () {

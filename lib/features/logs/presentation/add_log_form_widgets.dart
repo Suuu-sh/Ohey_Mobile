@@ -5,6 +5,7 @@ class _InputBox extends StatelessWidget {
     required this.hint,
     required this.controller,
     required this.maxLines,
+    this.maxLength,
     this.icon,
     this.iconColor = _AddLogColors.lime,
     this.suffix,
@@ -17,6 +18,7 @@ class _InputBox extends StatelessWidget {
   final String hint;
   final TextEditingController controller;
   final int maxLines;
+  final int? maxLength;
   final Widget? suffix;
   final bool borderless;
   final ValueChanged<String>? onChanged;
@@ -50,6 +52,8 @@ class _InputBox extends StatelessWidget {
             child: TextField(
               controller: controller,
               maxLines: maxLines,
+              maxLength: maxLength,
+              maxLengthEnforcement: MaxLengthEnforcement.enforced,
               onChanged: onChanged,
               decoration: InputDecoration(
                 isDense: true,

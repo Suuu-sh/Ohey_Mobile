@@ -19,7 +19,6 @@ import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_toast.dart';
-import '../../../core/widgets/nomo_state_view.dart';
 import '../application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../profile/presentation/profile_screen.dart';

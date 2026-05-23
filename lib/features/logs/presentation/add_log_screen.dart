@@ -26,6 +26,8 @@ part 'add_log_place_search.dart';
 part 'add_log_form_widgets.dart';
 part 'add_log_actions.dart';
 
+const _drinkLogCommentMaxLength = 15;
+
 class AddLogScreen extends ConsumerStatefulWidget {
   const AddLogScreen({super.key, this.initialPhotoPath});
 
@@ -122,9 +124,10 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                         child: _InputBox(
                           icon: CupertinoIcons.text_quote,
                           iconColor: _AddLogColors.impressionIcon,
-                          hint: 'コメント（任意）',
+                          hint: 'コメント（任意・15文字まで）',
                           controller: _memoController,
                           maxLines: 3,
+                          maxLength: _drinkLogCommentMaxLength,
                           onChanged: (_) => setState(() {}),
                         ),
                       ),
