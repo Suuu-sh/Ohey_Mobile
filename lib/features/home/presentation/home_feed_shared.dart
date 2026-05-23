@@ -16,38 +16,14 @@ class _FeedEmptyState extends StatelessWidget {
   final Color accent;
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(30),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          NomoPopIcon(icon: icon, color: accent, size: 58),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isWhite ? const Color(0xFF27313B) : Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isWhite
-                  ? const Color(0xFF6E7783)
-                  : Colors.white.withValues(alpha: .55),
-              fontWeight: FontWeight.w800,
-              height: 1.45,
-            ),
-          ),
-        ],
-      ),
-    ),
+  Widget build(BuildContext context) => NomoEmptyState(
+    visual: NomoPopIcon(icon: icon, color: accent, size: 58),
+    title: title,
+    message: message,
+    titleColor: isWhite ? const Color(0xFF27313B) : Colors.white,
+    messageColor: isWhite
+        ? const Color(0xFF6E7783)
+        : Colors.white.withValues(alpha: .55),
   );
 }
 

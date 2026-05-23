@@ -467,59 +467,19 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
 
 class _SheetShell extends StatelessWidget {
   const _SheetShell({required this.title, required this.child, this.onClose});
+
   final String title;
   final Widget child;
   final VoidCallback? onClose;
 
   @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    return SafeArea(
-      child: Container(
-        margin: const EdgeInsets.all(14),
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
-        decoration: BoxDecoration(
-          color: isWhite ? Colors.white : const Color(0xFF071622),
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(
-            color: isWhite ? const Color(0xFFDDE4EA) : _ProfileColors.line,
-          ),
-          boxShadow: isWhite
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: .10),
-                    blurRadius: 28,
-                    offset: const Offset(0, 14),
-                  ),
-                ]
-              : null,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: ink,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: onClose ?? () => Navigator.of(context).pop(),
-                  icon: NomoGeneratedIcon(CupertinoIcons.xmark, color: ink),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => NomoBottomSheetShell(
+    title: title,
+    onClose: onClose,
+    topSafeArea: true,
+    margin: const EdgeInsets.all(14),
+    padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+    radius: 28,
+    child: child,
+  );
 }

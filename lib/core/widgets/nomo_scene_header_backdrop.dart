@@ -8,6 +8,10 @@ class NomoSceneHeaderBackdrop extends StatelessWidget {
     required this.accentColor,
     this.shadeColor = const Color(0xFF03101E),
     this.alignment = Alignment.topCenter,
+    this.imageTopOffset = 0,
+    this.topShadeOpacity = .14,
+    this.midShadeOpacity = .06,
+    this.fadeStartOpacity = .90,
   });
 
   final String assetPath;
@@ -15,6 +19,10 @@ class NomoSceneHeaderBackdrop extends StatelessWidget {
   final Color accentColor;
   final Color shadeColor;
   final Alignment alignment;
+  final double imageTopOffset;
+  final double topShadeOpacity;
+  final double midShadeOpacity;
+  final double fadeStartOpacity;
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +30,17 @@ class NomoSceneHeaderBackdrop extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          ExcludeSemantics(
-            child: Image.asset(
-              assetPath,
-              fit: BoxFit.cover,
-              alignment: alignment,
+          Positioned(
+            left: 0,
+            right: 0,
+            top: imageTopOffset,
+            bottom: 0,
+            child: ExcludeSemantics(
+              child: Image.asset(
+                assetPath,
+                fit: BoxFit.cover,
+                alignment: alignment,
+              ),
             ),
           ),
           DecoratedBox(
@@ -48,9 +62,9 @@ class NomoSceneHeaderBackdrop extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  shadeColor.withValues(alpha: .14),
-                  shadeColor.withValues(alpha: .06),
-                  fadeColor.withValues(alpha: .90),
+                  shadeColor.withValues(alpha: topShadeOpacity),
+                  shadeColor.withValues(alpha: midShadeOpacity),
+                  fadeColor.withValues(alpha: fadeStartOpacity),
                   fadeColor,
                 ],
                 stops: const [0, .48, .84, 1],

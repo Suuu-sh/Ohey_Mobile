@@ -752,7 +752,6 @@ class _FeedHeaderOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final height = NomoPageHeader.sceneBackdropHeight(context);
-    final fadeColor = isWhite ? Colors.white : AppColors.darkBackgroundMiddle;
     return Positioned(
       left: 0,
       right: 0,
@@ -770,8 +769,12 @@ class _FeedHeaderOverlay extends StatelessWidget {
               children: [
                 NomoSceneHeaderBackdrop(
                   assetPath: 'assets/images/feed_header_scene.png',
-                  fadeColor: fadeColor,
+                  fadeColor: isWhite
+                      ? Colors.white
+                      : AppColors.darkBackgroundBottom,
                   accentColor: _FeedColors.teal,
+                  topShadeOpacity: .12,
+                  fadeStartOpacity: .92,
                 ),
                 SafeArea(
                   bottom: false,

@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
+import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../logs/application/drink_log_controller.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -83,7 +84,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               right: 0,
               top: 0,
               height: headerBackgroundHeight,
-              child: _CalendarHeaderBackdrop(isWhite: isWhite),
+              child: NomoSceneHeaderBackdrop(
+                assetPath: 'assets/images/calendar_header_scene.png',
+                fadeColor: isWhite
+                    ? Colors.white
+                    : AppColors.darkBackgroundBottom,
+                accentColor: const Color(0xFF20B9FF),
+                imageTopOffset: -54,
+                topShadeOpacity: .12,
+                fadeStartOpacity: .92,
+              ),
             ),
             SafeArea(
               bottom: false,
@@ -134,82 +144,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _CalendarHeaderBackdrop extends StatelessWidget {
-  const _CalendarHeaderBackdrop({required this.isWhite});
-
-  static const double _imageLift = 54;
-
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    final fadeColor = isWhite ? Colors.white : AppColors.darkBackgroundBottom;
-    return IgnorePointer(
-      child: Stack(
-        fit: StackFit.expand,
-        clipBehavior: Clip.hardEdge,
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: -_imageLift,
-            bottom: 0,
-            child: ExcludeSemantics(
-              child: Image.asset(
-                'assets/images/calendar_header_scene.png',
-                fit: BoxFit.cover,
-                alignment: Alignment.topCenter,
-              ),
-            ),
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.topLeft,
-                radius: 1.05,
-                colors: [
-                  const Color(0xFF20B9FF).withValues(alpha: .18),
-                  Colors.transparent,
-                ],
-                stops: const [.06, 1],
-              ),
-            ),
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFF03101E).withValues(alpha: .12),
-                  const Color(0xFF03101E).withValues(alpha: .06),
-                  fadeColor.withValues(alpha: .92),
-                  fadeColor,
-                ],
-                stops: const [0, .48, .84, 1],
-              ),
-            ),
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  const Color(0xFF03101E).withValues(alpha: .26),
-                  Colors.transparent,
-                  const Color(0xFF03101E).withValues(alpha: .16),
-                ],
-                stops: const [0, .48, 1],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

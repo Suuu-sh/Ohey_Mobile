@@ -16,12 +16,12 @@ class _FeedCompanionListSheet extends StatelessWidget {
       78.0,
       MediaQuery.sizeOf(context).height * .44,
     );
-    return _FeedModalShell(
+    return NomoBottomSheetShell(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _FeedModalHandle(),
+          const NomoBottomSheetHandle(),
           const SizedBox(height: 18),
           Row(
             children: [
@@ -200,12 +200,12 @@ class _FeedCompanionProfileSheet extends StatelessWidget {
         ? const Color(0xFF697684)
         : Colors.white.withValues(alpha: .58);
     final statusColor = _companionStatusColor(friend.statusKey);
-    return _FeedModalShell(
+    return NomoBottomSheetShell(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _FeedModalHandle(),
+          const NomoBottomSheetHandle(),
           const SizedBox(height: 14),
           Align(
             alignment: Alignment.centerRight,
