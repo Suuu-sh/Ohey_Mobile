@@ -1576,27 +1576,33 @@ class _AddFriendsPromoCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
-                              'フレンズを追加しよう',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.94),
-                                fontSize: 20,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -0.5,
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'フレンズを追加しよう',
+                                maxLines: 1,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.94),
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 7),
-                            Text(
-                              '友達を増やして、もっと楽しく飲もう',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.68),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.1,
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '友達を増やして、もっと楽しく飲もう',
+                                maxLines: 1,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.68),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.1,
+                                ),
                               ),
                             ),
                           ],
