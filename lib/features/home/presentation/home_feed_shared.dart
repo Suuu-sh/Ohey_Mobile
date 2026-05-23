@@ -82,9 +82,9 @@ List<_FeedItem> _feedItems(
     )
     .where(
       (item) =>
-          !item.isOfficial &&
-          item.ownerUserId.isNotEmpty &&
-          (item.ownedByMe || friendUserIds.contains(item.ownerUserId)),
+          item.isOfficial ||
+          (item.ownerUserId.isNotEmpty &&
+              (item.ownedByMe || friendUserIds.contains(item.ownerUserId))),
     )
     .toList(growable: false);
 
@@ -166,6 +166,11 @@ class _FeedItem {
   }
 
   bool get isLikeable => id.isNotEmpty;
+  _FeedPostKind get postKind {
+    if (isOfficial) return _FeedPostKind.official;
+    if (ownedByMe) return _FeedPostKind.mine;
+    return _FeedPostKind.friend;
+  }
 
   final String id;
   final String userName;
@@ -189,6 +194,8 @@ class _FeedItem {
 }
 
 enum _PostProp { beer, ticket, spark }
+
+enum _FeedPostKind { mine, friend, official }
 
 class _Companion {
   const _Companion({

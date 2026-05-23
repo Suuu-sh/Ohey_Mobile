@@ -20,8 +20,13 @@ class _FeedPostCard extends StatelessWidget {
     final photoPath = item.photoAssetPath;
     final hasPhoto = _isDisplayablePostPhoto(photoPath);
     final caption = _feedCardCaption(item);
-    final surfaceColor = isWhite ? Colors.white : AppColors.darkBackground;
-    final borderColor = isWhite
+    final isOfficial = item.isOfficial;
+    final surfaceColor = isOfficial
+        ? (isWhite ? const Color(0xFFF4FBFF) : const Color(0xFF081E2A))
+        : (isWhite ? Colors.white : AppColors.darkBackground);
+    final borderColor = isOfficial
+        ? AppColors.info.withValues(alpha: isWhite ? .42 : .32)
+        : isWhite
         ? const Color(0xFFE3EAF3)
         : Colors.white.withValues(alpha: .08);
 
@@ -30,9 +35,32 @@ class _FeedPostCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: surfaceColor,
+          gradient: isOfficial
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isWhite
+                      ? const [Color(0xFFF8FDFF), Color(0xFFEFF8FF)]
+                      : const [Color(0xFF092434), Color(0xFF071320)],
+                )
+              : null,
           border: Border.symmetric(
-            horizontal: BorderSide(color: borderColor, width: 1),
+            horizontal: BorderSide(
+              color: borderColor,
+              width: isOfficial ? 1.4 : 1,
+            ),
           ),
+          boxShadow: isOfficial
+              ? [
+                  BoxShadow(
+                    color: AppColors.info.withValues(
+                      alpha: isWhite ? .12 : .18,
+                    ),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -155,9 +183,14 @@ class _FeedCardAuthorBar extends StatelessWidget {
         ? const Color(0xFF1E2733)
         : Colors.white.withValues(alpha: .92);
     final place = item.place.trim();
-    final metadataLabel = place.isEmpty
+    final metadataLabel = item.isOfficial
+        ? (place.isEmpty
+              ? 'Nomo公式からのお知らせ ・ ${item.timeAgo}'
+              : 'Nomo公式 ・ $place ・ ${item.timeAgo}')
+        : place.isEmpty
         ? item.timeAgo
         : '${item.timeAgo} ・ $place';
+    final kind = item.postKind;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 11, 10, 10),
@@ -188,6 +221,8 @@ class _FeedCardAuthorBar extends StatelessWidget {
                         ),
                       ),
                     ),
+                    const SizedBox(width: 7),
+                    _FeedPostKindBadge(kind: kind, isWhite: isWhite),
                     if (item.isOfficial) const _OfficialVerifiedBadge(),
                   ],
                 ),
@@ -491,6 +526,49 @@ class _FeedPlaceholderOrb extends StatelessWidget {
 
 String _feedCardCaption(_FeedItem item) {
   return _duoStyleBody(item).trim();
+}
+
+class _FeedPostKindBadge extends StatelessWidget {
+  const _FeedPostKindBadge({required this.kind, required this.isWhite});
+
+  final _FeedPostKind kind;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = switch (kind) {
+      _FeedPostKind.mine => '自分',
+      _FeedPostKind.friend => 'フレンズ',
+      _FeedPostKind.official => '公式',
+    };
+    final color = switch (kind) {
+      _FeedPostKind.mine => AppColors.primaryAction,
+      _FeedPostKind.friend => AppColors.invite,
+      _FeedPostKind.official => AppColors.info,
+    };
+    final textColor = isWhite
+        ? Color.lerp(color, Colors.black, .22)!
+        : Colors.white;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: isWhite ? .14 : .22),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: isWhite ? .34 : .42)),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: textColor,
+          fontSize: 10.5,
+          fontWeight: FontWeight.w900,
+          height: 1,
+          letterSpacing: -.1,
+        ),
+      ),
+    );
+  }
 }
 
 class _OfficialVerifiedBadge extends StatelessWidget {
