@@ -148,6 +148,24 @@ class AdminController {
   Future<void> deleteDrinkLog(String id) async {
     await _client.delete('/v1/admin/drink-logs/$id');
   }
+
+  Future<AdminNotificationResult> createSystemNotification({
+    required String title,
+    required String message,
+    required bool sendToAll,
+    required List<String> recipientUserIds,
+    String? systemKey,
+  }) async {
+    final data = await _client.post('/v1/admin/notifications', {
+      'title': title,
+      'message': message,
+      'send_to_all': sendToAll,
+      'recipient_user_ids': recipientUserIds,
+      if (systemKey != null && systemKey.trim().isNotEmpty)
+        'system_key': systemKey.trim(),
+    });
+    return AdminNotificationResult.fromJson(Map<String, dynamic>.from(data));
+  }
 }
 
 class AdminUserProfile {
@@ -224,6 +242,23 @@ class AdminDrinkLog {
       linkUrl: json['link_url'] as String? ?? '',
       photoPath: json['photo_path'] as String? ?? '',
       isOfficial: json['is_official'] as bool? ?? false,
+    );
+  }
+}
+
+class AdminNotificationResult {
+  const AdminNotificationResult({
+    required this.recipientCount,
+    required this.createdCount,
+  });
+
+  final int recipientCount;
+  final int createdCount;
+
+  factory AdminNotificationResult.fromJson(Map<String, dynamic> json) {
+    return AdminNotificationResult(
+      recipientCount: (json['recipient_count'] as num?)?.toInt() ?? 0,
+      createdCount: (json['created_count'] as num?)?.toInt() ?? 0,
     );
   }
 }
