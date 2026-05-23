@@ -126,7 +126,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           _FeedHeaderOverlay(
             isWhite: isWhite,
-            isCondensed: _currentFeedPageIndex > 0,
             child: NomoPageHeader(
               title: 'フィード',
               titleColor: _FeedColors.teal,

@@ -909,15 +909,10 @@ class _FeedBackground extends ConsumerWidget {
 }
 
 class _FeedHeaderOverlay extends StatelessWidget {
-  const _FeedHeaderOverlay({
-    required this.child,
-    required this.isWhite,
-    required this.isCondensed,
-  });
+  const _FeedHeaderOverlay({required this.child, required this.isWhite});
 
   final Widget child;
   final bool isWhite;
-  final bool isCondensed;
 
   @override
   Widget build(BuildContext context) {
@@ -928,52 +923,32 @@ class _FeedHeaderOverlay extends StatelessWidget {
       top: 0,
       height: height,
       child: IgnorePointer(
-        ignoring: false,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 360),
-          curve: Curves.easeOutCubic,
-          decoration: BoxDecoration(
-            color: (isWhite ? Colors.white : AppColors.darkBackgroundBottom)
-                .withValues(alpha: isCondensed ? .76 : 0),
-          ),
-          child: ClipRect(
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(
-                sigmaX: isCondensed ? 14 : 0,
-                sigmaY: isCondensed ? 14 : 0,
+        child: ClipRect(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              NomoSceneHeaderBackdrop(
+                assetPath: 'assets/images/feed_header_scene.png',
+                fadeColor: isWhite
+                    ? Colors.white
+                    : AppColors.darkBackgroundBottom,
+                accentColor: _FeedColors.teal,
+                topShadeOpacity: .12,
+                fadeStartOpacity: .92,
               ),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  AnimatedOpacity(
-                    opacity: isCondensed ? .34 : 1,
-                    duration: const Duration(milliseconds: 360),
-                    curve: Curves.easeOutCubic,
-                    child: NomoSceneHeaderBackdrop(
-                      assetPath: 'assets/images/feed_header_scene.png',
-                      fadeColor: isWhite
-                          ? Colors.white
-                          : AppColors.darkBackgroundBottom,
-                      accentColor: _FeedColors.teal,
-                      topShadeOpacity: .12,
-                      fadeStartOpacity: .92,
-                    ),
+              SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    NomoPageHeader.horizontalPadding,
+                    NomoPageHeader.topPadding,
+                    NomoPageHeader.horizontalPadding,
+                    0,
                   ),
-                  SafeArea(
-                    bottom: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        NomoPageHeader.horizontalPadding,
-                        NomoPageHeader.topPadding,
-                        NomoPageHeader.horizontalPadding,
-                        0,
-                      ),
-                      child: child,
-                    ),
-                  ),
-                ],
+                  child: child,
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
