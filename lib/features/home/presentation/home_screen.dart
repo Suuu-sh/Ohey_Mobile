@@ -21,6 +21,7 @@ import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
+import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
@@ -945,8 +946,6 @@ class _FeedBackground extends ConsumerWidget {
   }
 }
 
-const _feedOverlayHeaderAlignmentOffset = 9.0;
-
 class _FeedHeaderOverlay extends StatelessWidget {
   const _FeedHeaderOverlay({
     required this.child,
@@ -960,8 +959,8 @@ class _FeedHeaderOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = NomoPageHeader.contentTopInset(context);
-    final headerBg = isWhite ? Colors.white : AppColors.darkBackgroundTop;
+    final height = MediaQuery.paddingOf(context).top + 178;
+    final fadeColor = isWhite ? Colors.white : AppColors.darkBackgroundMiddle;
     return Positioned(
       left: 0,
       right: 0,
@@ -974,45 +973,27 @@ class _FeedHeaderOverlay extends StatelessWidget {
           duration: Duration(milliseconds: isTransparent ? 420 : 620),
           curve: isTransparent ? Curves.easeOutCubic : Curves.easeOutQuart,
           child: ClipRect(
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: isWhite
-                        ? [
-                            headerBg.withValues(alpha: 1),
-                            headerBg.withValues(alpha: .82),
-                            headerBg.withValues(alpha: .20),
-                          ]
-                        : [
-                            headerBg.withValues(alpha: .98),
-                            headerBg.withValues(alpha: .66),
-                            AppColors.darkBackgroundMiddle.withValues(
-                              alpha: .18,
-                            ),
-                          ],
-                    stops: const [0, .74, 1],
-                  ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                NomoSceneHeaderBackdrop(
+                  assetPath: 'assets/images/feed_header_scene.png',
+                  fadeColor: fadeColor,
+                  accentColor: _FeedColors.teal,
                 ),
-                child: Transform.translate(
-                  offset: const Offset(0, -_feedOverlayHeaderAlignmentOffset),
-                  child: SafeArea(
-                    bottom: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        NomoPageHeader.horizontalPadding,
-                        NomoPageHeader.topPadding,
-                        NomoPageHeader.horizontalPadding,
-                        0,
-                      ),
-                      child: child,
+                SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      NomoPageHeader.horizontalPadding,
+                      NomoPageHeader.topPadding,
+                      NomoPageHeader.horizontalPadding,
+                      0,
                     ),
+                    child: child,
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ),

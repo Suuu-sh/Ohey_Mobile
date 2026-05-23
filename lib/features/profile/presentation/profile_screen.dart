@@ -21,6 +21,7 @@ import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
+import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../admin/application/admin_controller.dart';
 import '../../admin/presentation/admin_screen.dart';
@@ -58,95 +59,114 @@ class ProfileScreen extends ConsumerWidget {
     final bodyBackground = isWhite
         ? Colors.white
         : AppColors.darkBackgroundBottom;
+    final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 390;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: (isWhite ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
-          .copyWith(statusBarColor: topBackground),
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+      ),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: bodyBackground,
-        body: ColoredBox(
-          color: topBackground,
-          child: SafeArea(
-            bottom: false,
-            child: Column(
-              children: [
-                _ProfileTopSheet(
-                  isWhite: isWhite,
-                  child: Column(
-                    children: [
-                      _PageHeader(
-                        isWhite: isWhite,
-                        canOpenAdmin: canOpenAdmin,
-                        onSettings: () => _showSettingsSheet(context, ref),
-                        onAdmin: () => _openAdminScreen(context),
-                      ),
-                      const SizedBox(height: 14),
-                      _SimpleHero(
-                        isWhite: isWhite,
-                        name: user?.name ?? 'ユーザー名',
-                        avatar: user?.avatar,
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: ColoredBox(
-                    color: bodyBackground,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            ColoredBox(color: bodyBackground),
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: headerBackgroundHeight,
+              child: NomoSceneHeaderBackdrop(
+                assetPath: 'assets/images/profile_header_scene.png',
+                fadeColor: topBackground,
+                accentColor: _ProfileColors.pink,
+              ),
+            ),
+            SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  _ProfileTopSheet(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        ColoredBox(
-                          color: isWhite
-                              ? Colors.white
-                              : AppColors.darkBackgroundBottom,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 16, 24, 18),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                if (reservations.isNotEmpty ||
-                                    incomingInvites.isNotEmpty) ...[
-                                  _ProfileReservationStrip(
-                                    isWhite: isWhite,
-                                    userAvatar: user?.avatar,
-                                    currentUserId: currentAuthUserId,
-                                    reservations: reservations,
-                                    incomingInvites: incomingInvites,
-                                    onAccept: (invite) => _respondDrinkInvite(
-                                      context,
-                                      ref,
-                                      invite,
-                                      accept: true,
-                                    ),
-                                    onReject: (invite) => _respondDrinkInvite(
-                                      context,
-                                      ref,
-                                      invite,
-                                      accept: false,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                ],
-                                _ProfileMoodCta(
-                                  status:
-                                      user?.dailyStatus ??
-                                      NomoDailyStatus.unselected,
-                                  onTap: () =>
-                                      _showProfileStatusSheet(context, ref),
-                                ),
-                              ],
-                            ),
-                          ),
+                        _PageHeader(
+                          canOpenAdmin: canOpenAdmin,
+                          onSettings: () => _showSettingsSheet(context, ref),
+                          onAdmin: () => _openAdminScreen(context),
                         ),
-                        Expanded(child: ColoredBox(color: bodyBackground)),
+                        const SizedBox(height: 14),
+                        _SimpleHero(
+                          isWhite: isWhite,
+                          name: user?.name ?? 'ユーザー名',
+                          avatar: user?.avatar,
+                        ),
                       ],
                     ),
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: ColoredBox(
+                      color: bodyBackground,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ColoredBox(
+                            color: isWhite
+                                ? Colors.white
+                                : AppColors.darkBackgroundBottom,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                24,
+                                16,
+                                24,
+                                18,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (reservations.isNotEmpty ||
+                                      incomingInvites.isNotEmpty) ...[
+                                    _ProfileReservationStrip(
+                                      isWhite: isWhite,
+                                      userAvatar: user?.avatar,
+                                      currentUserId: currentAuthUserId,
+                                      reservations: reservations,
+                                      incomingInvites: incomingInvites,
+                                      onAccept: (invite) => _respondDrinkInvite(
+                                        context,
+                                        ref,
+                                        invite,
+                                        accept: true,
+                                      ),
+                                      onReject: (invite) => _respondDrinkInvite(
+                                        context,
+                                        ref,
+                                        invite,
+                                        accept: false,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                  ],
+                                  _ProfileMoodCta(
+                                    status:
+                                        user?.dailyStatus ??
+                                        NomoDailyStatus.unselected,
+                                    onTap: () =>
+                                        _showProfileStatusSheet(context, ref),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Expanded(child: ColoredBox(color: bodyBackground)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -523,31 +543,28 @@ const _selectableDailyStatuses = <NomoDailyStatus>[
 
 class _PageHeader extends StatelessWidget {
   const _PageHeader({
-    required this.isWhite,
     required this.canOpenAdmin,
     required this.onSettings,
     required this.onAdmin,
   });
 
-  final bool isWhite;
   final bool canOpenAdmin;
   final VoidCallback onSettings;
   final VoidCallback onAdmin;
 
   @override
   Widget build(BuildContext context) {
-    final headerColor = isWhite ? Colors.white : const Color(0xFF31363B);
     return NomoPageHeader(
       title: 'マイページ',
-      titleColor: headerColor,
+      titleColor: Colors.white,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (canOpenAdmin) ...[
-            _ProfileAdminButton(isWhite: isWhite, onTap: onAdmin),
+            _ProfileAdminButton(onTap: onAdmin),
             const SizedBox(width: 2),
           ],
-          _ProfileSettingsButton(isWhite: isWhite, onTap: onSettings),
+          _ProfileSettingsButton(onTap: onSettings),
         ],
       ),
     );
@@ -555,9 +572,8 @@ class _PageHeader extends StatelessWidget {
 }
 
 class _ProfileAdminButton extends StatelessWidget {
-  const _ProfileAdminButton({required this.isWhite, required this.onTap});
+  const _ProfileAdminButton({required this.onTap});
 
-  final bool isWhite;
   final VoidCallback onTap;
 
   @override
@@ -576,7 +592,7 @@ class _ProfileAdminButton extends StatelessWidget {
           child: Center(
             child: NomoGeneratedIcon(
               CupertinoIcons.lock_shield_fill,
-              color: isWhite ? Colors.white : Colors.black,
+              color: Colors.white,
               size: 36,
             ),
           ),
@@ -587,9 +603,8 @@ class _ProfileAdminButton extends StatelessWidget {
 }
 
 class _ProfileSettingsButton extends StatelessWidget {
-  const _ProfileSettingsButton({required this.isWhite, required this.onTap});
+  const _ProfileSettingsButton({required this.onTap});
 
-  final bool isWhite;
   final VoidCallback onTap;
 
   @override
@@ -608,7 +623,7 @@ class _ProfileSettingsButton extends StatelessWidget {
           child: Center(
             child: NomoGeneratedIcon(
               CupertinoIcons.gear_alt,
-              color: isWhite ? Colors.white : Colors.black,
+              color: Colors.white,
               size: 38,
             ),
           ),
@@ -619,10 +634,9 @@ class _ProfileSettingsButton extends StatelessWidget {
 }
 
 class _ProfileTopSheet extends StatelessWidget {
-  const _ProfileTopSheet({required this.child, required this.isWhite});
+  const _ProfileTopSheet({required this.child});
 
   final Widget child;
-  final bool isWhite;
 
   @override
   Widget build(BuildContext context) {
@@ -635,7 +649,7 @@ class _ProfileTopSheet extends StatelessWidget {
         18,
       ),
       decoration: BoxDecoration(
-        color: isWhite ? const Color(0xFF06111D) : const Color(0xFFF4F2EE),
+        color: const Color(0xFF03101E).withValues(alpha: .08),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(34)),
       ),
       child: child,
@@ -668,23 +682,46 @@ class _SimpleHero extends StatelessWidget {
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: isWhite
-                    ? const [Color(0xFF101B28), Color(0xFF06111D)]
-                    : const [Color(0xFFF3F1EE), Color(0xFFE7E4E0)],
-              ),
-            ),
+            padding: EdgeInsets.zero,
             child: SizedBox(
               height: 196,
-              child: Center(
-                child: NomoAvatarView(
-                  avatar: avatar ?? NomoAvatar.defaultAvatar,
-                  size: 194,
-                ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Opacity(
+                    opacity: isWhite ? .90 : .58,
+                    child: ExcludeSemantics(
+                      child: Image.asset(
+                        'assets/images/profile_header_scene.png',
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
+                      ),
+                    ),
+                  ),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: isWhite
+                            ? [
+                                const Color(0xFF101B28).withValues(alpha: .36),
+                                const Color(0xFF06111D).withValues(alpha: .64),
+                              ]
+                            : [
+                                const Color(0xFFFFFFFF).withValues(alpha: .22),
+                                const Color(0xFFE7E4E0).withValues(alpha: .44),
+                              ],
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: NomoAvatarView(
+                      avatar: avatar ?? NomoAvatar.defaultAvatar,
+                      size: 194,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

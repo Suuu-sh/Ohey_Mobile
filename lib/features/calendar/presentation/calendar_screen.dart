@@ -1,12 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/models/drink_log.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
+import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../logs/application/drink_log_controller.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -58,56 +60,83 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final userLogs = logs.where((log) => !log.isOfficial);
     final monthlyLogs = userLogs.where((log) => log.isInMonth(_month)).toList();
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
+    final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 178;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: isWhite
-              ? const [Colors.white, Colors.white, Color(0xFFF7F9FB)]
-              : AppColors.darkBackgroundGradient,
-        ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isWhite
+                ? const [Colors.white, Colors.white, Color(0xFFF7F9FB)]
+                : AppColors.darkBackgroundGradient,
+          ),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                NomoPageHeader.horizontalPadding,
-                NomoPageHeader.topPadding,
-                NomoPageHeader.horizontalPadding,
-                0,
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: headerBackgroundHeight,
+              child: NomoSceneHeaderBackdrop(
+                assetPath: 'assets/images/calendar_header_scene.png',
+                fadeColor: isWhite
+                    ? Colors.white
+                    : AppColors.darkBackgroundBottom,
+                accentColor: const Color(0xFF20B9FF),
               ),
+            ),
+            SafeArea(
+              bottom: false,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const NomoPageHeader(title: 'カレンダー'),
-                  const SizedBox(height: 18),
-                  _MonthHeader(month: _month, onMove: _moveMonth),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      NomoPageHeader.horizontalPadding,
+                      NomoPageHeader.topPadding,
+                      NomoPageHeader.horizontalPadding,
+                      0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const NomoPageHeader(
+                          title: 'カレンダー',
+                          titleColor: Color(0xFF54D7FF),
+                        ),
+                        const SizedBox(height: 18),
+                        _MonthHeader(month: _month, onMove: _moveMonth),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onHorizontalDragStart: _handleMonthDragStart,
+                      onHorizontalDragUpdate: _handleMonthDragUpdate,
+                      onHorizontalDragEnd: _handleMonthDragEnd,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          NomoPageHeader.horizontalPadding,
+                          14,
+                          NomoPageHeader.horizontalPadding,
+                          148,
+                        ),
+                        child: Column(
+                          children: [
+                            _PlayfulMonthGrid(month: _month, logs: monthlyLogs),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
-              ),
-            ),
-            Expanded(
-              child: GestureDetector(
-                onHorizontalDragStart: _handleMonthDragStart,
-                onHorizontalDragUpdate: _handleMonthDragUpdate,
-                onHorizontalDragEnd: _handleMonthDragEnd,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    NomoPageHeader.horizontalPadding,
-                    14,
-                    NomoPageHeader.horizontalPadding,
-                    148,
-                  ),
-                  child: Column(
-                    children: [
-                      _PlayfulMonthGrid(month: _month, logs: monthlyLogs),
-                    ],
-                  ),
-                ),
               ),
             ),
           ],
@@ -125,7 +154,6 @@ class _MonthHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
     return Row(
       children: [
         _ArrowButton(label: '<', onTap: () => onMove(-1)),
@@ -134,7 +162,7 @@ class _MonthHeader extends StatelessWidget {
             '${month.year}/${month.month.toString().padLeft(2, '0')}',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isWhite ? const Color(0xFF101820) : Colors.white,
+              color: Colors.white,
               fontSize: 26,
               fontWeight: FontWeight.w900,
               letterSpacing: -.7,
@@ -155,7 +183,6 @@ class _ArrowButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -163,15 +190,14 @@ class _ArrowButton extends StatelessWidget {
         height: 34,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isWhite
-              ? const Color(0xFFF3F6F8)
-              : Colors.white.withValues(alpha: .08),
+          color: Colors.white.withValues(alpha: .12),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: .10)),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isWhite ? const Color(0xFF101820) : Colors.white,
+            color: Colors.white,
             fontSize: 24,
             height: .95,
             fontWeight: FontWeight.w900,
