@@ -401,7 +401,7 @@ class _SelectedDayPanel extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       accentColor: _calendarPrimaryActionColor,
-      backgroundColor: isWhite ? Colors.white : AppColors.darkBackground,
+      backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
       borderRadius: 24,
       borderAlpha: isWhite ? .32 : .26,
       glowAlpha: isWhite ? .10 : .16,

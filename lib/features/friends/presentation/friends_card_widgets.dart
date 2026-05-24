@@ -23,7 +23,7 @@ class _FriendCard extends StatelessWidget {
       child: NomoThemedPanel(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
         accentColor: accent,
-        backgroundColor: isWhite ? Colors.white : AppColors.darkBackground,
+        backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
         gradient: isWhite
             ? const LinearGradient(
                 begin: Alignment.topLeft,

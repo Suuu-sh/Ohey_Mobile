@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 enum NomoThemedPanelBorder { all, horizontal }
 
 /// Shared themed surface used when a feature page needs the same panel body
@@ -21,6 +23,9 @@ class NomoThemedPanel extends StatelessWidget {
     this.glowBlur = 28,
     this.glowOffset = const Offset(0, 12),
   });
+
+  static Color surfaceColor({required bool isWhite}) =>
+      isWhite ? Colors.white : AppColors.darkBackground;
 
   final Widget child;
   final Color accentColor;

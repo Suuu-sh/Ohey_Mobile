@@ -940,7 +940,7 @@ class _ProfileActivityCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       accentColor: AppColors.lavender,
-      backgroundColor: isWhite ? Colors.white : AppColors.darkBackground,
+      backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
       borderRadius: 24,
       borderAlpha: isWhite ? .28 : .14,
       glowAlpha: isWhite ? .04 : 0,

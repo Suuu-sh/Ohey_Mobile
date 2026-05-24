@@ -23,7 +23,7 @@ class _FeedPostCard extends StatelessWidget {
     final isOfficial = item.isOfficial;
     final surfaceColor = isOfficial
         ? (isWhite ? const Color(0xFFF4FBFF) : const Color(0xFF081E2A))
-        : (isWhite ? Colors.white : AppColors.darkBackground);
+        : NomoThemedPanel.surfaceColor(isWhite: isWhite);
     final borderColor = isOfficial
         ? AppColors.info.withValues(alpha: isWhite ? .42 : .32)
         : _FeedColors.teal.withValues(alpha: isWhite ? .36 : .28);
