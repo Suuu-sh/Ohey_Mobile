@@ -205,16 +205,11 @@ class _TodayInviteSection extends StatelessWidget {
           ],
           const SizedBox(height: 18),
           Container(
-            height: 1,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  _FriendsColors.lime.withValues(alpha: isWhite ? .22 : .18),
-                  Colors.transparent,
-                ],
-              ),
-            ),
+            width: double.infinity,
+            height: 1.5,
+            color: isWhite
+                ? const Color(0xFFE1E7DE)
+                : Colors.white.withValues(alpha: .14),
           ),
         ],
       ),
