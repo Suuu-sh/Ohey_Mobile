@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_drink_invite.dart';
@@ -23,9 +24,33 @@ class CalendarScreen extends ConsumerStatefulWidget {
 }
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
+  static const _calendarIntroSeenKey = 'nomo_calendar_intro_seen';
+
   late DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
   late DateTime _selectedDay = _dateOnly(DateTime.now());
   double _monthDragOffset = 0;
+  bool _isIntroSeen = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadIntroSeen();
+  }
+
+  Future<void> _loadIntroSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _isIntroSeen = prefs.getBool(_calendarIntroSeenKey) ?? false;
+    });
+  }
+
+  Future<void> _dismissIntro() async {
+    if (_isIntroSeen) return;
+    setState(() => _isIntroSeen = true);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_calendarIntroSeenKey, true);
+  }
 
   void _moveMonth(int offset) {
     setState(() {
@@ -158,6 +183,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             onSelectDay: (day) =>
                                 setState(() => _selectedDay = day),
                           ),
+                          if (!_isIntroSeen) ...[
+                            const SizedBox(height: 14),
+                            _CalendarIntroCard(
+                              isWhite: isWhite,
+                              onDismiss: _dismissIntro,
+                            ),
+                          ],
                           const SizedBox(height: 14),
                           _SelectedDayPanel(
                             day: _selectedDay,
@@ -175,6 +207,106 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CalendarIntroCard extends StatelessWidget {
+  const _CalendarIntroCard({required this.isWhite, required this.onDismiss});
+
+  final bool isWhite;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final messageColor = isWhite
+        ? const Color(0xFF657282)
+        : Colors.white.withValues(alpha: .66);
+    final cardColor = isWhite
+        ? Colors.white
+        : const Color(0xFF122233).withValues(alpha: .82);
+    final borderColor = isWhite
+        ? const Color(0xFFDCE4EC)
+        : Colors.white.withValues(alpha: .08);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 15, 14, 15),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isWhite ? .05 : .18),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NomoPopIcon(
+            icon: CupertinoIcons.sparkles,
+            color: const Color(0xFFFFD166),
+            size: 42,
+            iconSize: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'カレンダーに思い出がたまります',
+                  style: TextStyle(
+                    color: titleColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    height: 1.25,
+                    letterSpacing: -.2,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  '飲みログを残すと、その日にアメーバが表示されます。写真つきのログは、たまにレアカラーになることがあります。',
+                  style: TextStyle(
+                    color: messageColor,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          CupertinoButton(
+            minimumSize: const Size(34, 34),
+            padding: EdgeInsets.zero,
+            onPressed: onDismiss,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF54D7FF).withValues(alpha: .16),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: const Color(0xFF54D7FF).withValues(alpha: .30),
+                ),
+              ),
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  color: Color(0xFF54D7FF),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
