@@ -611,8 +611,10 @@ class _ProfileStatCard extends StatelessWidget {
     return _ProfileActivityCard(
       isWhite: isWhite,
       onTap: onTap,
+      height: 144,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           NomoPopIcon(icon: icon, color: color, size: 42, iconSize: 23),
           const SizedBox(height: 12),
@@ -660,6 +662,7 @@ class _ProfileStatusHomeCard extends StatelessWidget {
     return _ProfileActivityCard(
       isWhite: isWhite,
       onTap: onTap,
+      height: 96,
       child: Row(
         children: [
           NomoPopIcon(
@@ -715,32 +718,44 @@ class _ProfileActivityCard extends StatelessWidget {
   const _ProfileActivityCard({
     required this.isWhite,
     required this.child,
+    required this.height,
     this.onTap,
   });
 
   final bool isWhite;
   final Widget child;
+  final double height;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final card = NomoThemedPanel(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      accentColor: _ProfileColors.pink,
-      backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
-      borderRadius: 24,
-      borderAlpha: isWhite ? .34 : .30,
-      glowAlpha: isWhite ? .05 : .06,
-      glowBlur: 16,
-      glowOffset: const Offset(0, 8),
-      child: child,
-    );
-    if (onTap == null) return card;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    final surface = NomoThemedPanel.surfaceColor(isWhite: isWhite);
+    return Nomo3DButtonSurface(
       onTap: onTap,
-      child: card,
+      height: height,
+      radius: 24,
+      color: surface,
+      bottomColor: Color.lerp(_ProfileColors.pink, Colors.black, .24),
+      borderColor: _ProfileColors.pink.withValues(alpha: isWhite ? .46 : .50),
+      borderWidth: 1.2,
+      useGradient: false,
+      outerShadows: [
+        BoxShadow(
+          color: _ProfileColors.pink.withValues(alpha: isWhite ? .10 : .16),
+          blurRadius: 18,
+          offset: const Offset(0, 10),
+        ),
+      ],
+      innerShadows: [
+        BoxShadow(
+          color: _ProfileColors.pink.withValues(alpha: isWhite ? .05 : .08),
+          blurRadius: 18,
+          spreadRadius: 1,
+        ),
+      ],
+      padding: const EdgeInsets.all(16),
+      alignment: Alignment.center,
+      child: child,
     );
   }
 }
