@@ -227,30 +227,64 @@ jobs:
           end
 
           profiles = {
-            'APP_PROVISIONING_PROFILE_NAME' => 'Nomo App Store CI Push',
-            'WIDGET_PROVISIONING_PROFILE_NAME' => 'Nomo Widgets App Store CI',
+            'APP_PROVISIONING_PROFILE_NAME' => {
+              bundle_id: 'app.nomo.nomo',
+              preferred_names: ['Nomo App Store CI Push', 'Nomo App Store CI App Groups'],
+            },
+            'WIDGET_PROVISIONING_PROFILE_NAME' => {
+              bundle_id: 'app.nomo.nomo.widgets',
+              preferred_names: ['Nomo Widgets App Store CI'],
+            },
           }
+
+          def active_app_store_profiles_for(bundle_identifier)
+            bundle_response = get_json('/v1/bundleIds', {
+              'filter[identifier]' => bundle_identifier,
+              'limit' => '1',
+            })
+            bundle = bundle_response.fetch('data').find do |item|
+              item.dig('attributes', 'identifier') == bundle_identifier
+            end
+            abort("Bundle ID not found in App Store Connect: #{bundle_identifier}") unless bundle
+
+            get_json('/v1/profiles', {
+              'filter[bundleId]' => bundle.fetch('id'),
+              'filter[profileState]' => 'ACTIVE',
+              'filter[profileType]' => 'IOS_APP_STORE',
+              'limit' => '200',
+            }).fetch('data')
+          end
+
+          def choose_profile(bundle_identifier, candidates, preferred_names)
+            abort("No active iOS App Store provisioning profiles found for #{bundle_identifier}") if candidates.empty?
+
+            preferred_names.each do |preferred_name|
+              profile = candidates.find { |item| item.dig('attributes', 'name') == preferred_name }
+              return profile if profile
+            end
+
+            candidates.max_by do |item|
+              attrs = item.fetch('attributes')
+              [attrs['expirationDate'].to_s, attrs['name'].to_s]
+            end
+          end
 
           profile_dir = File.expand_path('~/Library/MobileDevice/Provisioning Profiles')
           Dir.mkdir(File.expand_path('~/Library/MobileDevice')) unless Dir.exist?(File.expand_path('~/Library/MobileDevice'))
           Dir.mkdir(profile_dir) unless Dir.exist?(profile_dir)
 
           File.open(ENV.fetch('GITHUB_ENV'), 'a') do |env|
-            profiles.each do |env_name, profile_name|
-              response = get_json('/v1/profiles', {
-                'filter[name]' => profile_name,
-                'filter[profileState]' => 'ACTIVE',
-                'limit' => '10',
-              })
-              profile = response.fetch('data').find { |item| item.dig('attributes', 'name') == profile_name }
-              abort("Provisioning profile not found: #{profile_name}") unless profile
+            profiles.each do |env_name, config|
+              candidates = active_app_store_profiles_for(config.fetch(:bundle_id))
+              profile = choose_profile(config.fetch(:bundle_id), candidates, config.fetch(:preferred_names))
 
               attrs = profile.fetch('attributes')
+              profile_name = attrs.fetch('name')
               uuid = attrs.fetch('uuid')
               content = Base64.decode64(attrs.fetch('profileContent'))
               File.binwrite(File.join(profile_dir, "#{uuid}.mobileprovision"), content)
               env.puts "#{env_name}=#{profile_name}"
-              puts "Installed #{profile_name} (#{uuid})"
+              puts "Installed #{profile_name} (#{uuid}) for #{config.fetch(:bundle_id)}"
             end
           end
           RUBY
