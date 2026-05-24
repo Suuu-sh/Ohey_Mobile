@@ -600,9 +600,7 @@ class _PreviewFriendsPill extends StatelessWidget {
     final backgroundColor = isWhite
         ? const Color(0xFFF4F7FA)
         : Colors.white.withValues(alpha: .07);
-    final label = friends.length == 1
-        ? '${friends.first.name}と一緒'
-        : '${friends.first.name}ほか${friends.length - 1}人と一緒';
+    const label = 'と一緒';
 
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 6, 10, 6),
