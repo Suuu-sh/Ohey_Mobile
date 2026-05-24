@@ -175,13 +175,40 @@ class Nomo3DButtonSurface extends StatefulWidget {
 }
 
 class _Nomo3DButtonSurfaceState extends State<Nomo3DButtonSurface> {
+  static const _minimumPressedDuration = Duration(milliseconds: 120);
+
   bool _isPressed = false;
+  DateTime? _pressedAt;
+  int _pressToken = 0;
 
   void _setPressed(bool value) {
     if (_isPressed == value || !mounted) {
       return;
     }
+    if (value) {
+      _pressedAt = DateTime.now();
+      _pressToken++;
+    }
     setState(() => _isPressed = value);
+  }
+
+  void _releasePressed() {
+    final pressedAt = _pressedAt;
+    if (pressedAt == null) {
+      _setPressed(false);
+      return;
+    }
+    final elapsed = DateTime.now().difference(pressedAt);
+    final remaining = _minimumPressedDuration - elapsed;
+    final token = _pressToken;
+    if (remaining <= Duration.zero) {
+      _setPressed(false);
+      return;
+    }
+    Future<void>.delayed(remaining, () {
+      if (!mounted || token != _pressToken) return;
+      _setPressed(false);
+    });
   }
 
   @override
@@ -204,8 +231,8 @@ class _Nomo3DButtonSurfaceState extends State<Nomo3DButtonSurface> {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapDown: canTap ? (_) => _setPressed(true) : null,
-          onTapUp: canTap ? (_) => _setPressed(false) : null,
-          onTapCancel: canTap ? () => _setPressed(false) : null,
+          onTapUp: canTap ? (_) => _releasePressed() : null,
+          onTapCancel: canTap ? _releasePressed : null,
           onTap: canTap ? widget.onTap : null,
           child: Opacity(
             opacity: opacity,

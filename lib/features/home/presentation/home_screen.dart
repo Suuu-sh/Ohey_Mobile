@@ -137,6 +137,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onMorePressed: (item) => _showFeedPostActions(context, ref, item),
             ),
           ),
+          _FeedHeaderBackdropLayer(isWhite: isWhite),
           _FeedHeaderControlsLayer(
             child: NomoPageHeader(
               title: 'フィード',
@@ -192,6 +193,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void _handleFeedPageChanged(int index) {
     if (_currentFeedPageIndex == index || !mounted) return;
+    final isUpwardSwipe = index > _currentFeedPageIndex;
+    if (isUpwardSwipe) {
+      HapticFeedback.lightImpact();
+    }
     setState(() => _currentFeedPageIndex = index);
     if (index > 0) {
       _markFeedSwipeTutorialSeen();
@@ -232,7 +237,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         : await showNomoBottomSheet<_FeedShareDestination>(
             context: context,
             useSafeArea: true,
-                  barrierColor: Colors.black.withValues(alpha: .58),
+            barrierColor: Colors.black.withValues(alpha: .58),
             builder: (_) => const _FeedShareDestinationSheet(),
           );
     if (!context.mounted || destination == null) return;

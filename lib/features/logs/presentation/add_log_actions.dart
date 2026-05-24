@@ -106,6 +106,9 @@ extension _AddLogScreenActions on _AddLogScreenState {
     if (selected == null || !mounted) return;
     setState(() {
       _placeController.text = selected.name;
+      _selectedPlaceName = selected.name;
+      _selectedPlaceLatitude = selected.latitude;
+      _selectedPlaceLongitude = selected.longitude;
     });
   }
 
@@ -126,14 +129,23 @@ extension _AddLogScreenActions on _AddLogScreenState {
       final previousLogs =
           ref.read(drinkLogControllerProvider).asData?.value ??
           const <DrinkLog>[];
+      final placeText = _placeController.text.trim();
+      final hasSelectedPlaceCoordinate =
+          _selectedPlaceName != null && placeText == _selectedPlaceName!.trim();
       await ref
           .read(drinkLogControllerProvider.notifier)
           .addLog(
             date: _selectedDate,
             friends: selectedFriends,
-            place: _placeController.text,
+            place: placeText,
             memo: _memoController.text,
             photoAssetPath: photoPath,
+            placeLatitude: hasSelectedPlaceCoordinate
+                ? _selectedPlaceLatitude
+                : null,
+            placeLongitude: hasSelectedPlaceCoordinate
+                ? _selectedPlaceLongitude
+                : null,
           );
       if (!mounted) return;
       setState(() => _isSaving = false);

@@ -32,6 +32,8 @@ class DrinkLog {
     required this.memo,
     this.photoAssetPath,
     this.linkUrl,
+    this.placeLatitude,
+    this.placeLongitude,
     this.likeCount = 0,
     this.likedByMe = false,
     this.ownerUserId = '',
@@ -48,6 +50,8 @@ class DrinkLog {
   final String memo;
   final String? photoAssetPath;
   final String? linkUrl;
+  final double? placeLatitude;
+  final double? placeLongitude;
   final int likeCount;
   final bool likedByMe;
   final String ownerUserId;
@@ -64,6 +68,8 @@ class DrinkLog {
     memo: memo,
     photoAssetPath: photoAssetPath,
     linkUrl: linkUrl,
+    placeLatitude: placeLatitude,
+    placeLongitude: placeLongitude,
     likeCount: likeCount ?? this.likeCount,
     likedByMe: likedByMe ?? this.likedByMe,
     ownerUserId: ownerUserId,
@@ -78,6 +84,12 @@ class DrinkLog {
 
   bool isSameDay(DateTime day) =>
       date.year == day.year && date.month == day.month && date.day == day.day;
+
+  bool get hasPlaceCoordinate =>
+      placeLatitude != null &&
+      placeLongitude != null &&
+      placeLatitude!.isFinite &&
+      placeLongitude!.isFinite;
 
   String get friendNames => friends.map((friend) => friend.name).join(', ');
 }

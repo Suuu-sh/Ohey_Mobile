@@ -91,6 +91,7 @@ flutter:
     - assets/images/backend_busy_nomo.png
     - assets/images/admin_nomo_icon.png
     - assets/images/feed_header_scene.png
+    - assets/images/feed_header_scene_clear.png
     - assets/images/friends_header_scene.png
     - assets/images/calendar_header_scene.png
     - assets/images/profile_header_scene.png

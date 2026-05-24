@@ -39,13 +39,9 @@ class _FriendCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(
-              width: 62,
-              height: 66,
-              child: NomoAvatarView(
-                avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
-                size: 62,
-              ),
+            _FriendCardAvatarBubble(
+              avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
+              accent: accent,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -106,6 +102,75 @@ class _FriendCard extends StatelessWidget {
               onInvite: onInvite,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendCardAvatarBubble extends StatelessWidget {
+  const _FriendCardAvatarBubble({required this.avatar, required this.accent});
+
+  final NomoAvatar avatar;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return Container(
+      width: 62,
+      height: 62,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: accent.withValues(alpha: isWhite ? .22 : .30),
+        border: Border.all(
+          color: isWhite
+              ? Colors.white.withValues(alpha: .86)
+              : const Color(0xFF072130),
+          width: 4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isWhite ? .10 : .24),
+            blurRadius: 14,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _FriendAvatarBubbleBackground(avatar: avatar),
+            Center(
+              child: Transform.translate(
+                offset: const Offset(0, 5),
+                child: NomoAvatarView(avatar: avatar, size: 56, showBody: true),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendAvatarBubbleBackground extends StatelessWidget {
+  const _FriendAvatarBubbleBackground({required this.avatar});
+
+  final NomoAvatar avatar;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors =
+        NomoAvatar.backgroundGradients[avatar.background %
+            NomoAvatar.backgroundGradients.length];
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
         ),
       ),
     );

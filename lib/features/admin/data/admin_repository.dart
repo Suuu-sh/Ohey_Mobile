@@ -1,15 +1,25 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/data/backend_api_client.dart';
+import '../../../core/data/supabase_client_provider.dart';
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
-  return AdminRepository(ref.watch(backendApiClientProvider));
+  return AdminRepository(
+    ref.watch(backendApiClientProvider),
+    ref.watch(supabaseClientProvider),
+  );
 });
 
 class AdminRepository {
-  const AdminRepository(this._client);
+  const AdminRepository(this._client, this._supabase);
+
+  static const _photoBucket = 'nomo-photos';
 
   final BackendApiClient _client;
+  final SupabaseClient _supabase;
 
   Future<void> checkAccess() async {
     await _client.get('/v1/admin/me');
@@ -81,12 +91,16 @@ class AdminRepository {
     required String photoPath,
     required bool isOfficial,
   }) async {
+    final uploadedPhotoPath = await _uploadLocalPhotoIfNeeded(
+      photoPath,
+      isOfficial: isOfficial,
+    );
     final body = <String, dynamic>{
       'drank_at': DateTime.now().toUtc().toIso8601String(),
       'place_name': placeName,
       'memo': memo,
       'link_url': linkUrl,
-      'photo_path': photoPath,
+      'photo_path': uploadedPhotoPath ?? '',
       'is_official': isOfficial,
     };
     if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
@@ -104,17 +118,76 @@ class AdminRepository {
     required String photoPath,
     required bool isOfficial,
   }) async {
+    final uploadedPhotoPath = await _uploadLocalPhotoIfNeeded(
+      photoPath,
+      isOfficial: isOfficial,
+    );
     final body = <String, dynamic>{
       'place_name': placeName,
       'memo': memo,
       'link_url': linkUrl,
-      'photo_path': photoPath,
+      'photo_path': uploadedPhotoPath ?? '',
       'is_official': isOfficial,
     };
     if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
       body['owner_user_id'] = ownerUserId.trim();
     }
     await _client.patch('/v1/admin/drink-logs/$id', body);
+  }
+
+  Future<String?> _uploadLocalPhotoIfNeeded(
+    String? path, {
+    required bool isOfficial,
+  }) async {
+    final normalized = path?.trim();
+    if (normalized == null || normalized.isEmpty) return null;
+    if (!normalized.startsWith('/')) return normalized;
+
+    final file = File(normalized);
+    if (!await file.exists()) return normalized;
+
+    final userId = _client.currentUserId;
+    if (userId == null || userId.isEmpty) {
+      throw StateError('写真をアップロードするにはログインが必要です。');
+    }
+
+    final extension = _safeExtension(normalized);
+    final folder = isOfficial ? 'admin/official_posts' : 'admin/drink_logs';
+    final storagePath =
+        '$folder/$userId/${DateTime.now().toUtc().microsecondsSinceEpoch}$extension';
+
+    await _supabase.storage
+        .from(_photoBucket)
+        .upload(
+          storagePath,
+          file,
+          fileOptions: FileOptions(
+            cacheControl: '3600',
+            contentType: _contentTypeForExtension(extension),
+            upsert: false,
+          ),
+        );
+    return storagePath;
+  }
+
+  String _safeExtension(String path) {
+    final name = path.split('/').last;
+    final dot = name.lastIndexOf('.');
+    if (dot < 0 || dot == name.length - 1) return '.jpg';
+    final extension = name.substring(dot).toLowerCase();
+    return switch (extension) {
+      '.jpg' || '.jpeg' || '.png' || '.heic' || '.webp' => extension,
+      _ => '.jpg',
+    };
+  }
+
+  String _contentTypeForExtension(String extension) {
+    return switch (extension) {
+      '.png' => 'image/png',
+      '.heic' => 'image/heic',
+      '.webp' => 'image/webp',
+      _ => 'image/jpeg',
+    };
   }
 
   Future<void> deleteDrinkLog(String id) async {

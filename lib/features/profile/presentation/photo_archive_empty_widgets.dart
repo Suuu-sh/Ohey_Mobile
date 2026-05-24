@@ -148,5 +148,3 @@ String _archiveTitle(DrinkLog log) {
 
 String _archiveDate(DateTime date) =>
     '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
-
-String _shortArchiveDate(DateTime date) => '${date.month}/${date.day}';

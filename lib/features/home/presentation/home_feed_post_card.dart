@@ -20,33 +20,17 @@ class _FeedPostCard extends StatelessWidget {
     final photoPath = item.photoAssetPath;
     final hasPhoto = _isDisplayablePostPhoto(photoPath);
     final caption = _feedCardCaption(item);
-    final isOfficial = item.isOfficial;
-    final surfaceColor = isOfficial
-        ? (isWhite ? const Color(0xFFF4FBFF) : const Color(0xFF081E2A))
-        : NomoThemedPanel.surfaceColor(isWhite: isWhite);
-    final borderColor = isOfficial
-        ? AppColors.info.withValues(alpha: isWhite ? .42 : .32)
-        : _FeedColors.teal.withValues(alpha: isWhite ? .36 : .28);
-
+    final surfaceColor = NomoThemedPanel.surfaceColor(isWhite: isWhite);
     return Semantics(
       label: '${item.userName}の飲みログ',
       child: NomoThemedPanel(
-        accentColor: isOfficial ? AppColors.info : _FeedColors.teal,
+        accentColor: _FeedColors.teal,
         backgroundColor: surfaceColor,
-        gradient: isOfficial
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isWhite
-                    ? const [Color(0xFFF8FDFF), Color(0xFFEFF8FF)]
-                    : const [Color(0xFF092434), Color(0xFF071320)],
-              )
-            : null,
         borderRadius: 0,
         border: NomoThemedPanelBorder.horizontal,
-        borderWidth: isOfficial ? 1.4 : 1,
-        borderAlpha: isOfficial ? (isWhite ? .42 : .32) : (isWhite ? .36 : .28),
-        glowAlpha: isOfficial ? (isWhite ? .12 : .18) : 0,
+        borderWidth: 0,
+        borderAlpha: 0,
+        glowAlpha: 0,
         glowBlur: 24,
         glowOffset: const Offset(0, 10),
         child: Column(
@@ -54,24 +38,17 @@ class _FeedPostCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _FeedCardAuthorBar(item: item, isWhite: isWhite, onMore: onMore),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                border: Border.symmetric(
-                  horizontal: BorderSide(color: borderColor, width: .8),
-                ),
-              ),
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: ClipRect(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      hasPhoto
-                          ? _PostPhoto(path: photoPath!)
-                          : _FeedPhotoPlaceholder(accent: item.accent),
-                      _FeedPhotoCaptionOverlay(caption: caption),
-                    ],
-                  ),
+            AspectRatio(
+              aspectRatio: 1,
+              child: ClipRect(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    hasPhoto
+                        ? _PostPhoto(path: photoPath!)
+                        : _FeedPhotoPlaceholder(accent: item.accent),
+                    _FeedPhotoCaptionOverlay(caption: caption),
+                  ],
                 ),
               ),
             ),
@@ -171,12 +148,10 @@ class _FeedCardAuthorBar extends StatelessWidget {
         : Colors.white.withValues(alpha: .92);
     final place = item.place.trim();
     final metadataLabel = item.isOfficial
-        ? (place.isEmpty
-              ? 'Nomo公式からのお知らせ ・ ${item.timeAgo}'
-              : 'Nomo公式 ・ $place ・ ${item.timeAgo}')
+        ? (place.isEmpty ? 'Nomo公式からのお知らせ' : 'Nomo公式 ・ $place')
         : place.isEmpty
-        ? item.timeAgo
-        : '${item.timeAgo} ・ $place';
+        ? '飲みログ'
+        : place;
     final kind = item.postKind;
 
     return Padding(
@@ -323,15 +298,35 @@ class _FeedCardFooter extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            _feedReactionSummary(item),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: item.likes > 0 ? primaryText : secondaryText,
-              fontWeight: FontWeight.w900,
-              height: 1.15,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  _feedReactionSummary(item),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: item.likes > 0 ? primaryText : secondaryText,
+                    fontWeight: FontWeight.w900,
+                    height: 1.15,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                item.timeAgo,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: secondaryText,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w900,
+                  height: 1.15,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -538,7 +533,6 @@ String _feedCardCaption(_FeedItem item) {
 }
 
 String _feedLikeActionLabel(_FeedItem item) {
-  if (item.isOfficial) return item.liked ? 'Saved' : 'Save';
   return item.liked ? 'Liked' : 'Like';
 }
 

@@ -525,129 +525,6 @@ class _InviteResponseButton extends StatelessWidget {
   );
 }
 
-class _ProfileMoodCta extends StatelessWidget {
-  const _ProfileMoodCta({required this.status, required this.onTap});
-
-  final NomoDailyStatus status;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _statusColor(status);
-    final icon = status == NomoDailyStatus.unselected
-        ? CupertinoIcons.smiley
-        : _statusIcon(status);
-
-    return Nomo3DButtonSurface(
-      onTap: onTap,
-      height: 60,
-      radius: 20,
-      color: color,
-      outerShadows: const <BoxShadow>[],
-      padding: const EdgeInsets.fromLTRB(16, 8, 14, 8),
-      child: Row(
-        children: [
-          _ProfileMoodCtaIcon(
-            icon: icon,
-            color: status == NomoDailyStatus.unselected ? Colors.white : color,
-            muted: status == NomoDailyStatus.unselected,
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  status == NomoDailyStatus.unselected
-                      ? 'ステータスを設定する'
-                      : status.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                    letterSpacing: -.2,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  status == NomoDailyStatus.unselected
-                      ? '未設定だと誘われにくいかも'
-                      : 'フレンズが今日誘いやすくなります',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: .70),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
-                    letterSpacing: -.1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          NomoPopIcon(
-            icon: CupertinoIcons.chevron_right,
-            color: Colors.white,
-            foregroundColor: Colors.white,
-            size: 28,
-            iconSize: 24,
-            showBubble: false,
-            shadow: false,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileMoodCtaIcon extends StatelessWidget {
-  const _ProfileMoodCtaIcon({
-    required this.icon,
-    required this.color,
-    required this.muted,
-  });
-
-  final IconData icon;
-  final Color color;
-  final bool muted;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 36,
-    height: 36,
-    decoration: BoxDecoration(
-      color: muted
-          ? Colors.white.withValues(alpha: .14)
-          : Colors.white.withValues(alpha: .90),
-      borderRadius: BorderRadius.circular(13),
-      border: Border.all(
-        color: Colors.white.withValues(alpha: muted ? .18 : .34),
-      ),
-      boxShadow: muted
-          ? null
-          : [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: .10),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-    ),
-    child: Center(
-      child: NomoPopIcon(
-        icon: icon,
-        color: color,
-        size: 29,
-        iconSize: 27,
-        showBubble: false,
-      ),
-    ),
-  );
-}
-
 class _ProfileActivityHome extends StatelessWidget {
   const _ProfileActivityHome({
     required this.isWhite,
@@ -655,6 +532,7 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.photoLogs,
     required this.status,
     required this.onStatusTap,
+    required this.onLogsTap,
     required this.onArchiveTap,
   });
 
@@ -663,27 +541,22 @@ class _ProfileActivityHome extends StatelessWidget {
   final List<DrinkLog> photoLogs;
   final NomoDailyStatus status;
   final VoidCallback onStatusTap;
+  final VoidCallback onLogsTap;
   final VoidCallback onArchiveTap;
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final monthlyLogs = logs.where((log) => log.isInMonth(now)).toList();
-    final topFriends = _topProfileFriends(monthlyLogs);
-    final recentLogs = logs.take(3).toList(growable: false);
 
     return ListView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(24, 2, 24, 132),
       children: [
-        Text(
-          '飲み活動',
-          style: TextStyle(
-            color: isWhite ? const Color(0xFF17212B) : Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.5,
-          ),
+        _ProfileStatusHomeCard(
+          isWhite: isWhite,
+          status: status,
+          onTap: onStatusTap,
         ),
         const SizedBox(height: 12),
         Row(
@@ -692,9 +565,10 @@ class _ProfileActivityHome extends StatelessWidget {
               child: _ProfileStatCard(
                 isWhite: isWhite,
                 icon: CupertinoIcons.chart_bar_fill,
-                color: AppColors.primaryAction,
+                iconColor: _ProfileColors.pink,
                 label: '今月の飲みログ',
                 value: '${monthlyLogs.length}件',
+                onTap: onLogsTap,
               ),
             ),
             const SizedBox(width: 10),
@@ -702,7 +576,7 @@ class _ProfileActivityHome extends StatelessWidget {
               child: _ProfileStatCard(
                 isWhite: isWhite,
                 icon: CupertinoIcons.photo_fill_on_rectangle_fill,
-                color: const Color(0xFFFF7AB8),
+                iconColor: _ProfileColors.pink,
                 label: '写真アーカイブ',
                 value: '${photoLogs.length}枚',
                 onTap: onArchiveTap,
@@ -710,16 +584,6 @@ class _ProfileActivityHome extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        _ProfileStatusHomeCard(
-          isWhite: isWhite,
-          status: status,
-          onTap: onStatusTap,
-        ),
-        const SizedBox(height: 12),
-        _ProfileTopFriendsCard(isWhite: isWhite, friends: topFriends),
-        const SizedBox(height: 12),
-        _ProfileRecentLogsCard(isWhite: isWhite, logs: recentLogs),
       ],
     );
   }
@@ -729,7 +593,7 @@ class _ProfileStatCard extends StatelessWidget {
   const _ProfileStatCard({
     required this.isWhite,
     required this.icon,
-    required this.color,
+    required this.iconColor,
     required this.label,
     required this.value,
     this.onTap,
@@ -737,7 +601,7 @@ class _ProfileStatCard extends StatelessWidget {
 
   final bool isWhite;
   final IconData icon;
-  final Color color;
+  final Color iconColor;
   final String label;
   final String value;
   final VoidCallback? onTap;
@@ -747,15 +611,18 @@ class _ProfileStatCard extends StatelessWidget {
     return _ProfileActivityCard(
       isWhite: isWhite,
       onTap: onTap,
+      height: 144,
+      borderRadius: 30,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          NomoPopIcon(icon: icon, color: color, size: 42, iconSize: 23),
+          NomoPopIcon(icon: icon, color: iconColor, size: 42, iconSize: 23),
           const SizedBox(height: 12),
           Text(
             value,
-            style: TextStyle(
-              color: isWhite ? const Color(0xFF17212B) : Colors.white,
+            style: const TextStyle(
+              color: Colors.white,
               fontSize: 24,
               fontWeight: FontWeight.w900,
               letterSpacing: -.6,
@@ -765,9 +632,7 @@ class _ProfileStatCard extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: isWhite
-                  ? const Color(0xFF667381)
-                  : Colors.white.withValues(alpha: .58),
+              color: Colors.white.withValues(alpha: .72),
               fontSize: 12,
               fontWeight: FontWeight.w800,
             ),
@@ -791,16 +656,18 @@ class _ProfileStatusHomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _statusColor(status);
     final unset = status == NomoDailyStatus.unselected;
+    final color = unset ? _ProfileColors.pink : _statusColor(status);
     return _ProfileActivityCard(
       isWhite: isWhite,
       onTap: onTap,
+      height: 96,
+      borderRadius: 30,
       child: Row(
         children: [
           NomoPopIcon(
             icon: unset ? CupertinoIcons.smiley : _statusIcon(status),
-            color: unset ? AppColors.primaryAction : color,
+            color: color,
             size: 46,
             iconSize: 25,
           ),
@@ -811,8 +678,8 @@ class _ProfileStatusHomeCard extends StatelessWidget {
               children: [
                 Text(
                   unset ? 'ステータスを設定する' : status.label,
-                  style: TextStyle(
-                    color: isWhite ? const Color(0xFF17212B) : Colors.white,
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
                   ),
@@ -823,9 +690,7 @@ class _ProfileStatusHomeCard extends StatelessWidget {
                       ? '未設定だと誘われにくいかも。今日誘いやすいかをフレンズに伝えましょう。'
                       : 'フレンズが今日誘いやすくなります。${status.description}',
                   style: TextStyle(
-                    color: isWhite
-                        ? const Color(0xFF667381)
-                        : Colors.white.withValues(alpha: .58),
+                    color: Colors.white.withValues(alpha: .72),
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     height: 1.35,
@@ -836,87 +701,9 @@ class _ProfileStatusHomeCard extends StatelessWidget {
           ),
           NomoGeneratedIcon(
             CupertinoIcons.chevron_right,
-            color: isWhite
-                ? const Color(0xFF98A3AF)
-                : Colors.white.withValues(alpha: .44),
+            color: Colors.white.withValues(alpha: .86),
             size: 22,
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileTopFriendsCard extends StatelessWidget {
-  const _ProfileTopFriendsCard({required this.isWhite, required this.friends});
-
-  final bool isWhite;
-  final List<_ProfileFriendCount> friends;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ProfileActivityCard(
-      isWhite: isWhite,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _ProfileActivitySectionTitle(
-            isWhite: isWhite,
-            title: 'よく飲むフレンズ',
-            icon: CupertinoIcons.person_2_fill,
-            color: AppColors.invite,
-          ),
-          const SizedBox(height: 12),
-          if (friends.isEmpty)
-            _ProfileActivityEmptyText(
-              isWhite: isWhite,
-              text: 'フレンズと飲みログを残すと、ここに表示されます。',
-            )
-          else
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final item in friends)
-                  _ProfileFriendChip(isWhite: isWhite, item: item),
-              ],
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileRecentLogsCard extends StatelessWidget {
-  const _ProfileRecentLogsCard({required this.isWhite, required this.logs});
-
-  final bool isWhite;
-  final List<DrinkLog> logs;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ProfileActivityCard(
-      isWhite: isWhite,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _ProfileActivitySectionTitle(
-            isWhite: isWhite,
-            title: '最近の飲みログ',
-            icon: CupertinoIcons.clock_fill,
-            color: AppColors.warning,
-          ),
-          const SizedBox(height: 10),
-          if (logs.isEmpty)
-            _ProfileActivityEmptyText(
-              isWhite: isWhite,
-              text: '飲みログを残すと、最近の活動がここに並びます。',
-            )
-          else
-            for (var i = 0; i < logs.length; i++) ...[
-              _ProfileRecentLogRow(isWhite: isWhite, log: logs[i]),
-              if (i != logs.length - 1) const SizedBox(height: 10),
-            ],
         ],
       ),
     );
@@ -927,25 +714,46 @@ class _ProfileActivityCard extends StatelessWidget {
   const _ProfileActivityCard({
     required this.isWhite,
     required this.child,
+    required this.height,
+    this.borderRadius = 30,
     this.onTap,
   });
 
   final bool isWhite;
   final Widget child;
+  final double height;
+  final double borderRadius;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final card = NomoThemedPanel(
-      width: double.infinity,
+    final card = Container(
+      height: height,
       padding: const EdgeInsets.all(16),
-      accentColor: AppColors.lavender,
-      backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
-      borderRadius: 24,
-      borderAlpha: isWhite ? .28 : .14,
-      glowAlpha: isWhite ? .04 : 0,
-      glowBlur: 16,
-      glowOffset: const Offset(0, 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF081724), Color(0xFF06111C)],
+        ),
+        border: Border.all(
+          color: _ProfileColors.pink.withValues(alpha: isWhite ? .22 : .18),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isWhite ? .08 : .20),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: _ProfileColors.pink.withValues(alpha: isWhite ? .05 : .08),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
       child: child,
     );
     if (onTap == null) return card;
@@ -956,205 +764,3 @@ class _ProfileActivityCard extends StatelessWidget {
     );
   }
 }
-
-class _ProfileActivitySectionTitle extends StatelessWidget {
-  const _ProfileActivitySectionTitle({
-    required this.isWhite,
-    required this.title,
-    required this.icon,
-    required this.color,
-  });
-
-  final bool isWhite;
-  final String title;
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        NomoGeneratedIcon(icon, color: color, size: 22),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            color: isWhite ? const Color(0xFF17212B) : Colors.white,
-            fontSize: 15,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ProfileActivityEmptyText extends StatelessWidget {
-  const _ProfileActivityEmptyText({required this.isWhite, required this.text});
-
-  final bool isWhite;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Text(
-    text,
-    style: TextStyle(
-      color: isWhite
-          ? const Color(0xFF667381)
-          : Colors.white.withValues(alpha: .58),
-      fontSize: 12,
-      fontWeight: FontWeight.w800,
-      height: 1.4,
-    ),
-  );
-}
-
-class _ProfileFriendChip extends StatelessWidget {
-  const _ProfileFriendChip({required this.isWhite, required this.item});
-
-  final bool isWhite;
-  final _ProfileFriendCount item;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-    decoration: BoxDecoration(
-      color: isWhite
-          ? const Color(0xFFF6F8FA)
-          : Colors.white.withValues(alpha: .06),
-      borderRadius: BorderRadius.circular(999),
-      border: Border.all(
-        color: isWhite
-            ? const Color(0xFFE0E6ED)
-            : Colors.white.withValues(alpha: .10),
-      ),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        NomoAvatarView(
-          avatar: item.friend.avatar ?? NomoAvatar.defaultAvatar,
-          size: 24,
-        ),
-        const SizedBox(width: 7),
-        Text(
-          '${item.friend.name} ${item.count}回',
-          style: TextStyle(
-            color: isWhite ? const Color(0xFF17212B) : Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _ProfileRecentLogRow extends StatelessWidget {
-  const _ProfileRecentLogRow({required this.isWhite, required this.log});
-
-  final bool isWhite;
-  final DrinkLog log;
-
-  @override
-  Widget build(BuildContext context) {
-    final title = log.place.trim().isNotEmpty
-        ? log.place.trim()
-        : log.memo.trim().isNotEmpty
-        ? log.memo.trim()
-        : '飲みログ';
-    final subtitle = log.friends.isEmpty
-        ? _profileDateLabel(log.date)
-        : log.friendNames;
-    return Row(
-      children: [
-        Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: AppColors.primaryAction.withValues(alpha: .16),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: NomoGeneratedIcon(
-            (log.photoAssetPath ?? '').trim().isEmpty
-                ? CupertinoIcons.doc_text_fill
-                : CupertinoIcons.photo_fill,
-            color: AppColors.primaryAction,
-            size: 24,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: isWhite ? const Color(0xFF17212B) : Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: isWhite
-                      ? const Color(0xFF667381)
-                      : Colors.white.withValues(alpha: .58),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Text(
-          _profileShortDateLabel(log.date),
-          style: TextStyle(
-            color: isWhite
-                ? const Color(0xFF98A3AF)
-                : Colors.white.withValues(alpha: .44),
-            fontSize: 11,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ProfileFriendCount {
-  const _ProfileFriendCount({required this.friend, required this.count});
-
-  final NomoFriend friend;
-  final int count;
-}
-
-List<_ProfileFriendCount> _topProfileFriends(List<DrinkLog> logs) {
-  final counts = <String, ({NomoFriend friend, int count})>{};
-  for (final log in logs) {
-    for (final friend in log.friends) {
-      final current = counts[friend.id];
-      counts[friend.id] = (friend: friend, count: (current?.count ?? 0) + 1);
-    }
-  }
-  final result = counts.values
-      .map(
-        (entry) =>
-            _ProfileFriendCount(friend: entry.friend, count: entry.count),
-      )
-      .toList(growable: false);
-  result.sort((a, b) => b.count.compareTo(a.count));
-  return result.take(3).toList(growable: false);
-}
-
-String _profileDateLabel(DateTime date) =>
-    '${date.month}/${date.day} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-
-String _profileShortDateLabel(DateTime date) => '${date.month}/${date.day}';

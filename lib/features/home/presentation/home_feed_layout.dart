@@ -1,7 +1,14 @@
 part of 'home_screen.dart';
 
 double _feedHeaderScrollInset(BuildContext context) {
-  return NomoPageHeader.contentTopInset(context) + 17;
+  // Match the latest reference feed capture: header scene ends at y≈505 on
+  // a 1200px-wide crop. Keeping this width ratio locks the visible image
+  // crop to the reference instead of depending on safe-area heuristics.
+  const referenceWidth = 1200.0;
+  const referenceHeaderBottom = 505.0;
+  return MediaQuery.sizeOf(context).width *
+      referenceHeaderBottom /
+      referenceWidth;
 }
 
 const _feedBottomPageInset = 124.0;

@@ -32,7 +32,7 @@ class _FeedHeaderBackdropLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = NomoPageHeader.sceneBackdropHeight(context);
+    final height = _feedHeaderScrollInset(context);
     return Positioned(
       left: 0,
       right: 0,
@@ -41,11 +41,13 @@ class _FeedHeaderBackdropLayer extends StatelessWidget {
       child: IgnorePointer(
         child: ClipRect(
           child: NomoSceneHeaderBackdrop(
-            assetPath: 'assets/images/feed_header_scene.png',
+            assetPath: 'assets/images/feed_header_scene_clear.png',
             fadeColor: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
             accentColor: _FeedColors.teal,
-            topShadeOpacity: .12,
-            fadeStartOpacity: .92,
+            imageTopOffset: 0,
+            topShadeOpacity: 0,
+            midShadeOpacity: 0,
+            fadeStartOpacity: .18,
           ),
         ),
       ),

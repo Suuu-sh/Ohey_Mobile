@@ -11,6 +11,7 @@ import WidgetKit
   private var widgetSyncChannel: FlutterMethodChannel?
   private var placeSearchChannel: FlutterMethodChannel?
   private var instagramShareChannel: FlutterMethodChannel?
+  private var didRegisterArchiveMapViewFactory = false
   private var placeSearchLocationManager: CLLocationManager?
   private var placeSearchLocationCompletion: ((CLLocation?, FlutterError?) -> Void)?
   private var didRequestPlaceSearchLocation = false
@@ -22,6 +23,7 @@ import WidgetKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     registerArAvatarCameraViewFactory()
+    registerArchiveMapViewFactory()
     if let controller = window?.rootViewController as? FlutterViewController {
       registerQrSaverChannel(on: controller.binaryMessenger)
       registerWidgetSyncChannel(on: controller.binaryMessenger)
@@ -49,6 +51,10 @@ import WidgetKit
        let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoArAvatarCamera") {
       registerArAvatarCameraViewFactory(with: registrar)
     }
+    if !didRegisterArchiveMapViewFactory,
+       let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoArchiveMap") {
+      registerArchiveMapViewFactory(with: registrar)
+    }
   }
 
   private func registerArAvatarCameraViewFactory() {
@@ -63,6 +69,22 @@ import WidgetKit
     registrar.register(
       NomoArAvatarCameraFactory(messenger: registrar.messenger()),
       withId: "nomo/ar_avatar_camera"
+    )
+  }
+
+
+  private func registerArchiveMapViewFactory() {
+    guard !didRegisterArchiveMapViewFactory else { return }
+    guard let registrar = registrar(forPlugin: "NomoArchiveMap") else { return }
+    registerArchiveMapViewFactory(with: registrar)
+  }
+
+  private func registerArchiveMapViewFactory(with registrar: FlutterPluginRegistrar) {
+    guard !didRegisterArchiveMapViewFactory else { return }
+    didRegisterArchiveMapViewFactory = true
+    registrar.register(
+      NomoArchiveMapFactory(messenger: registrar.messenger()),
+      withId: "nomo/archive_map"
     )
   }
 

@@ -98,7 +98,6 @@ class _PostPreviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = _AddLogColors.isWhite(context);
-    final surfaceColor = isWhite ? Colors.white : AppColors.darkBackground;
     final borderColor = isWhite
         ? const Color(0xFFE3EAF3)
         : Colors.white.withValues(alpha: .08);
@@ -127,21 +126,17 @@ class _PostPreviewCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        Container(
+        NomoThemedPanel(
           width: double.infinity,
-          decoration: BoxDecoration(
-            color: surfaceColor,
-            border: Border.symmetric(
-              horizontal: BorderSide(color: borderColor, width: 1),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isWhite ? .08 : .18),
-                blurRadius: 22,
-                offset: const Offset(0, 12),
-              ),
-            ],
-          ),
+          accentColor: _AddLogColors.lime,
+          backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
+          borderRadius: 0,
+          border: NomoThemedPanelBorder.horizontal,
+          borderWidth: 1,
+          borderAlpha: isWhite ? .36 : .28,
+          glowAlpha: 0,
+          glowBlur: 24,
+          glowOffset: const Offset(0, 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
@@ -245,17 +240,26 @@ class _PreviewAuthorBar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  userName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: primaryText,
-                    fontSize: 15.5,
-                    fontWeight: FontWeight.w900,
-                    height: 1.05,
-                    letterSpacing: -.25,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        userName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: primaryText,
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w900,
+                          height: 1.05,
+                          letterSpacing: -.25,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 7),
+                    _PreviewPostKindBadge(isWhite: isWhite),
+                  ],
                 ),
                 const SizedBox(height: 3),
                 _PreviewTimeEditor(
@@ -266,10 +270,21 @@ class _PreviewAuthorBar extends StatelessWidget {
               ],
             ),
           ),
-          NomoGeneratedIcon(
-            CupertinoIcons.ellipsis,
-            color: iconColor,
-            size: 27,
+          Semantics(
+            button: true,
+            label: '投稿メニュー',
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: NomoPopIcon(
+                  icon: CupertinoIcons.ellipsis,
+                  color: iconColor,
+                  size: 27,
+                  showBubble: false,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -422,62 +437,89 @@ class _PreviewFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
+    final secondaryText = isWhite
+        ? const Color(0xFF778393)
+        : Colors.white.withValues(alpha: .62);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+      padding: const EdgeInsets.fromLTRB(14, 11, 14, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(
-                width: 112,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _PreviewFooterAction(
-                          icon: CupertinoIcons.heart,
-                          color: primaryText,
-                        ),
-                        const SizedBox(width: 18),
-                        _PreviewFooterAction(
-                          customIcon: _PreviewShareIcon(
-                            color: primaryText,
-                            size: 27,
-                          ),
-                          color: primaryText,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '0件のいいね',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: primaryText,
-                        fontWeight: FontWeight.w900,
-                        height: 1.15,
-                      ),
-                    ),
-                  ],
+              _PreviewActionPill(
+                semanticLabel: 'いいねで反応',
+                icon: CupertinoIcons.heart,
+                label: 'Like',
+                color: AppColors.primaryAction,
+                isWhite: isWhite,
+              ),
+              const SizedBox(width: 8),
+              _PreviewActionPill(
+                semanticLabel: '思い出を共有',
+                customIcon: _PreviewShareIcon(
+                  color: AppColors.invite,
+                  size: 18,
                 ),
+                label: 'Share',
+                color: AppColors.invite,
+                isWhite: isWhite,
               ),
               const Spacer(),
               if (friends.isNotEmpty) ...[
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 _PreviewFriendsPill(friends: friends, isWhite: isWhite),
               ],
             ],
           ),
+          const SizedBox(height: 8),
+          Text(
+            'まだリアクションはありません',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: secondaryText,
+              fontWeight: FontWeight.w900,
+              height: 1.15,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _PreviewPostKindBadge extends StatelessWidget {
+  const _PreviewPostKindBadge({required this.isWhite});
+
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    const color = AppColors.primaryAction;
+    final textColor = isWhite
+        ? Color.lerp(color, Colors.black, .22)!
+        : Colors.white;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: isWhite ? .14 : .22),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: isWhite ? .34 : .42)),
+      ),
+      child: Text(
+        '自分',
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: textColor,
+          fontSize: 10.5,
+          fontWeight: FontWeight.w900,
+          height: 1,
+          letterSpacing: -.1,
+        ),
       ),
     );
   }
@@ -516,25 +558,65 @@ class _PreviewInlineEditors extends StatelessWidget {
   );
 }
 
-class _PreviewFooterAction extends StatelessWidget {
-  const _PreviewFooterAction({this.icon, this.customIcon, required this.color});
+class _PreviewActionPill extends StatelessWidget {
+  const _PreviewActionPill({
+    required this.semanticLabel,
+    required this.label,
+    required this.color,
+    required this.isWhite,
+    this.icon,
+    this.customIcon,
+  });
 
+  final String semanticLabel;
+  final String label;
   final IconData? icon;
   final Widget? customIcon;
   final Color color;
+  final bool isWhite;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4),
-    child:
-        customIcon ??
-        NomoPopIcon(
-          icon: icon ?? CupertinoIcons.circle,
-          color: color,
-          size: 29,
-          showBubble: false,
+  Widget build(BuildContext context) {
+    final textColor = isWhite
+        ? Color.lerp(color, Colors.black, .22)!
+        : Colors.white;
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(10, 7, 12, 7),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: isWhite ? .12 : .20),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: color.withValues(alpha: isWhite ? .28 : .34),
+          ),
         ),
-  );
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            customIcon ??
+                NomoPopIcon(
+                  icon: icon ?? CupertinoIcons.circle,
+                  color: color,
+                  size: 19,
+                  iconSize: 16,
+                  showBubble: false,
+                ),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: textColor,
+                fontWeight: FontWeight.w900,
+                height: 1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _PreviewShareIcon extends StatelessWidget {
