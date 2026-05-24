@@ -73,8 +73,8 @@ class NomoToast {
   }
 
   static double bottomOffsetFor(double bottomPadding) {
-    const tabBarClearance = 104.0;
-    return bottomPadding + tabBarClearance;
+    const tabBarTopClearance = 96.0;
+    return bottomPadding + tabBarTopClearance;
   }
 
   static Color accentColorForIcon(IconData icon) {

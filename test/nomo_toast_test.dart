@@ -18,8 +18,8 @@ void main() {
   );
 
   test('bottom toast stays above the tab bar area', () {
-    expect(NomoToast.bottomOffsetFor(0), 104);
-    expect(NomoToast.bottomOffsetFor(34), 138);
+    expect(NomoToast.bottomOffsetFor(0), 96);
+    expect(NomoToast.bottomOffsetFor(34), 130);
   });
 
   test('toast accent color follows semantic icons', () {
