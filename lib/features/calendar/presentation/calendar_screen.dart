@@ -12,6 +12,7 @@ import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
+import '../../../core/widgets/nomo_themed_panel.dart';
 import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 
@@ -396,29 +397,18 @@ class _SelectedDayPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return NomoThemedPanel(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-      decoration: BoxDecoration(
-        color: isWhite
-            ? Colors.white
-            : const Color(0xFF122233).withValues(alpha: .82),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: _calendarPrimaryActionColor.withValues(
-            alpha: isWhite ? .32 : .26,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _calendarPrimaryActionColor.withValues(
-              alpha: isWhite ? .10 : .16,
-            ),
-            blurRadius: 28,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
+      accentColor: _calendarPrimaryActionColor,
+      backgroundColor: isWhite
+          ? Colors.white
+          : const Color(0xFF122233).withValues(alpha: .82),
+      borderRadius: 24,
+      borderAlpha: isWhite ? .32 : .26,
+      glowAlpha: isWhite ? .10 : .16,
+      glowBlur: 28,
+      glowOffset: const Offset(0, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

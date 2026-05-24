@@ -30,36 +30,25 @@ class _FeedPostCard extends StatelessWidget {
 
     return Semantics(
       label: '${item.userName}の飲みログ',
-      child: Container(
-        decoration: BoxDecoration(
-          color: surfaceColor,
-          gradient: isOfficial
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isWhite
-                      ? const [Color(0xFFF8FDFF), Color(0xFFEFF8FF)]
-                      : const [Color(0xFF092434), Color(0xFF071320)],
-                )
-              : null,
-          border: Border.symmetric(
-            horizontal: BorderSide(
-              color: borderColor,
-              width: isOfficial ? 1.4 : 1,
-            ),
-          ),
-          boxShadow: isOfficial
-              ? [
-                  BoxShadow(
-                    color: AppColors.info.withValues(
-                      alpha: isWhite ? .12 : .18,
-                    ),
-                    blurRadius: 24,
-                    offset: const Offset(0, 10),
-                  ),
-                ]
-              : null,
-        ),
+      child: NomoThemedPanel(
+        accentColor: isOfficial ? AppColors.info : _FeedColors.teal,
+        backgroundColor: surfaceColor,
+        gradient: isOfficial
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isWhite
+                    ? const [Color(0xFFF8FDFF), Color(0xFFEFF8FF)]
+                    : const [Color(0xFF092434), Color(0xFF071320)],
+              )
+            : null,
+        borderRadius: 0,
+        border: NomoThemedPanelBorder.horizontal,
+        borderWidth: isOfficial ? 1.4 : 1,
+        borderAlpha: isOfficial ? (isWhite ? .42 : .32) : (isWhite ? .36 : .28),
+        glowAlpha: isOfficial ? (isWhite ? .12 : .18) : 0,
+        glowBlur: 24,
+        glowOffset: const Offset(0, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
