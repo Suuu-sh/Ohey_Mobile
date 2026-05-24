@@ -5,6 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'nomo_pop_icon.dart';
 
+enum NomoToastPlacement { top, bottom }
+
 class NomoToast {
   const NomoToast._();
 
@@ -16,13 +18,19 @@ class NomoToast {
     String message, {
     IconData icon = CupertinoIcons.bell_fill,
     Duration duration = const Duration(milliseconds: 2600),
+    NomoToastPlacement placement = NomoToastPlacement.top,
   }) {
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
     if (overlay == null) return;
     final callerTopPadding = MediaQuery.maybeOf(context)?.padding.top ?? 0;
+    final callerBottomPadding =
+        MediaQuery.maybeOf(context)?.padding.bottom ?? 0;
     final overlayTopPadding =
         MediaQuery.maybeOf(overlay.context)?.padding.top ?? 0;
+    final overlayBottomPadding =
+        MediaQuery.maybeOf(overlay.context)?.padding.bottom ?? 0;
     final topPadding = math.max(callerTopPadding, overlayTopPadding);
+    final bottomPadding = math.max(callerBottomPadding, overlayBottomPadding);
 
     _timer?.cancel();
     _removeCurrentEntry();
@@ -33,6 +41,8 @@ class NomoToast {
         message: message,
         icon: icon,
         topPadding: topPadding,
+        bottomPadding: bottomPadding,
+        placement: placement,
       ),
     );
     _currentEntry = entry;
@@ -57,6 +67,11 @@ class NomoToast {
     const minimumVisibleTop = 88.0;
     return math.max(topPadding + safeAreaGap, minimumVisibleTop);
   }
+
+  static double bottomOffsetFor(double bottomPadding) {
+    const tabBarClearance = 104.0;
+    return bottomPadding + tabBarClearance;
+  }
 }
 
 class _NomoToastOverlay extends StatefulWidget {
@@ -64,11 +79,15 @@ class _NomoToastOverlay extends StatefulWidget {
     required this.message,
     required this.icon,
     required this.topPadding,
+    required this.bottomPadding,
+    required this.placement,
   });
 
   final String message;
   final IconData icon;
   final double topPadding;
+  final double bottomPadding;
+  final NomoToastPlacement placement;
 
   @override
   State<_NomoToastOverlay> createState() => _NomoToastOverlayState();
@@ -92,7 +111,9 @@ class _NomoToastOverlayState extends State<_NomoToastOverlay>
       curve: Curves.easeOutBack,
     );
     _slide = Tween<Offset>(
-      begin: const Offset(0, -1.18),
+      begin: widget.placement == NomoToastPlacement.bottom
+          ? const Offset(0, 1.18)
+          : const Offset(0, -1.18),
       end: Offset.zero,
     ).animate(curve);
     _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
@@ -107,74 +128,83 @@ class _NomoToastOverlayState extends State<_NomoToastOverlay>
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      top: NomoToast.topOffsetFor(widget.topPadding),
-      left: 16,
-      right: 16,
-      child: IgnorePointer(
-        child: SlideTransition(
-          position: _slide,
-          child: FadeTransition(
-            opacity: _fade,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F2230).withValues(alpha: .97),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: const Color(0xFFB5FF00).withValues(alpha: .26),
+    final toast = IgnorePointer(
+      child: SlideTransition(
+        position: _slide,
+        child: FadeTransition(
+          opacity: _fade,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F2230).withValues(alpha: .97),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: const Color(0xFFB5FF00).withValues(alpha: .26),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFB5FF00).withValues(alpha: .16),
+                  blurRadius: 22,
+                  offset: const Offset(0, 8),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFB5FF00).withValues(alpha: .16),
-                    blurRadius: 22,
-                    offset: const Offset(0, 8),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .26),
+                  blurRadius: 24,
+                  offset: const Offset(0, 14),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 16, 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFB5FF00),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: NomoGeneratedIcon(
+                      widget.icon,
+                      color: const Color(0xFF0B1420),
+                      size: 20,
+                    ),
                   ),
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: .26),
-                    blurRadius: 24,
-                    offset: const Offset(0, 14),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      widget.message,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        height: 1.35,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
                   ),
                 ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 12, 16, 12),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFB5FF00),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: NomoGeneratedIcon(
-                        widget.icon,
-                        color: const Color(0xFF0B1420),
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        widget.message,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          height: 1.35,
-                          decoration: TextDecoration.none,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
         ),
       ),
+    );
+    if (widget.placement == NomoToastPlacement.bottom) {
+      return Positioned(
+        left: 16,
+        right: 16,
+        bottom: NomoToast.bottomOffsetFor(widget.bottomPadding),
+        child: toast,
+      );
+    }
+    return Positioned(
+      top: NomoToast.topOffsetFor(widget.topPadding),
+      left: 16,
+      right: 16,
+      child: toast,
     );
   }
 }

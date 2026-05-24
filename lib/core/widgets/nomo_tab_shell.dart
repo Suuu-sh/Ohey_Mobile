@@ -421,22 +421,34 @@ class _DrinkPlanCreateSheet extends ConsumerStatefulWidget {
 
 class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
   String? _sendingFriendId;
+  String? _errorMessage;
 
   Future<void> _sendInvite(NomoFriend friend) async {
     if (_sendingFriendId != null) return;
     HapticFeedback.selectionClick();
-    setState(() => _sendingFriendId = friend.id);
+    setState(() {
+      _sendingFriendId = friend.id;
+      _errorMessage = null;
+    });
     try {
       await ref.read(drinkInviteControllerProvider).sendTodayInvite(friend.id);
       ref.invalidate(todayReservationsProvider);
       ref.invalidate(incomingDrinkInvitesProvider);
       if (!mounted) return;
-      NomoToast.show(context, '${friend.name}に飲み予定を送りました');
+      NomoToast.show(
+        context,
+        '${friend.name}に飲み予定を送りました',
+        icon: CupertinoIcons.checkmark_circle_fill,
+        placement: NomoToastPlacement.bottom,
+      );
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
-      NomoToast.show(context, '飲み予定を作れなかったよ。あとでもう一度試してね');
-      setState(() => _sendingFriendId = null);
+      HapticFeedback.mediumImpact();
+      setState(() {
+        _sendingFriendId = null;
+        _errorMessage = '飲み予定を作れなかったよ。あとでもう一度試してね';
+      });
     }
   }
 
@@ -522,6 +534,21 @@ class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
                 ),
               ],
             ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              child: _errorMessage == null
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      key: ValueKey(_errorMessage),
+                      padding: const EdgeInsets.only(top: 14),
+                      child: _SheetInlineError(
+                        message: _errorMessage!,
+                        isWhite: isWhite,
+                      ),
+                    ),
+            ),
             const SizedBox(height: 16),
             friendsAsync.when(
               loading: () => const Padding(
@@ -564,6 +591,64 @@ class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SheetInlineError extends StatelessWidget {
+  const _SheetInlineError({required this.message, required this.isWhite});
+
+  final String message;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final background = isWhite
+        ? AppColors.danger.withValues(alpha: .10)
+        : AppColors.danger.withValues(alpha: .14);
+    final border = AppColors.danger.withValues(alpha: isWhite ? .26 : .34);
+    final textColor = isWhite ? const Color(0xFF8F254B) : Colors.white;
+    final iconBackground = isWhite
+        ? AppColors.danger.withValues(alpha: .14)
+        : Colors.white.withValues(alpha: .08);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: iconBackground,
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: const NomoGeneratedIcon(
+              CupertinoIcons.exclamationmark_triangle_fill,
+              color: AppColors.danger,
+              size: 17,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -932,10 +1017,14 @@ class _IncomingDrinkInviteSheet extends StatefulWidget {
 
 class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
   String? _busyAction;
+  String? _errorMessage;
 
   Future<void> _submit({required bool accept}) async {
     if (_busyAction != null) return;
-    setState(() => _busyAction = accept ? 'accept' : 'reject');
+    setState(() {
+      _busyAction = accept ? 'accept' : 'reject';
+      _errorMessage = null;
+    });
     try {
       if (accept) {
         await widget.onAccept();
@@ -943,15 +1032,22 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
         await widget.onReject();
       }
       if (!mounted) return;
-      NomoToast.show(context, accept ? '飲み予定を受け取りました' : '飲み予定を見送りました');
+      NomoToast.show(
+        context,
+        accept ? '飲み予定を受け取りました' : '飲み予定を見送りました',
+        icon: CupertinoIcons.checkmark_circle_fill,
+        placement: NomoToastPlacement.bottom,
+      );
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
-      NomoToast.show(
-        context,
-        accept ? '承認できなかったよ。少し時間をおいて試してみてね。' : '見送りできなかったよ。少し時間をおいて試してみてね。',
-      );
-      setState(() => _busyAction = null);
+      HapticFeedback.mediumImpact();
+      setState(() {
+        _busyAction = null;
+        _errorMessage = accept
+            ? '承認できなかったよ。少し時間をおいて試してみてね。'
+            : '見送りできなかったよ。少し時間をおいて試してみてね。';
+      });
     }
   }
 
@@ -1120,6 +1216,21 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                         height: 1.45,
                       ),
                     ),
+                  ),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    child: _errorMessage == null
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            key: ValueKey(_errorMessage),
+                            padding: const EdgeInsets.only(top: 14),
+                            child: _SheetInlineError(
+                              message: _errorMessage!,
+                              isWhite: false,
+                            ),
+                          ),
                   ),
                   const SizedBox(height: 18),
                   Nomo3DButton(

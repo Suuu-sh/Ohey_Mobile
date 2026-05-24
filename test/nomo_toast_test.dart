@@ -11,4 +11,9 @@ void main() {
       expect(NomoToast.topOffsetFor(80), 98);
     },
   );
+
+  test('bottom toast stays above the tab bar area', () {
+    expect(NomoToast.bottomOffsetFor(0), 104);
+    expect(NomoToast.bottomOffsetFor(34), 138);
+  });
 }
