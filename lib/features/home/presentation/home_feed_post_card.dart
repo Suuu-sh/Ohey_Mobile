@@ -21,8 +21,6 @@ class _FeedPostCard extends StatelessWidget {
     final hasPhoto = _isDisplayablePostPhoto(photoPath);
     final caption = _feedCardCaption(item);
     final surfaceColor = NomoThemedPanel.surfaceColor(isWhite: isWhite);
-    final borderColor = _FeedColors.teal.withValues(alpha: isWhite ? .36 : .28);
-
     return Semantics(
       label: '${item.userName}の飲みログ',
       child: NomoThemedPanel(
@@ -30,8 +28,8 @@ class _FeedPostCard extends StatelessWidget {
         backgroundColor: surfaceColor,
         borderRadius: 0,
         border: NomoThemedPanelBorder.horizontal,
-        borderWidth: 1,
-        borderAlpha: isWhite ? .36 : .28,
+        borderWidth: 0,
+        borderAlpha: 0,
         glowAlpha: 0,
         glowBlur: 24,
         glowOffset: const Offset(0, 10),
@@ -40,24 +38,17 @@ class _FeedPostCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _FeedCardAuthorBar(item: item, isWhite: isWhite, onMore: onMore),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                border: Border.symmetric(
-                  horizontal: BorderSide(color: borderColor, width: .8),
-                ),
-              ),
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: ClipRect(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      hasPhoto
-                          ? _PostPhoto(path: photoPath!)
-                          : _FeedPhotoPlaceholder(accent: item.accent),
-                      _FeedPhotoCaptionOverlay(caption: caption),
-                    ],
-                  ),
+            AspectRatio(
+              aspectRatio: 1,
+              child: ClipRect(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    hasPhoto
+                        ? _PostPhoto(path: photoPath!)
+                        : _FeedPhotoPlaceholder(accent: item.accent),
+                    _FeedPhotoCaptionOverlay(caption: caption),
+                  ],
                 ),
               ),
             ),
