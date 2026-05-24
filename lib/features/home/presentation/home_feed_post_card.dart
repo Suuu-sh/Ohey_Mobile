@@ -20,33 +20,19 @@ class _FeedPostCard extends StatelessWidget {
     final photoPath = item.photoAssetPath;
     final hasPhoto = _isDisplayablePostPhoto(photoPath);
     final caption = _feedCardCaption(item);
-    final isOfficial = item.isOfficial;
-    final surfaceColor = isOfficial
-        ? (isWhite ? const Color(0xFFF4FBFF) : const Color(0xFF081E2A))
-        : NomoThemedPanel.surfaceColor(isWhite: isWhite);
-    final borderColor = isOfficial
-        ? AppColors.info.withValues(alpha: isWhite ? .42 : .32)
-        : _FeedColors.teal.withValues(alpha: isWhite ? .36 : .28);
+    final surfaceColor = NomoThemedPanel.surfaceColor(isWhite: isWhite);
+    final borderColor = _FeedColors.teal.withValues(alpha: isWhite ? .36 : .28);
 
     return Semantics(
       label: '${item.userName}の飲みログ',
       child: NomoThemedPanel(
-        accentColor: isOfficial ? AppColors.info : _FeedColors.teal,
+        accentColor: _FeedColors.teal,
         backgroundColor: surfaceColor,
-        gradient: isOfficial
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isWhite
-                    ? const [Color(0xFFF8FDFF), Color(0xFFEFF8FF)]
-                    : const [Color(0xFF092434), Color(0xFF071320)],
-              )
-            : null,
         borderRadius: 0,
         border: NomoThemedPanelBorder.horizontal,
-        borderWidth: isOfficial ? 1.4 : 1,
-        borderAlpha: isOfficial ? (isWhite ? .42 : .32) : (isWhite ? .36 : .28),
-        glowAlpha: isOfficial ? (isWhite ? .12 : .18) : 0,
+        borderWidth: 1,
+        borderAlpha: isWhite ? .36 : .28,
+        glowAlpha: 0,
         glowBlur: 24,
         glowOffset: const Offset(0, 10),
         child: Column(
