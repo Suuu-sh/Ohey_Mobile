@@ -32,7 +32,7 @@ class _FeedHeaderBackdropLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = NomoPageHeader.sceneBackdropHeight(context);
+    final height = _feedHeaderScrollInset(context);
     return Positioned(
       left: 0,
       right: 0,
