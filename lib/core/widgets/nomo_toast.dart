@@ -11,6 +11,9 @@ class NomoToast {
   const NomoToast._();
 
   static const defaultPlacement = NomoToastPlacement.bottom;
+  static const defaultAccentColor = Color(0xFF7DDCFF);
+  static const successAccentColor = Color(0xFF74E6A4);
+  static const dangerAccentColor = Color(0xFFFF8BA8);
   static OverlayEntry? _currentEntry;
   static Timer? _timer;
 
@@ -73,6 +76,16 @@ class NomoToast {
     const tabBarClearance = 104.0;
     return bottomPadding + tabBarClearance;
   }
+
+  static Color accentColorForIcon(IconData icon) {
+    if (icon == CupertinoIcons.checkmark_circle_fill) {
+      return successAccentColor;
+    }
+    if (icon == CupertinoIcons.exclamationmark_triangle_fill) {
+      return dangerAccentColor;
+    }
+    return defaultAccentColor;
+  }
 }
 
 class _NomoToastOverlay extends StatefulWidget {
@@ -129,6 +142,7 @@ class _NomoToastOverlayState extends State<_NomoToastOverlay>
 
   @override
   Widget build(BuildContext context) {
+    final accentColor = NomoToast.accentColorForIcon(widget.icon);
     final toast = IgnorePointer(
       child: SlideTransition(
         position: _slide,
@@ -136,21 +150,23 @@ class _NomoToastOverlayState extends State<_NomoToastOverlay>
           opacity: _fade,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: const Color(0xFF0F2230).withValues(alpha: .97),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: const Color(0xFFB5FF00).withValues(alpha: .26),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF122335), Color(0xFF0A1724)],
               ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withValues(alpha: .13)),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFB5FF00).withValues(alpha: .16),
-                  blurRadius: 22,
-                  offset: const Offset(0, 8),
+                  color: accentColor.withValues(alpha: .10),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
                 ),
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: .26),
-                  blurRadius: 24,
-                  offset: const Offset(0, 14),
+                  color: Colors.black.withValues(alpha: .32),
+                  blurRadius: 28,
+                  offset: const Offset(0, 16),
                 ),
               ],
             ),
@@ -162,12 +178,15 @@ class _NomoToastOverlayState extends State<_NomoToastOverlay>
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFB5FF00),
+                      color: accentColor.withValues(alpha: .14),
                       borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: accentColor.withValues(alpha: .30),
+                      ),
                     ),
                     child: NomoGeneratedIcon(
                       widget.icon,
-                      color: const Color(0xFF0B1420),
+                      color: accentColor,
                       size: 20,
                     ),
                   ),

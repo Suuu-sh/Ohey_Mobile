@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nomo/core/widgets/nomo_toast.dart';
 
@@ -19,5 +20,22 @@ void main() {
   test('bottom toast stays above the tab bar area', () {
     expect(NomoToast.bottomOffsetFor(0), 104);
     expect(NomoToast.bottomOffsetFor(34), 138);
+  });
+
+  test('toast accent color follows semantic icons', () {
+    expect(
+      NomoToast.accentColorForIcon(CupertinoIcons.bell_fill),
+      NomoToast.defaultAccentColor,
+    );
+    expect(
+      NomoToast.accentColorForIcon(CupertinoIcons.checkmark_circle_fill),
+      NomoToast.successAccentColor,
+    );
+    expect(
+      NomoToast.accentColorForIcon(
+        CupertinoIcons.exclamationmark_triangle_fill,
+      ),
+      NomoToast.dangerAccentColor,
+    );
   });
 }
