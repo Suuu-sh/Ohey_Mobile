@@ -722,21 +722,21 @@ class _ProfileActivityCard extends StatelessWidget {
       onTap: onTap,
       height: height,
       radius: 24,
-      color: _ProfileColors.pink,
+      color: AppColors.darkBackground,
       bottomColor: Color.lerp(_ProfileColors.pink, Colors.black, .24),
-      borderColor: Colors.white.withValues(alpha: isWhite ? .24 : .18),
+      borderColor: _ProfileColors.pink.withValues(alpha: isWhite ? .46 : .50),
       borderWidth: 1.2,
-      useGradient: true,
+      useGradient: false,
       outerShadows: [
         BoxShadow(
-          color: _ProfileColors.pink.withValues(alpha: isWhite ? .22 : .32),
-          blurRadius: 24,
-          offset: const Offset(0, 12),
+          color: _ProfileColors.pink.withValues(alpha: isWhite ? .10 : .16),
+          blurRadius: 18,
+          offset: const Offset(0, 10),
         ),
       ],
       innerShadows: [
         BoxShadow(
-          color: Colors.white.withValues(alpha: .16),
+          color: _ProfileColors.pink.withValues(alpha: isWhite ? .05 : .08),
           blurRadius: 18,
           spreadRadius: 1,
         ),
