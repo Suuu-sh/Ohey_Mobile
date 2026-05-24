@@ -677,46 +677,24 @@ class _SheetInlineError extends StatelessWidget {
         : AppColors.danger.withValues(alpha: .14);
     final border = AppColors.danger.withValues(alpha: isWhite ? .26 : .34);
     final textColor = isWhite ? const Color(0xFF8F254B) : Colors.white;
-    final iconBackground = isWhite
-        ? AppColors.danger.withValues(alpha: .14)
-        : Colors.white.withValues(alpha: .08);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: border),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              color: iconBackground,
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: const NomoGeneratedIcon(
-              CupertinoIcons.exclamationmark_triangle_fill,
-              color: AppColors.danger,
-              size: 17,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                height: 1.35,
-              ),
-            ),
-          ),
-        ],
+      child: Text(
+        message,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 13,
+          fontWeight: FontWeight.w900,
+          height: 1.25,
+        ),
       ),
     );
   }
