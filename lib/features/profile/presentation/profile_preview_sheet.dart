@@ -85,7 +85,7 @@ class _NomoProfilePreviewSheetState extends State<_NomoProfilePreviewSheet> {
     actionLabel: _buttonLabel,
     actionIcon: _canRequest ? CupertinoIcons.paperplane_fill : _statusIcon,
     onAction: _canRequest ? _sendRequest : () {},
-    backgroundColor: const Color(0xFF071622),
+    backgroundColor: AppColors.darkBackground,
     accentColor: _canRequest ? AppColors.primaryAction : _statusColor,
     onClose: () => Navigator.of(context).pop(),
   );

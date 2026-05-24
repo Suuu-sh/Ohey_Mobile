@@ -225,11 +225,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF0B1D2B), Color(0xFF06131F)],
-        ),
+        color: AppColors.darkBackground,
         borderRadius: BorderRadius.circular(30),
         border: Border.all(color: Colors.white12),
         boxShadow: [
@@ -296,7 +292,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(13),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .055),
+              color: AppColors.darkBackground,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.white.withValues(alpha: .08)),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import 'nomo_pop_icon.dart';
 
 class NomoActionTile extends StatelessWidget {
@@ -41,9 +42,7 @@ class NomoActionTile extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isWhite
-              ? const Color(0xFFF7FAFC)
-              : Colors.white.withValues(alpha: .055),
+          color: isWhite ? const Color(0xFFF7FAFC) : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: destructive

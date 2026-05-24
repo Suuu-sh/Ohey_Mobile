@@ -112,13 +112,14 @@ class _SettingsSheetShell extends StatelessWidget {
           child: Container(
             margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isWhite
-                    ? const [Color(0xFFFFFFFF), Color(0xFFF8FBFF)]
-                    : const [Color(0xFF102436), Color(0xFF07131F)],
-              ),
+              color: NomoThemedPanel.surfaceColor(isWhite: isWhite),
+              gradient: isWhite
+                  ? const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFFFFFFFF), Color(0xFFF8FBFF)],
+                    )
+                  : null,
               borderRadius: BorderRadius.circular(34),
               border: Border.all(
                 color: isWhite
@@ -190,7 +191,7 @@ class _SettingsSheetShell extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isWhite
                           ? const Color(0xFFF3F7FA)
-                          : Colors.white.withValues(alpha: .055),
+                          : AppColors.darkBackground,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: isWhite
@@ -302,7 +303,7 @@ class _SettingsTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
         decoration: BoxDecoration(
-          color: isWhite ? Colors.white : Colors.white.withValues(alpha: .055),
+          color: NomoThemedPanel.surfaceColor(isWhite: isWhite),
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: isWhite

@@ -126,9 +126,7 @@ class _FeedShareDestinationTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
         decoration: BoxDecoration(
-          color: isWhite
-              ? const Color(0xFFF6F8FA)
-              : Colors.white.withValues(alpha: .055),
+          color: isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: isWhite
@@ -790,7 +788,7 @@ void _paintShareText(
 
 class _FeedColors {
   const _FeedColors._();
-  static const teal = Color(0xFF21D6C4);
+  static const teal = Color(0xFFC08BFF);
   static const card = Color(0xFF112332);
   static const sub = Color(0xFF9AA7B7);
 }

@@ -227,7 +227,7 @@ class _DialogHint extends StatelessWidget {
       decoration: BoxDecoration(
         color: isWhite
             ? Colors.white.withValues(alpha: .72)
-            : Colors.white.withValues(alpha: .055),
+            : AppColors.darkBackground,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isWhite

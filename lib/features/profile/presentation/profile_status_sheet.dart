@@ -145,9 +145,7 @@ class _ProfileStatusOption extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected
               ? color.withValues(alpha: .16)
-              : (isWhite
-                    ? const Color(0xFFF6F8FA)
-                    : Colors.white.withValues(alpha: .055)),
+              : (isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground),
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: selected

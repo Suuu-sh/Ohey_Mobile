@@ -353,7 +353,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = widget.isWhite;
-    final bg = isWhite ? Colors.white : const Color(0xFF071622);
+    final bg = NomoThemedPanel.surfaceColor(isWhite: isWhite);
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
     final sub = isWhite
         ? const Color(0xFF687481)
@@ -371,13 +371,13 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
         ),
         decoration: BoxDecoration(
           color: bg,
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: isWhite
-                ? const [Colors.white, Color(0xFFF7FAFD)]
-                : const [Color(0xFF0B1D2B), Color(0xFF06131F)],
-          ),
+          gradient: isWhite
+              ? const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.white, Color(0xFFF7FAFD)],
+                )
+              : null,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
             color: isWhite
@@ -707,7 +707,7 @@ class _CriteriaToggleChip extends StatelessWidget {
               ? accent
               : isWhite
               ? const Color(0xFFF7F9FB)
-              : Colors.white.withValues(alpha: .055),
+              : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
             color: selected
@@ -778,7 +778,7 @@ class _CustomFilterFriendRow extends StatelessWidget {
               ? _FriendsColors.lime.withValues(alpha: isWhite ? .18 : .14)
               : isWhite
               ? const Color(0xFFF7F9FB)
-              : Colors.white.withValues(alpha: .055),
+              : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: selected

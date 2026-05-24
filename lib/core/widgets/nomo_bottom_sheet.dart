@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import 'nomo_pop_icon.dart';
 
 class NomoBottomSheetShell extends StatelessWidget {
@@ -44,14 +45,7 @@ class NomoBottomSheetShell extends StatelessWidget {
             child: Container(
               padding: padding,
               decoration: BoxDecoration(
-                color: isWhite ? Colors.white : null,
-                gradient: isWhite
-                    ? null
-                    : const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFF172737), Color(0xFF0B1722)],
-                      ),
+                color: isWhite ? Colors.white : AppColors.darkBackground,
                 borderRadius: BorderRadius.circular(radius),
                 border: Border.all(
                   color: isWhite

@@ -108,9 +108,7 @@ class _FeedCompanionTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isWhite
-              ? const Color(0xFFF7FAFC)
-              : Colors.white.withValues(alpha: .055),
+          color: isWhite ? const Color(0xFFF7FAFC) : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: isWhite
