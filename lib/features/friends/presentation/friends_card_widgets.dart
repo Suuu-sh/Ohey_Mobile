@@ -138,13 +138,47 @@ class _FriendCardAvatarBubble extends StatelessWidget {
         ],
       ),
       child: ClipOval(
-        child: Container(
-          color: NomoThemedPanel.surfaceColor(isWhite: isWhite),
-          alignment: Alignment.center,
-          child: Transform.translate(
-            offset: const Offset(0, 5),
-            child: NomoAvatarView(avatar: avatar, size: 56, showBody: true),
-          ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _FriendAvatarBubbleBackground(avatar: avatar),
+            Center(
+              child: Transform.translate(
+                offset: const Offset(0, 5),
+                child: NomoAvatarView(avatar: avatar, size: 56, showBody: true),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendAvatarBubbleBackground extends StatelessWidget {
+  const _FriendAvatarBubbleBackground({required this.avatar});
+
+  final NomoAvatar avatar;
+
+  @override
+  Widget build(BuildContext context) {
+    if (NomoAvatar.usesMascotBackdrop(avatar.background)) {
+      return Image.asset(
+        'assets/images/profile_mascot_backdrop_scene.png',
+        fit: BoxFit.cover,
+        alignment: Alignment.center,
+      );
+    }
+
+    final colors =
+        NomoAvatar.backgroundGradients[avatar.background %
+            NomoAvatar.backgroundGradients.length];
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
         ),
       ),
     );
