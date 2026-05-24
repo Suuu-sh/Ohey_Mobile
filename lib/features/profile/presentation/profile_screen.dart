@@ -16,6 +16,7 @@ import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/models/nomo_gender.dart';
+import '../../../core/models/nomo_friend.dart';
 import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
@@ -63,6 +64,8 @@ class ProfileScreen extends ConsumerWidget {
         const <DrinkLog>[];
     final myLogs = _myProfileLogs(logs, currentAuthUserId);
     final photoLogs = _photoArchiveLogs(logs, currentAuthUserId);
+    final friends =
+        ref.watch(friendsProvider).asData?.value ?? const <NomoFriend>[];
     const headerIsWhite = true;
     const bodyIsWhite = false;
     final hasAdminEmail = NomoAvatar.isAdminEmail(currentAuthUser?.email);
@@ -157,6 +160,7 @@ class ProfileScreen extends ConsumerWidget {
                               isWhite: bodyIsWhite,
                               logs: myLogs,
                               photoLogs: photoLogs,
+                              friendsCount: friends.length,
                               status:
                                   user?.dailyStatus ??
                                   NomoDailyStatus.unselected,
@@ -174,9 +178,16 @@ class ProfileScreen extends ConsumerWidget {
                                       PhotoArchiveScreen(logs: photoLogs),
                                 ),
                               ),
-                              onInviteAppTap: () => _shareAppInvite(
+                              onAddFriendsTap: () => Navigator.of(context).push(
+                                CupertinoPageRoute<void>(
+                                  fullscreenDialog: true,
+                                  builder: (_) => const AddNomiTomoScreen(),
+                                ),
+                              ),
+                              onQrTap: () => showMyQrDialog(
                                 context,
                                 ref.read(nomoUserProvider),
+                                ref,
                               ),
                             ),
                           ),
