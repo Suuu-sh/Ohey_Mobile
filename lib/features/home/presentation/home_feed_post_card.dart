@@ -446,7 +446,7 @@ class _FeedCompanionInlineButton extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: () => _showFeedCompanionList(context, friends),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(8, 6, 10, 6),
+          padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: BorderRadius.circular(999),
@@ -457,20 +457,18 @@ class _FeedCompanionInlineButton extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _FriendAvatarStack(friends: friends),
-                const SizedBox(width: 7),
-                Flexible(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: textColor,
-                      fontWeight: FontWeight.w900,
-                      height: 1.05,
-                    ),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: textColor,
+                    fontWeight: FontWeight.w900,
+                    height: 1.05,
                   ),
                 ),
+                const SizedBox(width: 7),
+                _FriendAvatarStack(friends: friends),
               ],
             ),
           ),
