@@ -14,6 +14,7 @@ import '../../features/friends/application/drink_invite_controller.dart';
 import '../../features/friends/presentation/friends_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/logs/application/drink_log_controller.dart';
+import '../../features/logs/application/drink_log_daily_limit.dart';
 import '../../features/logs/presentation/add_log_screen.dart';
 import '../../features/notifications/application/notification_controller.dart';
 import '../../features/notifications/application/os_notification_service.dart';
@@ -116,6 +117,13 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       builder: (_) => const _DrinkLogStartSheet(),
     );
     if (!mounted || action == null) return;
+    if (action.createsDrinkLog &&
+        await _hasExistingDrinkLogOn(DateTime.now())) {
+      if (!mounted) return;
+      await _showDailyPostLimitAlert(DateTime.now());
+      return;
+    }
+    if (!mounted) return;
 
     switch (action) {
       case _DrinkLogStartAction.camera:
@@ -132,6 +140,44 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       case _DrinkLogStartAction.gallery:
         await _openGalleryDrinkLogFlow();
     }
+  }
+
+  Future<bool> _hasExistingDrinkLogOn(DateTime day) async {
+    final currentUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    final currentLogs = ref.read(drinkLogControllerProvider).asData?.value;
+    if (currentLogs != null) {
+      return hasOwnDrinkLogOnDay(
+        currentLogs,
+        day,
+        currentUserId: currentUserId,
+      );
+    }
+
+    try {
+      final logs = await ref.read(drinkLogControllerProvider.future);
+      return hasOwnDrinkLogOnDay(logs, day, currentUserId: currentUserId);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _showDailyPostLimitAlert(DateTime day) async {
+    await showCupertinoDialog<void>(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: Text(
+          drinkLogDailyLimitAlertTitle(day: day, now: DateTime.now()),
+        ),
+        content: const Text(drinkLogDailyLimitAlertMessage),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _openDrinkPlanFlow() async {
@@ -805,6 +851,17 @@ class _DrinkPlanEmptyMessage extends StatelessWidget {
 }
 
 enum _DrinkLogStartAction { camera, noPhoto, gallery, plan }
+
+extension _DrinkLogStartActionX on _DrinkLogStartAction {
+  bool get createsDrinkLog {
+    return switch (this) {
+      _DrinkLogStartAction.camera ||
+      _DrinkLogStartAction.noPhoto ||
+      _DrinkLogStartAction.gallery => true,
+      _DrinkLogStartAction.plan => false,
+    };
+  }
+}
 
 class _DrinkLogStartSheet extends StatelessWidget {
   const _DrinkLogStartSheet();

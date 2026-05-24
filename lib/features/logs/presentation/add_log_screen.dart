@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
+import '../../../core/data/backend_api_client.dart';
+import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
@@ -19,6 +21,7 @@ import '../../../core/widgets/nomo_state_view.dart';
 import '../../../core/utils/nomo_photo_orientation.dart';
 import '../../camera/presentation/nomo_camera_screen.dart';
 import '../application/drink_log_controller.dart';
+import '../application/drink_log_daily_limit.dart';
 import '../data/nomo_place_search_service.dart';
 
 part 'add_log_preview_widgets.dart';

@@ -110,6 +110,13 @@ extension _AddLogScreenActions on _AddLogScreenState {
   }
 
   Future<void> _save(List<NomoFriend> friends) async {
+    if (_isSaving) return;
+    if (await _hasExistingDrinkLogOn(_selectedDate)) {
+      if (!mounted) return;
+      await _showDailyPostLimitAlert(_selectedDate);
+      return;
+    }
+
     setState(() => _isSaving = true);
     final selectedFriends = friends
         .where((friend) => _selectedFriendIds.contains(friend.id))
@@ -138,11 +145,57 @@ extension _AddLogScreenActions on _AddLogScreenState {
       );
       if (!mounted) return;
       Navigator.of(context).pop(openCalendar);
+    } on BackendApiException catch (error) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      if (error.statusCode == 409) {
+        await _showDailyPostLimitAlert(_selectedDate);
+        return;
+      }
+      NomoToast.show(context, '保存できなかったよ。あとでもう一度試してね');
     } catch (error) {
       if (!mounted) return;
       setState(() => _isSaving = false);
       NomoToast.show(context, '保存できなかったよ。あとでもう一度試してね');
     }
+  }
+
+  Future<bool> _hasExistingDrinkLogOn(DateTime day) async {
+    final currentUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    final currentLogs = ref.read(drinkLogControllerProvider).asData?.value;
+    if (currentLogs != null) {
+      return hasOwnDrinkLogOnDay(
+        currentLogs,
+        day,
+        currentUserId: currentUserId,
+      );
+    }
+
+    try {
+      final logs = await ref.read(drinkLogControllerProvider.future);
+      return hasOwnDrinkLogOnDay(logs, day, currentUserId: currentUserId);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _showDailyPostLimitAlert(DateTime day) async {
+    await showCupertinoDialog<void>(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: Text(
+          drinkLogDailyLimitAlertTitle(day: day, now: DateTime.now()),
+        ),
+        content: const Text(drinkLogDailyLimitAlertMessage),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   int _monthlyLogCountAfterSave(List<DrinkLog> previousLogs) {

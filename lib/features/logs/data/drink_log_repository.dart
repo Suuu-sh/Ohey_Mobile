@@ -8,6 +8,7 @@ import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
 import '../../../core/models/nomo_gender.dart';
+import '../application/drink_log_daily_limit.dart';
 
 final drinkLogRepositoryProvider = Provider<DrinkLogRepository>((ref) {
   return BackendDrinkLogRepository(
@@ -104,6 +105,8 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
     );
     final row = await _client.postRow('/v1/drink-logs', {
       'drank_at': log.date.toUtc().toIso8601String(),
+      'drank_on': drinkLogLocalDateKey(log.date),
+      'timezone_offset_minutes': log.date.timeZoneOffset.inMinutes,
       'place_name': log.place,
       'memo': log.memo,
       'photo_path': uploadedPhotoPath ?? '',
