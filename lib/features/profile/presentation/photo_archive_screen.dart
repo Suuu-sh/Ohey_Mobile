@@ -223,41 +223,11 @@ class _PhotoArchiveScreenState extends State<PhotoArchiveScreen> {
                         isWhite: isWhite,
                         onLogTap: (log) => _showArchiveDetail(context, log),
                       )
-                    : CustomScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        slivers: [
-                          SliverPadding(
-                            padding: const EdgeInsets.fromLTRB(22, 12, 22, 18),
-                            sliver: SliverToBoxAdapter(
-                              child: _ArchiveHeroCard(
-                                log: memoryLog ?? sorted.first,
-                              ),
-                            ),
-                          ),
-                          SliverPadding(
-                            padding: const EdgeInsets.fromLTRB(22, 0, 22, 130),
-                            sliver: SliverGrid(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 3,
-                                    crossAxisSpacing: 8,
-                                    mainAxisSpacing: 8,
-                                    childAspectRatio: .78,
-                                  ),
-                              delegate: SliverChildBuilderDelegate(
-                                (context, index) => _ArchiveGridTile(
-                                  log: sorted[index],
-                                  index: index,
-                                  onTap: () => _showArchiveDetail(
-                                    context,
-                                    sorted[index],
-                                  ),
-                                ),
-                                childCount: sorted.length,
-                              ),
-                            ),
-                          ),
-                        ],
+                    : _ArchiveStoriesView(
+                        logs: sorted,
+                        memoryLog: memoryLog,
+                        isWhite: isWhite,
+                        onLogTap: (log) => _showArchiveDetail(context, log),
                       ),
               ),
             ],

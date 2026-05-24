@@ -861,3 +861,255 @@ Alignment _archivePinAlignment(String name, int index) {
   final y = (math.sin(angle) * radius * 1.28).clamp(-.72, .72).toDouble();
   return Alignment(x, y);
 }
+
+class _ArchiveStoriesView extends StatelessWidget {
+  const _ArchiveStoriesView({
+    required this.logs,
+    required this.memoryLog,
+    required this.isWhite,
+    required this.onLogTap,
+  });
+
+  final List<DrinkLog> logs;
+  final DrinkLog? memoryLog;
+  final bool isWhite;
+  final ValueChanged<DrinkLog> onLogTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 1.5,
+              mainAxisSpacing: 1.5,
+              childAspectRatio: .62,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => _ArchiveStoryTile(
+                log: logs[index],
+                onTap: () => onLogTap(logs[index]),
+              ),
+              childCount: logs.length,
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: _ArchiveMemorySection(
+            log: memoryLog ?? logs.first,
+            isWhite: isWhite,
+            onShare: () => onLogTap(memoryLog ?? logs.first),
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 130)),
+      ],
+    );
+  }
+}
+
+class _ArchiveStoryTile extends StatelessWidget {
+  const _ArchiveStoryTile({required this.log, required this.onTap});
+
+  final DrinkLog log;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final dayLabel = log.date.day.toString().padLeft(2, '0');
+    final monthLabel = '${log.date.month}月';
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          _ArchivePhotoFrame(log: log, borderRadius: BorderRadius.zero),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: .28),
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: .22),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 8,
+            top: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: .58),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    dayLabel,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      height: .95,
+                    ),
+                  ),
+                  Text(
+                    monthLabel,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Colors.white.withValues(alpha: .90),
+                      fontWeight: FontWeight.w900,
+                      height: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 7,
+            right: 7,
+            bottom: 7,
+            child: Text(
+              _archiveTitle(log),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: .70),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ArchiveMemorySection extends StatelessWidget {
+  const _ArchiveMemorySection({
+    required this.log,
+    required this.isWhite,
+    required this.onShare,
+  });
+
+  final DrinkLog log;
+  final bool isWhite;
+  final VoidCallback onShare;
+
+  @override
+  Widget build(BuildContext context) {
+    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final subColor = CupertinoDynamicColor.resolve(
+      CupertinoColors.secondaryLabel,
+      context,
+    );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 24, 22, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                '思い出',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: titleColor,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const Spacer(),
+              NomoHeaderIconButton(
+                icon: CupertinoIcons.xmark,
+                color: subColor,
+                semanticLabel: '思い出を閉じる',
+                onTap: () {},
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 150,
+                height: 210,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: isWhite ? .12 : .30,
+                      ),
+                      blurRadius: 22,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
+                ),
+                child: _ArchivePhotoFrame(
+                  log: log,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+              ),
+              const SizedBox(width: 22),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '過去のこの日',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: titleColor,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${_memoryAgoLabel(log.date)}の今日。',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: subColor,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    CupertinoButton(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      color: AppColors.primaryAction,
+                      borderRadius: BorderRadius.circular(12),
+                      onPressed: onShare,
+                      child: Text(
+                        'シェア',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
