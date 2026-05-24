@@ -49,23 +49,34 @@ class _FriendsList extends StatelessWidget {
     final hasRecommendations = recommendations.isNotEmpty;
 
     if (filtered.isEmpty) {
-      return ListView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        padding: const EdgeInsets.only(bottom: 116),
-        children: [
-          _EmptyFriendsState(
-            avatar: userAvatar,
-            message: friends.isEmpty ? 'フレンズがいません' : 'この条件のフレンズはいません',
-            subtitle: friends.isEmpty
-                ? 'QRコードかIDでフレンズを追加しよう'
-                : selectedCustomFilter == null
-                ? '別の条件を選ぶと見つかるかも'
-                : 'フィルターを長押しすると編集できます',
-            onAddFriend: onAddFriend,
-          ),
-        ],
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          const bottomInset = 116.0;
+          final contentHeight = constraints.maxHeight - bottomInset;
+          return ListView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            padding: const EdgeInsets.only(bottom: bottomInset),
+            children: [
+              SizedBox(
+                height: contentHeight > 0 ? contentHeight : 0,
+                child: Center(
+                  child: _EmptyFriendsState(
+                    avatar: userAvatar,
+                    message: friends.isEmpty ? 'フレンズがいません' : 'この条件のフレンズはいません',
+                    subtitle: friends.isEmpty
+                        ? 'QRコードかIDでフレンズを追加しよう'
+                        : selectedCustomFilter == null
+                        ? '別の条件を選ぶと見つかるかも'
+                        : 'フィルターを長押しすると編集できます',
+                    onAddFriend: onAddFriend,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       );
     }
 
@@ -679,25 +690,19 @@ class _EmptyFriendsState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 116),
-      child: Transform.translate(
-        offset: const Offset(0, -42),
-        child: NomoEmptyState(
-          visual: _EmptyFriendsVisual(avatar: avatar),
-          title: message,
-          message: subtitle,
-          titleColor: isWhite ? const Color(0xFF1B2633) : Colors.white,
-          messageColor: isWhite
-              ? const Color(0xFF6D7784)
-              : Colors.white.withValues(alpha: .58),
-          padding: EdgeInsets.zero,
-          spacing: 14,
-          action: message == 'フレンズがいません'
-              ? _EmptyFriendsActions(onAddFriend: onAddFriend)
-              : null,
-        ),
-      ),
+    return NomoEmptyState(
+      visual: _EmptyFriendsVisual(avatar: avatar),
+      title: message,
+      message: subtitle,
+      titleColor: isWhite ? const Color(0xFF1B2633) : Colors.white,
+      messageColor: isWhite
+          ? const Color(0xFF6D7784)
+          : Colors.white.withValues(alpha: .58),
+      padding: EdgeInsets.zero,
+      spacing: 14,
+      action: message == 'フレンズがいません'
+          ? _EmptyFriendsActions(onAddFriend: onAddFriend)
+          : null,
     );
   }
 }
