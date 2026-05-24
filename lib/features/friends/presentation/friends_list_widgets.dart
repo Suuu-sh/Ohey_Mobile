@@ -159,7 +159,7 @@ class _TodayInviteSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '最近の雰囲気から、声をかけたいフレンズを表示しています。',
+                      '今誘いやすいフレンズを表示しています。',
                       style: TextStyle(
                         color: sub,
                         fontSize: 12,
