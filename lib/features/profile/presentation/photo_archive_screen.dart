@@ -171,69 +171,87 @@ class _PhotoArchiveScreenState extends State<PhotoArchiveScreen> {
     final background = isWhite
         ? const Color(0xFFF7F9FC)
         : AppColors.darkBackgroundBottom;
+    final isMapMode = sorted.isNotEmpty && _viewMode == _ArchiveViewMode.places;
 
     return Scaffold(
       backgroundColor: background,
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: isWhite
-                ? const [Colors.white, Color(0xFFF7F9FC)]
-                : AppColors.darkBackgroundGradient,
-          ),
-        ),
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  NomoPageHeader.horizontalPadding,
-                  NomoPageHeader.topPadding,
-                  NomoPageHeader.horizontalPadding,
-                  0,
-                ),
-                child: NomoPageHeader(
-                  title: 'アーカイブ',
-                  trailing: NomoHeaderIconButton(
-                    icon: CupertinoIcons.xmark,
-                    color: isWhite ? const Color(0xFF101820) : Colors.white,
-                    semanticLabel: '閉じる',
-                    onTap: () => Navigator.of(context).pop(),
-                  ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (isMapMode)
+            _ArchiveMapPage(
+              logs: sorted,
+              isWhite: isWhite,
+              onLogTap: (log) => _showArchiveDetail(context, log),
+            )
+          else
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: isWhite
+                      ? const [Colors.white, Color(0xFFF7F9FC)]
+                      : AppColors.darkBackgroundGradient,
                 ),
               ),
-              if (sorted.isNotEmpty)
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 118),
+                    Expanded(
+                      child: sorted.isEmpty
+                          ? _ArchiveEmptyState(isWhite: isWhite)
+                          : _ArchiveStoriesView(
+                              logs: sorted,
+                              memoryLog: memoryLog,
+                              isWhite: isWhite,
+                              onLogTap: (log) =>
+                                  _showArchiveDetail(context, log),
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(22, 14, 22, 6),
-                  child: _ArchiveViewModeSelector(
-                    value: _viewMode,
-                    isWhite: isWhite,
-                    onChanged: (value) => setState(() => _viewMode = value),
+                  padding: const EdgeInsets.fromLTRB(
+                    NomoPageHeader.horizontalPadding,
+                    NomoPageHeader.topPadding,
+                    NomoPageHeader.horizontalPadding,
+                    0,
+                  ),
+                  child: NomoPageHeader(
+                    title: 'アーカイブ',
+                    trailing: NomoHeaderIconButton(
+                      icon: CupertinoIcons.xmark,
+                      color: isWhite ? const Color(0xFF101820) : Colors.white,
+                      semanticLabel: '閉じる',
+                      onTap: () => Navigator.of(context).pop(),
+                    ),
                   ),
                 ),
-              Expanded(
-                child: sorted.isEmpty
-                    ? _ArchiveEmptyState(isWhite: isWhite)
-                    : _viewMode == _ArchiveViewMode.places
-                    ? _ArchivePlacesView(
-                        logs: sorted,
-                        isWhite: isWhite,
-                        onLogTap: (log) => _showArchiveDetail(context, log),
-                      )
-                    : _ArchiveStoriesView(
-                        logs: sorted,
-                        memoryLog: memoryLog,
-                        isWhite: isWhite,
-                        onLogTap: (log) => _showArchiveDetail(context, log),
-                      ),
-              ),
-            ],
+                if (sorted.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(22, 14, 22, isMapMode ? 0 : 6),
+                    child: _ArchiveViewModeSelector(
+                      value: _viewMode,
+                      isWhite: isWhite,
+                      onChanged: (value) => setState(() => _viewMode = value),
+                    ),
+                  ),
+                const Spacer(),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

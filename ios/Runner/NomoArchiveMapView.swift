@@ -19,17 +19,34 @@ final class NomoArchiveMapFactory: NSObject, FlutterPlatformViewFactory {
     viewIdentifier viewId: Int64,
     arguments args: Any?
   ) -> FlutterPlatformView {
-    NomoArchiveMapView(frame: frame, arguments: args)
+    NomoArchiveMapView(frame: frame, viewIdentifier: viewId, arguments: args, messenger: messenger)
   }
 }
 
-final class NomoArchiveMapView: NSObject, FlutterPlatformView {
+private final class NomoArchiveAnnotation: MKPointAnnotation {
+  let identifier: String
+
+  init(identifier: String) {
+    self.identifier = identifier
+    super.init()
+  }
+}
+
+final class NomoArchiveMapView: NSObject, FlutterPlatformView, MKMapViewDelegate {
   private let mapView: MKMapView
   private let geocoder = CLGeocoder()
+  private let channel: FlutterMethodChannel
 
-  init(frame: CGRect, arguments args: Any?) {
+  init(
+    frame: CGRect,
+    viewIdentifier viewId: Int64,
+    arguments args: Any?,
+    messenger: FlutterBinaryMessenger
+  ) {
     mapView = MKMapView(frame: frame)
+    channel = FlutterMethodChannel(name: "nomo/archive_map_\(viewId)", binaryMessenger: messenger)
     super.init()
+    mapView.delegate = self
     mapView.overrideUserInterfaceStyle = .dark
     mapView.mapType = .standard
     mapView.pointOfInterestFilter = .includingAll
@@ -46,16 +63,10 @@ final class NomoArchiveMapView: NSObject, FlutterPlatformView {
     guard let params = args as? [String: Any],
           let annotations = params["annotations"] as? [[String: Any]] else { return }
 
-    let coordinatePins = annotations.compactMap { item -> MKPointAnnotation? in
+    let coordinatePins = annotations.compactMap { item -> NomoArchiveAnnotation? in
       guard let lat = item["latitude"] as? CLLocationDegrees,
             let lng = item["longitude"] as? CLLocationDegrees else { return nil }
-      let annotation = MKPointAnnotation()
-      annotation.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
-      annotation.title = item["title"] as? String
-      if let count = item["count"] as? Int, count > 1 {
-        annotation.subtitle = "\(count)件の思い出"
-      }
-      return annotation
+      return makeAnnotation(from: item, coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lng))
     }
 
     let unresolvedItems = annotations.filter { item in
@@ -77,26 +88,38 @@ final class NomoArchiveMapView: NSObject, FlutterPlatformView {
     }
   }
 
+  private func makeAnnotation(
+    from item: [String: Any],
+    coordinate: CLLocationCoordinate2D
+  ) -> NomoArchiveAnnotation {
+    let fallbackId = item["title"] as? String ?? UUID().uuidString
+    let annotation = NomoArchiveAnnotation(identifier: item["id"] as? String ?? fallbackId)
+    annotation.coordinate = coordinate
+    annotation.title = item["title"] as? String
+    if let subtitle = item["subtitle"] as? String {
+      annotation.subtitle = subtitle
+    } else if let count = item["count"] as? Int, count > 1 {
+      annotation.subtitle = "\(count)件の思い出"
+    }
+    return annotation
+  }
+
   private func geocode(
     items: [[String: Any]],
-    completion: @escaping ([MKPointAnnotation]) -> Void
+    completion: @escaping ([NomoArchiveAnnotation]) -> Void
   ) {
-    var results: [MKPointAnnotation] = []
+    var results: [NomoArchiveAnnotation] = []
     let group = DispatchGroup()
 
     for item in items {
-      guard let title = item["title"] as? String, !title.isEmpty else { continue }
+      let place = (item["place"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+      let title = (item["title"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+      guard let query = [place, title].compactMap({ $0 }).first(where: { !$0.isEmpty }) else { continue }
       group.enter()
-      geocoder.geocodeAddressString(title) { placemarks, _ in
+      geocoder.geocodeAddressString(query) { placemarks, _ in
         defer { group.leave() }
         guard let coordinate = placemarks?.first?.location?.coordinate else { return }
-        let annotation = MKPointAnnotation()
-        annotation.coordinate = coordinate
-        annotation.title = title
-        if let count = item["count"] as? Int, count > 1 {
-          annotation.subtitle = "\(count)件の思い出"
-        }
-        results.append(annotation)
+        results.append(self.makeAnnotation(from: item, coordinate: coordinate))
       }
     }
 
@@ -110,8 +133,8 @@ final class NomoArchiveMapView: NSObject, FlutterPlatformView {
       mapView.setRegion(
         MKCoordinateRegion(
           center: CLLocationCoordinate2D(latitude: 35.681236, longitude: 139.767125),
-          latitudinalMeters: 5000,
-          longitudinalMeters: 5000
+          latitudinalMeters: 5_000,
+          longitudinalMeters: 5_000
         ),
         animated: false
       )
@@ -122,8 +145,8 @@ final class NomoArchiveMapView: NSObject, FlutterPlatformView {
       mapView.setRegion(
         MKCoordinateRegion(
           center: pins[0].coordinate,
-          latitudinalMeters: 1800,
-          longitudinalMeters: 1800
+          latitudinalMeters: 1_800,
+          longitudinalMeters: 1_800
         ),
         animated: false
       )
@@ -137,8 +160,26 @@ final class NomoArchiveMapView: NSObject, FlutterPlatformView {
     }
     mapView.setVisibleMapRect(
       rect,
-      edgePadding: UIEdgeInsets(top: 80, left: 60, bottom: 80, right: 60),
+      edgePadding: UIEdgeInsets(top: 150, left: 60, bottom: 80, right: 60),
       animated: false
     )
+  }
+
+  func mapView(_ mapView: MKMapView, didSelect annotation: MKAnnotation) {
+    guard let annotation = annotation as? NomoArchiveAnnotation else { return }
+    channel.invokeMethod("annotationSelected", arguments: ["id": annotation.identifier])
+    mapView.deselectAnnotation(annotation, animated: true)
+  }
+
+  func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+    guard annotation is NomoArchiveAnnotation else { return nil }
+    let identifier = "NomoArchiveAnnotation"
+    let view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView
+      ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+    view.annotation = annotation
+    view.markerTintColor = UIColor.systemPink
+    view.glyphImage = UIImage(systemName: "photo.fill")
+    view.canShowCallout = false
+    return view
   }
 }

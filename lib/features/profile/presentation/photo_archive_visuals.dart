@@ -436,6 +436,52 @@ class _ArchivePlacesView extends StatelessWidget {
   }
 }
 
+class _ArchiveMapPage extends StatelessWidget {
+  const _ArchiveMapPage({
+    required this.logs,
+    required this.isWhite,
+    required this.onLogTap,
+  });
+
+  final List<DrinkLog> logs;
+  final bool isWhite;
+  final ValueChanged<DrinkLog> onLogTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final mapLogs = logs
+        .where((log) => log.place.trim().isNotEmpty || log.hasPlaceCoordinate)
+        .toList(growable: false);
+    if (mapLogs.isEmpty) {
+      return _ArchivePlacesEmpty(isWhite: isWhite);
+    }
+
+    if (Platform.isIOS) {
+      return _ArchiveAppleMap(
+        annotations: _archiveLogMapAnnotations(mapLogs),
+        onAnnotationTap: (id) {
+          final index = mapLogs.indexWhere((log) => log.id == id);
+          if (index >= 0) onLogTap(mapLogs[index]);
+        },
+      );
+    }
+
+    final places = _archivePlaceGroups(mapLogs);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const _ArchiveStylizedMapBackground(),
+        for (var i = 0; i < places.length; i++)
+          _ArchiveMapPin(
+            place: places[i],
+            alignment: _archivePinAlignment(places[i].name, i),
+            onTap: () => onLogTap(places[i].latestLog),
+          ),
+      ],
+    );
+  }
+}
+
 class _ArchiveMapCard extends StatelessWidget {
   const _ArchiveMapCard({
     required this.places,
@@ -468,7 +514,7 @@ class _ArchiveMapCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             if (Platform.isIOS && visible.isNotEmpty)
-              _ArchiveAppleMap(places: visible)
+              _ArchiveAppleMap(annotations: _archiveMapAnnotations(visible))
             else
               const _ArchiveStylizedMapBackground(),
             if (!(Platform.isIOS && visible.isNotEmpty))
@@ -486,18 +532,50 @@ class _ArchiveMapCard extends StatelessWidget {
 }
 
 class _ArchiveAppleMap extends StatelessWidget {
-  const _ArchiveAppleMap({required this.places});
+  const _ArchiveAppleMap({required this.annotations, this.onAnnotationTap});
 
-  final List<_ArchivePlaceGroup> places;
+  final List<Map<String, Object?>> annotations;
+  final ValueChanged<String>? onAnnotationTap;
 
   @override
   Widget build(BuildContext context) {
     return UiKitView(
       viewType: 'nomo/archive_map',
-      creationParams: {'annotations': _archiveMapAnnotations(places)},
+      creationParams: {'annotations': annotations},
       creationParamsCodec: const StandardMessageCodec(),
+      onPlatformViewCreated: (id) {
+        final handler = onAnnotationTap;
+        if (handler == null) return;
+        MethodChannel('nomo/archive_map_$id').setMethodCallHandler((
+          call,
+        ) async {
+          if (call.method != 'annotationSelected') return;
+          final args = call.arguments;
+          if (args is Map) {
+            final value = args['id']?.toString();
+            if (value != null && value.isNotEmpty) handler(value);
+          }
+        });
+      },
     );
   }
+}
+
+List<Map<String, Object?>> _archiveLogMapAnnotations(List<DrinkLog> logs) {
+  return logs
+      .map(
+        (log) => <String, Object?>{
+          'id': log.id,
+          'title': _archiveTitle(log),
+          'subtitle': _archiveDate(log.date),
+          'place': log.place.trim(),
+          if (log.hasPlaceCoordinate) ...{
+            'latitude': log.placeLatitude,
+            'longitude': log.placeLongitude,
+          },
+        },
+      )
+      .toList(growable: false);
 }
 
 List<Map<String, Object?>> _archiveMapAnnotations(
