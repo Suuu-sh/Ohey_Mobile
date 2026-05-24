@@ -467,11 +467,11 @@ class _ArchiveMapCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (Platform.isIOS && _archiveMapAnnotations(visible).isNotEmpty)
+            if (Platform.isIOS && visible.isNotEmpty)
               _ArchiveAppleMap(places: visible)
             else
               const _ArchiveStylizedMapBackground(),
-            if (!(Platform.isIOS && _archiveMapAnnotations(visible).isNotEmpty))
+            if (!(Platform.isIOS && visible.isNotEmpty))
               for (var i = 0; i < visible.length; i++)
                 _ArchiveMapPin(
                   place: visible[i],
@@ -540,13 +540,14 @@ List<Map<String, Object?>> _archiveMapAnnotations(
   List<_ArchivePlaceGroup> places,
 ) {
   return places
-      .where((place) => place.latestLog.hasPlaceCoordinate)
       .map(
         (place) => <String, Object?>{
           'title': place.name,
           'count': place.logs.length,
-          'latitude': place.latestLog.placeLatitude,
-          'longitude': place.latestLog.placeLongitude,
+          if (place.latestLog.hasPlaceCoordinate) ...{
+            'latitude': place.latestLog.placeLatitude,
+            'longitude': place.latestLog.placeLongitude,
+          },
         },
       )
       .toList(growable: false);

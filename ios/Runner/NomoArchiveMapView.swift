@@ -25,14 +25,18 @@ final class NomoArchiveMapFactory: NSObject, FlutterPlatformViewFactory {
 
 final class NomoArchiveMapView: NSObject, FlutterPlatformView {
   private let mapView: MKMapView
+  private let geocoder = CLGeocoder()
 
   init(frame: CGRect, arguments args: Any?) {
     mapView = MKMapView(frame: frame)
     super.init()
     mapView.overrideUserInterfaceStyle = .dark
+    mapView.mapType = .standard
     mapView.pointOfInterestFilter = .includingAll
     mapView.showsCompass = false
     mapView.showsScale = false
+    mapView.showsBuildings = true
+    mapView.showsTraffic = false
     configureAnnotations(args)
   }
 
@@ -42,7 +46,7 @@ final class NomoArchiveMapView: NSObject, FlutterPlatformView {
     guard let params = args as? [String: Any],
           let annotations = params["annotations"] as? [[String: Any]] else { return }
 
-    let pins = annotations.compactMap { item -> MKPointAnnotation? in
+    let coordinatePins = annotations.compactMap { item -> MKPointAnnotation? in
       guard let lat = item["latitude"] as? CLLocationDegrees,
             let lng = item["longitude"] as? CLLocationDegrees else { return nil }
       let annotation = MKPointAnnotation()
@@ -54,8 +58,66 @@ final class NomoArchiveMapView: NSObject, FlutterPlatformView {
       return annotation
     }
 
+    let unresolvedItems = annotations.filter { item in
+      item["latitude"] == nil || item["longitude"] == nil
+    }
+
+    var pins = coordinatePins
     mapView.addAnnotations(pins)
-    guard !pins.isEmpty else { return }
+    if !pins.isEmpty {
+      setVisibleRegion(for: pins)
+    }
+
+    guard !unresolvedItems.isEmpty else { return }
+    geocode(items: unresolvedItems) { [weak self] geocodedPins in
+      guard let self else { return }
+      pins.append(contentsOf: geocodedPins)
+      self.mapView.addAnnotations(geocodedPins)
+      self.setVisibleRegion(for: pins)
+    }
+  }
+
+  private func geocode(
+    items: [[String: Any]],
+    completion: @escaping ([MKPointAnnotation]) -> Void
+  ) {
+    var results: [MKPointAnnotation] = []
+    let group = DispatchGroup()
+
+    for item in items {
+      guard let title = item["title"] as? String, !title.isEmpty else { continue }
+      group.enter()
+      geocoder.geocodeAddressString(title) { placemarks, _ in
+        defer { group.leave() }
+        guard let coordinate = placemarks?.first?.location?.coordinate else { return }
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = coordinate
+        annotation.title = title
+        if let count = item["count"] as? Int, count > 1 {
+          annotation.subtitle = "\(count)件の思い出"
+        }
+        results.append(annotation)
+      }
+    }
+
+    group.notify(queue: .main) {
+      completion(results)
+    }
+  }
+
+  private func setVisibleRegion(for pins: [MKPointAnnotation]) {
+    guard !pins.isEmpty else {
+      mapView.setRegion(
+        MKCoordinateRegion(
+          center: CLLocationCoordinate2D(latitude: 35.681236, longitude: 139.767125),
+          latitudinalMeters: 5000,
+          longitudinalMeters: 5000
+        ),
+        animated: false
+      )
+      return
+    }
+
     if pins.count == 1 {
       mapView.setRegion(
         MKCoordinateRegion(
