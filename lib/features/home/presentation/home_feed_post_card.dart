@@ -437,7 +437,7 @@ class _FeedCompanionInlineButton extends StatelessWidget {
     final backgroundColor = isWhite
         ? const Color(0xFFF4F7FA)
         : Colors.white.withValues(alpha: .07);
-    const label = 'と一緒';
+    const label = 'With';
 
     return Semantics(
       button: true,
@@ -553,15 +553,13 @@ String _feedCardCaption(_FeedItem item) {
 }
 
 String _feedLikeActionLabel(_FeedItem item) {
-  if (item.isOfficial) return item.liked ? '保存済み' : '参考になった';
-  if (item.ownedByMe) return item.liked ? 'いいね済み' : 'いいね';
-  return item.liked ? '反応済み' : 'いいねで反応';
+  if (item.isOfficial) return item.liked ? 'Saved' : 'Save';
+  return item.liked ? 'Liked' : 'Like';
 }
 
 String _feedShareActionLabel(_FeedItem item) {
-  if (item.isOfficial) return '詳しく見る';
-  if (item.ownedByMe) return '思い出を共有';
-  return '共有';
+  if (item.isOfficial) return 'More';
+  return 'Share';
 }
 
 String _feedReactionSummary(_FeedItem item) {
