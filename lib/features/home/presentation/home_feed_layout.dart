@@ -5,6 +5,8 @@ double _feedHeaderScrollInset(BuildContext context) {
 }
 
 const _feedBottomPageInset = 124.0;
+const _feedPrimaryActionColor = Color(0xFFC08BFF);
+const _feedPrimaryActionShadowColor = Color(0xFF7F51C9);
 
 Widget _buildFeedPage({
   required double topPadding,
@@ -146,8 +148,8 @@ class _FeedSectionEmptyState extends StatelessWidget {
             onTap: onAddLogPressed,
             height: 50,
             radius: 22,
-            color: AppColors.primaryAction,
-            shadowColor: AppColors.primaryActionShadow,
+            color: _feedPrimaryActionColor,
+            shadowColor: _feedPrimaryActionShadowColor,
             fontSize: 14,
           ),
         ),
