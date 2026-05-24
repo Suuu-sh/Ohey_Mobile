@@ -478,42 +478,6 @@ class _ArchiveMapCard extends StatelessWidget {
                   alignment: _archivePinAlignment(visible[i].name, i),
                   onTap: () => onPlaceTap(visible[i]),
                 ),
-            Positioned(
-              left: 18,
-              right: 18,
-              bottom: 18,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '場所をタップして、その場所の思い出へ',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: Colors.white.withValues(alpha: .88),
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: .42),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: .15),
-                      ),
-                    ),
-                    child: const Center(
-                      child: NomoGeneratedIcon(
-                        CupertinoIcons.location_fill,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
