@@ -139,7 +139,7 @@ class _FriendCardAvatarBubble extends StatelessWidget {
       ),
       child: ClipOval(
         child: Container(
-          color: accent.withValues(alpha: isWhite ? .18 : .24),
+          color: NomoThemedPanel.surfaceColor(isWhite: isWhite),
           alignment: Alignment.center,
           child: Transform.translate(
             offset: const Offset(0, 5),
