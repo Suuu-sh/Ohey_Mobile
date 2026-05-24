@@ -130,41 +130,23 @@ class _TodayInviteSection extends StatelessWidget {
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .60);
 
-    return Container(
+    return NomoThemedPanel(
       padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
-      decoration: BoxDecoration(
-        color: isWhite ? Colors.white : null,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isWhite
-              ? const [Colors.white, Color(0xFFF6FFE8)]
-              : const [
-                  _FriendsColors.blockTop,
-                  Color(0xFF102536),
-                  _FriendsColors.blockBottom,
-                ],
-          stops: const [0, .48, 1],
-        ),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(
-          color: isWhite
-              ? _FriendsColors.lime.withValues(alpha: .34)
-              : _FriendsColors.lime.withValues(alpha: .14),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _FriendsColors.lime.withValues(alpha: isWhite ? .08 : .10),
-            blurRadius: 28,
-            offset: const Offset(0, 10),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .06 : .30),
-            blurRadius: 30,
-            offset: const Offset(0, 16),
-          ),
-        ],
-      ),
+      accentColor: _FriendsColors.lime,
+      backgroundColor: isWhite ? Colors.white : AppColors.darkBackground,
+      gradient: isWhite
+          ? const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Color(0xFFF6FFE8)],
+              stops: [0, .48, 1],
+            )
+          : null,
+      borderRadius: 26,
+      borderAlpha: isWhite ? .34 : .18,
+      glowAlpha: isWhite ? .08 : .10,
+      glowBlur: 28,
+      glowOffset: const Offset(0, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -252,99 +234,83 @@ class _TodayInviteCandidateCard extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
     final reason = _recommendationReasonFor(item);
-    return Container(
+    return SizedBox(
       width: 150,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isWhite ? Colors.white : null,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isWhite
-              ? const [Colors.white, Color(0xFFF4FBEF)]
-              : const [_FriendsColors.cardTop, _FriendsColors.cardBottom],
-        ),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: isWhite
-              ? _FriendsColors.lime.withValues(alpha: .22)
-              : Color.lerp(
-                  accent,
-                  _FriendsColors.lime,
-                  .45,
-                )!.withValues(alpha: .16),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: isWhite ? .05 : .10),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .04 : .20),
-            blurRadius: 18,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              NomoAvatarView(
-                avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
-                size: 38,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  friend.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: ink,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
+      child: NomoThemedPanel(
+        padding: const EdgeInsets.all(12),
+        accentColor: accent,
+        backgroundColor: isWhite ? Colors.white : AppColors.darkBackground,
+        gradient: isWhite
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, Color(0xFFF4FBEF)],
+              )
+            : null,
+        borderRadius: 22,
+        borderAlpha: isWhite ? .22 : .18,
+        glowAlpha: isWhite ? .05 : .10,
+        glowBlur: 20,
+        glowOffset: const Offset(0, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                NomoAvatarView(
+                  avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
+                  size: 38,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    friend.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: ink,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _StatusPill(status: item.status, accent: accent),
+            const SizedBox(height: 8),
+            Text(
+              reason,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: isWhite
+                    ? const Color(0xFF667381)
+                    : Colors.white.withValues(alpha: .68),
+                fontSize: 12.5,
+                fontWeight: FontWeight.w900,
+                height: 1.28,
+                letterSpacing: -.2,
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          _StatusPill(status: item.status, accent: accent),
-          const SizedBox(height: 8),
-          Text(
-            reason,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: isWhite
-                  ? const Color(0xFF667381)
-                  : Colors.white.withValues(alpha: .68),
-              fontSize: 12.5,
-              fontWeight: FontWeight.w900,
-              height: 1.28,
-              letterSpacing: -.2,
             ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: Nomo3DButton(
-              label: '誘う',
-              icon: CupertinoIcons.paperplane_fill,
-              onTap: onInvite,
-              height: 34,
-              radius: 17,
-              color: _FriendsColors.lime,
-              foregroundColor: _FriendsColors.limeForeground,
-              shadowColor: _FriendsColors.limeShadow,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              fontSize: 12,
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: Nomo3DButton(
+                label: '誘う',
+                icon: CupertinoIcons.paperplane_fill,
+                onTap: onInvite,
+                height: 34,
+                radius: 17,
+                color: _FriendsColors.lime,
+                foregroundColor: _FriendsColors.limeForeground,
+                shadowColor: _FriendsColors.limeShadow,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                fontSize: 12,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

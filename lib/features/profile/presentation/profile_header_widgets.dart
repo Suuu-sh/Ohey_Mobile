@@ -98,16 +98,63 @@ class _ProfileSettingsButton extends StatelessWidget {
 }
 
 class _ProfileHeaderBackdrop extends StatelessWidget {
-  const _ProfileHeaderBackdrop();
+  const _ProfileHeaderBackdrop({required this.avatar});
+
+  final NomoAvatar? avatar;
 
   @override
   Widget build(BuildContext context) {
-    return ExcludeSemantics(
-      child: Image.asset(
-        'assets/images/profile_mascot_backdrop_scene.png',
-        fit: BoxFit.cover,
-        alignment: Alignment.center,
-      ),
+    final displayAvatar = avatar ?? NomoAvatar.defaultAvatar;
+    if (NomoAvatar.usesMascotBackdrop(displayAvatar.background)) {
+      return ExcludeSemantics(
+        child: Image.asset(
+          'assets/images/profile_mascot_backdrop_scene.png',
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
+        ),
+      );
+    }
+
+    final backgroundColors =
+        NomoAvatar.backgroundGradients[displayAvatar.background %
+            NomoAvatar.backgroundGradients.length];
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: backgroundColors,
+            ),
+          ),
+        ),
+        Opacity(
+          opacity: displayAvatar.background == NomoAvatar.dreamRoomBackground
+              ? .18
+              : .10,
+          child: ExcludeSemantics(
+            child: Image.asset(
+              'assets/images/profile_header_scene.png',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            ),
+          ),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.white.withValues(alpha: .18),
+                Colors.white.withValues(alpha: .36),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -889,27 +936,16 @@ class _ProfileActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final card = Container(
+    final card = NomoThemedPanel(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isWhite ? Colors.white : Colors.white.withValues(alpha: .055),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isWhite
-              ? const Color(0xFFE0E6ED)
-              : Colors.white.withValues(alpha: .10),
-        ),
-        boxShadow: isWhite
-            ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: .04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                ),
-              ]
-            : null,
-      ),
+      accentColor: AppColors.lavender,
+      backgroundColor: isWhite ? Colors.white : AppColors.darkBackground,
+      borderRadius: 24,
+      borderAlpha: isWhite ? .28 : .14,
+      glowAlpha: isWhite ? .04 : 0,
+      glowBlur: 16,
+      glowOffset: const Offset(0, 8),
       child: child,
     );
     if (onTap == null) return card;

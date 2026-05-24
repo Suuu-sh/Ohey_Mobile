@@ -25,6 +25,7 @@ import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_exchange_components.dart';
+import '../../../core/widgets/nomo_themed_panel.dart';
 import '../../admin/application/admin_controller.dart';
 import '../../admin/presentation/admin_screen.dart';
 import '../../friends/presentation/add_nomi_tomo_screen.dart';
@@ -88,7 +89,7 @@ class ProfileScreen extends ConsumerWidget {
               right: 0,
               top: 0,
               height: headerBackgroundHeight,
-              child: const _ProfileHeaderBackdrop(),
+              child: _ProfileHeaderBackdrop(avatar: user?.avatar),
             ),
             SafeArea(
               bottom: false,

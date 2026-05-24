@@ -19,6 +19,7 @@ import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_toast.dart';
+import '../../../core/widgets/nomo_themed_panel.dart';
 import '../application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../profile/presentation/profile_screen.dart';
@@ -241,7 +242,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       _selectedCustomFilterId,
       _customFilters,
     );
-    final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 178;
+    final headerBackgroundHeight =
+        NomoPageHeader.contentTopInset(context) + 100;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(

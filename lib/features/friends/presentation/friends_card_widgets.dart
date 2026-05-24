@@ -18,111 +18,95 @@ class _FriendCard extends StatelessWidget {
     final accent = _accentForFriend(friend);
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    return Container(
+    return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 98),
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-      decoration: BoxDecoration(
-        color: isWhite ? Colors.white : null,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isWhite
-              ? const [Colors.white, Color(0xFFF7FBF4)]
-              : const [_FriendsColors.blockTop, _FriendsColors.blockBottom],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isWhite
-              ? Color.lerp(accent, Colors.white, .55)!
-              : Color.lerp(
-                  accent,
-                  _FriendsColors.lime,
-                  .35,
-                )!.withValues(alpha: .12),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: isWhite ? .04 : .08),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .06 : .28),
-            blurRadius: 28,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 62,
-            height: 66,
-            child: NomoAvatarView(
-              avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
-              size: 62,
+      child: NomoThemedPanel(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+        accentColor: accent,
+        backgroundColor: isWhite ? Colors.white : AppColors.darkBackground,
+        gradient: isWhite
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, Color(0xFFF7FBF4)],
+              )
+            : null,
+        borderRadius: 20,
+        borderAlpha: isWhite ? .45 : .18,
+        glowAlpha: isWhite ? .04 : .08,
+        glowBlur: 24,
+        glowOffset: const Offset(0, 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 62,
+              height: 66,
+              child: NomoAvatarView(
+                avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
+                size: 62,
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        friend.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: ink,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 20,
-                          letterSpacing: -.4,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          friend.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: ink,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
+                            letterSpacing: -.4,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 9),
-                    Semantics(
-                      button: true,
-                      label: friend.isFavorite ? 'お気に入りを解除' : 'お気に入りに追加',
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: onFavoriteToggle,
-                        child: SizedBox(
-                          width: 34,
-                          height: 34,
-                          child: Center(
-                            child: _FavoriteStarIcon(
-                              filled: friend.isFavorite,
-                              color: friend.isFavorite
-                                  ? const Color(0xFFFFC700)
-                                  : (isWhite
-                                        ? const Color(0xFF8C9CAB)
-                                        : _FriendsColors.muted),
+                      const SizedBox(width: 9),
+                      Semantics(
+                        button: true,
+                        label: friend.isFavorite ? 'お気に入りを解除' : 'お気に入りに追加',
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: onFavoriteToggle,
+                          child: SizedBox(
+                            width: 34,
+                            height: 34,
+                            child: Center(
+                              child: _FavoriteStarIcon(
+                                filled: friend.isFavorite,
+                                color: friend.isFavorite
+                                    ? const Color(0xFFFFC700)
+                                    : (isWhite
+                                          ? const Color(0xFF8C9CAB)
+                                          : _FriendsColors.muted),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 7),
-                _StatusPill(status: status, accent: accent),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 7),
+                  _StatusPill(status: status, accent: accent),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 10),
-          _InviteButton(
-            status: status,
-            accent: accent,
-            name: friend.name,
-            onInvite: onInvite,
-          ),
-        ],
+            const SizedBox(width: 10),
+            _InviteButton(
+              status: status,
+              accent: accent,
+              name: friend.name,
+              onInvite: onInvite,
+            ),
+          ],
+        ),
       ),
     );
   }
