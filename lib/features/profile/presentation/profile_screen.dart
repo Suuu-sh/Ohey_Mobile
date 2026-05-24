@@ -112,6 +112,7 @@ class ProfileScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 12),
                   Expanded(
                     child: ColoredBox(
                       color: bodyBackground,
