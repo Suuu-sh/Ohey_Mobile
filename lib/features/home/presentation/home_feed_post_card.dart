@@ -26,9 +26,7 @@ class _FeedPostCard extends StatelessWidget {
         : (isWhite ? Colors.white : AppColors.darkBackground);
     final borderColor = isOfficial
         ? AppColors.info.withValues(alpha: isWhite ? .42 : .32)
-        : isWhite
-        ? const Color(0xFFE3EAF3)
-        : Colors.white.withValues(alpha: .08);
+        : _FeedColors.teal.withValues(alpha: isWhite ? .36 : .28);
 
     return Semantics(
       label: '${item.userName}の飲みログ',
