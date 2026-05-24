@@ -589,7 +589,7 @@ class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '今日誘うフレンズを選んで、飲み予定を送ります。',
+                        '今日誘うフレンズを選んで送ります。',
                         style: TextStyle(
                           color: sub,
                           fontSize: 13,
