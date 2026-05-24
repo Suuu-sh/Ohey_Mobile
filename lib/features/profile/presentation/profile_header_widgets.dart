@@ -525,129 +525,6 @@ class _InviteResponseButton extends StatelessWidget {
   );
 }
 
-class _ProfileMoodCta extends StatelessWidget {
-  const _ProfileMoodCta({required this.status, required this.onTap});
-
-  final NomoDailyStatus status;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _statusColor(status);
-    final icon = status == NomoDailyStatus.unselected
-        ? CupertinoIcons.smiley
-        : _statusIcon(status);
-
-    return Nomo3DButtonSurface(
-      onTap: onTap,
-      height: 60,
-      radius: 20,
-      color: color,
-      outerShadows: const <BoxShadow>[],
-      padding: const EdgeInsets.fromLTRB(16, 8, 14, 8),
-      child: Row(
-        children: [
-          _ProfileMoodCtaIcon(
-            icon: icon,
-            color: status == NomoDailyStatus.unselected ? Colors.white : color,
-            muted: status == NomoDailyStatus.unselected,
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  status == NomoDailyStatus.unselected
-                      ? 'ステータスを設定する'
-                      : status.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                    letterSpacing: -.2,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  status == NomoDailyStatus.unselected
-                      ? '未設定だと誘われにくいかも'
-                      : 'フレンズが今日誘いやすくなります',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: .70),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
-                    letterSpacing: -.1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          NomoPopIcon(
-            icon: CupertinoIcons.chevron_right,
-            color: Colors.white,
-            foregroundColor: Colors.white,
-            size: 28,
-            iconSize: 24,
-            showBubble: false,
-            shadow: false,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileMoodCtaIcon extends StatelessWidget {
-  const _ProfileMoodCtaIcon({
-    required this.icon,
-    required this.color,
-    required this.muted,
-  });
-
-  final IconData icon;
-  final Color color;
-  final bool muted;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 36,
-    height: 36,
-    decoration: BoxDecoration(
-      color: muted
-          ? Colors.white.withValues(alpha: .14)
-          : Colors.white.withValues(alpha: .90),
-      borderRadius: BorderRadius.circular(13),
-      border: Border.all(
-        color: Colors.white.withValues(alpha: muted ? .18 : .34),
-      ),
-      boxShadow: muted
-          ? null
-          : [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: .10),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-    ),
-    child: Center(
-      child: NomoPopIcon(
-        icon: icon,
-        color: color,
-        size: 29,
-        iconSize: 27,
-        showBubble: false,
-      ),
-    ),
-  );
-}
-
 class _ProfileActivityHome extends StatelessWidget {
   const _ProfileActivityHome({
     required this.isWhite,
@@ -655,6 +532,7 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.photoLogs,
     required this.status,
     required this.onStatusTap,
+    required this.onLogsTap,
     required this.onArchiveTap,
   });
 
@@ -663,6 +541,7 @@ class _ProfileActivityHome extends StatelessWidget {
   final List<DrinkLog> photoLogs;
   final NomoDailyStatus status;
   final VoidCallback onStatusTap;
+  final VoidCallback onLogsTap;
   final VoidCallback onArchiveTap;
 
   @override
@@ -674,6 +553,12 @@ class _ProfileActivityHome extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(24, 2, 24, 132),
       children: [
+        _ProfileStatusHomeCard(
+          isWhite: isWhite,
+          status: status,
+          onTap: onStatusTap,
+        ),
+        const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
@@ -683,6 +568,7 @@ class _ProfileActivityHome extends StatelessWidget {
                 color: AppColors.primaryAction,
                 label: '今月の飲みログ',
                 value: '${monthlyLogs.length}件',
+                onTap: onLogsTap,
               ),
             ),
             const SizedBox(width: 10),
@@ -697,12 +583,6 @@ class _ProfileActivityHome extends StatelessWidget {
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 12),
-        _ProfileStatusHomeCard(
-          isWhite: isWhite,
-          status: status,
-          onTap: onStatusTap,
         ),
       ],
     );

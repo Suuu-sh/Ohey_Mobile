@@ -118,52 +118,38 @@ class ProfileScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          ColoredBox(
-                            color: bodyBackground,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                24,
-                                16,
-                                24,
-                                18,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  if (reservations.isNotEmpty ||
-                                      incomingInvites.isNotEmpty) ...[
-                                    _ProfileReservationStrip(
-                                      isWhite: bodyIsWhite,
-                                      userAvatar: user?.avatar,
-                                      currentUserId: currentAuthUserId,
-                                      reservations: reservations,
-                                      incomingInvites: incomingInvites,
-                                      onAccept: (invite) => _respondDrinkInvite(
-                                        context,
-                                        ref,
-                                        invite,
-                                        accept: true,
-                                      ),
-                                      onReject: (invite) => _respondDrinkInvite(
-                                        context,
-                                        ref,
-                                        invite,
-                                        accept: false,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                  ],
-                                  _ProfileMoodCta(
-                                    status:
-                                        user?.dailyStatus ??
-                                        NomoDailyStatus.unselected,
-                                    onTap: () =>
-                                        _showProfileStatusSheet(context, ref),
+                          if (reservations.isNotEmpty ||
+                              incomingInvites.isNotEmpty)
+                            ColoredBox(
+                              color: bodyBackground,
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  24,
+                                  16,
+                                  24,
+                                  18,
+                                ),
+                                child: _ProfileReservationStrip(
+                                  isWhite: bodyIsWhite,
+                                  userAvatar: user?.avatar,
+                                  currentUserId: currentAuthUserId,
+                                  reservations: reservations,
+                                  incomingInvites: incomingInvites,
+                                  onAccept: (invite) => _respondDrinkInvite(
+                                    context,
+                                    ref,
+                                    invite,
+                                    accept: true,
                                   ),
-                                ],
+                                  onReject: (invite) => _respondDrinkInvite(
+                                    context,
+                                    ref,
+                                    invite,
+                                    accept: false,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
                           Expanded(
                             child: _ProfileActivityHome(
                               isWhite: bodyIsWhite,
@@ -174,6 +160,11 @@ class ProfileScreen extends ConsumerWidget {
                                   NomoDailyStatus.unselected,
                               onStatusTap: () =>
                                   _showProfileStatusSheet(context, ref),
+                              onLogsTap: () => NomoToast.show(
+                                context,
+                                '飲みログはカレンダーで確認できます',
+                                icon: CupertinoIcons.calendar,
+                              ),
                               onArchiveTap: () => Navigator.of(context).push(
                                 CupertinoPageRoute<void>(
                                   fullscreenDialog: true,
