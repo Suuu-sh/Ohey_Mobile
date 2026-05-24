@@ -207,6 +207,7 @@ class _PreviewAuthorBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
     final secondaryText = isWhite
         ? const Color(0xFF778393)
         : Colors.white.withValues(alpha: .62);
@@ -436,7 +437,6 @@ class _PreviewFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
     final secondaryText = isWhite
         ? const Color(0xFF778393)
         : Colors.white.withValues(alpha: .62);
