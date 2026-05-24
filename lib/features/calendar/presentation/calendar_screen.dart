@@ -401,14 +401,23 @@ class _SelectedDayPanel extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       decoration: BoxDecoration(
         color: isWhite
-            ? Colors.white
-            : const Color(0xFF122233).withValues(alpha: .82),
+            ? const Color(0xFFF7FBFF)
+            : const Color(0xFF102B43).withValues(alpha: .86),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isWhite
-              ? const Color(0xFFDCE4EC)
-              : Colors.white.withValues(alpha: .08),
+          color: _calendarPrimaryActionColor.withValues(
+            alpha: isWhite ? .32 : .26,
+          ),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: _calendarPrimaryActionColor.withValues(
+              alpha: isWhite ? .10 : .16,
+            ),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
