@@ -157,12 +157,10 @@ class _FeedCardAuthorBar extends StatelessWidget {
         : Colors.white.withValues(alpha: .92);
     final place = item.place.trim();
     final metadataLabel = item.isOfficial
-        ? (place.isEmpty
-              ? 'Nomo公式からのお知らせ ・ ${item.timeAgo}'
-              : 'Nomo公式 ・ $place ・ ${item.timeAgo}')
+        ? (place.isEmpty ? 'Nomo公式からのお知らせ' : 'Nomo公式 ・ $place')
         : place.isEmpty
-        ? item.timeAgo
-        : '${item.timeAgo} ・ $place';
+        ? '飲みログ'
+        : place;
     final kind = item.postKind;
 
     return Padding(
@@ -309,15 +307,35 @@ class _FeedCardFooter extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            _feedReactionSummary(item),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: item.likes > 0 ? primaryText : secondaryText,
-              fontWeight: FontWeight.w900,
-              height: 1.15,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  _feedReactionSummary(item),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: item.likes > 0 ? primaryText : secondaryText,
+                    fontWeight: FontWeight.w900,
+                    height: 1.15,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                item.timeAgo,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: secondaryText,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w900,
+                  height: 1.15,
+                ),
+              ),
+            ],
           ),
         ],
       ),
