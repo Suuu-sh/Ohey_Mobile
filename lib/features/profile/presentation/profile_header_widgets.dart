@@ -556,7 +556,7 @@ class _ProfileActivityHome extends StatelessWidget {
     final monthlyLogs = logs.where((log) => log.isInMonth(now)).toList();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+      padding: const EdgeInsets.fromLTRB(26, 0, 26, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -564,12 +564,12 @@ class _ProfileActivityHome extends StatelessWidget {
             friendsCount: friendsCount,
             logCount: logs.length,
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 18),
           _ProfileFriendActionRow(
             onAddFriendsTap: onAddFriendsTap,
             onQrTap: onQrTap,
           ),
-          const Spacer(),
+          const SizedBox(height: 46),
           _ProfileLearningStatus(
             status: status,
             monthlyLogCount: monthlyLogs.length,
@@ -578,7 +578,7 @@ class _ProfileActivityHome extends StatelessWidget {
             onLogsTap: onLogsTap,
             onArchiveTap: onArchiveTap,
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 6),
         ],
       ),
     );
@@ -636,35 +636,35 @@ class _ProfileSummaryStat extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          height: 44,
+          height: 38,
           child: Center(
             child: showIconOnly
                 ? NomoPopIcon(
                     icon: icon ?? Icons.local_bar_rounded,
                     color: const Color(0xFF20DDBF),
-                    size: 46,
-                    iconSize: 25,
+                    size: 38,
+                    iconSize: 21,
                   )
                 : Text(
                     value,
                     maxLines: 1,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 36,
+                      fontSize: 31,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -.8,
                     ),
                   ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: Colors.white.withValues(alpha: .48),
-            fontSize: 18,
+            fontSize: 15,
             fontWeight: FontWeight.w900,
             letterSpacing: -.4,
           ),
@@ -696,14 +696,14 @@ class _ProfileFriendActionRow extends StatelessWidget {
                 NomoGeneratedIcon(
                   CupertinoIcons.person_badge_plus_fill,
                   color: Colors.white,
-                  size: 27,
+                  size: 22,
                 ),
-                SizedBox(width: 12),
+                SizedBox(width: 10),
                 Text(
                   '友達を追加',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 22,
+                    fontSize: 18,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -.4,
                   ),
@@ -712,16 +712,16 @@ class _ProfileFriendActionRow extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: 10),
         SizedBox(
-          width: 72,
+          width: 64,
           child: _ProfileOutlineButton(
             onTap: onQrTap,
             child: const Center(
               child: NomoGeneratedIcon(
                 CupertinoIcons.qrcode,
                 color: Colors.white,
-                size: 31,
+                size: 25,
               ),
             ),
           ),
@@ -743,13 +743,13 @@ class _ProfileOutlineButton extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
-        height: 72,
+        height: 58,
         decoration: BoxDecoration(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(25),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: const Color(0xFF53606B).withValues(alpha: .82),
-            width: 3,
+            width: 2.4,
           ),
         ),
         child: child,
@@ -786,12 +786,12 @@ class _ProfileLearningStatus extends StatelessWidget {
           '学習状況',
           style: TextStyle(
             color: Colors.white.withValues(alpha: .48),
-            fontSize: 25,
+            fontSize: 22,
             fontWeight: FontWeight.w900,
             letterSpacing: -.6,
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 17),
         Row(
           children: [
             Expanded(
@@ -813,7 +813,7 @@ class _ProfileLearningStatus extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 17),
         Row(
           children: [
             Expanded(
@@ -864,8 +864,8 @@ class _ProfileLearningItem extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          NomoGeneratedIcon(icon, color: iconColor, size: 30),
-          const SizedBox(width: 12),
+          NomoGeneratedIcon(icon, color: iconColor, size: 25),
+          const SizedBox(width: 10),
           Flexible(
             child: Text(
               text,
@@ -873,7 +873,7 @@ class _ProfileLearningItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: muted ? .52 : .92),
-                fontSize: 23,
+                fontSize: 19,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.5,
               ),
