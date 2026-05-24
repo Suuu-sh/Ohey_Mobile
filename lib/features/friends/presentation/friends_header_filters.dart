@@ -64,7 +64,6 @@ class _FilterBar extends StatelessWidget {
                 label: customFilters[i].name,
                 accent: _customFilterAccent(i),
                 selected: selectedCustomFilterId == customFilters[i].id,
-                icon: CupertinoIcons.person_2_fill,
                 onTap: () => onCustomChanged(customFilters[i]),
                 onLongPress: () => onCustomLongPress(customFilters[i]),
               ),
