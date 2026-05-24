@@ -149,33 +149,9 @@ private struct SmallStatusContent: View {
   let snapshot: NomoWidgetSnapshot
 
   var body: some View {
-    let style = NomoStatusWidgetStyle(statusKey: snapshot.statusKey)
-
-    VStack(alignment: .leading, spacing: 8) {
-      HStack(alignment: .top) {
-        WidgetEyebrow(icon: style.symbolName, title: "今日のノリ", accent: style.accent)
-        Spacer(minLength: 0)
-        StatusOrb(symbolName: style.symbolName, accent: style.accent)
-      }
-
-      Spacer(minLength: 0)
-
-      Text(snapshot.statusLabel)
-        .font(.system(size: 22, weight: .black, design: .rounded))
-        .foregroundStyle(.white)
-        .lineLimit(2)
-        .minimumScaleFactor(0.68)
-        .nomoTextGlow()
-
-      Text("タップして飲みステータス更新")
-        .font(.system(size: 10.5, weight: .heavy, design: .rounded))
-        .foregroundStyle(Color.white.opacity(0.72))
-        .lineLimit(1)
-        .minimumScaleFactor(0.72)
-    }
-    .padding(15)
-    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-    .nomoWidgetBackground(artwork: .statusSmall(snapshot.statusKey))
+    Color.clear
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .nomoWidgetBackground(artwork: .statusSmall(snapshot.statusKey))
   }
 }
 
@@ -183,56 +159,33 @@ private struct MediumStatusContent: View {
   let snapshot: NomoWidgetSnapshot
 
   var body: some View {
-    let style = NomoStatusWidgetStyle(statusKey: snapshot.statusKey)
-
-    HStack(spacing: 0) {
-      Spacer(minLength: 122)
-
-      VStack(alignment: .leading, spacing: 8) {
-        WidgetEyebrow(icon: style.symbolName, title: "今日のノリ", accent: style.accent)
-
+    ZStack(alignment: .trailing) {
+      if !hasEmbeddedStatusTitle {
         Text(snapshot.statusLabel)
-          .font(.system(size: 26, weight: .black, design: .rounded))
+          .font(.system(size: 32, weight: .black, design: .rounded))
           .foregroundStyle(.white)
-          .lineLimit(1)
-          .minimumScaleFactor(0.65)
-          .nomoTextGlow()
-
-        Text(snapshot.statusDescription)
-          .font(.system(size: 12, weight: .bold, design: .rounded))
-          .foregroundStyle(Color.white.opacity(0.75))
           .lineLimit(2)
-          .minimumScaleFactor(0.75)
-
-        HStack(spacing: 6) {
-          Image(systemName: "arrow.up.forward.app.fill")
-            .font(.system(size: 10, weight: .black))
-          Text(updatedText)
-            .lineLimit(1)
-            .minimumScaleFactor(0.72)
-        }
-        .font(.system(size: 10.5, weight: .heavy, design: .rounded))
-        .foregroundStyle(Color.white.opacity(0.58))
+          .minimumScaleFactor(0.72)
+          .multilineTextAlignment(.leading)
+          .nomoTextGlow()
+          .frame(maxWidth: 210, alignment: .leading)
+          .padding(.trailing, 22)
       }
-      .padding(13)
-      .frame(maxWidth: 215, alignment: .leading)
     }
-    .padding(14)
+    .padding(.leading, 146)
+    .padding(.vertical, 12)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
     .nomoWidgetBackground(artwork: .statusMedium(snapshot.statusKey))
   }
 
-  private var updatedText: String {
-    guard let updatedAt = snapshot.updatedAt else { return "アプリを開くと更新" }
-    return "更新 \(Self.timeFormatter.string(from: updatedAt))"
+  private var hasEmbeddedStatusTitle: Bool {
+    switch snapshot.statusKey {
+    case "can_drink_today", "want_drink", "light_drink", "want_drink_hard", "non_alcohol", "liver_rest", "busy", "waiting_invite", "has_plans", "unselected":
+      return true
+    default:
+      return false
+    }
   }
-
-  private static let timeFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.locale = Locale(identifier: "ja_JP")
-    formatter.dateFormat = "H:mm"
-    return formatter
-  }()
 }
 
 private struct SmallFriendsContent: View {
@@ -516,7 +469,9 @@ private struct NomoWidgetBackground: View {
   @ViewBuilder
   private var overlay: some View {
     switch artwork {
-    case .mascotSmall, .statusSmall(_):
+    case .statusSmall(_), .statusMedium(_):
+      EmptyView()
+    case .mascotSmall:
       ZStack {
         LinearGradient(
           colors: [
@@ -534,7 +489,7 @@ private struct NomoWidgetBackground: View {
           endRadius: 120
         )
       }
-    case .mascotMedium, .statusMedium(_):
+    case .mascotMedium:
       ZStack {
         LinearGradient(
           colors: [

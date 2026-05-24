@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import '../theme/app_colors.dart';
 import 'nomo_pop_icon.dart';
 
 class Nomo3DButton extends StatelessWidget {
@@ -10,9 +12,49 @@ class Nomo3DButton extends StatelessWidget {
     this.icon,
     this.height = 58,
     this.radius = 24,
-    this.color = const Color(0xFF12C9A4),
+    this.color = AppColors.primaryAction,
     this.foregroundColor = Colors.white,
     this.shadowColor,
+    this.disabledColor,
+    this.disabledOpacity = 1,
+    this.trailing,
+    this.isLoading = false,
+    this.enabled = true,
+    this.padding = const EdgeInsets.symmetric(horizontal: 18),
+    this.fontSize = 16,
+    this.useGradient = true,
+  });
+
+  const Nomo3DButton.secondary({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.icon,
+    this.height = 58,
+    this.radius = 24,
+    this.color = const Color(0xFF52606B),
+    this.foregroundColor = Colors.white,
+    this.shadowColor = const Color(0xFF35434D),
+    this.disabledColor,
+    this.disabledOpacity = 1,
+    this.trailing,
+    this.isLoading = false,
+    this.enabled = true,
+    this.padding = const EdgeInsets.symmetric(horizontal: 18),
+    this.fontSize = 16,
+    this.useGradient = false,
+  });
+
+  const Nomo3DButton.destructive({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.icon,
+    this.height = 58,
+    this.radius = 24,
+    this.color = AppColors.danger,
+    this.foregroundColor = Colors.white,
+    this.shadowColor = AppColors.dangerShadow,
     this.disabledColor,
     this.disabledOpacity = 1,
     this.trailing,
@@ -88,14 +130,14 @@ class Nomo3DButton extends StatelessWidget {
   }
 }
 
-class Nomo3DButtonSurface extends StatelessWidget {
+class Nomo3DButtonSurface extends StatefulWidget {
   const Nomo3DButtonSurface({
     super.key,
     required this.child,
     required this.onTap,
     this.height = 58,
     this.radius = 24,
-    this.color = const Color(0xFF12C9A4),
+    this.color = AppColors.primaryAction,
     this.bottomColor,
     this.disabledColor,
     this.disabledOpacity = 1,
@@ -129,15 +171,30 @@ class Nomo3DButtonSurface extends StatelessWidget {
   final AlignmentGeometry alignment;
 
   @override
+  State<Nomo3DButtonSurface> createState() => _Nomo3DButtonSurfaceState();
+}
+
+class _Nomo3DButtonSurfaceState extends State<Nomo3DButtonSurface> {
+  bool _isPressed = false;
+
+  void _setPressed(bool value) {
+    if (_isPressed == value || !mounted) {
+      return;
+    }
+    setState(() => _isPressed = value);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final canTap = enabled && onTap != null && !isLoading;
-    final isUnavailable = !enabled || onTap == null;
-    final base = isUnavailable && disabledColor != null
-        ? disabledColor!
-        : color;
-    final bottom = bottomColor ?? Color.lerp(base, Colors.black, .28)!;
-    final opacity = isUnavailable && disabledColor != null
-        ? disabledOpacity
+    final canTap = widget.enabled && widget.onTap != null && !widget.isLoading;
+    final isUnavailable = !widget.enabled || widget.onTap == null;
+    final isPressed = canTap && _isPressed;
+    final base = isUnavailable && widget.disabledColor != null
+        ? widget.disabledColor!
+        : widget.color;
+    final bottom = widget.bottomColor ?? Color.lerp(base, Colors.black, .28)!;
+    final opacity = isUnavailable && widget.disabledColor != null
+        ? widget.disabledOpacity
         : 1.0;
 
     return LayoutBuilder(
@@ -146,17 +203,20 @@ class Nomo3DButtonSurface extends StatelessWidget {
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: canTap ? onTap : null,
+          onTapDown: canTap ? (_) => _setPressed(true) : null,
+          onTapUp: canTap ? (_) => _setPressed(false) : null,
+          onTapCancel: canTap ? () => _setPressed(false) : null,
+          onTap: canTap ? widget.onTap : null,
           child: Opacity(
             opacity: opacity,
             child: Container(
               width: expandsWidth ? double.infinity : null,
-              height: height + 7,
+              height: widget.height + 7,
               decoration: BoxDecoration(
-                color: bottom,
-                borderRadius: BorderRadius.circular(radius + 1),
+                color: isPressed ? Colors.transparent : bottom,
+                borderRadius: BorderRadius.circular(widget.radius + 1),
                 boxShadow:
-                    outerShadows ??
+                    widget.outerShadows ??
                     [
                       BoxShadow(
                         color: base.withValues(alpha: .22),
@@ -168,14 +228,16 @@ class Nomo3DButtonSurface extends StatelessWidget {
               child: Align(
                 alignment: Alignment.topCenter,
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 140),
+                  duration: const Duration(milliseconds: 90),
+                  curve: Curves.easeOutCubic,
+                  transform: Matrix4.translationValues(0, isPressed ? 6 : 0, 0),
                   width: expandsWidth ? double.infinity : null,
-                  height: height,
-                  alignment: alignment,
-                  padding: padding,
+                  height: widget.height,
+                  alignment: widget.alignment,
+                  padding: widget.padding,
                   decoration: BoxDecoration(
-                    color: useGradient ? null : base,
-                    gradient: useGradient
+                    color: widget.useGradient ? null : base,
+                    gradient: widget.useGradient
                         ? LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -188,7 +250,7 @@ class Nomo3DButtonSurface extends StatelessWidget {
                           )
                         : null,
                     boxShadow:
-                        innerShadows ??
+                        widget.innerShadows ??
                         [
                           BoxShadow(
                             color: base.withValues(alpha: .22),
@@ -197,13 +259,15 @@ class Nomo3DButtonSurface extends StatelessWidget {
                             offset: const Offset(0, 0),
                           ),
                         ],
-                    borderRadius: BorderRadius.circular(radius),
+                    borderRadius: BorderRadius.circular(widget.radius),
                     border: Border.all(
-                      color: borderColor ?? Colors.white.withValues(alpha: .18),
-                      width: borderWidth,
+                      color:
+                          widget.borderColor ??
+                          Colors.white.withValues(alpha: .18),
+                      width: widget.borderWidth,
                     ),
                   ),
-                  child: child,
+                  child: widget.child,
                 ),
               ),
             ),

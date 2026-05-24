@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import 'nomo_pop_icon.dart';
 
 class NomoBackendBusyScreen extends StatefulWidget {
@@ -35,7 +36,7 @@ class _NomoBackendBusyScreenState extends State<NomoBackendBusyScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFF071622),
+      backgroundColor: AppColors.darkBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 34),
@@ -55,7 +56,7 @@ class _NomoBackendBusyScreenState extends State<NomoBackendBusyScreen>
               ),
               const SizedBox(height: 34),
               const Text(
-                'ただいま混雑中',
+                'Nomoを準備中',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -66,7 +67,7 @@ class _NomoBackendBusyScreenState extends State<NomoBackendBusyScreen>
               ),
               const SizedBox(height: 10),
               Text(
-                'サーバーを起こしています。\n10秒ほどお待ちください。',
+                'データを読み込んでいます。\n少しだけお待ちください。',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: .66),

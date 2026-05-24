@@ -2,6 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../config/admin_config.dart';
+import 'nomo_gender.dart';
+
 class NomoAvatar {
   const NomoAvatar({
     required this.skin,
@@ -10,6 +13,7 @@ class NomoAvatar {
     required this.eyes,
     required this.mouth,
     required this.accessory,
+    this.background = 0,
     this.isAdmin = false,
   });
 
@@ -19,7 +23,12 @@ class NomoAvatar {
   final int eyes;
   final int mouth;
   final int accessory;
+  final int background;
   final bool isAdmin;
+
+  static const mascotBackdropBackground = 0;
+  static const dreamRoomBackground = 1;
+  static const nightFriendsBackground = 2;
 
   static const defaultAvatar = NomoAvatar(
     skin: 2,
@@ -28,6 +37,7 @@ class NomoAvatar {
     eyes: 0,
     mouth: 0,
     accessory: 0,
+    background: mascotBackdropBackground,
   );
 
   /// Mascot avatar used only for official Nomo posts.
@@ -38,35 +48,41 @@ class NomoAvatar {
     eyes: 2,
     mouth: 1,
     accessory: 1,
+    background: nightFriendsBackground,
     isAdmin: true,
   );
 
-  static bool isAdminEmail(String? email) =>
-      (email ?? '').trim().toLowerCase() == 'yisshiki39@gmail.com';
+  static bool isAdminEmail(String? email) => AdminConfig.isAdminEmail(email);
 
-  static NomoAvatar random() {
+  static NomoAvatar random({NomoGender gender = NomoGender.unspecified}) {
     final random = Random();
+    final hairOptions = selectableHairIndicesForGender(gender);
     return NomoAvatar(
       skin: random.nextInt(skinColors.length),
-      hair: random.nextInt(hairStyles.length),
+      hair: hairOptions[random.nextInt(hairOptions.length)],
       shirt: random.nextInt(shirtColors.length),
       eyes: random.nextInt(eyeStyles.length),
       mouth: random.nextInt(mouthStyles.length),
       accessory: random.nextInt(accessoryStyles.length),
+      background: random.nextInt(backgroundStyles.length),
     );
   }
 
   String encode() => isAdmin
       ? 'nomo_avatar:admin:v1'
-      : 'nomo_avatar:v1:$skin:$hair:$shirt:$eyes:$mouth:$accessory';
+      : 'nomo_avatar:v2:$skin:$hair:$shirt:$eyes:$mouth:$accessory:$background';
 
   static NomoAvatar? decode(String? value, {bool allowAdmin = false}) {
     if (value == 'nomo_avatar:admin:v1') {
       return allowAdmin ? adminAvatar : null;
     }
-    if (value == null || !value.startsWith('nomo_avatar:v1:')) return null;
+    if (value == null ||
+        (!value.startsWith('nomo_avatar:v1:') &&
+            !value.startsWith('nomo_avatar:v2:'))) {
+      return null;
+    }
     final parts = value.split(':');
-    if (parts.length != 8) return null;
+    if (parts.length != 8 && parts.length != 9) return null;
     int parse(int index, int max) {
       final raw = int.tryParse(parts[index]) ?? 0;
       return raw.clamp(0, max - 1).toInt();
@@ -79,6 +95,7 @@ class NomoAvatar {
       eyes: parse(5, eyeStyles.length),
       mouth: parse(6, mouthStyles.length),
       accessory: parse(7, accessoryStyles.length),
+      background: parts.length >= 9 ? parse(8, backgroundStyles.length) : 0,
     );
   }
 
@@ -89,6 +106,7 @@ class NomoAvatar {
     int? eyes,
     int? mouth,
     int? accessory,
+    int? background,
   }) {
     return NomoAvatar(
       skin: skin ?? this.skin,
@@ -97,9 +115,26 @@ class NomoAvatar {
       eyes: eyes ?? this.eyes,
       mouth: mouth ?? this.mouth,
       accessory: accessory ?? this.accessory,
+      background: background ?? this.background,
       isAdmin: isAdmin,
     );
   }
+
+  NomoAvatar normalizedForGender(NomoGender gender) {
+    if (isAdmin) return this;
+    final hairOptions = selectableHairIndicesForGender(gender);
+    if (hairOptions.contains(hair)) return this;
+    return copyWith(hair: hairOptions.first);
+  }
+
+  static const backgroundStyles = ['Nomo pink'];
+
+  static const backgroundGradients = [
+    [Color(0xFFFF7BBC), Color(0xFFFFD2E3)],
+  ];
+
+  static bool usesMascotBackdrop(int background) =>
+      background == mascotBackdropBackground;
 
   static const skinColors = [
     Color(0xFFFFD8C2),
@@ -146,4 +181,16 @@ class NomoAvatar {
   static const eyeStyles = ['まる目', 'にこ目', 'きらきら', 'ぱっちり'];
   static const mouthStyles = ['スマイル', 'にっこり', 'むにゅ'];
   static const accessoryStyles = ['なし', 'メガネ', 'マスク', 'チーク'];
+
+  static const maleHairIndices = [0, 1, 2, 3, 5];
+  static const femaleHairIndices = [1, 4, 6, 7, 8];
+
+  static List<int> selectableHairIndicesForGender(NomoGender gender) =>
+      switch (gender) {
+        NomoGender.male => maleHairIndices,
+        NomoGender.female => femaleHairIndices,
+        NomoGender.unspecified => [
+          for (var i = 0; i < hairStyles.length; i++) i,
+        ],
+      };
 }

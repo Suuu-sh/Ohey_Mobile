@@ -60,12 +60,14 @@ Future<String> nomoWriteSquarePhotoCopy(String path) async {
 
 Future<String> nomoWriteLandscapePhotoCopy(String path) async {
   final dimensions = await nomoReadPhotoDimensions(path);
-  if (dimensions.isLandscape) return path;
+  if (!dimensions.isLandscape) {
+    throw StateError('16:9はカメラを横にして撮影してください。');
+  }
 
-  const targetAspectRatio = 4 / 3;
+  const targetAspectRatio = 16 / 9;
   return _nomoWriteCroppedPhotoCopy(
     path,
-    prefix: 'landscape',
+    prefix: 'landscape_16_9',
     sourceRectFor: (width, height) {
       final sourceAspectRatio = width / height;
       final cropWidth = sourceAspectRatio > targetAspectRatio
@@ -81,7 +83,7 @@ Future<String> nomoWriteLandscapePhotoCopy(String path) async {
         cropHeight,
       );
     },
-    errorMessage: '写真を横長にできませんでした。',
+    errorMessage: '写真を16:9にできませんでした。',
   );
 }
 

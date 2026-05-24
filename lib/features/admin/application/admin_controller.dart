@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/data/backend_api_client.dart';
+import '../data/admin_repository.dart';
 
 final adminControllerProvider = Provider<AdminController>((ref) {
-  return AdminController(ref.watch(backendApiClientProvider));
+  return AdminController(ref.watch(adminRepositoryProvider));
 });
 
 final adminAccessProvider = FutureProvider.autoDispose<bool>((ref) async {
@@ -31,37 +32,32 @@ final adminDrinkLogsProvider = FutureProvider.autoDispose<List<AdminDrinkLog>>((
 });
 
 class AdminController {
-  const AdminController(this._client);
+  const AdminController(this._repository);
 
-  final BackendApiClient _client;
+  final AdminRepository _repository;
 
-  Future<void> checkAccess() async {
-    await _client.get('/v1/admin/me');
-  }
+  Future<void> checkAccess() => _repository.checkAccess();
 
-  Future<List<AdminUserProfile>> listUsers() async {
-    final data = await _client.get('/v1/admin/users');
-    return (data as List<dynamic>)
-        .map(
-          (item) => AdminUserProfile.fromJson(Map<String, dynamic>.from(item)),
-        )
-        .toList(growable: false);
-  }
+  Future<List<AdminUserProfile>> listUsers() => _repository.listUsers();
 
   Future<void> createUser({
     required String email,
     required String password,
     required String userId,
     required String displayName,
+    required String gender,
+    required String status,
     required bool isPlus,
-  }) async {
-    await _client.post('/v1/admin/users', {
-      'email': email,
-      'password': password,
-      'user_id': userId,
-      'display_name': displayName,
-      'is_plus': isPlus,
-    });
+  }) {
+    return _repository.createUser(
+      email: email,
+      password: password,
+      userId: userId,
+      displayName: displayName,
+      gender: gender,
+      status: status,
+      isPlus: isPlus,
+    );
   }
 
   Future<void> updateUser({
@@ -70,32 +66,23 @@ class AdminController {
     String? password,
     required String userId,
     required String displayName,
+    required String status,
     required bool isPlus,
-  }) async {
-    final body = <String, dynamic>{
-      'user_id': userId,
-      'display_name': displayName,
-      'is_plus': isPlus,
-    };
-    if (email != null && email.trim().isNotEmpty) {
-      body['email'] = email.trim();
-    }
-    if (password != null && password.trim().isNotEmpty) {
-      body['password'] = password.trim();
-    }
-    await _client.patch('/v1/admin/users/$id', body);
+  }) {
+    return _repository.updateUser(
+      id: id,
+      email: email,
+      password: password,
+      userId: userId,
+      displayName: displayName,
+      status: status,
+      isPlus: isPlus,
+    );
   }
 
-  Future<void> deleteUser(String id) async {
-    await _client.delete('/v1/admin/users/$id');
-  }
+  Future<void> deleteUser(String id) => _repository.deleteUser(id);
 
-  Future<List<AdminDrinkLog>> listDrinkLogs() async {
-    final data = await _client.get('/v1/admin/drink-logs');
-    return (data as List<dynamic>)
-        .map((item) => AdminDrinkLog.fromJson(Map<String, dynamic>.from(item)))
-        .toList(growable: false);
-  }
+  Future<List<AdminDrinkLog>> listDrinkLogs() => _repository.listDrinkLogs();
 
   Future<void> createDrinkLog({
     String? ownerUserId,
@@ -104,19 +91,15 @@ class AdminController {
     required String linkUrl,
     required String photoPath,
     required bool isOfficial,
-  }) async {
-    final body = <String, dynamic>{
-      'drank_at': DateTime.now().toUtc().toIso8601String(),
-      'place_name': placeName,
-      'memo': memo,
-      'link_url': linkUrl,
-      'photo_path': photoPath,
-      'is_official': isOfficial,
-    };
-    if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
-      body['owner_user_id'] = ownerUserId.trim();
-    }
-    await _client.post('/v1/admin/drink-logs', body);
+  }) {
+    return _repository.createDrinkLog(
+      ownerUserId: ownerUserId,
+      placeName: placeName,
+      memo: memo,
+      linkUrl: linkUrl,
+      photoPath: photoPath,
+      isOfficial: isOfficial,
+    );
   }
 
   Future<void> updateDrinkLog({
@@ -127,96 +110,33 @@ class AdminController {
     required String linkUrl,
     required String photoPath,
     required bool isOfficial,
-  }) async {
-    final body = <String, dynamic>{
-      'place_name': placeName,
-      'memo': memo,
-      'link_url': linkUrl,
-      'photo_path': photoPath,
-      'is_official': isOfficial,
-    };
-    if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
-      body['owner_user_id'] = ownerUserId.trim();
-    }
-    await _client.patch('/v1/admin/drink-logs/$id', body);
-  }
-
-  Future<void> deleteDrinkLog(String id) async {
-    await _client.delete('/v1/admin/drink-logs/$id');
-  }
-}
-
-class AdminUserProfile {
-  const AdminUserProfile({
-    required this.id,
-    required this.userId,
-    required this.displayName,
-    required this.isPlus,
-    this.avatarUrl,
-    this.createdAt,
-  });
-
-  final String id;
-  final String userId;
-  final String displayName;
-  final String? avatarUrl;
-  final bool isPlus;
-  final DateTime? createdAt;
-
-  factory AdminUserProfile.fromJson(Map<String, dynamic> json) {
-    return AdminUserProfile(
-      id: json['id'] as String? ?? '',
-      userId: json['user_id'] as String? ?? '',
-      displayName: json['display_name'] as String? ?? 'Nomo user',
-      avatarUrl: json['avatar_url'] as String?,
-      isPlus: json['is_plus'] as bool? ?? false,
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? ''),
+  }) {
+    return _repository.updateDrinkLog(
+      id: id,
+      ownerUserId: ownerUserId,
+      placeName: placeName,
+      memo: memo,
+      linkUrl: linkUrl,
+      photoPath: photoPath,
+      isOfficial: isOfficial,
     );
   }
-}
 
-class AdminDrinkLog {
-  const AdminDrinkLog({
-    required this.id,
-    required this.ownerUserId,
-    required this.ownerDisplayName,
-    required this.ownerHandle,
-    required this.drankAt,
-    required this.placeName,
-    required this.memo,
-    required this.linkUrl,
-    required this.photoPath,
-    required this.isOfficial,
-  });
+  Future<void> deleteDrinkLog(String id) => _repository.deleteDrinkLog(id);
 
-  final String id;
-  final String ownerUserId;
-  final String ownerDisplayName;
-  final String ownerHandle;
-  final DateTime drankAt;
-  final String placeName;
-  final String memo;
-  final String linkUrl;
-  final String photoPath;
-  final bool isOfficial;
-
-  factory AdminDrinkLog.fromJson(Map<String, dynamic> json) {
-    final owner = json['owner'] is Map
-        ? Map<String, dynamic>.from(json['owner'] as Map)
-        : const <String, dynamic>{};
-    return AdminDrinkLog(
-      id: json['id'] as String? ?? '',
-      ownerUserId: json['owner_user_id'] as String? ?? '',
-      ownerDisplayName: owner['display_name'] as String? ?? 'Nomo user',
-      ownerHandle: owner['user_id'] as String? ?? '',
-      drankAt:
-          DateTime.tryParse(json['drank_at'] as String? ?? '') ??
-          DateTime.fromMillisecondsSinceEpoch(0),
-      placeName: json['place_name'] as String? ?? '',
-      memo: json['memo'] as String? ?? '',
-      linkUrl: json['link_url'] as String? ?? '',
-      photoPath: json['photo_path'] as String? ?? '',
-      isOfficial: json['is_official'] as bool? ?? false,
+  Future<AdminNotificationResult> createSystemNotification({
+    required String title,
+    required String message,
+    required bool sendToAll,
+    required List<String> recipientUserIds,
+    String? systemKey,
+  }) {
+    return _repository.createSystemNotification(
+      title: title,
+      message: message,
+      sendToAll: sendToAll,
+      recipientUserIds: recipientUserIds,
+      systemKey: systemKey,
     );
   }
 }

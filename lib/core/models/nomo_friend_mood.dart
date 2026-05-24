@@ -16,7 +16,7 @@ extension NomoFriendMoodX on NomoFriendMood {
     NomoFriendMood.lonely => '今月はまだ静かなスタート。誰かに声をかけてみよ。',
     NomoFriendMood.sober => 'ゆったりいい感じ。無理せず思い出を増やそう。',
     NomoFriendMood.smile => '今月のNomo Friendはにこにこ。いい夜が増えてきたね。',
-    NomoFriendMood.fun => '友達との時間がきらきらしてる。今月いいペース！',
+    NomoFriendMood.fun => 'フレンズとの時間がきらきらしてる。今月いいペース！',
     NomoFriendMood.tipsy => '少しほろよい気分。写真やメモも残しておこう。',
     NomoFriendMood.hype => '交流モード全開！Nomo Friendもハイテンション。',
     NomoFriendMood.tired => 'たくさん遊んだね。今日はふわっと休もう。',

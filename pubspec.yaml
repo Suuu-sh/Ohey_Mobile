@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  characters: ^1.4.0
   flutter:
     sdk: flutter
 
@@ -89,6 +90,11 @@ flutter:
     - assets/images/opening_nomo.png
     - assets/images/backend_busy_nomo.png
     - assets/images/admin_nomo_icon.png
+    - assets/images/feed_header_scene.png
+    - assets/images/friends_header_scene.png
+    - assets/images/calendar_header_scene.png
+    - assets/images/profile_header_scene.png
+    - assets/images/profile_mascot_backdrop_scene.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -2,23 +2,43 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/models/nomo_avatar.dart';
+import '../../../core/models/nomo_gender.dart';
+import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 
 class AvatarBuilderScreen extends StatefulWidget {
-  const AvatarBuilderScreen({super.key, required this.initialAvatar});
+  const AvatarBuilderScreen({
+    super.key,
+    required this.initialAvatar,
+    this.gender = NomoGender.unspecified,
+  });
 
   final NomoAvatar initialAvatar;
+  final NomoGender gender;
 
   @override
   State<AvatarBuilderScreen> createState() => _AvatarBuilderScreenState();
 }
 
 class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
-  late NomoAvatar _avatar = widget.initialAvatar;
+  late NomoAvatar _avatar = widget.initialAvatar.normalizedForGender(
+    widget.gender,
+  );
   _AvatarTab _tab = _AvatarTab.face;
 
   bool get _hasChanges => _avatar.encode() != widget.initialAvatar.encode();
+
+  Future<void> _handleDone() async {
+    final result = await Navigator.of(context).push<NomoAvatar>(
+      CupertinoPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => AvatarBackgroundPickerScreen(initialAvatar: _avatar),
+      ),
+    );
+    if (!mounted || result == null) return;
+    Navigator.of(context).pop(result);
+  }
 
   Future<void> _handleClose() async {
     if (!_hasChanges) {
@@ -57,8 +77,10 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
             children: [
               _Header(
                 onClose: _handleClose,
-                onDone: () => Navigator.of(context).pop(_avatar),
-                onRandom: () => setState(() => _avatar = NomoAvatar.random()),
+                onDone: _handleDone,
+                onRandom: () => setState(
+                  () => _avatar = NomoAvatar.random(gender: widget.gender),
+                ),
               ),
               Expanded(
                 child: Column(
@@ -88,7 +110,9 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
                                 icon: CupertinoIcons.shuffle,
                                 label: 'ランダム',
                                 onTap: () => setState(
-                                  () => _avatar = NomoAvatar.random(),
+                                  () => _avatar = NomoAvatar.random(
+                                    gender: widget.gender,
+                                  ),
                                 ),
                               ),
                             ),
@@ -108,6 +132,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
                         child: _OptionsPanel(
                           tab: _tab,
                           avatar: _avatar,
+                          gender: widget.gender,
                           onChanged: (avatar) =>
                               setState(() => _avatar = avatar),
                         ),
@@ -124,6 +149,247 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
   }
 }
 
+class AvatarBackgroundPickerScreen extends StatefulWidget {
+  const AvatarBackgroundPickerScreen({super.key, required this.initialAvatar});
+
+  final NomoAvatar initialAvatar;
+
+  @override
+  State<AvatarBackgroundPickerScreen> createState() =>
+      _AvatarBackgroundPickerScreenState();
+}
+
+class _AvatarBackgroundPickerScreenState
+    extends State<AvatarBackgroundPickerScreen> {
+  late int _selected = widget.initialAvatar.background;
+
+  @override
+  Widget build(BuildContext context) {
+    final avatar = widget.initialAvatar.copyWith(background: _selected);
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      backgroundColor: _AvatarColors.cream,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const NomoGeneratedIcon(
+                      CupertinoIcons.chevron_left,
+                      color: _AvatarColors.ink,
+                      size: 34,
+                    ),
+                  ),
+                  const Expanded(
+                    child: Text(
+                      '背景を選ぶ',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: _AvatarColors.ink,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.8,
+                      ),
+                    ),
+                  ),
+                  _SaveAvatarButton(
+                    onTap: () => Navigator.of(context).pop(avatar),
+                  ),
+                ],
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                'マイページのアバターカードに表示する背景です。',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: _AvatarColors.dim,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  height: 1.4,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              height: 230,
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: .13),
+                    blurRadius: 24,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: _AvatarBackgroundPreview(avatar: avatar, large: true),
+            ),
+            const SizedBox(height: 18),
+            Expanded(
+              child: GridView.builder(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(22, 0, 22, 28),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.12,
+                ),
+                itemCount: NomoAvatar.backgroundStyles.length,
+                itemBuilder: (context, index) => _AvatarBackgroundOption(
+                  avatar: widget.initialAvatar.copyWith(background: index),
+                  label: NomoAvatar.backgroundStyles[index],
+                  selected: _selected == index,
+                  onTap: () => setState(() => _selected = index),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AvatarBackgroundOption extends StatelessWidget {
+  const _AvatarBackgroundOption({
+    required this.avatar,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final NomoAvatar avatar;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 160),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: selected ? _AvatarColors.coral : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .10),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _AvatarBackgroundPreview(avatar: avatar),
+            Positioned(
+              left: 8,
+              right: 8,
+              bottom: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: .38),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+            if (selected)
+              const Positioned(
+                right: 8,
+                top: 8,
+                child: NomoPopIcon(
+                  icon: CupertinoIcons.checkmark_alt,
+                  color: _AvatarColors.coral,
+                  size: 32,
+                  iconSize: 18,
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _AvatarBackgroundPreview extends StatelessWidget {
+  const _AvatarBackgroundPreview({required this.avatar, this.large = false});
+
+  final NomoAvatar avatar;
+  final bool large;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors =
+        NomoAvatar.backgroundGradients[avatar.background %
+            NomoAvatar.backgroundGradients.length];
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: colors,
+            ),
+          ),
+        ),
+        Opacity(
+          opacity: avatar.background == 0 ? .18 : .10,
+          child: ExcludeSemantics(
+            child: Image.asset(
+              'assets/images/profile_header_scene.png',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            ),
+          ),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.white.withValues(alpha: .18),
+                Colors.white.withValues(alpha: .36),
+              ],
+            ),
+          ),
+        ),
+        Center(
+          child: NomoAvatarView(avatar: avatar, size: large ? 190 : 96),
+        ),
+      ],
+    );
+  }
+}
+
 enum _UnsavedAvatarAction { save, discard, cancel }
 
 class _UnsavedAvatarSheet extends StatelessWidget {
@@ -133,15 +399,20 @@ class _UnsavedAvatarSheet extends StatelessWidget {
   Widget build(BuildContext context) => SafeArea(
     child: Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFFFFFF), Color(0xFFFFF8F1)],
+        ),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: _AvatarColors.line),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: .16),
-            blurRadius: 30,
-            offset: const Offset(0, 14),
+            color: Colors.black.withValues(alpha: .14),
+            blurRadius: 32,
+            offset: const Offset(0, 16),
           ),
         ],
       ),
@@ -149,40 +420,109 @@ class _UnsavedAvatarSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'アバターの変更を保存する？',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: _AvatarColors.ink,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            '保存せずに閉じると、変更前のアバターに戻ります。',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: _AvatarColors.dim,
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              height: 1.45,
+          Center(
+            child: Container(
+              width: 44,
+              height: 5,
+              decoration: BoxDecoration(
+                color: _AvatarColors.line,
+                borderRadius: BorderRadius.circular(999),
+              ),
             ),
           ),
           const SizedBox(height: 18),
-          _UnsavedAvatarButton(
+          const Row(
+            children: [
+              NomoPopIcon(
+                icon: CupertinoIcons.person_crop_circle_fill,
+                color: _AvatarColors.coral,
+                size: 48,
+                iconSize: 25,
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '変更を保存しますか？',
+                      style: TextStyle(
+                        color: _AvatarColors.ink,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.4,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '閉じる前にアバターの変更を保存できます',
+                      style: TextStyle(
+                        color: _AvatarColors.dim,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(13),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFEEF5),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: _AvatarColors.coral.withValues(alpha: .18),
+              ),
+            ),
+            child: const Row(
+              children: [
+                NomoGeneratedIcon(
+                  CupertinoIcons.info_circle_fill,
+                  color: _AvatarColors.coral,
+                  size: 20,
+                ),
+                SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    '保存しない場合は、変更前のアバターに戻ります。',
+                    style: TextStyle(
+                      color: _AvatarColors.ink,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          Nomo3DButton(
             label: '保存して閉じる',
             icon: CupertinoIcons.check_mark_circled_solid,
             color: _AvatarColors.coral,
-            textColor: Colors.white,
+            foregroundColor: Colors.white,
+            shadowColor: const Color(0xFFD95F88),
+            height: 52,
+            radius: 22,
+            fontSize: 15,
             onTap: () => Navigator.of(context).pop(_UnsavedAvatarAction.save),
           ),
           const SizedBox(height: 10),
-          _UnsavedAvatarButton(
+          Nomo3DButton(
             label: '変更を戻す',
             icon: CupertinoIcons.arrow_uturn_left,
-            color: const Color(0xFFFFF2F7),
-            textColor: _AvatarColors.coral,
+            color: const Color(0xFFFFEEF5),
+            foregroundColor: _AvatarColors.coral,
+            shadowColor: const Color(0xFFE8D7DE),
+            height: 48,
+            radius: 21,
+            fontSize: 14,
+            useGradient: false,
             onTap: () =>
                 Navigator.of(context).pop(_UnsavedAvatarAction.discard),
           ),
@@ -194,51 +534,9 @@ class _UnsavedAvatarSheet extends StatelessWidget {
               '編集を続ける',
               style: TextStyle(
                 color: _AvatarColors.dim,
+                fontSize: 14,
                 fontWeight: FontWeight.w900,
               ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _UnsavedAvatarButton extends StatelessWidget {
-  const _UnsavedAvatarButton({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.textColor,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final Color color;
-  final Color textColor;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          NomoGeneratedIcon(icon, color: textColor, size: 22),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
             ),
           ),
         ],
@@ -498,11 +796,13 @@ class _OptionsPanel extends StatelessWidget {
   const _OptionsPanel({
     required this.tab,
     required this.avatar,
+    required this.gender,
     required this.onChanged,
   });
 
   final _AvatarTab tab;
   final NomoAvatar avatar;
+  final NomoGender gender;
   final ValueChanged<NomoAvatar> onChanged;
 
   @override
@@ -552,7 +852,7 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('髪型'),
           _ChoiceGrid(
-            count: NomoAvatar.hairStyles.length,
+            indices: NomoAvatar.selectableHairIndicesForGender(gender),
             selected: avatar.hair,
             label: (i) => NomoAvatar.hairStyles[i],
             builder: (i) => NomoAvatarView(
@@ -665,39 +965,47 @@ class _ColorRow extends StatelessWidget {
 
 class _ChoiceGrid extends StatelessWidget {
   const _ChoiceGrid({
-    required this.count,
     required this.selected,
     required this.label,
     required this.builder,
     required this.onTap,
+    this.count,
+    this.indices,
   });
 
-  final int count;
+  final int? count;
+  final List<int>? indices;
   final int selected;
   final String Function(int) label;
   final Widget Function(int) builder;
   final ValueChanged<int> onTap;
 
   @override
-  Widget build(BuildContext context) => GridView.builder(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    itemCount: count,
-    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 3,
-      mainAxisSpacing: 14,
-      crossAxisSpacing: 14,
-      childAspectRatio: .86,
-    ),
-    itemBuilder: (context, i) => GestureDetector(
-      onTap: () => onTap(i),
-      child: _ChoiceTile(
-        selected: selected == i,
-        label: label(i),
-        preview: builder(i),
+  Widget build(BuildContext context) {
+    final items = indices ?? [for (var i = 0; i < (count ?? 0); i++) i];
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: items.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        childAspectRatio: .86,
       ),
-    ),
-  );
+      itemBuilder: (context, itemIndex) {
+        final i = items[itemIndex];
+        return GestureDetector(
+          onTap: () => onTap(i),
+          child: _ChoiceTile(
+            selected: selected == i,
+            label: label(i),
+            preview: builder(i),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _ChoiceTile extends StatelessWidget {

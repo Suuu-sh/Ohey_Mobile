@@ -39,6 +39,23 @@ class NomoNotification {
   final DateTime? notificationDate;
   final String? systemKey;
 
+  NomoNotification markRead() => NomoNotification(
+    id: id,
+    kind: kind,
+    title: title,
+    message: message,
+    createdAt: createdAt,
+    isUnread: false,
+    actorUserId: actorUserId,
+    drinkLogId: drinkLogId,
+    friendRequestId: friendRequestId,
+    friendRequestStatus: friendRequestStatus,
+    drinkInviteId: drinkInviteId,
+    drinkInviteStatus: drinkInviteStatus,
+    notificationDate: notificationDate,
+    systemKey: systemKey,
+  );
+
   factory NomoNotification.fromJson(Map<String, dynamic> json) {
     final createdAtText = json['created_at'] as String?;
     final friendRequest = json['friend_request'];
@@ -90,14 +107,10 @@ class BackendNotificationRepository implements NotificationRepository {
 
   @override
   Future<List<NomoNotification>> fetchNotifications() async {
-    final response = await _client.get(
+    final rows = await _client.getRows(
       '/v1/notifications',
       query: {'date': _todayIsoDate()},
     );
-    final rows = (response as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map((row) => Map<String, dynamic>.from(row))
-        .toList(growable: false);
     return rows.map(NomoNotification.fromJson).toList(growable: false);
   }
 

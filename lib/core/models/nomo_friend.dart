@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import 'nomo_avatar.dart';
+import 'nomo_gender.dart';
 
 enum NomiTomoKind { bunny, cat, bear, penguin, puppy, cloud }
 
@@ -16,8 +17,11 @@ class NomoFriend {
     required this.characterAssetPath,
     required this.kind,
     required this.palette,
+    this.gender = NomoGender.unspecified,
     this.avatar,
     this.monthlyCount,
+    this.totalDrinkCount,
+    this.lastDrinkAt,
     this.statusKey,
     this.isOnline,
     this.isFavorite = false,
@@ -30,8 +34,11 @@ class NomoFriend {
   final String characterAssetPath;
   final NomiTomoKind kind;
   final NomiTomoPalette palette;
+  final NomoGender gender;
   final NomoAvatar? avatar;
   final int? monthlyCount;
+  final int? totalDrinkCount;
+  final DateTime? lastDrinkAt;
   final String? statusKey;
   final bool? isOnline;
   final bool isFavorite;
@@ -63,8 +70,8 @@ String nomiTomoStatusLabel(int count) {
 }
 
 String nomiTomoStatusMessage(NomoFriend friend, int count) {
-  if (count == 0) return '${friend.name}とはまだ今月飲んでないよ。そろそろ誘ってみる？';
-  if (count <= 2) return '${friend.name}との夜が少しずつ増えてきた。次もゆるく乾杯しよ。';
-  if (count <= 5) return '${friend.name}との思い出がきらきら増殖中。いいペース！';
-  return '${friend.name}とは今月かなり仲良し。飲み友メーター満タン！';
+  if (count == 0) return '${friend.name}とそろそろ乾杯する？';
+  if (count <= 2) return '${friend.name}といいペースで乾杯中。';
+  if (count <= 5) return '${friend.name}との思い出、増えてるよ。';
+  return '${friend.name}とは今月かなり仲良し。';
 }

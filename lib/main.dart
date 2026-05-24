@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -191,7 +192,7 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
   }
 }
 
-class _StartupScreen extends StatelessWidget {
+class _StartupScreen extends StatefulWidget {
   const _StartupScreen({this.message, this.detail, this.onRetry});
 
   final String? message;
@@ -199,15 +200,56 @@ class _StartupScreen extends StatelessWidget {
   final VoidCallback? onRetry;
 
   @override
+  State<_StartupScreen> createState() => _StartupScreenState();
+}
+
+class _StartupScreenState extends State<_StartupScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final hasError = message != null;
+    final hasError = widget.message != null;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFFFF0A8D),
+      backgroundColor: const Color(0xFF02092B),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          const _OpeningNomoArtwork(),
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              final breath =
+                  1 + math.sin(_controller.value * math.pi * 2) * .012;
+              return Transform.scale(scale: breath, child: child);
+            },
+            child: const _OpeningNomoArtwork(),
+          ),
+          if (!hasError)
+            SafeArea(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 42),
+                  child: _StartupWaitingMessage(controller: _controller),
+                ),
+              ),
+            ),
           if (hasError)
             SafeArea(
               child: Align(
@@ -234,7 +276,7 @@ class _StartupScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            message!,
+                            widget.message!,
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
@@ -242,10 +284,10 @@ class _StartupScreen extends StatelessWidget {
                                   fontWeight: FontWeight.w900,
                                 ),
                           ),
-                          if (detail != null) ...[
+                          if (widget.detail != null) ...[
                             const SizedBox(height: 8),
                             Text(
-                              detail!,
+                              widget.detail!,
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
@@ -256,10 +298,10 @@ class _StartupScreen extends StatelessWidget {
                               ),
                             ),
                           ],
-                          if (onRetry != null) ...[
+                          if (widget.onRetry != null) ...[
                             const SizedBox(height: 14),
                             FilledButton(
-                              onPressed: onRetry,
+                              onPressed: widget.onRetry,
                               child: const Text('もう一度試す'),
                             ),
                           ],
@@ -286,6 +328,160 @@ class _OpeningNomoArtwork extends StatelessWidget {
       return Image.asset(_openingNomoAsset, fit: BoxFit.cover);
     }
     return RawImage(image: image, fit: BoxFit.cover);
+  }
+}
+
+class _StartupWaitingMessage extends StatelessWidget {
+  const _StartupWaitingMessage({required this.controller});
+
+  final Animation<double> controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const _StartupWordmark(),
+        const SizedBox(height: 10),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xFF08091F).withValues(alpha: .34),
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: Colors.white.withValues(alpha: .18)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: .18),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Nomoを準備してるよ',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.3,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'もうすぐ開きます',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .76),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -.1,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, _) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (var i = 0; i < 3; i++) ...[
+                          _StartupDot(phase: (controller.value + i * .16) % 1),
+                          if (i != 2) const SizedBox(width: 8),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StartupWordmark extends StatelessWidget {
+  const _StartupWordmark();
+
+  @override
+  Widget build(BuildContext context) {
+    final strokeStyle = TextStyle(
+      fontFamily: 'MPLUSRounded1c',
+      fontSize: 48,
+      fontWeight: FontWeight.w900,
+      letterSpacing: -1.2,
+      foreground: ui.Paint()
+        ..style = ui.PaintingStyle.stroke
+        ..strokeWidth = 7
+        ..color = const Color(0xFF160C52).withValues(alpha: .50),
+    );
+
+    const fillStyle = TextStyle(
+      color: Colors.white,
+      fontFamily: 'MPLUSRounded1c',
+      fontSize: 48,
+      fontWeight: FontWeight.w900,
+      letterSpacing: -1.2,
+      shadows: [
+        Shadow(color: Color(0x99060A35), blurRadius: 20, offset: Offset(0, 6)),
+        Shadow(color: Color(0x99FF5EA8), blurRadius: 22, offset: Offset(0, 0)),
+      ],
+    );
+
+    return Semantics(
+      label: 'Nomo',
+      child: ExcludeSemantics(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Text('Nomo', style: strokeStyle),
+            ShaderMask(
+              blendMode: ui.BlendMode.srcIn,
+              shaderCallback: (bounds) => const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.white, Color(0xFFFFF7B0), Color(0xFFFFA3D4)],
+              ).createShader(bounds),
+              child: const Text('Nomo', style: fillStyle),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StartupDot extends StatelessWidget {
+  const _StartupDot({required this.phase});
+
+  final double phase;
+
+  @override
+  Widget build(BuildContext context) {
+    final wave = (math.sin(phase * math.pi * 2) + 1) / 2;
+    return Transform.translate(
+      offset: Offset(0, -3 * wave),
+      child: Container(
+        width: 7 + wave * 3,
+        height: 7 + wave * 3,
+        decoration: BoxDecoration(
+          color: Color.lerp(Colors.white, const Color(0xFF9AF21A), wave),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.white.withValues(alpha: .18 + wave * .16),
+              blurRadius: 8 + wave * 8,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

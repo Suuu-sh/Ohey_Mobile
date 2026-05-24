@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/optimistic_update.dart';
 import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_friend.dart';
 import '../data/drink_log_repository.dart';
@@ -34,28 +37,31 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
       likedByMe: nextLiked,
       likeCount: (current.likeCount + (nextLiked ? 1 : -1)).clamp(0, 1 << 31),
     );
-    state = AsyncValue.data([
-      for (var i = 0; i < previous.length; i++)
-        i == index ? optimistic : previous[i],
-    ]);
-
     try {
-      final likeState = await ref
-          .read(drinkLogRepositoryProvider)
-          .setLike(logId, liked: nextLiked);
-      final latest = state.asData?.value ?? previous;
-      state = AsyncValue.data([
-        for (final log in latest)
-          if (log.id == logId)
-            log.copyWith(
-              likeCount: likeState.likeCount,
-              likedByMe: likeState.likedByMe,
-            )
-          else
-            log,
-      ]);
+      await runOptimistic<DrinkLogLikeState>(
+        apply: () => state = AsyncValue.data([
+          for (var i = 0; i < previous.length; i++)
+            i == index ? optimistic : previous[i],
+        ]),
+        rollback: () => state = AsyncValue.data(previous),
+        commit: () => ref
+            .read(drinkLogRepositoryProvider)
+            .setLike(logId, liked: nextLiked),
+        confirm: (likeState) {
+          final latest = state.asData?.value ?? previous;
+          state = AsyncValue.data([
+            for (final log in latest)
+              if (log.id == logId)
+                log.copyWith(
+                  likeCount: likeState.likeCount,
+                  likedByMe: likeState.likedByMe,
+                )
+              else
+                log,
+          ]);
+        },
+      );
     } catch (error, stackTrace) {
-      state = AsyncValue.data(previous);
       Error.throwWithStackTrace(error, stackTrace);
     }
   }
@@ -93,8 +99,9 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
       date: date,
       friends: friends,
       place: place.trim(),
-      memo: memo.trim(),
+      memo: String.fromCharCodes(memo.trim().runes.take(15)),
       photoAssetPath: photoAssetPath,
+      rarity: _rarityForNewLog(photoAssetPath),
     );
 
     try {
@@ -104,6 +111,18 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
       state = AsyncValue.error(error, stackTrace);
       Error.throwWithStackTrace(error, stackTrace);
     }
+  }
+
+  DrinkLogRarity _rarityForNewLog(String? photoAssetPath) {
+    final hasPhoto = photoAssetPath?.trim().isNotEmpty == true;
+    if (!hasPhoto) return DrinkLogRarity.normal;
+
+    final roll = math.Random.secure().nextDouble();
+    if (roll < .001) return DrinkLogRarity.secret;
+    if (roll < .010) return DrinkLogRarity.ultraRare;
+    if (roll < .070) return DrinkLogRarity.superRare;
+    if (roll < .250) return DrinkLogRarity.rare;
+    return DrinkLogRarity.uncommon;
   }
 }
 
@@ -116,9 +135,13 @@ class FriendsController {
     required String friendId,
     required bool isFavorite,
   }) async {
-    await _ref
-        .read(drinkLogRepositoryProvider)
-        .setFriendFavorite(friendId, isFavorite: isFavorite);
-    _ref.invalidate(friendsProvider);
+    await runOptimistic<void>(
+      apply: () => _ref.invalidate(friendsProvider),
+      rollback: () => _ref.invalidate(friendsProvider),
+      commit: () => _ref
+          .read(drinkLogRepositoryProvider)
+          .setFriendFavorite(friendId, isFavorite: isFavorite),
+      confirm: (_) => _ref.invalidate(friendsProvider),
+    );
   }
 }

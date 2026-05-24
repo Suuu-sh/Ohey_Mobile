@@ -7,8 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/firebase_config.dart';
-import '../data/backend_api_client.dart';
-import '../data/supabase_client_provider.dart';
+import '../data/push_token_repository.dart';
 
 final nomoPushNotificationServiceProvider =
     Provider<NomoPushNotificationService>((ref) {
@@ -52,20 +51,17 @@ class NomoPushNotificationService {
         unawaited(_registerCurrentToken());
       });
     } on Object catch (error, stackTrace) {
-      debugPrint('Nomo push setup skipped: $error');
-      debugPrintStack(stackTrace: stackTrace);
+      if (kDebugMode) {
+        debugPrint('Nomo push setup skipped.');
+        debugPrintStack(stackTrace: stackTrace);
+      }
     }
   }
 
   Future<void> _registerCurrentToken() async {
-    final userID = _ref.read(supabaseClientProvider).auth.currentUser?.id;
-    if (userID == null || userID.isEmpty) return;
     final token = await FirebaseMessaging.instance.getToken();
     if (token == null || token.isEmpty) return;
-    await _ref.read(backendApiClientProvider).put('/v1/me/push-token', {
-      'token': token,
-      'platform': Platform.isAndroid ? 'android' : 'ios',
-    });
+    await _ref.read(pushTokenRepositoryProvider).registerToken(token);
   }
 
   void dispose() {

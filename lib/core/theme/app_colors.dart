@@ -25,9 +25,23 @@ class AppColors {
   static const softGray = Color(0xFFF8F9FD);
   static const line = Color(0xFFE9ECF5);
   static const beer = Color(0xFFF5B84B);
-  static const darkBackgroundTop = Color(0xFF172637);
-  static const darkBackgroundMiddle = Color(0xFF101B28);
-  static const darkBackgroundBottom = Color(0xFF0B1420);
+  static const darkBackground = Color(0xFF071320);
+  static const darkBackgroundTop = darkBackground;
+  static const darkBackgroundMiddle = darkBackground;
+  static const darkBackgroundBottom = darkBackground;
+
+  // Semantic colors. Keep playful tab/accent colors, but use these for actions
+  // so users can learn what each color means across screens.
+  static const primaryAction = coral;
+  static const primaryActionShadow = Color(0xFFD95F80);
+  static const success = Color(0xFF5FCB74);
+  static const successShadow = Color(0xFF31964B);
+  static const invite = Color(0xFF22D7C5);
+  static const inviteShadow = Color(0xFF109F91);
+  static const info = blue;
+  static const warning = beer;
+  static const danger = Color(0xFFFF5F8F);
+  static const dangerShadow = Color(0xFFC9416D);
 
   static const pastelGradient = [blush, peach, sky];
   static const warmGradient = [Color(0xFFFFE7D6), Color(0xFFFFDDE8)];

@@ -9,16 +9,33 @@ class NomoPageHeader extends StatelessWidget {
     required this.title,
     this.trailing,
     this.titleColor,
+    this.titleOffset = Offset.zero,
+    this.trailingOffset = Offset.zero,
   });
 
   static const double height = 52;
   static const double titleSize = 34;
   static const double topPadding = 16;
   static const double horizontalPadding = 22;
+  static const double bottomSpacing = 18;
+  static const double sceneBackdropBodyHeight = 178;
+
+  static double contentTopInset(BuildContext context) {
+    return MediaQuery.paddingOf(context).top +
+        topPadding +
+        height +
+        bottomSpacing;
+  }
+
+  static double sceneBackdropHeight(BuildContext context) {
+    return MediaQuery.paddingOf(context).top + sceneBackdropBodyHeight;
+  }
 
   final String title;
   final Widget? trailing;
   final Color? titleColor;
+  final Offset titleOffset;
+  final Offset trailingOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -32,26 +49,32 @@ class NomoPageHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            child: Text(
-              title,
-              textAlign: TextAlign.left,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              strutStyle: const StrutStyle(
-                fontSize: titleSize,
-                height: 1,
-                forceStrutHeight: true,
-              ),
-              style: TextStyle(
-                color: color,
-                fontSize: titleSize,
-                height: 1,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1.2,
+            child: Transform.translate(
+              offset: titleOffset,
+              child: Text(
+                title,
+                textAlign: TextAlign.left,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                strutStyle: const StrutStyle(
+                  fontSize: titleSize,
+                  height: 1,
+                  forceStrutHeight: true,
+                ),
+                style: TextStyle(
+                  color: color,
+                  fontSize: titleSize,
+                  height: 1,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1.2,
+                ),
               ),
             ),
           ),
-          if (trailing != null) ...[const SizedBox(width: 12), trailing!],
+          if (trailing != null) ...[
+            const SizedBox(width: 12),
+            Transform.translate(offset: trailingOffset, child: trailing!),
+          ],
         ],
       ),
     );
