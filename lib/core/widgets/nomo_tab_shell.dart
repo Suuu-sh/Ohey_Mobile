@@ -363,7 +363,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
                 customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
                 label: 'フィード',
                 selected: _selectedIndex == 0,
-                activeColor: const Color(0xFF22D7C5),
+                activeColor: const Color(0xFF8A62FF),
                 onTap: () => setState(() => _selectedIndex = 0),
               ),
               _TabItem(
