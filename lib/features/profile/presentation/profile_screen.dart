@@ -15,7 +15,6 @@ import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/models/nomo_gender.dart';
-import '../../../core/models/nomo_friend.dart';
 import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
