@@ -229,11 +229,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _shareFeedItem(BuildContext context, _FeedItem item) async {
     final destination = item.isOfficial
         ? _FeedShareDestination.other
-        : await showModalBottomSheet<_FeedShareDestination>(
+        : await showNomoBottomSheet<_FeedShareDestination>(
             context: context,
             useSafeArea: true,
-            backgroundColor: Colors.transparent,
-            barrierColor: Colors.black.withValues(alpha: .58),
+                  barrierColor: Colors.black.withValues(alpha: .58),
             builder: (_) => const _FeedShareDestinationSheet(),
           );
     if (!context.mounted || destination == null) return;

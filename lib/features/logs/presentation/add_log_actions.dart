@@ -193,12 +193,11 @@ extension _AddLogScreenActions on _AddLogScreenState {
     required int monthlyCount,
     required bool isPrivateRecord,
   }) async {
-    final openCalendar = await showModalBottomSheet<bool>(
+    final openCalendar = await showNomoBottomSheet<bool>(
       context: context,
       useSafeArea: true,
       isDismissible: false,
       enableDrag: false,
-      backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .62),
       builder: (_) => _DrinkLogSuccessSheet(
         friends: friends,

@@ -229,21 +229,19 @@ Future<void> _showFeedCompanionList(
 ) async {
   if (friends.isEmpty) return;
   HapticFeedback.selectionClick();
-  final selected = await showModalBottomSheet<_Companion>(
+  final selected = await showNomoBottomSheet<_Companion>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: .58),
     builder: (context) => _FeedCompanionListSheet(friends: friends),
   );
   if (!context.mounted || selected == null) return;
   HapticFeedback.selectionClick();
-  await showModalBottomSheet<void>(
+  await showNomoBottomSheet<void>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: .62),
     builder: (context) => _FeedCompanionProfileSheet(friend: selected),
   );

@@ -17,12 +17,11 @@ Future<void> _showEditProfileSheet(
   var closing = false;
   String? error;
 
-  await showModalBottomSheet<void>(
+  await showNomoBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     isDismissible: false,
     enableDrag: false,
-    backgroundColor: Colors.transparent,
     builder: (sheetContext) => StatefulBuilder(
       builder: (sheetBuildContext, setState) {
         final sheetIsWhite =

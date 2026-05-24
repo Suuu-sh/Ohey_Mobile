@@ -165,11 +165,10 @@ Future<void> _showFeedPostActions(
 ) async {
   final body = item.body.trim();
   HapticFeedback.selectionClick();
-  final action = await showModalBottomSheet<_FeedPostAction>(
+  final action = await showNomoBottomSheet<_FeedPostAction>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: .58),
     builder: (context) => _FeedPostActionsSheet(item: item, body: body),
   );
@@ -204,11 +203,10 @@ Future<void> _showFeedPostActions(
 }
 
 Future<bool> _confirmDeleteFeedPost(BuildContext context) async {
-  final result = await showModalBottomSheet<bool>(
+  final result = await showNomoBottomSheet<bool>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: .62),
     builder: (context) => const _FeedDeleteConfirmSheet(),
   );

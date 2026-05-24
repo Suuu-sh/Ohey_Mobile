@@ -208,12 +208,8 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
   Future<void> _showAccountManagementSheet() async {
     final accounts = await NomoLastAccountStore.loadAccounts();
     if (!mounted) return;
-    await showModalBottomSheet<void>(
+    await showNomoBottomSheet<void>(
       context: context,
-      backgroundColor: const Color(0xFF17182C),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
       builder: (context) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),

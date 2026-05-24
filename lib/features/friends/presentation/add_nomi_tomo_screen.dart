@@ -9,6 +9,7 @@ import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
+import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_exchange_components.dart';
 import '../../logs/application/drink_log_controller.dart';
@@ -111,12 +112,10 @@ class _AddNomiTomoScreenState extends ConsumerState<AddNomiTomoScreen> {
         NomoToast.show(context, '$userId は見つかりませんでした。');
         return;
       }
-      showModalBottomSheet<void>(
+      showNomoBottomSheet<void>(
         context: context,
-        backgroundColor: Colors.transparent,
-        barrierColor: Colors.black.withValues(alpha: .62),
-        isScrollControlled: true,
-        builder: (context) => _UserSearchResultSheet(
+          barrierColor: Colors.black.withValues(alpha: .62),
+          builder: (context) => _UserSearchResultSheet(
           profile: profile,
           onAdd: () => _addFriend(profile),
         ),

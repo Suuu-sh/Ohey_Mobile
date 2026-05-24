@@ -360,11 +360,9 @@ Future<void> showMyQrDialog(
 
       final relationship = await repository.relationshipStatus(profile.id);
       if (!dialogContext.mounted) return;
-      await showModalBottomSheet<void>(
+      await showNomoBottomSheet<void>(
         context: dialogContext,
         useSafeArea: true,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
         barrierColor: Colors.black.withValues(alpha: .62),
         builder: (sheetContext) => _NomoProfilePreviewSheet(
           profile: profile,
@@ -422,7 +420,6 @@ Future<void> showMyQrDialog(
             horizontal: 22,
             vertical: 24,
           ),
-          backgroundColor: Colors.transparent,
           child: ConstrainedBox(
             constraints: BoxConstraints(maxHeight: maxDialogHeight),
             child: _MyQrCard(
@@ -450,10 +447,9 @@ Future<void> _showProfileStatusSheet(
 ) async {
   final selected =
       ref.read(nomoUserProvider)?.dailyStatus ?? NomoDailyStatus.unselected;
-  await showModalBottomSheet<void>(
+  await showNomoBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
     builder: (_) => _SheetShell(
       title: '今日のステータス',
       child: _ProfileStatusSheetContent(selected: selected, ref: ref),

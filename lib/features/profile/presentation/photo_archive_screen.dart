@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../core/models/drink_log.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_page_header.dart';
+import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_empty_state.dart';
 
@@ -242,10 +243,8 @@ class PhotoArchiveScreen extends StatelessWidget {
   }
 
   void _showArchiveDetail(BuildContext context, DrinkLog log) {
-    showModalBottomSheet<void>(
+    showNomoBottomSheet<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => _ArchiveDetailSheet(log: log),
     );
   }

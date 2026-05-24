@@ -14,6 +14,7 @@ import '../../../core/models/nomo_gender.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
+import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
 import '../../profile/presentation/avatar_builder_screen.dart';

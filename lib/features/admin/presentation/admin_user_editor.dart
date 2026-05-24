@@ -223,10 +223,9 @@ Future<void> _showPostSheet(
 }) async {
   final users =
       ref.read(adminUsersProvider).asData?.value ?? const <AdminUserProfile>[];
-  final didSave = await showModalBottomSheet<bool>(
+  final didSave = await showNomoBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
     builder: (_) => _AdminPostEditorSheet(log: log, users: users),
   );
 

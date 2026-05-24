@@ -12,11 +12,17 @@ Future<T?> showNomoBottomSheet<T>({
   bool isScrollControlled = true,
   bool useSafeArea = false,
   Color? barrierColor,
+  bool useRootNavigator = false,
+  bool isDismissible = true,
+  bool enableDrag = true,
 }) {
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: isScrollControlled,
     useSafeArea: useSafeArea,
+    useRootNavigator: useRootNavigator,
+    isDismissible: isDismissible,
+    enableDrag: enableDrag,
     backgroundColor: Colors.transparent,
     barrierColor: barrierColor,
     builder: builder,

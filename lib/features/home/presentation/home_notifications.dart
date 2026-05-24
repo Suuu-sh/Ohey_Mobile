@@ -227,11 +227,9 @@ class _FeedNotificationsScreenState
       return;
     }
 
-    await showModalBottomSheet<void>(
+    await showNomoBottomSheet<void>(
       context: context,
       useSafeArea: true,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .62),
       builder: (sheetContext) => _FriendRequestNotificationSheet(
         notification: notification,
@@ -261,11 +259,9 @@ class _FeedNotificationsScreenState
       return;
     }
 
-    await showModalBottomSheet<void>(
+    await showNomoBottomSheet<void>(
       context: context,
       useSafeArea: true,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .62),
       builder: (sheetContext) => _DrinkInviteNotificationSheet(
         notification: notification,

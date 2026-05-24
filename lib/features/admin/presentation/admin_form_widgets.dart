@@ -47,10 +47,8 @@ Future<void> _showNotificationSheet(BuildContext context, WidgetRef ref) async {
   String? error;
 
   try {
-    await showModalBottomSheet<void>(
+    await showNomoBottomSheet<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setState) => _AdminSheet(
           title: 'System通知作成',
