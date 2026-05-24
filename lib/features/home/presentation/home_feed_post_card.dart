@@ -538,7 +538,6 @@ String _feedCardCaption(_FeedItem item) {
 }
 
 String _feedLikeActionLabel(_FeedItem item) {
-  if (item.isOfficial) return item.liked ? 'Saved' : 'Save';
   return item.liked ? 'Liked' : 'Like';
 }
 
