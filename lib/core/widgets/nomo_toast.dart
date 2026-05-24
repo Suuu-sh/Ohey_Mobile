@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,10 @@ class NomoToast {
   }) {
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
     if (overlay == null) return;
-    final topPadding = MediaQuery.maybeOf(context)?.padding.top ?? 0;
+    final callerTopPadding = MediaQuery.maybeOf(context)?.padding.top ?? 0;
+    final overlayTopPadding =
+        MediaQuery.maybeOf(overlay.context)?.padding.top ?? 0;
+    final topPadding = math.max(callerTopPadding, overlayTopPadding);
 
     _timer?.cancel();
     _removeCurrentEntry();
@@ -46,6 +50,12 @@ class NomoToast {
     _currentEntry = null;
     if (entry == null || !entry.mounted) return;
     entry.remove();
+  }
+
+  static double topOffsetFor(double topPadding) {
+    const safeAreaGap = 18.0;
+    const minimumVisibleTop = 88.0;
+    return math.max(topPadding + safeAreaGap, minimumVisibleTop);
   }
 }
 
@@ -98,7 +108,7 @@ class _NomoToastOverlayState extends State<_NomoToastOverlay>
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: widget.topPadding + 10,
+      top: NomoToast.topOffsetFor(widget.topPadding),
       left: 16,
       right: 16,
       child: IgnorePointer(
