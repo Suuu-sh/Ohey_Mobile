@@ -136,10 +136,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onMorePressed: (item) => _showFeedPostActions(context, ref, item),
             ),
           ),
-          _FeedHeaderBackdropLayer(
-            isWhite: isWhite,
-            height: _feedHeaderScrollInset(context),
-          ),
+          _FeedHeaderBackdropLayer(isWhite: isWhite),
           _FeedHeaderControlsLayer(
             child: NomoPageHeader(
               title: 'フィード',
