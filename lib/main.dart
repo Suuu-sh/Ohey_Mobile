@@ -227,7 +227,7 @@ class _StartupScreenState extends State<_StartupScreen>
     final hasError = widget.message != null;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFFFF0A8D),
+      backgroundColor: const Color(0xFF02092B),
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -245,7 +245,7 @@ class _StartupScreenState extends State<_StartupScreen>
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 54),
+                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 42),
                   child: _StartupWaitingMessage(controller: _controller),
                 ),
               ),
@@ -338,52 +338,117 @@ class _StartupWaitingMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: const Color(0xFF08091F).withValues(alpha: .20),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.white.withValues(alpha: .16)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const _StartupWordmark(),
+        const SizedBox(height: 10),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xFF08091F).withValues(alpha: .34),
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: Colors.white.withValues(alpha: .18)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: .18),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Nomoを準備してるよ',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.3,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'もうすぐ開きます',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .76),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -.1,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, _) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (var i = 0; i < 3; i++) ...[
+                          _StartupDot(phase: (controller.value + i * .16) % 1),
+                          if (i != 2) const SizedBox(width: 8),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StartupWordmark extends StatelessWidget {
+  const _StartupWordmark();
+
+  @override
+  Widget build(BuildContext context) {
+    final strokeStyle = TextStyle(
+      fontFamily: 'MPLUSRounded1c',
+      fontSize: 48,
+      fontWeight: FontWeight.w900,
+      letterSpacing: -1.2,
+      foreground: ui.Paint()
+        ..style = ui.PaintingStyle.stroke
+        ..strokeWidth = 7
+        ..color = const Color(0xFF160C52).withValues(alpha: .50),
+    );
+
+    const fillStyle = TextStyle(
+      color: Colors.white,
+      fontFamily: 'MPLUSRounded1c',
+      fontSize: 48,
+      fontWeight: FontWeight.w900,
+      letterSpacing: -1.2,
+      shadows: [
+        Shadow(color: Color(0x99060A35), blurRadius: 20, offset: Offset(0, 6)),
+        Shadow(color: Color(0x99FF5EA8), blurRadius: 22, offset: Offset(0, 0)),
+      ],
+    );
+
+    return Semantics(
+      label: 'Nomo',
+      child: ExcludeSemantics(
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            const Text(
-              'Nomoを準備してるよ',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.3,
-              ),
-            ),
-            const SizedBox(height: 7),
-            Text(
-              'もうすぐ開きます',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: .76),
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -.1,
-              ),
-            ),
-            const SizedBox(height: 12),
-            AnimatedBuilder(
-              animation: controller,
-              builder: (context, _) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (var i = 0; i < 3; i++) ...[
-                      _StartupDot(phase: (controller.value + i * .16) % 1),
-                      if (i != 2) const SizedBox(width: 8),
-                    ],
-                  ],
-                );
-              },
+            Text('Nomo', style: strokeStyle),
+            ShaderMask(
+              blendMode: ui.BlendMode.srcIn,
+              shaderCallback: (bounds) => const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.white, Color(0xFFFFF7B0), Color(0xFFFFA3D4)],
+              ).createShader(bounds),
+              child: const Text('Nomo', style: fillStyle),
             ),
           ],
         ),
