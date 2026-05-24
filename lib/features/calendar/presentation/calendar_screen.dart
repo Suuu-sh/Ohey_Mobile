@@ -199,7 +199,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               onDismiss: _dismissIntro,
                             ),
                           ],
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 16),
                           _SelectedDayPanel(
                             day: _selectedDay,
                             logs: selectedLogs,
