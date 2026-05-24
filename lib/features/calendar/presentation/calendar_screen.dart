@@ -8,11 +8,16 @@ import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
+import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
+
+const _calendarPrimaryActionColor = Color(0xFF20B9FF);
+const _calendarPrimaryActionShadowColor = Color(0xFF0B78B7);
+const _calendarPrimaryActionForegroundColor = Color(0xFF06111D);
 
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key, this.onCreatePlan});
@@ -417,7 +422,10 @@ class _SelectedDayPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _CalendarSectionLabel(label: '予定', accent: AppColors.primaryAction),
+          _CalendarSectionLabel(
+            label: '予定',
+            accent: _calendarPrimaryActionColor,
+          ),
           const SizedBox(height: 7),
           if (plans.isNotEmpty)
             _CalendarInfoRow(
@@ -605,45 +613,35 @@ class _CalendarEmptyRow extends StatelessWidget {
         ),
       ),
       const SizedBox(width: 10),
-      _MiniCalendarCta(
-        label: buttonLabel,
-        accent: AppColors.primaryAction,
-        onTap: onTap,
-      ),
+      _MiniCalendarCta(label: buttonLabel, onTap: onTap),
     ],
   );
 }
 
 class _MiniCalendarCta extends StatelessWidget {
-  const _MiniCalendarCta({
-    required this.label,
-    required this.accent,
-    this.onTap,
-  });
+  const _MiniCalendarCta({required this.label, this.onTap});
 
   final String label;
-  final Color accent;
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: accent,
-        borderRadius: BorderRadius.circular(999),
+  Widget build(BuildContext context) {
+    final width = label.length >= 7 ? 126.0 : 112.0;
+    return SizedBox(
+      width: width,
+      child: Nomo3DButton(
+        label: label,
+        onTap: onTap,
+        height: 32,
+        radius: 16,
+        color: _calendarPrimaryActionColor,
+        foregroundColor: _calendarPrimaryActionForegroundColor,
+        shadowColor: _calendarPrimaryActionShadowColor,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        fontSize: 12,
       ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Color(0xFF06111D),
-          fontSize: 12,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-    ),
-  );
+    );
+  }
 }
 
 String _reservationFriendLabel(List<NomoDrinkInvite> reservations) {
@@ -842,7 +840,7 @@ class _DayTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(13),
           border: Border.all(
             color: hasPlan
-                ? AppColors.primaryAction
+                ? _calendarPrimaryActionColor
                 : isSelected
                 ? const Color(0xFF54D7FF)
                 : isWhite
@@ -886,7 +884,7 @@ class _DayTile extends StatelessWidget {
                 bottom: marker == null ? 7 : 28,
                 child: NomoGeneratedIcon(
                   CupertinoIcons.calendar_badge_plus,
-                  color: AppColors.primaryAction,
+                  color: _calendarPrimaryActionColor,
                   size: 22,
                 ),
               ),
