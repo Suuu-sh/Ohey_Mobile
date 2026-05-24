@@ -22,18 +22,34 @@ class _FriendCard extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 98),
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
       decoration: BoxDecoration(
-        color: isWhite ? Colors.white : _FriendsColors.block,
+        color: isWhite ? Colors.white : null,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isWhite
+              ? const [Colors.white, Color(0xFFF7FBF4)]
+              : const [_FriendsColors.blockTop, _FriendsColors.blockBottom],
+        ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isWhite
-              ? const Color(0xFFDCE4EC)
-              : Colors.white.withValues(alpha: .075),
+              ? Color.lerp(accent, Colors.white, .55)!
+              : Color.lerp(
+                  accent,
+                  _FriendsColors.lime,
+                  .35,
+                )!.withValues(alpha: .12),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .06 : .24),
-            blurRadius: 22,
-            offset: const Offset(0, 12),
+            color: accent.withValues(alpha: isWhite ? .04 : .08),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isWhite ? .06 : .28),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
           ),
         ],
       ),

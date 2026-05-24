@@ -339,7 +339,10 @@ class _FriendsColors {
   const _FriendsColors._();
 
   static const bg = AppColors.darkBackgroundBottom;
-  static const block = Color(0xFF101B28);
+  static const blockTop = Color(0xFF152A3A);
+  static const blockBottom = Color(0xFF0A1724);
+  static const cardTop = Color(0xFF1A2B38);
+  static const cardBottom = Color(0xFF101C2A);
   static const lime = Color(0xFFB8FF00);
   static const limeShadow = Color(0xFF6FB600);
   static const limeForeground = Color(0xFF071320);

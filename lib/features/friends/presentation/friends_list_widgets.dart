@@ -133,18 +133,35 @@ class _TodayInviteSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
       decoration: BoxDecoration(
-        color: isWhite ? Colors.white : const Color(0xFF101B28),
+        color: isWhite ? Colors.white : null,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isWhite
+              ? const [Colors.white, Color(0xFFF6FFE8)]
+              : const [
+                  _FriendsColors.blockTop,
+                  Color(0xFF102536),
+                  _FriendsColors.blockBottom,
+                ],
+          stops: const [0, .48, 1],
+        ),
         borderRadius: BorderRadius.circular(26),
         border: Border.all(
           color: isWhite
-              ? const Color(0xFFDCE4EC)
-              : Colors.white.withValues(alpha: .08),
+              ? _FriendsColors.lime.withValues(alpha: .34)
+              : _FriendsColors.lime.withValues(alpha: .14),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .05 : .22),
-            blurRadius: 22,
-            offset: const Offset(0, 12),
+            color: _FriendsColors.lime.withValues(alpha: isWhite ? .08 : .10),
+            blurRadius: 28,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isWhite ? .06 : .30),
+            blurRadius: 30,
+            offset: const Offset(0, 16),
           ),
         ],
       ),
@@ -239,15 +256,36 @@ class _TodayInviteCandidateCard extends StatelessWidget {
       width: 150,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isWhite
-            ? const Color(0xFFF7F9FB)
-            : Colors.white.withValues(alpha: .055),
+        color: isWhite ? Colors.white : null,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isWhite
+              ? const [Colors.white, Color(0xFFF4FBEF)]
+              : const [_FriendsColors.cardTop, _FriendsColors.cardBottom],
+        ),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: isWhite
-              ? const Color(0xFFE0E6ED)
-              : Colors.white.withValues(alpha: .10),
+              ? _FriendsColors.lime.withValues(alpha: .22)
+              : Color.lerp(
+                  accent,
+                  _FriendsColors.lime,
+                  .45,
+                )!.withValues(alpha: .16),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: isWhite ? .05 : .10),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isWhite ? .04 : .20),
+            blurRadius: 18,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
