@@ -759,30 +759,20 @@ class _DayTile extends StatelessWidget {
                   size: 22,
                 ),
               ),
-            if (marker != null) ...[
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 8,
-                child: NomoGeneratedIcon(
-                  CupertinoIcons.person_crop_circle_fill,
-                  color: marker!.accent,
-                  size: 26,
-                ),
-              ),
-              Positioned(
-                right: 10,
-                top: 16,
-                child: Container(
-                  width: 9,
-                  height: 9,
-                  decoration: BoxDecoration(
-                    color: marker!.accent,
-                    shape: BoxShape.circle,
+            if (marker != null)
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 3),
+                    child: NomoGeneratedIcon(
+                      CupertinoIcons.person_crop_circle_fill,
+                      color: marker!.accent,
+                      size: 42,
+                    ),
                   ),
                 ),
               ),
-            ],
           ],
         ),
       ),
