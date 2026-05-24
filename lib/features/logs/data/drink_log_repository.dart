@@ -107,6 +107,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       'place_name': log.place,
       'memo': log.memo,
       'photo_path': uploadedPhotoPath ?? '',
+      'marker_rarity': log.rarity.key,
       'friend_ids': log.friends
           .map((friend) => friend.id)
           .toList(growable: false),
@@ -120,6 +121,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       memo: (row['memo'] as String?) ?? '',
       photoAssetPath: await _displayPhotoPath(row['photo_path'] as String?),
       linkUrl: row['link_url'] as String?,
+      rarity: DrinkLogRarity.fromKey(row['marker_rarity'] as String?),
       likeCount: 0,
       likedByMe: false,
       ownerUserId:
@@ -230,6 +232,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       memo: (row['memo'] as String?) ?? '',
       photoAssetPath: await _displayPhotoPath(row['photo_path'] as String?),
       linkUrl: row['link_url'] as String?,
+      rarity: DrinkLogRarity.fromKey(row['marker_rarity'] as String?),
       likeCount: (row['like_count'] as num?)?.toInt() ?? 0,
       likedByMe: (row['liked_by_me'] as bool?) ?? false,
       ownerUserId: (row['owner_user_id'] as String?) ?? '',

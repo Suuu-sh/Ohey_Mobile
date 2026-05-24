@@ -1,6 +1,28 @@
 import 'nomo_avatar.dart';
 import 'nomo_friend.dart';
 
+enum DrinkLogRarity {
+  normal('normal'),
+  uncommon('uncommon'),
+  rare('rare'),
+  superRare('super_rare'),
+  ultraRare('ultra_rare'),
+  secret('secret');
+
+  const DrinkLogRarity(this.key);
+
+  final String key;
+
+  static DrinkLogRarity fromKey(String? key) => switch (key?.trim()) {
+    'uncommon' => DrinkLogRarity.uncommon,
+    'rare' => DrinkLogRarity.rare,
+    'super_rare' => DrinkLogRarity.superRare,
+    'ultra_rare' => DrinkLogRarity.ultraRare,
+    'secret' => DrinkLogRarity.secret,
+    _ => DrinkLogRarity.normal,
+  };
+}
+
 class DrinkLog {
   const DrinkLog({
     required this.id,
@@ -16,6 +38,7 @@ class DrinkLog {
     this.ownerDisplayName = '',
     this.ownerAvatar,
     this.isOfficial = false,
+    this.rarity = DrinkLogRarity.normal,
   });
 
   final String id;
@@ -31,6 +54,7 @@ class DrinkLog {
   final String ownerDisplayName;
   final NomoAvatar? ownerAvatar;
   final bool isOfficial;
+  final DrinkLogRarity rarity;
 
   DrinkLog copyWith({int? likeCount, bool? likedByMe}) => DrinkLog(
     id: id,
@@ -46,6 +70,7 @@ class DrinkLog {
     ownerDisplayName: ownerDisplayName,
     ownerAvatar: ownerAvatar,
     isOfficial: isOfficial,
+    rarity: rarity,
   );
 
   bool isInMonth(DateTime month) =>

@@ -536,13 +536,14 @@ class _PlayfulMonthGrid extends StatelessWidget {
   final List<NomoDrinkInvite> todayReservations;
   final ValueChanged<DateTime> onSelectDay;
 
-  static const _markerColors = [
-    Color(0xFFB7F51A),
-    Color(0xFFFFA726),
-    Color(0xFF46C8FF),
-    Color(0xFFC678FF),
-    Color(0xFFFF6FA6),
-  ];
+  static const _rarityColors = {
+    DrinkLogRarity.normal: Color(0xFF94A3B8),
+    DrinkLogRarity.uncommon: Color(0xFFFF75B5),
+    DrinkLogRarity.rare: Color(0xFFC08BFF),
+    DrinkLogRarity.superRare: Color(0xFFFFD166),
+    DrinkLogRarity.ultraRare: Color(0xFF54D7FF),
+    DrinkLogRarity.secret: Color(0xFFB7F51A),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -635,15 +636,27 @@ class _PlayfulMonthGrid extends StatelessWidget {
   }
 
   Map<int, _Marker> _markersForLogs(List<DrinkLog> logs) {
-    final markers = <int, _Marker>{};
+    final rarities = <int, DrinkLogRarity>{};
     for (final log in logs) {
-      markers.putIfAbsent(log.date.day, () {
-        final index = log.date.day % _markerColors.length;
-        return _Marker(_markerColors[index]);
-      });
+      final current = rarities[log.date.day];
+      if (current == null || _rarityRank(log.rarity) > _rarityRank(current)) {
+        rarities[log.date.day] = log.rarity;
+      }
     }
-    return markers;
+    return {
+      for (final entry in rarities.entries)
+        entry.key: _Marker(_rarityColors[entry.value]!, entry.value),
+    };
   }
+
+  int _rarityRank(DrinkLogRarity rarity) => switch (rarity) {
+    DrinkLogRarity.normal => 0,
+    DrinkLogRarity.uncommon => 1,
+    DrinkLogRarity.rare => 2,
+    DrinkLogRarity.superRare => 3,
+    DrinkLogRarity.ultraRare => 4,
+    DrinkLogRarity.secret => 5,
+  };
 }
 
 class _DayTile extends StatelessWidget {
@@ -767,9 +780,10 @@ class _DayTile extends StatelessWidget {
 }
 
 class _Marker {
-  const _Marker(this.accent);
+  const _Marker(this.accent, this.rarity);
 
   final Color accent;
+  final DrinkLogRarity rarity;
 }
 
 bool _isSameDate(DateTime a, DateTime b) =>
