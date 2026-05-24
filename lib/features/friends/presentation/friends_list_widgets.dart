@@ -797,7 +797,7 @@ class _EmptyFriendsVisual extends StatelessWidget {
             child: NomoAvatarView(avatar: avatar, size: 76),
           ),
           Positioned(
-            right: 14,
+            right: 22,
             bottom: 18,
             child: Container(
               width: 32,
