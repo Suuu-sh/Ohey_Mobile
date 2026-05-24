@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +11,7 @@ import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
+import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
@@ -459,6 +462,10 @@ class _SelectedDayPanel extends StatelessWidget {
                 isWhite: isWhite,
                 badgeLabel: isPrivateRecord ? '記録のみ' : null,
                 badgeColor: AppColors.success,
+                actionLabel: isPrivateRecord ? null : '写真を見る',
+                onActionTap: isPrivateRecord
+                    ? null
+                    : () => _showCalendarLogPhoto(context, log),
               );
             })
           else
@@ -509,6 +516,8 @@ class _CalendarInfoRow extends StatelessWidget {
     required this.isWhite,
     this.badgeLabel,
     this.badgeColor,
+    this.actionLabel,
+    this.onActionTap,
   });
 
   final IconData icon;
@@ -517,6 +526,8 @@ class _CalendarInfoRow extends StatelessWidget {
   final bool isWhite;
   final String? badgeLabel;
   final Color? badgeColor;
+  final String? actionLabel;
+  final VoidCallback? onActionTap;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -545,9 +556,185 @@ class _CalendarInfoRow extends StatelessWidget {
             isWhite: isWhite,
           ),
         ],
+        if (actionLabel != null && onActionTap != null) ...[
+          const SizedBox(width: 8),
+          _CalendarInlineButton(
+            label: actionLabel!,
+            color: accent,
+            isWhite: isWhite,
+            onTap: onActionTap!,
+          ),
+        ],
       ],
     ),
   );
+}
+
+class _CalendarInlineButton extends StatelessWidget {
+  const _CalendarInlineButton({
+    required this.label,
+    required this.color,
+    required this.isWhite,
+    required this.onTap,
+  });
+
+  final String label;
+  final Color color;
+  final bool isWhite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: isWhite ? .16 : .24),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: isWhite ? .32 : .42)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: isWhite ? Color.lerp(color, Colors.black, .18)! : Colors.white,
+          fontSize: 10.5,
+          fontWeight: FontWeight.w900,
+          height: 1,
+        ),
+      ),
+    ),
+  );
+}
+
+Future<void> _showCalendarLogPhoto(BuildContext context, DrinkLog log) {
+  return showNomoBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: Colors.black.withValues(alpha: .62),
+    builder: (_) => _CalendarLogPhotoSheet(log: log),
+  );
+}
+
+class _CalendarLogPhotoSheet extends StatelessWidget {
+  const _CalendarLogPhotoSheet({required this.log});
+
+  final DrinkLog log;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final subColor = isWhite
+        ? const Color(0xFF657282)
+        : Colors.white.withValues(alpha: .68);
+    final title = log.place.trim().isNotEmpty
+        ? log.place.trim()
+        : log.memo.trim().isNotEmpty
+        ? log.memo.trim()
+        : '飲みログ写真';
+
+    return NomoBottomSheetShell(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+      radius: 32,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              width: 44,
+              height: 5,
+              decoration: BoxDecoration(
+                color: subColor.withValues(alpha: .42),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          AspectRatio(
+            aspectRatio: 1,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: _CalendarLogPhotoFrame(path: log.photoAssetPath),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: titleColor,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.3,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            '${log.date.month}/${log.date.day} の飲みログ',
+            style: TextStyle(
+              color: subColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CalendarLogPhotoFrame extends StatelessWidget {
+  const _CalendarLogPhotoFrame({required this.path});
+
+  final String? path;
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = _calendarImageProviderFor(path);
+    if (provider == null) {
+      return Container(
+        color: Colors.black.withValues(alpha: .20),
+        alignment: Alignment.center,
+        child: const NomoGeneratedIcon(
+          CupertinoIcons.photo,
+          color: Colors.white54,
+          size: 42,
+        ),
+      );
+    }
+    return Image(
+      image: provider,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => Container(
+        color: Colors.black.withValues(alpha: .20),
+        alignment: Alignment.center,
+        child: const NomoGeneratedIcon(
+          CupertinoIcons.exclamationmark_triangle,
+          color: Colors.white54,
+          size: 42,
+        ),
+      ),
+    );
+  }
+}
+
+ImageProvider? _calendarImageProviderFor(String? value) {
+  final normalized = value?.trim();
+  if (normalized == null || normalized.isEmpty) return null;
+  if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+    return NetworkImage(normalized);
+  }
+  if (normalized.startsWith('/')) {
+    final file = File(normalized);
+    if (!file.existsSync()) return null;
+    return FileImage(file);
+  }
+  if (normalized.startsWith('assets/')) return AssetImage(normalized);
+  return null;
 }
 
 class _CalendarLogBadge extends StatelessWidget {
