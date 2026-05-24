@@ -7,6 +7,29 @@ import 'nomo_pop_icon.dart';
 
 enum NomoToastPlacement { top, bottom }
 
+class NomoToastAccent extends InheritedTheme {
+  const NomoToastAccent({super.key, required this.color, required super.child});
+
+  final Color color;
+
+  static Color? maybeOf(BuildContext context) {
+    final element = context
+        .getElementForInheritedWidgetOfExactType<NomoToastAccent>();
+    final widget = element?.widget;
+    return widget is NomoToastAccent ? widget.color : null;
+  }
+
+  @override
+  Widget wrap(BuildContext context, Widget child) {
+    return NomoToastAccent(color: color, child: child);
+  }
+
+  @override
+  bool updateShouldNotify(NomoToastAccent oldWidget) {
+    return color != oldWidget.color;
+  }
+}
+
 class NomoToast {
   const NomoToast._();
 
@@ -23,6 +46,7 @@ class NomoToast {
     IconData icon = CupertinoIcons.bell_fill,
     Duration duration = const Duration(milliseconds: 2600),
     NomoToastPlacement placement = defaultPlacement,
+    Color? accentColor,
   }) {
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
     if (overlay == null) return;
@@ -35,6 +59,11 @@ class NomoToast {
         MediaQuery.maybeOf(overlay.context)?.padding.bottom ?? 0;
     final topPadding = math.max(callerTopPadding, overlayTopPadding);
     final bottomPadding = math.max(callerBottomPadding, overlayBottomPadding);
+    final resolvedAccentColor = accentColorForIcon(
+      icon,
+      pageAccentColor: NomoToastAccent.maybeOf(context),
+      overrideAccentColor: accentColor,
+    );
 
     _timer?.cancel();
     _removeCurrentEntry();
@@ -47,6 +76,7 @@ class NomoToast {
         topPadding: topPadding,
         bottomPadding: bottomPadding,
         placement: placement,
+        accentColor: resolvedAccentColor,
       ),
     );
     _currentEntry = entry;
@@ -77,14 +107,21 @@ class NomoToast {
     return bottomPadding + tabBarTopClearance;
   }
 
-  static Color accentColorForIcon(IconData icon) {
+  static Color accentColorForIcon(
+    IconData icon, {
+    Color? pageAccentColor,
+    Color? overrideAccentColor,
+  }) {
+    if (overrideAccentColor != null) {
+      return overrideAccentColor;
+    }
     if (icon == CupertinoIcons.checkmark_circle_fill) {
-      return successAccentColor;
+      return pageAccentColor ?? successAccentColor;
     }
     if (icon == CupertinoIcons.exclamationmark_triangle_fill) {
       return dangerAccentColor;
     }
-    return defaultAccentColor;
+    return pageAccentColor ?? defaultAccentColor;
   }
 }
 
@@ -95,6 +132,7 @@ class _NomoToastOverlay extends StatefulWidget {
     required this.topPadding,
     required this.bottomPadding,
     required this.placement,
+    required this.accentColor,
   });
 
   final String message;
@@ -102,6 +140,7 @@ class _NomoToastOverlay extends StatefulWidget {
   final double topPadding;
   final double bottomPadding;
   final NomoToastPlacement placement;
+  final Color accentColor;
 
   @override
   State<_NomoToastOverlay> createState() => _NomoToastOverlayState();
@@ -142,7 +181,7 @@ class _NomoToastOverlayState extends State<_NomoToastOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = NomoToast.accentColorForIcon(widget.icon);
+    final accentColor = widget.accentColor;
     final toast = IgnorePointer(
       child: SlideTransition(
         position: _slide,

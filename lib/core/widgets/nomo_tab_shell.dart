@@ -45,6 +45,10 @@ class NomoTabShell extends ConsumerStatefulWidget {
 class _NomoTabShellState extends ConsumerState<NomoTabShell>
     with WidgetsBindingObserver {
   static const _invitePollInterval = Duration(seconds: 15);
+  static const _feedAccentColor = Color(0xFFC08BFF);
+  static const _friendsAccentColor = Color(0xFF9AF21A);
+  static const _calendarAccentColor = Color(0xFF20B9FF);
+  static const _profileAccentColor = Color(0xFFFF75B5);
 
   int _selectedIndex = 0;
   bool _didScheduleProfileRestore = false;
@@ -101,11 +105,24 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     );
   }
 
+  Color get _selectedToastAccentColor => switch (_selectedIndex) {
+    0 => _feedAccentColor,
+    1 => _friendsAccentColor,
+    2 => _calendarAccentColor,
+    _ => _profileAccentColor,
+  };
+
   List<Widget> get _pages => [
-    HomeScreen(onAddLogPressed: _openDrinkLogFlow),
-    const FriendsScreen(),
-    CalendarScreen(onCreatePlan: _openDrinkPlanFlow),
-    const ProfileScreen(),
+    NomoToastAccent(
+      color: _feedAccentColor,
+      child: HomeScreen(onAddLogPressed: _openDrinkLogFlow),
+    ),
+    const NomoToastAccent(color: _friendsAccentColor, child: FriendsScreen()),
+    NomoToastAccent(
+      color: _calendarAccentColor,
+      child: CalendarScreen(onCreatePlan: _openDrinkPlanFlow),
+    ),
+    const NomoToastAccent(color: _profileAccentColor, child: ProfileScreen()),
   ];
 
   Future<void> _openDrinkLogFlow() async {
@@ -115,7 +132,10 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .58),
-      builder: (_) => const _DrinkLogStartSheet(),
+      builder: (_) => NomoToastAccent(
+        color: _selectedToastAccentColor,
+        child: const _DrinkLogStartSheet(),
+      ),
     );
     if (!mounted || action == null) return;
     if (action.createsDrinkLog &&
@@ -130,9 +150,14 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       case _DrinkLogStartAction.camera:
         await _openCameraDrinkLogFlow();
       case _DrinkLogStartAction.noPhoto:
-        final openCalendar = await Navigator.of(
-          context,
-        ).push<bool>(CupertinoPageRoute(builder: (_) => const AddLogScreen()));
+        final openCalendar = await Navigator.of(context).push<bool>(
+          CupertinoPageRoute(
+            builder: (_) => NomoToastAccent(
+              color: _selectedToastAccentColor,
+              child: const AddLogScreen(),
+            ),
+          ),
+        );
         if (mounted && openCalendar == true) {
           setState(() => _selectedIndex = 2);
         }
@@ -169,7 +194,10 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .58),
-      builder: (_) => const _DrinkPlanCreateSheet(),
+      builder: (_) => NomoToastAccent(
+        color: _selectedToastAccentColor,
+        child: const _DrinkPlanCreateSheet(),
+      ),
     );
   }
 
@@ -177,14 +205,20 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     final result = await Navigator.of(context).push<NomoCameraResult>(
       CupertinoPageRoute(
         fullscreenDialog: true,
-        builder: (_) => const NomoCameraScreen(),
+        builder: (_) => NomoToastAccent(
+          color: _selectedToastAccentColor,
+          child: const NomoCameraScreen(),
+        ),
       ),
     );
     if (!mounted || result == null) return;
 
     await Navigator.of(context).push<void>(
       CupertinoPageRoute(
-        builder: (_) => AddLogScreen(initialPhotoPath: result.path),
+        builder: (_) => NomoToastAccent(
+          color: _selectedToastAccentColor,
+          child: AddLogScreen(initialPhotoPath: result.path),
+        ),
       ),
     );
   }
@@ -198,7 +232,10 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
 
     await Navigator.of(context).push<void>(
       CupertinoPageRoute(
-        builder: (_) => AddLogScreen(initialPhotoPath: picked.path),
+        builder: (_) => NomoToastAccent(
+          color: _selectedToastAccentColor,
+          child: AddLogScreen(initialPhotoPath: picked.path),
+        ),
       ),
     );
   }
@@ -250,16 +287,19 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
         useRootNavigator: true,
         backgroundColor: Colors.transparent,
         barrierColor: Colors.black.withValues(alpha: .62),
-        builder: (_) => _IncomingDrinkInviteSheet(
-          invite: invite,
-          onAccept: () async {
-            await ref.read(drinkInviteControllerProvider).accept(invite.id);
-            ref.invalidate(notificationControllerProvider);
-          },
-          onReject: () async {
-            await ref.read(drinkInviteControllerProvider).reject(invite.id);
-            ref.invalidate(notificationControllerProvider);
-          },
+        builder: (_) => NomoToastAccent(
+          color: _selectedToastAccentColor,
+          child: _IncomingDrinkInviteSheet(
+            invite: invite,
+            onAccept: () async {
+              await ref.read(drinkInviteControllerProvider).accept(invite.id);
+              ref.invalidate(notificationControllerProvider);
+            },
+            onReject: () async {
+              await ref.read(drinkInviteControllerProvider).reject(invite.id);
+              ref.invalidate(notificationControllerProvider);
+            },
+          ),
         ),
       );
     } finally {

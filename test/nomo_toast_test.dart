@@ -38,4 +38,60 @@ void main() {
       NomoToast.dangerAccentColor,
     );
   });
+
+  test('toast accent color can follow page accent', () {
+    const pageAccentColor = Color(0xFFC08BFF);
+    const overrideAccentColor = Color(0xFFFF75B5);
+
+    expect(
+      NomoToast.accentColorForIcon(
+        CupertinoIcons.bell_fill,
+        pageAccentColor: pageAccentColor,
+      ),
+      pageAccentColor,
+    );
+    expect(
+      NomoToast.accentColorForIcon(
+        CupertinoIcons.checkmark_circle_fill,
+        pageAccentColor: pageAccentColor,
+      ),
+      pageAccentColor,
+    );
+    expect(
+      NomoToast.accentColorForIcon(
+        CupertinoIcons.exclamationmark_triangle_fill,
+        pageAccentColor: pageAccentColor,
+      ),
+      NomoToast.dangerAccentColor,
+    );
+    expect(
+      NomoToast.accentColorForIcon(
+        CupertinoIcons.exclamationmark_triangle_fill,
+        pageAccentColor: pageAccentColor,
+        overrideAccentColor: overrideAccentColor,
+      ),
+      overrideAccentColor,
+    );
+  });
+
+  testWidgets('toast page accent is available from descendants', (
+    tester,
+  ) async {
+    const pageAccentColor = Color(0xFF9AF21A);
+    Color? resolvedAccentColor;
+
+    await tester.pumpWidget(
+      NomoToastAccent(
+        color: pageAccentColor,
+        child: Builder(
+          builder: (context) {
+            resolvedAccentColor = NomoToastAccent.maybeOf(context);
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+
+    expect(resolvedAccentColor, pageAccentColor);
+  });
 }
