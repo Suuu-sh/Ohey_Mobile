@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -147,14 +148,23 @@ class PhotoArchivePreview extends StatelessWidget {
   }
 }
 
-class PhotoArchiveScreen extends StatelessWidget {
+class PhotoArchiveScreen extends StatefulWidget {
   const PhotoArchiveScreen({super.key, required this.logs});
 
   final List<DrinkLog> logs;
 
   @override
+  State<PhotoArchiveScreen> createState() => _PhotoArchiveScreenState();
+}
+
+enum _ArchiveViewMode { grid, places }
+
+class _PhotoArchiveScreenState extends State<PhotoArchiveScreen> {
+  _ArchiveViewMode _viewMode = _ArchiveViewMode.grid;
+
+  @override
   Widget build(BuildContext context) {
-    final sorted = _sortedPhotoLogs(logs);
+    final sorted = _sortedPhotoLogs(widget.logs);
     final memoryLog = _randomMemoryLog(sorted);
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final background = isWhite
@@ -195,14 +205,29 @@ class PhotoArchiveScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              if (sorted.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(22, 14, 22, 6),
+                  child: _ArchiveViewModeSelector(
+                    value: _viewMode,
+                    isWhite: isWhite,
+                    onChanged: (value) => setState(() => _viewMode = value),
+                  ),
+                ),
               Expanded(
                 child: sorted.isEmpty
                     ? _ArchiveEmptyState(isWhite: isWhite)
+                    : _viewMode == _ArchiveViewMode.places
+                    ? _ArchivePlacesView(
+                        logs: sorted,
+                        isWhite: isWhite,
+                        onLogTap: (log) => _showArchiveDetail(context, log),
+                      )
                     : CustomScrollView(
                         physics: const BouncingScrollPhysics(),
                         slivers: [
                           SliverPadding(
-                            padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
+                            padding: const EdgeInsets.fromLTRB(22, 12, 22, 18),
                             sliver: SliverToBoxAdapter(
                               child: _ArchiveHeroCard(
                                 log: memoryLog ?? sorted.first,
