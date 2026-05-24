@@ -209,6 +209,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     try {
       await ref.read(drinkInviteControllerProvider).sendTodayInvite(friend.id);
       if (!mounted) return;
+      HapticFeedback.lightImpact();
       NomoToast.show(
         context,
         '${friend.name}に飲み招待を送りました。',
