@@ -401,8 +401,8 @@ class _SelectedDayPanel extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       decoration: BoxDecoration(
         color: isWhite
-            ? const Color(0xFFF7FBFF)
-            : const Color(0xFF102B43).withValues(alpha: .86),
+            ? Colors.white
+            : const Color(0xFF122233).withValues(alpha: .82),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: _calendarPrimaryActionColor.withValues(
