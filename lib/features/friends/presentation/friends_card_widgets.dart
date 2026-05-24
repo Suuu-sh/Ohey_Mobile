@@ -162,14 +162,6 @@ class _FriendAvatarBubbleBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (NomoAvatar.usesMascotBackdrop(avatar.background)) {
-      return Image.asset(
-        'assets/images/profile_mascot_backdrop_scene.png',
-        fit: BoxFit.cover,
-        alignment: Alignment.center,
-      );
-    }
-
     final colors =
         NomoAvatar.backgroundGradients[avatar.background %
             NomoAvatar.backgroundGradients.length];
