@@ -401,9 +401,7 @@ class _SelectedDayPanel extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       accentColor: _calendarPrimaryActionColor,
-      backgroundColor: isWhite
-          ? Colors.white
-          : const Color(0xFF122233).withValues(alpha: .82),
+      backgroundColor: isWhite ? Colors.white : AppColors.darkBackground,
       borderRadius: 24,
       borderAlpha: isWhite ? .32 : .26,
       glowAlpha: isWhite ? .10 : .16,
