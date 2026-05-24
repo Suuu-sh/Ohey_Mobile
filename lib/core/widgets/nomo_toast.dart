@@ -10,6 +10,7 @@ enum NomoToastPlacement { top, bottom }
 class NomoToast {
   const NomoToast._();
 
+  static const defaultPlacement = NomoToastPlacement.bottom;
   static OverlayEntry? _currentEntry;
   static Timer? _timer;
 
@@ -18,7 +19,7 @@ class NomoToast {
     String message, {
     IconData icon = CupertinoIcons.bell_fill,
     Duration duration = const Duration(milliseconds: 2600),
-    NomoToastPlacement placement = NomoToastPlacement.top,
+    NomoToastPlacement placement = defaultPlacement,
   }) {
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
     if (overlay == null) return;

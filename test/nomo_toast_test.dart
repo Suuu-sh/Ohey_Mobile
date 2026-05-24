@@ -2,6 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nomo/core/widgets/nomo_toast.dart';
 
 void main() {
+  test('toast defaults to bottom placement', () {
+    expect(NomoToast.defaultPlacement, NomoToastPlacement.bottom);
+  });
+
   test(
     'toast stays below the device top chrome even without safe-area padding',
     () {
