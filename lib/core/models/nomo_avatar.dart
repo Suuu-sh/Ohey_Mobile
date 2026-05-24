@@ -26,6 +26,10 @@ class NomoAvatar {
   final int background;
   final bool isAdmin;
 
+  static const mascotBackdropBackground = 0;
+  static const dreamRoomBackground = 1;
+  static const nightFriendsBackground = 2;
+
   static const defaultAvatar = NomoAvatar(
     skin: 2,
     hair: 1,
@@ -33,7 +37,7 @@ class NomoAvatar {
     eyes: 0,
     mouth: 0,
     accessory: 0,
-    background: 0,
+    background: mascotBackdropBackground,
   );
 
   /// Mascot avatar used only for official Nomo posts.
@@ -44,7 +48,7 @@ class NomoAvatar {
     eyes: 2,
     mouth: 1,
     accessory: 1,
-    background: 1,
+    background: nightFriendsBackground,
     isAdmin: true,
   );
 
@@ -123,21 +127,14 @@ class NomoAvatar {
     return copyWith(hair: hairOptions.first);
   }
 
-  static const backgroundStyles = [
-    'Dream room',
-    'Night friends',
-    'Mint cafe',
-    'Pink pop',
-    'Blue glow',
-  ];
+  static const backgroundStyles = ['Nomo pink'];
 
   static const backgroundGradients = [
-    [Color(0xFFF8FBFF), Color(0xFFEAF1F8)],
-    [Color(0xFF071320), Color(0xFF17324A)],
-    [Color(0xFFE8FFF7), Color(0xFFB8F3E6)],
-    [Color(0xFFFFEEF6), Color(0xFFFFC9E1)],
-    [Color(0xFFE9F6FF), Color(0xFFBFE6FF)],
+    [Color(0xFFFF7BBC), Color(0xFFFFD2E3)],
   ];
+
+  static bool usesMascotBackdrop(int background) =>
+      background == mascotBackdropBackground;
 
   static const skinColors = [
     Color(0xFFFFD8C2),
