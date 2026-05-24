@@ -534,6 +534,7 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.onStatusTap,
     required this.onLogsTap,
     required this.onArchiveTap,
+    required this.onInviteAppTap,
   });
 
   final bool isWhite;
@@ -543,6 +544,7 @@ class _ProfileActivityHome extends StatelessWidget {
   final VoidCallback onStatusTap;
   final VoidCallback onLogsTap;
   final VoidCallback onArchiveTap;
+  final VoidCallback onInviteAppTap;
 
   @override
   Widget build(BuildContext context) {
@@ -558,6 +560,8 @@ class _ProfileActivityHome extends StatelessWidget {
           status: status,
           onTap: onStatusTap,
         ),
+        const SizedBox(height: 12),
+        _ProfileInviteAppCard(isWhite: isWhite, onTap: onInviteAppTap),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -585,6 +589,65 @@ class _ProfileActivityHome extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class _ProfileInviteAppCard extends StatelessWidget {
+  const _ProfileInviteAppCard({required this.isWhite, required this.onTap});
+
+  final bool isWhite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProfileActivityCard(
+      isWhite: isWhite,
+      onTap: onTap,
+      height: 88,
+      borderRadius: 30,
+      child: Row(
+        children: [
+          NomoPopIcon(
+            icon: CupertinoIcons.person_2_fill,
+            color: AppColors.invite,
+            size: 46,
+            iconSize: 25,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  '友達を招待する',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'アプリに誘導するリンクを共有',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .72),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          NomoGeneratedIcon(
+            CupertinoIcons.square_arrow_up,
+            color: Colors.white.withValues(alpha: .88),
+            size: 22,
+          ),
+        ],
+      ),
     );
   }
 }

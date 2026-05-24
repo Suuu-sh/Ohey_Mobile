@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/data/backend_api_client.dart';
@@ -173,6 +174,10 @@ class ProfileScreen extends ConsumerWidget {
                                       PhotoArchiveScreen(logs: photoLogs),
                                 ),
                               ),
+                              onInviteAppTap: () => _shareAppInvite(
+                                context,
+                                ref.read(nomoUserProvider),
+                              ),
                             ),
                           ),
                         ],
@@ -190,6 +195,45 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 String _profileQrPayload(String userId) => 'nomo://friend/$userId';
+
+String _appInviteUrl(NomoUser? user) {
+  final userId = user?.userId.trim();
+  final uri = Uri.https('tomola.app', '/invite', {
+    if (userId != null && userId.isNotEmpty) 'ref': userId,
+  });
+  return uri.toString();
+}
+
+Future<void> _shareAppInvite(BuildContext context, NomoUser? user) async {
+  final renderBox = context.findRenderObject() as RenderBox?;
+  final shareOrigin = renderBox == null
+      ? null
+      : renderBox.localToGlobal(Offset.zero) & renderBox.size;
+  final inviteUrl = _appInviteUrl(user);
+  final inviterName = user?.name.trim();
+  final message = [
+    if (inviterName != null && inviterName.isNotEmpty)
+      '$inviterNameさんからTomolaへの招待です。',
+    'Tomolaで飲みログや予定を一緒に楽しもう。',
+    inviteUrl,
+  ].join('\n');
+
+  final result = await SharePlus.instance.share(
+    ShareParams(
+      text: message,
+      subject: 'Tomolaへの招待',
+      sharePositionOrigin: shareOrigin,
+    ),
+  );
+  if (!context.mounted) return;
+  if (result.status == ShareResultStatus.unavailable) {
+    NomoToast.show(
+      context,
+      '共有できるアプリが見つかりませんでした。',
+      icon: CupertinoIcons.square_arrow_up,
+    );
+  }
+}
 
 bool _isMyUserLog(DrinkLog log, String? currentUserId) {
   if (log.isOfficial) return false;
