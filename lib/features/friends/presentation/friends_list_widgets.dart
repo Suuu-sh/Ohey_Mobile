@@ -321,10 +321,11 @@ class _TodayInviteCandidateCard extends StatelessWidget {
             style: TextStyle(
               color: isWhite
                   ? const Color(0xFF667381)
-                  : Colors.white.withValues(alpha: .58),
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              height: 1.25,
+                  : Colors.white.withValues(alpha: .68),
+              fontSize: 12.5,
+              fontWeight: FontWeight.w900,
+              height: 1.28,
+              letterSpacing: -.2,
             ),
           ),
           const SizedBox(height: 8),
@@ -401,18 +402,18 @@ class _TodayInviteEmpty extends StatelessWidget {
 String _recommendationReasonFor(_DecoratedFriend item) {
   final friend = item.friend;
   if (friend.totalDrinkCount == 0) {
-    return 'おすすめの理由：まだ行ったことない';
+    return 'まだ一緒に行ったことない';
   }
   if (friend.isFavorite && _daysSinceLastDrink(friend) >= 30) {
-    return 'おすすめの理由：お気に入りだけど30日以上行ってない';
+    return '30日以上行ってない';
   }
   if (friend.statusKey == 'can_drink_today') {
-    return 'おすすめの理由：今日飲めそう';
+    return '今日飲めそう';
   }
   if (friend.statusKey == 'non_alcohol') {
-    return 'おすすめの理由：軽く誘いやすい';
+    return '軽く誘いやすい';
   }
-  return 'おすすめの理由：誘いやすい状態';
+  return '誘いやすい状態';
 }
 
 bool _isRecommendedFriend(_DecoratedFriend item) {
