@@ -22,6 +22,7 @@ import '../../features/notifications/application/os_notification_service.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/onboarding/presentation/create_user_dialog.dart';
 import '../application/nomo_user_controller.dart';
+import '../data/backend_api_client.dart';
 import '../data/nomo_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
 import '../models/nomo_avatar.dart';
@@ -510,12 +511,12 @@ class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
         placement: NomoToastPlacement.bottom,
       );
       Navigator.of(context).pop();
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       setState(() {
         _sendingFriendId = null;
-        _errorMessage = '飲み予定を作れなかったよ。あとでもう一度試してね';
+        _errorMessage = _drinkInviteFailureReason(error);
       });
     }
   }
@@ -698,6 +699,24 @@ class _SheetInlineError extends StatelessWidget {
       ),
     );
   }
+}
+
+String _drinkInviteFailureReason(Object error) {
+  if (error is BackendApiException) {
+    return _cleanDrinkInviteFailureReason(error.message);
+  }
+  if (error is StateError) {
+    return _cleanDrinkInviteFailureReason(error.message);
+  }
+  return '通信に失敗しました。時間をおいて試してね。';
+}
+
+String _cleanDrinkInviteFailureReason(String raw) {
+  final message = raw.trim();
+  if (message.isEmpty || message == 'Backend request failed.') {
+    return '通信に失敗しました。時間をおいて試してね。';
+  }
+  return message;
 }
 
 class _DrinkPlanFriendTile extends StatelessWidget {
