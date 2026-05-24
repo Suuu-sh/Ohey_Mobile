@@ -118,7 +118,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return const _FeedBackground(child: SizedBox.expand()).copyWith(
       child: Stack(
         children: [
-          _FeedHeaderBackdropLayer(isWhite: isWhite),
           Positioned.fill(
             child: _buildFeedPage(
               topPadding: _feedHeaderScrollInset(context),
@@ -137,6 +136,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onMorePressed: (item) => _showFeedPostActions(context, ref, item),
             ),
           ),
+          _FeedHeaderBackdropLayer(isWhite: isWhite),
           _FeedHeaderControlsLayer(
             child: NomoPageHeader(
               title: 'フィード',
@@ -232,7 +232,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         : await showNomoBottomSheet<_FeedShareDestination>(
             context: context,
             useSafeArea: true,
-                  barrierColor: Colors.black.withValues(alpha: .58),
+            barrierColor: Colors.black.withValues(alpha: .58),
             builder: (_) => const _FeedShareDestinationSheet(),
           );
     if (!context.mounted || destination == null) return;
