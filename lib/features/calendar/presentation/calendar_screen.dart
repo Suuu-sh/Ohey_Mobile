@@ -403,8 +403,8 @@ class _SelectedDayPanel extends StatelessWidget {
       accentColor: _calendarPrimaryActionColor,
       backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
       borderRadius: 24,
-      borderAlpha: isWhite ? .32 : .26,
-      glowAlpha: isWhite ? .10 : .16,
+      borderAlpha: isWhite ? .46 : .52,
+      glowAlpha: isWhite ? .12 : .20,
       glowBlur: 28,
       glowOffset: const Offset(0, 12),
       child: Column(
@@ -838,9 +838,9 @@ class _DayTile extends StatelessWidget {
                 ? _calendarPrimaryActionColor
                 : isSelected
                 ? const Color(0xFF54D7FF)
-                : isWhite
-                ? const Color(0xFFDCE4EC)
-                : Colors.white.withValues(alpha: .06),
+                : _calendarPrimaryActionColor.withValues(
+                    alpha: isWhite ? .34 : .24,
+                  ),
             width: isSelected || hasPlan ? 2 : 1,
           ),
           boxShadow: [
