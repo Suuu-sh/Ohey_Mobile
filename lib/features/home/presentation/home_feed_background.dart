@@ -44,6 +44,7 @@ class _FeedHeaderBackdropLayer extends StatelessWidget {
             assetPath: 'assets/images/feed_header_scene.png',
             fadeColor: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
             accentColor: _FeedColors.teal,
+            imageTopOffset: 18,
             topShadeOpacity: .04,
             midShadeOpacity: .01,
             fadeStartOpacity: .56,
