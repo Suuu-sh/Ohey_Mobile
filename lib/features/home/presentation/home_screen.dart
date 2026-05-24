@@ -55,8 +55,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const _feedSwipeTutorialSeenKey = 'nomo_feed_swipe_tutorial_seen';
-  static const _instagramShareChannel = MethodChannel('nomo/instagram_share');
-
   bool _isRefreshingFeed = false;
   int _currentFeedPageIndex = 0;
   bool _isFeedSwipeTutorialSeen = true;
@@ -231,25 +229,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _shareFeedItem(BuildContext context, _FeedItem item) async {
-    final destination = item.isOfficial
-        ? _FeedShareDestination.other
-        : await showNomoBottomSheet<_FeedShareDestination>(
-            context: context,
-            useSafeArea: true,
-            barrierColor: Colors.black.withValues(alpha: .58),
-            builder: (_) => const _FeedShareDestinationSheet(),
-          );
-    if (!context.mounted || destination == null) return;
-
     try {
       final imagePath = await _createStoryShareImage(item);
       if (!mounted) return;
-      switch (destination) {
-        case _FeedShareDestination.instagram:
-          await _shareFeedImageToInstagram(this.context, imagePath);
-        case _FeedShareDestination.other:
-          await _shareFeedImageWithSystemSheet(this.context, item, imagePath);
-      }
+      await _shareFeedImageWithSystemSheet(this.context, item, imagePath);
     } catch (_) {
       if (!context.mounted) return;
       NomoToast.show(
@@ -257,34 +240,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         '共有を始められなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.square_arrow_up,
       );
-    }
-  }
-
-  Future<void> _shareFeedImageToInstagram(
-    BuildContext context,
-    String imagePath,
-  ) async {
-    try {
-      await _instagramShareChannel.invokeMethod<void>('shareStory', {
-        'imagePath': imagePath,
-      });
-      if (!context.mounted) return;
-      NomoToast.show(
-        context,
-        'Instagramで投稿を仕上げてね',
-        icon: CupertinoIcons.camera_fill,
-      );
-    } on PlatformException catch (error) {
-      if (!context.mounted) return;
-      if (error.code == 'instagram_unavailable') {
-        NomoToast.show(
-          context,
-          'Instagramアプリが見つかりませんでした',
-          icon: CupertinoIcons.camera_fill,
-        );
-        return;
-      }
-      rethrow;
     }
   }
 
