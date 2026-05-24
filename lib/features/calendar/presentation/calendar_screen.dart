@@ -829,11 +829,9 @@ class _DayTile extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
         decoration: BoxDecoration(
-          color: isSelected
-              ? (isWhite ? const Color(0xFFEAF8FF) : const Color(0xFF123047))
-              : isWhite
-              ? Colors.white
-              : const Color(0xFF122233).withValues(alpha: .82),
+          color: isWhite
+              ? (isSelected ? const Color(0xFFEAF8FF) : Colors.white)
+              : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(13),
           border: Border.all(
             color: hasPlan
