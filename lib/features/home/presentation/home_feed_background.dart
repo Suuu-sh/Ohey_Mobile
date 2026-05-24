@@ -41,10 +41,10 @@ class _FeedHeaderBackdropLayer extends StatelessWidget {
       child: IgnorePointer(
         child: ClipRect(
           child: NomoSceneHeaderBackdrop(
-            assetPath: 'assets/images/feed_header_scene.png',
+            assetPath: 'assets/images/feed_header_scene_clear.png',
             fadeColor: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
             accentColor: _FeedColors.teal,
-            imageTopOffset: 18,
+            imageTopOffset: 0,
             topShadeOpacity: 0,
             midShadeOpacity: 0,
             fadeStartOpacity: .18,
