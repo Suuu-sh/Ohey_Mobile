@@ -15,6 +15,7 @@ import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_empty_state.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
+import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
@@ -109,11 +110,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     }
     HapticFeedback.selectionClick();
     final isWhite = ref.read(nomoThemeModeProvider).isWhite;
-    final result = await showModalBottomSheet<_CustomFilterSheetResult>(
+    final result = await showNomoBottomSheet<_CustomFilterSheetResult>(
       context: context,
       useSafeArea: true,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .58),
       builder: (_) => _CustomFilterSheet(
         friends: friends,

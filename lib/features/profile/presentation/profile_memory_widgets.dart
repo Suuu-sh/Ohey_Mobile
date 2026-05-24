@@ -375,11 +375,8 @@ Future<void> _openAdminScreen(BuildContext context) async {
 Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
   final rootContext = context;
   final user = ref.read(nomoUserProvider);
-  await showModalBottomSheet<void>(
+  await showNomoBottomSheet<void>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: false,
-    backgroundColor: Colors.transparent,
     builder: (sheetContext) => Consumer(
       builder: (context, ref, _) {
         final themeMode = ref.watch(nomoThemeModeProvider);

@@ -102,144 +102,113 @@ class _SettingsSheetShell extends StatelessWidget {
         ? '@${user!.userId}'
         : 'プロフィール未設定';
 
-    final maxHeight = MediaQuery.sizeOf(context).height * .88;
-    return SafeArea(
-      top: false,
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: maxHeight),
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            decoration: BoxDecoration(
-              color: NomoThemedPanel.surfaceColor(isWhite: isWhite),
-              gradient: isWhite
-                  ? const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFFFFFFFF), Color(0xFFF8FBFF)],
-                    )
-                  : null,
-              borderRadius: BorderRadius.circular(34),
-              border: Border.all(
-                color: isWhite
-                    ? const Color(0xFFE4EAF0)
-                    : Colors.white.withValues(alpha: .10),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isWhite ? .14 : .34),
-                  blurRadius: 34,
-                  offset: const Offset(0, 16),
+    return NomoBottomSheetShell(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      padding: EdgeInsets.zero,
+      radius: 34,
+      maxHeightFactor: .88,
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: isWhite
+                      ? const Color(0xFFD8E0E8)
+                      : Colors.white.withValues(alpha: .18),
+                  borderRadius: BorderRadius.circular(999),
                 ),
-              ],
+              ),
             ),
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 48,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: isWhite
-                            ? const Color(0xFFD8E0E8)
-                            : Colors.white.withValues(alpha: .18),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '設定',
-                              style: Theme.of(context).textTheme.headlineSmall
-                                  ?.copyWith(
-                                    color: ink,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -1.0,
-                                  ),
+                      Text(
+                        '設定',
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              color: ink,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -1.0,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Nomoを自分好みに整えよう',
-                              style: TextStyle(
-                                color: sub,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Nomoを自分好みに整えよう',
+                        style: TextStyle(
+                          color: sub,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
-                      _SettingsCloseButton(onTap: onClose, color: ink),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isWhite
-                          ? const Color(0xFFF3F7FA)
-                          : AppColors.darkBackground,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: isWhite
-                            ? const Color(0xFFE0E7EE)
-                            : Colors.white.withValues(alpha: .09),
-                      ),
-                    ),
-                    child: Row(
+                ),
+                _SettingsCloseButton(onTap: onClose, color: ink),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isWhite
+                    ? const Color(0xFFF3F7FA)
+                    : AppColors.darkBackground,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: isWhite
+                      ? const Color(0xFFE0E7EE)
+                      : Colors.white.withValues(alpha: .09),
+                ),
+              ),
+              child: Row(
+                children: [
+                  NomoAvatarView(avatar: avatar, size: 52),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        NomoAvatarView(avatar: avatar, size: 52),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: ink,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                handle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: sub,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ],
+                        Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: ink,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          handle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: sub,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  ...children,
                 ],
               ),
             ),
-          ),
+            const SizedBox(height: 14),
+            ...children,
+          ],
         ),
       ),
     );

@@ -353,7 +353,6 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = widget.isWhite;
-    final bg = NomoThemedPanel.surfaceColor(isWhite: isWhite);
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
     final sub = isWhite
         ? const Color(0xFF687481)
@@ -361,282 +360,255 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
     final fieldBg = isWhite
         ? const Color(0xFFF2F6FA)
         : Colors.white.withValues(alpha: .07);
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * .88,
-        ),
-        decoration: BoxDecoration(
-          color: bg,
-          gradient: isWhite
-              ? const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.white, Color(0xFFF7FAFD)],
-                )
-              : null,
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: isWhite
-                ? const Color(0xFFDCE4EC)
-                : Colors.white.withValues(alpha: .12),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isWhite ? .12 : .34),
-              blurRadius: 28,
-              offset: const Offset(0, 16),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 44,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: isWhite
-                      ? const Color(0xFFD5DEE8)
-                      : Colors.white.withValues(alpha: .22),
-                  borderRadius: BorderRadius.circular(999),
-                ),
+    return NomoBottomSheetShell(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+      radius: 30,
+      maxHeightFactor: .88,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              width: 44,
+              height: 5,
+              decoration: BoxDecoration(
+                color: isWhite
+                    ? const Color(0xFFD5DEE8)
+                    : Colors.white.withValues(alpha: .22),
+                borderRadius: BorderRadius.circular(999),
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                NomoPopIcon(
-                  icon: _isEditing
-                      ? CupertinoIcons.slider_horizontal_3
-                      : CupertinoIcons.person_2_fill,
-                  color: _FriendsColors.lime,
-                  size: 48,
-                  iconSize: 26,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _isEditing ? 'フィルター編集' : 'フィルター作成',
-                        style: TextStyle(
-                          color: ink,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.4,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        'よく使う条件だけ選んで保存できます',
-                        style: TextStyle(
-                          color: sub,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(42, 42),
-                  borderRadius: BorderRadius.circular(18),
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: NomoGeneratedIcon(
-                    CupertinoIcons.xmark,
-                    color: sub,
-                    size: 24,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Flexible(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              NomoPopIcon(
+                icon: _isEditing
+                    ? CupertinoIcons.slider_horizontal_3
+                    : CupertinoIcons.person_2_fill,
+                color: _FriendsColors.lime,
+                size: 48,
+                iconSize: 26,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextField(
-                      controller: _nameController,
-                      textInputAction: TextInputAction.done,
-                      cursorColor: _FriendsColors.lime,
+                    Text(
+                      _isEditing ? 'フィルター編集' : 'フィルター作成',
                       style: TextStyle(
                         color: ink,
-                        fontSize: 16,
+                        fontSize: 20,
                         fontWeight: FontWeight.w900,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'フィルター名（例：いつメン）',
-                        hintStyle: TextStyle(
-                          color: sub,
-                          fontWeight: FontWeight.w800,
-                        ),
-                        filled: true,
-                        fillColor: fieldBg,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 13,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
+                        letterSpacing: -.4,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    _FilterSectionTitle(label: 'よく使う条件', color: ink),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _CriteriaToggleChip(
-                          label: 'お気に入りのみ',
-                          icon: CupertinoIcons.star_fill,
-                          selected: _favoriteOnly,
-                          accent: const Color(0xFFFFC700),
-                          isWhite: isWhite,
-                          onTap: () => _setBoolCondition(
-                            value: _favoriteOnly,
-                            setter: (value) => _favoriteOnly = value,
-                          ),
-                        ),
-                        _CriteriaToggleChip(
-                          label: '今日誘える',
-                          icon: CupertinoIcons.paperplane_fill,
-                          selected: _drinkableOnly,
-                          accent: const Color(0xFF12C9A4),
-                          isWhite: isWhite,
-                          onTap: () => _setBoolCondition(
-                            value: _drinkableOnly,
-                            setter: (value) => _drinkableOnly = value,
-                          ),
-                        ),
-                        _CriteriaToggleChip(
-                          label: 'オンライン',
-                          icon: CupertinoIcons.circle_fill,
-                          selected: _onlineOnly,
-                          accent: const Color(0xFF18AFFF),
-                          isWhite: isWhite,
-                          onTap: () => _setBoolCondition(
-                            value: _onlineOnly,
-                            setter: (value) => _onlineOnly = value,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _FilterSectionTitle(label: '性別', color: ink),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final gender in selectableNomoGenders)
-                          _CriteriaToggleChip(
-                            label: gender.label,
-                            icon: gender == NomoGender.male
-                                ? CupertinoIcons.person_fill
-                                : CupertinoIcons.person_crop_circle_fill,
-                            selected: _selectedGenderKeys.contains(gender.key),
-                            accent: gender == NomoGender.male
-                                ? const Color(0xFF18AFFF)
-                                : const Color(0xFFFF5AA6),
-                            isWhite: isWhite,
-                            onTap: () => _toggleGender(gender.key),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _FilterSectionTitle(label: 'ステータス', color: ink),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final option in _statusOptions)
-                          _CriteriaToggleChip(
-                            label: option.label,
-                            selected: _selectedStatusKeys.contains(option.key),
-                            accent: option.enabled
-                                ? _FriendsColors.lime
-                                : _FriendsColors.muted,
-                            isWhite: isWhite,
-                            onTap: () => _toggleStatus(option.key),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _FilterSectionTitle(label: 'フレンズ', color: ink),
-                    const SizedBox(height: 8),
-                    for (var i = 0; i < widget.friends.length; i++) ...[
-                      _CustomFilterFriendRow(
-                        friend: widget.friends[i],
-                        selected: _selectedFriendIds.contains(
-                          widget.friends[i].id,
-                        ),
-                        isWhite: isWhite,
-                        onTap: () => _toggleFriend(widget.friends[i].id),
+                    const SizedBox(height: 3),
+                    Text(
+                      'よく使う条件だけ選んで保存できます',
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
                       ),
-                      if (i != widget.friends.length - 1)
-                        const SizedBox(height: 8),
-                    ],
+                    ),
                   ],
                 ),
               ),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(42, 42),
+                borderRadius: BorderRadius.circular(18),
+                onPressed: () => Navigator.of(context).pop(),
+                child: NomoGeneratedIcon(
+                  CupertinoIcons.xmark,
+                  color: sub,
+                  size: 24,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Flexible(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _nameController,
+                    textInputAction: TextInputAction.done,
+                    cursorColor: _FriendsColors.lime,
+                    style: TextStyle(
+                      color: ink,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'フィルター名（例：いつメン）',
+                      hintStyle: TextStyle(
+                        color: sub,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      filled: true,
+                      fillColor: fieldBg,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 13,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _FilterSectionTitle(label: 'よく使う条件', color: ink),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _CriteriaToggleChip(
+                        label: 'お気に入りのみ',
+                        icon: CupertinoIcons.star_fill,
+                        selected: _favoriteOnly,
+                        accent: const Color(0xFFFFC700),
+                        isWhite: isWhite,
+                        onTap: () => _setBoolCondition(
+                          value: _favoriteOnly,
+                          setter: (value) => _favoriteOnly = value,
+                        ),
+                      ),
+                      _CriteriaToggleChip(
+                        label: '今日誘える',
+                        icon: CupertinoIcons.paperplane_fill,
+                        selected: _drinkableOnly,
+                        accent: const Color(0xFF12C9A4),
+                        isWhite: isWhite,
+                        onTap: () => _setBoolCondition(
+                          value: _drinkableOnly,
+                          setter: (value) => _drinkableOnly = value,
+                        ),
+                      ),
+                      _CriteriaToggleChip(
+                        label: 'オンライン',
+                        icon: CupertinoIcons.circle_fill,
+                        selected: _onlineOnly,
+                        accent: const Color(0xFF18AFFF),
+                        isWhite: isWhite,
+                        onTap: () => _setBoolCondition(
+                          value: _onlineOnly,
+                          setter: (value) => _onlineOnly = value,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _FilterSectionTitle(label: '性別', color: ink),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final gender in selectableNomoGenders)
+                        _CriteriaToggleChip(
+                          label: gender.label,
+                          icon: gender == NomoGender.male
+                              ? CupertinoIcons.person_fill
+                              : CupertinoIcons.person_crop_circle_fill,
+                          selected: _selectedGenderKeys.contains(gender.key),
+                          accent: gender == NomoGender.male
+                              ? const Color(0xFF18AFFF)
+                              : const Color(0xFFFF5AA6),
+                          isWhite: isWhite,
+                          onTap: () => _toggleGender(gender.key),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _FilterSectionTitle(label: 'ステータス', color: ink),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final option in _statusOptions)
+                        _CriteriaToggleChip(
+                          label: option.label,
+                          selected: _selectedStatusKeys.contains(option.key),
+                          accent: option.enabled
+                              ? _FriendsColors.lime
+                              : _FriendsColors.muted,
+                          isWhite: isWhite,
+                          onTap: () => _toggleStatus(option.key),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _FilterSectionTitle(label: 'フレンズ', color: ink),
+                  const SizedBox(height: 8),
+                  for (var i = 0; i < widget.friends.length; i++) ...[
+                    _CustomFilterFriendRow(
+                      friend: widget.friends[i],
+                      selected: _selectedFriendIds.contains(
+                        widget.friends[i].id,
+                      ),
+                      isWhite: isWhite,
+                      onTap: () => _toggleFriend(widget.friends[i].id),
+                    ),
+                    if (i != widget.friends.length - 1)
+                      const SizedBox(height: 8),
+                  ],
+                ],
+              ),
             ),
-            if (_errorText != null) ...[
-              const SizedBox(height: 10),
-              Text(
-                _errorText!,
-                style: const TextStyle(
+          ),
+          if (_errorText != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              _errorText!,
+              style: const TextStyle(
+                color: Color(0xFFFF6B8A),
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          Nomo3DButton(
+            label: _isEditing ? '保存する' : '作成する',
+            icon: CupertinoIcons.checkmark_circle_fill,
+            onTap: _canSave ? _save : null,
+            enabled: _canSave,
+            height: 48,
+            radius: 20,
+            color: _FriendsColors.lime,
+            foregroundColor: _FriendsColors.bg,
+            shadowColor: const Color(0xFF77A600),
+            fontSize: 14,
+          ),
+          if (_isEditing) ...[
+            const SizedBox(height: 8),
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 36),
+              onPressed: _delete,
+              child: const Text(
+                '削除する',
+                style: TextStyle(
                   color: Color(0xFFFF6B8A),
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-            ],
-            const SizedBox(height: 16),
-            Nomo3DButton(
-              label: _isEditing ? '保存する' : '作成する',
-              icon: CupertinoIcons.checkmark_circle_fill,
-              onTap: _canSave ? _save : null,
-              enabled: _canSave,
-              height: 48,
-              radius: 20,
-              color: _FriendsColors.lime,
-              foregroundColor: _FriendsColors.bg,
-              shadowColor: const Color(0xFF77A600),
-              fontSize: 14,
             ),
-            if (_isEditing) ...[
-              const SizedBox(height: 8),
-              CupertinoButton(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(0, 36),
-                onPressed: _delete,
-                child: const Text(
-                  '削除する',
-                  style: TextStyle(
-                    color: Color(0xFFFF6B8A),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }
