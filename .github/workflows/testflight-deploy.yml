@@ -338,6 +338,35 @@ jobs:
           print('Configured manual signing:', changed)
           PY
 
+      - name: Normalize CI release entitlements
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import plistlib
+          from pathlib import Path
+
+          # The App Store provisioning profiles used by CI intentionally do not
+          # include the App Group capability. Keep Release entitlements aligned
+          # with those profiles so TestFlight archives do not fail signing.
+          release_entitlements = [
+              Path('ios/Runner/RunnerRelease.entitlements'),
+              Path('ios/NomoWidgets/NomoWidgetsRelease.entitlements'),
+          ]
+          for path in release_entitlements:
+              data = {}
+              if path.exists():
+                  with path.open('rb') as handle:
+                      data = plistlib.load(handle)
+              data.pop('com.apple.security.application-groups', None)
+              if path.name == 'RunnerRelease.entitlements':
+                  data['aps-environment'] = 'production'
+              with path.open('wb') as handle:
+                  plistlib.dump(data, handle)
+              print(f'Normalized {path}')
+          PY
+          plutil -p ios/Runner/RunnerRelease.entitlements
+          plutil -p ios/NomoWidgets/NomoWidgetsRelease.entitlements
+
       - name: Archive release build
         run: |
           set -euo pipefail
