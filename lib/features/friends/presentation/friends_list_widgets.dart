@@ -130,23 +130,8 @@ class _TodayInviteSection extends StatelessWidget {
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .60);
 
-    return NomoThemedPanel(
-      padding: const EdgeInsets.fromLTRB(18, 17, 18, 18),
-      accentColor: _FriendsColors.lime,
-      backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
-      gradient: isWhite
-          ? const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Color(0xFFF6FFE8)],
-              stops: [0, .48, 1],
-            )
-          : null,
-      borderRadius: 26,
-      borderAlpha: isWhite ? .34 : .18,
-      glowAlpha: isWhite ? .08 : .10,
-      glowBlur: 28,
-      glowOffset: const Offset(0, 10),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
