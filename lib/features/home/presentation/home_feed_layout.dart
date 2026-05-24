@@ -1,12 +1,11 @@
 part of 'home_screen.dart';
 
 double _feedHeaderScrollInset(BuildContext context) {
-  // Match the reference feed capture: header scene ends at y=236 on a
-  // 538px-wide screen. Keeping this width ratio makes the visible image
-  // crop identical across simulator screenshots instead of depending on
-  // safe-area heuristics.
-  const referenceWidth = 538.0;
-  const referenceHeaderBottom = 236.0;
+  // Match the latest reference feed capture: header scene ends at y=270 on
+  // a 604px-wide app capture. Keeping this width ratio locks the visible
+  // image crop to the reference instead of depending on safe-area heuristics.
+  const referenceWidth = 604.0;
+  const referenceHeaderBottom = 270.0;
   return MediaQuery.sizeOf(context).width *
       referenceHeaderBottom /
       referenceWidth;
