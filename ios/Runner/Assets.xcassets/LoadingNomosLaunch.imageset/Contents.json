@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "OpeningNomoLaunch.png",
+      "filename" : "LoadingNomosLaunch.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "OpeningNomoLaunch@2x.png",
+      "filename" : "LoadingNomosLaunch@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "OpeningNomoLaunch@3x.png",
+      "filename" : "LoadingNomosLaunch@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

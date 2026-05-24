@@ -16,32 +16,14 @@
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFill" image="OpeningNomoLaunch" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
+                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFill" image="LoadingNomosLaunch" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Nomo" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nmO-lg-001">
-                                <fontDescription key="fontDescription" type="system" weight="black" pointSize="44"/>
-                                <color key="textColor" red="1" green="0.9607843137254902" blue="0.7058823529411765" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <color key="shadowColor" red="0.0196078431372549" green="0.03529411764705882" blue="0.17647058823529413" alpha="0.7" colorSpace="custom" customColorSpace="sRGB"/>
-                                <size key="shadowOffset" width="0.0" height="3"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Nomoを準備してるよ" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nmO-ms-001">
-                                <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="17"/>
-                                <color key="textColor" white="1" alpha="0.92" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="shadowColor" red="0.0196078431372549" green="0.03529411764705882" blue="0.17647058823529413" alpha="0.72" colorSpace="custom" customColorSpace="sRGB"/>
-                                <size key="shadowOffset" width="0.0" height="2"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
-                        <color key="backgroundColor" red="1" green="0.0392156862745098" blue="0.5529411764705883" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" red="0.00784313725490196" green="0.03529411764705882" blue="0.16862745098039217" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="1a2-6s-vTC"/>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="bottom" secondItem="Ze5-6b-2t3" secondAttribute="bottom" id="4X2-HB-R7a"/>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="8gL-1c-Qgt"/>
-                            <constraint firstItem="nmO-lg-001" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="D4m-rQ-Y6p"/>
-                            <constraint firstItem="nmO-ms-001" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="F0n-vA-J3k"/>
-                            <constraint firstItem="nmO-ms-001" firstAttribute="top" secondItem="nmO-lg-001" secondAttribute="bottom" constant="2" id="H7b-qE-L9s"/>
-                            <constraint firstItem="xbc-2k-c8Z" firstAttribute="top" secondItem="nmO-ms-001" secondAttribute="bottom" constant="58" id="N5m-uX-P2d"/>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="trailing" secondItem="Ze5-6b-2t3" secondAttribute="trailing" id="pRk-9L-uSh"/>
                         </constraints>
                     </view>
@@ -52,6 +34,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="OpeningNomoLaunch" width="853" height="1844"/>
+        <image name="LoadingNomosLaunch" width="853" height="1844"/>
     </resources>
 </document>
