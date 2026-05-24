@@ -565,7 +565,6 @@ class _ProfileActivityHome extends StatelessWidget {
               child: _ProfileStatCard(
                 isWhite: isWhite,
                 icon: CupertinoIcons.chart_bar_fill,
-                color: AppColors.primaryAction,
                 label: '今月の飲みログ',
                 value: '${monthlyLogs.length}件',
                 onTap: onLogsTap,
@@ -576,7 +575,6 @@ class _ProfileActivityHome extends StatelessWidget {
               child: _ProfileStatCard(
                 isWhite: isWhite,
                 icon: CupertinoIcons.photo_fill_on_rectangle_fill,
-                color: const Color(0xFFFF7AB8),
                 label: '写真アーカイブ',
                 value: '${photoLogs.length}枚',
                 onTap: onArchiveTap,
@@ -593,7 +591,6 @@ class _ProfileStatCard extends StatelessWidget {
   const _ProfileStatCard({
     required this.isWhite,
     required this.icon,
-    required this.color,
     required this.label,
     required this.value,
     this.onTap,
@@ -601,7 +598,6 @@ class _ProfileStatCard extends StatelessWidget {
 
   final bool isWhite;
   final IconData icon;
-  final Color color;
   final String label;
   final String value;
   final VoidCallback? onTap;
@@ -616,12 +612,12 @@ class _ProfileStatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          NomoPopIcon(icon: icon, color: color, size: 42, iconSize: 23),
+          NomoPopIcon(icon: icon, color: Colors.white, size: 42, iconSize: 23),
           const SizedBox(height: 12),
           Text(
             value,
-            style: TextStyle(
-              color: isWhite ? const Color(0xFF17212B) : Colors.white,
+            style: const TextStyle(
+              color: Colors.white,
               fontSize: 24,
               fontWeight: FontWeight.w900,
               letterSpacing: -.6,
@@ -631,9 +627,7 @@ class _ProfileStatCard extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: isWhite
-                  ? const Color(0xFF667381)
-                  : Colors.white.withValues(alpha: .58),
+              color: Colors.white.withValues(alpha: .72),
               fontSize: 12,
               fontWeight: FontWeight.w800,
             ),
@@ -657,7 +651,6 @@ class _ProfileStatusHomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _statusColor(status);
     final unset = status == NomoDailyStatus.unselected;
     return _ProfileActivityCard(
       isWhite: isWhite,
@@ -667,7 +660,7 @@ class _ProfileStatusHomeCard extends StatelessWidget {
         children: [
           NomoPopIcon(
             icon: unset ? CupertinoIcons.smiley : _statusIcon(status),
-            color: unset ? AppColors.primaryAction : color,
+            color: Colors.white,
             size: 46,
             iconSize: 25,
           ),
@@ -678,8 +671,8 @@ class _ProfileStatusHomeCard extends StatelessWidget {
               children: [
                 Text(
                   unset ? 'ステータスを設定する' : status.label,
-                  style: TextStyle(
-                    color: isWhite ? const Color(0xFF17212B) : Colors.white,
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
                   ),
@@ -690,9 +683,7 @@ class _ProfileStatusHomeCard extends StatelessWidget {
                       ? '未設定だと誘われにくいかも。今日誘いやすいかをフレンズに伝えましょう。'
                       : 'フレンズが今日誘いやすくなります。${status.description}',
                   style: TextStyle(
-                    color: isWhite
-                        ? const Color(0xFF667381)
-                        : Colors.white.withValues(alpha: .58),
+                    color: Colors.white.withValues(alpha: .72),
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     height: 1.35,
@@ -703,9 +694,7 @@ class _ProfileStatusHomeCard extends StatelessWidget {
           ),
           NomoGeneratedIcon(
             CupertinoIcons.chevron_right,
-            color: isWhite
-                ? const Color(0xFF98A3AF)
-                : Colors.white.withValues(alpha: .44),
+            color: Colors.white.withValues(alpha: .86),
             size: 22,
           ),
         ],
@@ -729,26 +718,25 @@ class _ProfileActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = NomoThemedPanel.surfaceColor(isWhite: isWhite);
     return Nomo3DButtonSurface(
       onTap: onTap,
       height: height,
       radius: 24,
-      color: surface,
+      color: _ProfileColors.pink,
       bottomColor: Color.lerp(_ProfileColors.pink, Colors.black, .24),
-      borderColor: _ProfileColors.pink.withValues(alpha: isWhite ? .46 : .50),
+      borderColor: Colors.white.withValues(alpha: isWhite ? .24 : .18),
       borderWidth: 1.2,
-      useGradient: false,
+      useGradient: true,
       outerShadows: [
         BoxShadow(
-          color: _ProfileColors.pink.withValues(alpha: isWhite ? .10 : .16),
-          blurRadius: 18,
-          offset: const Offset(0, 10),
+          color: _ProfileColors.pink.withValues(alpha: isWhite ? .22 : .32),
+          blurRadius: 24,
+          offset: const Offset(0, 12),
         ),
       ],
       innerShadows: [
         BoxShadow(
-          color: _ProfileColors.pink.withValues(alpha: isWhite ? .05 : .08),
+          color: Colors.white.withValues(alpha: .16),
           blurRadius: 18,
           spreadRadius: 1,
         ),
