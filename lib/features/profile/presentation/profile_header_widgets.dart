@@ -98,52 +98,16 @@ class _ProfileSettingsButton extends StatelessWidget {
 }
 
 class _ProfileHeaderBackdrop extends StatelessWidget {
-  const _ProfileHeaderBackdrop({required this.isWhite, required this.avatar});
-
-  final bool isWhite;
-  final NomoAvatar? avatar;
+  const _ProfileHeaderBackdrop();
 
   @override
   Widget build(BuildContext context) {
-    final displayAvatar = avatar ?? NomoAvatar.defaultAvatar;
-    final backgroundColors =
-        NomoAvatar.backgroundGradients[displayAvatar.background %
-            NomoAvatar.backgroundGradients.length];
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: backgroundColors,
-            ),
-          ),
-        ),
-        Opacity(
-          opacity: displayAvatar.background == 0 ? (isWhite ? .36 : .62) : .22,
-          child: ExcludeSemantics(
-            child: Image.asset(
-              'assets/images/profile_mascot_backdrop_scene.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-          ),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.white.withValues(alpha: isWhite ? .22 : .08),
-                Colors.white.withValues(alpha: isWhite ? .30 : .16),
-              ],
-            ),
-          ),
-        ),
-      ],
+    return ExcludeSemantics(
+      child: Image.asset(
+        'assets/images/profile_mascot_backdrop_scene.png',
+        fit: BoxFit.cover,
+        alignment: Alignment.center,
+      ),
     );
   }
 }

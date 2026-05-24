@@ -88,10 +88,7 @@ class ProfileScreen extends ConsumerWidget {
               right: 0,
               top: 0,
               height: headerBackgroundHeight,
-              child: _ProfileHeaderBackdrop(
-                isWhite: headerIsWhite,
-                avatar: user?.avatar,
-              ),
+              child: const _ProfileHeaderBackdrop(),
             ),
             SafeArea(
               bottom: false,
