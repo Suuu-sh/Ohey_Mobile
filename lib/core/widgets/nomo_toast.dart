@@ -73,7 +73,7 @@ class NomoToast {
   }
 
   static double bottomOffsetFor(double bottomPadding) {
-    const tabBarTopClearance = 96.0;
+    const tabBarTopClearance = 72.0;
     return bottomPadding + tabBarTopClearance;
   }
 
