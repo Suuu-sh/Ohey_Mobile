@@ -1,7 +1,7 @@
 part of 'home_screen.dart';
 
 double _feedHeaderScrollInset(BuildContext context) {
-  return NomoPageHeader.sceneBackdropHeight(context) + 8;
+  return NomoPageHeader.contentTopInset(context) + 58;
 }
 
 const _feedBottomPageInset = 124.0;
