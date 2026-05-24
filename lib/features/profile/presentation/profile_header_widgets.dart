@@ -536,7 +536,6 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.onLogsTap,
     required this.onArchiveTap,
     required this.onAddFriendsTap,
-    required this.onQrTap,
   });
 
   final bool isWhite;
@@ -548,7 +547,6 @@ class _ProfileActivityHome extends StatelessWidget {
   final VoidCallback onLogsTap;
   final VoidCallback onArchiveTap;
   final VoidCallback onAddFriendsTap;
-  final VoidCallback onQrTap;
 
   @override
   Widget build(BuildContext context) {
@@ -565,10 +563,7 @@ class _ProfileActivityHome extends StatelessWidget {
             logCount: logs.length,
           ),
           const SizedBox(height: 18),
-          _ProfileFriendActionRow(
-            onAddFriendsTap: onAddFriendsTap,
-            onQrTap: onQrTap,
-          ),
+          _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
           const SizedBox(height: 46),
           _ProfileLearningStatus(
             status: status,
@@ -675,13 +670,9 @@ class _ProfileSummaryStat extends StatelessWidget {
 }
 
 class _ProfileFriendActionRow extends StatelessWidget {
-  const _ProfileFriendActionRow({
-    required this.onAddFriendsTap,
-    required this.onQrTap,
-  });
+  const _ProfileFriendActionRow({required this.onAddFriendsTap});
 
   final VoidCallback onAddFriendsTap;
-  final VoidCallback onQrTap;
 
   @override
   Widget build(BuildContext context) {
@@ -709,20 +700,6 @@ class _ProfileFriendActionRow extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        SizedBox(
-          width: 64,
-          child: _ProfileOutlineButton(
-            onTap: onQrTap,
-            child: const Center(
-              child: NomoGeneratedIcon(
-                CupertinoIcons.qrcode,
-                color: Colors.white,
-                size: 25,
-              ),
             ),
           ),
         ),
