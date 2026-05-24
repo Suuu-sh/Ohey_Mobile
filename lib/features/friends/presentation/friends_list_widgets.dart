@@ -257,9 +257,10 @@ class _TodayInviteCandidateCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                NomoAvatarView(
+                _FriendMiniAvatarBubble(
                   avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
-                  size: 38,
+                  accent: accent,
+                  size: 42,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -307,6 +308,55 @@ class _TodayInviteCandidateCard extends StatelessWidget {
                 shadowColor: _FriendsColors.limeShadow,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendMiniAvatarBubble extends StatelessWidget {
+  const _FriendMiniAvatarBubble({
+    required this.avatar,
+    required this.accent,
+    this.size = 42,
+  });
+
+  final NomoAvatar avatar;
+  final Color accent;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: accent.withValues(alpha: isWhite ? .22 : .30),
+        border: Border.all(
+          color: isWhite
+              ? Colors.white.withValues(alpha: .86)
+              : const Color(0xFF072130),
+          width: 3,
+        ),
+      ),
+      child: ClipOval(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _FriendAvatarBubbleBackground(avatar: avatar),
+            Center(
+              child: Transform.translate(
+                offset: Offset(0, size * .08),
+                child: NomoAvatarView(
+                  avatar: avatar,
+                  size: size * .88,
+                  showBody: true,
+                ),
               ),
             ),
           ],
