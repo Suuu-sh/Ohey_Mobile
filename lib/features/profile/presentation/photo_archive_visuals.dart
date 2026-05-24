@@ -467,13 +467,17 @@ class _ArchiveMapCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            const _ArchiveStylizedMapBackground(),
-            for (var i = 0; i < visible.length; i++)
-              _ArchiveMapPin(
-                place: visible[i],
-                alignment: _archivePinAlignment(visible[i].name, i),
-                onTap: () => onPlaceTap(visible[i]),
-              ),
+            if (Platform.isIOS && _archiveMapAnnotations(visible).isNotEmpty)
+              _ArchiveAppleMap(places: visible)
+            else
+              const _ArchiveStylizedMapBackground(),
+            if (!(Platform.isIOS && _archiveMapAnnotations(visible).isNotEmpty))
+              for (var i = 0; i < visible.length; i++)
+                _ArchiveMapPin(
+                  place: visible[i],
+                  alignment: _archivePinAlignment(visible[i].name, i),
+                  onTap: () => onPlaceTap(visible[i]),
+                ),
             Positioned(
               left: 18,
               right: 18,
@@ -515,6 +519,37 @@ class _ArchiveMapCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ArchiveAppleMap extends StatelessWidget {
+  const _ArchiveAppleMap({required this.places});
+
+  final List<_ArchivePlaceGroup> places;
+
+  @override
+  Widget build(BuildContext context) {
+    return UiKitView(
+      viewType: 'nomo/archive_map',
+      creationParams: {'annotations': _archiveMapAnnotations(places)},
+      creationParamsCodec: const StandardMessageCodec(),
+    );
+  }
+}
+
+List<Map<String, Object?>> _archiveMapAnnotations(
+  List<_ArchivePlaceGroup> places,
+) {
+  return places
+      .where((place) => place.latestLog.hasPlaceCoordinate)
+      .map(
+        (place) => <String, Object?>{
+          'title': place.name,
+          'count': place.logs.length,
+          'latitude': place.latestLog.placeLatitude,
+          'longitude': place.latestLog.placeLongitude,
+        },
+      )
+      .toList(growable: false);
 }
 
 class _ArchiveStylizedMapBackground extends StatelessWidget {

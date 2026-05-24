@@ -90,6 +90,8 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
     required String place,
     required String memo,
     String? photoAssetPath,
+    double? placeLatitude,
+    double? placeLongitude,
   }) async {
     final repository = ref.read(drinkLogRepositoryProvider);
     final previous = state.asData?.value ?? const <DrinkLog>[];
@@ -101,6 +103,8 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
       place: place.trim(),
       memo: String.fromCharCodes(memo.trim().runes.take(15)),
       photoAssetPath: photoAssetPath,
+      placeLatitude: placeLatitude,
+      placeLongitude: placeLongitude,
       rarity: _rarityForNewLog(photoAssetPath),
     );
 

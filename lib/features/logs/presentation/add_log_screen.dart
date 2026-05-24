@@ -51,6 +51,9 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
   final _memoController = TextEditingController();
   final _friendSearchController = TextEditingController();
   String _friendSearchQuery = '';
+  String? _selectedPlaceName;
+  double? _selectedPlaceLatitude;
+  double? _selectedPlaceLongitude;
   String? _photoPath;
   bool _isSaving = false;
 
