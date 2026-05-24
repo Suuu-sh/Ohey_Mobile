@@ -69,12 +69,11 @@ class ProfileScreen extends ConsumerWidget {
         .watch(adminAccessProvider)
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
     final canOpenAdmin = hasAdminEmail || hasAdminAccess;
-    const topBackground = Colors.white;
     const bodyBackground = AppColors.darkBackgroundBottom;
     final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 390;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light.copyWith(
+      value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: Colors.transparent,
       ),
       child: Scaffold(
@@ -89,7 +88,10 @@ class ProfileScreen extends ConsumerWidget {
               right: 0,
               top: 0,
               height: headerBackgroundHeight,
-              child: ColoredBox(color: topBackground),
+              child: _ProfileHeaderBackdrop(
+                isWhite: headerIsWhite,
+                avatar: user?.avatar,
+              ),
             ),
             SafeArea(
               bottom: false,

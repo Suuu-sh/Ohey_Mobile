@@ -97,6 +97,57 @@ class _ProfileSettingsButton extends StatelessWidget {
   }
 }
 
+class _ProfileHeaderBackdrop extends StatelessWidget {
+  const _ProfileHeaderBackdrop({required this.isWhite, required this.avatar});
+
+  final bool isWhite;
+  final NomoAvatar? avatar;
+
+  @override
+  Widget build(BuildContext context) {
+    final displayAvatar = avatar ?? NomoAvatar.defaultAvatar;
+    final backgroundColors =
+        NomoAvatar.backgroundGradients[displayAvatar.background %
+            NomoAvatar.backgroundGradients.length];
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: backgroundColors,
+            ),
+          ),
+        ),
+        Opacity(
+          opacity: displayAvatar.background == 0 ? (isWhite ? .18 : .58) : .10,
+          child: ExcludeSemantics(
+            child: Image.asset(
+              'assets/images/profile_header_scene.png',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            ),
+          ),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.white.withValues(alpha: isWhite ? .18 : .08),
+                Colors.white.withValues(alpha: isWhite ? .36 : .16),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _ProfileTopSheet extends StatelessWidget {
   const _ProfileTopSheet({required this.child});
 
@@ -137,63 +188,16 @@ class _SimpleHero extends StatelessWidget {
     final now = DateTime.now();
     final joinedMonth = '${now.year}/${now.month.toString().padLeft(2, '0')}';
     final displayAvatar = avatar ?? NomoAvatar.defaultAvatar;
-    final backgroundColors =
-        NomoAvatar.backgroundGradients[displayAvatar.background %
-            NomoAvatar.backgroundGradients.length];
     return Container(
       clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: isWhite ? Colors.white : const Color(0xFF101D25),
-        borderRadius: BorderRadius.circular(30),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
       child: Column(
         children: [
-          Container(
+          SizedBox(
             width: double.infinity,
-            padding: EdgeInsets.zero,
-            child: SizedBox(
-              height: 196,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: backgroundColors,
-                      ),
-                    ),
-                  ),
-                  Opacity(
-                    opacity: displayAvatar.background == 0
-                        ? (isWhite ? .18 : .58)
-                        : .10,
-                    child: ExcludeSemantics(
-                      child: Image.asset(
-                        'assets/images/profile_header_scene.png',
-                        fit: BoxFit.cover,
-                        alignment: Alignment.center,
-                      ),
-                    ),
-                  ),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.white.withValues(alpha: isWhite ? .18 : .08),
-                          Colors.white.withValues(alpha: isWhite ? .36 : .16),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Center(
-                    child: NomoAvatarView(avatar: displayAvatar, size: 194),
-                  ),
-                ],
-              ),
+            height: 196,
+            child: Center(
+              child: NomoAvatarView(avatar: displayAvatar, size: 194),
             ),
           ),
           Container(
