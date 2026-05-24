@@ -122,10 +122,10 @@ class _ProfileHeaderBackdrop extends StatelessWidget {
           ),
         ),
         Opacity(
-          opacity: displayAvatar.background == 0 ? (isWhite ? .18 : .58) : .10,
+          opacity: displayAvatar.background == 0 ? (isWhite ? .36 : .62) : .22,
           child: ExcludeSemantics(
             child: Image.asset(
-              'assets/images/profile_header_scene.png',
+              'assets/images/profile_mascot_backdrop_scene.png',
               fit: BoxFit.cover,
               alignment: Alignment.center,
             ),
@@ -137,8 +137,8 @@ class _ProfileHeaderBackdrop extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.white.withValues(alpha: isWhite ? .18 : .08),
-                Colors.white.withValues(alpha: isWhite ? .36 : .16),
+                Colors.white.withValues(alpha: isWhite ? .22 : .08),
+                Colors.white.withValues(alpha: isWhite ? .30 : .16),
               ],
             ),
           ),
