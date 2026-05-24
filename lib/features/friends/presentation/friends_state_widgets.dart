@@ -341,5 +341,7 @@ class _FriendsColors {
   static const bg = AppColors.darkBackgroundBottom;
   static const block = Color(0xFF101B28);
   static const lime = Color(0xFFB8FF00);
+  static const limeShadow = Color(0xFF6FB600);
+  static const limeForeground = Color(0xFF071320);
   static const muted = Color(0xFF8792A3);
 }
