@@ -209,10 +209,21 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     try {
       await ref.read(drinkInviteControllerProvider).sendTodayInvite(friend.id);
       if (!mounted) return;
-      NomoToast.show(context, '${friend.name}に飲み招待を送りました。');
+      NomoToast.show(
+        context,
+        '${friend.name}に飲み招待を送りました。',
+        icon: CupertinoIcons.checkmark_circle_fill,
+        placement: NomoToastPlacement.bottom,
+      );
     } catch (error) {
       if (!mounted) return;
-      NomoToast.show(context, '招待を送れなかったよ。あとでもう一度試してね');
+      HapticFeedback.mediumImpact();
+      NomoToast.show(
+        context,
+        '招待を送れなかったよ。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+        placement: NomoToastPlacement.bottom,
+      );
     }
   }
 
