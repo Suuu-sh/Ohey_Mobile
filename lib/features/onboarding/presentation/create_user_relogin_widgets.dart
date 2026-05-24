@@ -193,67 +193,67 @@ class _ReLoginAccountCard extends StatelessWidget {
     final visibleAccounts = accounts
         .take(NomoLastAccountStore.maxAccounts)
         .toList(growable: false);
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: const Color(0xFF101F28).withValues(alpha: .82),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: .20),
-          width: 2,
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (var index = 0; index < visibleAccounts.length; index++) ...[
-            _ReLoginAccountRow(
-              account: visibleAccounts[index],
-              compact: compact,
-              onTap: () => onAccountTap(visibleAccounts[index]),
-            ),
-            Divider(height: 1, color: Colors.white.withValues(alpha: .16)),
-          ],
-          InkWell(
-            onTap: onAddAccount,
-            child: Padding(
-              padding: compact
-                  ? const EdgeInsets.fromLTRB(18, 14, 18, 14)
-                  : const EdgeInsets.fromLTRB(20, 18, 20, 18),
-              child: Row(
-                children: [
-                  Container(
-                    width: compact ? 46 : 52,
-                    height: compact ? 46 : 52,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: .34),
-                        width: 2,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: NomoThemedPanel(
+        accentColor: Colors.white,
+        backgroundColor: NomoThemedPanel.surfaceColor(isWhite: false),
+        borderRadius: 20,
+        borderAlpha: .20,
+        borderWidth: 2,
+        glowAlpha: 0,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var index = 0; index < visibleAccounts.length; index++) ...[
+              _ReLoginAccountRow(
+                account: visibleAccounts[index],
+                compact: compact,
+                onTap: () => onAccountTap(visibleAccounts[index]),
+              ),
+              Divider(height: 1, color: Colors.white.withValues(alpha: .16)),
+            ],
+            InkWell(
+              onTap: onAddAccount,
+              child: Padding(
+                padding: compact
+                    ? const EdgeInsets.fromLTRB(18, 14, 18, 14)
+                    : const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                child: Row(
+                  children: [
+                    Container(
+                      width: compact ? 46 : 52,
+                      height: compact ? 46 : 52,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: .34),
+                          width: 2,
+                        ),
+                      ),
+                      child: Center(
+                        child: NomoGeneratedIcon(
+                          CupertinoIcons.plus,
+                          color: Colors.white.withValues(alpha: .44),
+                          size: compact ? 24 : 26,
+                        ),
                       ),
                     ),
-                    child: Center(
-                      child: NomoGeneratedIcon(
-                        CupertinoIcons.plus,
+                    SizedBox(width: compact ? 14 : 16),
+                    Text(
+                      '別のアカウントを追加',
+                      style: TextStyle(
                         color: Colors.white.withValues(alpha: .44),
-                        size: compact ? 24 : 26,
+                        fontSize: compact ? 16 : 17,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
-                  ),
-                  SizedBox(width: compact ? 14 : 16),
-                  Text(
-                    '別のアカウントを追加',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .44),
-                      fontSize: compact ? 16 : 17,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
