@@ -113,7 +113,7 @@ extension _AddLogScreenActions on _AddLogScreenState {
     if (_isSaving) return;
     if (await _hasExistingDrinkLogOn(_selectedDate)) {
       if (!mounted) return;
-      await _showDailyPostLimitAlert(_selectedDate);
+      await showDrinkLogDailyLimitDialog(context, _selectedDate);
       return;
     }
 
@@ -149,7 +149,7 @@ extension _AddLogScreenActions on _AddLogScreenState {
       if (!mounted) return;
       setState(() => _isSaving = false);
       if (error.statusCode == 409) {
-        await _showDailyPostLimitAlert(_selectedDate);
+        await showDrinkLogDailyLimitDialog(context, _selectedDate);
         return;
       }
       NomoToast.show(context, '保存できなかったよ。あとでもう一度試してね');
@@ -177,25 +177,6 @@ extension _AddLogScreenActions on _AddLogScreenState {
     } catch (_) {
       return false;
     }
-  }
-
-  Future<void> _showDailyPostLimitAlert(DateTime day) async {
-    await showCupertinoDialog<void>(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: Text(
-          drinkLogDailyLimitAlertTitle(day: day, now: DateTime.now()),
-        ),
-        content: const Text(drinkLogDailyLimitAlertMessage),
-        actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 
   int _monthlyLogCountAfterSave(List<DrinkLog> previousLogs) {

@@ -23,6 +23,7 @@ import '../../camera/presentation/nomo_camera_screen.dart';
 import '../application/drink_log_controller.dart';
 import '../application/drink_log_daily_limit.dart';
 import '../data/nomo_place_search_service.dart';
+import 'drink_log_daily_limit_dialog.dart';
 
 part 'add_log_preview_widgets.dart';
 part 'add_log_place_search.dart';

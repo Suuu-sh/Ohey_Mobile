@@ -16,6 +16,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/logs/application/drink_log_controller.dart';
 import '../../features/logs/application/drink_log_daily_limit.dart';
 import '../../features/logs/presentation/add_log_screen.dart';
+import '../../features/logs/presentation/drink_log_daily_limit_dialog.dart';
 import '../../features/notifications/application/notification_controller.dart';
 import '../../features/notifications/application/os_notification_service.dart';
 import '../../features/profile/presentation/profile_screen.dart';
@@ -120,7 +121,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     if (action.createsDrinkLog &&
         await _hasExistingDrinkLogOn(DateTime.now())) {
       if (!mounted) return;
-      await _showDailyPostLimitAlert(DateTime.now());
+      await showDrinkLogDailyLimitDialog(context, DateTime.now());
       return;
     }
     if (!mounted) return;
@@ -159,25 +160,6 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     } catch (_) {
       return false;
     }
-  }
-
-  Future<void> _showDailyPostLimitAlert(DateTime day) async {
-    await showCupertinoDialog<void>(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: Text(
-          drinkLogDailyLimitAlertTitle(day: day, now: DateTime.now()),
-        ),
-        content: const Text(drinkLogDailyLimitAlertMessage),
-        actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _openDrinkPlanFlow() async {
