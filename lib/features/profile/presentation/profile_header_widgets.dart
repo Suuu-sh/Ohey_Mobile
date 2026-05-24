@@ -612,6 +612,7 @@ class _ProfileStatCard extends StatelessWidget {
       isWhite: isWhite,
       onTap: onTap,
       height: 144,
+      borderRadius: 30,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -661,6 +662,7 @@ class _ProfileStatusHomeCard extends StatelessWidget {
       isWhite: isWhite,
       onTap: onTap,
       height: 96,
+      borderRadius: 30,
       child: Row(
         children: [
           NomoPopIcon(
@@ -713,38 +715,52 @@ class _ProfileActivityCard extends StatelessWidget {
     required this.isWhite,
     required this.child,
     required this.height,
+    this.borderRadius = 30,
     this.onTap,
   });
 
   final bool isWhite;
   final Widget child;
   final double height;
+  final double borderRadius;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Nomo3DButtonSurface(
-      onTap: onTap,
+    final card = Container(
       height: height,
-      radius: 24,
-      color: const Color(0xFF071522),
-      bottomColor: const Color(0xFFB83B79),
-      borderColor: _ProfileColors.pink.withValues(alpha: isWhite ? .30 : .26),
-      borderWidth: 1,
-      useGradient: false,
-      outerShadows: [
-        BoxShadow(
-          color: _ProfileColors.pink.withValues(alpha: isWhite ? .08 : .11),
-          blurRadius: 14,
-          offset: const Offset(0, 8),
-        ),
-      ],
-      innerShadows: [
-        BoxShadow(color: Colors.white.withValues(alpha: .025), blurRadius: 12),
-      ],
       padding: const EdgeInsets.all(16),
-      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF081724), Color(0xFF06111C)],
+        ),
+        border: Border.all(
+          color: _ProfileColors.pink.withValues(alpha: isWhite ? .22 : .18),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isWhite ? .08 : .20),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: _ProfileColors.pink.withValues(alpha: isWhite ? .05 : .08),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
       child: child,
+    );
+    if (onTap == null) return card;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: card,
     );
   }
 }
