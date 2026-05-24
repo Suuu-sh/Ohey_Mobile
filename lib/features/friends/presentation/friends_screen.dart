@@ -294,7 +294,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 24),
                     _FilterBar(
                       selected: _selectedFilter,
                       selectedCustomFilterId: _selectedCustomFilterId,
