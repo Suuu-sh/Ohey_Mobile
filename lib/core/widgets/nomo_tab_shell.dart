@@ -384,55 +384,71 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       resizeToAvoidBottomInset: false,
       extendBody: true,
       body: IndexedStack(index: _selectedIndex, children: _pages),
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(26, 0, 26, 16),
-        child: SizedBox(
-          height: 74,
-          child: Row(
-            children: [
-              _TabItem(
-                customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
-                label: 'フィード',
-                selected: _selectedIndex == 0,
-                activeColor: const Color(0xFF8A62FF),
-                onTap: () => setState(() => _selectedIndex = 0),
-              ),
-              _TabItem(
-                customIcon: _FriendsTabIcon(selected: _selectedIndex == 1),
-                label: 'フレンズ',
-                selected: _selectedIndex == 1,
-                activeColor: const Color(0xFF9AF21A),
-                onTap: () => setState(() => _selectedIndex = 1),
-              ),
-              _TabItem(
-                customIcon: _CalendarTabIcon(selected: _selectedIndex == 2),
-                label: 'カレンダー',
-                selected: _selectedIndex == 2,
-                activeColor: const Color(0xFF20B9FF),
-                onTap: () => setState(() => _selectedIndex = 2),
-              ),
-              _TabItem(
-                customIcon: _ProfileTabIcon(selected: _selectedIndex == 3),
-                label: 'マイページ',
-                selected: _selectedIndex == 3,
-                activeColor: const Color(0xFFFF75B5),
-                onTap: () => setState(() => _selectedIndex = 3),
-              ),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: _openDrinkLogFlow,
-                    child: Semantics(
-                      button: true,
-                      label: '思い出を追加',
-                      child: const _AddTabIcon(),
-                    ),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.darkBackgroundBottom,
+          border: Border(top: BorderSide(color: Color(0xFF0F2233), width: .8)),
+        ),
+        child: SafeArea(
+          top: false,
+          minimum: const EdgeInsets.fromLTRB(24, 0, 24, 14),
+          child: SizedBox(
+            height: 76,
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 270,
+                  child: Row(
+                    children: [
+                      _TabItem(
+                        customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
+                        label: 'フィード',
+                        selected: _selectedIndex == 0,
+                        activeColor: const Color(0xFF8A62FF),
+                        onTap: () => setState(() => _selectedIndex = 0),
+                      ),
+                      _TabItem(
+                        customIcon: _FriendsTabIcon(
+                          selected: _selectedIndex == 1,
+                        ),
+                        label: 'フレンズ',
+                        selected: _selectedIndex == 1,
+                        activeColor: const Color(0xFF9AF21A),
+                        onTap: () => setState(() => _selectedIndex = 1),
+                      ),
+                      _TabItem(
+                        customIcon: _CalendarTabIcon(
+                          selected: _selectedIndex == 2,
+                        ),
+                        label: 'カレンダー',
+                        selected: _selectedIndex == 2,
+                        activeColor: const Color(0xFF20B9FF),
+                        onTap: () => setState(() => _selectedIndex = 2),
+                      ),
+                      _TabItem(
+                        customIcon: _ProfileTabIcon(
+                          selected: _selectedIndex == 3,
+                        ),
+                        label: 'マイページ',
+                        selected: _selectedIndex == 3,
+                        activeColor: const Color(0xFFFF75B5),
+                        onTap: () => setState(() => _selectedIndex = 3),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
+                const Spacer(),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _openDrinkLogFlow,
+                  child: Semantics(
+                    button: true,
+                    label: '思い出を追加',
+                    child: const _AddTabIcon(),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
