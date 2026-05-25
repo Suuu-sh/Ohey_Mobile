@@ -43,7 +43,7 @@ class NomoCameraScreen extends ConsumerStatefulWidget {
 
 class _NomoCameraScreenState extends ConsumerState<NomoCameraScreen> {
   static const _plainFilterName = 'Original';
-  static const _avatarFilterName = 'Nomo AR Avatar';
+  static const _avatarFilterName = 'Tomo AR Avatar';
   static const _naturalFilterName = 'Natural';
 
   CameraController? _cameraController;

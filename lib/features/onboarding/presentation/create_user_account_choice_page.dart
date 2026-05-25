@@ -53,7 +53,7 @@ extension _CreateUserAccountChoicePage on _CreateUserDialogState {
               ),
               SizedBox(height: compact ? 30 : 54),
               Text(
-                'Nomoは初めてですか',
+                'Tomolaは初めてですか',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,

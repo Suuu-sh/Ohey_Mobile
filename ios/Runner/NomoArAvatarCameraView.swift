@@ -143,7 +143,7 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
 
   private func startIfPossible() {
     guard ARFaceTrackingConfiguration.isSupported else {
-      showStatus("Nomo ARアバターは\nTrueDepthカメラ搭載の実機で使えます。")
+      showStatus("Tomo ARアバターは\nTrueDepthカメラ搭載の実機で使えます。")
       return
     }
 
@@ -184,7 +184,7 @@ private final class NomoArAvatarCameraView: NSObject, FlutterPlatformView, ARSCN
     guard ARFaceTrackingConfiguration.isSupported else {
       result(FlutterError(
         code: "face_tracking_unavailable",
-        message: "Nomo ARアバターはTrueDepthカメラ搭載の実機で使えます。",
+        message: "Tomo ARアバターはTrueDepthカメラ搭載の実機で使えます。",
         details: nil
       ))
       return

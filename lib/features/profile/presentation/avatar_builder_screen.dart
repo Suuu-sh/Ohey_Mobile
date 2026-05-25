@@ -345,6 +345,24 @@ class _AvatarBackgroundPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (NomoAvatar.usesMascotBackdrop(avatar.background)) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          ExcludeSemantics(
+            child: Image.asset(
+              'assets/images/profile_mascot_backdrop_scene.png',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            ),
+          ),
+          Center(
+            child: NomoAvatarView(avatar: avatar, size: large ? 190 : 96),
+          ),
+        ],
+      );
+    }
+
     final colors =
         NomoAvatar.backgroundGradients[avatar.background %
             NomoAvatar.backgroundGradients.length];
@@ -361,7 +379,9 @@ class _AvatarBackgroundPreview extends StatelessWidget {
           ),
         ),
         Opacity(
-          opacity: avatar.background == 0 ? .18 : .10,
+          opacity: avatar.background == NomoAvatar.dreamRoomBackground
+              ? .18
+              : .10,
           child: ExcludeSemantics(
             child: Image.asset(
               'assets/images/profile_header_scene.png',

@@ -134,7 +134,7 @@ class _FeedItem {
               NomoAvatar.defaultAvatar;
     return _FeedItem(
       id: log.id,
-      userName: log.isOfficial ? 'Nomo' : authorName,
+      userName: log.isOfficial ? 'Tomola' : authorName,
       timeAgo: _relativeTime(log.date),
       body: log.memo.trim(),
       place: log.place.trim(),
@@ -224,7 +224,7 @@ class _Companion {
   final Color accent;
   final String? statusKey;
 
-  String get handleLabel => handle.trim().isEmpty ? 'Nomoフレンズ' : '@$handle';
+  String get handleLabel => handle.trim().isEmpty ? 'Tomolaフレンズ' : '@$handle';
 }
 
 String _companionStatusLabel(String? statusKey) {

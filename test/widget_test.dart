@@ -30,7 +30,7 @@ void main() {
 
     expect(find.text('すでにアカウントをお持ち\nですか？'), findsOneWidget);
     expect(find.text('ログイン'), findsOneWidget);
-    expect(find.text('Nomoは初めてですか'), findsOneWidget);
+    expect(find.text('Tomolaは初めてですか'), findsOneWidget);
     expect(find.text('サインアップ'), findsOneWidget);
     expect(find.byType(SingleChildScrollView), findsNothing);
 
@@ -88,7 +88,7 @@ void main() {
 
     expect(find.text('すでにアカウントをお持ち\nですか？'), findsOneWidget);
     expect(find.text('ログイン'), findsOneWidget);
-    expect(find.text('Nomoは初めてですか'), findsOneWidget);
+    expect(find.text('Tomolaは初めてですか'), findsOneWidget);
     expect(find.text('サインアップ'), findsOneWidget);
     expect(find.byType(SingleChildScrollView), findsNothing);
 

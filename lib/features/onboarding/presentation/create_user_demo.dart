@@ -3,8 +3,8 @@ part of 'create_user_dialog.dart';
 const _demoSlides = [
   _DemoSlideData(
     step: '1 / 4',
-    title: 'Nomoで飲みログを\nかわいく残そう',
-    subtitle: '今月の乾杯を、飲みログでゆるく残そう。',
+    title: 'Tomolaで今日を\nかわいく残そう',
+    subtitle: '友達との今日を、写真とメモでゆるく残そう。',
     kind: _DemoKind.hero,
   ),
   _DemoSlideData(
@@ -15,14 +15,14 @@ const _demoSlides = [
   ),
   _DemoSlideData(
     step: '3 / 4',
-    title: '飲み会の思い出を\n飲みログに残そう',
-    subtitle: '場所や飲みともを残して、あとで見返せるよ。',
+    title: '友達との思い出を\nログに残そう',
+    subtitle: '場所や一緒にいた友達を残して、あとで見返せるよ。',
     kind: _DemoKind.log,
   ),
   _DemoSlideData(
     step: '4 / 4',
-    title: '飲みともとつながって\nまた誘おう',
-    subtitle: 'QRやIDでつながって、また乾杯しよう。',
+    title: 'フレンズとつながって\nまた誘おう',
+    subtitle: 'QRやIDでつながって、今日のノリでまた誘おう。',
     kind: _DemoKind.friends,
   ),
 ];
@@ -202,7 +202,7 @@ class _ProfileDemoVisual extends StatelessWidget {
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      '@nomo_friend',
+                      '@tomola_friend',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -234,15 +234,19 @@ class _LogDemoVisual extends StatelessWidget {
     ),
     child: const Column(
       children: [
-        _DemoRow(icon: Icons.local_bar_rounded, label: '今月の飲み', value: '3回'),
+        _DemoRow(
+          icon: CupertinoIcons.camera_fill,
+          label: '今月の思い出',
+          value: '3回',
+        ),
         SizedBox(height: 14),
         _DemoRow(
           icon: CupertinoIcons.person_2_fill,
-          label: '一緒に飲んだフレンズ',
+          label: '一緒にいたフレンズ',
           value: '5人',
         ),
         SizedBox(height: 14),
-        _DemoRow(icon: CupertinoIcons.calendar, label: '飲みログに保存', value: 'OK'),
+        _DemoRow(icon: CupertinoIcons.calendar, label: 'ログに保存', value: 'OK'),
       ],
     ),
   );
@@ -288,7 +292,7 @@ class _FriendsDemoVisual extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
         ),
         child: const Text(
-          '飲みともを追加する',
+          'フレンズを追加する',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
         ),
       ),

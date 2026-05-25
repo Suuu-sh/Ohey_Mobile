@@ -56,7 +56,7 @@ class _NomoBackendBusyScreenState extends State<NomoBackendBusyScreen>
               ),
               const SizedBox(height: 34),
               const Text(
-                'Nomoを準備中',
+                'Tomolaを準備中',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
