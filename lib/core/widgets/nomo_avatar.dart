@@ -271,6 +271,47 @@ class _NomoAvatarPainter extends CustomPainter {
             Paint()..color = const Color(0xFFFF8FB2),
           );
         }
+      case 9:
+        for (final side in [-1.0, 1.0]) {
+          final wave = Path()
+            ..moveTo(90 + side * 37, 60)
+            ..cubicTo(
+              90 + side * 58,
+              70,
+              90 + side * 54,
+              103,
+              90 + side * 39,
+              124,
+            )
+            ..cubicTo(
+              90 + side * 25,
+              110,
+              90 + side * 27,
+              75,
+              90 + side * 37,
+              60,
+            )
+            ..close();
+          canvas.drawPath(wave, paint);
+        }
+      case 11:
+        final ponytail = Path()
+          ..moveTo(126, 52)
+          ..cubicTo(164, 58, 166, 108, 132, 132)
+          ..cubicTo(114, 115, 119, 75, 126, 52)
+          ..close();
+        canvas.drawShadow(
+          ponytail,
+          Colors.black.withValues(alpha: .18),
+          6,
+          true,
+        );
+        canvas.drawPath(ponytail, paint);
+        canvas.drawCircle(
+          const Offset(126, 62),
+          7,
+          Paint()..color = const Color(0xFFFF8FB2),
+        );
       default:
         return;
     }
@@ -438,6 +479,76 @@ class _NomoAvatarPainter extends CustomPainter {
             ..cubicTo(79, 33, 105, 34, 124, 47),
           shine,
         );
+      case 9:
+        canvas.drawPath(
+          Path()
+            ..moveTo(42, 62)
+            ..cubicTo(48, 31, 72, 22, 91, 24)
+            ..cubicTo(116, 26, 136, 40, 138, 64)
+            ..quadraticBezierTo(122, 51, 106, 59)
+            ..quadraticBezierTo(96, 44, 83, 59)
+            ..quadraticBezierTo(68, 49, 52, 66)
+            ..close(),
+          paint,
+        );
+        for (final curl in const [
+          Rect.fromLTWH(44, 63, 19, 29),
+          Rect.fromLTWH(117, 62, 19, 30),
+        ]) {
+          canvas.drawArc(
+            curl,
+            math.pi * .38,
+            math.pi * 1.15,
+            false,
+            Paint()
+              ..color = color
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 8
+              ..strokeCap = StrokeCap.round,
+          );
+        }
+        canvas.drawPath(
+          Path()
+            ..moveTo(62, 44)
+            ..cubicTo(78, 35, 106, 36, 124, 49),
+          shine,
+        );
+      case 10:
+        final mash = Path()
+          ..moveTo(42, 63)
+          ..cubicTo(42, 34, 64, 23, 89, 23)
+          ..cubicTo(119, 23, 139, 36, 139, 64)
+          ..quadraticBezierTo(130, 66, 121, 62)
+          ..quadraticBezierTo(112, 69, 102, 61)
+          ..quadraticBezierTo(91, 70, 80, 60)
+          ..quadraticBezierTo(68, 69, 58, 61)
+          ..quadraticBezierTo(49, 66, 42, 63)
+          ..close();
+        canvas.drawPath(mash, paint);
+        canvas.drawPath(
+          Path()
+            ..moveTo(60, 42)
+            ..quadraticBezierTo(90, 30, 121, 44),
+          shine,
+        );
+      case 11:
+        canvas.drawPath(
+          Path()
+            ..moveTo(43, 62)
+            ..cubicTo(48, 32, 70, 24, 91, 24)
+            ..cubicTo(114, 24, 135, 35, 139, 62)
+            ..quadraticBezierTo(122, 55, 107, 60)
+            ..quadraticBezierTo(91, 45, 73, 61)
+            ..quadraticBezierTo(59, 56, 43, 62)
+            ..close(),
+          paint,
+        );
+        canvas.drawPath(
+          Path()
+            ..moveTo(66, 42)
+            ..cubicTo(86, 33, 109, 35, 126, 49),
+          shine,
+        );
       default:
         canvas.drawRRect(
           RRect.fromRectAndRadius(
@@ -582,6 +693,74 @@ class _NomoAvatarPainter extends CustomPainter {
           canvas.drawLine(Offset(x - 13, 65), Offset(x - 19, 61), lash);
           canvas.drawLine(Offset(x + 13, 65), Offset(x + 19, 61), lash);
         }
+      case 4:
+        glossyEye(x: 69, width: 26, height: 36, roundPupil: true);
+        final winkStroke = Paint()
+          ..color = darkColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5
+          ..strokeCap = StrokeCap.round;
+        canvas.drawArc(
+          const Rect.fromLTWH(98, 75, 25, 14),
+          .2,
+          math.pi - .4,
+          false,
+          Paint()
+            ..color = Colors.white.withValues(alpha: .66)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 7
+            ..strokeCap = StrokeCap.round,
+        );
+        canvas.drawArc(
+          const Rect.fromLTWH(98, 73, 25, 16),
+          .08,
+          math.pi - .16,
+          false,
+          winkStroke,
+        );
+      case 5:
+        for (final x in [70.0, 109.0]) {
+          glossyEye(
+            x: x,
+            width: 27,
+            height: 32,
+            pupilDx: x < 90 ? 1 : -1,
+            roundPupil: true,
+            accent: const Color(0xFF253443),
+          );
+          canvas.drawArc(
+            Rect.fromCenter(center: Offset(x, 68), width: 29, height: 14),
+            .15,
+            math.pi - .30,
+            false,
+            Paint()
+              ..color = darkColor.withValues(alpha: .62)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 3
+              ..strokeCap = StrokeCap.round,
+          );
+        }
+      case 6:
+        final sleepy = Paint()
+          ..color = darkColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5
+          ..strokeCap = StrokeCap.round;
+        for (final x in [70.0, 109.0]) {
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(
+              Rect.fromCenter(center: Offset(x, 79), width: 27, height: 14),
+              const Radius.circular(9),
+            ),
+            Paint()..color = Colors.white.withValues(alpha: .76),
+          );
+          canvas.drawLine(Offset(x - 11, 80), Offset(x + 11, 78), sleepy);
+          canvas.drawCircle(
+            Offset(x + 3, 81),
+            3.4,
+            Paint()..color = darkColor.withValues(alpha: .82),
+          );
+        }
       default:
         glossyEye(x: 70);
         glossyEye(x: 109);
@@ -649,6 +828,56 @@ class _NomoAvatarPainter extends CustomPainter {
           const Offset(99, 107),
           2.2,
           Paint()..color = Colors.white.withValues(alpha: .60),
+        );
+      case 3:
+        canvas.drawOval(
+          const Rect.fromLTWH(80, 101, 20, 24),
+          Paint()..color = darkMouth.withValues(alpha: .82),
+        );
+        canvas.drawOval(
+          const Rect.fromLTWH(85, 106, 10, 12),
+          Paint()..color = const Color(0xFFFF8FA6).withValues(alpha: .72),
+        );
+        canvas.drawOval(
+          const Rect.fromLTWH(84, 103, 7, 4),
+          Paint()..color = Colors.white.withValues(alpha: .50),
+        );
+      case 4:
+        final smile = Path()
+          ..moveTo(75, 103)
+          ..cubicTo(83, 111, 97, 112, 106, 103);
+        canvas.drawPath(
+          smile,
+          Paint()
+            ..color = darkMouth.withValues(alpha: .58)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 3.7
+            ..strokeCap = StrokeCap.round,
+        );
+        for (final point in const [Offset(71, 101), Offset(110, 101)]) {
+          canvas.drawCircle(
+            point,
+            2.2,
+            Paint()..color = darkMouth.withValues(alpha: .22),
+          );
+        }
+      case 5:
+        canvas.drawPath(
+          Path()
+            ..moveTo(78, 106)
+            ..quadraticBezierTo(90, 101, 102, 106)
+            ..quadraticBezierTo(90, 112, 78, 106)
+            ..close(),
+          Paint()..color = const Color(0xFFC94E5D).withValues(alpha: .82),
+        );
+        canvas.drawLine(
+          const Offset(82, 106),
+          const Offset(98, 106),
+          Paint()
+            ..color = Colors.white.withValues(alpha: .26)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8
+            ..strokeCap = StrokeCap.round,
         );
       default:
         final path = Path()
@@ -748,6 +977,82 @@ class _NomoAvatarPainter extends CustomPainter {
       canvas.drawOval(
         const Rect.fromLTWH(115, 94, 8, 4),
         Paint()..color = Colors.white.withValues(alpha: .24),
+      );
+    } else if (avatar.accessory == 4) {
+      final freckle = Paint()
+        ..color = const Color(0xFF5C2B22).withValues(alpha: .34);
+      for (final point in const [
+        Offset(57, 94),
+        Offset(64, 98),
+        Offset(70, 93),
+        Offset(110, 94),
+        Offset(117, 98),
+        Offset(123, 93),
+      ]) {
+        canvas.drawCircle(point, 1.8, freckle);
+      }
+    } else if (avatar.accessory == 5) {
+      canvas.drawCircle(
+        const Offset(116, 101),
+        2.7,
+        Paint()..color = const Color(0xFF2A1715).withValues(alpha: .74),
+      );
+      canvas.drawCircle(
+        const Offset(115.3, 100.2),
+        .8,
+        Paint()..color = Colors.white.withValues(alpha: .55),
+      );
+    } else if (avatar.accessory == 6) {
+      final frame = Paint()
+        ..color = const Color(0xFF25313E)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..strokeCap = StrokeCap.round;
+      canvas.drawArc(
+        const Rect.fromLTWH(44, 34, 92, 76),
+        math.pi * 1.12,
+        math.pi * .76,
+        false,
+        frame,
+      );
+      for (final cup in const [
+        Rect.fromLTWH(37, 73, 18, 32),
+        Rect.fromLTWH(125, 73, 18, 32),
+      ]) {
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(cup, const Radius.circular(9)),
+          Paint()
+            ..shader = const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF5869FF), Color(0xFF21E0C2)],
+            ).createShader(cup),
+        );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(cup.deflate(4), const Radius.circular(6)),
+          Paint()..color = const Color(0xFF101820).withValues(alpha: .28),
+        );
+      }
+    } else if (avatar.accessory == 7) {
+      final pinPaint = Paint()
+        ..color = const Color(0xFFFFD25B)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(const Offset(51, 53), const Offset(72, 44), pinPaint);
+      canvas.drawLine(
+        const Offset(54, 60),
+        const Offset(75, 51),
+        Paint()
+          ..color = const Color(0xFFFF8FB2)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4
+          ..strokeCap = StrokeCap.round,
+      );
+      canvas.drawCircle(
+        const Offset(72, 44),
+        3.3,
+        Paint()..color = Colors.white.withValues(alpha: .82),
       );
     }
   }
