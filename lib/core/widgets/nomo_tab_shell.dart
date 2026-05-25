@@ -612,7 +612,7 @@ class _DailyStatusRequiredSheetState
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'みんなが誘いやすくなるように、入室前に今日の気分をセットしてね',
+                        'みんなと予定を合わせやすいように、入室前に今日の気分をセットしてね',
                         style: TextStyle(
                           color: sub,
                           fontSize: 12.5,

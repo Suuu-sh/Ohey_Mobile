@@ -881,12 +881,9 @@ class _DrinkInviteNotificationSheetState
 
   @override
   Widget build(BuildContext context) {
-    final statusLabel = switch (widget.notification.drinkInviteStatus) {
-      'accepted' => '参加予定',
-      'rejected' => '見送り済み',
-      'cancelled' => '取り消し済み',
-      _ => '返信待ち',
-    };
+    final statusLabel = nomoDrinkInviteStatusFromKey(
+      widget.notification.drinkInviteStatus,
+    ).label;
 
     return SafeArea(
       child: Container(

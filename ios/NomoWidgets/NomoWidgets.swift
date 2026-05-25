@@ -99,7 +99,7 @@ struct NomoFriendsAvailabilityWidget: Widget {
     StaticConfiguration(kind: kind, provider: NomoTimelineProvider()) { entry in
       NomoFriendsAvailabilityWidgetView(entry: entry)
     }
-    .configurationDisplayName("誘える飲み友リスト")
+    .configurationDisplayName("空いてるフレンズリスト")
     .description("今日誘えそうな友達を、Tomoと一緒にすぐチェックできます。")
     .supportedFamilies([.systemSmall, .systemMedium])
   }
@@ -201,7 +201,7 @@ private struct SmallFriendsContent: View {
 
       Spacer(minLength: 0)
 
-      Text("飲み友リスト")
+      Text("フレンズリスト")
         .font(.system(size: 13, weight: .black, design: .rounded))
         .foregroundStyle(Color.white.opacity(0.78))
         .lineLimit(1)
@@ -239,7 +239,7 @@ private struct MediumFriendsContent: View {
 
       VStack(alignment: .leading, spacing: 8) {
         HStack(spacing: 8) {
-          WidgetEyebrow(icon: "person.2.wave.2.fill", title: "誘える飲み友", accent: .nomoLime)
+          WidgetEyebrow(icon: "person.2.wave.2.fill", title: "空いてるフレンズ", accent: .nomoLime)
           Spacer(minLength: 0)
           FriendCountBadge(count: snapshot.availableFriendsCount, compact: false)
         }
@@ -253,7 +253,7 @@ private struct MediumFriendsContent: View {
 
         friendRows
 
-        Text(snapshot.availableFriendsCount <= 0 ? "飲み友のステータス待ち" : "タップして声をかけにいく")
+        Text(snapshot.availableFriendsCount <= 0 ? "フレンズの予定待ち" : "タップして予定を作る")
           .font(.system(size: 10.5, weight: .heavy, design: .rounded))
           .foregroundStyle(Color.white.opacity(0.58))
           .lineLimit(1)

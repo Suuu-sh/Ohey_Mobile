@@ -360,12 +360,7 @@ class _FeedNotification {
       };
     }
     if (kind == 'drink_invite_received') {
-      return switch (drinkInviteStatus) {
-        'accepted' => '参加予定',
-        'rejected' => '見送り済み',
-        'cancelled' => '取り消し済み',
-        _ => 'タップして返信',
-      };
+      return nomoDrinkInviteStatusFromKey(drinkInviteStatus).actionLabel;
     }
     return null;
   }
