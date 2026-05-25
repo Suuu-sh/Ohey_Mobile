@@ -26,7 +26,10 @@ class AdminRepository {
   }
 
   Future<List<AdminUserProfile>> listUsers() async {
-    final rows = await _client.getRows('/v1/admin/users');
+    final rows = await _client.getRows(
+      '/v1/admin/users',
+      query: {'date': _todayIsoDate()},
+    );
     return rows.map(AdminUserProfile.fromJson).toList(growable: false);
   }
 
@@ -46,6 +49,7 @@ class AdminRepository {
       'display_name': displayName,
       'gender': gender,
       'status': status,
+      'status_date': _todayIsoDate(),
       'is_plus': isPlus,
     });
   }
@@ -63,6 +67,7 @@ class AdminRepository {
       'user_id': userId,
       'display_name': displayName,
       'status': status,
+      'status_date': _todayIsoDate(),
       'is_plus': isPlus,
     };
     if (email != null && email.trim().isNotEmpty) {
@@ -211,6 +216,13 @@ class AdminRepository {
     });
     return AdminNotificationResult.fromJson(row);
   }
+}
+
+String _todayIsoDate() {
+  final now = DateTime.now();
+  return '${now.year.toString().padLeft(4, '0')}-'
+      '${now.month.toString().padLeft(2, '0')}-'
+      '${now.day.toString().padLeft(2, '0')}';
 }
 
 class AdminUserProfile {

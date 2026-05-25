@@ -183,6 +183,7 @@ Future<void> _showUserSheet(
   );
   if (saved == true && context.mounted) {
     ref.invalidate(adminUsersProvider);
+    ref.invalidate(friendsProvider);
     NomoToast.show(context, 'ユーザーを保存しました。');
   }
 }
