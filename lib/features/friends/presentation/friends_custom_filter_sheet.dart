@@ -18,7 +18,7 @@ class _CustomFilterSheetResult {
   final String? filterId;
 }
 
-enum _CustomFilterManageAction { edit, delete, reorder }
+enum _CustomFilterManageAction { add, edit, delete, reorder }
 
 class _CustomFilterManageResult {
   const _CustomFilterManageResult._({
@@ -30,6 +30,9 @@ class _CustomFilterManageResult {
 
   const _CustomFilterManageResult.edit(_CustomFriendFilter filter)
     : this._(action: _CustomFilterManageAction.edit, filter: filter);
+
+  const _CustomFilterManageResult.add()
+    : this._(action: _CustomFilterManageAction.add);
 
   const _CustomFilterManageResult.delete(String filterId)
     : this._(action: _CustomFilterManageAction.delete, filterId: filterId);
@@ -226,10 +229,12 @@ class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            '並び替えたり、いらないグループを片づけられるよ。',
+            '追加・並び替え・削除をここでまとめてできるよ。',
             style: TextStyle(color: sub, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 14),
+          _CustomFilterManageAddButton(isWhite: isWhite),
+          const SizedBox(height: 10),
           ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 360),
             child: ReorderableListView.builder(
@@ -278,6 +283,58 @@ class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
             ).pop(_CustomFilterManageResult.reorder(_filters)),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CustomFilterManageAddButton extends StatelessWidget {
+  const _CustomFilterManageAddButton({required this.isWhite});
+
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        Navigator.of(context).pop(const _CustomFilterManageResult.add());
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: _FriendsColors.lime.withValues(alpha: isWhite ? .18 : .13),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _FriendsColors.lime.withValues(alpha: .46)),
+        ),
+        child: Row(
+          children: [
+            const NomoPopIcon(
+              icon: CupertinoIcons.plus,
+              color: _FriendsColors.lime,
+              size: 36,
+              iconSize: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'グループを追加',
+                style: TextStyle(
+                  color: ink,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            NomoGeneratedIcon(
+              CupertinoIcons.chevron_right,
+              color: _FriendsColors.lime,
+              size: 18,
+            ),
+          ],
+        ),
       ),
     );
   }

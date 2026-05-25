@@ -118,10 +118,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   }
 
   Future<void> _openCustomFilterManageSheet() async {
-    if (_customFilters.isEmpty) {
-      NomoToast.show(context, 'グループを作ると編集できるよ');
-      return;
-    }
     HapticFeedback.selectionClick();
     final result = await showNomoBottomSheet<_CustomFilterManageResult>(
       context: context,
@@ -132,6 +128,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     if (!mounted || result == null) return;
 
     switch (result.action) {
+      case _CustomFilterManageAction.add:
+        await _openCustomFilterSheet();
+        break;
       case _CustomFilterManageAction.edit:
         await _openCustomFilterSheet(filter: result.filter);
         break;
@@ -377,7 +376,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                       onCustomLongPress: (filter) =>
                           _openCustomFilterSheet(filter: filter),
                       onManageCustom: _openCustomFilterManageSheet,
-                      onCreateCustom: () => _openCustomFilterSheet(),
                     ),
                     const SizedBox(height: 18),
                     Expanded(

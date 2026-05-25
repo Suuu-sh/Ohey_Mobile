@@ -28,7 +28,6 @@ class _FilterBar extends StatelessWidget {
     required this.onCustomChanged,
     required this.onCustomLongPress,
     required this.onManageCustom,
-    required this.onCreateCustom,
   });
 
   final _FriendFilterType selected;
@@ -38,7 +37,6 @@ class _FilterBar extends StatelessWidget {
   final ValueChanged<_CustomFriendFilter> onCustomChanged;
   final ValueChanged<_CustomFriendFilter> onCustomLongPress;
   final VoidCallback onManageCustom;
-  final VoidCallback onCreateCustom;
 
   @override
   Widget build(BuildContext context) {
@@ -71,23 +69,14 @@ class _FilterBar extends StatelessWidget {
               ),
               const SizedBox(width: 10),
             ],
-            if (customFilters.isNotEmpty) ...[
-              _FilterChip(
-                label: '編集',
-                accent: const Color(0xFF5DEBD3),
-                selected: false,
-                icon: CupertinoIcons.pencil,
-                onTap: onManageCustom,
-              ),
-              const SizedBox(width: 10),
-            ],
             _FilterChip(
-              label: '作成',
-              accent: _FriendsColors.lime,
+              label: '編集',
+              accent: const Color(0xFF5DEBD3),
               selected: false,
-              icon: CupertinoIcons.plus,
-              onTap: onCreateCustom,
+              icon: CupertinoIcons.pencil,
+              onTap: onManageCustom,
             ),
+            const SizedBox(width: 10),
           ],
         ),
       ),
