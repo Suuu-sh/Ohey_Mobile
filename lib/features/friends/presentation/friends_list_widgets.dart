@@ -906,6 +906,7 @@ class _GroupAvailabilityStats {
     required this.maybeCount,
     required this.blockedCount,
     required this.undecidedCount,
+    required this.weightedScore,
   });
 
   final int total;
@@ -913,16 +914,17 @@ class _GroupAvailabilityStats {
   final int maybeCount;
   final int blockedCount;
   final int undecidedCount;
+  final double weightedScore;
 
-  bool get isAllOk => total > 0 && okCount == total;
+  double get averageWeight => total == 0 ? 0 : weightedScore / total;
+
+  bool get isAllOk => total > 0 && blockedCount == 0 && averageWeight >= .8;
 
   bool get hasNoBlockedMembers => total > 0 && blockedCount == 0;
 
-  bool get isAlmostOk =>
-      total >= 3 && okCount == total - 1 && undecidedCount == 1;
+  bool get isAlmostOk => total >= 3 && averageWeight >= .75;
 
-  bool get isMaybeOk =>
-      total > 0 && maybeCount >= (total / 2).ceil() && blockedCount < total / 2;
+  bool get isMaybeOk => total > 0 && averageWeight >= .5;
 }
 
 _GroupAvailabilityStats _groupAvailabilityStats(
@@ -932,21 +934,18 @@ _GroupAvailabilityStats _groupAvailabilityStats(
   var maybeCount = 0;
   var blockedCount = 0;
   var undecidedCount = 0;
+  var weightedScore = 0.0;
   for (final item in friends) {
-    switch (item.friend.statusKey) {
-      case 'can_drink_today' || 'non_alcohol':
-        okCount += 1;
-        maybeCount += 1;
-      case 'liver_rest':
-        maybeCount += 1;
-      case 'unselected' || 'unset' || null || '':
-        maybeCount += 1;
-        undecidedCount += 1;
-      case 'has_plans':
-        blockedCount += 1;
-      default:
-        maybeCount += 1;
-        undecidedCount += 1;
+    final weight = _availabilityWeightForStatusKey(item.friend.statusKey);
+    weightedScore += weight;
+    if (weight >= .8) okCount += 1;
+    if (weight > 0) {
+      maybeCount += 1;
+    } else {
+      blockedCount += 1;
+    }
+    if (_isUndecidedStatusKey(item.friend.statusKey)) {
+      undecidedCount += 1;
     }
   }
   return _GroupAvailabilityStats(
@@ -955,8 +954,26 @@ _GroupAvailabilityStats _groupAvailabilityStats(
     maybeCount: maybeCount,
     blockedCount: blockedCount,
     undecidedCount: undecidedCount,
+    weightedScore: weightedScore,
   );
 }
+
+double _availabilityWeightForStatusKey(String? statusKey) {
+  return switch (statusKey) {
+    'can_drink_today' => 1.0,
+    'non_alcohol' => .8,
+    'liver_rest' => .5,
+    'has_plans' => 0,
+    'unselected' || 'unset' || null || '' => 0,
+    _ => 0,
+  };
+}
+
+bool _isUndecidedStatusKey(String? statusKey) =>
+    statusKey == null ||
+    statusKey.isEmpty ||
+    statusKey == 'unselected' ||
+    statusKey == 'unset';
 
 String _groupScheduleDayLabel(DateTime day) {
   final now = DateTime.now();
