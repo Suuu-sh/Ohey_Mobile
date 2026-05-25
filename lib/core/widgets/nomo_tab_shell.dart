@@ -1686,9 +1686,13 @@ class _TabItem extends StatelessWidget {
               SizedBox(
                 height: 44,
                 child: Center(
-                  child: IconTheme(
-                    data: IconThemeData(color: labelColor),
-                    child: customIcon ?? const SizedBox.shrink(),
+                  child: _TabIconGlow(
+                    selected: selected,
+                    color: activeColor,
+                    child: IconTheme(
+                      data: IconThemeData(color: labelColor),
+                      child: customIcon ?? const SizedBox.shrink(),
+                    ),
                   ),
                 ),
               ),
@@ -1719,6 +1723,67 @@ class _TabItem extends StatelessWidget {
       ),
     );
   }
+}
+
+class _TabIconGlow extends StatelessWidget {
+  const _TabIconGlow({
+    required this.selected,
+    required this.color,
+    required this.child,
+  });
+
+  final bool selected;
+  final Color color;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => AnimatedContainer(
+    duration: const Duration(milliseconds: 220),
+    curve: Curves.easeOutCubic,
+    width: 64,
+    height: 50,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: selected ? color.withValues(alpha: .10) : Colors.transparent,
+      boxShadow: selected
+          ? [
+              BoxShadow(
+                color: color.withValues(alpha: .46),
+                blurRadius: 24,
+                spreadRadius: 2,
+              ),
+              BoxShadow(
+                color: color.withValues(alpha: .28),
+                blurRadius: 42,
+                spreadRadius: 8,
+              ),
+            ]
+          : const [],
+    ),
+    child: Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        if (selected)
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    color.withValues(alpha: .28),
+                    color.withValues(alpha: .10),
+                    Colors.transparent,
+                  ],
+                  stops: const [0, .48, 1],
+                ),
+              ),
+            ),
+          ),
+        child,
+      ],
+    ),
+  );
 }
 
 class _PopTabIcon extends StatelessWidget {
