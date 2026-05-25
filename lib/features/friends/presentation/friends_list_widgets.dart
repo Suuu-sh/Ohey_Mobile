@@ -191,23 +191,19 @@ class _TodayInviteSection extends StatelessWidget {
           else
             SizedBox(
               height: 178,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final cardWidth = (constraints.maxWidth - 12) / 2;
-                  return ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: candidates.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) => SizedBox(
-                      width: cardWidth,
-                      child: _TodayInviteCandidateCard(
-                        item: candidates[index],
-                        onInvite: () => onInvite(candidates[index].friend),
-                      ),
-                    ),
-                  );
-                },
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 520),
+                switchInCurve: Curves.easeOutBack,
+                switchOutCurve: Curves.easeInBack,
+                transitionBuilder: (child, animation) =>
+                    _SlimeSplitTransition(animation: animation, child: child),
+                child: _TodayInviteCardsStrip(
+                  key: ValueKey(
+                    '${candidates.length}-${candidates.map((item) => item.friend.id).join(',')}',
+                  ),
+                  candidates: candidates,
+                  onInvite: onInvite,
+                ),
               ),
             ),
           if (blocked.isNotEmpty) ...[
@@ -231,6 +227,82 @@ class _TodayInviteSection extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _TodayInviteCardsStrip extends StatelessWidget {
+  const _TodayInviteCardsStrip({
+    super.key,
+    required this.candidates,
+    required this.onInvite,
+  });
+
+  final List<_DecoratedFriend> candidates;
+  final ValueChanged<NomoFriend> onInvite;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSingle = candidates.length == 1;
+        final cardWidth = isSingle
+            ? constraints.maxWidth
+            : (constraints.maxWidth - 12) / 2;
+        return ListView.separated(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          itemCount: candidates.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 12),
+          itemBuilder: (context, index) => TweenAnimationBuilder<double>(
+            key: ValueKey(candidates[index].friend.id),
+            tween: Tween(begin: 0, end: 1),
+            duration: Duration(milliseconds: 420 + index * 70),
+            curve: Curves.easeOutBack,
+            builder: (context, value, child) {
+              final squeeze = 1 - value;
+              return Transform.scale(
+                scaleX: 1 + squeeze * (isSingle ? .10 : .18),
+                scaleY: 1 - squeeze * .08,
+                alignment: Alignment.center,
+                child: Opacity(opacity: value.clamp(0, 1), child: child),
+              );
+            },
+            child: SizedBox(
+              width: cardWidth,
+              child: _TodayInviteCandidateCard(
+                item: candidates[index],
+                onInvite: () => onInvite(candidates[index].friend),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SlimeSplitTransition extends StatelessWidget {
+  const _SlimeSplitTransition({required this.animation, required this.child});
+
+  final Animation<double> animation;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      child: child,
+      builder: (context, child) {
+        final value = Curves.easeOutBack.transform(animation.value.clamp(0, 1));
+        final squash = 1 - value;
+        return Transform.scale(
+          scaleX: 1 + squash * .16,
+          scaleY: 1 - squash * .10,
+          alignment: Alignment.centerLeft,
+          child: Opacity(opacity: animation.value.clamp(0, 1), child: child),
+        );
+      },
     );
   }
 }
