@@ -30,7 +30,7 @@ class UserRepository {
 
     final statusRows = await _client.getRows(
       '/v1/daily-status',
-      query: {'date': _todayIsoDate()},
+      query: {'date': _isoDate(DateTime.now())},
     );
     final statusRow = statusRows.isEmpty ? null : statusRows.first;
 
@@ -79,9 +79,21 @@ class UserRepository {
     );
   }
 
-  Future<void> updateDailyStatus(NomoDailyStatus status) async {
+  Future<NomoDailyStatus> fetchDailyStatus(DateTime date) async {
+    final rows = await _client.getRows(
+      '/v1/daily-status',
+      query: {'date': _isoDate(date)},
+    );
+    if (rows.isEmpty) return NomoDailyStatus.unselected;
+    return nomoDailyStatusFromKey(rows.first['status'] as String?);
+  }
+
+  Future<void> updateDailyStatus(
+    NomoDailyStatus status, {
+    DateTime? date,
+  }) async {
     await _client.put('/v1/daily-status', {
-      'status_date': _todayIsoDate(),
+      'status_date': _isoDate(date ?? DateTime.now()),
       'status': status.key,
     });
   }
@@ -112,11 +124,10 @@ String defaultNomoUserId(String authUserId) {
   return 'nomo_${compact.substring(0, compact.length < 12 ? compact.length : 12)}';
 }
 
-String _todayIsoDate() {
-  final now = DateTime.now();
-  return '${now.year.toString().padLeft(4, '0')}-'
-      '${now.month.toString().padLeft(2, '0')}-'
-      '${now.day.toString().padLeft(2, '0')}';
+String _isoDate(DateTime date) {
+  return '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
 }
 
 Map<String, dynamic> createProfilePayload({
