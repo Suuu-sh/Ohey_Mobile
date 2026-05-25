@@ -1093,32 +1093,7 @@ class _DecoratedFriend {
 }
 
 bool _matchesCustomFilter(_DecoratedFriend item, _CustomFriendFilter filter) {
-  if (filter.friendIds.isNotEmpty &&
-      !filter.friendIds.contains(item.friend.id)) {
-    return false;
-  }
-  if (filter.statusKeys.isNotEmpty &&
-      !filter.statusKeys.contains(_normalizedStatusKey(item.friend))) {
-    return false;
-  }
-  if (filter.genderKeys.isNotEmpty &&
-      !filter.genderKeys.contains(item.friend.gender.key)) {
-    return false;
-  }
-  if (filter.favoriteOnly && !item.friend.isFavorite) return false;
-  if (filter.drinkableOnly && !_isDrinkableStatus(item.status)) return false;
-  if (filter.onlineOnly && item.friend.isOnline != true) return false;
-  return true;
-}
-
-String _normalizedStatusKey(NomoFriend friend) {
-  return switch (friend.statusKey) {
-    'can_drink_today' => 'can_drink_today',
-    'non_alcohol' => 'non_alcohol',
-    'liver_rest' => 'liver_rest',
-    'has_plans' => 'has_plans',
-    _ => 'unset',
-  };
+  return filter.friendIds.contains(item.friend.id);
 }
 
 NomoFriend _friendWithFavorite(NomoFriend friend, bool isFavorite) {
@@ -1299,11 +1274,4 @@ class _EmptyFriendsVisual extends StatelessWidget {
       ),
     );
   }
-}
-
-bool _isDrinkableStatus(_FriendStatus status) {
-  return switch (status.label) {
-    '遊べる！' || '多分いける！' || 'まだ決めてない。' => true,
-    _ => false,
-  };
 }

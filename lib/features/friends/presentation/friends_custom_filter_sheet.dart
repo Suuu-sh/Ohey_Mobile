@@ -46,10 +46,6 @@ class _CustomFilterManageResult {
 String _customFilterStorageKey(String userId) =>
     'nomo_custom_friend_filters_v1_$userId';
 
-bool _isSelectableGenderKey(String key) => selectableNomoGenders.any(
-  (gender) => gender.key == key.trim().toLowerCase(),
-);
-
 List<_CustomFriendFilter> _decodeCustomFilters(String? raw) {
   if (raw == null || raw.trim().isEmpty) return const [];
   try {
@@ -87,26 +83,6 @@ const _customFilterAccents = [
 
 Color _customFilterAccent(int index) =>
     _customFilterAccents[index % _customFilterAccents.length];
-
-class _FriendStatusOption {
-  const _FriendStatusOption({
-    required this.key,
-    required this.label,
-    required this.enabled,
-  });
-
-  final String key;
-  final String label;
-  final bool enabled;
-}
-
-const _statusOptions = [
-  _FriendStatusOption(key: 'can_drink_today', label: '遊べる！', enabled: true),
-  _FriendStatusOption(key: 'non_alcohol', label: '多分いける！', enabled: true),
-  _FriendStatusOption(key: 'liver_rest', label: '休ませて。', enabled: false),
-  _FriendStatusOption(key: 'has_plans', label: '予定ある。ごめん', enabled: false),
-  _FriendStatusOption(key: 'unset', label: 'まだ決めてない。', enabled: true),
-];
 
 class _FilterChip extends StatelessWidget {
   const _FilterChip({
@@ -433,24 +409,12 @@ class _CustomFilterSheet extends StatefulWidget {
 class _CustomFilterSheetState extends State<_CustomFilterSheet> {
   late final TextEditingController _nameController;
   late Set<String> _selectedFriendIds;
-  late Set<String> _selectedStatusKeys;
-  late Set<String> _selectedGenderKeys;
-  late bool _favoriteOnly;
-  late bool _drinkableOnly;
-  late bool _onlineOnly;
   String? _errorText;
 
   bool get _isEditing => widget.initialFilter != null;
 
-  bool get _canSave => _nameController.text.trim().isNotEmpty && _hasCriteria;
-
-  bool get _hasCriteria =>
-      _selectedFriendIds.isNotEmpty ||
-      _selectedStatusKeys.isNotEmpty ||
-      _selectedGenderKeys.isNotEmpty ||
-      _favoriteOnly ||
-      _drinkableOnly ||
-      _onlineOnly;
+  bool get _canSave =>
+      _nameController.text.trim().isNotEmpty && _selectedFriendIds.isNotEmpty;
 
   @override
   void initState() {
@@ -461,11 +425,6 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
             setState(() => _errorText = null);
           });
     _selectedFriendIds = {...?widget.initialFilter?.friendIds};
-    _selectedStatusKeys = {...?widget.initialFilter?.statusKeys};
-    _selectedGenderKeys = {...?widget.initialFilter?.genderKeys};
-    _favoriteOnly = widget.initialFilter?.favoriteOnly ?? false;
-    _drinkableOnly = widget.initialFilter?.drinkableOnly ?? false;
-    _onlineOnly = widget.initialFilter?.onlineOnly ?? false;
   }
 
   @override
@@ -484,69 +443,23 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
     });
   }
 
-  void _toggleStatus(String statusKey) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      if (!_selectedStatusKeys.add(statusKey)) {
-        _selectedStatusKeys.remove(statusKey);
-      }
-      _errorText = null;
-    });
-  }
-
-  void _toggleGender(String genderKey) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      if (!_selectedGenderKeys.add(genderKey)) {
-        _selectedGenderKeys.remove(genderKey);
-      }
-      _errorText = null;
-    });
-  }
-
-  void _setBoolCondition({
-    required bool value,
-    required ValueChanged<bool> setter,
-  }) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      setter(!value);
-      _errorText = null;
-    });
-  }
-
   void _save() {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       setState(() => _errorText = 'グループ名を入れてね');
       return;
     }
-    if (!_hasCriteria) {
-      setState(() => _errorText = '条件を1つ以上選んでね');
+    if (_selectedFriendIds.isEmpty) {
+      setState(() => _errorText = 'メンバーを1人以上選んでね');
       return;
     }
     final existingOrder = {
       for (var i = 0; i < widget.friends.length; i++) widget.friends[i].id: i,
     };
-    final statusOrder = {
-      for (var i = 0; i < _statusOptions.length; i++) _statusOptions[i].key: i,
-    };
     final friendIds = _selectedFriendIds.toList()
       ..sort(
         (a, b) =>
             (existingOrder[a] ?? 9999).compareTo(existingOrder[b] ?? 9999),
-      );
-    final statusKeys = _selectedStatusKeys.toList()
-      ..sort(
-        (a, b) => (statusOrder[a] ?? 9999).compareTo(statusOrder[b] ?? 9999),
-      );
-    final genderOrder = {
-      for (var i = 0; i < selectableNomoGenders.length; i++)
-        selectableNomoGenders[i].key: i,
-    };
-    final genderKeys = _selectedGenderKeys.toList()
-      ..sort(
-        (a, b) => (genderOrder[a] ?? 9999).compareTo(genderOrder[b] ?? 9999),
       );
     Navigator.of(context).pop(
       _CustomFilterSheetResult.save(
@@ -556,11 +469,6 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
               DateTime.now().microsecondsSinceEpoch.toString(),
           name: name,
           friendIds: friendIds,
-          statusKeys: statusKeys,
-          genderKeys: genderKeys,
-          favoriteOnly: _favoriteOnly,
-          drinkableOnly: _drinkableOnly,
-          onlineOnly: _onlineOnly,
         ),
       ),
     );
@@ -690,89 +598,6 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _FilterSectionTitle(label: 'よく使う条件', color: ink),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _CriteriaToggleChip(
-                        label: 'お気に入りのみ',
-                        icon: CupertinoIcons.star_fill,
-                        selected: _favoriteOnly,
-                        accent: const Color(0xFFFFC700),
-                        isWhite: isWhite,
-                        onTap: () => _setBoolCondition(
-                          value: _favoriteOnly,
-                          setter: (value) => _favoriteOnly = value,
-                        ),
-                      ),
-                      _CriteriaToggleChip(
-                        label: '今日誘える',
-                        icon: CupertinoIcons.paperplane_fill,
-                        selected: _drinkableOnly,
-                        accent: const Color(0xFF12C9A4),
-                        isWhite: isWhite,
-                        onTap: () => _setBoolCondition(
-                          value: _drinkableOnly,
-                          setter: (value) => _drinkableOnly = value,
-                        ),
-                      ),
-                      _CriteriaToggleChip(
-                        label: 'オンライン',
-                        icon: CupertinoIcons.circle_fill,
-                        selected: _onlineOnly,
-                        accent: const Color(0xFF18AFFF),
-                        isWhite: isWhite,
-                        onTap: () => _setBoolCondition(
-                          value: _onlineOnly,
-                          setter: (value) => _onlineOnly = value,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _FilterSectionTitle(label: '性別', color: ink),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final gender in selectableNomoGenders)
-                        _CriteriaToggleChip(
-                          label: gender.label,
-                          icon: gender == NomoGender.male
-                              ? CupertinoIcons.person_fill
-                              : CupertinoIcons.person_crop_circle_fill,
-                          selected: _selectedGenderKeys.contains(gender.key),
-                          accent: gender == NomoGender.male
-                              ? const Color(0xFF18AFFF)
-                              : const Color(0xFFFF5AA6),
-                          isWhite: isWhite,
-                          onTap: () => _toggleGender(gender.key),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _FilterSectionTitle(label: 'ステータス', color: ink),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final option in _statusOptions)
-                        _CriteriaToggleChip(
-                          label: option.label,
-                          selected: _selectedStatusKeys.contains(option.key),
-                          accent: option.enabled
-                              ? _FriendsColors.lime
-                              : _FriendsColors.muted,
-                          isWhite: isWhite,
-                          onTap: () => _toggleStatus(option.key),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
                   _FilterSectionTitle(label: 'フレンズ', color: ink),
                   const SizedBox(height: 8),
                   for (var i = 0; i < widget.friends.length; i++) ...[
@@ -865,82 +690,6 @@ class _FilterSectionTitle extends StatelessWidget {
       ),
     ],
   );
-}
-
-class _CriteriaToggleChip extends StatelessWidget {
-  const _CriteriaToggleChip({
-    required this.label,
-    required this.selected,
-    required this.accent,
-    required this.isWhite,
-    required this.onTap,
-    this.icon,
-  });
-
-  final String label;
-  final bool selected;
-  final Color accent;
-  final bool isWhite;
-  final VoidCallback onTap;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final ink = selected
-        ? _FriendsColors.bg
-        : isWhite
-        ? const Color(0xFF101820)
-        : Colors.white;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected
-              ? accent
-              : isWhite
-              ? const Color(0xFFF7F9FB)
-              : AppColors.darkBackground,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: selected
-                ? Colors.white.withValues(alpha: .20)
-                : isWhite
-                ? const Color(0xFFDCE4EC)
-                : Colors.white.withValues(alpha: .10),
-          ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: accent.withValues(alpha: .20),
-                    blurRadius: 16,
-                    offset: const Offset(0, 7),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              NomoGeneratedIcon(icon!, color: ink, size: 15),
-              const SizedBox(width: 6),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                color: ink,
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _CustomFilterFriendRow extends StatelessWidget {
