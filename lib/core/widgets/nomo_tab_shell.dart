@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -1742,46 +1743,64 @@ class _TabIconGlow extends StatelessWidget {
     curve: Curves.easeOutCubic,
     width: 64,
     height: 50,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: selected ? color.withValues(alpha: .10) : Colors.transparent,
-      boxShadow: selected
-          ? [
-              BoxShadow(
-                color: color.withValues(alpha: .46),
-                blurRadius: 24,
-                spreadRadius: 2,
-              ),
-              BoxShadow(
-                color: color.withValues(alpha: .28),
-                blurRadius: 42,
-                spreadRadius: 8,
-              ),
-            ]
-          : const [],
-    ),
     child: Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.center,
       children: [
-        if (selected)
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    color.withValues(alpha: .28),
-                    color.withValues(alpha: .10),
-                    Colors.transparent,
-                  ],
-                  stops: const [0, .48, 1],
-                ),
+        if (selected) ...[
+          _TabIconShapeGlow(
+            color: color,
+            blur: 12,
+            opacity: .24,
+            scale: 1.14,
+            child: child,
+          ),
+          _TabIconShapeGlow(
+            color: color,
+            blur: 6,
+            opacity: .36,
+            scale: 1.06,
+            child: child,
+          ),
+        ],
+        child,
+      ],
+    ),
+  );
+}
+
+class _TabIconShapeGlow extends StatelessWidget {
+  const _TabIconShapeGlow({
+    required this.color,
+    required this.blur,
+    required this.opacity,
+    required this.scale,
+    required this.child,
+  });
+
+  final Color color;
+  final double blur;
+  final double opacity;
+  final double scale;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Positioned.fill(
+    child: IgnorePointer(
+      child: ExcludeSemantics(
+        child: ImageFiltered(
+          imageFilter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+          child: Opacity(
+            opacity: opacity,
+            child: ColorFiltered(
+              colorFilter: ColorFilter.mode(color, BlendMode.srcATop),
+              child: Center(
+                child: Transform.scale(scale: scale, child: child),
               ),
             ),
           ),
-        child,
-      ],
+        ),
+      ),
     ),
   );
 }
@@ -1932,17 +1951,6 @@ class _FriendsPainter extends CustomPainter {
     final colors = active
         ? const [Color(0xFF9AF21A), Color(0xFF5DC86C)]
         : const [Color(0xFFB1BAC8), Color(0xFF798393)];
-    final glow = Paint()
-      ..color = colors.first.withValues(alpha: active ? .18 : .05)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * .49, size.height * .55),
-        width: 46,
-        height: 34,
-      ),
-      glow,
-    );
     final paint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
@@ -2103,18 +2111,6 @@ class _ProfilePainter extends CustomPainter {
         end: Alignment.bottomRight,
         colors: colors,
       ).createShader(Offset.zero & size);
-
-    final glow = Paint()
-      ..color = colors.first.withValues(alpha: active ? .18 : .05)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * .52, size.height * .62),
-        width: 40,
-        height: 28,
-      ),
-      glow,
-    );
 
     final blob = Path()
       ..moveTo(size.width * .23, size.height * .78)
