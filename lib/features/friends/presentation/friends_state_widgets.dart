@@ -268,63 +268,110 @@ class _FriendStatus {
     required this.label,
     required this.enabled,
     required this.reason,
+    required this.blockColor,
   });
 
   final String label;
   final bool enabled;
   final String reason;
+  final Color blockColor;
+}
+
+Color _friendBlockSurfaceColor({
+  required bool isWhite,
+  required _FriendStatus status,
+}) {
+  if (status.enabled) {
+    return isWhite ? Colors.white : AppColors.darkBackgroundBottom;
+  }
+  return isWhite ? AppColors.background : AppColors.darkBackgroundBottom;
+}
+
+Gradient? _friendBlockGradient({
+  required bool isWhite,
+  required _FriendStatus status,
+}) {
+  if (!status.enabled) {
+    return isWhite
+        ? const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.background, Color(0xFFEFF3F8)],
+          )
+        : null;
+  }
+
+  final color = status.blockColor;
+  return LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: isWhite
+        ? [
+            Color.lerp(color, Colors.white, .72)!,
+            Color.lerp(color, Colors.white, .88)!,
+          ]
+        : [
+            color.withValues(alpha: .30),
+            color.withValues(alpha: .15),
+            Colors.white.withValues(alpha: .045),
+          ],
+    stops: isWhite ? null : const [0, .58, 1],
+  );
+}
+
+double _friendBlockBorderAlpha({
+  required bool isWhite,
+  required _FriendStatus status,
+}) {
+  if (!status.enabled) return isWhite ? .20 : .18;
+  return isWhite ? .36 : .42;
 }
 
 _FriendStatus _statusForFriend(NomoFriend friend, int _) {
   switch (friend.statusKey) {
     case 'can_drink_today':
       return const _FriendStatus(
-        label: '空いてる',
+        label: 'いける',
         enabled: true,
         reason: '誘ってくれてOKだよ',
+        blockColor: _FriendsColors.statusPink,
       );
     case 'non_alcohol':
       return const _FriendStatus(
-        label: '多分空いてる',
+        label: '多分いける',
         enabled: true,
         reason: 'たぶん誘って大丈夫だよ',
+        blockColor: _FriendsColors.statusBlue,
       );
     case 'liver_rest':
       return const _FriendStatus(
         label: '時間次第',
         enabled: true,
         reason: '時間が合えば行けそうだよ',
+        blockColor: _FriendsColors.statusPurple,
       );
     case 'has_plans':
       return const _FriendStatus(
         label: '予定ある',
         enabled: false,
         reason: '予定が入っています',
+        blockColor: _FriendsColors.statusBlocked,
       );
     case 'unselected' || 'unset' || null || '':
       return const _FriendStatus(
-        label: 'まだ決めてない',
+        label: '未定',
         enabled: true,
         reason: 'まだ決めてないみたい',
+        blockColor: _FriendsColors.statusGreen,
       );
   }
 
   return const _FriendStatus(
-    label: 'まだ決めてない',
+    label: '未定',
     enabled: true,
     reason: 'まだ決めてないみたい',
+    blockColor: _FriendsColors.statusGreen,
   );
-}
-
-Color _accentForFriend(NomoFriend friend) {
-  return switch (friend.palette) {
-    NomiTomoPalette.peach => const Color(0xFFFFB03B),
-    NomiTomoPalette.sky => const Color(0xFF18AFFF),
-    NomiTomoPalette.lemon => _FriendsColors.lime,
-    NomiTomoPalette.lavender => const Color(0xFFA855F7),
-    NomiTomoPalette.mint => const Color(0xFF46E68A),
-    NomiTomoPalette.blush => const Color(0xFFFF4B9A),
-  };
 }
 
 NomoAvatar _fallbackAvatarForFriend(NomoFriend friend) {
@@ -347,4 +394,12 @@ class _FriendsColors {
   static const limeShadow = Color(0xFF6FB600);
   static const limeForeground = Color(0xFF071320);
   static const muted = Color(0xFF8792A3);
+  static const statusPink = Color(0xFFFF5EA8);
+  static const statusBlue = Color(0xFF20B9FF);
+  static const statusPurple = Color(0xFF8A62FF);
+  static const statusGreen = Color(0xFF9AF21A);
+  static const statusBlocked = Color(0xFF2B3644);
+  static const disabledButton = Color(0xFF2B3441);
+  static const disabledButtonShadow = Color(0xFF111923);
+  static const disabledButtonForeground = Color(0xFF738092);
 }

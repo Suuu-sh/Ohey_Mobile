@@ -568,27 +568,26 @@ class _TodayInviteCandidateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final friend = item.friend;
-    final accent = _accentForFriend(friend);
+    final accent = item.status.blockColor;
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = item.status.enabled
+        ? (isWhite ? const Color(0xFF101820) : Colors.white)
+        : (isWhite ? const Color(0xFF667381) : _FriendsColors.muted);
     final reason = _recommendationReasonFor(item);
     return NomoThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
       accentColor: accent,
-      backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: isWhite
-            ? const [Color(0xFFFFFFFF), Color(0xFFF7FFE9)]
-            : [
-                Colors.white.withValues(alpha: .06),
-                accent.withValues(alpha: .08),
-              ],
+      backgroundColor: _friendBlockSurfaceColor(
+        isWhite: isWhite,
+        status: item.status,
       ),
+      gradient: _friendBlockGradient(isWhite: isWhite, status: item.status),
       borderRadius: 24,
-      borderAlpha: isWhite ? .24 : .14,
-      glowAlpha: isWhite ? .04 : .07,
+      borderAlpha: _friendBlockBorderAlpha(
+        isWhite: isWhite,
+        status: item.status,
+      ),
+      glowAlpha: item.status.enabled ? (isWhite ? .07 : .14) : 0,
       glowBlur: 18,
       glowOffset: const Offset(0, 8),
       child: Column(
@@ -619,7 +618,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    _CompactStatusPill(status: item.status, accent: accent),
+                    _CompactStatusPill(status: item.status),
                   ],
                 ),
               ),
@@ -661,12 +660,19 @@ class _TodayInviteCandidateCard extends StatelessWidget {
             child: Nomo3DButton(
               label: '誘う',
               icon: CupertinoIcons.paperplane_fill,
-              onTap: onInvite,
+              onTap: item.status.enabled ? onInvite : null,
+              enabled: item.status.enabled,
               height: 36,
               radius: 18,
               color: _FriendsColors.lime,
-              foregroundColor: _FriendsColors.limeForeground,
-              shadowColor: _FriendsColors.limeShadow,
+              foregroundColor: item.status.enabled
+                  ? _FriendsColors.limeForeground
+                  : _FriendsColors.disabledButtonForeground,
+              shadowColor: item.status.enabled
+                  ? _FriendsColors.limeShadow
+                  : _FriendsColors.disabledButtonShadow,
+              disabledColor: _FriendsColors.disabledButton,
+              disabledOpacity: 1,
               padding: const EdgeInsets.symmetric(horizontal: 10),
               fontSize: 12.5,
             ),
@@ -678,17 +684,19 @@ class _TodayInviteCandidateCard extends StatelessWidget {
 }
 
 class _CompactStatusPill extends StatelessWidget {
-  const _CompactStatusPill({required this.status, required this.accent});
+  const _CompactStatusPill({required this.status});
 
   final _FriendStatus status;
-  final Color accent;
 
   @override
   Widget build(BuildContext context) {
+    final accent = status.blockColor;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: status.enabled ? .18 : .10),
+        color: status.enabled
+            ? accent.withValues(alpha: .20)
+            : _FriendsColors.statusBlocked.withValues(alpha: .38),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
