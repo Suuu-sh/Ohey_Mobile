@@ -20,6 +20,11 @@ final friendsProvider = FutureProvider<List<NomoFriend>>((ref) async {
   return ref.watch(drinkLogRepositoryProvider).fetchFriends();
 });
 
+final friendsForDateProvider =
+    FutureProvider.family<List<NomoFriend>, DateTime>((ref, date) async {
+      return ref.watch(drinkLogRepositoryProvider).fetchFriends(date: date);
+    });
+
 class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
   @override
   Future<List<DrinkLog>> build() async {
