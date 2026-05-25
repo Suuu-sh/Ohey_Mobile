@@ -101,12 +101,6 @@ class NomoBottomSheetShell extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isWhite ? Colors.white : AppColors.darkBackground,
                   borderRadius: sheetRadius,
-                  border: Border.all(
-                    color: isWhite
-                        ? const Color(0xFFE1E8F1)
-                        : Colors.white.withValues(alpha: .12),
-                    width: 1.2,
-                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(
