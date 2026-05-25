@@ -767,29 +767,123 @@ class _GroupScheduleSuggestion {
 List<_GroupScheduleSuggestion> _groupScheduleSuggestions(
   List<_DecoratedFriend> friends,
 ) {
-  final availableCount = friends.where((item) => item.status.enabled).length;
-  final total = friends.length;
+  final stats = _groupAvailabilityStats(friends);
   final now = DateTime.now();
-  final baseScore = availableCount / total;
-  final firstDayOffset = baseScore == 1 ? 0 : 1;
-
-  return [
-    for (var i = 0; i < 3; i++)
-      _GroupScheduleSuggestion(
-        title: _groupScheduleDayLabel(
-          now.add(Duration(days: firstDayOffset + i)),
-        ),
-        subtitle: i == 0
-            ? _bestGroupScheduleSubtitle(availableCount, total)
-            : _futureGroupScheduleSubtitle(friends, i),
-        badge: i == 0 && baseScore == 1 ? '全員OK' : '$availableCount/$total人OK',
-        accent: i == 0
-            ? const Color(0xFFB8FF00)
-            : i == 1
-            ? const Color(0xFF5DEBD3)
-            : const Color(0xFFFFD166),
+  final tiers = <_GroupScheduleTier>[
+    if (stats.isAllOk)
+      const _GroupScheduleTier(
+        dayOffset: 0,
+        title: '全員OK',
+        subtitle: '全員いけそう。まずこの日を押さえよ。',
+        accent: Color(0xFFB8FF00),
+      ),
+    if (stats.isAlmostOk)
+      const _GroupScheduleTier(
+        dayOffset: 1,
+        title: 'ほぼOK',
+        subtitle: '1人だけまだ決めてない。確認したらまとまりそう。',
+        accent: Color(0xFF5DEBD3),
+      ),
+    if (stats.isMaybeOk)
+      const _GroupScheduleTier(
+        dayOffset: 2,
+        title: '確認すればいけそう',
+        subtitle: '予定ある人が少なめ。候補として聞いてみよ。',
+        accent: Color(0xFFFFD166),
       ),
   ];
+
+  final visibleTiers = tiers.isEmpty
+      ? const [
+          _GroupScheduleTier(
+            dayOffset: 1,
+            title: '確認してみよ',
+            subtitle: 'まだ揃いきってないから、まず予定を聞いてみよ。',
+            accent: Color(0xFF94A3B8),
+          ),
+        ]
+      : tiers;
+
+  return [
+    for (final tier in visibleTiers)
+      _GroupScheduleSuggestion(
+        title: _groupScheduleDayLabel(now.add(Duration(days: tier.dayOffset))),
+        subtitle: tier.subtitle,
+        badge: tier.title == '全員OK'
+            ? '全員OK'
+            : '${stats.okCount}/${stats.total}人OK',
+        accent: tier.accent,
+      ),
+  ];
+}
+
+class _GroupScheduleTier {
+  const _GroupScheduleTier({
+    required this.dayOffset,
+    required this.title,
+    required this.subtitle,
+    required this.accent,
+  });
+
+  final int dayOffset;
+  final String title;
+  final String subtitle;
+  final Color accent;
+}
+
+class _GroupAvailabilityStats {
+  const _GroupAvailabilityStats({
+    required this.total,
+    required this.okCount,
+    required this.maybeCount,
+    required this.blockedCount,
+    required this.undecidedCount,
+  });
+
+  final int total;
+  final int okCount;
+  final int maybeCount;
+  final int blockedCount;
+  final int undecidedCount;
+
+  bool get isAllOk => total > 0 && okCount == total;
+
+  bool get isAlmostOk =>
+      total >= 3 && okCount == total - 1 && undecidedCount == 1;
+
+  bool get isMaybeOk =>
+      total > 0 && maybeCount >= (total / 2).ceil() && blockedCount < total / 2;
+}
+
+_GroupAvailabilityStats _groupAvailabilityStats(
+  List<_DecoratedFriend> friends,
+) {
+  var okCount = 0;
+  var maybeCount = 0;
+  var blockedCount = 0;
+  var undecidedCount = 0;
+  for (final item in friends) {
+    switch (item.friend.statusKey) {
+      case 'can_drink_today' || 'non_alcohol':
+        okCount += 1;
+        maybeCount += 1;
+      case 'unselected' || 'unset' || null || '':
+        maybeCount += 1;
+        undecidedCount += 1;
+      case 'has_plans' || 'liver_rest':
+        blockedCount += 1;
+      default:
+        maybeCount += 1;
+        undecidedCount += 1;
+    }
+  }
+  return _GroupAvailabilityStats(
+    total: friends.length,
+    okCount: okCount,
+    maybeCount: maybeCount,
+    blockedCount: blockedCount,
+    undecidedCount: undecidedCount,
+  );
 }
 
 String _groupScheduleDayLabel(DateTime day) {
@@ -800,28 +894,12 @@ String _groupScheduleDayLabel(DateTime day) {
   return '${day.month}/${day.day}（${weekdays[day.weekday - 1]}）';
 }
 
-String _bestGroupScheduleSubtitle(int availableCount, int total) {
-  if (availableCount == total) return '今ならこのメンバーで声かけやすいよ。';
-  final busy = total - availableCount;
-  return '$busy人だけ予定あり。まず候補日にして聞いてみよ。';
-}
-
-String _futureGroupScheduleSubtitle(List<_DecoratedFriend> friends, int index) {
-  final activeNames = friends
-      .where((item) => item.status.enabled)
-      .map((item) => item.friend.name)
-      .take(2)
-      .toList();
-  if (activeNames.isEmpty) return 'みんなに予定を聞く候補日にしよ。';
-  final names = activeNames.join('、');
-  return index == 1 ? '$names は誘いやすそう。' : '候補を出して予定を合わせよ。';
-}
-
 String _groupScheduleNote(List<_DecoratedFriend> friends) {
-  final blocked = friends.where((item) => !item.status.enabled).toList();
-  if (blocked.isEmpty) return 'みんな行けそう。予定を立てるなら今がよさそう。';
-  final names = blocked.map((item) => item.friend.name).take(2).join('、');
-  return '$names の予定も見ながら、無理なく決めよ。';
+  final stats = _groupAvailabilityStats(friends);
+  if (stats.isAllOk) return 'みんな行けそう。予定を立てるなら今がよさそう。';
+  if (stats.isAlmostOk) return 'あと1人確認できたら決めやすいよ。';
+  if (stats.isMaybeOk) return 'まず候補日を出して、みんなに聞いてみよ。';
+  return '予定が合いにくそう。別の日も候補にしよ。';
 }
 
 bool _isSameLocalDay(DateTime a, DateTime b) =>
