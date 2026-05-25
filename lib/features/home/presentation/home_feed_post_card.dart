@@ -293,7 +293,7 @@ class _FeedCardFooter extends StatelessWidget {
                     : '投稿を共有',
                 customIcon: item.isOfficial
                     ? null
-                    : _VectorShareIcon(color: shareAccent, size: 18),
+                    : _VectorShareIcon(color: shareAccent, size: 19),
                 icon: item.isOfficial ? CupertinoIcons.doc_text_fill : null,
                 label: _feedShareActionLabel(item),
                 color: shareAccent,
@@ -378,7 +378,8 @@ class _FeedActionPill extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.fromLTRB(10, 7, 12, 7),
+          height: 44,
+          padding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
           decoration: BoxDecoration(
             color: color.withValues(alpha: isWhite ? .16 : .26),
             borderRadius: BorderRadius.circular(999),
