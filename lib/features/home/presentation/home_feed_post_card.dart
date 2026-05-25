@@ -143,12 +143,13 @@ class _FeedCardAuthorBar extends StatelessWidget {
     final secondaryText = isWhite
         ? const Color(0xFF778393)
         : Colors.white.withValues(alpha: .62);
+    const menuAccent = Color(0xFFC08BFF);
     final iconColor = isWhite
-        ? const Color(0xFF1E2733)
-        : Colors.white.withValues(alpha: .92);
+        ? Color.lerp(menuAccent, Colors.black, .18)!
+        : Color.lerp(menuAccent, Colors.white, .18)!;
     final place = item.place.trim();
     final metadataLabel = item.isOfficial
-        ? (place.isEmpty ? 'Nomo公式からのお知らせ' : 'Nomo公式 ・ $place')
+        ? (place.isEmpty ? 'Tomola公式からのお知らせ' : 'Tomola公式 ・ $place')
         : place.isEmpty
         ? '飲みログ'
         : place;
@@ -245,12 +246,15 @@ class _FeedCardFooter extends StatelessWidget {
     final secondaryText = isWhite
         ? const Color(0xFF778393)
         : Colors.white.withValues(alpha: .62);
-    final likeAccent = item.liked ? AppColors.danger : AppColors.primaryAction;
+    const feedActionPurple = Color(0xFFC08BFF);
+    final likeAccent = item.liked
+        ? Color.lerp(AppColors.danger, feedActionPurple, .34)!
+        : feedActionPurple;
     final shareAccent = item.isOfficial
-        ? AppColors.info
+        ? Color.lerp(AppColors.info, feedActionPurple, .34)!
         : item.ownedByMe
-        ? AppColors.invite
-        : AppColors.primaryAction;
+        ? Color.lerp(AppColors.invite, feedActionPurple, .46)!
+        : feedActionPurple;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 11, 14, 14),
@@ -372,6 +376,13 @@ class _FeedActionPill extends StatelessWidget {
             border: Border.all(
               color: color.withValues(alpha: isWhite ? .28 : .34),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: isWhite ? .12 : .18),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -543,7 +554,7 @@ String _feedShareActionLabel(_FeedItem item) {
 
 String _feedReactionSummary(_FeedItem item) {
   if (item.isOfficial) {
-    return item.likes > 0 ? '${item.likes}人がチェックしました' : 'Nomoからのお知らせです';
+    return item.likes > 0 ? '${item.likes}人がチェックしました' : 'Tomolaからのお知らせです';
   }
   if (item.likes <= 0) {
     return item.ownedByMe ? 'まだリアクションはありません' : '最初にリアクションしよう';
