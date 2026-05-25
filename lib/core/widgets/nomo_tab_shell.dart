@@ -385,52 +385,9 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       extendBody: true,
       body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-        child: Container(
-          height: 94,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                isWhite
-                    ? Colors.white.withValues(alpha: .92)
-                    : const Color(0xFF132234).withValues(alpha: .92),
-                isWhite
-                    ? const Color(0xFFF1F4F8).withValues(alpha: .94)
-                    : const Color(0xFF06111D).withValues(alpha: .94),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(42),
-            border: Border.all(
-              color: _selectedToastAccentColor.withValues(
-                alpha: isWhite ? .76 : .90,
-              ),
-              width: 1.7,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: .34),
-                blurRadius: 34,
-                offset: const Offset(0, 18),
-              ),
-              BoxShadow(
-                color: _selectedToastAccentColor.withValues(
-                  alpha: isWhite ? .24 : .32,
-                ),
-                blurRadius: 58,
-                offset: const Offset(0, 8),
-              ),
-              BoxShadow(
-                color: _selectedToastAccentColor.withValues(
-                  alpha: isWhite ? .16 : .24,
-                ),
-                blurRadius: 18,
-                spreadRadius: 1.2,
-              ),
-            ],
-          ),
+        minimum: const EdgeInsets.fromLTRB(26, 0, 26, 16),
+        child: SizedBox(
+          height: 74,
           child: Row(
             children: [
               _TabItem(
@@ -447,22 +404,6 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
                 activeColor: const Color(0xFF9AF21A),
                 onTap: () => setState(() => _selectedIndex = 1),
               ),
-              Expanded(
-                child: Center(
-                  child: Transform.translate(
-                    offset: const Offset(0, -2),
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: _openDrinkLogFlow,
-                      child: Semantics(
-                        button: true,
-                        label: '思い出を追加',
-                        child: const _AddTabIcon(),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
               _TabItem(
                 customIcon: _CalendarTabIcon(selected: _selectedIndex == 2),
                 label: 'カレンダー',
@@ -476,6 +417,20 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
                 selected: _selectedIndex == 3,
                 activeColor: const Color(0xFFFF75B5),
                 onTap: () => setState(() => _selectedIndex = 3),
+              ),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _openDrinkLogFlow,
+                    child: Semantics(
+                      button: true,
+                      label: '思い出を追加',
+                      child: const _AddTabIcon(),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -1400,35 +1355,16 @@ class _TabItem extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              height: 42,
-              child: Center(child: customIcon ?? const SizedBox.shrink()),
+        child: Semantics(
+          button: true,
+          label: label,
+          selected: selected,
+          child: Center(
+            child: IconTheme(
+              data: IconThemeData(color: labelColor),
+              child: customIcon ?? const SizedBox.shrink(),
             ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: labelColor,
-                fontSize: 12,
-                height: 1,
-                fontWeight: selected ? FontWeight.w900 : FontWeight.w800,
-                letterSpacing: -.4,
-                shadows: selected
-                    ? [
-                        Shadow(
-                          color: activeColor.withValues(alpha: .34),
-                          blurRadius: 14,
-                        ),
-                      ]
-                    : null,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
