@@ -1043,7 +1043,7 @@ class _Header extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Text(
-          '飲みログ作成',
+          '思い出作成',
           style: TextStyle(
             color: titleColor,
             fontSize: 24,

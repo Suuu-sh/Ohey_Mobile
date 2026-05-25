@@ -86,7 +86,7 @@ class _AdminSegmentedControl extends StatelessWidget {
             onTap: () => onChanged(_AdminSection.users),
           ),
           _AdminSegmentButton(
-            label: '飲みログ',
+            label: '思い出',
             selected: section == _AdminSection.posts,
             onTap: () => onChanged(_AdminSection.posts),
           ),
@@ -197,7 +197,7 @@ class _AdminPostsPane extends StatelessWidget {
     return Column(
       children: [
         _AdminPaneToolbar(
-          title: '飲みログ管理',
+          title: '思い出管理',
           actionLabel: '作成',
           onAction: () => _showPostSheet(context, ref),
           onRefresh: () => ref.invalidate(adminDrinkLogsProvider),
@@ -207,7 +207,7 @@ class _AdminPostsPane extends StatelessWidget {
           child: logsAsync.when(
             data: (logs) {
               if (logs.isEmpty) {
-                return const _AdminEmptyState(message: '飲みログがまだありません。');
+                return const _AdminEmptyState(message: '思い出がまだありません。');
               }
               return ListView.separated(
                 padding: const EdgeInsets.only(bottom: 120),

@@ -259,8 +259,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         fileNameOverrides: [
           item.isOfficial ? 'nomo_official_post.png' : 'nomo_drink_log.png',
         ],
-        title: item.isOfficial ? 'Tomola公式投稿を共有' : '飲みログを共有',
-        subject: item.isOfficial ? 'Tomola公式のお知らせ' : 'Tomolaのログ',
+        title: item.isOfficial ? 'Tomola公式投稿を共有' : '思い出を共有',
+        subject: item.isOfficial ? 'Tomola公式のお知らせ' : 'Tomolaの思い出',
         sharePositionOrigin: shareOrigin,
       ),
     );

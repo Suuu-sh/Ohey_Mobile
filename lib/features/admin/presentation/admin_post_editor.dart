@@ -55,7 +55,7 @@ class _AdminPostEditorSheetState extends ConsumerState<_AdminPostEditorSheet> {
     final log = _log;
 
     return _AdminSheet(
-      title: log == null ? '飲みログ作成' : '飲みログ編集',
+      title: log == null ? '思い出作成' : '思い出編集',
       child: Padding(
         padding: EdgeInsets.only(bottom: bottomInset),
         child: Column(

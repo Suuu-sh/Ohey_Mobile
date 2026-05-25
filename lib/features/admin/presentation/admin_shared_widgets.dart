@@ -129,7 +129,7 @@ class _AdminDropdown extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '飲みログのユーザー',
+            '思い出のユーザー',
             style: TextStyle(
               color: _AdminColors.sub,
               fontSize: 12,

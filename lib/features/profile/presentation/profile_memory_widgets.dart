@@ -441,7 +441,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               icon: CupertinoIcons.photo_fill_on_rectangle_fill,
               label: 'フォトアーカイブ',
               subtitle: photoLogs.isEmpty
-                  ? '写真付きの飲みログを見返す'
+                  ? '写真付きの思い出を見返す'
                   : '${photoLogs.length}件の思い出を見返す',
               accent: const Color(0xFFFF7AB8),
               onTap: () async {

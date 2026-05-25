@@ -191,7 +191,7 @@ Future<void> _showFeedPostActions(
       try {
         await ref.read(drinkLogControllerProvider.notifier).deleteLog(item.id);
         ref.invalidate(drinkLogControllerProvider);
-        if (context.mounted) NomoToast.show(context, '飲みログを削除しました');
+        if (context.mounted) NomoToast.show(context, '思い出を削除しました');
       } catch (error) {
         if (context.mounted) {
           NomoToast.show(context, '削除できなかったよ。あとでもう一度試してね');
@@ -200,7 +200,7 @@ Future<void> _showFeedPostActions(
     case _FeedPostAction.report:
       try {
         await ref.read(drinkLogControllerProvider.notifier).reportLog(item.id);
-        if (context.mounted) NomoToast.show(context, '飲みログを報告しました');
+        if (context.mounted) NomoToast.show(context, '思い出を報告しました');
       } catch (error) {
         if (context.mounted) {
           NomoToast.show(context, '報告できなかったよ。あとでもう一度試してね');

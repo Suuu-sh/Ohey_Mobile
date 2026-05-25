@@ -730,7 +730,7 @@ class _ArchivePlacesEmpty extends StatelessWidget {
             ),
           ),
           title: '場所つきの思い出はまだありません',
-          message: '飲みログに場所を入れると、ここに地図みたいに並びます。',
+          message: '思い出に場所を入れると、ここに地図みたいに並びます。',
         ),
       ),
     );

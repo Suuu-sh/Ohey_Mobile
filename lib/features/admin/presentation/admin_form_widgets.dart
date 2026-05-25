@@ -246,14 +246,14 @@ Future<void> _confirmDeletePost(
 ) async {
   final ok = await _confirmDestructive(
     context,
-    title: '飲みログを削除しますか？',
+    title: '思い出を削除しますか？',
     message: log.placeName.isEmpty ? log.id : log.placeName,
   );
   if (ok != true) return;
   try {
     await ref.read(adminControllerProvider).deleteDrinkLog(log.id);
     ref.invalidate(adminDrinkLogsProvider);
-    if (context.mounted) NomoToast.show(context, '飲みログを削除しました。');
+    if (context.mounted) NomoToast.show(context, '思い出を削除しました。');
   } catch (e) {
     if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
   }

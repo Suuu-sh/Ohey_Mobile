@@ -943,7 +943,7 @@ class _EmptyFriendsVisual extends StatelessWidget {
 
 bool _isDrinkableStatus(_FriendStatus status) {
   return switch (status.label) {
-    '今日飲める' || 'ノンアルなら' || '未設定' => true,
+    '今日遊べる' || 'ノンアルなら' || '未設定' => true,
     _ => false,
   };
 }

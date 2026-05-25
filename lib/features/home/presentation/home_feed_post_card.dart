@@ -22,7 +22,7 @@ class _FeedPostCard extends StatelessWidget {
     final caption = _feedCardCaption(item);
     final surfaceColor = NomoThemedPanel.surfaceColor(isWhite: isWhite);
     return Semantics(
-      label: '${item.userName}の飲みログ',
+      label: '${item.userName}の思い出',
       child: NomoThemedPanel(
         accentColor: _FeedColors.teal,
         backgroundColor: surfaceColor,
@@ -160,7 +160,7 @@ class _FeedCardAuthorBar extends StatelessWidget {
     final metadataLabel = item.isOfficial
         ? (place.isEmpty ? 'Tomola公式からのお知らせ' : 'Tomola公式 ・ $place')
         : place.isEmpty
-        ? '飲みログ'
+        ? '思い出'
         : place;
     final kind = item.postKind;
 
@@ -789,8 +789,8 @@ bool _isDisplayablePostPhoto(String? path) {
 String _duoStyleBody(_FeedItem item) {
   if (item.isOfficial) {
     return switch (item.prop) {
-      _PostProp.spark => '飲みともとの思い出を、もっと楽しく。',
-      _PostProp.ticket => 'フレンズと一緒に今月の飲みログをふり返ろう。',
+      _PostProp.spark => 'フレンズとの思い出を、もっと楽しく。',
+      _PostProp.ticket => 'フレンズと一緒に今月の思い出をふり返ろう。',
       _ => item.body,
     };
   }

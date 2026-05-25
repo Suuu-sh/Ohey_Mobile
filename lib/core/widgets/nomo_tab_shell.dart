@@ -456,7 +456,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
                       onTap: _openDrinkLogFlow,
                       child: Semantics(
                         button: true,
-                        label: '飲みログを追加',
+                        label: '思い出を追加',
                         child: const _AddTabIcon(),
                       ),
                     ),
@@ -907,7 +907,7 @@ class _DrinkLogStartSheet extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '写真なしでも、あとからでも飲みログを残せます。',
+            '写真なしでも、あとからでも思い出を残せます。',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: sub,

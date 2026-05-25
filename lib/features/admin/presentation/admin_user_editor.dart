@@ -231,6 +231,6 @@ Future<void> _showPostSheet(
 
   if (didSave == true && context.mounted) {
     ref.invalidate(adminDrinkLogsProvider);
-    NomoToast.show(context, '飲みログを保存しました。');
+    NomoToast.show(context, '思い出を保存しました。');
   }
 }

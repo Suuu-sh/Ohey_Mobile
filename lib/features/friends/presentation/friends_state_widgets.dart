@@ -279,7 +279,7 @@ _FriendStatus _statusForFriend(NomoFriend friend, int _) {
   switch (friend.statusKey) {
     case 'can_drink_today':
       return const _FriendStatus(
-        label: '今日飲める',
+        label: '今日遊べる',
         enabled: true,
         reason: '今夜誘いやすい状態です',
       );
@@ -291,9 +291,9 @@ _FriendStatus _statusForFriend(NomoFriend friend, int _) {
       );
     case 'liver_rest':
       return const _FriendStatus(
-        label: '休肝日',
+        label: 'おやすみ',
         enabled: false,
-        reason: '今日は飲みを控えたい日です',
+        reason: '今日はゆっくりしたい日です',
       );
     case 'has_plans':
       return const _FriendStatus(

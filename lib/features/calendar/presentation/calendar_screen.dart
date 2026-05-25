@@ -280,7 +280,7 @@ class _CalendarIntroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  '飲みログを残すと、その日にアメーバが表示されます。写真つきのログは、たまにレアカラーになることがあります。',
+                  '思い出を残すと、その日にアメーバが表示されます。写真つきのログは、たまにレアカラーになることがあります。',
                   style: TextStyle(
                     color: messageColor,
                     fontSize: 12.5,
@@ -414,7 +414,7 @@ class _SelectedDayPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${day.month}/${day.day} の予定と飲みログ',
+            '${day.month}/${day.day} の予定と思い出',
             style: TextStyle(
               color: isWhite ? const Color(0xFF101820) : Colors.white,
               fontSize: 14,
@@ -443,7 +443,7 @@ class _SelectedDayPanel extends StatelessWidget {
               onTap: onCreatePlan,
             ),
           const SizedBox(height: 8),
-          _CalendarSectionLabel(label: '飲みログ', accent: const Color(0xFF54D7FF)),
+          _CalendarSectionLabel(label: '思い出', accent: const Color(0xFF54D7FF)),
           const SizedBox(height: 5),
           if (logs.isNotEmpty)
             ...logs.take(3).map((log) {
@@ -458,7 +458,7 @@ class _SelectedDayPanel extends StatelessWidget {
                     ? AppColors.success
                     : const Color(0xFF54D7FF),
                 text: log.memo.trim().isEmpty
-                    ? (isPrivateRecord ? '記録だけ保存しました' : '飲みログを残しました')
+                    ? (isPrivateRecord ? '記録だけ保存しました' : '思い出を残しました')
                     : log.memo.trim(),
                 isWhite: isWhite,
                 badgeLabel: isPrivateRecord ? '記録のみ' : null,
@@ -471,8 +471,8 @@ class _SelectedDayPanel extends StatelessWidget {
             })
           else
             _CalendarEmptyRow(
-              text: 'この日の飲みログはまだありません',
-              buttonLabel: '飲みログを残す',
+              text: 'この日の思い出はまだありません',
+              buttonLabel: '思い出を残す',
               isWhite: isWhite,
               onTap: onCreatePlan,
             ),
@@ -634,7 +634,7 @@ class _CalendarLogPhotoSheet extends StatelessWidget {
         ? log.place.trim()
         : log.memo.trim().isNotEmpty
         ? log.memo.trim()
-        : '飲みログ写真';
+        : '思い出写真';
 
     return NomoBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
@@ -676,7 +676,7 @@ class _CalendarLogPhotoSheet extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            '${log.date.month}/${log.date.day} の飲みログ',
+            '${log.date.month}/${log.date.day} の思い出',
             style: TextStyle(
               color: subColor,
               fontSize: 12,

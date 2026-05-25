@@ -143,7 +143,7 @@ String _archiveTitle(DrinkLog log) {
   if (place.isNotEmpty) return place;
   final memo = log.memo.trim();
   if (memo.isNotEmpty) return memo;
-  return '飲みログ';
+  return '思い出';
 }
 
 String _archiveDate(DateTime date) =>

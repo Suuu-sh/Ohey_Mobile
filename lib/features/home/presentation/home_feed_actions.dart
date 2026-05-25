@@ -48,7 +48,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      body.isEmpty ? '飲みログメニュー' : body,
+                      body.isEmpty ? '思い出メニュー' : body,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -86,7 +86,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
           if (item.ownedByMe)
             NomoActionTile(
               icon: CupertinoIcons.trash_fill,
-              title: '飲みログを削除',
+              title: '思い出を削除',
               subtitle: 'この投稿をフィードから消す',
               accent: const Color(0xFFFF5F8F),
               destructive: true,
@@ -95,7 +95,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
           else
             NomoActionTile(
               icon: CupertinoIcons.exclamationmark_bubble_fill,
-              title: '飲みログを報告',
+              title: '思い出を報告',
               subtitle: '気になる投稿を運営に送る',
               accent: const Color(0xFFFFD166),
               onTap: () => Navigator.of(context).pop(_FeedPostAction.report),
@@ -139,7 +139,7 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            '飲みログを削除しますか？',
+            '思い出を削除しますか？',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: titleColor,
@@ -150,7 +150,7 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '削除した飲みログは元に戻せません。',
+            '削除した思い出は元に戻せません。',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: subtitleColor,
