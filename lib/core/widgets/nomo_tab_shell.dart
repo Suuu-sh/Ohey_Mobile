@@ -1453,90 +1453,33 @@ class _AddPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromCenter(
       center: Offset(size.width / 2, size.height * .50),
-      width: 54,
-      height: 54,
+      width: 52,
+      height: 52,
     );
     final center = rect.center;
 
-    final outerGlow = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFFFF4FB5).withValues(alpha: .34),
-          const Color(0xFFFF4FB5).withValues(alpha: .10),
-          Colors.transparent,
-        ],
-        stops: const [0, .52, 1],
-      ).createShader(Rect.fromCircle(center: center, radius: 42));
-    canvas.drawCircle(center.translate(0, 3), 42, outerGlow);
-
     canvas.drawCircle(
-      center.translate(0, 4),
-      27,
-      Paint()..color = const Color(0xFF8E155A).withValues(alpha: .38),
+      center,
+      26,
+      Paint()..color = Colors.white.withValues(alpha: .96),
     );
-
-    final fill = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFFF8FC5), Color(0xFFFF4FB5), Color(0xFFE92B96)],
-        stops: [0, .55, 1],
-      ).createShader(rect);
-    canvas.drawCircle(center, 27, fill);
-
-    final softDepth = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Colors.white.withValues(alpha: .16),
-          Colors.transparent,
-          const Color(0xFF9B155F).withValues(alpha: .18),
-        ],
-        stops: const [0, .48, 1],
-      ).createShader(rect);
-    canvas.drawCircle(center, 25.4, softDepth);
 
     canvas.drawCircle(
       center,
-      26.4,
+      25.4,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.3
-        ..color = Colors.white.withValues(alpha: .38),
+        ..strokeWidth = 1
+        ..color = Colors.white.withValues(alpha: .18),
     );
 
-    final innerRing = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..color = Colors.white.withValues(alpha: .13);
-    canvas.drawCircle(center.translate(0, -1), 20.5, innerRing);
-
-    final shine = Paint()..color = Colors.white.withValues(alpha: .20);
-    canvas.drawCircle(Offset(size.width * .37, size.height * .31), 4.4, shine);
-
     final plus = Paint()
-      ..color = Colors.white.withValues(alpha: .96)
+      ..color = AppColors.darkBackgroundBottom
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..strokeWidth = 5.1;
-    final plusShadow = Paint()
-      ..color = const Color(0xFF7A0E4B).withValues(alpha: .42)
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 6;
-    canvas.drawLine(
-      Offset(center.dx - 12, center.dy + 2),
-      Offset(center.dx + 12, center.dy + 2),
-      plusShadow,
-    );
-    canvas.drawLine(
-      Offset(center.dx, center.dy - 10),
-      Offset(center.dx, center.dy + 14),
-      plusShadow,
-    );
+
     canvas.drawLine(
       Offset(center.dx - 12, center.dy),
       Offset(center.dx + 12, center.dy),
