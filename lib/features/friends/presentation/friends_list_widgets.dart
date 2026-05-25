@@ -252,83 +252,96 @@ class _GroupScheduleSection extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child: NomoThemedPanel(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 15),
-        accentColor: const Color(0xFF5DEBD3),
-        backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
-        borderRadius: 28,
-        borderAlpha: isWhite ? .28 : .18,
-        glowAlpha: isWhite ? .04 : .08,
-        glowBlur: 20,
-        glowOffset: const Offset(0, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const NomoPopIcon(
-                  icon: CupertinoIcons.calendar_badge_plus,
-                  color: Color(0xFF5DEBD3),
-                  size: 40,
-                  iconSize: 21,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$groupNameで集まる日',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: ink,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.4,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        'みんなの今の予定から、集まりやすそうな日を出すね。',
-                        style: TextStyle(
-                          color: sub,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 13),
-            for (final suggestion in suggestions) ...[
-              _GroupScheduleSuggestionRow(
-                suggestion: suggestion,
-                isWhite: isWhite,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const NomoPopIcon(
+                icon: CupertinoIcons.calendar_badge_plus,
+                color: Color(0xFF5DEBD3),
+                size: 38,
+                iconSize: 20,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$groupNameで集まる日',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.4,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'みんなの今の予定から、集まりやすそうな日を出すね。',
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
-            Text(
-              _groupScheduleNote(friends),
-              style: TextStyle(
-                color: sub,
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                height: 1.35,
-              ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 142,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final cardWidth = (constraints.maxWidth - 12) / 2;
+                return ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: suggestions.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) => SizedBox(
+                    width: cardWidth,
+                    child: _GroupScheduleSuggestionCard(
+                      suggestion: suggestions[index],
+                      isWhite: isWhite,
+                    ),
+                  ),
+                );
+              },
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _groupScheduleNote(friends),
+            style: TextStyle(
+              color: sub,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Container(
+            width: double.infinity,
+            height: 1.5,
+            color: isWhite
+                ? const Color(0xFFE1E7DE)
+                : Colors.white.withValues(alpha: .14),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _GroupScheduleSuggestionRow extends StatelessWidget {
-  const _GroupScheduleSuggestionRow({
+class _GroupScheduleSuggestionCard extends StatelessWidget {
+  const _GroupScheduleSuggestionCard({
     required this.suggestion,
     required this.isWhite,
   });
@@ -342,64 +355,76 @@ class _GroupScheduleSuggestionRow extends StatelessWidget {
     final sub = isWhite
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .62);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: isWhite
-            ? const Color(0xFFF7F9FC)
-            : Colors.white.withValues(alpha: .06),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: suggestion.accent.withValues(alpha: isWhite ? .25 : .20),
-        ),
+    return NomoThemedPanel(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
+      accentColor: suggestion.accent,
+      backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: isWhite
+            ? const [Color(0xFFFFFFFF), Color(0xFFF7FFE9)]
+            : [
+                Colors.white.withValues(alpha: .06),
+                suggestion.accent.withValues(alpha: .08),
+              ],
       ),
-      child: Row(
+      borderRadius: 24,
+      borderAlpha: isWhite ? .24 : .14,
+      glowAlpha: isWhite ? .04 : .07,
+      glowBlur: 18,
+      glowOffset: const Offset(0, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          NomoPopIcon(
-            icon: CupertinoIcons.sparkles,
-            color: suggestion.accent,
-            size: 34,
-            iconSize: 17,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  suggestion.title,
+          Row(
+            children: [
+              NomoPopIcon(
+                icon: CupertinoIcons.calendar_badge_plus,
+                color: suggestion.accent,
+                size: 40,
+                iconSize: 20,
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                decoration: BoxDecoration(
+                  color: suggestion.accent.withValues(alpha: .16),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  suggestion.badge,
                   style: TextStyle(
-                    color: ink,
-                    fontSize: 14,
+                    color: suggestion.accent,
+                    fontSize: 11,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  suggestion.subtitle,
-                  style: TextStyle(
-                    color: sub,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 11),
+          Text(
+            suggestion.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: ink,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.25,
             ),
           ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-            decoration: BoxDecoration(
-              color: suggestion.accent.withValues(alpha: .16),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              suggestion.badge,
-              style: TextStyle(
-                color: suggestion.accent,
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
-              ),
+          const SizedBox(height: 7),
+          Text(
+            suggestion.subtitle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: sub,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
             ),
           ),
         ],
