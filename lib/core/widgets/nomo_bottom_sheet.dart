@@ -37,7 +37,7 @@ class NomoBottomSheetShell extends StatelessWidget {
     this.onClose,
     this.showHandle = false,
     this.topSafeArea = false,
-    this.margin = const EdgeInsets.fromLTRB(14, 0, 14, 14),
+    this.margin = EdgeInsets.zero,
     this.padding = const EdgeInsets.fromLTRB(18, 14, 18, 18),
     this.radius = 30,
     this.blurSigma = 16,
@@ -67,21 +67,28 @@ class NomoBottomSheetShell extends StatelessWidget {
     final bottomInset = followKeyboard
         ? MediaQuery.viewInsetsOf(context).bottom
         : 0.0;
+    final bottomSafePadding = MediaQuery.paddingOf(context).bottom;
+    final resolvedPadding = padding.resolve(Directionality.of(context));
+    final effectivePadding = resolvedPadding.add(
+      EdgeInsets.only(bottom: bottomSafePadding),
+    );
+    final sheetRadius = BorderRadius.vertical(top: Radius.circular(radius));
     return SafeArea(
       top: topSafeArea,
+      bottom: false,
       child: Padding(
         padding: margin.add(EdgeInsets.only(bottom: bottomInset)),
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: maxHeight ?? double.infinity),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(radius),
+            borderRadius: sheetRadius,
             child: BackdropFilter(
               filter: ui.ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
               child: Container(
-                padding: padding,
+                padding: effectivePadding,
                 decoration: BoxDecoration(
                   color: isWhite ? Colors.white : AppColors.darkBackground,
-                  borderRadius: BorderRadius.circular(radius),
+                  borderRadius: sheetRadius,
                   border: Border.all(
                     color: isWhite
                         ? const Color(0xFFE1E8F1)
