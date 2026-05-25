@@ -562,16 +562,9 @@ class _ProfileActivityHome extends StatelessWidget {
             friendsCount: friendsCount,
             logCount: logs.length,
           ),
-          const SizedBox(height: 18),
-          _ProfileRoomHighlights(
-            photoLogCount: photoLogs.length,
-            friendsCount: friendsCount,
-            onArchiveTap: onArchiveTap,
-            onAddFriendsTap: onAddFriendsTap,
-          ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
           _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
-          const SizedBox(height: 34),
+          const SizedBox(height: 24),
           _ProfileLearningStatus(
             status: status,
             monthlyLogCount: monthlyLogs.length,
@@ -602,7 +595,7 @@ class _ProfileSummaryStats extends StatelessWidget {
       children: [
         const Expanded(
           child: _ProfileSummaryStat(
-            icon: Icons.local_bar_rounded,
+            icon: CupertinoIcons.house_fill,
             value: '',
             label: 'ルーム',
             showIconOnly: true,
@@ -643,7 +636,7 @@ class _ProfileSummaryStat extends StatelessWidget {
             child: showIconOnly
                 ? NomoPopIcon(
                     icon: icon ?? Icons.local_bar_rounded,
-                    color: const Color(0xFF20DDBF),
+                    color: const Color(0xFFC08BFF),
                     size: 38,
                     iconSize: 21,
                   )
@@ -672,135 +665,6 @@ class _ProfileSummaryStat extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ProfileRoomHighlights extends StatelessWidget {
-  const _ProfileRoomHighlights({
-    required this.photoLogCount,
-    required this.friendsCount,
-    required this.onArchiveTap,
-    required this.onAddFriendsTap,
-  });
-
-  final int photoLogCount;
-  final int friendsCount;
-  final VoidCallback onArchiveTap;
-  final VoidCallback onAddFriendsTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .06),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: Colors.white.withValues(alpha: .10)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const NomoPopIcon(
-                icon: CupertinoIcons.house_fill,
-                color: Color(0xFFC08BFF),
-                size: 38,
-                iconSize: 20,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Tomolaマイルーム',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: .94),
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.4,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _ProfileRoomChip(
-                icon: CupertinoIcons.person_crop_circle_fill,
-                label: 'アバター背景',
-                color: const Color(0xFF21D6C4),
-                onTap: onArchiveTap,
-              ),
-              _ProfileRoomChip(
-                icon: CupertinoIcons.sparkles,
-                label: 'Tomoと飾る',
-                color: const Color(0xFFFFC857),
-                onTap: onArchiveTap,
-              ),
-              _ProfileRoomChip(
-                icon: CupertinoIcons.photo_fill_on_rectangle_fill,
-                label: '思い出 $photoLogCount枚',
-                color: const Color(0xFFFF7AB8),
-                onTap: onArchiveTap,
-              ),
-              _ProfileRoomChip(
-                icon: CupertinoIcons.person_2_fill,
-                label: 'フレンズ $friendsCount人',
-                color: const Color(0xFFB7F15B),
-                onTap: onAddFriendsTap,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileRoomChip extends StatelessWidget {
-  const _ProfileRoomChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: .13),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: color.withValues(alpha: .28)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            NomoGeneratedIcon(icon, color: color, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: .92),
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
