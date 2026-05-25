@@ -749,13 +749,7 @@ IconData _dailyStatusPromptIcon(NomoDailyStatus status) => switch (status) {
   NomoDailyStatus.unselected => CupertinoIcons.circle,
 };
 
-String _dailyStatusPromptCopy(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.canDrinkToday => 'すぐ誘われても大丈夫',
-  NomoDailyStatus.nonAlcohol => 'たぶん行けそうな日',
-  NomoDailyStatus.liverRest => '時間が合えば行けそう',
-  NomoDailyStatus.hasPlans => '今日はもう予定がある',
-  NomoDailyStatus.unselected => 'あとで決める',
-};
+String _dailyStatusPromptCopy(NomoDailyStatus status) => status.shortCopy;
 
 String _localDateKey(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-'

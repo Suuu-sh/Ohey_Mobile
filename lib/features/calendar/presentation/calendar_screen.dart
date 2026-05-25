@@ -873,24 +873,11 @@ class _CalendarFriendStatusRow extends StatelessWidget {
   }
 }
 
-bool _calendarFriendIsAvailable(String? statusKey) {
-  return switch (nomoDailyStatusFromKey(statusKey)) {
-    NomoDailyStatus.canDrinkToday ||
-    NomoDailyStatus.nonAlcohol ||
-    NomoDailyStatus.liverRest => true,
-    NomoDailyStatus.unselected || NomoDailyStatus.hasPlans => false,
-  };
-}
+bool _calendarFriendIsAvailable(String? statusKey) =>
+    nomoDailyStatusFromKey(statusKey).canJoinPlan;
 
-int _calendarFriendStatusRank(String? statusKey) {
-  return switch (nomoDailyStatusFromKey(statusKey)) {
-    NomoDailyStatus.canDrinkToday => 0,
-    NomoDailyStatus.nonAlcohol => 1,
-    NomoDailyStatus.liverRest => 2,
-    NomoDailyStatus.unselected => 3,
-    NomoDailyStatus.hasPlans => 4,
-  };
-}
+int _calendarFriendStatusRank(String? statusKey) =>
+    nomoDailyStatusFromKey(statusKey).availabilityRank;
 
 class _CalendarStatusSheet extends StatelessWidget {
   const _CalendarStatusSheet({required this.day, required this.selected});
@@ -1674,22 +1661,8 @@ IconData _calendarStatusIcon(NomoDailyStatus status) => switch (status) {
   NomoDailyStatus.unselected => CupertinoIcons.circle,
 };
 
-String _calendarStatusLabel(NomoDailyStatus status, {required DateTime day}) {
-  return switch (status) {
-    NomoDailyStatus.canDrinkToday => '空いてる',
-    NomoDailyStatus.nonAlcohol => '多分空いてる',
-    NomoDailyStatus.liverRest => '時間次第',
-    NomoDailyStatus.hasPlans => '予定ある',
-    NomoDailyStatus.unselected => 'まだ決めてない',
-  };
-}
+String _calendarStatusLabel(NomoDailyStatus status, {required DateTime day}) =>
+    status.label;
 
-String _calendarStatusCopy(NomoDailyStatus status, {required DateTime day}) {
-  return switch (status) {
-    NomoDailyStatus.canDrinkToday => '誘ってくれてOKだよ',
-    NomoDailyStatus.nonAlcohol => '多分空いてるかも',
-    NomoDailyStatus.liverRest => '時間次第の日',
-    NomoDailyStatus.hasPlans => '予定あるね',
-    NomoDailyStatus.unselected => 'まだ決めてないよ',
-  };
-}
+String _calendarStatusCopy(NomoDailyStatus status, {required DateTime day}) =>
+    status.description;

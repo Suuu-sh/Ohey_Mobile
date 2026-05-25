@@ -330,49 +330,18 @@ double _friendBlockBorderAlpha({
 }
 
 _FriendStatus _statusForFriend(NomoFriend friend, int _) {
-  switch (friend.statusKey) {
-    case 'can_drink_today':
-      return const _FriendStatus(
-        label: 'いける',
-        enabled: true,
-        reason: '誘ってくれてOKだよ',
-        buttonColor: _FriendsColors.statusPink,
-      );
-    case 'non_alcohol':
-      return const _FriendStatus(
-        label: '多分いける',
-        enabled: true,
-        reason: 'たぶん誘って大丈夫だよ',
-        buttonColor: _FriendsColors.statusBlue,
-      );
-    case 'liver_rest':
-      return const _FriendStatus(
-        label: '時間次第',
-        enabled: true,
-        reason: '時間が合えば行けそうだよ',
-        buttonColor: _FriendsColors.statusPurple,
-      );
-    case 'has_plans':
-      return const _FriendStatus(
-        label: '予定ある',
-        enabled: false,
-        reason: '予定が入っています',
-        buttonColor: _FriendsColors.statusBlocked,
-      );
-    case 'unselected' || 'unset' || null || '':
-      return const _FriendStatus(
-        label: '未定',
-        enabled: true,
-        reason: 'まだ決めてないみたい',
-        buttonColor: _FriendsColors.statusGreen,
-      );
-  }
-
-  return const _FriendStatus(
-    label: '未定',
-    enabled: true,
-    reason: 'まだ決めてないみたい',
-    buttonColor: _FriendsColors.statusGreen,
+  final status = nomoDailyStatusFromKey(friend.statusKey);
+  return _FriendStatus(
+    label: status.label,
+    enabled: status.isAvailable,
+    reason: status.description,
+    buttonColor: switch (status) {
+      NomoDailyStatus.canDrinkToday => _FriendsColors.statusPink,
+      NomoDailyStatus.nonAlcohol => _FriendsColors.statusBlue,
+      NomoDailyStatus.liverRest => _FriendsColors.statusPurple,
+      NomoDailyStatus.hasPlans => _FriendsColors.statusBlocked,
+      NomoDailyStatus.unselected => _FriendsColors.statusGreen,
+    },
   );
 }
 
