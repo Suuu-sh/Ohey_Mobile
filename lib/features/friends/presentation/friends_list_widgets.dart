@@ -1019,9 +1019,9 @@ String _recommendationReasonFor(_DecoratedFriend item) {
     return '今日遊べそう';
   }
   if (friend.statusKey == 'non_alcohol') {
-    return '軽く誘いやすい';
+    return 'たぶん空いてそう';
   }
-  return '誘いやすい状態';
+  return '誘って大丈夫そう';
 }
 
 bool _isRecommendedFriend(_DecoratedFriend item) {
