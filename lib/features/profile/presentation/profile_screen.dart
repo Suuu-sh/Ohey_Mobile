@@ -263,7 +263,7 @@ Future<void> _respondDrinkInvite(
       await controller.reject(invite.id);
     }
     if (!context.mounted) return;
-    NomoToast.show(context, accept ? '飲み予定が成立しました。' : '招待を見送りました。');
+    NomoToast.show(context, accept ? '予定が成立しました。' : '招待を見送りました。');
   } catch (error) {
     if (!context.mounted) return;
     NomoToast.show(context, '返信できなかったよ。あとでもう一度試してね');

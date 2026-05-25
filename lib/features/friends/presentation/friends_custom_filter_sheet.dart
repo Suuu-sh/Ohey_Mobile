@@ -102,7 +102,7 @@ class _FriendStatusOption {
 
 const _statusOptions = [
   _FriendStatusOption(key: 'can_drink_today', label: '今日遊べる', enabled: true),
-  _FriendStatusOption(key: 'non_alcohol', label: 'ノンアルなら', enabled: true),
+  _FriendStatusOption(key: 'non_alcohol', label: '軽めなら', enabled: true),
   _FriendStatusOption(key: 'liver_rest', label: 'おやすみ', enabled: false),
   _FriendStatusOption(key: 'has_plans', label: '予定あり', enabled: false),
   _FriendStatusOption(key: 'unset', label: '未設定', enabled: true),

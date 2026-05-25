@@ -285,9 +285,9 @@ _FriendStatus _statusForFriend(NomoFriend friend, int _) {
       );
     case 'non_alcohol':
       return const _FriendStatus(
-        label: 'ノンアルなら',
+        label: '軽めなら',
         enabled: true,
-        reason: 'ノンアル参加なら誘えます',
+        reason: '軽めなら誘えます',
       );
     case 'liver_rest':
       return const _FriendStatus(

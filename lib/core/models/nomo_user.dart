@@ -21,7 +21,7 @@ extension NomoDailyStatusX on NomoDailyStatus {
   String get label => switch (this) {
     NomoDailyStatus.unselected => '未設定',
     NomoDailyStatus.canDrinkToday => '今日遊べる',
-    NomoDailyStatus.nonAlcohol => 'ノンアルなら',
+    NomoDailyStatus.nonAlcohol => '軽めなら',
     NomoDailyStatus.liverRest => '今日はおやすみ',
     NomoDailyStatus.hasPlans => '予定あり',
   };
@@ -29,7 +29,7 @@ extension NomoDailyStatusX on NomoDailyStatus {
   String get description => switch (this) {
     NomoDailyStatus.unselected => 'ステータス未設定のまま、誘いは受けられます。',
     NomoDailyStatus.canDrinkToday => '今日の誘いを受けやすい状態です。',
-    NomoDailyStatus.nonAlcohol => 'ノンアル参加ならOKです。',
+    NomoDailyStatus.nonAlcohol => '軽めに参加ならOKです。',
     NomoDailyStatus.liverRest => '今日はゆっくりしたい状態です。',
     NomoDailyStatus.hasPlans => '今日は予定が入っています。',
   };

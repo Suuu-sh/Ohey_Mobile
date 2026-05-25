@@ -255,7 +255,7 @@ class _FeedNotificationsScreenState
   ) async {
     final drinkInviteId = notification.drinkInviteId;
     if (drinkInviteId == null || drinkInviteId.isEmpty) {
-      NomoToast.show(context, 'この飲み予定を開けなかったよ。あとでもう一度試してね。');
+      NomoToast.show(context, 'この予定を開けなかったよ。あとでもう一度試してね。');
       return;
     }
 
@@ -867,7 +867,7 @@ class _DrinkInviteNotificationSheetState
         await widget.onReject();
       }
       if (!mounted) return;
-      NomoToast.show(context, accept ? '飲み予定を受け取りました' : '飲み予定を見送りました');
+      NomoToast.show(context, accept ? '予定を受け取りました' : 'お誘いを見送りました');
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
@@ -1013,7 +1013,7 @@ class _DrinkInviteNotificationSheetState
             const SizedBox(height: 18),
             if (_isPending) ...[
               Nomo3DButton(
-                label: '承認して飲みに行く',
+                label: '承認して遊びに行く',
                 icon: CupertinoIcons.checkmark_circle_fill,
                 onTap: () => _submit(accept: true),
                 isLoading: _busyAction == 'accept',

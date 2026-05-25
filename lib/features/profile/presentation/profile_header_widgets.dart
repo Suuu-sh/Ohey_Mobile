@@ -274,8 +274,8 @@ class _ProfileReservationStrip extends StatelessWidget {
         .map((invite) => invite.otherUser(currentUserId!))
         .toList(growable: false);
     final friendText = reservedFriends.isEmpty
-        ? '飲み予定が成立しています'
-        : '${reservedFriends.first.name}${reservedFriends.length > 1 ? 'ほか${reservedFriends.length - 1}人' : ''}との飲み予定があります';
+        ? '予定が成立しています'
+        : '${reservedFriends.first.name}${reservedFriends.length > 1 ? 'ほか${reservedFriends.length - 1}人' : ''}との予定があります';
     return Container(
       constraints: const BoxConstraints(minHeight: 86),
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -418,7 +418,7 @@ class _IncomingInviteCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${from.name}から飲みのお誘い',
+                  '${from.name}からお誘い',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

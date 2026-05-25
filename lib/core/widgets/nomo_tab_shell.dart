@@ -501,7 +501,7 @@ class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
       if (!mounted) return;
       NomoToast.show(
         context,
-        '${friend.name}に飲み予定を送りました',
+        '${friend.name}に遊ぶ予定を送りました',
         icon: CupertinoIcons.checkmark_circle_fill,
         placement: NomoToastPlacement.bottom,
       );
@@ -558,7 +558,7 @@ class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '飲み予定を作る',
+                      '予定を作る',
                       style: TextStyle(
                         color: ink,
                         fontSize: 22,
@@ -610,7 +610,7 @@ class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
               if (friends.isEmpty) {
                 return _DrinkPlanEmptyMessage(
                   isWhite: isWhite,
-                  message: '飲み予定を送るには、まずフレンズを追加してください。',
+                  message: '予定を送るには、まずフレンズを追加してください。',
                 );
               }
               final visibleFriends = friends.take(6).toList(growable: false);
@@ -936,7 +936,7 @@ class _DrinkLogStartSheet extends StatelessWidget {
           _DrinkLogStartTile(
             icon: CupertinoIcons.calendar_badge_plus,
             color: AppColors.warning,
-            title: '飲み予定を作る',
+            title: '予定を作る',
             subtitle: 'これからの予定を先にメモ',
             onTap: () => Navigator.of(context).pop(_DrinkLogStartAction.plan),
           ),
@@ -1062,7 +1062,7 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
       if (!mounted) return;
       NomoToast.show(
         context,
-        accept ? '飲み予定を受け取りました' : '飲み予定を見送りました',
+        accept ? '予定を受け取りました' : 'お誘いを見送りました',
         icon: CupertinoIcons.checkmark_circle_fill,
         placement: NomoToastPlacement.bottom,
       );
@@ -1131,7 +1131,7 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            '飲みのお誘いが届いたよ！',
+                            'お誘いが届いたよ！',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -1143,7 +1143,7 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            '${from.name}から飲みのお誘い',
+                            '${from.name}からお誘い',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -1215,7 +1215,7 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                     ),
                   ),
                   child: Text(
-                    '${from.name}さんから飲み予定が届いたよ。',
+                    '${from.name}さんから予定が届いたよ。',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: .82),
                       fontSize: 14,
@@ -1241,7 +1241,7 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                 ),
                 const SizedBox(height: 18),
                 Nomo3DButton(
-                  label: '承認して飲みに行く',
+                  label: '承認して遊びに行く',
                   icon: CupertinoIcons.checkmark_circle_fill,
                   onTap: () => _submit(accept: true),
                   isLoading: _busyAction == 'accept',

@@ -443,7 +443,7 @@ class _FeedCompanionInlineButton extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: '一緒に飲んだフレンズを表示',
+      label: '一緒に遊んだフレンズを表示',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => _showFeedCompanionList(context, friends),

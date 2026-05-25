@@ -512,12 +512,12 @@ class _SelectedDayPanel extends StatelessWidget {
             _CalendarInfoRow(
               icon: CupertinoIcons.calendar_today,
               accent: AppColors.success,
-              text: '${_reservationFriendLabel(plans)}との飲み予定',
+              text: '${_reservationFriendLabel(plans)}との予定',
               isWhite: isWhite,
             )
           else
             _CalendarEmptyRow(
-              text: 'この日の飲み予定はまだありません',
+              text: 'この日の予定はまだありません',
               buttonLabel: 'この日に作る',
               isWhite: isWhite,
               onTap: onCreatePlan,
@@ -1417,7 +1417,7 @@ IconData _calendarStatusIcon(NomoDailyStatus status) => switch (status) {
 String _calendarStatusLabel(NomoDailyStatus status, {required DateTime day}) {
   return switch (status) {
     NomoDailyStatus.canDrinkToday => '遊べる',
-    NomoDailyStatus.nonAlcohol => 'ノンアルなら',
+    NomoDailyStatus.nonAlcohol => '軽めなら',
     NomoDailyStatus.liverRest => 'おやすみ',
     NomoDailyStatus.hasPlans => '予定あり',
     NomoDailyStatus.unselected => '未設定',

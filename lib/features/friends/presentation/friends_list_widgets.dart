@@ -764,7 +764,7 @@ String _recommendationReasonFor(_DecoratedFriend item) {
     return '30日以上行ってない';
   }
   if (friend.statusKey == 'can_drink_today') {
-    return '今日飲めそう';
+    return '今日遊べそう';
   }
   if (friend.statusKey == 'non_alcohol') {
     return '軽く誘いやすい';
@@ -1231,7 +1231,7 @@ class _EmptyFriendsVisual extends StatelessWidget {
 
 bool _isDrinkableStatus(_FriendStatus status) {
   return switch (status.label) {
-    '今日遊べる' || 'ノンアルなら' || '未設定' => true,
+    '今日遊べる' || '軽めなら' || '未設定' => true,
     _ => false,
   };
 }

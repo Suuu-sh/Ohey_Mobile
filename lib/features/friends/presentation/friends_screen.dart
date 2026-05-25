@@ -268,7 +268,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       HapticFeedback.lightImpact();
       NomoToast.show(
         context,
-        '${friend.name}に飲み招待を送りました。',
+        '${friend.name}にお誘いを送りました。',
         icon: CupertinoIcons.checkmark_circle_fill,
         placement: NomoToastPlacement.bottom,
       );
