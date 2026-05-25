@@ -31,8 +31,9 @@ class _FriendsList extends StatelessWidget {
             favoriteOverrides[friends[i].id] ?? friends[i].isFavorite,
           ),
           status: _statusForFriend(friends[i], i),
+          originalIndex: i,
         ),
-    ];
+    ]..sort(_compareFriendsForList);
     final filtered = decorated.where((item) {
       if (selectedCustomFilter != null) {
         return _matchesCustomFilter(item, selectedCustomFilter!);
@@ -1266,10 +1267,28 @@ class _PromoAvatarBubble extends StatelessWidget {
 }
 
 class _DecoratedFriend {
-  const _DecoratedFriend({required this.friend, required this.status});
+  const _DecoratedFriend({
+    required this.friend,
+    required this.status,
+    required this.originalIndex,
+  });
 
   final NomoFriend friend;
   final _FriendStatus status;
+  final int originalIndex;
+}
+
+int _compareFriendsForList(_DecoratedFriend a, _DecoratedFriend b) {
+  if (a.friend.isFavorite != b.friend.isFavorite) {
+    return a.friend.isFavorite ? -1 : 1;
+  }
+
+  final statusRankCompare = nomoDailyStatusFromKey(a.friend.statusKey)
+      .availabilityRank
+      .compareTo(nomoDailyStatusFromKey(b.friend.statusKey).availabilityRank);
+  if (statusRankCompare != 0) return statusRankCompare;
+
+  return a.originalIndex.compareTo(b.originalIndex);
 }
 
 bool _matchesCustomFilter(_DecoratedFriend item, _CustomFriendFilter filter) {
