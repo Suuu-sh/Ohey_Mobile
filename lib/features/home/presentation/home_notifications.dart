@@ -409,8 +409,8 @@ class _NotificationEmptyState extends StatelessWidget {
   Widget build(BuildContext context) => _FeedEmptyState(
     icon: CupertinoIcons.bell,
     isWhite: isWhite,
-    title: '大事な通知だけ届きます',
-    message: 'フレンズ申請・リアクション・今日の思い出・お誘いを、うるさくならないようにまとめます。',
+    title: 'まだお知らせはありません',
+    message: 'フレンズからの反応やお誘いがここに届きます。',
     action: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
