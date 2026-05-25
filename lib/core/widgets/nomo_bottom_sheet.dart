@@ -23,6 +23,10 @@ Future<T?> showNomoBottomSheet<T>({
     useRootNavigator: useRootNavigator,
     isDismissible: isDismissible,
     enableDrag: enableDrag,
+    constraints: BoxConstraints(
+      minWidth: MediaQuery.sizeOf(context).width,
+      maxWidth: MediaQuery.sizeOf(context).width,
+    ),
     backgroundColor: Colors.transparent,
     barrierColor: barrierColor,
     builder: builder,
