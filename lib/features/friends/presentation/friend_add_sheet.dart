@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/nomo_user_controller.dart';
+import '../../../core/models/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_toast.dart';
+import '../../../core/widgets/nomo_exchange_components.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../data/friend_repository.dart';
 
@@ -40,8 +43,41 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     super.dispose();
   }
 
+  String _normalizedInput(String value) {
+    var input = value.trim();
+    if (input.startsWith('@')) input = input.substring(1).trim();
+    final uri = Uri.tryParse(input);
+    if (uri != null && uri.pathSegments.isNotEmpty) {
+      input = uri.pathSegments.last.trim();
+    }
+    return input;
+  }
+
+  Future<void> _pasteAndSearch() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = data?.text?.trim();
+    if (text == null || text.isEmpty) {
+      if (!mounted) return;
+      setState(() => _error = 'コピーしたIDが見つかりませんでした');
+      return;
+    }
+    _controller.text = _normalizedInput(text);
+    await _search();
+  }
+
+  Future<void> _copyMyId(String userId) async {
+    await Clipboard.setData(ClipboardData(text: userId));
+    if (!mounted) return;
+    NomoToast.show(
+      context,
+      '@$userId をコピーしました',
+      icon: CupertinoIcons.doc_on_clipboard_fill,
+    );
+  }
+
   Future<void> _search() async {
-    final userId = _controller.text.trim();
+    final userId = _normalizedInput(_controller.text);
+    _controller.text = userId;
     if (userId.isEmpty) {
       setState(() => _error = 'IDを入力してください');
       return;
@@ -105,6 +141,9 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     final sub = isWhite ? const Color(0xFF6C7480) : Colors.white70;
     final profile = _profile;
     final status = _status;
+    final user = widget.ref.watch(nomoUserProvider);
+    final myUserId = user?.userId.trim() ?? '';
+    final qrPayload = myUserId.isEmpty ? null : 'tomola://friend/$myUserId';
     final alreadyFriend = status?.alreadyFriend == true;
     final alreadyRequested =
         status?.requestState == NomoFriendRequestState.outgoing;
@@ -117,9 +156,37 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            '相手のTomola IDを入力してフレンズ申請できます。',
-            style: TextStyle(color: sub, fontWeight: FontWeight.w700),
+            '相手のTomola IDを入力・ペーストしてすぐ申請できます。QRは自分のID交換用です。',
+            style: TextStyle(
+              color: sub,
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
           ),
+          if (myUserId.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            NomoQrDisplayCard(
+              title: 'あなたのTomola ID',
+              subtitle: '友達に見せるか、IDをコピーして送れます',
+              handle: '@$myUserId',
+              payload: qrPayload,
+              avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
+              accentColor: const Color(0xFFB7F15B),
+              textColor: ink,
+              mutedTextColor: sub,
+              qrSize: 154,
+              qrPadding: 10,
+            ),
+            const SizedBox(height: 10),
+            Nomo3DButton.secondary(
+              label: '自分のIDをコピー',
+              icon: CupertinoIcons.doc_on_clipboard,
+              onTap: () => _copyMyId(myUserId),
+              height: 42,
+              radius: 20,
+              fontSize: 13,
+            ),
+          ],
           const SizedBox(height: 14),
           CupertinoTextField(
             controller: _controller,
@@ -138,20 +205,38 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
             ),
           ),
           const SizedBox(height: 12),
-          Nomo3DButton(
-            label: _isLoading ? '検索中...' : 'IDで検索',
-            icon: CupertinoIcons.search,
-            onTap: _isLoading
-                ? null
-                : () {
-                    HapticFeedback.selectionClick();
-                    _search();
-                  },
-            height: 46,
-            radius: 22,
-            color: const Color(0xFFB7F15B),
-            foregroundColor: const Color(0xFF183018),
-            shadowColor: const Color(0xFF79A634),
+          Row(
+            children: [
+              Expanded(
+                child: Nomo3DButton(
+                  label: _isLoading ? '検索中...' : 'IDで検索',
+                  icon: CupertinoIcons.search,
+                  onTap: _isLoading
+                      ? null
+                      : () {
+                          HapticFeedback.selectionClick();
+                          _search();
+                        },
+                  height: 46,
+                  radius: 22,
+                  color: const Color(0xFFB7F15B),
+                  foregroundColor: const Color(0xFF183018),
+                  shadowColor: const Color(0xFF79A634),
+                ),
+              ),
+              const SizedBox(width: 10),
+              SizedBox(
+                width: 104,
+                child: Nomo3DButton.secondary(
+                  label: '貼り付け',
+                  icon: CupertinoIcons.doc_on_clipboard,
+                  onTap: _isLoading ? null : _pasteAndSearch,
+                  height: 46,
+                  radius: 22,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),

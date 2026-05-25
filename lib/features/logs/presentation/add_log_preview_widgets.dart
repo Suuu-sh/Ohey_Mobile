@@ -68,6 +68,76 @@ class _PhotoCapturePrompt extends StatelessWidget {
   );
 }
 
+class _QuickPostHintCard extends StatelessWidget {
+  const _QuickPostHintCard({
+    required this.hasCaption,
+    required this.hasFriends,
+  });
+
+  final bool hasCaption;
+  final bool hasFriends;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = _AddLogColors.isWhite(context);
+    final ink = _AddLogColors.primaryTextFor(context);
+    final sub = _AddLogColors.secondaryTextFor(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      child: Container(
+        padding: const EdgeInsets.all(13),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? Colors.white.withValues(alpha: .86)
+              : Colors.white.withValues(alpha: .07),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: _AddLogColors.lineFor(context)),
+        ),
+        child: Row(
+          children: [
+            NomoPopIcon(
+              icon: hasCaption
+                  ? CupertinoIcons.checkmark_alt
+                  : CupertinoIcons.text_quote,
+              color: hasCaption ? AppColors.success : _AddLogColors.lime,
+              size: 38,
+              iconSize: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hasCaption ? 'あとは投稿するだけ' : 'ひと言だけで投稿できます',
+                    style: TextStyle(
+                      color: ink,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    hasFriends
+                        ? 'フレンズもタグ付け済み。投稿後はフィードで反応を待てます。'
+                        : '場所やフレンズは任意。あとで思い出を見返しやすくなります。',
+                    style: TextStyle(
+                      color: sub,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                      height: 1.25,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _PostPreviewCard extends StatelessWidget {
   const _PostPreviewCard({
     required this.path,
@@ -496,7 +566,7 @@ class _PreviewFooter extends StatelessWidget {
               _PreviewActionPill(
                 semanticLabel: 'いいねで反応',
                 icon: CupertinoIcons.heart,
-                label: 'Like',
+                label: 'いいね',
                 color: _postPreviewActionPurple,
                 isWhite: isWhite,
               ),
@@ -507,7 +577,7 @@ class _PreviewFooter extends StatelessWidget {
                   color: _postPreviewActionPurple,
                   size: 18,
                 ),
-                label: 'Share',
+                label: 'また誘う',
                 color: _postPreviewActionPurple,
                 isWhite: isWhite,
               ),
@@ -1127,7 +1197,7 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
             ),
             const SizedBox(height: 14),
             Text(
-              widget.isPrivateRecord ? '記録しました！' : '飲みログを残しました！',
+              widget.isPrivateRecord ? '記録しました！' : '投稿できました！',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: ink,
@@ -1140,7 +1210,7 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
             Text(
               widget.isPrivateRecord
                   ? 'カレンダーに追加しました'
-                  : '今月${widget.monthlyCount}回目の飲みログです',
+                  : '今月${widget.monthlyCount}個目の思い出が増えました',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: widget.isPrivateRecord
@@ -1176,7 +1246,7 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
                 const SizedBox(width: 10),
                 Expanded(
                   child: Nomo3DButton(
-                    label: widget.isPrivateRecord ? 'カレンダーへ' : 'フィードへ',
+                    label: widget.isPrivateRecord ? 'カレンダーへ' : 'フィードで見る',
                     icon: widget.isPrivateRecord
                         ? CupertinoIcons.calendar_today
                         : CupertinoIcons.house_fill,

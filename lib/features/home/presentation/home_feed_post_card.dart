@@ -553,12 +553,13 @@ String _feedCardCaption(_FeedItem item) {
 }
 
 String _feedLikeActionLabel(_FeedItem item) {
-  return item.liked ? 'Liked' : 'Like';
+  return item.liked ? 'いいね済み' : 'いいね';
 }
 
 String _feedShareActionLabel(_FeedItem item) {
-  if (item.isOfficial) return 'More';
-  return 'Share';
+  if (item.isOfficial) return '詳しく';
+  if (!item.ownedByMe && item.friends.isNotEmpty) return 'また誘う';
+  return item.ownedByMe ? '共有' : '送る';
 }
 
 String _feedReactionSummary(_FeedItem item) {
@@ -566,7 +567,7 @@ String _feedReactionSummary(_FeedItem item) {
     return item.likes > 0 ? '${item.likes}人がチェックしました' : 'Tomolaからのお知らせです';
   }
   if (item.likes <= 0) {
-    return item.ownedByMe ? 'まだリアクションはありません' : '最初にリアクションしよう';
+    return item.ownedByMe ? '友達のリアクションを待とう' : 'いいねで気持ちを送ろう';
   }
   final companion = item.friends.isNotEmpty
       ? item.friends.first.name.trim()
