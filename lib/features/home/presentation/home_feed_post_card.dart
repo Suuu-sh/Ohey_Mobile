@@ -248,12 +248,12 @@ class _FeedCardFooter extends StatelessWidget {
         : Colors.white.withValues(alpha: .62);
     const feedActionPurple = Color(0xFFC08BFF);
     final likeAccent = item.liked
-        ? Color.lerp(AppColors.danger, feedActionPurple, .34)!
+        ? Color.lerp(AppColors.danger, feedActionPurple, .58)!
         : feedActionPurple;
     final shareAccent = item.isOfficial
-        ? Color.lerp(AppColors.info, feedActionPurple, .34)!
+        ? Color.lerp(AppColors.info, feedActionPurple, .58)!
         : item.ownedByMe
-        ? Color.lerp(AppColors.invite, feedActionPurple, .46)!
+        ? Color.lerp(AppColors.invite, feedActionPurple, .66)!
         : feedActionPurple;
 
     return Padding(
@@ -371,15 +371,15 @@ class _FeedActionPill extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(10, 7, 12, 7),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: isWhite ? .12 : .20),
+            color: color.withValues(alpha: isWhite ? .16 : .26),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: color.withValues(alpha: isWhite ? .28 : .34),
+              color: color.withValues(alpha: isWhite ? .40 : .50),
             ),
             boxShadow: [
               BoxShadow(
-                color: color.withValues(alpha: isWhite ? .12 : .18),
-                blurRadius: 14,
+                color: color.withValues(alpha: isWhite ? .18 : .28),
+                blurRadius: 18,
                 offset: const Offset(0, 6),
               ),
             ],
