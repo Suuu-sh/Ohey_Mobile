@@ -91,6 +91,7 @@ class _FilterChip extends StatelessWidget {
     required this.onTap,
     this.icon,
     this.onLongPress,
+    this.onDelete,
   });
 
   final String label;
@@ -99,6 +100,7 @@ class _FilterChip extends StatelessWidget {
   final VoidCallback onTap;
   final IconData? icon;
   final VoidCallback? onLongPress;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +139,7 @@ class _FilterChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.only(left: 20, right: onDelete == null ? 20 : 10),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -184,6 +186,41 @@ class _FilterChip extends StatelessWidget {
                   fontSize: 14,
                 ),
               ),
+              if (onDelete != null) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: onDelete,
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? _FriendsColors.bg.withValues(alpha: .14)
+                          : Colors.white.withValues(alpha: isWhite ? .70 : .10),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: selected
+                            ? _FriendsColors.bg.withValues(alpha: .18)
+                            : Colors.white.withValues(
+                                alpha: isWhite ? .42 : .10,
+                              ),
+                      ),
+                    ),
+                    child: Center(
+                      child: NomoGeneratedIcon(
+                        CupertinoIcons.xmark,
+                        color: selected
+                            ? _FriendsColors.bg
+                            : isWhite
+                            ? const Color(0xFF101820)
+                            : Colors.white,
+                        size: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

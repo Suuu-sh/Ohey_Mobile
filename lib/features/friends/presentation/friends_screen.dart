@@ -101,6 +101,22 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     );
   }
 
+  Future<void> _deleteCustomFilter(_CustomFriendFilter filter) async {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _customFilters = [
+        for (final item in _customFilters)
+          if (item.id != filter.id) item,
+      ];
+      if (_selectedCustomFilterId == filter.id) {
+        _selectedCustomFilterId = null;
+        _selectedFilter = _FriendFilterType.all;
+      }
+    });
+    await _persistCustomFilters();
+    if (mounted) NomoToast.show(context, 'グループを削除したよ');
+  }
+
   Future<void> _openCustomFilterSheet({_CustomFriendFilter? filter}) async {
     final friends =
         ref.read(friendsProvider).asData?.value ?? const <NomoFriend>[];
@@ -321,6 +337,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                       }),
                       onCustomLongPress: (filter) =>
                           _openCustomFilterSheet(filter: filter),
+                      onCustomDelete: _deleteCustomFilter,
                       onCreateCustom: () => _openCustomFilterSheet(),
                     ),
                     const SizedBox(height: 18),

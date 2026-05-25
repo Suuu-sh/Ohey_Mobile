@@ -27,6 +27,7 @@ class _FilterBar extends StatelessWidget {
     required this.onChanged,
     required this.onCustomChanged,
     required this.onCustomLongPress,
+    required this.onCustomDelete,
     required this.onCreateCustom,
   });
 
@@ -36,6 +37,7 @@ class _FilterBar extends StatelessWidget {
   final ValueChanged<_FriendFilterType> onChanged;
   final ValueChanged<_CustomFriendFilter> onCustomChanged;
   final ValueChanged<_CustomFriendFilter> onCustomLongPress;
+  final ValueChanged<_CustomFriendFilter> onCustomDelete;
   final VoidCallback onCreateCustom;
 
   @override
@@ -66,6 +68,7 @@ class _FilterBar extends StatelessWidget {
                 selected: selectedCustomFilterId == customFilters[i].id,
                 onTap: () => onCustomChanged(customFilters[i]),
                 onLongPress: () => onCustomLongPress(customFilters[i]),
+                onDelete: () => onCustomDelete(customFilters[i]),
               ),
               const SizedBox(width: 10),
             ],
