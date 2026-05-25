@@ -46,7 +46,9 @@ class _FriendsList extends StatelessWidget {
         (a, b) =>
             _recommendationScoreFor(b).compareTo(_recommendationScoreFor(a)),
       );
-    final hasRecommendations = recommendations.isNotEmpty;
+    final isGroupView = selectedCustomFilter != null;
+    final hasRecommendations = !isGroupView && recommendations.isNotEmpty;
+    final hasGroupSchedule = isGroupView && filtered.length >= 2;
 
     if (filtered.isEmpty) {
       return LayoutBuilder(
@@ -85,7 +87,11 @@ class _FriendsList extends StatelessWidget {
         parent: BouncingScrollPhysics(),
       ),
       padding: const EdgeInsets.only(bottom: 116),
-      itemCount: filtered.length + 1 + (hasRecommendations ? 1 : 0),
+      itemCount:
+          filtered.length +
+          1 +
+          (hasRecommendations ? 1 : 0) +
+          (hasGroupSchedule ? 1 : 0),
       separatorBuilder: (_, _) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
         if (hasRecommendations && index == 0) {
@@ -94,7 +100,14 @@ class _FriendsList extends StatelessWidget {
             onInvite: onInvite,
           );
         }
-        final friendIndex = index - (hasRecommendations ? 1 : 0);
+        if (hasGroupSchedule && index == 0) {
+          return _GroupScheduleSection(
+            groupName: selectedCustomFilter!.name,
+            friends: filtered,
+          );
+        }
+        final friendIndex =
+            index - (hasRecommendations ? 1 : 0) - (hasGroupSchedule ? 1 : 0);
         if (friendIndex == filtered.length) {
           return _AddFriendsPromoCard(onTap: onAddFriend);
         }
@@ -215,6 +228,179 @@ class _TodayInviteSection extends StatelessWidget {
             color: isWhite
                 ? const Color(0xFFE1E7DE)
                 : Colors.white.withValues(alpha: .14),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GroupScheduleSection extends StatelessWidget {
+  const _GroupScheduleSection({required this.groupName, required this.friends});
+
+  final String groupName;
+  final List<_DecoratedFriend> friends;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .60);
+    final suggestions = _groupScheduleSuggestions(friends);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: NomoThemedPanel(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 15),
+        accentColor: const Color(0xFF5DEBD3),
+        backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
+        borderRadius: 28,
+        borderAlpha: isWhite ? .28 : .18,
+        glowAlpha: isWhite ? .04 : .08,
+        glowBlur: 20,
+        glowOffset: const Offset(0, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const NomoPopIcon(
+                  icon: CupertinoIcons.calendar_badge_plus,
+                  color: Color(0xFF5DEBD3),
+                  size: 40,
+                  iconSize: 21,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$groupNameで集まる日',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: ink,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.4,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'みんなの今の予定から、集まりやすそうな日を出すね。',
+                        style: TextStyle(
+                          color: sub,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 13),
+            for (final suggestion in suggestions) ...[
+              _GroupScheduleSuggestionRow(
+                suggestion: suggestion,
+                isWhite: isWhite,
+              ),
+              const SizedBox(height: 8),
+            ],
+            Text(
+              _groupScheduleNote(friends),
+              style: TextStyle(
+                color: sub,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GroupScheduleSuggestionRow extends StatelessWidget {
+  const _GroupScheduleSuggestionRow({
+    required this.suggestion,
+    required this.isWhite,
+  });
+
+  final _GroupScheduleSuggestion suggestion;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .62);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isWhite
+            ? const Color(0xFFF7F9FC)
+            : Colors.white.withValues(alpha: .06),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: suggestion.accent.withValues(alpha: isWhite ? .25 : .20),
+        ),
+      ),
+      child: Row(
+        children: [
+          NomoPopIcon(
+            icon: CupertinoIcons.sparkles,
+            color: suggestion.accent,
+            size: 34,
+            iconSize: 17,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  suggestion.title,
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  suggestion.subtitle,
+                  style: TextStyle(
+                    color: sub,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+            decoration: BoxDecoration(
+              color: suggestion.accent.withValues(alpha: .16),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              suggestion.badge,
+              style: TextStyle(
+                color: suggestion.accent,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
           ),
         ],
       ),
@@ -466,6 +652,83 @@ class _TodayInviteEmpty extends StatelessWidget {
     ),
   );
 }
+
+class _GroupScheduleSuggestion {
+  const _GroupScheduleSuggestion({
+    required this.title,
+    required this.subtitle,
+    required this.badge,
+    required this.accent,
+  });
+
+  final String title;
+  final String subtitle;
+  final String badge;
+  final Color accent;
+}
+
+List<_GroupScheduleSuggestion> _groupScheduleSuggestions(
+  List<_DecoratedFriend> friends,
+) {
+  final availableCount = friends.where((item) => item.status.enabled).length;
+  final total = friends.length;
+  final now = DateTime.now();
+  final baseScore = availableCount / total;
+  final firstDayOffset = baseScore == 1 ? 0 : 1;
+
+  return [
+    for (var i = 0; i < 3; i++)
+      _GroupScheduleSuggestion(
+        title: _groupScheduleDayLabel(
+          now.add(Duration(days: firstDayOffset + i)),
+        ),
+        subtitle: i == 0
+            ? _bestGroupScheduleSubtitle(availableCount, total)
+            : _futureGroupScheduleSubtitle(friends, i),
+        badge: i == 0 && baseScore == 1 ? '全員OK' : '$availableCount/$total人OK',
+        accent: i == 0
+            ? const Color(0xFFB8FF00)
+            : i == 1
+            ? const Color(0xFF5DEBD3)
+            : const Color(0xFFFFD166),
+      ),
+  ];
+}
+
+String _groupScheduleDayLabel(DateTime day) {
+  final now = DateTime.now();
+  if (_isSameLocalDay(day, now)) return '今日';
+  if (_isSameLocalDay(day, now.add(const Duration(days: 1)))) return '明日';
+  const weekdays = ['月', '火', '水', '木', '金', '土', '日'];
+  return '${day.month}/${day.day}（${weekdays[day.weekday - 1]}）';
+}
+
+String _bestGroupScheduleSubtitle(int availableCount, int total) {
+  if (availableCount == total) return '今ならこのメンバーで声かけやすいよ。';
+  final busy = total - availableCount;
+  return '$busy人だけ予定あり。まず候補日にして聞いてみよ。';
+}
+
+String _futureGroupScheduleSubtitle(List<_DecoratedFriend> friends, int index) {
+  final activeNames = friends
+      .where((item) => item.status.enabled)
+      .map((item) => item.friend.name)
+      .take(2)
+      .toList();
+  if (activeNames.isEmpty) return 'みんなに予定を聞く候補日にしよ。';
+  final names = activeNames.join('、');
+  return index == 1 ? '$names は誘いやすそう。' : '候補を出して予定を合わせよ。';
+}
+
+String _groupScheduleNote(List<_DecoratedFriend> friends) {
+  final blocked = friends.where((item) => !item.status.enabled).toList();
+  if (blocked.isEmpty) return 'みんな行けそう。予定を立てるなら今がよさそう。';
+  final names = blocked.map((item) => item.friend.name).take(2).join('、');
+  return '$names の予定も見ながら、無理なく決めよ。';
+}
+
+bool _isSameLocalDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
 
 String _recommendationReasonFor(_DecoratedFriend item) {
   final friend = item.friend;
