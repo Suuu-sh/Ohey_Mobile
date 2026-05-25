@@ -937,10 +937,12 @@ _GroupAvailabilityStats _groupAvailabilityStats(
       case 'can_drink_today' || 'non_alcohol':
         okCount += 1;
         maybeCount += 1;
+      case 'liver_rest':
+        maybeCount += 1;
       case 'unselected' || 'unset' || null || '':
         maybeCount += 1;
         undecidedCount += 1;
-      case 'has_plans' || 'liver_rest':
+      case 'has_plans':
         blockedCount += 1;
       default:
         maybeCount += 1;

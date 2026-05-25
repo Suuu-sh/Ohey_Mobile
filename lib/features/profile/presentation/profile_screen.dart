@@ -244,7 +244,7 @@ Color _statusColor(NomoDailyStatus status) => switch (status) {
 IconData _statusIcon(NomoDailyStatus status) => switch (status) {
   NomoDailyStatus.canDrinkToday => CupertinoIcons.checkmark_circle_fill,
   NomoDailyStatus.nonAlcohol => CupertinoIcons.drop_fill,
-  NomoDailyStatus.liverRest => CupertinoIcons.moon_fill,
+  NomoDailyStatus.liverRest => CupertinoIcons.clock_fill,
   NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
   NomoDailyStatus.unselected => CupertinoIcons.circle,
 };

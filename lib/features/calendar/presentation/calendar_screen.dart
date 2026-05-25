@@ -644,10 +644,9 @@ class _CalendarStatusSheet extends StatelessWidget {
     final sub = isWhite ? const Color(0xFF657282) : Colors.white70;
     final options = const [
       NomoDailyStatus.canDrinkToday,
-      NomoDailyStatus.hasPlans,
-      NomoDailyStatus.liverRest,
       NomoDailyStatus.nonAlcohol,
-      NomoDailyStatus.unselected,
+      NomoDailyStatus.liverRest,
+      NomoDailyStatus.hasPlans,
     ];
     return NomoBottomSheetShell(
       title: 'この日の気分',
@@ -732,7 +731,7 @@ class _CalendarStatusOption extends StatelessWidget {
                 children: [
                   Text(
                     status == NomoDailyStatus.unselected
-                        ? 'まだ決めてない。'
+                        ? 'まだ決めてない'
                         : _calendarStatusLabel(status, day: day),
                     style: TextStyle(
                       color: ink,
@@ -1409,27 +1408,27 @@ Color _calendarStatusColor(NomoDailyStatus status) => switch (status) {
 IconData _calendarStatusIcon(NomoDailyStatus status) => switch (status) {
   NomoDailyStatus.canDrinkToday => CupertinoIcons.sparkles,
   NomoDailyStatus.nonAlcohol => CupertinoIcons.drop_fill,
-  NomoDailyStatus.liverRest => CupertinoIcons.moon_stars_fill,
+  NomoDailyStatus.liverRest => CupertinoIcons.clock_fill,
   NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
   NomoDailyStatus.unselected => CupertinoIcons.circle,
 };
 
 String _calendarStatusLabel(NomoDailyStatus status, {required DateTime day}) {
   return switch (status) {
-    NomoDailyStatus.canDrinkToday => '遊べる！',
-    NomoDailyStatus.nonAlcohol => '多分いける！',
-    NomoDailyStatus.liverRest => '休ませて。',
-    NomoDailyStatus.hasPlans => '予定ある。ごめん',
-    NomoDailyStatus.unselected => 'まだ決めてない。',
+    NomoDailyStatus.canDrinkToday => '空いてる',
+    NomoDailyStatus.nonAlcohol => '多分空いてる',
+    NomoDailyStatus.liverRest => '時間次第',
+    NomoDailyStatus.hasPlans => '予定ある',
+    NomoDailyStatus.unselected => 'まだ決めてない',
   };
 }
 
 String _calendarStatusCopy(NomoDailyStatus status, {required DateTime day}) {
   return switch (status) {
     NomoDailyStatus.canDrinkToday => '誘ってくれてOKだよ',
-    NomoDailyStatus.nonAlcohol => 'たぶん行けるかも',
-    NomoDailyStatus.liverRest => '休ませてほしい日',
-    NomoDailyStatus.hasPlans => '予定ある。ごめんね',
+    NomoDailyStatus.nonAlcohol => '多分空いてるかも',
+    NomoDailyStatus.liverRest => '時間次第の日',
+    NomoDailyStatus.hasPlans => '予定あるね',
     NomoDailyStatus.unselected => 'まだ決めてないよ',
   };
 }

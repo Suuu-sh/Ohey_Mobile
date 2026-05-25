@@ -279,38 +279,38 @@ _FriendStatus _statusForFriend(NomoFriend friend, int _) {
   switch (friend.statusKey) {
     case 'can_drink_today':
       return const _FriendStatus(
-        label: '遊べる！',
+        label: '空いてる',
         enabled: true,
         reason: '誘ってくれてOKだよ',
       );
     case 'non_alcohol':
       return const _FriendStatus(
-        label: '多分いける！',
+        label: '多分空いてる',
         enabled: true,
         reason: 'たぶん誘って大丈夫だよ',
       );
     case 'liver_rest':
       return const _FriendStatus(
-        label: '休ませて。',
-        enabled: false,
-        reason: '休みたい日です',
+        label: '時間次第',
+        enabled: true,
+        reason: '時間が合えば行けそうだよ',
       );
     case 'has_plans':
       return const _FriendStatus(
-        label: '予定ある。ごめん',
+        label: '予定ある',
         enabled: false,
         reason: '予定が入っています',
       );
     case 'unselected' || 'unset' || null || '':
       return const _FriendStatus(
-        label: 'まだ決めてない。',
+        label: 'まだ決めてない',
         enabled: true,
         reason: 'まだ決めてないみたい',
       );
   }
 
   return const _FriendStatus(
-    label: 'まだ決めてない。',
+    label: 'まだ決めてない',
     enabled: true,
     reason: 'まだ決めてないみたい',
   );

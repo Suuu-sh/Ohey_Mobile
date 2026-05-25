@@ -98,7 +98,7 @@ class _ProfileStatusHelpCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '今日遊べるか、休みたいかを出しておくとフレンズが誘いやすくなります。',
+                  '今空いてるか、時間次第かを出しておくとフレンズが誘いやすくなります。',
                   style: TextStyle(
                     color: isWhite
                         ? const Color(0xFF667381)
