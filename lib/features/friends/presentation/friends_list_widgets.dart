@@ -689,9 +689,7 @@ class _CompactStatusPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: status.enabled
-            ? accent.withValues(alpha: .20)
-            : _FriendsColors.statusBlocked.withValues(alpha: .38),
+        color: accent.withValues(alpha: status.enabled ? .20 : .38),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
@@ -699,7 +697,9 @@ class _CompactStatusPill extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          color: status.enabled ? accent : _FriendsColors.muted,
+          color: status.enabled
+              ? accent
+              : _friendInviteButtonForegroundColor(status),
           fontWeight: FontWeight.w900,
           fontSize: 11,
           letterSpacing: -.15,

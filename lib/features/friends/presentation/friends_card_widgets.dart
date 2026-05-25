@@ -182,15 +182,15 @@ class _StatusPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        color: status.enabled
-            ? accent.withValues(alpha: .22)
-            : _FriendsColors.statusBlocked.withValues(alpha: .38),
+        color: accent.withValues(alpha: status.enabled ? .22 : .38),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         status.label,
         style: TextStyle(
-          color: status.enabled ? accent : _FriendsColors.muted,
+          color: status.enabled
+              ? accent
+              : _friendInviteButtonForegroundColor(status),
           fontWeight: FontWeight.w900,
           fontSize: 13,
         ),

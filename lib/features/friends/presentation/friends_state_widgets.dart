@@ -280,16 +280,11 @@ class _FriendStatus {
 Color _friendBlockSurfaceColor({required bool isWhite}) =>
     isWhite ? Colors.white : AppColors.darkBackgroundBottom;
 
-Color _friendBlockFrameColor(_FriendStatus status) => status.enabled
-    ? _FriendsColors.statusGreen
-    : Color.lerp(
-        _FriendsColors.statusGreen,
-        _FriendsColors.statusBlocked,
-        .45,
-      )!;
+Color _friendBlockFrameColor(_FriendStatus status) =>
+    _friendInviteButtonColor(status);
 
 Color _friendStatusPillColor(_FriendStatus status) =>
-    status.enabled ? _FriendsColors.statusGreen : _FriendsColors.muted;
+    _friendInviteButtonColor(status);
 
 Color _friendInviteButtonColor(_FriendStatus status) {
   if (!status.enabled) return _FriendsColors.disabledButton;
