@@ -101,8 +101,8 @@ class _NomoAvatarPainter extends CustomPainter {
         ).createShader(rect);
 
   void _drawBody(Canvas canvas, Color skin, Color shirt) {
-    final neckRect = Rect.fromLTWH(72, 104, 36, 46);
-    final neck = RRect.fromRectAndRadius(neckRect, const Radius.circular(14));
+    final neckRect = Rect.fromLTWH(75, 104, 30, 43);
+    final neck = RRect.fromRectAndRadius(neckRect, const Radius.circular(12));
     canvas.drawRRect(
       neck.shift(const Offset(0, 2)),
       Paint()..color = _darken(skin, .18).withValues(alpha: .42),
@@ -110,10 +110,10 @@ class _NomoAvatarPainter extends CustomPainter {
     canvas.drawRRect(neck, _skinGradient(neckRect, skin));
 
     final shoulders = Path()
-      ..moveTo(31, 180)
-      ..cubicTo(38, 146, 55, 124, 78, 119)
-      ..quadraticBezierTo(90, 132, 102, 119)
-      ..cubicTo(125, 124, 142, 146, 149, 180)
+      ..moveTo(50, 180)
+      ..cubicTo(54, 151, 66, 128, 81, 121)
+      ..quadraticBezierTo(90, 131, 99, 121)
+      ..cubicTo(114, 128, 126, 151, 130, 180)
       ..close();
     canvas.drawShadow(shoulders, Colors.black.withValues(alpha: .24), 7, true);
     canvas.drawPath(
@@ -124,7 +124,7 @@ class _NomoAvatarPainter extends CustomPainter {
           end: Alignment.bottomCenter,
           colors: [_lighten(shirt, .16), shirt, _darken(shirt, .13)],
           stops: const [0, .58, 1],
-        ).createShader(const Rect.fromLTWH(31, 118, 118, 62)),
+        ).createShader(const Rect.fromLTWH(50, 120, 80, 60)),
     );
 
     final shirtRim = Paint()
@@ -134,16 +134,16 @@ class _NomoAvatarPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     canvas.drawPath(
       Path()
-        ..moveTo(55, 137)
-        ..quadraticBezierTo(74, 123, 90, 134)
-        ..quadraticBezierTo(106, 123, 125, 137),
+        ..moveTo(64, 137)
+        ..quadraticBezierTo(77, 126, 90, 135)
+        ..quadraticBezierTo(103, 126, 116, 137),
       shirtRim,
     );
     canvas.drawPath(
       Path()
-        ..moveTo(78, 119)
-        ..quadraticBezierTo(90, 132, 102, 119)
-        ..lineTo(90, 145)
+        ..moveTo(81, 121)
+        ..quadraticBezierTo(90, 131, 99, 121)
+        ..lineTo(90, 149)
         ..close(),
       Paint()..color = _darken(shirt, .10).withValues(alpha: .28),
     );
