@@ -1068,25 +1068,21 @@ class _DrinkPlanFriendTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
+              SizedBox(
+                width: 70,
+                child: Nomo3DButton(
+                  label: '誘う',
+                  onTap: disabled ? null : onTap,
+                  height: 34,
+                  radius: 17,
                   color: AppColors.primaryAction,
-                  borderRadius: BorderRadius.circular(999),
+                  foregroundColor: const Color(0xFF06111D),
+                  shadowColor: AppColors.primaryActionShadow,
+                  isLoading: isSending,
+                  enabled: !disabled,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  fontSize: 12,
                 ),
-                child: isSending
-                    ? const CupertinoActivityIndicator(radius: 7)
-                    : const Text(
-                        '誘う',
-                        style: TextStyle(
-                          color: Color(0xFF06111D),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
               ),
             ],
           ),
