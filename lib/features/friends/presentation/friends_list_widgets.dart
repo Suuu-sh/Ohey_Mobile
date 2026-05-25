@@ -800,8 +800,10 @@ class _EmptyFriendsState extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     return NomoEmptyState(
       visual: _EmptyFriendsVisual(avatar: avatar),
-      title: message,
-      message: subtitle,
+      title: message == 'フレンズがいません' ? '一緒に残すフレンズを追加しよう' : message,
+      message: message == 'フレンズがいません'
+          ? 'QRかIDでつながると、投稿にタグ付けしたり、反応を送り合えます。'
+          : subtitle,
       titleColor: isWhite ? const Color(0xFF1B2633) : Colors.white,
       messageColor: isWhite
           ? const Color(0xFF6D7784)
@@ -828,7 +830,7 @@ class _EmptyFriendsActions extends StatelessWidget {
         SizedBox(
           width: 118,
           child: Nomo3DButton(
-            label: 'QRで追加',
+            label: 'QRでつながる',
             icon: CupertinoIcons.qrcode_viewfinder,
             onTap: onAddFriend,
             height: 44,
@@ -844,7 +846,7 @@ class _EmptyFriendsActions extends StatelessWidget {
         SizedBox(
           width: 118,
           child: Nomo3DButton.secondary(
-            label: 'IDで追加',
+            label: 'IDで探す',
             icon: CupertinoIcons.at,
             onTap: onAddFriend,
             height: 44,

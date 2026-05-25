@@ -24,7 +24,7 @@ class _ArchiveEmptyPreview extends StatelessWidget {
         ),
       ),
       child: Text(
-        '写真付きで投稿するとここに並びます',
+        '最初の投稿がここに飾られます',
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
           color: isWhite ? const Color(0xFF7A8490) : Colors.white60,
           fontWeight: FontWeight.w900,
@@ -63,8 +63,8 @@ class _ArchiveEmptyState extends StatelessWidget {
         size: 42,
       ),
     ),
-    title: 'まだ写真がありません',
-    message: '写真付きの飲みログをここで見返せます。',
+    title: '思い出アルバムを育てよう',
+    message: '写真付きで投稿すると、日付や場所と一緒にここでかわいく見返せます。',
     titleColor: isWhite ? const Color(0xFF101820) : Colors.white,
     messageColor: isWhite ? const Color(0xFF7A8490) : Colors.white60,
     padding: const EdgeInsets.symmetric(horizontal: 30),

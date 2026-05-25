@@ -29,7 +29,7 @@ extension _CreateUserAccountChoicePage on _CreateUserDialogState {
               ),
               const Spacer(flex: 5),
               Text(
-                'すでにアカウントをお持ち\nですか？',
+                'まずはアカウントを作って\n今日を1枚残そう',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -53,7 +53,7 @@ extension _CreateUserAccountChoicePage on _CreateUserDialogState {
               ),
               SizedBox(height: compact ? 30 : 54),
               Text(
-                'Tomolaは初めてですか',
+                '30秒で始められます',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -64,7 +64,7 @@ extension _CreateUserAccountChoicePage on _CreateUserDialogState {
               ),
               SizedBox(height: compact ? 28 : 40),
               _AccountChoiceOutlineButton(
-                label: 'サインアップ',
+                label: '新しくはじめる',
                 height: compact ? 58 : 64,
                 onTap: _showRegistrationForm,
               ),

@@ -407,13 +407,13 @@ class _NotificationEmptyState extends StatelessWidget {
   Widget build(BuildContext context) => _FeedEmptyState(
     icon: CupertinoIcons.bell,
     isWhite: isWhite,
-    title: 'まだお知らせはありません',
-    message: 'フレンズを追加したり飲みログを残すと、反応や招待がここに届きます。',
+    title: '反応が届く場所です',
+    message: '最初の投稿やフレンズ追加をすると、いいね・返信・お誘いがここに集まります。',
     action: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'まずはフレンズ追加か飲みログ作成から始めよう',
+          'まずは1枚投稿するか、フレンズを追加してみよう',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: isWhite
