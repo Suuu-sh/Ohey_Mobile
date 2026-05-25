@@ -116,6 +116,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return const _FeedBackground(child: SizedBox.expand()).copyWith(
       child: Stack(
         children: [
+          _FeedHeaderBackdropLayer(isWhite: isWhite),
           Positioned.fill(
             child: _buildFeedPage(
               topPadding: _feedHeaderScrollInset(context),
