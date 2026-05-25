@@ -385,15 +385,34 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       extendBody: true,
       body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
+        padding: const EdgeInsets.only(top: 7),
+        decoration: BoxDecoration(
           color: AppColors.darkBackgroundBottom,
-          border: Border(top: BorderSide(color: Color(0xFF0F2233), width: .8)),
+          border: Border(
+            top: BorderSide(
+              color: _selectedToastAccentColor.withValues(alpha: .72),
+              width: 1,
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: _selectedToastAccentColor.withValues(alpha: .28),
+              blurRadius: 18,
+              spreadRadius: .5,
+              offset: const Offset(0, -5),
+            ),
+            BoxShadow(
+              color: _selectedToastAccentColor.withValues(alpha: .16),
+              blurRadius: 34,
+              offset: const Offset(0, -9),
+            ),
+          ],
         ),
         child: SafeArea(
           top: false,
-          minimum: const EdgeInsets.fromLTRB(24, 0, 24, 14),
+          minimum: const EdgeInsets.fromLTRB(24, 0, 24, 12),
           child: SizedBox(
-            height: 76,
+            height: 82,
             child: Row(
               children: [
                 SizedBox(
@@ -1375,11 +1394,40 @@ class _TabItem extends StatelessWidget {
           button: true,
           label: label,
           selected: selected,
-          child: Center(
-            child: IconTheme(
-              data: IconThemeData(color: labelColor),
-              child: customIcon ?? const SizedBox.shrink(),
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: 44,
+                child: Center(
+                  child: IconTheme(
+                    data: IconThemeData(color: labelColor),
+                    child: customIcon ?? const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: labelColor,
+                  fontSize: 9.5,
+                  height: 1,
+                  fontWeight: selected ? FontWeight.w900 : FontWeight.w800,
+                  letterSpacing: -.35,
+                  shadows: selected
+                      ? [
+                          Shadow(
+                            color: activeColor.withValues(alpha: .36),
+                            blurRadius: 10,
+                          ),
+                        ]
+                      : null,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1394,7 +1442,7 @@ class _AddTabIcon extends StatelessWidget {
   Widget build(BuildContext context) => AnimatedScale(
     duration: const Duration(milliseconds: 180),
     scale: 1,
-    child: CustomPaint(size: const Size(58, 56), painter: const _AddPainter()),
+    child: CustomPaint(size: const Size(60, 58), painter: const _AddPainter()),
   );
 }
 
@@ -1405,22 +1453,26 @@ class _AddPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromCenter(
       center: Offset(size.width / 2, size.height * .50),
-      width: 52,
-      height: 52,
+      width: 54,
+      height: 54,
     );
-    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(21));
-    final path = Path()..addRRect(rrect);
+    final center = rect.center;
 
-    canvas.drawShadow(
-      path,
-      const Color(0xFFFF4FB5).withValues(alpha: .26),
-      11,
-      true,
-    );
+    final outerGlow = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFFFF4FB5).withValues(alpha: .34),
+          const Color(0xFFFF4FB5).withValues(alpha: .10),
+          Colors.transparent,
+        ],
+        stops: const [0, .52, 1],
+      ).createShader(Rect.fromCircle(center: center, radius: 42));
+    canvas.drawCircle(center.translate(0, 3), 42, outerGlow);
 
-    canvas.drawRRect(
-      rrect.shift(const Offset(0, 3)),
-      Paint()..color = const Color(0xFF9E1C63).withValues(alpha: .30),
+    canvas.drawCircle(
+      center.translate(0, 4),
+      27,
+      Paint()..color = const Color(0xFF8E155A).withValues(alpha: .38),
     );
 
     final fill = Paint()
@@ -1430,7 +1482,7 @@ class _AddPainter extends CustomPainter {
         colors: [Color(0xFFFF8FC5), Color(0xFFFF4FB5), Color(0xFFE92B96)],
         stops: [0, .55, 1],
       ).createShader(rect);
-    canvas.drawRRect(rrect, fill);
+    canvas.drawCircle(center, 27, fill);
 
     final softDepth = Paint()
       ..shader = LinearGradient(
@@ -1443,32 +1495,38 @@ class _AddPainter extends CustomPainter {
         ],
         stops: const [0, .48, 1],
       ).createShader(rect);
-    canvas.drawRRect(rrect.deflate(1.4), softDepth);
+    canvas.drawCircle(center, 25.4, softDepth);
 
-    canvas.drawRRect(
-      rrect,
+    canvas.drawCircle(
+      center,
+      26.4,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..color = Colors.white.withValues(alpha: .34),
+        ..strokeWidth = 1.3
+        ..color = Colors.white.withValues(alpha: .38),
     );
 
-    final shine = Paint()..color = Colors.white.withValues(alpha: .18);
-    canvas.drawCircle(Offset(size.width * .35, size.height * .29), 4.2, shine);
+    final innerRing = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..color = Colors.white.withValues(alpha: .13);
+    canvas.drawCircle(center.translate(0, -1), 20.5, innerRing);
+
+    final shine = Paint()..color = Colors.white.withValues(alpha: .20);
+    canvas.drawCircle(Offset(size.width * .37, size.height * .31), 4.4, shine);
 
     final plus = Paint()
       ..color = Colors.white.withValues(alpha: .96)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 5.4;
-    final center = Offset(size.width / 2, size.height * .50);
+      ..strokeWidth = 5.1;
     final plusShadow = Paint()
       ..color = const Color(0xFF7A0E4B).withValues(alpha: .42)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 6.2;
+      ..strokeWidth = 6;
     canvas.drawLine(
       Offset(center.dx - 12, center.dy + 2),
       Offset(center.dx + 12, center.dy + 2),
