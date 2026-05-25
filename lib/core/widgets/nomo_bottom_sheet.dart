@@ -80,7 +80,7 @@ class NomoBottomSheetShell extends StatelessWidget {
     );
     final effectiveMargin = EdgeInsets.only(
       top: resolvedMargin.top,
-      bottom: resolvedMargin.bottom + bottomInset,
+      bottom: bottomInset,
     );
     final sheetRadius = BorderRadius.vertical(top: Radius.circular(radius));
     return SafeArea(
