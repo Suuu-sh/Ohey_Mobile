@@ -127,6 +127,20 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     const NomoToastAccent(color: _profileAccentColor, child: ProfileScreen()),
   ];
 
+  void _selectTab(int index) {
+    if (_selectedIndex == index) return;
+    setState(() => _selectedIndex = index);
+    if (index == 0) {
+      _refreshFeedOnOpen();
+    }
+  }
+
+  void _refreshFeedOnOpen() {
+    ref.invalidate(drinkLogControllerProvider);
+    ref.invalidate(friendsProvider);
+    ref.invalidate(notificationControllerProvider);
+  }
+
   Future<void> _openDrinkLogFlow() async {
     final action = await showNomoBottomSheet<_DrinkLogStartAction>(
       context: context,
@@ -424,7 +438,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
                         label: 'フィード',
                         selected: _selectedIndex == 0,
                         activeColor: const Color(0xFF8A62FF),
-                        onTap: () => setState(() => _selectedIndex = 0),
+                        onTap: () => _selectTab(0),
                       ),
                       _TabItem(
                         customIcon: _FriendsTabIcon(
@@ -433,7 +447,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
                         label: 'フレンズ',
                         selected: _selectedIndex == 1,
                         activeColor: const Color(0xFF9AF21A),
-                        onTap: () => setState(() => _selectedIndex = 1),
+                        onTap: () => _selectTab(1),
                       ),
                       _TabItem(
                         customIcon: _CalendarTabIcon(
@@ -442,7 +456,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
                         label: 'カレンダー',
                         selected: _selectedIndex == 2,
                         activeColor: const Color(0xFF20B9FF),
-                        onTap: () => setState(() => _selectedIndex = 2),
+                        onTap: () => _selectTab(2),
                       ),
                       _TabItem(
                         customIcon: _ProfileTabIcon(
@@ -451,7 +465,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
                         label: 'マイページ',
                         selected: _selectedIndex == 3,
                         activeColor: const Color(0xFFFF75B5),
-                        onTap: () => setState(() => _selectedIndex = 3),
+                        onTap: () => _selectTab(3),
                       ),
                     ],
                   ),
