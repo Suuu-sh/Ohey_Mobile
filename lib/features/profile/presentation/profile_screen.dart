@@ -1,20 +1,17 @@
 // ignore_for_file: unused_element
 
-import 'dart:ui' as ui;
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
-import '../../../core/data/backend_api_client.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/models/nomo_gender.dart';
+import '../../../core/models/nomo_friend.dart';
 import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
@@ -23,12 +20,9 @@ import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_toast.dart';
-import '../../../core/widgets/nomo_exchange_components.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
 import '../../admin/application/admin_controller.dart';
 import '../../admin/presentation/admin_screen.dart';
-import '../../friends/presentation/add_nomi_tomo_screen.dart';
-import '../../friends/data/friend_repository.dart';
 import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../onboarding/presentation/create_user_dialog.dart';
@@ -37,7 +31,6 @@ import 'photo_archive_screen.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 
 part 'profile_header_widgets.dart';
-part 'profile_preview_sheet.dart';
 part 'profile_memory_widgets.dart';
 part 'profile_status_sheet.dart';
 part 'profile_settings_sheet.dart';
@@ -62,6 +55,8 @@ class ProfileScreen extends ConsumerWidget {
         const <DrinkLog>[];
     final myLogs = _myProfileLogs(logs, currentAuthUserId);
     final photoLogs = _photoArchiveLogs(logs, currentAuthUserId);
+    final friends =
+        ref.watch(friendsProvider).asData?.value ?? const <NomoFriend>[];
     const headerIsWhite = true;
     const bodyIsWhite = false;
     final hasAdminEmail = NomoAvatar.isAdminEmail(currentAuthUser?.email);
@@ -156,6 +151,7 @@ class ProfileScreen extends ConsumerWidget {
                               isWhite: bodyIsWhite,
                               logs: myLogs,
                               photoLogs: photoLogs,
+                              friendsCount: friends.length,
                               status:
                                   user?.dailyStatus ??
                                   NomoDailyStatus.unselected,
@@ -173,6 +169,11 @@ class ProfileScreen extends ConsumerWidget {
                                       PhotoArchiveScreen(logs: photoLogs),
                                 ),
                               ),
+                              onAddFriendsTap: () => NomoToast.show(
+                                context,
+                                'フレンズ追加機能は調整中です',
+                                icon: CupertinoIcons.person_badge_plus,
+                              ),
                             ),
                           ),
                         ],
@@ -188,8 +189,6 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 }
-
-String _profileQrPayload(String userId) => 'nomo://friend/$userId';
 
 bool _isMyUserLog(DrinkLog log, String? currentUserId) {
   if (log.isOfficial) return false;
@@ -211,226 +210,6 @@ List<DrinkLog> _photoArchiveLogs(
     .where((log) => _isMyUserLog(log, currentAuthUserId))
     .where((log) => (log.photoAssetPath ?? '').trim().isNotEmpty)
     .toList(growable: false);
-
-String? _parseProfileFriendQrPayload(String raw) {
-  final value = raw.trim();
-  final uri = Uri.tryParse(value);
-  if (uri != null && uri.scheme == 'nomo' && uri.host == 'friend') {
-    final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
-    return id?.isEmpty == false ? id : null;
-  }
-  if (RegExp(r'^[A-Za-z0-9_]{3,24}$').hasMatch(value)) return value;
-  return null;
-}
-
-const _qrSaverChannel = MethodChannel('nomo/qr_saver');
-
-Future<Uint8List> _createQrPngBytes(String payload) async {
-  final painter = QrPainter(
-    data: payload,
-    version: QrVersions.auto,
-    gapless: false,
-    eyeStyle: const QrEyeStyle(
-      eyeShape: QrEyeShape.square,
-      color: Color(0xFF4B5056),
-    ),
-    dataModuleStyle: const QrDataModuleStyle(
-      dataModuleShape: QrDataModuleShape.circle,
-      color: Color(0xFF4B5056),
-    ),
-  );
-  final data = await painter.toImageData(1024, format: ui.ImageByteFormat.png);
-  if (data == null) {
-    throw StateError('QR画像を生成できませんでした');
-  }
-  return data.buffer.asUint8List();
-}
-
-Future<void> showMyQrDialog(
-  BuildContext context,
-  NomoUser? user,
-  WidgetRef ref,
-) async {
-  if (user == null) {
-    NomoToast.show(context, 'プロフィール作成後にQRを表示できます。');
-    return;
-  }
-
-  final payload = _profileQrPayload(user.userId);
-  final name = user.name.trim().isEmpty ? 'nomo_user' : user.name.trim();
-
-  Future<void> copyUserId(BuildContext dialogContext) async {
-    await Clipboard.setData(ClipboardData(text: user.userId));
-    if (!dialogContext.mounted) return;
-    NomoToast.show(dialogContext, 'ユーザーIDをコピーしました');
-  }
-
-  Future<void> saveQrImage(BuildContext dialogContext) async {
-    try {
-      final pngBytes = await _createQrPngBytes(payload);
-      await _qrSaverChannel.invokeMethod<void>('savePngToPhotos', pngBytes);
-      if (!dialogContext.mounted) return;
-      NomoToast.show(dialogContext, 'QR画像を保存しました');
-    } on PlatformException catch (error) {
-      if (!dialogContext.mounted) return;
-      final message = error.code == 'permission_denied'
-          ? '写真への保存が許可されていません'
-          : 'QR画像を保存できませんでした';
-      NomoToast.show(dialogContext, message);
-    } on MissingPluginException {
-      if (!dialogContext.mounted) return;
-      NomoToast.show(dialogContext, 'この端末ではQR保存に未対応です');
-    } catch (_) {
-      if (!dialogContext.mounted) return;
-      NomoToast.show(dialogContext, 'QR画像を保存できませんでした');
-    }
-  }
-
-  Future<void> sendFriendRequest(
-    BuildContext sheetContext,
-    NomoFriendProfile profile,
-  ) async {
-    final repository = ref.read(friendRepositoryProvider);
-    final currentUserId = repository.currentUserId;
-    if (currentUserId == null || currentUserId.isEmpty) {
-      NomoToast.show(sheetContext, 'フレンズ申請にはログインが必要です');
-      return;
-    }
-    if (profile.id == currentUserId) {
-      NomoToast.show(sheetContext, '自分自身には申請できません');
-      return;
-    }
-
-    try {
-      await repository.sendFriendRequest(profile.id);
-      if (!sheetContext.mounted) return;
-      Navigator.of(sheetContext).pop();
-      if (!context.mounted) return;
-      NomoToast.show(context, '${profile.displayName}にフレンズ申請を送りました');
-    } on BackendApiException catch (e) {
-      if (!sheetContext.mounted) return;
-      if (e.statusCode == 409) {
-        NomoToast.show(sheetContext, 'すでに申請済みです');
-      } else {
-        NomoToast.show(sheetContext, '申請を送れなかったよ。あとでもう一度試してね');
-      }
-    } catch (e) {
-      if (!sheetContext.mounted) return;
-      NomoToast.show(sheetContext, '申請を送れなかったよ。あとでもう一度試してね');
-    }
-  }
-
-  Future<void> searchAndShowProfileByUserId(
-    BuildContext dialogContext,
-    String rawUserId,
-  ) async {
-    final query = rawUserId.trim();
-    if (query.isEmpty) {
-      NomoToast.show(dialogContext, 'ユーザーIDを入力してください');
-      return;
-    }
-
-    final repository = ref.read(friendRepositoryProvider);
-    final currentUserId = repository.currentUserId;
-    if (currentUserId == null || currentUserId.isEmpty) {
-      NomoToast.show(dialogContext, 'フレンズ追加にはログインが必要です');
-      return;
-    }
-
-    try {
-      final profile = await repository.findProfileByUserId(query);
-      if (!dialogContext.mounted) return;
-      if (profile == null) {
-        NomoToast.show(dialogContext, '@$query は見つかりませんでした');
-        return;
-      }
-      if (profile.id == currentUserId) {
-        NomoToast.show(dialogContext, '自分自身は追加できません');
-        return;
-      }
-
-      final relationship = await repository.relationshipStatus(profile.id);
-      if (!dialogContext.mounted) return;
-      await showNomoBottomSheet<void>(
-        context: dialogContext,
-        useSafeArea: true,
-        barrierColor: Colors.black.withValues(alpha: .62),
-        builder: (sheetContext) => _NomoProfilePreviewSheet(
-          profile: profile,
-          alreadyFriend: relationship.alreadyFriend,
-          requestState: relationship.requestState,
-          onRequest: () => sendFriendRequest(sheetContext, profile),
-        ),
-      );
-    } on BackendApiException catch (e) {
-      if (!dialogContext.mounted) return;
-      if (e.statusCode == 404) {
-        NomoToast.show(dialogContext, '@$query は見つかりませんでした');
-      } else {
-        NomoToast.show(dialogContext, '検索できなかったよ。あとでもう一度試してね');
-      }
-    } catch (e) {
-      if (!dialogContext.mounted) return;
-      NomoToast.show(dialogContext, '検索できなかったよ。あとでもう一度試してね');
-    }
-  }
-
-  Future<void> scanQr(BuildContext dialogContext) async {
-    final payload = await Navigator.of(dialogContext).push<String>(
-      CupertinoPageRoute(
-        fullscreenDialog: true,
-        builder: (_) => const NomiTomoQrScannerScreen(),
-      ),
-    );
-    if (!dialogContext.mounted || payload == null) return;
-    final userId = _parseProfileFriendQrPayload(payload);
-    if (userId == null) {
-      NomoToast.show(dialogContext, 'NomoのフレンズQRではありません');
-      return;
-    }
-    await searchAndShowProfileByUserId(dialogContext, userId);
-  }
-
-  await showDialog<void>(
-    context: context,
-    barrierColor: Colors.black.withValues(alpha: .74),
-    builder: (dialogContext) {
-      final mediaQuery = MediaQuery.of(dialogContext);
-      final maxDialogHeight =
-          (mediaQuery.size.height -
-                  mediaQuery.viewInsets.bottom -
-                  mediaQuery.padding.vertical -
-                  48)
-              .clamp(360.0, mediaQuery.size.height)
-              .toDouble();
-
-      return MediaQuery(
-        data: mediaQuery.copyWith(textScaler: const TextScaler.linear(1)),
-        child: Dialog(
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 22,
-            vertical: 24,
-          ),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: maxDialogHeight),
-            child: _MyQrCard(
-              name: name,
-              handle: '@${user.userId}',
-              avatar: user.avatar,
-              payload: payload,
-              onClose: () => Navigator.of(dialogContext).pop(),
-              onCopyUserId: () => copyUserId(dialogContext),
-              onSaveQr: () => saveQrImage(dialogContext),
-              onScan: () => scanQr(dialogContext),
-              onSearchUserId: (value) =>
-                  searchAndShowProfileByUserId(dialogContext, value),
-            ),
-          ),
-        ),
-      );
-    },
-  );
-}
 
 Future<void> _showProfileStatusSheet(
   BuildContext context,

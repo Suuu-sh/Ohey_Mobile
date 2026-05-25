@@ -295,6 +295,52 @@ class _ArchivePlacesView extends StatelessWidget {
   }
 }
 
+class _ArchiveMapPage extends StatelessWidget {
+  const _ArchiveMapPage({
+    required this.logs,
+    required this.isWhite,
+    required this.onLogTap,
+  });
+
+  final List<DrinkLog> logs;
+  final bool isWhite;
+  final ValueChanged<DrinkLog> onLogTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final mapLogs = logs
+        .where((log) => log.place.trim().isNotEmpty || log.hasPlaceCoordinate)
+        .toList(growable: false);
+    if (mapLogs.isEmpty) {
+      return _ArchivePlacesEmpty(isWhite: isWhite);
+    }
+
+    if (Platform.isIOS) {
+      return _ArchiveAppleMap(
+        annotations: _archiveLogMapAnnotations(mapLogs),
+        onAnnotationTap: (id) {
+          final index = mapLogs.indexWhere((log) => log.id == id);
+          if (index >= 0) onLogTap(mapLogs[index]);
+        },
+      );
+    }
+
+    final places = _archivePlaceGroups(mapLogs);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const _ArchiveStylizedMapBackground(),
+        for (var i = 0; i < places.length; i++)
+          _ArchiveMapPin(
+            place: places[i],
+            alignment: _archivePinAlignment(places[i].name, i),
+            onTap: () => onLogTap(places[i].latestLog),
+          ),
+      ],
+    );
+  }
+}
+
 class _ArchiveMapCard extends StatelessWidget {
   const _ArchiveMapCard({
     required this.places,
@@ -326,53 +372,17 @@ class _ArchiveMapCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (Platform.isIOS && _archiveMapAnnotations(visible).isNotEmpty)
-              _ArchiveAppleMap(places: visible)
+            if (Platform.isIOS && visible.isNotEmpty)
+              _ArchiveAppleMap(annotations: _archiveMapAnnotations(visible))
             else
               const _ArchiveStylizedMapBackground(),
-            if (!(Platform.isIOS && _archiveMapAnnotations(visible).isNotEmpty))
+            if (!(Platform.isIOS && visible.isNotEmpty))
               for (var i = 0; i < visible.length; i++)
                 _ArchiveMapPin(
                   place: visible[i],
                   alignment: _archivePinAlignment(visible[i].name, i),
                   onTap: () => onPlaceTap(visible[i]),
                 ),
-            Positioned(
-              left: 18,
-              right: 18,
-              bottom: 18,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '場所をタップして、その場所の思い出へ',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: Colors.white.withValues(alpha: .88),
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: .42),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: .15),
-                      ),
-                    ),
-                    child: const Center(
-                      child: NomoGeneratedIcon(
-                        CupertinoIcons.location_fill,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
@@ -381,31 +391,64 @@ class _ArchiveMapCard extends StatelessWidget {
 }
 
 class _ArchiveAppleMap extends StatelessWidget {
-  const _ArchiveAppleMap({required this.places});
+  const _ArchiveAppleMap({required this.annotations, this.onAnnotationTap});
 
-  final List<_ArchivePlaceGroup> places;
+  final List<Map<String, Object?>> annotations;
+  final ValueChanged<String>? onAnnotationTap;
 
   @override
   Widget build(BuildContext context) {
     return UiKitView(
       viewType: 'nomo/archive_map',
-      creationParams: {'annotations': _archiveMapAnnotations(places)},
+      creationParams: {'annotations': annotations},
       creationParamsCodec: const StandardMessageCodec(),
+      onPlatformViewCreated: (id) {
+        final handler = onAnnotationTap;
+        if (handler == null) return;
+        MethodChannel('nomo/archive_map_$id').setMethodCallHandler((
+          call,
+        ) async {
+          if (call.method != 'annotationSelected') return;
+          final args = call.arguments;
+          if (args is Map) {
+            final value = args['id']?.toString();
+            if (value != null && value.isNotEmpty) handler(value);
+          }
+        });
+      },
     );
   }
+}
+
+List<Map<String, Object?>> _archiveLogMapAnnotations(List<DrinkLog> logs) {
+  return logs
+      .map(
+        (log) => <String, Object?>{
+          'id': log.id,
+          'title': _archiveTitle(log),
+          'subtitle': _archiveDate(log.date),
+          'place': log.place.trim(),
+          if (log.hasPlaceCoordinate) ...{
+            'latitude': log.placeLatitude,
+            'longitude': log.placeLongitude,
+          },
+        },
+      )
+      .toList(growable: false);
 }
 
 List<Map<String, Object?>> _archiveMapAnnotations(
   List<_ArchivePlaceGroup> places,
 ) {
   return places
-      .where((place) => place.latestLog.hasPlaceCoordinate)
       .map(
         (place) => <String, Object?>{
           'title': place.name,
           'count': place.logs.length,
-          'latitude': place.latestLog.placeLatitude,
-          'longitude': place.latestLog.placeLongitude,
+          if (place.latestLog.hasPlaceCoordinate) ...{
+            'latitude': place.latestLog.placeLatitude,
+            'longitude': place.latestLog.placeLongitude,
+          },
         },
       )
       .toList(growable: false);
@@ -423,74 +466,253 @@ class _ArchiveStylizedMapBackground extends StatelessWidget {
 class _ArchiveMapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final sea = Paint()..color = const Color(0xFF0D2B63).withValues(alpha: .55);
-    final land = Paint()
-      ..color = const Color(0xFF149178).withValues(alpha: .72);
-    final road = Paint()
-      ..color = Colors.white.withValues(alpha: .24)
+    final background = Paint()..color = const Color(0xFF14233B);
+    canvas.drawRect(Offset.zero & size, background);
+
+    final blockPaint = Paint()..color = const Color(0xFF1A2B45);
+    final parkPaint = Paint()
+      ..color = const Color(0xFF1E6B5D).withValues(alpha: .72);
+    final waterPaint = Paint()
+      ..color = const Color(0xFF123860).withValues(alpha: .84);
+    final minorRoad = Paint()
+      ..color = const Color(0xFF7E8EA6).withValues(alpha: .32)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final mainRoadOuter = Paint()
+      ..color = const Color(0xFFFFD166).withValues(alpha: .28)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 13
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final mainRoadInner = Paint()
+      ..color = const Color(0xFFF7F3DA).withValues(alpha: .70)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 7
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final highway = Paint()
+      ..color = const Color(0xFFFFB14A).withValues(alpha: .62)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final rail = Paint()
+      ..color = const Color(0xFF92A1B4).withValues(alpha: .42)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
 
-    canvas.drawRect(Offset.zero & size, sea);
+    RRect block(double l, double t, double r, double b, [double radius = 18]) =>
+        RRect.fromRectAndRadius(
+          Rect.fromLTRB(
+            size.width * l,
+            size.height * t,
+            size.width * r,
+            size.height * b,
+          ),
+          Radius.circular(radius),
+        );
 
-    Path island(double dx, double dy, double w, double h) => Path()
-      ..moveTo(size.width * (dx + w * .18), size.height * dy)
-      ..cubicTo(
-        size.width * (dx + w * .92),
-        size.height * (dy + h * .08),
-        size.width * (dx + w * .84),
-        size.height * (dy + h * .68),
-        size.width * (dx + w * .42),
-        size.height * (dy + h),
-      )
-      ..cubicTo(
-        size.width * (dx - w * .04),
-        size.height * (dy + h * .74),
-        size.width * (dx + w * .02),
-        size.height * (dy + h * .22),
-        size.width * (dx + w * .18),
-        size.height * dy,
-      );
+    for (final rect in [
+      block(.04, .06, .25, .24),
+      block(.28, .04, .54, .20),
+      block(.60, .05, .93, .22),
+      block(.07, .29, .32, .46),
+      block(.38, .27, .61, .43),
+      block(.67, .30, .94, .48),
+      block(.05, .53, .28, .73),
+      block(.35, .55, .57, .72),
+      block(.64, .57, .93, .75),
+      block(.18, .79, .44, .93),
+      block(.51, .80, .82, .94),
+    ]) {
+      canvas.drawRRect(rect, blockPaint);
+    }
 
-    final main = island(.22, .15, .56, .58);
-    final west = island(.02, .46, .28, .24);
-    final east = island(.68, .05, .24, .34);
-    canvas.drawPath(main, land);
-    canvas.drawPath(
-      west,
-      land..color = const Color(0xFF0F806F).withValues(alpha: .72),
+    canvas.drawRRect(block(.70, .10, .90, .28, 26), parkPaint);
+    canvas.drawRRect(block(.10, .58, .30, .76, 26), parkPaint);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * .38, size.height * .32),
+        width: size.width * .25,
+        height: size.height * .17,
+      ),
+      parkPaint,
     );
     canvas.drawPath(
-      east,
-      land..color = const Color(0xFF1BA184).withValues(alpha: .66),
+      Path()
+        ..moveTo(size.width * .00, size.height * .18)
+        ..cubicTo(
+          size.width * .16,
+          size.height * .12,
+          size.width * .22,
+          size.height * .30,
+          size.width * .12,
+          size.height * .45,
+        )
+        ..cubicTo(
+          size.width * .05,
+          size.height * .55,
+          size.width * .08,
+          size.height * .72,
+          size.width * .00,
+          size.height * .82,
+        )
+        ..close(),
+      waterPaint,
     );
 
-    final route = Path()
-      ..moveTo(size.width * .10, size.height * .58)
+    Path path(List<Offset> points) {
+      final p = Path()
+        ..moveTo(size.width * points.first.dx, size.height * points.first.dy);
+      for (final point in points.skip(1)) {
+        p.lineTo(size.width * point.dx, size.height * point.dy);
+      }
+      return p;
+    }
+
+    final main = Path()
+      ..moveTo(size.width * .03, size.height * .72)
       ..cubicTo(
-        size.width * .28,
-        size.height * .48,
-        size.width * .38,
+        size.width * .20,
         size.height * .62,
-        size.width * .50,
-        size.height * .44,
+        size.width * .29,
+        size.height * .66,
+        size.width * .42,
+        size.height * .53,
       )
       ..cubicTo(
-        size.width * .62,
-        size.height * .26,
-        size.width * .71,
-        size.height * .34,
-        size.width * .82,
+        size.width * .57,
+        size.height * .38,
+        size.width * .58,
+        size.height * .25,
+        size.width * .78,
         size.height * .18,
+      )
+      ..cubicTo(
+        size.width * .87,
+        size.height * .15,
+        size.width * .91,
+        size.height * .11,
+        size.width * .98,
+        size.height * .06,
       );
-    canvas.drawPath(route, road);
+    canvas.drawPath(main, mainRoadOuter);
+    canvas.drawPath(main, mainRoadInner);
 
-    final glow = Paint()
-      ..color = const Color(0xFF7DF1FF).withValues(alpha: .10)
+    final diagonal = path([
+      const Offset(.02, .28),
+      const Offset(.20, .34),
+      const Offset(.44, .30),
+      const Offset(.68, .42),
+      const Offset(.96, .38),
+    ]);
+    final horizontal = path([
+      const Offset(.00, .50),
+      const Offset(.18, .50),
+      const Offset(.36, .47),
+      const Offset(.60, .52),
+      const Offset(1.00, .49),
+    ]);
+    final lower = path([
+      const Offset(.12, .90),
+      const Offset(.24, .78),
+      const Offset(.47, .77),
+      const Offset(.72, .69),
+      const Offset(.96, .75),
+    ]);
+    final vertical1 = path([
+      const Offset(.33, .00),
+      const Offset(.30, .22),
+      const Offset(.36, .45),
+      const Offset(.32, .70),
+      const Offset(.38, 1.00),
+    ]);
+    final vertical2 = path([
+      const Offset(.63, .00),
+      const Offset(.66, .20),
+      const Offset(.61, .45),
+      const Offset(.66, .70),
+      const Offset(.62, 1.00),
+    ]);
+    for (final p in [diagonal, horizontal, lower, vertical1, vertical2]) {
+      canvas.drawPath(p, minorRoad);
+    }
+
+    final expressway = Path()
+      ..moveTo(size.width * .18, size.height * .08)
+      ..cubicTo(
+        size.width * .36,
+        size.height * .16,
+        size.width * .44,
+        size.height * .18,
+        size.width * .55,
+        size.height * .09,
+      )
+      ..cubicTo(
+        size.width * .68,
+        size.height * -.02,
+        size.width * .76,
+        size.height * .02,
+        size.width * .94,
+        size.height * .13,
+      );
+    canvas.drawPath(expressway, highway);
+
+    final railPath = Path()
+      ..moveTo(size.width * .00, size.height * .36)
+      ..cubicTo(
+        size.width * .20,
+        size.height * .24,
+        size.width * .39,
+        size.height * .42,
+        size.width * .55,
+        size.height * .33,
+      )
+      ..cubicTo(
+        size.width * .73,
+        size.height * .24,
+        size.width * .78,
+        size.height * .48,
+        size.width * 1.00,
+        size.height * .30,
+      );
+    canvas.drawPath(railPath, rail);
+    final dashPaint = Paint()
+      ..color = Colors.white.withValues(alpha: .18)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 18;
-    canvas.drawPath(route, glow);
+      ..strokeWidth = 1.2;
+    for (var i = 0; i < 18; i++) {
+      final x = size.width * (i / 17);
+      canvas.drawLine(
+        Offset(x, size.height * (.35 + math.sin(i * .9) * .04)),
+        Offset(x + 7, size.height * (.35 + math.sin(i * .9) * .04)),
+        dashPaint,
+      );
+    }
+
+    void label(String text, double x, double y, {double alpha = .58}) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: alpha),
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -.2,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      painter.paint(canvas, Offset(size.width * x, size.height * y));
+    }
+
+    label('中央通り', .48, .46, alpha: .64);
+    label('Tomola Park', .70, .18, alpha: .50);
+    label('Station', .18, .34, alpha: .46);
+    label('Cafe area', .62, .63, alpha: .46);
   }
 
   @override

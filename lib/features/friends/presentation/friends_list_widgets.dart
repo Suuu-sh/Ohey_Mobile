@@ -130,23 +130,8 @@ class _TodayInviteSection extends StatelessWidget {
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .60);
 
-    return NomoThemedPanel(
-      padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
-      accentColor: _FriendsColors.lime,
-      backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
-      gradient: isWhite
-          ? const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Color(0xFFF6FFE8)],
-              stops: [0, .48, 1],
-            )
-          : null,
-      borderRadius: 26,
-      borderAlpha: isWhite ? .34 : .18,
-      glowAlpha: isWhite ? .08 : .10,
-      glowBlur: 28,
-      glowOffset: const Offset(0, 10),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -155,10 +140,10 @@ class _TodayInviteSection extends StatelessWidget {
               const NomoPopIcon(
                 icon: CupertinoIcons.sparkles,
                 color: _FriendsColors.lime,
-                size: 42,
-                iconSize: 22,
+                size: 38,
+                iconSize: 20,
               ),
-              const SizedBox(width: 11),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,7 +159,7 @@ class _TodayInviteSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '最近の雰囲気から、声をかけたいフレンズを表示しています。',
+                      '今誘いやすいフレンズを表示しています。',
                       style: TextStyle(
                         color: sub,
                         fontSize: 12,
@@ -192,16 +177,24 @@ class _TodayInviteSection extends StatelessWidget {
             _TodayInviteEmpty(isWhite: isWhite)
           else
             SizedBox(
-              height: 196,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                itemCount: candidates.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 10),
-                itemBuilder: (context, index) => _TodayInviteCandidateCard(
-                  item: candidates[index],
-                  onInvite: () => onInvite(candidates[index].friend),
-                ),
+              height: 178,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final cardWidth = (constraints.maxWidth - 12) / 2;
+                  return ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: candidates.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) => SizedBox(
+                      width: cardWidth,
+                      child: _TodayInviteCandidateCard(
+                        item: candidates[index],
+                        onInvite: () => onInvite(candidates[index].friend),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           if (blocked.isNotEmpty) ...[
@@ -215,6 +208,14 @@ class _TodayInviteSection extends StatelessWidget {
               ],
             ),
           ],
+          const SizedBox(height: 18),
+          Container(
+            width: double.infinity,
+            height: 1.5,
+            color: isWhite
+                ? const Color(0xFFE1E7DE)
+                : Colors.white.withValues(alpha: .14),
+          ),
         ],
       ),
     );
@@ -234,83 +235,134 @@ class _TodayInviteCandidateCard extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
     final reason = _recommendationReasonFor(item);
-    return SizedBox(
-      width: 150,
-      child: NomoThemedPanel(
-        padding: const EdgeInsets.all(12),
-        accentColor: accent,
-        backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
-        gradient: isWhite
-            ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.white, Color(0xFFF4FBEF)],
-              )
-            : null,
-        borderRadius: 22,
-        borderAlpha: isWhite ? .22 : .18,
-        glowAlpha: isWhite ? .05 : .10,
-        glowBlur: 20,
-        glowOffset: const Offset(0, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                _FriendMiniAvatarBubble(
-                  avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
-                  accent: accent,
-                  size: 42,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    friend.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: ink,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
+    return NomoThemedPanel(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
+      accentColor: accent,
+      backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: isWhite
+            ? const [Color(0xFFFFFFFF), Color(0xFFF7FFE9)]
+            : [
+                Colors.white.withValues(alpha: .06),
+                accent.withValues(alpha: .08),
               ],
-            ),
-            const SizedBox(height: 8),
-            _StatusPill(status: item.status, accent: accent),
-            const SizedBox(height: 8),
-            Text(
-              reason,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+      ),
+      borderRadius: 24,
+      borderAlpha: isWhite ? .24 : .14,
+      glowAlpha: isWhite ? .04 : .07,
+      glowBlur: 18,
+      glowOffset: const Offset(0, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _FriendMiniAvatarBubble(
+                avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
+                accent: accent,
+                size: 42,
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      friend.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.25,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    _CompactStatusPill(status: item.status, accent: accent),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                CupertinoIcons.clock_fill,
+                size: 13,
                 color: isWhite
                     ? const Color(0xFF667381)
-                    : Colors.white.withValues(alpha: .68),
-                fontSize: 12.5,
-                fontWeight: FontWeight.w900,
-                height: 1.28,
-                letterSpacing: -.2,
+                    : Colors.white.withValues(alpha: .54),
               ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: Nomo3DButton(
-                label: '誘う',
-                icon: CupertinoIcons.paperplane_fill,
-                onTap: onInvite,
-                height: 34,
-                radius: 17,
-                color: _FriendsColors.lime,
-                foregroundColor: _FriendsColors.limeForeground,
-                shadowColor: _FriendsColors.limeShadow,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                fontSize: 12,
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  reason,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isWhite
+                        ? const Color(0xFF667381)
+                        : Colors.white.withValues(alpha: .68),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    height: 1.25,
+                    letterSpacing: -.2,
+                  ),
+                ),
               ),
+            ],
+          ),
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            child: Nomo3DButton(
+              label: '誘う',
+              icon: CupertinoIcons.paperplane_fill,
+              onTap: onInvite,
+              height: 36,
+              radius: 18,
+              color: _FriendsColors.lime,
+              foregroundColor: _FriendsColors.limeForeground,
+              shadowColor: _FriendsColors.limeShadow,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              fontSize: 12.5,
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CompactStatusPill extends StatelessWidget {
+  const _CompactStatusPill({required this.status, required this.accent});
+
+  final _FriendStatus status;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: status.enabled ? .18 : .10),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        status.label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: status.enabled ? accent : _FriendsColors.muted,
+          fontWeight: FontWeight.w900,
+          fontSize: 11,
+          letterSpacing: -.15,
         ),
       ),
     );

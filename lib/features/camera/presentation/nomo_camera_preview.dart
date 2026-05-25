@@ -38,6 +38,7 @@ class _CameraPreviewStage extends StatelessWidget {
             _LiveCameraBackground(
               controller: cameraController,
               isInitializing: isInitializingCamera,
+              framing: selectedFraming,
             ),
           _CameraFrameMask(
             framing: selectedFraming,
@@ -60,10 +61,12 @@ class _LiveCameraBackground extends StatelessWidget {
   const _LiveCameraBackground({
     required this.controller,
     required this.isInitializing,
+    required this.framing,
   });
 
   final CameraController? controller;
   final bool isInitializing;
+  final _CameraFraming framing;
 
   @override
   Widget build(BuildContext context) {
@@ -72,20 +75,54 @@ class _LiveCameraBackground extends StatelessWidget {
     if (!isReady) {
       return _CameraUnavailablePlaceholder(isInitializing: isInitializing);
     }
-    return _PlainCameraPreview(controller: camera);
+    return _PlainCameraPreview(
+      controller: camera,
+      fillAspectRatio: framing == _CameraFraming.landscape
+          ? framing.frameAspectRatio
+          : null,
+    );
   }
 }
 
 class _PlainCameraPreview extends StatelessWidget {
-  const _PlainCameraPreview({required this.controller});
+  const _PlainCameraPreview({
+    required this.controller,
+    required this.fillAspectRatio,
+  });
 
   final CameraController controller;
+  final double? fillAspectRatio;
 
   @override
   Widget build(BuildContext context) {
-    // Use the plugin's default preview widget directly so the preview is not
-    // stretched, cropped, or tinted by Nomo-specific filters.
-    return Center(child: CameraPreview(controller));
+    final fillAspectRatio = this.fillAspectRatio;
+    if (fillAspectRatio == null) {
+      // Use the plugin's default preview widget directly for non-wide modes so
+      // the existing square/portrait framing keeps its current behavior.
+      return Center(child: CameraPreview(controller));
+    }
+
+    // In 16:9 landscape mode the camera plugin can report a portrait preview
+    // aspect while the app shell is landscape, which leaves only a narrow
+    // vertical strip of live camera inside the wide frame. Size the preview as
+    // a landscape surface and cover the full stage so everything inside the
+    // bracket frame is live camera.
+    return ClipRect(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final height = width / fillAspectRatio;
+          return FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox(
+              width: width,
+              height: height,
+              child: CameraPreview(controller),
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 

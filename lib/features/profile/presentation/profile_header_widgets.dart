@@ -530,55 +530,284 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.isWhite,
     required this.logs,
     required this.photoLogs,
+    required this.friendsCount,
     required this.status,
     required this.onStatusTap,
     required this.onLogsTap,
     required this.onArchiveTap,
+    required this.onAddFriendsTap,
   });
 
   final bool isWhite;
   final List<DrinkLog> logs;
   final List<DrinkLog> photoLogs;
+  final int friendsCount;
   final NomoDailyStatus status;
   final VoidCallback onStatusTap;
   final VoidCallback onLogsTap;
   final VoidCallback onArchiveTap;
+  final VoidCallback onAddFriendsTap;
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final monthlyLogs = logs.where((log) => log.isInMonth(now)).toList();
 
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(24, 2, 24, 132),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(26, 0, 26, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _ProfileSummaryStats(
+            friendsCount: friendsCount,
+            logCount: logs.length,
+          ),
+          const SizedBox(height: 18),
+          _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
+          const SizedBox(height: 46),
+          _ProfileLearningStatus(
+            status: status,
+            monthlyLogCount: monthlyLogs.length,
+            photoLogCount: photoLogs.length,
+            onStatusTap: onStatusTap,
+            onLogsTap: onLogsTap,
+            onArchiveTap: onArchiveTap,
+          ),
+          const SizedBox(height: 6),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileSummaryStats extends StatelessWidget {
+  const _ProfileSummaryStats({
+    required this.friendsCount,
+    required this.logCount,
+  });
+
+  final int friendsCount;
+  final int logCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
       children: [
-        _ProfileStatusHomeCard(
-          isWhite: isWhite,
-          status: status,
-          onTap: onStatusTap,
+        const Expanded(
+          child: _ProfileSummaryStat(
+            icon: Icons.local_bar_rounded,
+            value: '',
+            label: 'コース',
+            showIconOnly: true,
+          ),
         ),
-        const SizedBox(height: 12),
+        Expanded(
+          child: _ProfileSummaryStat(value: '$friendsCount', label: 'フレンズ'),
+        ),
+        Expanded(
+          child: _ProfileSummaryStat(value: '$logCount', label: 'ログ回数'),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileSummaryStat extends StatelessWidget {
+  const _ProfileSummaryStat({
+    required this.value,
+    required this.label,
+    this.icon,
+    this.showIconOnly = false,
+  });
+
+  final String value;
+  final String label;
+  final IconData? icon;
+  final bool showIconOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: 38,
+          child: Center(
+            child: showIconOnly
+                ? NomoPopIcon(
+                    icon: icon ?? Icons.local_bar_rounded,
+                    color: const Color(0xFF20DDBF),
+                    size: 38,
+                    iconSize: 21,
+                  )
+                : Text(
+                    value,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 31,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.8,
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: .48),
+            fontSize: 15,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.4,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileFriendActionRow extends StatelessWidget {
+  const _ProfileFriendActionRow({required this.onAddFriendsTap});
+
+  final VoidCallback onAddFriendsTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _ProfileOutlineButton(
+            onTap: onAddFriendsTap,
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                NomoGeneratedIcon(
+                  CupertinoIcons.person_badge_plus_fill,
+                  color: Colors.white,
+                  size: 22,
+                ),
+                SizedBox(width: 10),
+                Text(
+                  '友達を追加',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileOutlineButton extends StatelessWidget {
+  const _ProfileOutlineButton({required this.child, required this.onTap});
+
+  final Widget child;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 58,
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color(0xFF53606B).withValues(alpha: .82),
+            width: 2.4,
+          ),
+        ),
+        child: child,
+      ),
+    );
+  }
+}
+
+class _ProfileLearningStatus extends StatelessWidget {
+  const _ProfileLearningStatus({
+    required this.status,
+    required this.monthlyLogCount,
+    required this.photoLogCount,
+    required this.onStatusTap,
+    required this.onLogsTap,
+    required this.onArchiveTap,
+  });
+
+  final NomoDailyStatus status;
+  final int monthlyLogCount;
+  final int photoLogCount;
+  final VoidCallback onStatusTap;
+  final VoidCallback onLogsTap;
+  final VoidCallback onArchiveTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final unset = status == NomoDailyStatus.unselected;
+    final statusLabel = unset ? '未設定' : status.label;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '学習状況',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: .48),
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.6,
+          ),
+        ),
+        const SizedBox(height: 17),
         Row(
           children: [
             Expanded(
-              child: _ProfileStatCard(
-                isWhite: isWhite,
-                icon: CupertinoIcons.chart_bar_fill,
-                iconColor: _ProfileColors.pink,
-                label: '今月の飲みログ',
-                value: '${monthlyLogs.length}件',
+              child: _ProfileLearningItem(
+                icon: CupertinoIcons.drop_fill,
+                iconColor: Colors.white.withValues(alpha: .46),
+                text: '$monthlyLogCount日',
+                muted: true,
                 onTap: onLogsTap,
               ),
             ),
-            const SizedBox(width: 10),
             Expanded(
-              child: _ProfileStatCard(
-                isWhite: isWhite,
-                icon: CupertinoIcons.photo_fill_on_rectangle_fill,
-                iconColor: _ProfileColors.pink,
-                label: '写真アーカイブ',
-                value: '${photoLogs.length}枚',
+              child: _ProfileLearningItem(
+                icon: CupertinoIcons.bolt_fill,
+                iconColor: const Color(0xFFFFD60A),
+                text: '${monthlyLogCount * 120} XP',
+                onTap: onLogsTap,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 17),
+        Row(
+          children: [
+            Expanded(
+              child: _ProfileLearningItem(
+                icon: unset ? CupertinoIcons.smiley : _statusIcon(status),
+                iconColor: unset
+                    ? const Color(0xFF28B9FF)
+                    : _statusColor(status),
+                text: statusLabel,
+                onTap: onStatusTap,
+              ),
+            ),
+            Expanded(
+              child: _ProfileLearningItem(
+                icon: CupertinoIcons.rosette,
+                iconColor: const Color(0xFFFFD60A),
+                text: '写真 $photoLogCount枚',
                 onTap: onArchiveTap,
               ),
             ),
@@ -589,120 +818,43 @@ class _ProfileActivityHome extends StatelessWidget {
   }
 }
 
-class _ProfileStatCard extends StatelessWidget {
-  const _ProfileStatCard({
-    required this.isWhite,
+class _ProfileLearningItem extends StatelessWidget {
+  const _ProfileLearningItem({
     required this.icon,
     required this.iconColor,
-    required this.label,
-    required this.value,
-    this.onTap,
+    required this.text,
+    required this.onTap,
+    this.muted = false,
   });
 
-  final bool isWhite;
   final IconData icon;
   final Color iconColor;
-  final String label;
-  final String value;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ProfileActivityCard(
-      isWhite: isWhite,
-      onTap: onTap,
-      height: 144,
-      borderRadius: 30,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          NomoPopIcon(icon: icon, color: iconColor, size: 42, iconSize: 23),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.6,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: .72),
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileStatusHomeCard extends StatelessWidget {
-  const _ProfileStatusHomeCard({
-    required this.isWhite,
-    required this.status,
-    required this.onTap,
-  });
-
-  final bool isWhite;
-  final NomoDailyStatus status;
+  final String text;
   final VoidCallback onTap;
+  final bool muted;
 
   @override
   Widget build(BuildContext context) {
-    final unset = status == NomoDailyStatus.unselected;
-    final color = unset ? _ProfileColors.pink : _statusColor(status);
-    return _ProfileActivityCard(
-      isWhite: isWhite,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      height: 96,
-      borderRadius: 30,
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          NomoPopIcon(
-            icon: unset ? CupertinoIcons.smiley : _statusIcon(status),
-            color: color,
-            size: 46,
-            iconSize: 25,
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  unset ? 'ステータスを設定する' : status.label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  unset
-                      ? '未設定だと誘われにくいかも。今日誘いやすいかをフレンズに伝えましょう。'
-                      : 'フレンズが今日誘いやすくなります。${status.description}',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: .72),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    height: 1.35,
-                  ),
-                ),
-              ],
+          NomoGeneratedIcon(icon, color: iconColor, size: 25),
+          const SizedBox(width: 10),
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: muted ? .52 : .92),
+                fontSize: 19,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.5,
+              ),
             ),
-          ),
-          NomoGeneratedIcon(
-            CupertinoIcons.chevron_right,
-            color: Colors.white.withValues(alpha: .86),
-            size: 22,
           ),
         ],
       ),

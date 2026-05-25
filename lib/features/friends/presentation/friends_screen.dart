@@ -23,7 +23,6 @@ import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
 import '../application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
-import '../../profile/presentation/profile_screen.dart';
 
 part 'friends_header_filters.dart';
 part 'friends_custom_filter_sheet.dart';
@@ -57,7 +56,11 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   }
 
   void _openAddFriend() {
-    showMyQrDialog(context, ref.read(nomoUserProvider), ref);
+    NomoToast.show(
+      context,
+      'フレンズ追加機能は調整中です',
+      icon: CupertinoIcons.person_badge_plus,
+    );
   }
 
   void _syncCustomFiltersForUser(String? userId) {
