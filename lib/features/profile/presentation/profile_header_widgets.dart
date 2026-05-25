@@ -722,12 +722,26 @@ class _ProfileOutlineButton extends StatelessWidget {
       child: Container(
         height: 58,
         decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: const Color(0xFF53606B).withValues(alpha: .82),
-            width: 2.4,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFFC08BFF).withValues(alpha: .22),
+              const Color(0xFF162336).withValues(alpha: .92),
+            ],
           ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: const Color(0xFFC08BFF).withValues(alpha: .48),
+            width: 1.6,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFC08BFF).withValues(alpha: .18),
+              blurRadius: 26,
+              offset: const Offset(0, 12),
+            ),
+          ],
         ),
         child: child,
       ),
@@ -756,64 +770,124 @@ class _ProfileLearningStatus extends StatelessWidget {
   Widget build(BuildContext context) {
     final unset = status == NomoDailyStatus.unselected;
     final statusLabel = unset ? '未設定' : status.label;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'マイルームの成長',
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: .48),
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.6,
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFFC08BFF).withValues(alpha: .18),
+            const Color(0xFF102033).withValues(alpha: .88),
+            const Color(0xFFFF5EA8).withValues(alpha: .10),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: const Color(0xFFC08BFF).withValues(alpha: .28),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFC08BFF).withValues(alpha: .14),
+            blurRadius: 32,
+            offset: const Offset(0, 16),
           ),
-        ),
-        const SizedBox(height: 17),
-        Row(
-          children: [
-            Expanded(
-              child: _ProfileLearningItem(
-                icon: CupertinoIcons.drop_fill,
-                iconColor: Colors.white.withValues(alpha: .46),
-                text: '$monthlyLogCount日',
-                muted: true,
-                onTap: onLogsTap,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const NomoPopIcon(
+                icon: CupertinoIcons.sparkles,
+                color: Color(0xFFC08BFF),
+                size: 38,
+                iconSize: 20,
               ),
-            ),
-            Expanded(
-              child: _ProfileLearningItem(
-                icon: CupertinoIcons.bolt_fill,
-                iconColor: const Color(0xFFFFD60A),
-                text: '${monthlyLogCount * 120} XP',
-                onTap: onLogsTap,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'マイルームの成長',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: .94),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.6,
+                        height: 1.05,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '遊んだ日と思い出で、部屋が育つよ',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: .55),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w800,
+                        height: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 17),
-        Row(
-          children: [
-            Expanded(
-              child: _ProfileLearningItem(
-                icon: unset ? CupertinoIcons.smiley : _statusIcon(status),
-                iconColor: unset
-                    ? const Color(0xFF28B9FF)
-                    : _statusColor(status),
-                text: statusLabel,
-                onTap: onStatusTap,
+            ],
+          ),
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              Expanded(
+                child: _ProfileLearningItem(
+                  icon: CupertinoIcons.calendar_today,
+                  iconColor: const Color(0xFF5DEBD3),
+                  text: '$monthlyLogCount日',
+                  label: '遊んだ日',
+                  onTap: onLogsTap,
+                ),
               ),
-            ),
-            Expanded(
-              child: _ProfileLearningItem(
-                icon: CupertinoIcons.rosette,
-                iconColor: const Color(0xFFFFD60A),
-                text: '写真 $photoLogCount枚',
-                onTap: onArchiveTap,
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ProfileLearningItem(
+                  icon: CupertinoIcons.bolt_fill,
+                  iconColor: const Color(0xFFFFD60A),
+                  text: '${monthlyLogCount * 120} XP',
+                  label: '経験値',
+                  onTap: onLogsTap,
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _ProfileLearningItem(
+                  icon: unset ? CupertinoIcons.smiley : _statusIcon(status),
+                  iconColor: unset
+                      ? const Color(0xFF28B9FF)
+                      : _statusColor(status),
+                  text: statusLabel,
+                  label: '今日の気分',
+                  onTap: onStatusTap,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ProfileLearningItem(
+                  icon: CupertinoIcons.photo_fill_on_rectangle_fill,
+                  iconColor: const Color(0xFFFF5EA8),
+                  text: '$photoLogCount枚',
+                  label: '写真の思い出',
+                  onTap: onArchiveTap,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -823,40 +897,77 @@ class _ProfileLearningItem extends StatelessWidget {
     required this.icon,
     required this.iconColor,
     required this.text,
+    required this.label,
     required this.onTap,
-    this.muted = false,
   });
 
   final IconData icon;
   final Color iconColor;
   final String text;
+  final String label;
   final VoidCallback onTap;
-  final bool muted;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          NomoGeneratedIcon(icon, color: iconColor, size: 25),
-          const SizedBox(width: 10),
-          Flexible(
-            child: Text(
-              text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: muted ? .52 : .92),
-                fontSize: 19,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.5,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 76),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: .065),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: Colors.white.withValues(alpha: .09)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: .16),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Center(
+                child: NomoGeneratedIcon(icon, color: iconColor, size: 21),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 9),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.45,
+                      height: 1.05,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: .50),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      height: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
