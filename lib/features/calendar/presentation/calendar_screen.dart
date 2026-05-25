@@ -723,42 +723,74 @@ class _CalendarFriendStatusList extends StatelessWidget {
         final availableCount = friends
             .where((friend) => _calendarFriendIsAvailable(friend.statusKey))
             .length;
-        final visibleFriends = sorted.take(6).toList(growable: false);
-        final hiddenCount = sorted.length - visibleFriends.length;
 
         return _CalendarFriendStatusFrame(
           isWhite: isWhite,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          onTap: () => _showCalendarFriendStatusSheet(
+            context,
+            friends: sorted,
+            isWhite: isWhite,
+          ),
+          child: Row(
             children: [
-              Text(
-                '$availableCount/${friends.length}人が空いてそう',
-                style: TextStyle(
-                  color: isWhite ? const Color(0xFF101820) : Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
+              NomoPopIcon(
+                icon: CupertinoIcons.person_2_fill,
+                color: availableCount > 0
+                    ? _calendarPrimaryActionColor
+                    : const Color(0xFF94A3B8),
+                size: 38,
+                iconSize: 18,
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$availableCount/${friends.length}人が空いてそう',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isWhite ? const Color(0xFF101820) : Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'タップして内訳を見る',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isWhite
+                            ? const Color(0xFF667381)
+                            : Colors.white.withValues(alpha: .62),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 7),
-              _CalendarFriendStatusSummary(friends: friends, isWhite: isWhite),
-              const SizedBox(height: 6),
-              ...visibleFriends.map(
-                (friend) =>
-                    _CalendarFriendStatusRow(friend: friend, isWhite: isWhite),
-              ),
-              if (hiddenCount > 0) ...[
-                const SizedBox(height: 8),
-                _CalendarShowAllFriendsButton(
-                  hiddenCount: hiddenCount,
-                  totalCount: friends.length,
-                  isWhite: isWhite,
-                  onTap: () => _showCalendarFriendStatusSheet(
-                    context,
-                    friends: sorted,
-                    isWhite: isWhite,
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: _calendarPrimaryActionColor.withValues(alpha: .16),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '見る',
+                  style: TextStyle(
+                    color: _calendarPrimaryActionColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-              ],
+              ),
             ],
           ),
         );
@@ -837,57 +869,6 @@ class _CalendarFriendStatusCountChip extends StatelessWidget {
   }
 }
 
-class _CalendarShowAllFriendsButton extends StatelessWidget {
-  const _CalendarShowAllFriendsButton({
-    required this.hiddenCount,
-    required this.totalCount,
-    required this.isWhite,
-    required this.onTap,
-  });
-
-  final int hiddenCount;
-  final int totalCount;
-  final bool isWhite;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: isWhite
-              ? const Color(0xFFEFF5FA)
-              : Colors.white.withValues(alpha: .07),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'ほか$hiddenCount人を表示',
-              style: TextStyle(
-                color: isWhite ? const Color(0xFF17212B) : Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(width: 6),
-            Icon(
-              CupertinoIcons.chevron_up_chevron_down,
-              size: 14,
-              color: isWhite ? const Color(0xFF667381) : Colors.white70,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 Future<void> _showCalendarFriendStatusSheet(
   BuildContext context, {
   required List<NomoFriend> friends,
@@ -931,6 +912,8 @@ class _CalendarFriendStatusSheet extends StatelessWidget {
               fontWeight: FontWeight.w900,
             ),
           ),
+          const SizedBox(height: 8),
+          _CalendarFriendStatusSummary(friends: friends, isWhite: isWhite),
           const SizedBox(height: 10),
           Flexible(
             child: ListView.separated(
@@ -954,14 +937,16 @@ class _CalendarFriendStatusFrame extends StatelessWidget {
   const _CalendarFriendStatusFrame({
     required this.child,
     required this.isWhite,
+    this.onTap,
   });
 
   final Widget child;
   final bool isWhite;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final content = Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(11, 10, 11, 10),
       decoration: BoxDecoration(
@@ -976,6 +961,13 @@ class _CalendarFriendStatusFrame extends StatelessWidget {
         ),
       ),
       child: child,
+    );
+    final handler = onTap;
+    if (handler == null) return content;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: handler,
+      child: content,
     );
   }
 }
