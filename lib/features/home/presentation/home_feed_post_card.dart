@@ -47,7 +47,10 @@ class _FeedPostCard extends StatelessWidget {
                     hasPhoto
                         ? _PostPhoto(path: photoPath!)
                         : _FeedPhotoPlaceholder(accent: item.accent),
-                    _FeedPhotoCaptionOverlay(caption: caption),
+                    _FeedPhotoCaptionOverlay(
+                      caption: caption,
+                      captionY: item.captionY,
+                    ),
                   ],
                 ),
               ),
@@ -66,9 +69,13 @@ class _FeedPostCard extends StatelessWidget {
 }
 
 class _FeedPhotoCaptionOverlay extends StatelessWidget {
-  const _FeedPhotoCaptionOverlay({required this.caption});
+  const _FeedPhotoCaptionOverlay({
+    required this.caption,
+    required this.captionY,
+  });
 
   final String caption;
+  final double captionY;
 
   @override
   Widget build(BuildContext context) {
@@ -80,9 +87,11 @@ class _FeedPhotoCaptionOverlay extends StatelessWidget {
     return IgnorePointer(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final top = constraints.maxHeight > bandHeight
-              ? (constraints.maxHeight - bandHeight) / 2
-              : 0.0;
+          final maxTop = (constraints.maxHeight - bandHeight).clamp(
+            0.0,
+            double.infinity,
+          );
+          final top = maxTop * captionY.clamp(0.0, 1.0);
 
           return Stack(
             fit: StackFit.expand,

@@ -55,6 +55,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
   double? _selectedPlaceLatitude;
   double? _selectedPlaceLongitude;
   String? _photoPath;
+  double _captionY = .5;
   bool _isSaving = false;
 
   @override

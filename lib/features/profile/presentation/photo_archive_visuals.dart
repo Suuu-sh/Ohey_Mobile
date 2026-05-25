@@ -247,54 +247,6 @@ class _ArchiveViewModeButton extends StatelessWidget {
   }
 }
 
-class _ArchivePlacesView extends StatelessWidget {
-  const _ArchivePlacesView({
-    required this.logs,
-    required this.isWhite,
-    required this.onLogTap,
-  });
-
-  final List<DrinkLog> logs;
-  final bool isWhite;
-  final ValueChanged<DrinkLog> onLogTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final places = _archivePlaceGroups(logs);
-    if (places.isEmpty) {
-      return _ArchivePlacesEmpty(isWhite: isWhite);
-    }
-
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(22, 12, 22, 130),
-      children: [
-        _ArchiveMapCard(
-          places: places,
-          isWhite: isWhite,
-          onPlaceTap: (place) => onLogTap(place.latestLog),
-        ),
-        const SizedBox(height: 18),
-        Text(
-          '場所別アーカイブ',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w900,
-            color: isWhite ? const Color(0xFF101820) : Colors.white,
-          ),
-        ),
-        const SizedBox(height: 10),
-        ...places.map(
-          (place) => _ArchivePlaceTile(
-            place: place,
-            isWhite: isWhite,
-            onTap: () => onLogTap(place.latestLog),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _ArchiveMapPage extends StatelessWidget {
   const _ArchiveMapPage({
     required this.logs,
@@ -341,55 +293,6 @@ class _ArchiveMapPage extends StatelessWidget {
   }
 }
 
-class _ArchiveMapCard extends StatelessWidget {
-  const _ArchiveMapCard({
-    required this.places,
-    required this.isWhite,
-    required this.onPlaceTap,
-  });
-
-  final List<_ArchivePlaceGroup> places;
-  final bool isWhite;
-  final ValueChanged<_ArchivePlaceGroup> onPlaceTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final visible = places.take(8).toList(growable: false);
-    return Container(
-      height: 430,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .16 : .40),
-            blurRadius: 30,
-            offset: const Offset(0, 18),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (Platform.isIOS && visible.isNotEmpty)
-              _ArchiveAppleMap(annotations: _archiveMapAnnotations(visible))
-            else
-              const _ArchiveStylizedMapBackground(),
-            if (!(Platform.isIOS && visible.isNotEmpty))
-              for (var i = 0; i < visible.length; i++)
-                _ArchiveMapPin(
-                  place: visible[i],
-                  alignment: _archivePinAlignment(visible[i].name, i),
-                  onTap: () => onPlaceTap(visible[i]),
-                ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _ArchiveAppleMap extends StatelessWidget {
   const _ArchiveAppleMap({required this.annotations, this.onAnnotationTap});
 
@@ -431,23 +334,6 @@ List<Map<String, Object?>> _archiveLogMapAnnotations(List<DrinkLog> logs) {
           if (log.hasPlaceCoordinate) ...{
             'latitude': log.placeLatitude,
             'longitude': log.placeLongitude,
-          },
-        },
-      )
-      .toList(growable: false);
-}
-
-List<Map<String, Object?>> _archiveMapAnnotations(
-  List<_ArchivePlaceGroup> places,
-) {
-  return places
-      .map(
-        (place) => <String, Object?>{
-          'title': place.name,
-          'count': place.logs.length,
-          if (place.latestLog.hasPlaceCoordinate) ...{
-            'latitude': place.latestLog.placeLatitude,
-            'longitude': place.latestLog.placeLongitude,
           },
         },
       )
@@ -809,86 +695,6 @@ class _ArchiveMapPin extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ArchivePlaceTile extends StatelessWidget {
-  const _ArchivePlaceTile({
-    required this.place,
-    required this.isWhite,
-    required this.onTap,
-  });
-
-  final _ArchivePlaceGroup place;
-  final bool isWhite;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: isWhite ? Colors.white : Colors.white.withValues(alpha: .07),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: isWhite
-                  ? Colors.black.withValues(alpha: .06)
-                  : Colors.white.withValues(alpha: .10),
-            ),
-          ),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 64,
-                height: 64,
-                child: _ArchivePhotoFrame(
-                  log: place.latestLog,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      place.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: isWhite ? const Color(0xFF101820) : Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${place.logs.length}件の思い出 ・ ${_archiveDate(place.latestLog.date)}',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: CupertinoDynamicColor.resolve(
-                          CupertinoColors.secondaryLabel,
-                          context,
-                        ),
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const NomoGeneratedIcon(
-                CupertinoIcons.chevron_forward,
-                color: AppColors.primaryAction,
-                size: 18,
-              ),
-            ],
-          ),
         ),
       ),
     );

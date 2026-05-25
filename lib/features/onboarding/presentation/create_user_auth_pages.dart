@@ -117,7 +117,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
               if (!isEmailStep) ...[
                 const SizedBox(height: 20),
                 Text(
-                  '登録するとNomoの利用規約とプライバシー\nポリシーに同意したことになります。',
+                  '登録するとTomolaの利用規約とプライバシー\nポリシーに同意したことになります。',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: .82),
@@ -271,7 +271,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
               ),
               SizedBox(height: termsGap),
               Text(
-                'ログインするとNomoの利用規約とプライバシー\nポリシーに同意したことになります。',
+                'ログインするとTomolaの利用規約とプライバシー\nポリシーに同意したことになります。',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: .82),

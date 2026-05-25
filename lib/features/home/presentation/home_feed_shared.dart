@@ -99,6 +99,7 @@ class _FeedItem {
     required this.avatar,
     required this.accent,
     this.photoAssetPath,
+    this.captionY = .5,
     this.linkUrl = '',
     this.friends = const <_Companion>[],
     required this.likes,
@@ -133,13 +134,14 @@ class _FeedItem {
               NomoAvatar.defaultAvatar;
     return _FeedItem(
       id: log.id,
-      userName: log.isOfficial ? 'Nomo' : authorName,
+      userName: log.isOfficial ? 'Tomola' : authorName,
       timeAgo: _relativeTime(log.date),
       body: log.memo.trim(),
       place: log.place.trim(),
       avatar: avatar,
       accent: accent,
       photoAssetPath: log.photoAssetPath,
+      captionY: log.captionY,
       linkUrl: log.linkUrl ?? '',
       friends: log.friends.map(_Companion.fromFriend).toList(),
       likes: log.likeCount,
@@ -181,6 +183,7 @@ class _FeedItem {
   final NomoAvatar avatar;
   final Color accent;
   final String? photoAssetPath;
+  final double captionY;
   final String linkUrl;
   final List<_Companion> friends;
   final int likes;
@@ -221,7 +224,7 @@ class _Companion {
   final Color accent;
   final String? statusKey;
 
-  String get handleLabel => handle.trim().isEmpty ? 'Nomoフレンズ' : '@$handle';
+  String get handleLabel => handle.trim().isEmpty ? 'Tomolaフレンズ' : '@$handle';
 }
 
 String _companionStatusLabel(String? statusKey) {

@@ -22,7 +22,7 @@ struct NomoWidgetSnapshot: Equatable {
   static let placeholder = NomoWidgetSnapshot(
     statusKey: "unselected",
     statusLabel: "今日の気分は？",
-    statusDescription: "Nomoを開いて飲みステータスをセットしよう",
+    statusDescription: "Tomolaを開いて今日のノリをセットしよう",
     availableFriendsCount: 0,
     availableFriendNames: [],
     availableFriends: [],
@@ -33,7 +33,7 @@ struct NomoWidgetSnapshot: Equatable {
     let defaults = UserDefaults(suiteName: appGroupIdentifier) ?? .standard
     let statusKey = defaults.string(forKey: "statusKey") ?? "unselected"
     let statusLabel = defaults.string(forKey: "statusLabel") ?? "今日の気分は？"
-    let statusDescription = defaults.string(forKey: "statusDescription") ?? "Nomoを開いて飲みステータスをセットしよう"
+    let statusDescription = defaults.string(forKey: "statusDescription") ?? "Tomolaを開いて今日のノリをセットしよう"
     let friendNames = Array((defaults.stringArray(forKey: "availableFriendNames") ?? []).prefix(3))
     let friendStatusLabels = Array((defaults.stringArray(forKey: "availableFriendStatusLabels") ?? []).prefix(3))
     let friendCount = defaults.object(forKey: "availableFriendsCount") as? Int ?? friendNames.count
@@ -87,7 +87,7 @@ struct NomoTodayStatusWidget: Widget {
       NomoTodayStatusWidgetView(entry: entry)
     }
     .configurationDisplayName("今日のノリ")
-    .description("Nomoのキャラクターと一緒に、今日の飲みステータスをホーム画面で確認できます。")
+    .description("Tomoと一緒に、今日のノリをホーム画面で確認できます。")
     .supportedFamilies([.systemSmall, .systemMedium])
   }
 }
@@ -100,7 +100,7 @@ struct NomoFriendsAvailabilityWidget: Widget {
       NomoFriendsAvailabilityWidgetView(entry: entry)
     }
     .configurationDisplayName("誘える飲み友リスト")
-    .description("今日飲みに誘えそうな飲み友を、Nomoのキャラクターと一緒にすぐチェックできます。")
+    .description("今日誘えそうな友達を、Tomoと一緒にすぐチェックできます。")
     .supportedFamilies([.systemSmall, .systemMedium])
   }
 }
@@ -276,7 +276,7 @@ private struct MediumFriendsContent: View {
   @ViewBuilder
   private var friendRows: some View {
     if snapshot.availableFriends.isEmpty {
-      Text("Nomoを開いて、みんなの今日のノリを更新しよう。")
+      Text("Tomolaを開いて、みんなの今日のノリを更新しよう。")
         .font(.system(size: 12, weight: .bold, design: .rounded))
         .foregroundStyle(Color.white.opacity(0.72))
         .lineLimit(2)

@@ -97,7 +97,7 @@ class _NomoWidgetSnapshot {
       statusKey: status.key,
       statusLabel: user == null ? '今日の気分は？' : status.label,
       statusDescription: user == null
-          ? 'Nomoを開いて飲みステータスをセットしよう'
+          ? 'Tomolaを開いて今日のノリをセットしよう'
           : status.description,
       availableFriendsCount: availableFriends.length,
       availableFriendNames: [

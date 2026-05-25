@@ -1,5 +1,7 @@
 part of 'add_log_screen.dart';
 
+const _postPreviewActionPurple = Color(0xFFC08BFF);
+
 String _previewUserName(String? name) {
   final normalized = name?.trim() ?? '';
   return normalized.isEmpty ? 'あなた' : normalized;
@@ -72,6 +74,7 @@ class _PostPreviewCard extends StatelessWidget {
     required this.userName,
     required this.avatar,
     required this.memoController,
+    required this.captionY,
     required this.place,
     required this.date,
     required this.friends,
@@ -79,6 +82,7 @@ class _PostPreviewCard extends StatelessWidget {
     required this.placeEditor,
     required this.onEditDateTime,
     required this.onMemoChanged,
+    required this.onCaptionYChanged,
     required this.onRetake,
   });
 
@@ -86,6 +90,7 @@ class _PostPreviewCard extends StatelessWidget {
   final String userName;
   final NomoAvatar avatar;
   final TextEditingController memoController;
+  final double captionY;
   final String place;
   final DateTime date;
   final List<NomoFriend> friends;
@@ -93,6 +98,7 @@ class _PostPreviewCard extends StatelessWidget {
   final Widget placeEditor;
   final VoidCallback onEditDateTime;
   final ValueChanged<String> onMemoChanged;
+  final ValueChanged<double> onCaptionYChanged;
   final VoidCallback onRetake;
 
   @override
@@ -128,7 +134,7 @@ class _PostPreviewCard extends StatelessWidget {
         const SizedBox(height: 10),
         NomoThemedPanel(
           width: double.infinity,
-          accentColor: _AddLogColors.lime,
+          accentColor: _postPreviewActionPurple,
           backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
           borderRadius: 0,
           border: NomoThemedPanelBorder.horizontal,
@@ -169,7 +175,9 @@ class _PostPreviewCard extends StatelessWidget {
                         _PreviewPhotoCaptionEditor(
                           controller: memoController,
                           hint: _previewCaptionHint(place: place),
+                          captionY: captionY,
                           onChanged: onMemoChanged,
+                          onCaptionYChanged: onCaptionYChanged,
                         ),
                       ],
                     ),
@@ -339,12 +347,16 @@ class _PreviewPhotoCaptionEditor extends StatelessWidget {
   const _PreviewPhotoCaptionEditor({
     required this.controller,
     required this.hint,
+    required this.captionY,
     required this.onChanged,
+    required this.onCaptionYChanged,
   });
 
   final TextEditingController controller;
   final String hint;
+  final double captionY;
   final ValueChanged<String> onChanged;
+  final ValueChanged<double> onCaptionYChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -352,9 +364,19 @@ class _PreviewPhotoCaptionEditor extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final top = constraints.maxHeight > bandHeight
-            ? (constraints.maxHeight - bandHeight) / 2
-            : 0.0;
+        final maxTop = (constraints.maxHeight - bandHeight).clamp(
+          0.0,
+          double.infinity,
+        );
+        final top = maxTop * captionY.clamp(0.0, 1.0);
+
+        void updateCaptionY(double globalY) {
+          final box = context.findRenderObject() as RenderBox?;
+          if (box == null || maxTop <= 0) return;
+          final localY = box.globalToLocal(Offset(0, globalY)).dy;
+          final nextTop = (localY - bandHeight / 2).clamp(0.0, maxTop);
+          onCaptionYChanged(nextTop / maxTop);
+        }
 
         return Stack(
           fit: StackFit.expand,
@@ -364,58 +386,79 @@ class _PreviewPhotoCaptionEditor extends StatelessWidget {
               right: 0,
               top: top,
               height: bandHeight,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                color: Colors.black.withValues(alpha: .46),
-                alignment: Alignment.center,
-                child: TextField(
-                  controller: controller,
-                  maxLength: _drinkLogCommentMaxLength,
-                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                  onChanged: onChanged,
-                  keyboardType: TextInputType.text,
-                  textInputAction: TextInputAction.done,
-                  maxLines: 1,
-                  textAlign: TextAlign.center,
-                  textAlignVertical: TextAlignVertical.center,
-                  cursorColor: _AddLogColors.lime,
-                  decoration: InputDecoration(
-                    isDense: true,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    filled: false,
-                    fillColor: Colors.transparent,
-                    contentPadding: EdgeInsets.zero,
-                    counterText: '',
-                    hintText: hint,
-                    hintStyle: Theme.of(context).textTheme.headlineSmall
-                        ?.copyWith(
-                          color: Colors.white.withValues(alpha: .76),
-                          fontSize: 23,
-                          fontWeight: FontWeight.w900,
-                          height: 1.05,
-                          letterSpacing: -.65,
-                          shadows: const [
-                            Shadow(
-                              color: Colors.black87,
-                              blurRadius: 10,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onVerticalDragStart: (details) =>
+                    updateCaptionY(details.globalPosition.dy),
+                onVerticalDragUpdate: (details) =>
+                    updateCaptionY(details.globalPosition.dy),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  color: Colors.black.withValues(alpha: .46),
+                  alignment: Alignment.center,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      TextField(
+                        controller: controller,
+                        maxLength: _drinkLogCommentMaxLength,
+                        maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                        onChanged: onChanged,
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.done,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                        textAlignVertical: TextAlignVertical.center,
+                        cursorColor: _AddLogColors.lime,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                          fillColor: Colors.transparent,
+                          contentPadding: EdgeInsets.zero,
+                          counterText: '',
+                          hintText: hint,
+                          hintStyle: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: Colors.white.withValues(alpha: .76),
+                                fontSize: 23,
+                                fontWeight: FontWeight.w900,
+                                height: 1.05,
+                                letterSpacing: -.65,
+                                shadows: const [
+                                  Shadow(
+                                    color: Colors.black87,
+                                    blurRadius: 10,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
                         ),
-                  ),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
-                    fontSize: 23,
-                    fontWeight: FontWeight.w900,
-                    height: 1.05,
-                    letterSpacing: -.65,
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black87,
-                        blurRadius: 10,
-                        offset: Offset(0, 2),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontSize: 23,
+                              fontWeight: FontWeight.w900,
+                              height: 1.05,
+                              letterSpacing: -.65,
+                              shadows: const [
+                                Shadow(
+                                  color: Colors.black87,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                      ),
+                      const Positioned(
+                        right: 0,
+                        child: Icon(
+                          CupertinoIcons.arrow_up_arrow_down,
+                          color: Colors.white70,
+                          size: 18,
+                        ),
                       ),
                     ],
                   ),
@@ -454,18 +497,18 @@ class _PreviewFooter extends StatelessWidget {
                 semanticLabel: 'いいねで反応',
                 icon: CupertinoIcons.heart,
                 label: 'Like',
-                color: AppColors.primaryAction,
+                color: _postPreviewActionPurple,
                 isWhite: isWhite,
               ),
               const SizedBox(width: 8),
               _PreviewActionPill(
                 semanticLabel: '思い出を共有',
                 customIcon: _PreviewShareIcon(
-                  color: AppColors.invite,
+                  color: _postPreviewActionPurple,
                   size: 18,
                 ),
                 label: 'Share',
-                color: AppColors.invite,
+                color: _postPreviewActionPurple,
                 isWhite: isWhite,
               ),
               const Spacer(),
@@ -586,11 +629,18 @@ class _PreviewActionPill extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(10, 7, 12, 7),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: isWhite ? .12 : .20),
+          color: color.withValues(alpha: isWhite ? .16 : .26),
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: color.withValues(alpha: isWhite ? .28 : .34),
+            color: color.withValues(alpha: isWhite ? .40 : .50),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: isWhite ? .18 : .28),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -676,12 +726,9 @@ class _PreviewFriendsPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = isWhite ? const Color(0xFF344152) : Colors.white;
-    final borderColor = isWhite
-        ? const Color(0xFFE0E7EF)
-        : Colors.white.withValues(alpha: .13);
-    final backgroundColor = isWhite
-        ? const Color(0xFFF4F7FA)
-        : Colors.white.withValues(alpha: .07);
+    const color = _postPreviewActionPurple;
+    final borderColor = color.withValues(alpha: isWhite ? .40 : .50);
+    final backgroundColor = color.withValues(alpha: isWhite ? .16 : .26);
     const label = 'と一緒';
 
     return Container(
@@ -742,7 +789,7 @@ class _PreviewFriendAvatarStack extends StatelessWidget {
                   color: visible[index].accentColor.withValues(alpha: .34),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: .78),
+                    color: _postPreviewActionPurple.withValues(alpha: .58),
                     width: 1,
                   ),
                 ),

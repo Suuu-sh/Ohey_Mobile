@@ -160,7 +160,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       await ref.read(authRepositoryProvider).signInWithOAuth(provider);
       if (!mounted) return;
       setState(() {
-        _notice = '$providerLabel認証を完了するとNomoに戻ります。';
+        _notice = '$providerLabel認証を完了するとTomolaに戻ります。';
       });
     } on AuthException catch (e) {
       if (mounted) setState(() => _error = _friendlyAuthError(e.message));

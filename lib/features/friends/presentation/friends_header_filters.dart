@@ -12,7 +12,7 @@ class _FriendsHeaderBackdrop extends StatelessWidget {
       fadeColor: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
       accentColor: _FriendsColors.lime,
       topShadeOpacity: .12,
-      fadeStartOpacity: .92,
+      fadeStartOpacity: .84,
     );
   }
 }

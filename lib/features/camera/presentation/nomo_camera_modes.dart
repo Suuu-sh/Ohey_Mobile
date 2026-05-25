@@ -15,7 +15,7 @@ enum _CameraFilter {
 
   String get label => switch (this) {
     original => 'Original',
-    avatar => 'Nomo AR',
+    avatar => 'Tomo AR',
     natural => 'Natural',
   };
 

@@ -238,7 +238,7 @@ class AdminUserProfile {
     return AdminUserProfile(
       id: json['id'] as String? ?? '',
       userId: json['user_id'] as String? ?? '',
-      displayName: json['display_name'] as String? ?? 'Nomo user',
+      displayName: json['display_name'] as String? ?? 'Tomola user',
       avatarUrl: json['avatar_url'] as String?,
       gender: json['gender'] as String? ?? 'unspecified',
       status: json['status'] as String? ?? 'unselected',
@@ -280,7 +280,7 @@ class AdminDrinkLog {
     return AdminDrinkLog(
       id: json['id'] as String? ?? '',
       ownerUserId: json['owner_user_id'] as String? ?? '',
-      ownerDisplayName: owner['display_name'] as String? ?? 'Nomo user',
+      ownerDisplayName: owner['display_name'] as String? ?? 'Tomola user',
       ownerHandle: owner['user_id'] as String? ?? '',
       drankAt:
           DateTime.tryParse(json['drank_at'] as String? ?? '') ??

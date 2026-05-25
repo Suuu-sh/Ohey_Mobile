@@ -188,7 +188,7 @@ class _AdminUserEditorScreenState
               ),
               const SizedBox(height: 10),
               _AdminSwitchRow(
-                label: 'Nomo Plus',
+                label: 'Tomola Plus',
                 value: _isPlus,
                 onChanged: (value) => setState(() => _isPlus = value),
               ),
