@@ -178,18 +178,23 @@ class _TodayInviteSection extends StatelessWidget {
           else
             SizedBox(
               height: 178,
-              child: Row(
-                children: [
-                  for (final entry in candidates.take(2).indexed) ...[
-                    if (entry.$1 > 0) const SizedBox(width: 12),
-                    Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final cardWidth = (constraints.maxWidth - 12) / 2;
+                  return ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: candidates.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) => SizedBox(
+                      width: cardWidth,
                       child: _TodayInviteCandidateCard(
-                        item: entry.$2,
-                        onInvite: () => onInvite(entry.$2.friend),
+                        item: candidates[index],
+                        onInvite: () => onInvite(candidates[index].friend),
                       ),
                     ),
-                  ],
-                ],
+                  );
+                },
               ),
             ),
           if (blocked.isNotEmpty) ...[
