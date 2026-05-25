@@ -1,11 +1,11 @@
 {
-    "name": "nomo",
-    "short_name": "nomo",
+    "name": "Tomola",
+    "short_name": "Tomola",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A cozy drinking log social app.",
+    "description": "A cozy social app for spontaneous plans and memories.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
