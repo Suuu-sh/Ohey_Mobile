@@ -172,7 +172,7 @@ class _TodayInviteSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '今誘いやすいフレンズを表示しています。',
+                      'あなたにおすすめのフレンズを表示しています。',
                       style: TextStyle(
                         color: sub,
                         fontSize: 12,
