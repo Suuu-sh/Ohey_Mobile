@@ -302,21 +302,44 @@ Gradient? _friendBlockGradient({
   }
 
   final color = status.blockColor;
+  final isGreen = color == _FriendsColors.statusGreen;
   return LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: isWhite
         ? [
-            Color.lerp(color, Colors.white, .72)!,
-            Color.lerp(color, Colors.white, .88)!,
+            Color.lerp(color, Colors.white, isGreen ? .88 : .72)!,
+            Color.lerp(color, Colors.white, isGreen ? .96 : .88)!,
           ]
         : [
-            color.withValues(alpha: .30),
-            color.withValues(alpha: .15),
+            color.withValues(alpha: isGreen ? .12 : .30),
+            color.withValues(alpha: isGreen ? .055 : .15),
             Colors.white.withValues(alpha: .045),
           ],
     stops: isWhite ? null : const [0, .58, 1],
   );
+}
+
+double _friendBlockGlowAlpha({
+  required bool isWhite,
+  required _FriendStatus status,
+}) {
+  if (!status.enabled) return 0;
+  if (status.blockColor == _FriendsColors.statusGreen) {
+    return isWhite ? .025 : .05;
+  }
+  return isWhite ? .08 : .16;
+}
+
+double _friendInviteCardGlowAlpha({
+  required bool isWhite,
+  required _FriendStatus status,
+}) {
+  if (!status.enabled) return 0;
+  if (status.blockColor == _FriendsColors.statusGreen) {
+    return isWhite ? .022 : .045;
+  }
+  return isWhite ? .07 : .14;
 }
 
 double _friendBlockBorderAlpha({
@@ -324,6 +347,9 @@ double _friendBlockBorderAlpha({
   required _FriendStatus status,
 }) {
   if (!status.enabled) return isWhite ? .20 : .18;
+  if (status.blockColor == _FriendsColors.statusGreen) {
+    return isWhite ? .26 : .30;
+  }
   return isWhite ? .36 : .42;
 }
 

@@ -32,7 +32,7 @@ class _FriendCard extends StatelessWidget {
         gradient: _friendBlockGradient(isWhite: isWhite, status: status),
         borderRadius: 20,
         borderAlpha: _friendBlockBorderAlpha(isWhite: isWhite, status: status),
-        glowAlpha: status.enabled ? (isWhite ? .08 : .16) : 0,
+        glowAlpha: _friendBlockGlowAlpha(isWhite: isWhite, status: status),
         glowBlur: 24,
         glowOffset: const Offset(0, 8),
         child: Row(

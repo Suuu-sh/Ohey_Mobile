@@ -587,7 +587,10 @@ class _TodayInviteCandidateCard extends StatelessWidget {
         isWhite: isWhite,
         status: item.status,
       ),
-      glowAlpha: item.status.enabled ? (isWhite ? .07 : .14) : 0,
+      glowAlpha: _friendInviteCardGlowAlpha(
+        isWhite: isWhite,
+        status: item.status,
+      ),
       glowBlur: 18,
       glowOffset: const Offset(0, 8),
       child: Column(
