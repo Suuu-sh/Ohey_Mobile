@@ -1,5 +1,7 @@
 part of 'add_log_screen.dart';
 
+const _postPreviewActionPurple = Color(0xFFC08BFF);
+
 String _previewUserName(String? name) {
   final normalized = name?.trim() ?? '';
   return normalized.isEmpty ? 'あなた' : normalized;
@@ -128,7 +130,7 @@ class _PostPreviewCard extends StatelessWidget {
         const SizedBox(height: 10),
         NomoThemedPanel(
           width: double.infinity,
-          accentColor: _AddLogColors.lime,
+          accentColor: _postPreviewActionPurple,
           backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
           borderRadius: 0,
           border: NomoThemedPanelBorder.horizontal,
@@ -454,18 +456,18 @@ class _PreviewFooter extends StatelessWidget {
                 semanticLabel: 'いいねで反応',
                 icon: CupertinoIcons.heart,
                 label: 'Like',
-                color: AppColors.primaryAction,
+                color: _postPreviewActionPurple,
                 isWhite: isWhite,
               ),
               const SizedBox(width: 8),
               _PreviewActionPill(
                 semanticLabel: '思い出を共有',
                 customIcon: _PreviewShareIcon(
-                  color: AppColors.invite,
+                  color: _postPreviewActionPurple,
                   size: 18,
                 ),
                 label: 'Share',
-                color: AppColors.invite,
+                color: _postPreviewActionPurple,
                 isWhite: isWhite,
               ),
               const Spacer(),
@@ -586,11 +588,18 @@ class _PreviewActionPill extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(10, 7, 12, 7),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: isWhite ? .12 : .20),
+          color: color.withValues(alpha: isWhite ? .16 : .26),
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: color.withValues(alpha: isWhite ? .28 : .34),
+            color: color.withValues(alpha: isWhite ? .40 : .50),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: isWhite ? .18 : .28),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -676,12 +685,9 @@ class _PreviewFriendsPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = isWhite ? const Color(0xFF344152) : Colors.white;
-    final borderColor = isWhite
-        ? const Color(0xFFE0E7EF)
-        : Colors.white.withValues(alpha: .13);
-    final backgroundColor = isWhite
-        ? const Color(0xFFF4F7FA)
-        : Colors.white.withValues(alpha: .07);
+    const color = _postPreviewActionPurple;
+    final borderColor = color.withValues(alpha: isWhite ? .40 : .50);
+    final backgroundColor = color.withValues(alpha: isWhite ? .16 : .26);
     const label = 'と一緒';
 
     return Container(
@@ -742,7 +748,7 @@ class _PreviewFriendAvatarStack extends StatelessWidget {
                   color: visible[index].accentColor.withValues(alpha: .34),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: .78),
+                    color: _postPreviewActionPurple.withValues(alpha: .58),
                     width: 1,
                   ),
                 ),
