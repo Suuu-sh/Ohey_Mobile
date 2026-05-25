@@ -369,23 +369,24 @@ class _GroupScheduleSection extends StatelessWidget {
           const SizedBox(height: 14),
           SizedBox(
             height: 142,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final cardWidth = (constraints.maxWidth - 12) / 2;
-                return ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: suggestions.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) => SizedBox(
-                    width: cardWidth,
-                    child: _GroupScheduleSuggestionCard(
-                      suggestion: suggestions[index],
-                      isWhite: isWhite,
-                    ),
-                  ),
-                );
-              },
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 520),
+              switchInCurve: Curves.easeOutBack,
+              switchOutCurve: Curves.easeInBack,
+              transitionBuilder: (child, animation) =>
+                  _SlimeSplitTransition(animation: animation, child: child),
+              child: _GroupScheduleCardsStrip(
+                key: ValueKey(
+                  suggestions
+                      .map(
+                        (suggestion) =>
+                            '${suggestion.title}-${suggestion.badge}',
+                      )
+                      .join(','),
+                ),
+                suggestions: suggestions,
+                isWhite: isWhite,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -408,6 +409,59 @@ class _GroupScheduleSection extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _GroupScheduleCardsStrip extends StatelessWidget {
+  const _GroupScheduleCardsStrip({
+    super.key,
+    required this.suggestions,
+    required this.isWhite,
+  });
+
+  final List<_GroupScheduleSuggestion> suggestions;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSingle = suggestions.length == 1;
+        final cardWidth = isSingle
+            ? constraints.maxWidth
+            : (constraints.maxWidth - 12) / 2;
+        return ListView.separated(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          itemCount: suggestions.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 12),
+          itemBuilder: (context, index) => TweenAnimationBuilder<double>(
+            key: ValueKey(
+              '${suggestions[index].title}-${suggestions[index].badge}',
+            ),
+            tween: Tween(begin: 0, end: 1),
+            duration: Duration(milliseconds: 420 + index * 70),
+            curve: Curves.easeOutBack,
+            builder: (context, value, child) {
+              final squeeze = 1 - value;
+              return Transform.scale(
+                scaleX: 1 + squeeze * (isSingle ? .10 : .18),
+                scaleY: 1 - squeeze * .08,
+                alignment: Alignment.center,
+                child: Opacity(opacity: value.clamp(0, 1), child: child),
+              );
+            },
+            child: SizedBox(
+              width: cardWidth,
+              child: _GroupScheduleSuggestionCard(
+                suggestion: suggestions[index],
+                isWhite: isWhite,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
