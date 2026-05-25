@@ -18,6 +18,7 @@ import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
+import '../../../core/widgets/nomo_primary_button.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
@@ -115,6 +116,45 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     });
     await _persistCustomFilters();
     if (mounted) NomoToast.show(context, 'グループを削除したよ');
+  }
+
+  Future<void> _openCustomFilterManageSheet() async {
+    if (_customFilters.isEmpty) {
+      NomoToast.show(context, 'グループを作ると編集できるよ');
+      return;
+    }
+    HapticFeedback.selectionClick();
+    final result = await showNomoBottomSheet<_CustomFilterManageResult>(
+      context: context,
+      useSafeArea: true,
+      barrierColor: Colors.black.withValues(alpha: .58),
+      builder: (_) => _CustomFilterManageSheet(filters: _customFilters),
+    );
+    if (!mounted || result == null) return;
+
+    switch (result.action) {
+      case _CustomFilterManageAction.edit:
+        await _openCustomFilterSheet(filter: result.filter);
+        break;
+      case _CustomFilterManageAction.delete:
+        final filterId = result.filterId;
+        _CustomFriendFilter? filter;
+        for (final item in _customFilters) {
+          if (item.id == filterId) {
+            filter = item;
+            break;
+          }
+        }
+        if (filter != null) await _deleteCustomFilter(filter);
+        break;
+      case _CustomFilterManageAction.reorder:
+        final filters = result.filters;
+        if (filters == null) return;
+        setState(() => _customFilters = filters);
+        await _persistCustomFilters();
+        if (mounted) NomoToast.show(context, 'グループの順番を保存したよ');
+        break;
+    }
   }
 
   Future<void> _openCustomFilterSheet({_CustomFriendFilter? filter}) async {
@@ -337,7 +377,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                       }),
                       onCustomLongPress: (filter) =>
                           _openCustomFilterSheet(filter: filter),
-                      onCustomDelete: _deleteCustomFilter,
+                      onManageCustom: _openCustomFilterManageSheet,
                       onCreateCustom: () => _openCustomFilterSheet(),
                     ),
                     const SizedBox(height: 18),

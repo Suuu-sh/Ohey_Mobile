@@ -27,7 +27,7 @@ class _FilterBar extends StatelessWidget {
     required this.onChanged,
     required this.onCustomChanged,
     required this.onCustomLongPress,
-    required this.onCustomDelete,
+    required this.onManageCustom,
     required this.onCreateCustom,
   });
 
@@ -37,7 +37,7 @@ class _FilterBar extends StatelessWidget {
   final ValueChanged<_FriendFilterType> onChanged;
   final ValueChanged<_CustomFriendFilter> onCustomChanged;
   final ValueChanged<_CustomFriendFilter> onCustomLongPress;
-  final ValueChanged<_CustomFriendFilter> onCustomDelete;
+  final VoidCallback onManageCustom;
   final VoidCallback onCreateCustom;
 
   @override
@@ -68,7 +68,16 @@ class _FilterBar extends StatelessWidget {
                 selected: selectedCustomFilterId == customFilters[i].id,
                 onTap: () => onCustomChanged(customFilters[i]),
                 onLongPress: () => onCustomLongPress(customFilters[i]),
-                onDelete: () => onCustomDelete(customFilters[i]),
+              ),
+              const SizedBox(width: 10),
+            ],
+            if (customFilters.isNotEmpty) ...[
+              _FilterChip(
+                label: '編集',
+                accent: const Color(0xFF5DEBD3),
+                selected: false,
+                icon: CupertinoIcons.pencil,
+                onTap: onManageCustom,
               ),
               const SizedBox(width: 10),
             ],

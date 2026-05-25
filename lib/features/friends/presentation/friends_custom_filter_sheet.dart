@@ -18,6 +18,31 @@ class _CustomFilterSheetResult {
   final String? filterId;
 }
 
+enum _CustomFilterManageAction { edit, delete, reorder }
+
+class _CustomFilterManageResult {
+  const _CustomFilterManageResult._({
+    required this.action,
+    this.filter,
+    this.filterId,
+    this.filters,
+  });
+
+  const _CustomFilterManageResult.edit(_CustomFriendFilter filter)
+    : this._(action: _CustomFilterManageAction.edit, filter: filter);
+
+  const _CustomFilterManageResult.delete(String filterId)
+    : this._(action: _CustomFilterManageAction.delete, filterId: filterId);
+
+  const _CustomFilterManageResult.reorder(List<_CustomFriendFilter> filters)
+    : this._(action: _CustomFilterManageAction.reorder, filters: filters);
+
+  final _CustomFilterManageAction action;
+  final _CustomFriendFilter? filter;
+  final String? filterId;
+  final List<_CustomFriendFilter>? filters;
+}
+
 String _customFilterStorageKey(String userId) =>
     'nomo_custom_friend_filters_v1_$userId';
 
@@ -91,7 +116,6 @@ class _FilterChip extends StatelessWidget {
     required this.onTap,
     this.icon,
     this.onLongPress,
-    this.onDelete,
   });
 
   final String label;
@@ -100,7 +124,6 @@ class _FilterChip extends StatelessWidget {
   final VoidCallback onTap;
   final IconData? icon;
   final VoidCallback? onLongPress;
-  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +162,7 @@ class _FilterChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           alignment: Alignment.center,
-          padding: EdgeInsets.only(left: 20, right: onDelete == null ? 20 : 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -186,44 +209,207 @@ class _FilterChip extends StatelessWidget {
                   fontSize: 14,
                 ),
               ),
-              if (onDelete != null) ...[
-                const SizedBox(width: 8),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: onDelete,
-                  child: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? _FriendsColors.bg.withValues(alpha: .14)
-                          : Colors.white.withValues(alpha: isWhite ? .70 : .10),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: selected
-                            ? _FriendsColors.bg.withValues(alpha: .18)
-                            : Colors.white.withValues(
-                                alpha: isWhite ? .42 : .10,
-                              ),
-                      ),
-                    ),
-                    child: Center(
-                      child: NomoGeneratedIcon(
-                        CupertinoIcons.xmark,
-                        color: selected
-                            ? _FriendsColors.bg
-                            : isWhite
-                            ? const Color(0xFF101820)
-                            : Colors.white,
-                        size: 12,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _CustomFilterManageSheet extends StatefulWidget {
+  const _CustomFilterManageSheet({required this.filters});
+
+  final List<_CustomFriendFilter> filters;
+
+  @override
+  State<_CustomFilterManageSheet> createState() =>
+      _CustomFilterManageSheetState();
+}
+
+class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
+  late List<_CustomFriendFilter> _filters;
+
+  @override
+  void initState() {
+    super.initState();
+    _filters = [...widget.filters];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite ? const Color(0xFF657282) : Colors.white70;
+    return NomoBottomSheetShell(
+      title: 'グループ編集',
+      showHandle: true,
+      radius: 32,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '並び替えたり、いらないグループを片づけられるよ。',
+            style: TextStyle(color: sub, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 14),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 360),
+            child: ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const BouncingScrollPhysics(),
+              buildDefaultDragHandles: false,
+              itemCount: _filters.length,
+              onReorder: (oldIndex, newIndex) {
+                HapticFeedback.selectionClick();
+                setState(() {
+                  if (oldIndex < newIndex) newIndex -= 1;
+                  final item = _filters.removeAt(oldIndex);
+                  _filters.insert(newIndex, item);
+                });
+              },
+              itemBuilder: (context, index) {
+                final filter = _filters[index];
+                return _CustomFilterManageRow(
+                  key: ValueKey(filter.id),
+                  filter: filter,
+                  index: index,
+                  ink: ink,
+                  isWhite: isWhite,
+                  onEdit: () {
+                    HapticFeedback.selectionClick();
+                    Navigator.of(
+                      context,
+                    ).pop(_CustomFilterManageResult.edit(filter));
+                  },
+                  onDelete: () {
+                    HapticFeedback.mediumImpact();
+                    Navigator.of(
+                      context,
+                    ).pop(_CustomFilterManageResult.delete(filter.id));
+                  },
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 14),
+          NomoPrimaryButton(
+            label: 'この順番で保存',
+            icon: CupertinoIcons.checkmark_alt_circle_fill,
+            onPressed: () => Navigator.of(
+              context,
+            ).pop(_CustomFilterManageResult.reorder(_filters)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomFilterManageRow extends StatelessWidget {
+  const _CustomFilterManageRow({
+    super.key,
+    required this.filter,
+    required this.index,
+    required this.ink,
+    required this.isWhite,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final _CustomFriendFilter filter;
+  final int index;
+  final Color ink;
+  final bool isWhite;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = _customFilterAccent(index);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? const Color(0xFFF7F9FC)
+              : Colors.white.withValues(alpha: .06),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isWhite ? const Color(0xFFE2E8F0) : Colors.white12,
+          ),
+        ),
+        child: Row(
+          children: [
+            ReorderableDragStartListener(
+              index: index,
+              child: NomoPopIcon(
+                icon: CupertinoIcons.line_horizontal_3,
+                color: accent,
+                size: 36,
+                iconSize: 18,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                filter.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: ink,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            _ManageIconButton(
+              icon: CupertinoIcons.pencil,
+              color: accent,
+              onTap: onEdit,
+            ),
+            const SizedBox(width: 6),
+            _ManageIconButton(
+              icon: CupertinoIcons.trash_fill,
+              color: const Color(0xFFFF6B9A),
+              onTap: onDelete,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ManageIconButton extends StatelessWidget {
+  const _ManageIconButton({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        width: 38,
+        height: 38,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: .14),
+          shape: BoxShape.circle,
+          border: Border.all(color: color.withValues(alpha: .26)),
+        ),
+        child: NomoGeneratedIcon(icon, color: color, size: 17),
       ),
     );
   }
