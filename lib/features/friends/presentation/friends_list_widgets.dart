@@ -823,19 +823,6 @@ List<_GroupScheduleSuggestion> _groupScheduleSuggestions(
 ) {
   final stats = _groupAvailabilityStats(friends);
   final now = DateTime.now();
-  if (stats.hasNoBlockedMembers) {
-    return [
-      for (var i = 0; i < 2; i++)
-        _GroupScheduleSuggestion(
-          title: _groupScheduleDayLabel(now.add(Duration(days: i))),
-          subtitle: i == 0
-              ? '誰も無理とは言ってない日。予定を入れてもらってね。'
-              : 'ここも候補にできそう。みんなに予定を入れてもらおう。',
-          badge: stats.isAllOk ? '全員OK' : '${stats.okCount}/${stats.total}人OK',
-          accent: i == 0 ? const Color(0xFFB8FF00) : const Color(0xFF5DEBD3),
-        ),
-    ];
-  }
 
   final tiers = <_GroupScheduleTier>[
     if (stats.isAllOk)
@@ -843,23 +830,37 @@ List<_GroupScheduleSuggestion> _groupScheduleSuggestions(
         dayOffset: 0,
         title: '全員OK',
         subtitle: '全員いけそう。まずこの日を押さえよ。',
-        accent: Color(0xFFB8FF00),
+        accent: Color(0xFFFF5EA8),
       ),
     if (stats.isAlmostOk)
       const _GroupScheduleTier(
         dayOffset: 1,
         title: 'ほぼOK',
         subtitle: '1人だけまだ決めてない。確認したらまとまりそう。',
-        accent: Color(0xFF5DEBD3),
+        accent: Color(0xFF20B9FF),
       ),
     if (stats.isMaybeOk)
       const _GroupScheduleTier(
         dayOffset: 2,
         title: '確認すればいけそう',
         subtitle: '予定ある人が少なめ。候補として聞いてみよ。',
-        accent: Color(0xFFFFD166),
+        accent: Color(0xFF8A62FF),
       ),
   ];
+
+  if (tiers.isEmpty && stats.hasNoPlannedMembers) {
+    return [
+      for (var i = 0; i < 2; i++)
+        _GroupScheduleSuggestion(
+          title: _groupScheduleDayLabel(now.add(Duration(days: i))),
+          subtitle: i == 0
+              ? '誰も予定は入ってない日。予定を入れてもらってね。'
+              : 'ここも候補にできそう。みんなに予定を入れてもらおう。',
+          badge: '${stats.okCount}/${stats.total}人OK',
+          accent: const Color(0xFFB8FF00),
+        ),
+    ];
+  }
 
   final visibleTiers = tiers.isEmpty
       ? const [
@@ -906,6 +907,7 @@ class _GroupAvailabilityStats {
     required this.maybeCount,
     required this.blockedCount,
     required this.undecidedCount,
+    required this.plannedCount,
     required this.weightedScore,
   });
 
@@ -914,13 +916,14 @@ class _GroupAvailabilityStats {
   final int maybeCount;
   final int blockedCount;
   final int undecidedCount;
+  final int plannedCount;
   final double weightedScore;
 
   double get averageWeight => total == 0 ? 0 : weightedScore / total;
 
   bool get isAllOk => total > 0 && blockedCount == 0 && averageWeight >= .8;
 
-  bool get hasNoBlockedMembers => total > 0 && blockedCount == 0;
+  bool get hasNoPlannedMembers => total > 0 && plannedCount == 0;
 
   bool get isAlmostOk => total >= 3 && averageWeight >= .75;
 
@@ -934,6 +937,7 @@ _GroupAvailabilityStats _groupAvailabilityStats(
   var maybeCount = 0;
   var blockedCount = 0;
   var undecidedCount = 0;
+  var plannedCount = 0;
   var weightedScore = 0.0;
   for (final item in friends) {
     final weight = _availabilityWeightForStatusKey(item.friend.statusKey);
@@ -947,6 +951,9 @@ _GroupAvailabilityStats _groupAvailabilityStats(
     if (_isUndecidedStatusKey(item.friend.statusKey)) {
       undecidedCount += 1;
     }
+    if (item.friend.statusKey == 'has_plans') {
+      plannedCount += 1;
+    }
   }
   return _GroupAvailabilityStats(
     total: friends.length,
@@ -954,6 +961,7 @@ _GroupAvailabilityStats _groupAvailabilityStats(
     maybeCount: maybeCount,
     blockedCount: blockedCount,
     undecidedCount: undecidedCount,
+    plannedCount: plannedCount,
     weightedScore: weightedScore,
   );
 }
@@ -985,7 +993,7 @@ String _groupScheduleDayLabel(DateTime day) {
 
 String _groupScheduleNote(List<_DecoratedFriend> friends) {
   final stats = _groupAvailabilityStats(friends);
-  if (stats.hasNoBlockedMembers) {
+  if (stats.hasNoPlannedMembers && stats.weightedScore == 0) {
     return '候補日を出して、みんなに予定を入れてもらってね。';
   }
   if (stats.isAlmostOk) return 'あと1人確認できたら決めやすいよ。';
