@@ -1415,22 +1415,20 @@ IconData _calendarStatusIcon(NomoDailyStatus status) => switch (status) {
 };
 
 String _calendarStatusLabel(NomoDailyStatus status, {required DateTime day}) {
-  final isToday = _isSameDate(day, DateTime.now());
   return switch (status) {
-    NomoDailyStatus.canDrinkToday => isToday ? '今日遊べる' : '遊べる',
+    NomoDailyStatus.canDrinkToday => '遊べる',
     NomoDailyStatus.nonAlcohol => 'ノンアルなら',
-    NomoDailyStatus.liverRest => isToday ? '今日はおやすみ' : 'おやすみ',
+    NomoDailyStatus.liverRest => 'おやすみ',
     NomoDailyStatus.hasPlans => '予定あり',
     NomoDailyStatus.unselected => '未設定',
   };
 }
 
 String _calendarStatusCopy(NomoDailyStatus status, {required DateTime day}) {
-  final isToday = _isSameDate(day, DateTime.now());
   return switch (status) {
-    NomoDailyStatus.canDrinkToday => isToday ? '誘ってくれてOKだよ' : 'この日は誘ってOKだよ',
+    NomoDailyStatus.canDrinkToday => '誘ってくれてOKだよ',
     NomoDailyStatus.nonAlcohol => '軽めなら行けるかも',
-    NomoDailyStatus.liverRest => isToday ? '今日はゆっくりしたい日' : 'この日はゆっくりしたい日',
+    NomoDailyStatus.liverRest => 'ゆっくりしたい日',
     NomoDailyStatus.hasPlans => 'もう予定があるよ',
     NomoDailyStatus.unselected => 'あとで決めよ',
   };
