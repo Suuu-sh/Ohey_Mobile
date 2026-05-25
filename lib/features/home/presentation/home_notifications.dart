@@ -188,7 +188,9 @@ class _FeedNotificationsScreenState
       ],
       _NotificationSectionHeader(
         title: '最近のお知らせ',
-        message: actionItems.isEmpty ? '新しい反応や予定がここに届きます' : 'いいね・公式通知・返信済みはこちら',
+        message: actionItems.isEmpty
+            ? 'いいね・今日の思い出・予定が静かにまとまります'
+            : '返信が必要な通知だけ上にまとめています',
         count: recentItems.length,
         accent: AppColors.invite,
         isWhite: isWhite,
@@ -407,8 +409,8 @@ class _NotificationEmptyState extends StatelessWidget {
   Widget build(BuildContext context) => _FeedEmptyState(
     icon: CupertinoIcons.bell,
     isWhite: isWhite,
-    title: '反応が届く場所です',
-    message: '最初の投稿やフレンズ追加をすると、いいね・返信・お誘いがここに集まります。',
+    title: '大事な通知だけ届きます',
+    message: 'フレンズ申請・リアクション・今日の思い出・お誘いを、うるさくならないようにまとめます。',
     action: Column(
       mainAxisSize: MainAxisSize.min,
       children: [

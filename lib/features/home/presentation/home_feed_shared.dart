@@ -275,8 +275,8 @@ class _FeedNotification {
   factory _FeedNotification.fromNotification(NomoNotification notification) {
     return _FeedNotification(
       kind: notification.kind,
-      title: notification.title,
-      message: notification.message,
+      title: notification.displayTitle,
+      message: notification.displayMessage,
       timeAgo: _relativeTimeText(notification.createdAt),
       icon: switch (notification.kind) {
         'drink_log_like' => CupertinoIcons.heart_fill,
