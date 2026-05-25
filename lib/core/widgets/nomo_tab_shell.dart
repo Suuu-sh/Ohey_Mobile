@@ -1442,7 +1442,7 @@ class _AddTabIcon extends StatelessWidget {
   Widget build(BuildContext context) => AnimatedScale(
     duration: const Duration(milliseconds: 180),
     scale: 1,
-    child: CustomPaint(size: const Size(60, 58), painter: const _AddPainter()),
+    child: CustomPaint(size: const Size(48, 42), painter: const _AddPainter()),
   );
 }
 
@@ -1451,44 +1451,53 @@ class _AddPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromCenter(
-      center: Offset(size.width / 2, size.height * .50),
-      width: 52,
-      height: 52,
-    );
-    final center = rect.center;
-
-    canvas.drawCircle(
-      center,
-      26,
-      Paint()..color = Colors.white.withValues(alpha: .96),
-    );
-
-    canvas.drawCircle(
-      center,
-      25.4,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1
-        ..color = Colors.white.withValues(alpha: .18),
-    );
-
-    final plus = Paint()
-      ..color = AppColors.darkBackgroundBottom
+    final center = Offset(size.width / 2, size.height / 2);
+    final shadow = Paint()
+      ..color = Colors.black.withValues(alpha: .18)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 5.1;
+      ..strokeWidth = 7.2;
+    final stroke = Paint()
+      ..color = const Color(0xFFA5ADBC)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = 6.2;
+    final highlight = Paint()
+      ..color = Colors.white.withValues(alpha: .24)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = 2.1;
+
+    final horizontal = Offset(size.width * .26, center.dy);
+    final horizontalEnd = Offset(size.width * .74, center.dy);
+    final vertical = Offset(center.dx, size.height * .26);
+    final verticalEnd = Offset(center.dx, size.height * .74);
 
     canvas.drawLine(
-      Offset(center.dx - 12, center.dy),
-      Offset(center.dx + 12, center.dy),
-      plus,
+      horizontal.translate(0, 1.5),
+      horizontalEnd.translate(0, 1.5),
+      shadow,
     );
     canvas.drawLine(
-      Offset(center.dx, center.dy - 12),
-      Offset(center.dx, center.dy + 12),
-      plus,
+      vertical.translate(0, 1.5),
+      verticalEnd.translate(0, 1.5),
+      shadow,
+    );
+    canvas.drawLine(horizontal, horizontalEnd, stroke);
+    canvas.drawLine(vertical, verticalEnd, stroke);
+
+    canvas.drawLine(
+      Offset(size.width * .31, center.dy - 1.7),
+      Offset(size.width * .69, center.dy - 1.7),
+      highlight,
+    );
+    canvas.drawLine(
+      Offset(center.dx - 1.7, size.height * .31),
+      Offset(center.dx - 1.7, size.height * .69),
+      highlight,
     );
   }
 
