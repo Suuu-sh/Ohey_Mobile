@@ -19,6 +19,7 @@ import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
+import '../../../core/widgets/nomo_toast.dart';
 import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 
@@ -128,6 +129,22 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
     if (picked == null) return;
     await _setStatusForSelectedDay(picked);
+  }
+
+  Future<void> _createPlanForSelectedDay() async {
+    final status =
+        _statusByDate[_dateKey(_selectedDay)] ?? NomoDailyStatus.unselected;
+    if (status == NomoDailyStatus.unselected) {
+      HapticFeedback.selectionClick();
+      NomoToast.show(
+        context,
+        '先にこの日の気分を入れてね',
+        icon: CupertinoIcons.calendar_badge_plus,
+      );
+      await _openStatusPicker();
+      return;
+    }
+    widget.onCreatePlan?.call();
   }
 
   void _handleMonthDragStart(DragStartDetails details) {
@@ -271,7 +288,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                 NomoDailyStatus.unselected,
                             isStatusSaving: _isStatusSaving,
                             onStatusTap: _openStatusPicker,
-                            onCreatePlan: widget.onCreatePlan,
+                            onCreatePlan: widget.onCreatePlan == null
+                                ? null
+                                : _createPlanForSelectedDay,
                           ),
                         ],
                       ),
