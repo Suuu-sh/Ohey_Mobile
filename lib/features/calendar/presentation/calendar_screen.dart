@@ -19,7 +19,6 @@ import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
-import '../../../core/widgets/nomo_toast.dart';
 import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 
@@ -136,11 +135,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         _statusByDate[_dateKey(_selectedDay)] ?? NomoDailyStatus.unselected;
     if (status == NomoDailyStatus.unselected) {
       HapticFeedback.selectionClick();
-      NomoToast.show(
-        context,
-        '先にこの日の気分を入れてね',
-        icon: CupertinoIcons.calendar_badge_plus,
-      );
       await _openStatusPicker();
       return;
     }
