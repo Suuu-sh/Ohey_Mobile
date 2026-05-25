@@ -85,6 +85,7 @@ extension _AddLogScreenLayout on _AddLogScreenState {
                         userName: _previewUserName(user?.name),
                         avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
                         memoController: _memoController,
+                        captionY: _captionY,
                         place: _placeController.text,
                         date: _selectedDate,
                         friends: selectedFriends,
@@ -92,6 +93,8 @@ extension _AddLogScreenLayout on _AddLogScreenState {
                         placeEditor: placeEditor,
                         onEditDateTime: _pickDateTime,
                         onMemoChanged: (_) => setState(() {}),
+                        onCaptionYChanged: (value) =>
+                            setState(() => _captionY = value),
                         onRetake: _openNomoCamera,
                       ),
                       const SizedBox(height: 14),

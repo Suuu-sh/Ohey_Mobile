@@ -90,6 +90,7 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
     required String place,
     required String memo,
     String? photoAssetPath,
+    double captionY = .5,
     double? placeLatitude,
     double? placeLongitude,
   }) async {
@@ -103,6 +104,7 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
       place: place.trim(),
       memo: String.fromCharCodes(memo.trim().runes.take(15)),
       photoAssetPath: photoAssetPath,
+      captionY: captionY.clamp(0.0, 1.0),
       placeLatitude: placeLatitude,
       placeLongitude: placeLongitude,
       rarity: _rarityForNewLog(photoAssetPath),

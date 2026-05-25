@@ -32,6 +32,7 @@ class DrinkLog {
     required this.memo,
     this.photoAssetPath,
     this.linkUrl,
+    this.captionY = .5,
     this.placeLatitude,
     this.placeLongitude,
     this.likeCount = 0,
@@ -50,6 +51,7 @@ class DrinkLog {
   final String memo;
   final String? photoAssetPath;
   final String? linkUrl;
+  final double captionY;
   final double? placeLatitude;
   final double? placeLongitude;
   final int likeCount;
@@ -68,6 +70,7 @@ class DrinkLog {
     memo: memo,
     photoAssetPath: photoAssetPath,
     linkUrl: linkUrl,
+    captionY: captionY,
     placeLatitude: placeLatitude,
     placeLongitude: placeLongitude,
     likeCount: likeCount ?? this.likeCount,

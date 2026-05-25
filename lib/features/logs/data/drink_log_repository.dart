@@ -111,6 +111,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       'place_lat': log.placeLatitude,
       'place_lng': log.placeLongitude,
       'memo': log.memo,
+      'caption_y': log.captionY.clamp(0.0, 1.0),
       'photo_path': uploadedPhotoPath ?? '',
       'marker_rarity': log.rarity.key,
       'friend_ids': log.friends
@@ -126,6 +127,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       placeLatitude: (row['place_lat'] as num?)?.toDouble(),
       placeLongitude: (row['place_lng'] as num?)?.toDouble(),
       memo: (row['memo'] as String?) ?? '',
+      captionY: _captionYFromRow(row),
       photoAssetPath: await _displayPhotoPath(row['photo_path'] as String?),
       linkUrl: row['link_url'] as String?,
       rarity: DrinkLogRarity.fromKey(row['marker_rarity'] as String?),
@@ -135,6 +137,11 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
           (row['owner_user_id'] as String?) ?? _client.currentUserId ?? '',
       isOfficial: (row['is_official'] as bool?) ?? false,
     );
+  }
+
+  double _captionYFromRow(Map<String, dynamic> row) {
+    final value = (row['caption_y'] as num?)?.toDouble() ?? .5;
+    return value.clamp(0.0, 1.0);
   }
 
   Future<String?> _uploadLocalPhotoIfNeeded(String? path) async {
@@ -239,6 +246,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       placeLatitude: (row['place_lat'] as num?)?.toDouble(),
       placeLongitude: (row['place_lng'] as num?)?.toDouble(),
       memo: (row['memo'] as String?) ?? '',
+      captionY: _captionYFromRow(row),
       photoAssetPath: await _displayPhotoPath(row['photo_path'] as String?),
       linkUrl: row['link_url'] as String?,
       rarity: DrinkLogRarity.fromKey(row['marker_rarity'] as String?),

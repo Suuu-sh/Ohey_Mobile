@@ -139,6 +139,7 @@ extension _AddLogScreenActions on _AddLogScreenState {
             friends: selectedFriends,
             place: placeText,
             memo: _memoController.text,
+            captionY: _captionY,
             photoAssetPath: photoPath,
             placeLatitude: hasSelectedPlaceCoordinate
                 ? _selectedPlaceLatitude

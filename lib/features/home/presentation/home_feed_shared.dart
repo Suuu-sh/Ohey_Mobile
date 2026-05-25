@@ -99,6 +99,7 @@ class _FeedItem {
     required this.avatar,
     required this.accent,
     this.photoAssetPath,
+    this.captionY = .5,
     this.linkUrl = '',
     this.friends = const <_Companion>[],
     required this.likes,
@@ -140,6 +141,7 @@ class _FeedItem {
       avatar: avatar,
       accent: accent,
       photoAssetPath: log.photoAssetPath,
+      captionY: log.captionY,
       linkUrl: log.linkUrl ?? '',
       friends: log.friends.map(_Companion.fromFriend).toList(),
       likes: log.likeCount,
@@ -181,6 +183,7 @@ class _FeedItem {
   final NomoAvatar avatar;
   final Color accent;
   final String? photoAssetPath;
+  final double captionY;
   final String linkUrl;
   final List<_Companion> friends;
   final int likes;

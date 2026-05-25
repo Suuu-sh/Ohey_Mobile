@@ -74,6 +74,7 @@ class _PostPreviewCard extends StatelessWidget {
     required this.userName,
     required this.avatar,
     required this.memoController,
+    required this.captionY,
     required this.place,
     required this.date,
     required this.friends,
@@ -81,6 +82,7 @@ class _PostPreviewCard extends StatelessWidget {
     required this.placeEditor,
     required this.onEditDateTime,
     required this.onMemoChanged,
+    required this.onCaptionYChanged,
     required this.onRetake,
   });
 
@@ -88,6 +90,7 @@ class _PostPreviewCard extends StatelessWidget {
   final String userName;
   final NomoAvatar avatar;
   final TextEditingController memoController;
+  final double captionY;
   final String place;
   final DateTime date;
   final List<NomoFriend> friends;
@@ -95,6 +98,7 @@ class _PostPreviewCard extends StatelessWidget {
   final Widget placeEditor;
   final VoidCallback onEditDateTime;
   final ValueChanged<String> onMemoChanged;
+  final ValueChanged<double> onCaptionYChanged;
   final VoidCallback onRetake;
 
   @override
@@ -171,7 +175,9 @@ class _PostPreviewCard extends StatelessWidget {
                         _PreviewPhotoCaptionEditor(
                           controller: memoController,
                           hint: _previewCaptionHint(place: place),
+                          captionY: captionY,
                           onChanged: onMemoChanged,
+                          onCaptionYChanged: onCaptionYChanged,
                         ),
                       ],
                     ),
@@ -341,12 +347,16 @@ class _PreviewPhotoCaptionEditor extends StatelessWidget {
   const _PreviewPhotoCaptionEditor({
     required this.controller,
     required this.hint,
+    required this.captionY,
     required this.onChanged,
+    required this.onCaptionYChanged,
   });
 
   final TextEditingController controller;
   final String hint;
+  final double captionY;
   final ValueChanged<String> onChanged;
+  final ValueChanged<double> onCaptionYChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -354,9 +364,19 @@ class _PreviewPhotoCaptionEditor extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final top = constraints.maxHeight > bandHeight
-            ? (constraints.maxHeight - bandHeight) / 2
-            : 0.0;
+        final maxTop = (constraints.maxHeight - bandHeight).clamp(
+          0.0,
+          double.infinity,
+        );
+        final top = maxTop * captionY.clamp(0.0, 1.0);
+
+        void updateCaptionY(double globalY) {
+          final box = context.findRenderObject() as RenderBox?;
+          if (box == null || maxTop <= 0) return;
+          final localY = box.globalToLocal(Offset(0, globalY)).dy;
+          final nextTop = (localY - bandHeight / 2).clamp(0.0, maxTop);
+          onCaptionYChanged(nextTop / maxTop);
+        }
 
         return Stack(
           fit: StackFit.expand,
@@ -366,58 +386,79 @@ class _PreviewPhotoCaptionEditor extends StatelessWidget {
               right: 0,
               top: top,
               height: bandHeight,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                color: Colors.black.withValues(alpha: .46),
-                alignment: Alignment.center,
-                child: TextField(
-                  controller: controller,
-                  maxLength: _drinkLogCommentMaxLength,
-                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                  onChanged: onChanged,
-                  keyboardType: TextInputType.text,
-                  textInputAction: TextInputAction.done,
-                  maxLines: 1,
-                  textAlign: TextAlign.center,
-                  textAlignVertical: TextAlignVertical.center,
-                  cursorColor: _AddLogColors.lime,
-                  decoration: InputDecoration(
-                    isDense: true,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    filled: false,
-                    fillColor: Colors.transparent,
-                    contentPadding: EdgeInsets.zero,
-                    counterText: '',
-                    hintText: hint,
-                    hintStyle: Theme.of(context).textTheme.headlineSmall
-                        ?.copyWith(
-                          color: Colors.white.withValues(alpha: .76),
-                          fontSize: 23,
-                          fontWeight: FontWeight.w900,
-                          height: 1.05,
-                          letterSpacing: -.65,
-                          shadows: const [
-                            Shadow(
-                              color: Colors.black87,
-                              blurRadius: 10,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onVerticalDragStart: (details) =>
+                    updateCaptionY(details.globalPosition.dy),
+                onVerticalDragUpdate: (details) =>
+                    updateCaptionY(details.globalPosition.dy),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  color: Colors.black.withValues(alpha: .46),
+                  alignment: Alignment.center,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      TextField(
+                        controller: controller,
+                        maxLength: _drinkLogCommentMaxLength,
+                        maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                        onChanged: onChanged,
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.done,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                        textAlignVertical: TextAlignVertical.center,
+                        cursorColor: _AddLogColors.lime,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                          fillColor: Colors.transparent,
+                          contentPadding: EdgeInsets.zero,
+                          counterText: '',
+                          hintText: hint,
+                          hintStyle: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: Colors.white.withValues(alpha: .76),
+                                fontSize: 23,
+                                fontWeight: FontWeight.w900,
+                                height: 1.05,
+                                letterSpacing: -.65,
+                                shadows: const [
+                                  Shadow(
+                                    color: Colors.black87,
+                                    blurRadius: 10,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
                         ),
-                  ),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
-                    fontSize: 23,
-                    fontWeight: FontWeight.w900,
-                    height: 1.05,
-                    letterSpacing: -.65,
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black87,
-                        blurRadius: 10,
-                        offset: Offset(0, 2),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontSize: 23,
+                              fontWeight: FontWeight.w900,
+                              height: 1.05,
+                              letterSpacing: -.65,
+                              shadows: const [
+                                Shadow(
+                                  color: Colors.black87,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                      ),
+                      const Positioned(
+                        right: 0,
+                        child: Icon(
+                          CupertinoIcons.arrow_up_arrow_down,
+                          color: Colors.white70,
+                          size: 18,
+                        ),
                       ),
                     ],
                   ),
