@@ -55,7 +55,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const _feedSwipeTutorialSeenKey = 'nomo_feed_swipe_tutorial_seen';
-  bool _isRefreshingFeed = false;
   int _currentFeedPageIndex = 0;
   bool _isFeedSwipeTutorialSeen = true;
 
@@ -146,12 +145,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   NomoHeaderIconButton(
-                    icon: CupertinoIcons.arrow_clockwise,
-                    semanticLabel: 'フィードを更新',
-                    color: _isRefreshingFeed
-                        ? _FeedColors.sub
-                        : _FeedColors.teal,
-                    onTap: _isRefreshingFeed ? () {} : _refreshFeed,
+                    icon: CupertinoIcons.camera_fill,
+                    semanticLabel: '投稿する',
+                    color: _FeedColors.teal,
+                    onTap: widget.onAddLogPressed ?? () {},
                   ),
                   const SizedBox(width: 8),
                   NomoHeaderIconButton(
@@ -198,34 +195,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     setState(() => _currentFeedPageIndex = index);
     if (index > 0) {
       _markFeedSwipeTutorialSeen();
-    }
-  }
-
-  Future<void> _refreshFeed() async {
-    if (_isRefreshingFeed) return;
-    HapticFeedback.selectionClick();
-    setState(() => _isRefreshingFeed = true);
-    try {
-      await Future.wait([
-        ref.refresh(drinkLogControllerProvider.future),
-        ref.refresh(friendsProvider.future),
-        ref.refresh(notificationControllerProvider.future),
-      ]);
-      if (!mounted) return;
-      NomoToast.show(
-        context,
-        'フィードを更新しました',
-        icon: CupertinoIcons.arrow_clockwise,
-      );
-    } catch (_) {
-      if (!mounted) return;
-      NomoToast.show(
-        context,
-        '更新できなかったよ。あとでもう一度試してね',
-        icon: CupertinoIcons.arrow_clockwise,
-      );
-    } finally {
-      if (mounted) setState(() => _isRefreshingFeed = false);
     }
   }
 

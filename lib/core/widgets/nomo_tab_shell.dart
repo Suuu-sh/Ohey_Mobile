@@ -429,56 +429,33 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
             height: 82,
             child: Row(
               children: [
-                SizedBox(
-                  width: 270,
-                  child: Row(
-                    children: [
-                      _TabItem(
-                        customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
-                        label: 'フィード',
-                        selected: _selectedIndex == 0,
-                        activeColor: const Color(0xFF8A62FF),
-                        onTap: () => _selectTab(0),
-                      ),
-                      _TabItem(
-                        customIcon: _FriendsTabIcon(
-                          selected: _selectedIndex == 1,
-                        ),
-                        label: 'フレンズ',
-                        selected: _selectedIndex == 1,
-                        activeColor: const Color(0xFF9AF21A),
-                        onTap: () => _selectTab(1),
-                      ),
-                      _TabItem(
-                        customIcon: _CalendarTabIcon(
-                          selected: _selectedIndex == 2,
-                        ),
-                        label: 'カレンダー',
-                        selected: _selectedIndex == 2,
-                        activeColor: const Color(0xFF20B9FF),
-                        onTap: () => _selectTab(2),
-                      ),
-                      _TabItem(
-                        customIcon: _ProfileTabIcon(
-                          selected: _selectedIndex == 3,
-                        ),
-                        label: 'マイページ',
-                        selected: _selectedIndex == 3,
-                        activeColor: const Color(0xFFFF75B5),
-                        onTap: () => _selectTab(3),
-                      ),
-                    ],
-                  ),
+                _TabItem(
+                  customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
+                  label: 'フィード',
+                  selected: _selectedIndex == 0,
+                  activeColor: const Color(0xFF8A62FF),
+                  onTap: () => _selectTab(0),
                 ),
-                const Spacer(),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: _openDrinkLogFlow,
-                  child: Semantics(
-                    button: true,
-                    label: '思い出を追加',
-                    child: const _AddTabIcon(),
-                  ),
+                _TabItem(
+                  customIcon: _FriendsTabIcon(selected: _selectedIndex == 1),
+                  label: 'フレンズ',
+                  selected: _selectedIndex == 1,
+                  activeColor: const Color(0xFF9AF21A),
+                  onTap: () => _selectTab(1),
+                ),
+                _TabItem(
+                  customIcon: _CalendarTabIcon(selected: _selectedIndex == 2),
+                  label: 'カレンダー',
+                  selected: _selectedIndex == 2,
+                  activeColor: const Color(0xFF20B9FF),
+                  onTap: () => _selectTab(2),
+                ),
+                _TabItem(
+                  customIcon: _ProfileTabIcon(selected: _selectedIndex == 3),
+                  label: 'マイページ',
+                  selected: _selectedIndex == 3,
+                  activeColor: const Color(0xFFFF75B5),
+                  onTap: () => _selectTab(3),
                 ),
               ],
             ),
@@ -1447,76 +1424,6 @@ class _TabItem extends StatelessWidget {
       ),
     );
   }
-}
-
-class _AddTabIcon extends StatelessWidget {
-  const _AddTabIcon();
-
-  @override
-  Widget build(BuildContext context) => AnimatedScale(
-    duration: const Duration(milliseconds: 180),
-    scale: 1,
-    child: CustomPaint(size: const Size(48, 42), painter: const _AddPainter()),
-  );
-}
-
-class _AddPainter extends CustomPainter {
-  const _AddPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final shadow = Paint()
-      ..color = Colors.black.withValues(alpha: .18)
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 7.2;
-    final stroke = Paint()
-      ..color = const Color(0xFFA5ADBC)
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 6.2;
-    final highlight = Paint()
-      ..color = Colors.white.withValues(alpha: .24)
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 2.1;
-
-    final horizontal = Offset(size.width * .26, center.dy);
-    final horizontalEnd = Offset(size.width * .74, center.dy);
-    final vertical = Offset(center.dx, size.height * .26);
-    final verticalEnd = Offset(center.dx, size.height * .74);
-
-    canvas.drawLine(
-      horizontal.translate(0, 1.5),
-      horizontalEnd.translate(0, 1.5),
-      shadow,
-    );
-    canvas.drawLine(
-      vertical.translate(0, 1.5),
-      verticalEnd.translate(0, 1.5),
-      shadow,
-    );
-    canvas.drawLine(horizontal, horizontalEnd, stroke);
-    canvas.drawLine(vertical, verticalEnd, stroke);
-
-    canvas.drawLine(
-      Offset(size.width * .31, center.dy - 1.7),
-      Offset(size.width * .69, center.dy - 1.7),
-      highlight,
-    );
-    canvas.drawLine(
-      Offset(center.dx - 1.7, size.height * .31),
-      Offset(center.dx - 1.7, size.height * .69),
-      highlight,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _AddPainter oldDelegate) => false;
 }
 
 class _PopTabIcon extends StatelessWidget {
