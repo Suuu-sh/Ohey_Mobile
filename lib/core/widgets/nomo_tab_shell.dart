@@ -28,6 +28,7 @@ import '../data/supabase_client_provider.dart';
 import '../models/nomo_avatar.dart';
 import '../models/nomo_drink_invite.dart';
 import '../models/nomo_friend.dart';
+import '../models/nomo_user.dart';
 import '../theme/app_colors.dart';
 import '../theme/nomo_theme_mode.dart';
 import 'nomo_3d_button.dart';
@@ -58,6 +59,8 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
   bool _isOnboardingSeen = false;
   bool _onboardingPrefLoaded = false;
   bool _isDrinkInviteModalOpen = false;
+  bool _isDailyStatusPromptOpen = false;
+  String? _lastDailyStatusPromptKey;
   String? _lastPresentedDrinkInviteId;
   Timer? _invitePollTimer;
   final Set<String> _notifiedDrinkInviteIds = <String>{};
@@ -86,6 +89,12 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     }
     if (state != AppLifecycleState.resumed) return;
     _lastPresentedDrinkInviteId = null;
+    unawaited(
+      ref
+          .read(nomoUserProvider.notifier)
+          .loadFromBackendProfile()
+          .catchError((_) => false),
+    );
     ref.invalidate(incomingDrinkInvitesProvider);
     ref.invalidate(notificationControllerProvider);
   }
@@ -253,7 +262,11 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
   }
 
   void _handleIncomingDrinkInvites(List<NomoDrinkInvite> invites) {
-    if (ref.read(nomoUserProvider) == null) return;
+    final currentUser = ref.read(nomoUserProvider);
+    if (currentUser == null ||
+        currentUser.dailyStatus == NomoDailyStatus.unselected) {
+      return;
+    }
     final pendingInvites = invites
         .where((invite) => invite.status == NomoDrinkInviteStatus.pending)
         .toList(growable: false);
@@ -317,6 +330,59 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     }
   }
 
+  void _maybeShowDailyStatusPrompt(NomoUser user) {
+    if (user.dailyStatus != NomoDailyStatus.unselected ||
+        _isDailyStatusPromptOpen) {
+      return;
+    }
+    final promptKey = '${user.userId}-${_localDateKey(DateTime.now())}';
+    if (_lastDailyStatusPromptKey == promptKey) return;
+    _lastDailyStatusPromptKey = promptKey;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isDailyStatusPromptOpen) return;
+      final currentUser = ref.read(nomoUserProvider);
+      if (currentUser == null ||
+          currentUser.dailyStatus != NomoDailyStatus.unselected) {
+        return;
+      }
+      _showDailyStatusPrompt();
+    });
+  }
+
+  Future<void> _showDailyStatusPrompt() async {
+    _isDailyStatusPromptOpen = true;
+    try {
+      await showNomoBottomSheet<void>(
+        context: context,
+        useSafeArea: true,
+        useRootNavigator: true,
+        isDismissible: false,
+        enableDrag: false,
+        barrierColor: Colors.black.withValues(alpha: .72),
+        builder: (_) => NomoToastAccent(
+          color: Color(0xFF20B9FF),
+          child: _DailyStatusRequiredSheet(
+            onSelect: (status) async {
+              await ref
+                  .read(nomoUserProvider.notifier)
+                  .updateDailyStatus(status);
+              ref.invalidate(friendsProvider);
+              ref.invalidate(incomingDrinkInvitesProvider);
+              ref.invalidate(notificationControllerProvider);
+            },
+          ),
+        ),
+      );
+    } finally {
+      _isDailyStatusPromptOpen = false;
+      if (mounted &&
+          ref.read(nomoUserProvider)?.dailyStatus ==
+              NomoDailyStatus.unselected) {
+        _lastDailyStatusPromptKey = null;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(nomoUserProvider);
@@ -331,6 +397,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     );
 
     if (user != null) {
+      _maybeShowDailyStatusPrompt(user);
       _startInvitePolling();
       incomingDrinkInvitesAsync.whenData(_handleIncomingDrinkInvites);
       _didAttemptProfileRestore = false;
@@ -465,6 +532,234 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     );
   }
 }
+
+class _DailyStatusRequiredSheet extends ConsumerStatefulWidget {
+  const _DailyStatusRequiredSheet({required this.onSelect});
+
+  final Future<void> Function(NomoDailyStatus status) onSelect;
+
+  @override
+  ConsumerState<_DailyStatusRequiredSheet> createState() =>
+      _DailyStatusRequiredSheetState();
+}
+
+class _DailyStatusRequiredSheetState
+    extends ConsumerState<_DailyStatusRequiredSheet> {
+  static const _options = <NomoDailyStatus>[
+    NomoDailyStatus.canDrinkToday,
+    NomoDailyStatus.nonAlcohol,
+    NomoDailyStatus.liverRest,
+    NomoDailyStatus.hasPlans,
+  ];
+
+  NomoDailyStatus? _savingStatus;
+
+  Future<void> _select(NomoDailyStatus status) async {
+    if (_savingStatus != null) return;
+    HapticFeedback.selectionClick();
+    setState(() => _savingStatus = status);
+    try {
+      await widget.onSelect(status);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      NomoToast.show(context, '今日は「${status.label}」だね');
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _savingStatus = null);
+      NomoToast.show(context, '設定できなかったよ。もう一度ためしてね');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .64);
+    return PopScope(
+      canPop: false,
+      child: NomoBottomSheetShell(
+        showHandle: true,
+        maxHeightFactor: .88,
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const NomoPopIcon(
+                  icon: CupertinoIcons.calendar_badge_plus,
+                  color: Color(0xFF20B9FF),
+                  size: 48,
+                  iconSize: 25,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '今日の予定、先に教えて',
+                        style: TextStyle(
+                          color: ink,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.6,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'みんなが誘いやすくなるように、入室前に今日の気分をセットしてね',
+                        style: TextStyle(
+                          color: sub,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            for (final status in _options) ...[
+              _DailyStatusRequiredOption(
+                status: status,
+                saving: _savingStatus == status,
+                disabled: _savingStatus != null,
+                onTap: () => _select(status),
+              ),
+              if (status != _options.last) const SizedBox(height: 10),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DailyStatusRequiredOption extends StatelessWidget {
+  const _DailyStatusRequiredOption({
+    required this.status,
+    required this.onTap,
+    required this.saving,
+    required this.disabled,
+  });
+
+  final NomoDailyStatus status;
+  final VoidCallback onTap;
+  final bool saving;
+  final bool disabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final color = _dailyStatusPromptColor(status);
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .64);
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 160),
+      opacity: disabled && !saving ? .46 : 1,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: disabled ? null : onTap,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+          decoration: BoxDecoration(
+            color: isWhite
+                ? color.withValues(alpha: .10)
+                : Colors.white.withValues(alpha: .06),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: color.withValues(alpha: .34), width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: isWhite ? .05 : .10),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              NomoPopIcon(
+                icon: _dailyStatusPromptIcon(status),
+                color: color,
+                size: 42,
+                iconSize: 22,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      status.label,
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.25,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      _dailyStatusPromptCopy(status),
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              if (saving)
+                CupertinoActivityIndicator(color: color)
+              else
+                Icon(CupertinoIcons.chevron_right, color: color, size: 19),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Color _dailyStatusPromptColor(NomoDailyStatus status) => switch (status) {
+  NomoDailyStatus.canDrinkToday => const Color(0xFF9AF21A),
+  NomoDailyStatus.nonAlcohol => const Color(0xFF5DEBD3),
+  NomoDailyStatus.liverRest => const Color(0xFFFFB84D),
+  NomoDailyStatus.hasPlans => const Color(0xFFB8C1CD),
+  NomoDailyStatus.unselected => const Color(0xFF94A3B8),
+};
+
+IconData _dailyStatusPromptIcon(NomoDailyStatus status) => switch (status) {
+  NomoDailyStatus.canDrinkToday => CupertinoIcons.sparkles,
+  NomoDailyStatus.nonAlcohol => CupertinoIcons.hand_thumbsup_fill,
+  NomoDailyStatus.liverRest => CupertinoIcons.clock_fill,
+  NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
+  NomoDailyStatus.unselected => CupertinoIcons.circle,
+};
+
+String _dailyStatusPromptCopy(NomoDailyStatus status) => switch (status) {
+  NomoDailyStatus.canDrinkToday => 'すぐ誘われても大丈夫',
+  NomoDailyStatus.nonAlcohol => 'たぶん行けそうな日',
+  NomoDailyStatus.liverRest => '時間が合えば行けそう',
+  NomoDailyStatus.hasPlans => '今日はもう予定がある',
+  NomoDailyStatus.unselected => 'あとで決める',
+};
+
+String _localDateKey(DateTime date) =>
+    '${date.year.toString().padLeft(4, '0')}-'
+    '${date.month.toString().padLeft(2, '0')}-'
+    '${date.day.toString().padLeft(2, '0')}';
 
 class _DrinkPlanCreateSheet extends ConsumerStatefulWidget {
   const _DrinkPlanCreateSheet();
