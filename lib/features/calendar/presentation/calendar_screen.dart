@@ -253,7 +253,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       onHorizontalDragUpdate: _handleMonthDragUpdate,
                       onHorizontalDragEnd: _handleMonthDragEnd,
                       child: ListView(
-                        physics: const NeverScrollableScrollPhysics(),
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
                         padding: const EdgeInsets.fromLTRB(
                           NomoPageHeader.horizontalPadding,
                           8,
@@ -721,6 +723,8 @@ class _CalendarFriendStatusList extends StatelessWidget {
         final availableCount = friends
             .where((friend) => _calendarFriendIsAvailable(friend.statusKey))
             .length;
+        final visibleFriends = sorted.take(6).toList(growable: false);
+        final hiddenCount = sorted.length - visibleFriends.length;
 
         return _CalendarFriendStatusFrame(
           isWhite: isWhite,
@@ -736,14 +740,212 @@ class _CalendarFriendStatusList extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 7),
-              ...sorted.map(
+              _CalendarFriendStatusSummary(friends: friends, isWhite: isWhite),
+              const SizedBox(height: 6),
+              ...visibleFriends.map(
                 (friend) =>
                     _CalendarFriendStatusRow(friend: friend, isWhite: isWhite),
               ),
+              if (hiddenCount > 0) ...[
+                const SizedBox(height: 8),
+                _CalendarShowAllFriendsButton(
+                  hiddenCount: hiddenCount,
+                  totalCount: friends.length,
+                  isWhite: isWhite,
+                  onTap: () => _showCalendarFriendStatusSheet(
+                    context,
+                    friends: sorted,
+                    isWhite: isWhite,
+                  ),
+                ),
+              ],
             ],
           ),
         );
       },
+    );
+  }
+}
+
+class _CalendarFriendStatusSummary extends StatelessWidget {
+  const _CalendarFriendStatusSummary({
+    required this.friends,
+    required this.isWhite,
+  });
+
+  final List<NomoFriend> friends;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final counts = <NomoDailyStatus, int>{
+      for (final status in NomoDailyStatus.values) status: 0,
+    };
+    for (final friend in friends) {
+      final status = nomoDailyStatusFromKey(friend.statusKey);
+      counts[status] = (counts[status] ?? 0) + 1;
+    }
+    final statuses = NomoDailyStatus.values
+        .where((status) => (counts[status] ?? 0) > 0)
+        .toList(growable: false);
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        for (final status in statuses)
+          _CalendarFriendStatusCountChip(
+            status: status,
+            count: counts[status] ?? 0,
+            isWhite: isWhite,
+          ),
+      ],
+    );
+  }
+}
+
+class _CalendarFriendStatusCountChip extends StatelessWidget {
+  const _CalendarFriendStatusCountChip({
+    required this.status,
+    required this.count,
+    required this.isWhite,
+  });
+
+  final NomoDailyStatus status;
+  final int count;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _calendarStatusColor(status);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: isWhite ? .16 : .12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: .36)),
+      ),
+      child: Text(
+        '${status.label} $count',
+        style: TextStyle(
+          color: isWhite ? const Color(0xFF17212B) : Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class _CalendarShowAllFriendsButton extends StatelessWidget {
+  const _CalendarShowAllFriendsButton({
+    required this.hiddenCount,
+    required this.totalCount,
+    required this.isWhite,
+    required this.onTap,
+  });
+
+  final int hiddenCount;
+  final int totalCount;
+  final bool isWhite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? const Color(0xFFEFF5FA)
+              : Colors.white.withValues(alpha: .07),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'ほか$hiddenCount人を表示',
+              style: TextStyle(
+                color: isWhite ? const Color(0xFF17212B) : Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(
+              CupertinoIcons.chevron_up_chevron_down,
+              size: 14,
+              color: isWhite ? const Color(0xFF667381) : Colors.white70,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _showCalendarFriendStatusSheet(
+  BuildContext context, {
+  required List<NomoFriend> friends,
+  required bool isWhite,
+}) {
+  return showNomoBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (_) =>
+        _CalendarFriendStatusSheet(friends: friends, isWhite: isWhite),
+  );
+}
+
+class _CalendarFriendStatusSheet extends StatelessWidget {
+  const _CalendarFriendStatusSheet({
+    required this.friends,
+    required this.isWhite,
+  });
+
+  final List<NomoFriend> friends;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    return NomoBottomSheetShell(
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
+      radius: 32,
+      maxHeightFactor: .78,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const NomoBottomSheetHandle(),
+          const SizedBox(height: 14),
+          Text(
+            'フレンズの空き状況',
+            style: TextStyle(
+              color: isWhite ? const Color(0xFF101820) : Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Flexible(
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: const BouncingScrollPhysics(),
+              itemCount: friends.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 4),
+              itemBuilder: (context, index) => _CalendarFriendStatusRow(
+                friend: friends[index],
+                isWhite: isWhite,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -946,23 +1148,34 @@ class _CalendarStatusOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _calendarStatusColor(status);
+    final blockAccent = _calendarStatusBlockAccent(status);
+    final blockBackground = _calendarStatusBlockBackground(
+      status,
+      isWhite: isWhite,
+      selected: selected,
+    );
+    final borderColor = _calendarStatusBlockBorder(
+      status,
+      isWhite: isWhite,
+      selected: selected,
+    );
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: selected
-              ? color.withValues(alpha: isWhite ? .16 : .22)
-              : (isWhite
-                    ? const Color(0xFFF7F9FC)
-                    : Colors.white.withValues(alpha: .06)),
+          color: blockBackground,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected
-                ? color.withValues(alpha: .42)
-                : (isWhite ? const Color(0xFFE2E8F0) : Colors.white12),
-          ),
+          border: Border.all(color: borderColor),
+          boxShadow: [
+            if (selected)
+              BoxShadow(
+                color: blockAccent.withValues(alpha: isWhite ? .10 : .18),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+          ],
         ),
         child: Row(
           children: [
@@ -1645,13 +1858,53 @@ DateTime _dateOnly(DateTime value) =>
 String _dateKey(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
+const _calendarStatusPink = Color(0xFFFF5EA8);
+const _calendarStatusBlue = Color(0xFF20B9FF);
+const _calendarStatusPurple = Color(0xFF8A62FF);
+const _calendarStatusGreen = Color(0xFF9AF21A);
+const _calendarStatusBlocked = Color(0xFF2B3644);
+const _calendarStatusBlockedForeground = Color(0xFF738092);
+
 Color _calendarStatusColor(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.canDrinkToday => const Color(0xFF9AF21A),
-  NomoDailyStatus.nonAlcohol => const Color(0xFF5DEBD3),
-  NomoDailyStatus.liverRest => const Color(0xFFFF7AB8),
-  NomoDailyStatus.hasPlans => const Color(0xFFFFD166),
-  NomoDailyStatus.unselected => const Color(0xFF94A3B8),
+  NomoDailyStatus.canDrinkToday => _calendarStatusPink,
+  NomoDailyStatus.nonAlcohol => _calendarStatusBlue,
+  NomoDailyStatus.liverRest => _calendarStatusPurple,
+  NomoDailyStatus.hasPlans => _calendarStatusBlockedForeground,
+  NomoDailyStatus.unselected => _calendarStatusGreen,
 };
+
+Color _calendarStatusBlockAccent(NomoDailyStatus status) => switch (status) {
+  NomoDailyStatus.hasPlans => _calendarStatusBlocked,
+  _ => _calendarStatusColor(status),
+};
+
+Color _calendarStatusBlockBackground(
+  NomoDailyStatus status, {
+  required bool isWhite,
+  required bool selected,
+}) {
+  if (status == NomoDailyStatus.hasPlans) {
+    if (isWhite) return selected ? const Color(0xFFE9EEF4) : Colors.white;
+    return selected
+        ? const Color(0xFF172230)
+        : Colors.white.withValues(alpha: .05);
+  }
+  final color = _calendarStatusColor(status);
+  return color.withValues(
+    alpha: selected ? (isWhite ? .20 : .18) : (isWhite ? .11 : .09),
+  );
+}
+
+Color _calendarStatusBlockBorder(
+  NomoDailyStatus status, {
+  required bool isWhite,
+  required bool selected,
+}) {
+  final accent = _calendarStatusBlockAccent(status);
+  return accent.withValues(
+    alpha: selected ? (isWhite ? .52 : .48) : (isWhite ? .28 : .24),
+  );
+}
 
 IconData _calendarStatusIcon(NomoDailyStatus status) => switch (status) {
   NomoDailyStatus.canDrinkToday => CupertinoIcons.sparkles,
