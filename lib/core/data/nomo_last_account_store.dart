@@ -172,5 +172,5 @@ class NomoLastAccountStore {
 
 String _fallbackName(String email) {
   final localPart = email.split('@').first.trim();
-  return localPart.isEmpty ? 'Tomolaユーザー' : localPart;
+  return localPart.isEmpty ? 'Nomoユーザー' : localPart;
 }

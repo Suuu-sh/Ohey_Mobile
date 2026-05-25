@@ -127,7 +127,7 @@ class NomoAvatar {
     return copyWith(hair: hairOptions.first);
   }
 
-  static const backgroundStyles = ['Tomola pink'];
+  static const backgroundStyles = ['Nomo pink'];
 
   static const backgroundGradients = [
     [Color(0xFFFF7BBC), Color(0xFFFFD2E3)],

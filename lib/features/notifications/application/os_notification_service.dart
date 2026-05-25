@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/models/nomo_drink_invite.dart';
+import '../../../core/models/nomo_friend_request_status.dart';
 import '../data/notification_repository.dart';
 
 final osNotificationServiceProvider = Provider<OsNotificationService>((ref) {
@@ -26,12 +27,14 @@ class _NotificationDeliveryPolicy {
   static bool shouldShowOsNotification(NomoNotification notification) {
     if (!_osAllowedKinds.contains(notification.kind)) return false;
     if (notification.kind == 'friend_request_received') {
-      return notification.friendRequestStatus == null ||
-          notification.friendRequestStatus == 'pending';
+      return nomoFriendRequestStatusFromKey(
+        notification.friendRequestStatus,
+      ).isPending;
     }
     if (notification.kind == 'drink_invite_received') {
-      return notification.drinkInviteStatus == null ||
-          notification.drinkInviteStatus == 'pending';
+      return nomoDrinkInviteStatusFromKey(
+        notification.drinkInviteStatus,
+      ).isPending;
     }
     return true;
   }
@@ -56,8 +59,8 @@ class OsNotificationService {
 
   static const _channel = AndroidNotificationChannel(
     'nomo_notifications',
-    'Tomola通知',
-    description: 'フレンズ申請、お誘い、今日の思い出など厳選したTomola通知',
+    'Nomo通知',
+    description: 'フレンズ申請、お誘い、今日の思い出など厳選したNomo通知',
     importance: Importance.high,
   );
   static const _lastNotifiedKey = 'nomo_last_os_notification_created_at';
@@ -107,8 +110,8 @@ class OsNotificationService {
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             'nomo_notifications',
-            'Tomola通知',
-            channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したTomola通知',
+            'Nomo通知',
+            channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したNomo通知',
             importance: Importance.high,
             priority: Priority.high,
           ),
@@ -141,8 +144,8 @@ class OsNotificationService {
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'nomo_notifications',
-          'Tomola通知',
-          channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したTomola通知',
+          'Nomo通知',
+          channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したNomo通知',
           importance: Importance.high,
           priority: Priority.high,
         ),

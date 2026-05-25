@@ -55,4 +55,6 @@ extension NomoDrinkInviteStatusX on NomoDrinkInviteStatus {
     NomoDrinkInviteStatus.rejected => label,
     NomoDrinkInviteStatus.cancelled => label,
   };
+
+  bool get isPending => this == NomoDrinkInviteStatus.pending;
 }

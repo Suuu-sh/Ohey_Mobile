@@ -16,6 +16,7 @@ import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/models/nomo_friend.dart';
+import '../../../core/models/nomo_friend_request_status.dart';
 import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
@@ -228,8 +229,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         fileNameOverrides: [
           item.isOfficial ? 'nomo_official_post.png' : 'nomo_drink_log.png',
         ],
-        title: item.isOfficial ? 'Tomola公式投稿を共有' : '思い出を共有',
-        subject: item.isOfficial ? 'Tomola公式のお知らせ' : 'Tomolaの思い出',
+        title: item.isOfficial ? 'Nomo公式投稿を共有' : '思い出を共有',
+        subject: item.isOfficial ? 'Nomo公式のお知らせ' : 'Nomoの思い出',
         sharePositionOrigin: shareOrigin,
       ),
     );

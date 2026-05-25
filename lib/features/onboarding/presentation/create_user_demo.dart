@@ -4,7 +4,7 @@ const _demoSlides = [
   _DemoSlideData(
     step: '1 / 4',
     title: '写真1枚で、今日が\n友達との思い出になる',
-    subtitle: 'Tomolaは、写真・場所・一緒にいたフレンズをかわいく残すアプリです。',
+    subtitle: 'Nomoは、写真・場所・一緒にいたフレンズをかわいく残すアプリです。',
     kind: _DemoKind.hero,
     chips: ['撮る', '残る', 'また誘える'],
   ),
@@ -218,7 +218,7 @@ class _ProfileDemoVisual extends StatelessWidget {
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      '@tomola_friend',
+                      '@nomo_friend',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

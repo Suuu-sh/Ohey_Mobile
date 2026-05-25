@@ -22,7 +22,7 @@ struct NomoWidgetSnapshot: Equatable {
   static let placeholder = NomoWidgetSnapshot(
     statusKey: "unselected",
     statusLabel: "今日の気分は？",
-    statusDescription: "Tomolaを開いて今日のノリをセットしよう",
+    statusDescription: "Nomoを開いて今日の予定感をセットしよう",
     availableFriendsCount: 0,
     availableFriendNames: [],
     availableFriends: [],
@@ -33,7 +33,7 @@ struct NomoWidgetSnapshot: Equatable {
     let defaults = UserDefaults(suiteName: appGroupIdentifier) ?? .standard
     let statusKey = defaults.string(forKey: "statusKey") ?? "unselected"
     let statusLabel = defaults.string(forKey: "statusLabel") ?? "今日の気分は？"
-    let statusDescription = defaults.string(forKey: "statusDescription") ?? "Tomolaを開いて今日のノリをセットしよう"
+    let statusDescription = defaults.string(forKey: "statusDescription") ?? "Nomoを開いて今日の予定感をセットしよう"
     let friendNames = Array((defaults.stringArray(forKey: "availableFriendNames") ?? []).prefix(3))
     let friendStatusLabels = Array((defaults.stringArray(forKey: "availableFriendStatusLabels") ?? []).prefix(3))
     let friendCount = defaults.object(forKey: "availableFriendsCount") as? Int ?? friendNames.count
@@ -276,7 +276,7 @@ private struct MediumFriendsContent: View {
   @ViewBuilder
   private var friendRows: some View {
     if snapshot.availableFriends.isEmpty {
-      Text("Tomolaを開いて、みんなの今日のノリを更新しよう。")
+      Text("Nomoを開いて、みんなの今日の予定感を更新しよう。")
         .font(.system(size: 12, weight: .bold, design: .rounded))
         .foregroundStyle(Color.white.opacity(0.72))
         .lineLimit(2)

@@ -38,7 +38,7 @@ class NomoUserController extends Notifier<NomoUser?> {
     final repository = ref.read(userRepositoryProvider);
     final authUserId = repository.currentUserId;
     if (authUserId == null || authUserId.isEmpty) {
-      throw StateError('Login is required before creating a Tomola user.');
+      throw StateError('Login is required before creating a Nomo user.');
     }
 
     final trimmed = name.trim();
@@ -77,7 +77,7 @@ class NomoUserController extends Notifier<NomoUser?> {
     final repository = ref.read(userRepositoryProvider);
     final authUserId = repository.currentUserId;
     if (authUserId == null || authUserId.isEmpty) {
-      throw StateError('Login is required before updating a Tomola user.');
+      throw StateError('Login is required before updating a Nomo user.');
     }
 
     final trimmed = name.trim();

@@ -415,7 +415,7 @@ class _CuteIdSearchCard extends StatelessWidget {
         children: [
           CupertinoTextField(
             controller: controller,
-            placeholder: 'Tomola ID',
+            placeholder: 'Nomo ID',
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => onSearch(),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),

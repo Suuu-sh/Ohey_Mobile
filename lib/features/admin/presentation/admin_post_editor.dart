@@ -75,8 +75,8 @@ class _AdminPostEditorSheetState extends ConsumerState<_AdminPostEditorSheet> {
               child: _isOfficial
                   ? const _AdminInfoBox(
                       key: ValueKey('official-info'),
-                      title: 'Tomola公式として投稿します',
-                      message: 'Tomola公式として届けるよ。',
+                      title: 'Nomo公式として投稿します',
+                      message: 'Nomo公式として届けるよ。',
                     )
                   : _AdminOwnerField(
                       key: const ValueKey('owner-field'),

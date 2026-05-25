@@ -627,9 +627,9 @@ class _FriendRequestNotificationSheetState
     extends State<_FriendRequestNotificationSheet> {
   String? _busyAction;
 
-  bool get _isPending =>
-      widget.notification.friendRequestStatus == null ||
-      widget.notification.friendRequestStatus == 'pending';
+  bool get _isPending => nomoFriendRequestStatusFromKey(
+    widget.notification.friendRequestStatus,
+  ).isPending;
 
   Future<void> _submit({required bool accept}) async {
     if (_busyAction != null || !_isPending) return;
@@ -656,12 +656,9 @@ class _FriendRequestNotificationSheetState
 
   @override
   Widget build(BuildContext context) {
-    final statusLabel = switch (widget.notification.friendRequestStatus) {
-      'accepted' => '承認済み',
-      'rejected' => '見送り済み',
-      'cancelled' => '取り消し済み',
-      _ => '承認待ち',
-    };
+    final statusLabel = nomoFriendRequestStatusFromKey(
+      widget.notification.friendRequestStatus,
+    ).label;
 
     return SafeArea(
       child: Container(
@@ -852,9 +849,9 @@ class _DrinkInviteNotificationSheetState
     extends State<_DrinkInviteNotificationSheet> {
   String? _busyAction;
 
-  bool get _isPending =>
-      widget.notification.drinkInviteStatus == null ||
-      widget.notification.drinkInviteStatus == 'pending';
+  bool get _isPending => nomoDrinkInviteStatusFromKey(
+    widget.notification.drinkInviteStatus,
+  ).isPending;
 
   Future<void> _submit({required bool accept}) async {
     if (_busyAction != null || !_isPending) return;

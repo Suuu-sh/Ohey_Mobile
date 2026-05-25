@@ -80,7 +80,7 @@ class DrinkInviteRepository {
   NomoFriend _profileToFriend(Map<String, dynamic> profile) {
     return NomoFriend(
       id: profile['id'] as String,
-      name: (profile['display_name'] as String?) ?? 'Tomola friend',
+      name: (profile['display_name'] as String?) ?? 'Nomo friend',
       avatarEmoji: '🍻',
       vibe: (profile['user_id'] as String?) ?? '',
       characterAssetPath: '',

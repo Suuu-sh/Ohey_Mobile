@@ -37,7 +37,7 @@ class _AdminHeader extends StatelessWidget {
                 ),
               ),
               Text(
-                'Tomola ${SupabaseConfig.environment} admin',
+                'Nomo ${SupabaseConfig.environment} admin',
                 style: const TextStyle(
                   color: _AdminColors.sub,
                   fontWeight: FontWeight.w800,
