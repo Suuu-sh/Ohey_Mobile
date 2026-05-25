@@ -769,6 +769,20 @@ List<_GroupScheduleSuggestion> _groupScheduleSuggestions(
 ) {
   final stats = _groupAvailabilityStats(friends);
   final now = DateTime.now();
+  if (stats.hasNoBlockedMembers) {
+    return [
+      for (var i = 0; i < 2; i++)
+        _GroupScheduleSuggestion(
+          title: _groupScheduleDayLabel(now.add(Duration(days: i))),
+          subtitle: i == 0
+              ? '誰も無理とは言ってない日。予定を入れてもらってね。'
+              : 'ここも候補にできそう。みんなに予定を入れてもらおう。',
+          badge: stats.isAllOk ? '全員OK' : '${stats.okCount}/${stats.total}人OK',
+          accent: i == 0 ? const Color(0xFFB8FF00) : const Color(0xFF5DEBD3),
+        ),
+    ];
+  }
+
   final tiers = <_GroupScheduleTier>[
     if (stats.isAllOk)
       const _GroupScheduleTier(
@@ -848,6 +862,8 @@ class _GroupAvailabilityStats {
 
   bool get isAllOk => total > 0 && okCount == total;
 
+  bool get hasNoBlockedMembers => total > 0 && blockedCount == 0;
+
   bool get isAlmostOk =>
       total >= 3 && okCount == total - 1 && undecidedCount == 1;
 
@@ -896,7 +912,9 @@ String _groupScheduleDayLabel(DateTime day) {
 
 String _groupScheduleNote(List<_DecoratedFriend> friends) {
   final stats = _groupAvailabilityStats(friends);
-  if (stats.isAllOk) return 'みんな行けそう。予定を立てるなら今がよさそう。';
+  if (stats.hasNoBlockedMembers) {
+    return '候補日を出して、みんなに予定を入れてもらってね。';
+  }
   if (stats.isAlmostOk) return 'あと1人確認できたら決めやすいよ。';
   if (stats.isMaybeOk) return 'まず候補日を出して、みんなに聞いてみよ。';
   return '予定が合いにくそう。別の日も候補にしよ。';
