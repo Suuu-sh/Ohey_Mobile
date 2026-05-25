@@ -432,13 +432,19 @@ class _FeedCompanionInlineButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isWhite ? const Color(0xFF344152) : Colors.white;
-    final borderColor = isWhite
-        ? const Color(0xFFE0E7EF)
-        : Colors.white.withValues(alpha: .13);
-    final backgroundColor = isWhite
-        ? const Color(0xFFF4F7FA)
-        : Colors.white.withValues(alpha: .07);
+    const withPurple = Color(0xFFC08BFF);
+    final textColor = isWhite ? const Color(0xFF2B2440) : Colors.white;
+    final borderColor = withPurple.withValues(alpha: isWhite ? .34 : .42);
+    final backgroundGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: isWhite
+          ? [withPurple.withValues(alpha: .18), const Color(0xFFFFFFFF)]
+          : [
+              withPurple.withValues(alpha: .28),
+              const Color(0xFF101B2B).withValues(alpha: .88),
+            ],
+    );
     const label = 'With';
 
     return Semantics(
@@ -450,9 +456,16 @@ class _FeedCompanionInlineButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
           decoration: BoxDecoration(
-            color: backgroundColor,
+            gradient: backgroundGradient,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(color: borderColor),
+            boxShadow: [
+              BoxShadow(
+                color: withPurple.withValues(alpha: isWhite ? .10 : .22),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 182),
