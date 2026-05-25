@@ -2,14 +2,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_avatar.dart';
+import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_toast.dart';
-import '../../../core/widgets/nomo_exchange_components.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../data/friend_repository.dart';
 
@@ -144,63 +145,295 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     final user = widget.ref.watch(nomoUserProvider);
     final myUserId = user?.userId.trim() ?? '';
     final qrPayload = myUserId.isEmpty ? null : 'tomola://friend/$myUserId';
-    final alreadyFriend = status?.alreadyFriend == true;
-    final alreadyRequested =
-        status?.requestState == NomoFriendRequestState.outgoing;
-
     return NomoBottomSheetShell(
-      title: 'フレンズを追加',
+      title: null,
       showHandle: true,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'IDで探すか、あなたのQRを見せてつながろ。',
-            style: TextStyle(
-              color: sub,
-              fontWeight: FontWeight.w700,
-              height: 1.35,
+      radius: 34,
+      maxHeightFactor: .88,
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFF7AB8), Color(0xFFC08BFF)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFF7AB8).withValues(alpha: .26),
+                        blurRadius: 22,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: NomoGeneratedIcon(
+                      CupertinoIcons.person_2_fill,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'フレンズとつながろ',
+                        style: TextStyle(
+                          color: ink,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.8,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'QRを見せるか、IDで探してね。',
+                        style: TextStyle(
+                          color: sub,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: NomoGeneratedIcon(
+                    CupertinoIcons.xmark,
+                    color: ink.withValues(alpha: .86),
+                    size: 30,
+                  ),
+                ),
+              ],
             ),
+            if (myUserId.isNotEmpty) ...[
+              const SizedBox(height: 18),
+              _CuteQrCard(
+                userId: myUserId,
+                payload: qrPayload,
+                avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
+                isWhite: isWhite,
+                onCopy: () => _copyMyId(myUserId),
+              ),
+            ],
+            const SizedBox(height: 18),
+            _CuteIdSearchCard(
+              controller: _controller,
+              isWhite: isWhite,
+              isLoading: _isLoading,
+              onSearch: () {
+                HapticFeedback.selectionClick();
+                _search();
+              },
+              onPaste: _pasteAndSearch,
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: 10),
+              _CuteMessageBox(
+                icon: CupertinoIcons.exclamationmark_bubble_fill,
+                message: _error!,
+                color: const Color(0xFFFF7A9E),
+              ),
+            ],
+            if (profile != null) ...[
+              const SizedBox(height: 14),
+              _FriendSearchResultCard(
+                profile: profile,
+                status: status,
+                isSending: _isSending,
+                isWhite: isWhite,
+                onSend: _sendRequest,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CuteQrCard extends StatelessWidget {
+  const _CuteQrCard({
+    required this.userId,
+    required this.payload,
+    required this.avatar,
+    required this.isWhite,
+    required this.onCopy,
+  });
+
+  final String userId;
+  final String? payload;
+  final NomoAvatar avatar;
+  final bool isWhite;
+  final VoidCallback onCopy;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = isWhite ? const Color(0xFF18222E) : Colors.white;
+    final sub = isWhite ? const Color(0xFF6C7480) : Colors.white70;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isWhite
+              ? const [Color(0xFFFFF3FA), Color(0xFFF3EEFF)]
+              : const [Color(0xFF1B1830), Color(0xFF102225)],
+        ),
+        border: Border.all(
+          color: isWhite
+              ? const Color(0xFFFFC4DF)
+              : Colors.white.withValues(alpha: .10),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(
+              0xFFFF7AB8,
+            ).withValues(alpha: isWhite ? .18 : .12),
+            blurRadius: 26,
+            offset: const Offset(0, 12),
           ),
-          if (myUserId.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            NomoQrDisplayCard(
-              title: 'あなたのTomola ID',
-              subtitle: '友達に見せるか、IDをコピーして送れます',
-              handle: '@$myUserId',
-              payload: qrPayload,
-              avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
-              accentColor: const Color(0xFFB7F15B),
-              textColor: ink,
-              mutedTextColor: sub,
-              qrSize: 154,
-              qrPadding: 10,
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              NomoAvatarView(avatar: avatar, size: 56),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '見せるだけでOK',
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '@$userId',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: sub, fontWeight: FontWeight.w900),
+                    ),
+                  ],
+                ),
+              ),
+              const NomoPopIcon(
+                icon: CupertinoIcons.sparkles,
+                color: Color(0xFFFFC857),
+                size: 38,
+                iconSize: 20,
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            width: 184,
+            height: 184,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(34),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF21D6C4).withValues(alpha: .20),
+                  blurRadius: 30,
+                  offset: const Offset(0, 14),
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            Nomo3DButton.secondary(
-              label: '自分のIDをコピー',
+            child: payload == null
+                ? const Center(child: Text('ログインしてね'))
+                : QrImageView(data: payload!, version: QrVersions.auto),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: 220,
+            child: Nomo3DButton.secondary(
+              label: 'IDをコピー',
               icon: CupertinoIcons.doc_on_clipboard,
-              onTap: () => _copyMyId(myUserId),
-              height: 42,
-              radius: 20,
+              onTap: onCopy,
+              height: 44,
+              radius: 22,
               fontSize: 13,
             ),
-          ],
-          const SizedBox(height: 14),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CuteIdSearchCard extends StatelessWidget {
+  const _CuteIdSearchCard({
+    required this.controller,
+    required this.isWhite,
+    required this.isLoading,
+    required this.onSearch,
+    required this.onPaste,
+  });
+
+  final TextEditingController controller;
+  final bool isWhite;
+  final bool isLoading;
+  final VoidCallback onSearch;
+  final VoidCallback onPaste;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isWhite ? Colors.white : Colors.white.withValues(alpha: .06),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: isWhite ? const Color(0xFFEADDEA) : Colors.white12,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
           CupertinoTextField(
-            controller: _controller,
+            controller: controller,
             placeholder: 'Tomola ID',
             textInputAction: TextInputAction.search,
-            onSubmitted: (_) => _search(),
+            onSubmitted: (_) => onSearch(),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            prefix: Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: NomoGeneratedIcon(
+                CupertinoIcons.at,
+                color: Color(0xFFFF7AB8),
+                size: 20,
+              ),
+            ),
             decoration: BoxDecoration(
               color: isWhite
-                  ? const Color(0xFFF4F7FB)
-                  : Colors.white.withValues(alpha: .08),
-              borderRadius: BorderRadius.circular(18),
+                  ? const Color(0xFFFFF7FB)
+                  : Colors.black.withValues(alpha: .16),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isWhite ? const Color(0xFFE0E6EF) : Colors.white12,
+                color: isWhite ? const Color(0xFFFFC4DF) : Colors.white12,
               ),
             ),
           ),
@@ -209,109 +442,151 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
             children: [
               Expanded(
                 child: Nomo3DButton(
-                  label: _isLoading ? '検索中...' : 'IDで検索',
+                  label: isLoading ? '探してる...' : 'IDで探す',
                   icon: CupertinoIcons.search,
-                  onTap: _isLoading
-                      ? null
-                      : () {
-                          HapticFeedback.selectionClick();
-                          _search();
-                        },
-                  height: 46,
-                  radius: 22,
-                  color: const Color(0xFFB7F15B),
-                  foregroundColor: const Color(0xFF183018),
-                  shadowColor: const Color(0xFF79A634),
+                  onTap: isLoading ? null : onSearch,
+                  height: 48,
+                  radius: 24,
+                  color: const Color(0xFFFF7AB8),
+                  foregroundColor: Colors.white,
+                  shadowColor: const Color(0xFFC43D7C),
                 ),
               ),
               const SizedBox(width: 10),
               SizedBox(
                 width: 104,
                 child: Nomo3DButton.secondary(
-                  label: '貼り付け',
+                  label: '貼る',
                   icon: CupertinoIcons.doc_on_clipboard,
-                  onTap: _isLoading ? null : _pasteAndSearch,
-                  height: 46,
-                  radius: 22,
+                  onTap: isLoading ? null : onPaste,
+                  height: 48,
+                  radius: 24,
                   fontSize: 12,
                 ),
               ),
             ],
           ),
-          if (_error != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              _error!,
-              style: const TextStyle(
-                color: Color(0xFFFF6B6B),
-                fontWeight: FontWeight.w800,
+        ],
+      ),
+    );
+  }
+}
+
+class _CuteMessageBox extends StatelessWidget {
+  const _CuteMessageBox({
+    required this.icon,
+    required this.message,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String message;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: .12),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: color.withValues(alpha: .24)),
+      ),
+      child: Row(
+        children: [
+          NomoGeneratedIcon(icon, color: color, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w900,
+                fontSize: 12,
               ),
             ),
-          ],
-          if (profile != null) ...[
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: isWhite
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: .06),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                  color: isWhite ? const Color(0xFFE4EAF2) : Colors.white12,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendSearchResultCard extends StatelessWidget {
+  const _FriendSearchResultCard({
+    required this.profile,
+    required this.status,
+    required this.isSending,
+    required this.isWhite,
+    required this.onSend,
+  });
+
+  final NomoFriendProfile profile;
+  final NomoFriendRelationshipStatus? status;
+  final bool isSending;
+  final bool isWhite;
+  final VoidCallback onSend;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = isWhite ? const Color(0xFF18222E) : Colors.white;
+    final sub = isWhite ? const Color(0xFF6C7480) : Colors.white70;
+    final alreadyFriend = status?.alreadyFriend == true;
+    final alreadyRequested =
+        status?.requestState == NomoFriendRequestState.outgoing;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isWhite ? const Color(0xFFF7FFF0) : const Color(0xFF162514),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFB7F15B).withValues(alpha: .36),
+        ),
+      ),
+      child: Row(
+        children: [
+          NomoAvatarView(avatar: profile.avatar, size: 54),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  profile.displayName,
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
-              ),
-              child: Row(
-                children: [
-                  NomoAvatarView(avatar: profile.avatar, size: 54),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          profile.displayName,
-                          style: TextStyle(
-                            color: ink,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        Text(
-                          '@${profile.userId}',
-                          style: TextStyle(
-                            color: sub,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    width: 108,
-                    child: Nomo3DButton(
-                      label: alreadyFriend
-                          ? '追加済み'
-                          : alreadyRequested
-                          ? '申請済み'
-                          : _isSending
-                          ? '送信中'
-                          : '申請',
-                      onTap: alreadyFriend || alreadyRequested || _isSending
-                          ? null
-                          : _sendRequest,
-                      height: 42,
-                      radius: 20,
-                      color: const Color(0xFF8A62FF),
-                      foregroundColor: Colors.white,
-                      shadowColor: const Color(0xFF4A2BBF),
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
+                Text(
+                  '@${profile.userId}',
+                  style: TextStyle(color: sub, fontWeight: FontWeight.w800),
+                ),
+              ],
             ),
-          ],
+          ),
+          SizedBox(
+            width: 104,
+            child: Nomo3DButton(
+              label: alreadyFriend
+                  ? '追加済み'
+                  : alreadyRequested
+                  ? '申請済み'
+                  : isSending
+                  ? '送信中'
+                  : '申請',
+              onTap: alreadyFriend || alreadyRequested || isSending
+                  ? null
+                  : onSend,
+              height: 42,
+              radius: 20,
+              color: const Color(0xFF8A62FF),
+              foregroundColor: Colors.white,
+              shadowColor: const Color(0xFF4A2BBF),
+              fontSize: 13,
+            ),
+          ),
         ],
       ),
     );
