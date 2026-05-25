@@ -405,9 +405,9 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
             borderRadius: BorderRadius.circular(42),
             border: Border.all(
               color: _selectedToastAccentColor.withValues(
-                alpha: isWhite ? .76 : .90,
+                alpha: isWhite ? .62 : .74,
               ),
-              width: 1.7,
+              width: 1.45,
             ),
             boxShadow: [
               BoxShadow(
@@ -417,17 +417,17 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
               ),
               BoxShadow(
                 color: _selectedToastAccentColor.withValues(
-                  alpha: isWhite ? .24 : .32,
+                  alpha: isWhite ? .17 : .23,
                 ),
-                blurRadius: 58,
+                blurRadius: 46,
                 offset: const Offset(0, 8),
               ),
               BoxShadow(
                 color: _selectedToastAccentColor.withValues(
-                  alpha: isWhite ? .16 : .24,
+                  alpha: isWhite ? .10 : .16,
                 ),
-                blurRadius: 18,
-                spreadRadius: 1.2,
+                blurRadius: 14,
+                spreadRadius: .6,
               ),
             ],
           ),

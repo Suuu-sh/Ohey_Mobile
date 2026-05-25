@@ -24,6 +24,7 @@ import '../../../core/widgets/nomo_themed_panel.dart';
 import '../../admin/application/admin_controller.dart';
 import '../../admin/presentation/admin_screen.dart';
 import '../../friends/application/drink_invite_controller.dart';
+import '../../friends/presentation/friend_add_sheet.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../onboarding/presentation/create_user_dialog.dart';
 import 'avatar_builder_screen.dart';
@@ -169,11 +170,8 @@ class ProfileScreen extends ConsumerWidget {
                                       PhotoArchiveScreen(logs: photoLogs),
                                 ),
                               ),
-                              onAddFriendsTap: () => NomoToast.show(
-                                context,
-                                'フレンズ追加機能は調整中です',
-                                icon: CupertinoIcons.person_badge_plus,
-                              ),
+                              onAddFriendsTap: () =>
+                                  showFriendAddSheet(context, ref),
                             ),
                           ),
                         ],
