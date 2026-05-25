@@ -1141,7 +1141,12 @@ class _CalendarStatusOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = _calendarStatusColor(status);
     final blockAccent = _calendarStatusBlockAccent(status);
-    final blockBackground = _calendarStatusBlockBackground(
+    final surfaceColor = _calendarStatus3DSurfaceColor(
+      status,
+      isWhite: isWhite,
+      selected: selected,
+    );
+    final bottomColor = _calendarStatus3DShadowColor(
       status,
       isWhite: isWhite,
       selected: selected,
@@ -1151,67 +1156,72 @@ class _CalendarStatusOption extends StatelessWidget {
       isWhite: isWhite,
       selected: selected,
     );
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return Nomo3DButtonSurface(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: blockBackground,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor),
-          boxShadow: [
-            if (selected)
-              BoxShadow(
-                color: blockAccent.withValues(alpha: isWhite ? .10 : .18),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
-              ),
-          ],
+      height: 84,
+      radius: 28,
+      color: surfaceColor,
+      bottomColor: bottomColor,
+      borderColor: borderColor,
+      borderWidth: 1.2,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      useGradient: true,
+      outerShadows: [
+        BoxShadow(
+          color: blockAccent.withValues(alpha: selected ? .20 : .10),
+          blurRadius: selected ? 22 : 14,
+          offset: const Offset(0, 8),
         ),
-        child: Row(
-          children: [
-            NomoPopIcon(
-              icon: _calendarStatusIcon(status),
+      ],
+      innerShadows: [
+        BoxShadow(
+          color: blockAccent.withValues(alpha: selected ? .18 : .08),
+          blurRadius: selected ? 18 : 12,
+        ),
+      ],
+      child: Row(
+        children: [
+          NomoPopIcon(
+            icon: _calendarStatusIcon(status),
+            color: color,
+            size: 38,
+            iconSize: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  status == NomoDailyStatus.unselected
+                      ? 'まだ決めてない'
+                      : _calendarStatusLabel(status, day: day),
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _calendarStatusCopy(status, day: day),
+                  style: TextStyle(
+                    color: isWhite ? const Color(0xFF657282) : Colors.white70,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (selected)
+            NomoGeneratedIcon(
+              CupertinoIcons.checkmark_circle_fill,
               color: color,
-              size: 36,
-              iconSize: 19,
+              size: 24,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    status == NomoDailyStatus.unselected
-                        ? 'まだ決めてない'
-                        : _calendarStatusLabel(status, day: day),
-                    style: TextStyle(
-                      color: ink,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _calendarStatusCopy(status, day: day),
-                    style: TextStyle(
-                      color: isWhite ? const Color(0xFF657282) : Colors.white70,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (selected)
-              NomoGeneratedIcon(
-                CupertinoIcons.checkmark_circle_fill,
-                color: color,
-                size: 22,
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -1885,6 +1895,40 @@ Color _calendarStatusBlockBackground(
   return color.withValues(
     alpha: selected ? (isWhite ? .20 : .18) : (isWhite ? .11 : .09),
   );
+}
+
+Color _calendarStatus3DSurfaceColor(
+  NomoDailyStatus status, {
+  required bool isWhite,
+  required bool selected,
+}) {
+  final background = _calendarStatusBlockBackground(
+    status,
+    isWhite: isWhite,
+    selected: selected,
+  );
+  final backdrop = isWhite ? Colors.white : AppColors.darkBackgroundBottom;
+  return Color.alphaBlend(background, backdrop);
+}
+
+Color _calendarStatus3DShadowColor(
+  NomoDailyStatus status, {
+  required bool isWhite,
+  required bool selected,
+}) {
+  final surface = _calendarStatus3DSurfaceColor(
+    status,
+    isWhite: isWhite,
+    selected: selected,
+  );
+  if (status == NomoDailyStatus.hasPlans) {
+    return isWhite ? const Color(0xFFD4DCE7) : const Color(0xFF0D1622);
+  }
+  final accent = _calendarStatusBlockAccent(status);
+  if (selected) {
+    return Color.lerp(accent, Colors.black, isWhite ? .30 : .42)!;
+  }
+  return Color.lerp(surface, Colors.black, isWhite ? .14 : .30)!;
 }
 
 Color _calendarStatusBlockBorder(
