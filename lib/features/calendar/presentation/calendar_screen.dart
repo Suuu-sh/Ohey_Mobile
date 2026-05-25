@@ -496,6 +496,7 @@ class _SelectedDayPanel extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _CalendarDayStatusRow(
+            day: day,
             status: myStatus,
             isSaving: isStatusSaving,
             isWhite: isWhite,
@@ -563,12 +564,14 @@ class _SelectedDayPanel extends StatelessWidget {
 
 class _CalendarDayStatusRow extends StatelessWidget {
   const _CalendarDayStatusRow({
+    required this.day,
     required this.status,
     required this.isSaving,
     required this.isWhite,
     required this.onTap,
   });
 
+  final DateTime day;
   final NomoDailyStatus status;
   final bool isSaving;
   final bool isWhite;
@@ -577,6 +580,7 @@ class _CalendarDayStatusRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _calendarStatusColor(status);
+    final label = _calendarStatusLabel(status, day: day);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: isSaving ? null : onTap,
@@ -601,7 +605,7 @@ class _CalendarDayStatusRow extends StatelessWidget {
               child: Text(
                 status == NomoDailyStatus.unselected
                     ? 'この日の気分、入れておく？'
-                    : '${status.label} にしてあるよ',
+                    : '$label にしてあるよ',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -660,6 +664,7 @@ class _CalendarStatusSheet extends StatelessWidget {
           const SizedBox(height: 14),
           for (final status in options) ...[
             _CalendarStatusOption(
+              day: day,
               status: status,
               selected: status == selected,
               ink: ink,
@@ -676,6 +681,7 @@ class _CalendarStatusSheet extends StatelessWidget {
 
 class _CalendarStatusOption extends StatelessWidget {
   const _CalendarStatusOption({
+    required this.day,
     required this.status,
     required this.selected,
     required this.ink,
@@ -683,6 +689,7 @@ class _CalendarStatusOption extends StatelessWidget {
     required this.onTap,
   });
 
+  final DateTime day;
   final NomoDailyStatus status;
   final bool selected;
   final Color ink;
@@ -726,7 +733,7 @@ class _CalendarStatusOption extends StatelessWidget {
                   Text(
                     status == NomoDailyStatus.unselected
                         ? 'まだ決めない'
-                        : status.label,
+                        : _calendarStatusLabel(status, day: day),
                     style: TextStyle(
                       color: ink,
                       fontSize: 15,
@@ -735,7 +742,7 @@ class _CalendarStatusOption extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _calendarStatusCopy(status),
+                    _calendarStatusCopy(status, day: day),
                     style: TextStyle(
                       color: isWhite ? const Color(0xFF657282) : Colors.white70,
                       fontSize: 11.5,
@@ -1407,10 +1414,24 @@ IconData _calendarStatusIcon(NomoDailyStatus status) => switch (status) {
   NomoDailyStatus.unselected => CupertinoIcons.circle,
 };
 
-String _calendarStatusCopy(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.canDrinkToday => '誘ってくれてOKだよ',
-  NomoDailyStatus.nonAlcohol => '軽めなら行けるかも',
-  NomoDailyStatus.liverRest => '今日はゆっくりしたい日',
-  NomoDailyStatus.hasPlans => 'もう予定があるよ',
-  NomoDailyStatus.unselected => 'あとで決めよ',
-};
+String _calendarStatusLabel(NomoDailyStatus status, {required DateTime day}) {
+  final isToday = _isSameDate(day, DateTime.now());
+  return switch (status) {
+    NomoDailyStatus.canDrinkToday => isToday ? '今日遊べる' : '遊べる',
+    NomoDailyStatus.nonAlcohol => 'ノンアルなら',
+    NomoDailyStatus.liverRest => isToday ? '今日はおやすみ' : 'おやすみ',
+    NomoDailyStatus.hasPlans => '予定あり',
+    NomoDailyStatus.unselected => '未設定',
+  };
+}
+
+String _calendarStatusCopy(NomoDailyStatus status, {required DateTime day}) {
+  final isToday = _isSameDate(day, DateTime.now());
+  return switch (status) {
+    NomoDailyStatus.canDrinkToday => isToday ? '誘ってくれてOKだよ' : 'この日は誘ってOKだよ',
+    NomoDailyStatus.nonAlcohol => '軽めなら行けるかも',
+    NomoDailyStatus.liverRest => isToday ? '今日はゆっくりしたい日' : 'この日はゆっくりしたい日',
+    NomoDailyStatus.hasPlans => 'もう予定があるよ',
+    NomoDailyStatus.unselected => 'あとで決めよ',
+  };
+}
