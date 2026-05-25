@@ -295,7 +295,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
   void _save() {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      setState(() => _errorText = 'フィルター名を入力してね');
+      setState(() => _errorText = 'グループ名を入れてね');
       return;
     }
     if (!_hasCriteria) {
@@ -398,7 +398,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _isEditing ? 'フィルター編集' : 'フィルター作成',
+                      _isEditing ? 'グループ編集' : 'グループ作成',
                       style: TextStyle(
                         color: ink,
                         fontSize: 20,
@@ -408,7 +408,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'よく使う条件を残しておけるよ。',
+                      'よく遊ぶメンバーをまとめておけるよ。',
                       style: TextStyle(
                         color: sub,
                         fontSize: 12,
@@ -449,7 +449,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                       fontWeight: FontWeight.w900,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'フィルター名（例：いつメン）',
+                      hintText: 'グループ名（例：いつメン）',
                       hintStyle: TextStyle(
                         color: sub,
                         fontWeight: FontWeight.w800,

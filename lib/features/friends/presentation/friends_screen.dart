@@ -105,7 +105,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     final friends =
         ref.read(friendsProvider).asData?.value ?? const <NomoFriend>[];
     if (friends.isEmpty) {
-      NomoToast.show(context, 'フレンズを追加するとフィルターを作れます');
+      NomoToast.show(context, 'フレンズを追加するとグループを作れるよ');
       return;
     }
     HapticFeedback.selectionClick();
@@ -140,7 +140,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           _selectedCustomFilterId = saved.id;
         });
         await _persistCustomFilters();
-        if (mounted) NomoToast.show(context, 'フィルターを保存しました');
+        if (mounted) NomoToast.show(context, 'グループを保存したよ');
         break;
       case _CustomFilterSheetAction.delete:
         final filterId = result.filterId!;
@@ -155,7 +155,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           }
         });
         await _persistCustomFilters();
-        if (mounted) NomoToast.show(context, 'フィルターを削除しました');
+        if (mounted) NomoToast.show(context, 'グループを削除したよ');
         break;
     }
   }

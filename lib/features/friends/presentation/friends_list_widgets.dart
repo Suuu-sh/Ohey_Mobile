@@ -69,7 +69,7 @@ class _FriendsList extends StatelessWidget {
                         ? 'QRコードかIDでフレンズを追加しよう'
                         : selectedCustomFilter == null
                         ? '別の条件を選ぶと見つかるかも'
-                        : '長押しで変えられるよ',
+                        : '長押しでグループ編集',
                     onAddFriend: onAddFriend,
                   ),
                 ),
