@@ -68,16 +68,24 @@ class NomoBottomSheetShell extends StatelessWidget {
         ? MediaQuery.viewInsetsOf(context).bottom
         : 0.0;
     final bottomSafePadding = MediaQuery.paddingOf(context).bottom;
-    final resolvedPadding = padding.resolve(Directionality.of(context));
+    final direction = Directionality.of(context);
+    final resolvedPadding = padding.resolve(direction);
+    final resolvedMargin = margin.resolve(direction);
     final effectivePadding = resolvedPadding.add(
       EdgeInsets.only(bottom: bottomSafePadding),
+    );
+    final effectiveMargin = EdgeInsets.only(
+      top: resolvedMargin.top,
+      bottom: resolvedMargin.bottom + bottomInset,
     );
     final sheetRadius = BorderRadius.vertical(top: Radius.circular(radius));
     return SafeArea(
       top: topSafeArea,
       bottom: false,
+      left: false,
+      right: false,
       child: Padding(
-        padding: margin.add(EdgeInsets.only(bottom: bottomInset)),
+        padding: effectiveMargin,
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: maxHeight ?? double.infinity),
           child: ClipRRect(
