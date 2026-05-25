@@ -47,7 +47,7 @@ class _PhotoCapturePrompt extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '写真なしでも保存できます。撮る場合はこちら',
+                  '写真を足してみる？',
                   style: TextStyle(
                     color: _AddLogColors.secondaryTextFor(context),
                     fontSize: 12,
@@ -109,7 +109,7 @@ class _QuickPostHintCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    hasCaption ? 'あとは投稿するだけ' : 'ひと言だけで投稿できます',
+                    hasCaption ? 'あとは投稿するだけ' : 'ひと言だけ添えてみよ',
                     style: TextStyle(
                       color: ink,
                       fontWeight: FontWeight.w900,
@@ -1134,11 +1134,11 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
 
   String get _friendSummary {
     if (widget.isPrivateRecord) {
-      if (widget.friends.isEmpty) return 'フィードには投稿せず、カレンダーで確認できます';
+      if (widget.friends.isEmpty) return '自分だけの記録にしたよ。';
       final first = widget.friends.first.name;
       final others = widget.friends.length - 1;
-      if (others <= 0) return '$firstとの記録はカレンダーで確認できます';
-      return '$firstほか$others人との記録はカレンダーで確認できます';
+      if (others <= 0) return '$firstとの記録を残したよ。';
+      return '$firstほか$others人との記録を残したよ。';
     }
     if (widget.friends.isEmpty) return '自分だけの思い出に追加しました';
     final first = widget.friends.first.name;

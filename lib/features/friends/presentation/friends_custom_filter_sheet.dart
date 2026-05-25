@@ -408,7 +408,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'よく使う条件だけ選んで保存できます',
+                      'よく使う条件を残しておけるよ。',
                       style: TextStyle(
                         color: sub,
                         fontSize: 12,

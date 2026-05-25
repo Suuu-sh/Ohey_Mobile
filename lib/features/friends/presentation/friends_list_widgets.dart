@@ -69,7 +69,7 @@ class _FriendsList extends StatelessWidget {
                         ? 'QRコードかIDでフレンズを追加しよう'
                         : selectedCustomFilter == null
                         ? '別の条件を選ぶと見つかるかも'
-                        : 'フィルターを長押しすると編集できます',
+                        : '長押しで変えられるよ',
                     onAddFriend: onAddFriend,
                   ),
                 ),
@@ -455,7 +455,7 @@ class _TodayInviteEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-    '今日は誘えそうなフレンズがまだいません。ステータスが更新されるとここに出ます。',
+    '今日はまだ誘えそうなフレンズがいないみたい。',
     style: TextStyle(
       color: isWhite
           ? const Color(0xFF667381)

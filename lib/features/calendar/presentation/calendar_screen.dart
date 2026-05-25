@@ -280,7 +280,7 @@ class _CalendarIntroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  '思い出を残すと、その日にアメーバが表示されます。写真つきのログは、たまにレアカラーになることがあります。',
+                  '思い出を残すと、その日にアメーバが出るよ。写真つきだとレアカラーになるかも。',
                   style: TextStyle(
                     color: messageColor,
                     fontSize: 12.5,

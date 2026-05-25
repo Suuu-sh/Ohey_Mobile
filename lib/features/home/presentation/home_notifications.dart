@@ -169,7 +169,7 @@ class _FeedNotificationsScreenState
       if (actionItems.isNotEmpty) ...[
         _NotificationSectionHeader(
           title: '対応が必要',
-          message: '飲み招待やフレンズ申請はここから返事できます',
+          message: 'お返事まちだよ',
           count: actionItems.length,
           accent: AppColors.primaryAction,
           isWhite: isWhite,
@@ -188,9 +188,7 @@ class _FeedNotificationsScreenState
       ],
       _NotificationSectionHeader(
         title: '最近のお知らせ',
-        message: actionItems.isEmpty
-            ? 'いいね・今日の思い出・予定が静かにまとまります'
-            : '返信が必要な通知だけ上にまとめています',
+        message: actionItems.isEmpty ? 'いいね・今日の思い出・予定が静かにまとまります' : '先にお返事しよっか',
         count: recentItems.length,
         accent: AppColors.invite,
         isWhite: isWhite,
@@ -387,7 +385,7 @@ class _NotificationSectionEmptyNote extends StatelessWidget {
       ),
     ),
     child: Text(
-      '対応が必要なお知らせはありません。招待や申請が届いたら上に表示されます。',
+      '今はお返事まち、ないよ。',
       style: TextStyle(
         color: isWhite
             ? const Color(0xFF617281)
@@ -409,8 +407,8 @@ class _NotificationEmptyState extends StatelessWidget {
   Widget build(BuildContext context) => _FeedEmptyState(
     icon: CupertinoIcons.bell,
     isWhite: isWhite,
-    title: 'まだお知らせはありません',
-    message: 'フレンズからの反応やお誘いがここに届きます。',
+    title: 'まだ何も来てないよ',
+    message: '反応やお誘いが来たら知らせるね。',
     action: Column(
       mainAxisSize: MainAxisSize.min,
       children: [

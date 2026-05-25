@@ -274,7 +274,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      '閉じる前にプロフィールの変更を保存できます',
+                      '閉じる前に、変更を残しておけるよ。',
                       style: TextStyle(
                         color: _ProfileColors.sub,
                         fontSize: 12,

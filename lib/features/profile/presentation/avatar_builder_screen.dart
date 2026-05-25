@@ -475,7 +475,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      '閉じる前にアバターの変更を保存できます',
+                      '閉じる前に、アバターを残しておけるよ。',
                       style: TextStyle(
                         color: _AvatarColors.dim,
                         fontSize: 12,

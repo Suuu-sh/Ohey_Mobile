@@ -18,7 +18,7 @@ const _demoSlides = [
   _DemoSlideData(
     step: '3 / 4',
     title: 'オンボーディング後は\n1枚投稿してみよう',
-    subtitle: '今日の写真を選んでひと言だけ。最初のログがホームとアーカイブに並びます。',
+    subtitle: '今日の写真にひと言だけ。最初の思い出を飾ろう。',
     kind: _DemoKind.log,
     chips: ['写真 + ひと言', '場所も残せる'],
   ),

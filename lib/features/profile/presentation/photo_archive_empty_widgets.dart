@@ -24,7 +24,7 @@ class _ArchiveEmptyPreview extends StatelessWidget {
         ),
       ),
       child: Text(
-        '最初の投稿がここに飾られます',
+        '最初の1枚、待ってるよ',
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
           color: isWhite ? const Color(0xFF7A8490) : Colors.white60,
           fontWeight: FontWeight.w900,
@@ -64,7 +64,7 @@ class _ArchiveEmptyState extends StatelessWidget {
       ),
     ),
     title: '思い出アルバムを育てよう',
-    message: '写真付きで投稿すると、日付や場所と一緒にここでかわいく見返せます。',
+    message: '写真の思い出が増えたら、ここがアルバムになるよ。',
     titleColor: isWhite ? const Color(0xFF101820) : Colors.white,
     messageColor: isWhite ? const Color(0xFF7A8490) : Colors.white60,
     padding: const EdgeInsets.symmetric(horizontal: 30),

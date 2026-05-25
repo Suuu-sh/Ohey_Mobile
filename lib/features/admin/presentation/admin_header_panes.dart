@@ -252,9 +252,8 @@ class _AdminNotificationsPane extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         const _AdminInfoBox(
-          title: '通常通知画面に表示されます',
-          message:
-              'POST /v1/admin/notifications を使って kind=system の通知を作成します。送信先は全ユーザー、または個別ユーザーを選べます。',
+          title: 'アプリ内のお知らせに出るよ',
+          message: 'ユーザー全員、または選んだユーザーにお知らせを届けます。',
         ),
         const SizedBox(height: 12),
         Expanded(

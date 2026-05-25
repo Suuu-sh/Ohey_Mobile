@@ -160,7 +160,7 @@ class ProfileScreen extends ConsumerWidget {
                                   _showProfileStatusSheet(context, ref),
                               onLogsTap: () => NomoToast.show(
                                 context,
-                                '思い出はカレンダーで確認できます',
+                                'カレンダーを見てみてね。',
                                 icon: CupertinoIcons.calendar,
                               ),
                               onArchiveTap: () => Navigator.of(context).push(

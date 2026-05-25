@@ -156,7 +156,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            '相手のTomola IDを入力・ペーストしてすぐ申請できます。QRは自分のID交換用です。',
+            'IDで探すか、あなたのQRを見せてつながろ。',
             style: TextStyle(
               color: sub,
               fontWeight: FontWeight.w700,

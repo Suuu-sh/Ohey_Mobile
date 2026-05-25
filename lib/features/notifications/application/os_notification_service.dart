@@ -137,7 +137,7 @@ class OsNotificationService {
     await _plugin.show(
       id: invite.id.hashCode,
       title: '${invite.fromUser.name}からお誘い',
-      body: '今日会わない？アプリで返信できます。',
+      body: '今日会わない？アプリで返事してね。',
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'nomo_notifications',
