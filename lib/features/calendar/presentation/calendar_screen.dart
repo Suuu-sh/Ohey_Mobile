@@ -732,7 +732,7 @@ class _CalendarStatusOption extends StatelessWidget {
                 children: [
                   Text(
                     status == NomoDailyStatus.unselected
-                        ? 'まだ決めない'
+                        ? 'まだ決めてない。'
                         : _calendarStatusLabel(status, day: day),
                     style: TextStyle(
                       color: ink,
@@ -1416,20 +1416,20 @@ IconData _calendarStatusIcon(NomoDailyStatus status) => switch (status) {
 
 String _calendarStatusLabel(NomoDailyStatus status, {required DateTime day}) {
   return switch (status) {
-    NomoDailyStatus.canDrinkToday => '遊べる',
-    NomoDailyStatus.nonAlcohol => '軽めなら',
-    NomoDailyStatus.liverRest => 'おやすみ',
-    NomoDailyStatus.hasPlans => '予定あり',
-    NomoDailyStatus.unselected => '未設定',
+    NomoDailyStatus.canDrinkToday => '遊べる！',
+    NomoDailyStatus.nonAlcohol => '多分いける！',
+    NomoDailyStatus.liverRest => '休ませて。',
+    NomoDailyStatus.hasPlans => '予定ある。ごめん',
+    NomoDailyStatus.unselected => 'まだ決めてない。',
   };
 }
 
 String _calendarStatusCopy(NomoDailyStatus status, {required DateTime day}) {
   return switch (status) {
     NomoDailyStatus.canDrinkToday => '誘ってくれてOKだよ',
-    NomoDailyStatus.nonAlcohol => '軽めなら行けるかも',
-    NomoDailyStatus.liverRest => 'ゆっくりしたい日',
-    NomoDailyStatus.hasPlans => 'もう予定があるよ',
-    NomoDailyStatus.unselected => 'あとで決めよ',
+    NomoDailyStatus.nonAlcohol => 'たぶん行けるかも',
+    NomoDailyStatus.liverRest => '休ませてほしい日',
+    NomoDailyStatus.hasPlans => '予定ある。ごめんね',
+    NomoDailyStatus.unselected => 'まだ決めてないよ',
   };
 }

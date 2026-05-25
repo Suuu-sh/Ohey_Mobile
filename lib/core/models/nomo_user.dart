@@ -19,19 +19,19 @@ extension NomoDailyStatusX on NomoDailyStatus {
   };
 
   String get label => switch (this) {
-    NomoDailyStatus.unselected => '未設定',
-    NomoDailyStatus.canDrinkToday => '今日遊べる',
-    NomoDailyStatus.nonAlcohol => '軽めなら',
-    NomoDailyStatus.liverRest => '今日はおやすみ',
-    NomoDailyStatus.hasPlans => '予定あり',
+    NomoDailyStatus.unselected => 'まだ決めてない。',
+    NomoDailyStatus.canDrinkToday => '遊べる！',
+    NomoDailyStatus.nonAlcohol => '多分いける！',
+    NomoDailyStatus.liverRest => '休ませて。',
+    NomoDailyStatus.hasPlans => '予定ある。ごめん',
   };
 
   String get description => switch (this) {
-    NomoDailyStatus.unselected => 'ステータス未設定のまま、誘いは受けられます。',
-    NomoDailyStatus.canDrinkToday => '今日の誘いを受けやすい状態です。',
-    NomoDailyStatus.nonAlcohol => '軽めに参加ならOKです。',
-    NomoDailyStatus.liverRest => '今日はゆっくりしたい状態です。',
-    NomoDailyStatus.hasPlans => '今日は予定が入っています。',
+    NomoDailyStatus.unselected => 'まだ決めてないけど、あとで返事できます。',
+    NomoDailyStatus.canDrinkToday => '誘ってくれてOKな気分です。',
+    NomoDailyStatus.nonAlcohol => 'たぶん行けそうな気分です。',
+    NomoDailyStatus.liverRest => 'ゆっくり休みたい気分です。',
+    NomoDailyStatus.hasPlans => 'もう予定が入っています。',
   };
 
   bool get isAvailable => switch (this) {
