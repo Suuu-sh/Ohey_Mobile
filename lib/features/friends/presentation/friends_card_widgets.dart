@@ -15,7 +15,7 @@ class _FriendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = status.blockColor;
+    final frameAccent = _friendBlockFrameColor(status);
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = status.enabled
         ? (isWhite ? const Color(0xFF101820) : Colors.white)
@@ -24,12 +24,8 @@ class _FriendCard extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 98),
       child: NomoThemedPanel(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-        accentColor: accent,
-        backgroundColor: _friendBlockSurfaceColor(
-          isWhite: isWhite,
-          status: status,
-        ),
-        gradient: _friendBlockGradient(isWhite: isWhite, status: status),
+        accentColor: frameAccent,
+        backgroundColor: _friendBlockSurfaceColor(isWhite: isWhite),
         borderRadius: 20,
         borderAlpha: _friendBlockBorderAlpha(isWhite: isWhite, status: status),
         glowAlpha: _friendBlockGlowAlpha(isWhite: isWhite, status: status),
@@ -40,7 +36,7 @@ class _FriendCard extends StatelessWidget {
           children: [
             _FriendCardAvatarBubble(
               avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
-              accent: accent,
+              accent: frameAccent,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -96,7 +92,6 @@ class _FriendCard extends StatelessWidget {
             const SizedBox(width: 10),
             _InviteButton(
               status: status,
-              accent: accent,
               name: friend.name,
               onInvite: onInvite,
             ),
@@ -183,7 +178,7 @@ class _StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = status.blockColor;
+    final accent = _friendStatusPillColor(status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
@@ -289,13 +284,11 @@ class _FavoriteStarPainter extends CustomPainter {
 class _InviteButton extends StatelessWidget {
   const _InviteButton({
     required this.status,
-    required this.accent,
     required this.name,
     required this.onInvite,
   });
 
   final _FriendStatus status;
-  final Color accent;
   final String name;
   final VoidCallback onInvite;
 
@@ -311,13 +304,9 @@ class _InviteButton extends StatelessWidget {
         enabled: enabled,
         height: 36,
         radius: 18,
-        color: _FriendsColors.lime,
-        foregroundColor: enabled
-            ? _FriendsColors.limeForeground
-            : _FriendsColors.disabledButtonForeground,
-        shadowColor: enabled
-            ? _FriendsColors.limeShadow
-            : _FriendsColors.disabledButtonShadow,
+        color: _friendInviteButtonColor(status),
+        foregroundColor: _friendInviteButtonForegroundColor(status),
+        shadowColor: _friendInviteButtonShadowColor(status),
         disabledColor: _FriendsColors.disabledButton,
         disabledOpacity: 1,
         padding: const EdgeInsets.symmetric(horizontal: 13),

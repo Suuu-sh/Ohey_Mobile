@@ -568,7 +568,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final friend = item.friend;
-    final accent = item.status.blockColor;
+    final frameAccent = _friendBlockFrameColor(item.status);
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = item.status.enabled
         ? (isWhite ? const Color(0xFF101820) : Colors.white)
@@ -576,12 +576,8 @@ class _TodayInviteCandidateCard extends StatelessWidget {
     final reason = _recommendationReasonFor(item);
     return NomoThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
-      accentColor: accent,
-      backgroundColor: _friendBlockSurfaceColor(
-        isWhite: isWhite,
-        status: item.status,
-      ),
-      gradient: _friendBlockGradient(isWhite: isWhite, status: item.status),
+      accentColor: frameAccent,
+      backgroundColor: _friendBlockSurfaceColor(isWhite: isWhite),
       borderRadius: 24,
       borderAlpha: _friendBlockBorderAlpha(
         isWhite: isWhite,
@@ -601,7 +597,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
             children: [
               _FriendMiniAvatarBubble(
                 avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
-                accent: accent,
+                accent: frameAccent,
                 size: 42,
               ),
               const SizedBox(width: 9),
@@ -667,13 +663,9 @@ class _TodayInviteCandidateCard extends StatelessWidget {
               enabled: item.status.enabled,
               height: 36,
               radius: 18,
-              color: _FriendsColors.lime,
-              foregroundColor: item.status.enabled
-                  ? _FriendsColors.limeForeground
-                  : _FriendsColors.disabledButtonForeground,
-              shadowColor: item.status.enabled
-                  ? _FriendsColors.limeShadow
-                  : _FriendsColors.disabledButtonShadow,
+              color: _friendInviteButtonColor(item.status),
+              foregroundColor: _friendInviteButtonForegroundColor(item.status),
+              shadowColor: _friendInviteButtonShadowColor(item.status),
               disabledColor: _FriendsColors.disabledButton,
               disabledOpacity: 1,
               padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -693,7 +685,7 @@ class _CompactStatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = status.blockColor;
+    final accent = _friendStatusPillColor(status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

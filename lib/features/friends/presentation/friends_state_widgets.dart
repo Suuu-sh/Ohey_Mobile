@@ -268,89 +268,70 @@ class _FriendStatus {
     required this.label,
     required this.enabled,
     required this.reason,
-    required this.blockColor,
+    required this.buttonColor,
   });
 
   final String label;
   final bool enabled;
   final String reason;
-  final Color blockColor;
+  final Color buttonColor;
 }
 
-Color _friendBlockSurfaceColor({
-  required bool isWhite,
-  required _FriendStatus status,
-}) {
-  if (status.enabled) {
-    return isWhite ? Colors.white : AppColors.darkBackgroundBottom;
+Color _friendBlockSurfaceColor({required bool isWhite}) =>
+    isWhite ? Colors.white : AppColors.darkBackgroundBottom;
+
+Color _friendBlockFrameColor(_FriendStatus status) => status.enabled
+    ? _FriendsColors.statusGreen
+    : Color.lerp(
+        _FriendsColors.statusGreen,
+        _FriendsColors.statusBlocked,
+        .45,
+      )!;
+
+Color _friendStatusPillColor(_FriendStatus status) =>
+    status.enabled ? _FriendsColors.statusGreen : _FriendsColors.muted;
+
+Color _friendInviteButtonColor(_FriendStatus status) {
+  if (!status.enabled) return _FriendsColors.disabledButton;
+  if (status.buttonColor == _FriendsColors.statusGreen) {
+    return _FriendsColors.lime;
   }
-  return isWhite ? AppColors.background : AppColors.darkBackgroundBottom;
+  return status.buttonColor;
 }
 
-Gradient? _friendBlockGradient({
-  required bool isWhite,
-  required _FriendStatus status,
-}) {
-  if (!status.enabled) {
-    return isWhite
-        ? const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.background, Color(0xFFEFF3F8)],
-          )
-        : null;
-  }
-
-  final color = status.blockColor;
-  final isGreen = color == _FriendsColors.statusGreen;
-  return LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: isWhite
-        ? [
-            Color.lerp(color, Colors.white, isGreen ? .88 : .72)!,
-            Color.lerp(color, Colors.white, isGreen ? .96 : .88)!,
-          ]
-        : [
-            color.withValues(alpha: isGreen ? .12 : .30),
-            color.withValues(alpha: isGreen ? .055 : .15),
-            Colors.white.withValues(alpha: .045),
-          ],
-    stops: isWhite ? null : const [0, .58, 1],
-  );
+Color _friendInviteButtonShadowColor(_FriendStatus status) {
+  if (!status.enabled) return _FriendsColors.disabledButtonShadow;
+  final color = _friendInviteButtonColor(status);
+  if (color == _FriendsColors.lime) return _FriendsColors.limeShadow;
+  return Color.lerp(color, Colors.black, .32)!;
 }
+
+Color _friendInviteButtonForegroundColor(_FriendStatus status) => status.enabled
+    ? _FriendsColors.limeForeground
+    : _FriendsColors.disabledButtonForeground;
 
 double _friendBlockGlowAlpha({
   required bool isWhite,
   required _FriendStatus status,
 }) {
-  if (!status.enabled) return 0;
-  if (status.blockColor == _FriendsColors.statusGreen) {
-    return isWhite ? .025 : .05;
-  }
-  return isWhite ? .08 : .16;
+  if (!status.enabled) return isWhite ? .035 : .06;
+  return isWhite ? .09 : .18;
 }
 
 double _friendInviteCardGlowAlpha({
   required bool isWhite,
   required _FriendStatus status,
 }) {
-  if (!status.enabled) return 0;
-  if (status.blockColor == _FriendsColors.statusGreen) {
-    return isWhite ? .022 : .045;
-  }
-  return isWhite ? .07 : .14;
+  if (!status.enabled) return isWhite ? .03 : .05;
+  return isWhite ? .075 : .15;
 }
 
 double _friendBlockBorderAlpha({
   required bool isWhite,
   required _FriendStatus status,
 }) {
-  if (!status.enabled) return isWhite ? .20 : .18;
-  if (status.blockColor == _FriendsColors.statusGreen) {
-    return isWhite ? .26 : .30;
-  }
-  return isWhite ? .36 : .42;
+  if (!status.enabled) return isWhite ? .20 : .24;
+  return isWhite ? .34 : .42;
 }
 
 _FriendStatus _statusForFriend(NomoFriend friend, int _) {
@@ -360,35 +341,35 @@ _FriendStatus _statusForFriend(NomoFriend friend, int _) {
         label: 'いける',
         enabled: true,
         reason: '誘ってくれてOKだよ',
-        blockColor: _FriendsColors.statusPink,
+        buttonColor: _FriendsColors.statusPink,
       );
     case 'non_alcohol':
       return const _FriendStatus(
         label: '多分いける',
         enabled: true,
         reason: 'たぶん誘って大丈夫だよ',
-        blockColor: _FriendsColors.statusBlue,
+        buttonColor: _FriendsColors.statusBlue,
       );
     case 'liver_rest':
       return const _FriendStatus(
         label: '時間次第',
         enabled: true,
         reason: '時間が合えば行けそうだよ',
-        blockColor: _FriendsColors.statusPurple,
+        buttonColor: _FriendsColors.statusPurple,
       );
     case 'has_plans':
       return const _FriendStatus(
         label: '予定ある',
         enabled: false,
         reason: '予定が入っています',
-        blockColor: _FriendsColors.statusBlocked,
+        buttonColor: _FriendsColors.statusBlocked,
       );
     case 'unselected' || 'unset' || null || '':
       return const _FriendStatus(
         label: '未定',
         enabled: true,
         reason: 'まだ決めてないみたい',
-        blockColor: _FriendsColors.statusGreen,
+        buttonColor: _FriendsColors.statusGreen,
       );
   }
 
@@ -396,7 +377,7 @@ _FriendStatus _statusForFriend(NomoFriend friend, int _) {
     label: '未定',
     enabled: true,
     reason: 'まだ決めてないみたい',
-    blockColor: _FriendsColors.statusGreen,
+    buttonColor: _FriendsColors.statusGreen,
   );
 }
 
