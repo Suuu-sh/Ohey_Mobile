@@ -16,10 +16,91 @@ import '../../logs/application/drink_log_controller.dart';
 import '../data/friend_repository.dart';
 
 Future<void> showFriendAddSheet(BuildContext context, WidgetRef ref) {
-  return showNomoBottomSheet<void>(
+  return showGeneralDialog<void>(
     context: context,
-    builder: (_) => _FriendAddSheet(ref: ref),
+    barrierDismissible: true,
+    barrierLabel: '閉じる',
+    barrierColor: Colors.black.withValues(alpha: .70),
+    transitionDuration: const Duration(milliseconds: 180),
+    pageBuilder: (context, animation, secondaryAnimation) =>
+        _FriendQrDialog(ref: ref),
+    transitionBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
+      return FadeTransition(
+        opacity: curved,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: .96, end: 1).animate(curved),
+          child: child,
+        ),
+      );
+    },
   );
+}
+
+class _FriendQrDialog extends StatelessWidget {
+  const _FriendQrDialog({required this.ref});
+
+  final WidgetRef ref;
+
+  Future<void> _copyMyId(BuildContext context, String userId) async {
+    await Clipboard.setData(ClipboardData(text: userId));
+    if (!context.mounted) return;
+    NomoToast.show(
+      context,
+      '@$userId をコピーしました',
+      icon: CupertinoIcons.doc_on_clipboard_fill,
+    );
+  }
+
+  Future<void> _copyFriendLink(BuildContext context, String payload) async {
+    await Clipboard.setData(ClipboardData(text: payload));
+    if (!context.mounted) return;
+    NomoToast.show(context, 'リンクをコピーしました', icon: CupertinoIcons.link);
+  }
+
+  Future<void> _shareFriendLink(String userId, String payload) async {
+    HapticFeedback.selectionClick();
+    await SharePlus.instance.share(
+      ShareParams(title: 'Nomoでつながろ', text: 'Nomoで@$userId とつながろう：$payload'),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = ref.watch(nomoUserProvider);
+    final myUserId = user?.userId.trim() ?? '';
+    final qrPayload = myUserId.isEmpty ? null : 'tomola://friend/$myUserId';
+    return SafeArea(
+      child: Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 430),
+              child: _CuteQrCard(
+                userId: myUserId,
+                payload: qrPayload,
+                avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
+                isWhite: false,
+                onClose: () => Navigator.of(context).pop(),
+                onCopyId: () => _copyMyId(context, myUserId),
+                onCopyLink: qrPayload == null
+                    ? null
+                    : () => _copyFriendLink(context, qrPayload),
+                onShare: qrPayload == null
+                    ? null
+                    : () => _shareFriendLink(myUserId, qrPayload),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _FriendAddSheet extends StatefulWidget {
@@ -294,6 +375,7 @@ class _CuteQrCard extends StatelessWidget {
     required this.onCopyId,
     required this.onCopyLink,
     required this.onShare,
+    this.onClose,
   });
 
   final String userId;
@@ -303,6 +385,7 @@ class _CuteQrCard extends StatelessWidget {
   final VoidCallback onCopyId;
   final VoidCallback? onCopyLink;
   final VoidCallback? onShare;
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -326,10 +409,24 @@ class _CuteQrCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              NomoGeneratedIcon(
-                CupertinoIcons.sparkles,
-                color: ink.withValues(alpha: .72),
-                size: 30,
+              SizedBox(
+                width: 42,
+                height: 42,
+                child: onClose == null
+                    ? NomoGeneratedIcon(
+                        CupertinoIcons.sparkles,
+                        color: ink.withValues(alpha: .72),
+                        size: 30,
+                      )
+                    : IconButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: onClose,
+                        icon: NomoGeneratedIcon(
+                          CupertinoIcons.xmark,
+                          color: ink.withValues(alpha: .74),
+                          size: 32,
+                        ),
+                      ),
               ),
               Expanded(
                 child: Column(
