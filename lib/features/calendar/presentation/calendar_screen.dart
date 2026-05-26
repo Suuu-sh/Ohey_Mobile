@@ -277,16 +277,21 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             ),
                           ],
                           const SizedBox(height: 16),
+                          _CalendarDayStatusRow(
+                            day: _selectedDay,
+                            status:
+                                _statusByDate[_dateKey(_selectedDay)] ??
+                                NomoDailyStatus.unselected,
+                            isSaving: _isStatusSaving,
+                            isWhite: isWhite,
+                            onTap: _openStatusPicker,
+                          ),
+                          const SizedBox(height: 12),
                           _SelectedDayPanel(
                             day: _selectedDay,
                             logs: selectedLogs,
                             friendsAsync: selectedFriendsAsync,
                             isWhite: isWhite,
-                            myStatus:
-                                _statusByDate[_dateKey(_selectedDay)] ??
-                                NomoDailyStatus.unselected,
-                            isStatusSaving: _isStatusSaving,
-                            onStatusTap: _openStatusPicker,
                             onCreatePlan: widget.onCreatePlan == null
                                 ? null
                                 : _createPlanForSelectedDay,
@@ -473,9 +478,6 @@ class _SelectedDayPanel extends StatelessWidget {
     required this.logs,
     required this.friendsAsync,
     required this.isWhite,
-    required this.myStatus,
-    required this.isStatusSaving,
-    required this.onStatusTap,
     required this.onCreatePlan,
   });
 
@@ -483,9 +485,6 @@ class _SelectedDayPanel extends StatelessWidget {
   final List<DrinkLog> logs;
   final AsyncValue<List<NomoFriend>> friendsAsync;
   final bool isWhite;
-  final NomoDailyStatus myStatus;
-  final bool isStatusSaving;
-  final VoidCallback onStatusTap;
   final VoidCallback? onCreatePlan;
 
   @override
@@ -511,14 +510,6 @@ class _SelectedDayPanel extends StatelessWidget {
               fontWeight: FontWeight.w900,
               height: 1.1,
             ),
-          ),
-          const SizedBox(height: 8),
-          _CalendarDayStatusRow(
-            day: day,
-            status: myStatus,
-            isSaving: isStatusSaving,
-            isWhite: isWhite,
-            onTap: onStatusTap,
           ),
           const SizedBox(height: 10),
           _CalendarSectionLabel(
@@ -587,53 +578,74 @@ class _CalendarDayStatusRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _calendarStatusColor(status);
     final label = _calendarStatusLabel(status, day: day);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    final accent = _calendarStatusBlockAccent(status);
+    final foreground = _calendarStatus3DForegroundColor(status);
+    return Nomo3DButtonSurface(
       onTap: isSaving ? null : onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: isWhite ? .13 : .18),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: color.withValues(alpha: isWhite ? .28 : .36),
-          ),
+      enabled: !isSaving,
+      height: 48,
+      radius: 22,
+      color: _calendarStatus3DSurfaceColor(
+        status,
+        isWhite: isWhite,
+        selected: true,
+      ),
+      bottomColor: _calendarStatus3DShadowColor(
+        status,
+        isWhite: isWhite,
+        selected: true,
+      ),
+      borderColor: _calendarStatus3DBorderColor(
+        status,
+        isWhite: isWhite,
+        selected: true,
+      ),
+      borderWidth: 1.2,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      useGradient: true,
+      outerShadows: [
+        BoxShadow(
+          color: accent.withValues(alpha: .28),
+          blurRadius: 24,
+          offset: const Offset(0, 10),
         ),
-        child: Row(
-          children: [
-            NomoGeneratedIcon(
-              _calendarStatusIcon(status),
-              color: color,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                status == NomoDailyStatus.unselected
-                    ? 'この日の気分、入れておく？'
-                    : '$label にしてあるよ',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: isWhite ? const Color(0xFF27313B) : Colors.white,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              isSaving ? '保存中' : '変える',
+      ],
+      innerShadows: [
+        BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
+      ],
+      child: Row(
+        children: [
+          NomoGeneratedIcon(
+            _calendarStatusIcon(status),
+            color: foreground,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              status == NomoDailyStatus.unselected
+                  ? 'この日の気分、入れておく？'
+                  : '$label にしてあるよ',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: color,
-                fontSize: 11,
+                color: foreground,
+                fontSize: 13,
                 fontWeight: FontWeight.w900,
               ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            isSaving ? '保存中' : '変える',
+            style: TextStyle(
+              color: foreground.withValues(alpha: .82),
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
       ),
     );
   }
