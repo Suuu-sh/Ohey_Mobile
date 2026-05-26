@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/nomo_avatar.dart';
@@ -73,6 +74,19 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
       context,
       '@$userId をコピーしました',
       icon: CupertinoIcons.doc_on_clipboard_fill,
+    );
+  }
+
+  Future<void> _copyFriendLink(String payload) async {
+    await Clipboard.setData(ClipboardData(text: payload));
+    if (!mounted) return;
+    NomoToast.show(context, 'リンクをコピーしました', icon: CupertinoIcons.link);
+  }
+
+  Future<void> _shareFriendLink(String userId, String payload) async {
+    HapticFeedback.selectionClick();
+    await SharePlus.instance.share(
+      ShareParams(title: 'Nomoでつながろ', text: 'Nomoで@$userId とつながろう：$payload'),
     );
   }
 
@@ -226,7 +240,13 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
                 payload: qrPayload,
                 avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
                 isWhite: isWhite,
-                onCopy: () => _copyMyId(myUserId),
+                onCopyId: () => _copyMyId(myUserId),
+                onCopyLink: qrPayload == null
+                    ? null
+                    : () => _copyFriendLink(qrPayload),
+                onShare: qrPayload == null
+                    ? null
+                    : () => _shareFriendLink(myUserId, qrPayload),
               ),
             ],
             const SizedBox(height: 18),
@@ -271,42 +291,34 @@ class _CuteQrCard extends StatelessWidget {
     required this.payload,
     required this.avatar,
     required this.isWhite,
-    required this.onCopy,
+    required this.onCopyId,
+    required this.onCopyLink,
+    required this.onShare,
   });
 
   final String userId;
   final String? payload;
   final NomoAvatar avatar;
   final bool isWhite;
-  final VoidCallback onCopy;
+  final VoidCallback onCopyId;
+  final VoidCallback? onCopyLink;
+  final VoidCallback? onShare;
 
   @override
   Widget build(BuildContext context) {
-    final ink = isWhite ? const Color(0xFF18222E) : Colors.white;
-    final sub = isWhite ? const Color(0xFF6C7480) : Colors.white70;
+    const ink = Color(0xFF151515);
+    const softInk = Color(0xFF6D6D6D);
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isWhite
-              ? const [Color(0xFFFFF3FA), Color(0xFFF3EEFF)]
-              : const [Color(0xFF1B1830), Color(0xFF102225)],
-        ),
-        border: Border.all(
-          color: isWhite
-              ? const Color(0xFFFFC4DF)
-              : Colors.white.withValues(alpha: .10),
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(34),
+        border: Border.all(color: Colors.black.withValues(alpha: .08)),
         boxShadow: [
           BoxShadow(
-            color: const Color(
-              0xFFFF7AB8,
-            ).withValues(alpha: isWhite ? .18 : .12),
-            blurRadius: 26,
-            offset: const Offset(0, 12),
+            color: Colors.black.withValues(alpha: isWhite ? .10 : .34),
+            blurRadius: 34,
+            offset: const Offset(0, 18),
           ),
         ],
       ),
@@ -314,71 +326,190 @@ class _CuteQrCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              NomoAvatarView(avatar: avatar, size: 56),
-              const SizedBox(width: 12),
+              NomoGeneratedIcon(
+                CupertinoIcons.sparkles,
+                color: ink.withValues(alpha: .72),
+                size: 30,
+              ),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '見せるだけでOK',
+                      'Nomo',
                       style: TextStyle(
                         color: ink,
-                        fontSize: 18,
+                        fontSize: 24,
                         fontWeight: FontWeight.w900,
+                        letterSpacing: -.7,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 2),
                     Text(
                       '@$userId',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: sub, fontWeight: FontWeight.w900),
+                      style: const TextStyle(
+                        color: softInk,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const NomoPopIcon(
-                icon: CupertinoIcons.sparkles,
-                color: Color(0xFFFFC857),
-                size: 38,
-                iconSize: 20,
-              ),
+              const SizedBox(width: 30),
             ],
           ),
           const SizedBox(height: 14),
           Container(
-            width: 184,
-            height: 184,
-            padding: const EdgeInsets.all(14),
+            width: 238,
+            height: 238,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(34),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF21D6C4).withValues(alpha: .20),
-                  blurRadius: 30,
-                  offset: const Offset(0, 14),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: Colors.black.withValues(alpha: .05)),
             ),
             child: payload == null
                 ? const Center(child: Text('ログインしてね'))
-                : QrImageView(data: payload!, version: QrVersions.auto),
+                : Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      QrImageView(
+                        data: payload!,
+                        version: QrVersions.auto,
+                        eyeStyle: const QrEyeStyle(
+                          eyeShape: QrEyeShape.circle,
+                          color: ink,
+                        ),
+                        dataModuleStyle: const QrDataModuleStyle(
+                          dataModuleShape: QrDataModuleShape.circle,
+                          color: ink,
+                        ),
+                      ),
+                      Container(
+                        width: 76,
+                        height: 76,
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F3F3),
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withValues(alpha: .96),
+                              blurRadius: 0,
+                              spreadRadius: 6,
+                            ),
+                          ],
+                        ),
+                        child: NomoAvatarView(avatar: avatar, size: 62),
+                      ),
+                    ],
+                  ),
           ),
-          const SizedBox(height: 14),
-          SizedBox(
-            width: 220,
-            child: Nomo3DButton.secondary(
-              label: 'IDをコピー',
-              icon: CupertinoIcons.doc_on_clipboard,
-              onTap: onCopy,
-              height: 44,
-              radius: 22,
-              fontSize: 13,
+          const SizedBox(height: 10),
+          const Text(
+            'nomo',
+            style: TextStyle(
+              color: ink,
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.6,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Expanded(
+                child: _QrActionButton(
+                  icon: CupertinoIcons.square_arrow_up,
+                  label: 'リンクをシェア',
+                  onTap: onShare,
+                ),
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: _QrActionButton(
+                  icon: CupertinoIcons.link,
+                  label: 'リンクをコピー',
+                  onTap: onCopyLink,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: onCopyId,
+            child: Text(
+              'IDだけコピー',
+              style: TextStyle(
+                color: softInk.withValues(alpha: .82),
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                decoration: TextDecoration.underline,
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _QrActionButton extends StatelessWidget {
+  const _QrActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    const ink = Color(0xFF222222);
+    return GestureDetector(
+      onTap: onTap,
+      child: Opacity(
+        opacity: onTap == null ? .45 : 1,
+        child: Column(
+          children: [
+            Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.black.withValues(alpha: .09),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: .04),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: NomoGeneratedIcon(icon, color: ink, size: 32),
+              ),
+            ),
+            const SizedBox(height: 9),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: ink.withValues(alpha: .50),
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
