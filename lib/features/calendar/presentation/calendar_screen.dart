@@ -894,6 +894,14 @@ class _CalendarFriendStatusSheet extends StatelessWidget {
     final availableCount = friends
         .where((friend) => _calendarFriendIsAvailable(friend.statusKey))
         .length;
+    final maxListHeight = (MediaQuery.sizeOf(context).height * .36)
+        .clamp(190.0, 320.0)
+        .toDouble();
+    final estimatedListHeight =
+        (friends.length * 98.0) + ((friends.length - 1).clamp(0, 999) * 14.0);
+    final listHeight = estimatedListHeight
+        .clamp(98.0, maxListHeight)
+        .toDouble();
     return NomoBottomSheetShell(
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
       radius: 32,
@@ -933,7 +941,8 @@ class _CalendarFriendStatusSheet extends StatelessWidget {
           const SizedBox(height: 8),
           _CalendarFriendStatusSummary(friends: friends, isWhite: isWhite),
           const SizedBox(height: 12),
-          Flexible(
+          SizedBox(
+            height: listHeight,
             child: _CalendarFriendStatusBlockList(
               friends: friends,
               isWhite: isWhite,
