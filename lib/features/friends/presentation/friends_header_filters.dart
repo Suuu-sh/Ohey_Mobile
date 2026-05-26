@@ -27,7 +27,7 @@ class _FilterBar extends StatelessWidget {
     required this.onChanged,
     required this.onCustomChanged,
     required this.onCustomLongPress,
-    required this.onCreateCustom,
+    required this.onManageCustom,
   });
 
   final _FriendFilterType selected;
@@ -36,7 +36,7 @@ class _FilterBar extends StatelessWidget {
   final ValueChanged<_FriendFilterType> onChanged;
   final ValueChanged<_CustomFriendFilter> onCustomChanged;
   final ValueChanged<_CustomFriendFilter> onCustomLongPress;
-  final VoidCallback onCreateCustom;
+  final VoidCallback onManageCustom;
 
   @override
   Widget build(BuildContext context) {
@@ -70,12 +70,13 @@ class _FilterBar extends StatelessWidget {
               const SizedBox(width: 10),
             ],
             _FilterChip(
-              label: '作成',
-              accent: _FriendsColors.lime,
+              label: '編集',
+              accent: const Color(0xFF5DEBD3),
               selected: false,
-              icon: CupertinoIcons.plus,
-              onTap: onCreateCustom,
+              icon: CupertinoIcons.pencil,
+              onTap: onManageCustom,
             ),
+            const SizedBox(width: 10),
           ],
         ),
       ),
@@ -99,39 +100,18 @@ class _CustomFriendFilter {
     required this.id,
     required this.name,
     this.friendIds = const [],
-    this.statusKeys = const [],
-    this.genderKeys = const [],
-    this.favoriteOnly = false,
-    this.drinkableOnly = false,
-    this.onlineOnly = false,
   });
 
   final String id;
   final String name;
   final List<String> friendIds;
-  final List<String> statusKeys;
-  final List<String> genderKeys;
-  final bool favoriteOnly;
-  final bool drinkableOnly;
-  final bool onlineOnly;
 
-  bool get hasCriteria =>
-      friendIds.isNotEmpty ||
-      statusKeys.isNotEmpty ||
-      genderKeys.isNotEmpty ||
-      favoriteOnly ||
-      drinkableOnly ||
-      onlineOnly;
+  bool get hasCriteria => friendIds.isNotEmpty;
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
     'friendIds': friendIds,
-    'statusKeys': statusKeys,
-    'genderKeys': genderKeys,
-    'favoriteOnly': favoriteOnly,
-    'drinkableOnly': drinkableOnly,
-    'onlineOnly': onlineOnly,
   };
 
   static _CustomFriendFilter? fromJson(Object? value) {
@@ -139,8 +119,6 @@ class _CustomFriendFilter {
     final id = (value['id'] as String?)?.trim();
     final name = (value['name'] as String?)?.trim();
     final rawFriendIds = value['friendIds'];
-    final rawStatusKeys = value['statusKeys'];
-    final rawGenderKeys = value['genderKeys'];
     if (id == null || id.isEmpty || name == null || name.isEmpty) {
       return null;
     }
@@ -151,29 +129,10 @@ class _CustomFriendFilter {
                 friendId.trim(),
           ]
         : const <String>[];
-    final statusKeys = rawStatusKeys is List
-        ? [
-            for (final statusKey in rawStatusKeys)
-              if (statusKey is String && statusKey.trim().isNotEmpty)
-                statusKey.trim(),
-          ]
-        : const <String>[];
-    final genderKeys = rawGenderKeys is List
-        ? [
-            for (final genderKey in rawGenderKeys)
-              if (genderKey is String && _isSelectableGenderKey(genderKey))
-                genderKey.trim().toLowerCase(),
-          ]
-        : const <String>[];
     final filter = _CustomFriendFilter(
       id: id,
       name: name,
       friendIds: friendIds,
-      statusKeys: statusKeys,
-      genderKeys: genderKeys,
-      favoriteOnly: value['favoriteOnly'] == true,
-      drinkableOnly: value['drinkableOnly'] == true,
-      onlineOnly: value['onlineOnly'] == true,
     );
     if (!filter.hasCriteria) return null;
     return filter;

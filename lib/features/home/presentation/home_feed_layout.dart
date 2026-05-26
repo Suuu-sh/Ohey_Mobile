@@ -142,15 +142,15 @@ class _FeedSectionEmptyState extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 28),
       child: _FeedEmptyState(
-        icon: CupertinoIcons.photo_on_rectangle,
+        icon: CupertinoIcons.camera_fill,
         isWhite: isWhite,
-        title: '飲みログはまだありません',
-        message: '写真つきの飲みログがフィードに表示されます。記録だけのログはカレンダーで確認できます。',
-        accent: _FeedColors.teal,
+        title: '最初の1枚を残そう',
+        message: '今日の写真にひと言添えるだけで、ホームとアーカイブにかわいい思い出が並びます。',
+        accent: _feedPrimaryActionColor,
         action: SizedBox(
-          width: 220,
+          width: 240,
           child: Nomo3DButton(
-            label: '最初の飲みログを残す',
+            label: '写真を選んで投稿する',
             icon: CupertinoIcons.camera_fill,
             onTap: onAddLogPressed,
             height: 50,
@@ -191,7 +191,7 @@ Future<void> _showFeedPostActions(
       try {
         await ref.read(drinkLogControllerProvider.notifier).deleteLog(item.id);
         ref.invalidate(drinkLogControllerProvider);
-        if (context.mounted) NomoToast.show(context, '飲みログを削除しました');
+        if (context.mounted) NomoToast.show(context, '思い出を削除しました');
       } catch (error) {
         if (context.mounted) {
           NomoToast.show(context, '削除できなかったよ。あとでもう一度試してね');
@@ -200,7 +200,7 @@ Future<void> _showFeedPostActions(
     case _FeedPostAction.report:
       try {
         await ref.read(drinkLogControllerProvider.notifier).reportLog(item.id);
-        if (context.mounted) NomoToast.show(context, '飲みログを報告しました');
+        if (context.mounted) NomoToast.show(context, '思い出を報告しました');
       } catch (error) {
         if (context.mounted) {
           NomoToast.show(context, '報告できなかったよ。あとでもう一度試してね');

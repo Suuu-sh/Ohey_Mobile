@@ -55,7 +55,7 @@ class _AdminPostEditorSheetState extends ConsumerState<_AdminPostEditorSheet> {
     final log = _log;
 
     return _AdminSheet(
-      title: log == null ? '飲みログ作成' : '飲みログ編集',
+      title: log == null ? '思い出作成' : '思い出編集',
       child: Padding(
         padding: EdgeInsets.only(bottom: bottomInset),
         child: Column(
@@ -75,8 +75,8 @@ class _AdminPostEditorSheetState extends ConsumerState<_AdminPostEditorSheet> {
               child: _isOfficial
                   ? const _AdminInfoBox(
                       key: ValueKey('official-info'),
-                      title: 'Tomola公式として投稿します',
-                      message: '公式アカウントとして全員に表示されます。',
+                      title: 'Nomo公式として投稿します',
+                      message: 'Nomo公式として届けるよ。',
                     )
                   : _AdminOwnerField(
                       key: const ValueKey('owner-field'),

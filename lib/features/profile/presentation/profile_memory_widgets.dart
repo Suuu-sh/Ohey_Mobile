@@ -274,7 +274,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      '閉じる前にプロフィールの変更を保存できます',
+                      '閉じる前に、変更を残しておけるよ。',
                       style: TextStyle(
                         color: _ProfileColors.sub,
                         fontSize: 12,
@@ -441,7 +441,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               icon: CupertinoIcons.photo_fill_on_rectangle_fill,
               label: 'フォトアーカイブ',
               subtitle: photoLogs.isEmpty
-                  ? '写真付きの飲みログを見返す'
+                  ? '写真付きの思い出を見返す'
                   : '${photoLogs.length}件の思い出を見返す',
               accent: const Color(0xFFFF7AB8),
               onTap: () async {
@@ -461,7 +461,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
             _SettingsTile(
               icon: CupertinoIcons.play_circle_fill,
               label: 'はじめてのデモ',
-              subtitle: 'Tomolaの使い方をもう一度見る',
+              subtitle: 'Nomoの使い方をもう一度見る',
               accent: const Color(0xFF9AF21A),
               onTap: () async {
                 if (sheetContext.mounted) {

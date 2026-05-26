@@ -22,7 +22,7 @@ struct NomoWidgetSnapshot: Equatable {
   static let placeholder = NomoWidgetSnapshot(
     statusKey: "unselected",
     statusLabel: "今日の気分は？",
-    statusDescription: "Tomolaを開いて今日のノリをセットしよう",
+    statusDescription: "Nomoを開いて今日の予定感をセットしよう",
     availableFriendsCount: 0,
     availableFriendNames: [],
     availableFriends: [],
@@ -33,7 +33,7 @@ struct NomoWidgetSnapshot: Equatable {
     let defaults = UserDefaults(suiteName: appGroupIdentifier) ?? .standard
     let statusKey = defaults.string(forKey: "statusKey") ?? "unselected"
     let statusLabel = defaults.string(forKey: "statusLabel") ?? "今日の気分は？"
-    let statusDescription = defaults.string(forKey: "statusDescription") ?? "Tomolaを開いて今日のノリをセットしよう"
+    let statusDescription = defaults.string(forKey: "statusDescription") ?? "Nomoを開いて今日の予定感をセットしよう"
     let friendNames = Array((defaults.stringArray(forKey: "availableFriendNames") ?? []).prefix(3))
     let friendStatusLabels = Array((defaults.stringArray(forKey: "availableFriendStatusLabels") ?? []).prefix(3))
     let friendCount = defaults.object(forKey: "availableFriendsCount") as? Int ?? friendNames.count
@@ -99,7 +99,7 @@ struct NomoFriendsAvailabilityWidget: Widget {
     StaticConfiguration(kind: kind, provider: NomoTimelineProvider()) { entry in
       NomoFriendsAvailabilityWidgetView(entry: entry)
     }
-    .configurationDisplayName("誘える飲み友リスト")
+    .configurationDisplayName("空いてるフレンズリスト")
     .description("今日誘えそうな友達を、Tomoと一緒にすぐチェックできます。")
     .supportedFamilies([.systemSmall, .systemMedium])
   }
@@ -201,7 +201,7 @@ private struct SmallFriendsContent: View {
 
       Spacer(minLength: 0)
 
-      Text("飲み友リスト")
+      Text("フレンズリスト")
         .font(.system(size: 13, weight: .black, design: .rounded))
         .foregroundStyle(Color.white.opacity(0.78))
         .lineLimit(1)
@@ -239,7 +239,7 @@ private struct MediumFriendsContent: View {
 
       VStack(alignment: .leading, spacing: 8) {
         HStack(spacing: 8) {
-          WidgetEyebrow(icon: "person.2.wave.2.fill", title: "誘える飲み友", accent: .nomoLime)
+          WidgetEyebrow(icon: "person.2.wave.2.fill", title: "空いてるフレンズ", accent: .nomoLime)
           Spacer(minLength: 0)
           FriendCountBadge(count: snapshot.availableFriendsCount, compact: false)
         }
@@ -253,7 +253,7 @@ private struct MediumFriendsContent: View {
 
         friendRows
 
-        Text(snapshot.availableFriendsCount <= 0 ? "飲み友のステータス待ち" : "タップして声をかけにいく")
+        Text(snapshot.availableFriendsCount <= 0 ? "フレンズの予定待ち" : "タップして予定を作る")
           .font(.system(size: 10.5, weight: .heavy, design: .rounded))
           .foregroundStyle(Color.white.opacity(0.58))
           .lineLimit(1)
@@ -276,7 +276,7 @@ private struct MediumFriendsContent: View {
   @ViewBuilder
   private var friendRows: some View {
     if snapshot.availableFriends.isEmpty {
-      Text("Tomolaを開いて、みんなの今日のノリを更新しよう。")
+      Text("Nomoを開いて、みんなの今日の予定感を更新しよう。")
         .font(.system(size: 12, weight: .bold, design: .rounded))
         .foregroundStyle(Color.white.opacity(0.72))
         .lineLimit(2)

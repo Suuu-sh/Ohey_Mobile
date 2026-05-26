@@ -23,6 +23,10 @@ Future<T?> showNomoBottomSheet<T>({
     useRootNavigator: useRootNavigator,
     isDismissible: isDismissible,
     enableDrag: enableDrag,
+    constraints: BoxConstraints(
+      minWidth: MediaQuery.sizeOf(context).width,
+      maxWidth: MediaQuery.sizeOf(context).width,
+    ),
     backgroundColor: Colors.transparent,
     barrierColor: barrierColor,
     builder: builder,
@@ -37,7 +41,7 @@ class NomoBottomSheetShell extends StatelessWidget {
     this.onClose,
     this.showHandle = false,
     this.topSafeArea = false,
-    this.margin = const EdgeInsets.fromLTRB(14, 0, 14, 14),
+    this.margin = EdgeInsets.zero,
     this.padding = const EdgeInsets.fromLTRB(18, 14, 18, 18),
     this.radius = 30,
     this.blurSigma = 16,
@@ -67,27 +71,36 @@ class NomoBottomSheetShell extends StatelessWidget {
     final bottomInset = followKeyboard
         ? MediaQuery.viewInsetsOf(context).bottom
         : 0.0;
+    final bottomSafePadding = MediaQuery.paddingOf(context).bottom;
+    final direction = Directionality.of(context);
+    final resolvedPadding = padding.resolve(direction);
+    final resolvedMargin = margin.resolve(direction);
+    final effectivePadding = resolvedPadding.add(
+      EdgeInsets.only(bottom: bottomSafePadding),
+    );
+    final effectiveMargin = EdgeInsets.only(
+      top: resolvedMargin.top,
+      bottom: bottomInset,
+    );
+    final sheetRadius = BorderRadius.vertical(top: Radius.circular(radius));
     return SafeArea(
       top: topSafeArea,
+      bottom: false,
+      left: false,
+      right: false,
       child: Padding(
-        padding: margin.add(EdgeInsets.only(bottom: bottomInset)),
+        padding: effectiveMargin,
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: maxHeight ?? double.infinity),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(radius),
+            borderRadius: sheetRadius,
             child: BackdropFilter(
               filter: ui.ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
               child: Container(
-                padding: padding,
+                padding: effectivePadding,
                 decoration: BoxDecoration(
                   color: isWhite ? Colors.white : AppColors.darkBackground,
-                  borderRadius: BorderRadius.circular(radius),
-                  border: Border.all(
-                    color: isWhite
-                        ? const Color(0xFFE1E8F1)
-                        : Colors.white.withValues(alpha: .12),
-                    width: 1.2,
-                  ),
+                  borderRadius: sheetRadius,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(

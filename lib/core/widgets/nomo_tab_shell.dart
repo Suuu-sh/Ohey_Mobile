@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,7 @@ import '../data/supabase_client_provider.dart';
 import '../models/nomo_avatar.dart';
 import '../models/nomo_drink_invite.dart';
 import '../models/nomo_friend.dart';
+import '../models/nomo_user.dart';
 import '../theme/app_colors.dart';
 import '../theme/nomo_theme_mode.dart';
 import 'nomo_3d_button.dart';
@@ -58,6 +60,8 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
   bool _isOnboardingSeen = false;
   bool _onboardingPrefLoaded = false;
   bool _isDrinkInviteModalOpen = false;
+  bool _isDailyStatusPromptOpen = false;
+  String? _lastDailyStatusPromptKey;
   String? _lastPresentedDrinkInviteId;
   Timer? _invitePollTimer;
   final Set<String> _notifiedDrinkInviteIds = <String>{};
@@ -86,6 +90,12 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     }
     if (state != AppLifecycleState.resumed) return;
     _lastPresentedDrinkInviteId = null;
+    unawaited(
+      ref
+          .read(nomoUserProvider.notifier)
+          .loadFromBackendProfile()
+          .catchError((_) => false),
+    );
     ref.invalidate(incomingDrinkInvitesProvider);
     ref.invalidate(notificationControllerProvider);
   }
@@ -126,6 +136,20 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     ),
     const NomoToastAccent(color: _profileAccentColor, child: ProfileScreen()),
   ];
+
+  void _selectTab(int index) {
+    if (_selectedIndex == index) return;
+    setState(() => _selectedIndex = index);
+    if (index == 0) {
+      _refreshFeedOnOpen();
+    }
+  }
+
+  void _refreshFeedOnOpen() {
+    ref.invalidate(drinkLogControllerProvider);
+    ref.invalidate(friendsProvider);
+    ref.invalidate(notificationControllerProvider);
+  }
 
   Future<void> _openDrinkLogFlow() async {
     final action = await showNomoBottomSheet<_DrinkLogStartAction>(
@@ -239,7 +263,11 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
   }
 
   void _handleIncomingDrinkInvites(List<NomoDrinkInvite> invites) {
-    if (ref.read(nomoUserProvider) == null) return;
+    final currentUser = ref.read(nomoUserProvider);
+    if (currentUser == null ||
+        currentUser.dailyStatus == NomoDailyStatus.unselected) {
+      return;
+    }
     final pendingInvites = invites
         .where((invite) => invite.status == NomoDrinkInviteStatus.pending)
         .toList(growable: false);
@@ -303,6 +331,59 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     }
   }
 
+  void _maybeShowDailyStatusPrompt(NomoUser user) {
+    if (user.dailyStatus != NomoDailyStatus.unselected ||
+        _isDailyStatusPromptOpen) {
+      return;
+    }
+    final promptKey = '${user.userId}-${_localDateKey(DateTime.now())}';
+    if (_lastDailyStatusPromptKey == promptKey) return;
+    _lastDailyStatusPromptKey = promptKey;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isDailyStatusPromptOpen) return;
+      final currentUser = ref.read(nomoUserProvider);
+      if (currentUser == null ||
+          currentUser.dailyStatus != NomoDailyStatus.unselected) {
+        return;
+      }
+      _showDailyStatusPrompt();
+    });
+  }
+
+  Future<void> _showDailyStatusPrompt() async {
+    _isDailyStatusPromptOpen = true;
+    try {
+      await showNomoBottomSheet<void>(
+        context: context,
+        useSafeArea: true,
+        useRootNavigator: true,
+        isDismissible: false,
+        enableDrag: false,
+        barrierColor: Colors.black.withValues(alpha: .72),
+        builder: (_) => NomoToastAccent(
+          color: Color(0xFF20B9FF),
+          child: _DailyStatusRequiredSheet(
+            onSelect: (status) async {
+              await ref
+                  .read(nomoUserProvider.notifier)
+                  .updateDailyStatus(status);
+              ref.invalidate(friendsProvider);
+              ref.invalidate(incomingDrinkInvitesProvider);
+              ref.invalidate(notificationControllerProvider);
+            },
+          ),
+        ),
+      );
+    } finally {
+      _isDailyStatusPromptOpen = false;
+      if (mounted &&
+          ref.read(nomoUserProvider)?.dailyStatus ==
+              NomoDailyStatus.unselected) {
+        _lastDailyStatusPromptKey = null;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(nomoUserProvider);
@@ -317,6 +398,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     );
 
     if (user != null) {
+      _maybeShowDailyStatusPrompt(user);
       _startInvitePolling();
       incomingDrinkInvitesAsync.whenData(_handleIncomingDrinkInvites);
       _didAttemptProfileRestore = false;
@@ -384,99 +466,265 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       resizeToAvoidBottomInset: false,
       extendBody: true,
       body: IndexedStack(index: _selectedIndex, children: _pages),
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-        child: Container(
-          height: 94,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                isWhite
-                    ? Colors.white.withValues(alpha: .92)
-                    : const Color(0xFF132234).withValues(alpha: .92),
-                isWhite
-                    ? const Color(0xFFF1F4F8).withValues(alpha: .94)
-                    : const Color(0xFF06111D).withValues(alpha: .94),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.only(top: 7),
+        decoration: BoxDecoration(
+          color: AppColors.darkBackgroundBottom,
+          border: Border(
+            top: BorderSide(
+              color: _selectedToastAccentColor.withValues(alpha: .72),
+              width: 1,
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: _selectedToastAccentColor.withValues(alpha: .28),
+              blurRadius: 18,
+              spreadRadius: .5,
+              offset: const Offset(0, -5),
+            ),
+            BoxShadow(
+              color: _selectedToastAccentColor.withValues(alpha: .16),
+              blurRadius: 34,
+              offset: const Offset(0, -9),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          minimum: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+          child: SizedBox(
+            height: 82,
+            child: Row(
+              children: [
+                _TabItem(
+                  customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
+                  label: 'フィード',
+                  selected: _selectedIndex == 0,
+                  activeColor: const Color(0xFF8A62FF),
+                  onTap: () => _selectTab(0),
+                ),
+                _TabItem(
+                  customIcon: _FriendsTabIcon(selected: _selectedIndex == 1),
+                  label: 'フレンズ',
+                  selected: _selectedIndex == 1,
+                  activeColor: const Color(0xFF9AF21A),
+                  onTap: () => _selectTab(1),
+                ),
+                _TabItem(
+                  customIcon: _CalendarTabIcon(selected: _selectedIndex == 2),
+                  label: 'カレンダー',
+                  selected: _selectedIndex == 2,
+                  activeColor: const Color(0xFF20B9FF),
+                  onTap: () => _selectTab(2),
+                ),
+                _TabItem(
+                  customIcon: _ProfileTabIcon(selected: _selectedIndex == 3),
+                  label: 'マイページ',
+                  selected: _selectedIndex == 3,
+                  activeColor: const Color(0xFFFF75B5),
+                  onTap: () => _selectTab(3),
+                ),
               ],
             ),
-            borderRadius: BorderRadius.circular(42),
-            border: Border.all(
-              color: _selectedToastAccentColor.withValues(
-                alpha: isWhite ? .76 : .90,
-              ),
-              width: 1.7,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DailyStatusRequiredSheet extends ConsumerStatefulWidget {
+  const _DailyStatusRequiredSheet({required this.onSelect});
+
+  final Future<void> Function(NomoDailyStatus status) onSelect;
+
+  @override
+  ConsumerState<_DailyStatusRequiredSheet> createState() =>
+      _DailyStatusRequiredSheetState();
+}
+
+class _DailyStatusRequiredSheetState
+    extends ConsumerState<_DailyStatusRequiredSheet> {
+  static const _options = <NomoDailyStatus>[
+    NomoDailyStatus.canDrinkToday,
+    NomoDailyStatus.nonAlcohol,
+    NomoDailyStatus.liverRest,
+    NomoDailyStatus.hasPlans,
+  ];
+
+  NomoDailyStatus? _savingStatus;
+
+  Future<void> _select(NomoDailyStatus status) async {
+    if (_savingStatus != null) return;
+    HapticFeedback.selectionClick();
+    setState(() => _savingStatus = status);
+    try {
+      await widget.onSelect(status);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      NomoToast.show(context, '今日は「${status.label}」だね');
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _savingStatus = null);
+      NomoToast.show(context, '設定できなかったよ。もう一度ためしてね');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .64);
+    return PopScope(
+      canPop: false,
+      child: NomoBottomSheetShell(
+        showHandle: true,
+        maxHeightFactor: .88,
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const NomoPopIcon(
+                  icon: CupertinoIcons.calendar_badge_plus,
+                  color: Color(0xFF20B9FF),
+                  size: 48,
+                  iconSize: 25,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '今日の予定、先に教えて',
+                        style: TextStyle(
+                          color: ink,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.6,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'みんなと予定を合わせやすいように、入室前に今日の気分をセットしてね',
+                        style: TextStyle(
+                          color: sub,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
+            const SizedBox(height: 18),
+            for (final status in _options) ...[
+              _DailyStatusRequiredOption(
+                status: status,
+                saving: _savingStatus == status,
+                disabled: _savingStatus != null,
+                onTap: () => _select(status),
+              ),
+              if (status != _options.last) const SizedBox(height: 10),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DailyStatusRequiredOption extends StatelessWidget {
+  const _DailyStatusRequiredOption({
+    required this.status,
+    required this.onTap,
+    required this.saving,
+    required this.disabled,
+  });
+
+  final NomoDailyStatus status;
+  final VoidCallback onTap;
+  final bool saving;
+  final bool disabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final color = _dailyStatusPromptColor(status);
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .64);
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 160),
+      opacity: disabled && !saving ? .46 : 1,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: disabled ? null : onTap,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+          decoration: BoxDecoration(
+            color: isWhite
+                ? color.withValues(alpha: .10)
+                : Colors.white.withValues(alpha: .06),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: color.withValues(alpha: .34), width: 1.2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: .34),
-                blurRadius: 34,
-                offset: const Offset(0, 18),
-              ),
-              BoxShadow(
-                color: _selectedToastAccentColor.withValues(
-                  alpha: isWhite ? .24 : .32,
-                ),
-                blurRadius: 58,
-                offset: const Offset(0, 8),
-              ),
-              BoxShadow(
-                color: _selectedToastAccentColor.withValues(
-                  alpha: isWhite ? .16 : .24,
-                ),
-                blurRadius: 18,
-                spreadRadius: 1.2,
+                color: color.withValues(alpha: isWhite ? .05 : .10),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
           child: Row(
             children: [
-              _TabItem(
-                customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
-                label: 'フィード',
-                selected: _selectedIndex == 0,
-                activeColor: const Color(0xFF8A62FF),
-                onTap: () => setState(() => _selectedIndex = 0),
+              NomoPopIcon(
+                icon: _dailyStatusPromptIcon(status),
+                color: color,
+                size: 42,
+                iconSize: 22,
               ),
-              _TabItem(
-                customIcon: _FriendsTabIcon(selected: _selectedIndex == 1),
-                label: 'フレンズ',
-                selected: _selectedIndex == 1,
-                activeColor: const Color(0xFF9AF21A),
-                onTap: () => setState(() => _selectedIndex = 1),
-              ),
+              const SizedBox(width: 12),
               Expanded(
-                child: Center(
-                  child: Transform.translate(
-                    offset: const Offset(0, -2),
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: _openDrinkLogFlow,
-                      child: Semantics(
-                        button: true,
-                        label: '飲みログを追加',
-                        child: const _AddTabIcon(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      status.label,
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.25,
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 3),
+                    Text(
+                      _dailyStatusPromptCopy(status),
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              _TabItem(
-                customIcon: _CalendarTabIcon(selected: _selectedIndex == 2),
-                label: 'カレンダー',
-                selected: _selectedIndex == 2,
-                activeColor: const Color(0xFF20B9FF),
-                onTap: () => setState(() => _selectedIndex = 2),
-              ),
-              _TabItem(
-                customIcon: _ProfileTabIcon(selected: _selectedIndex == 3),
-                label: 'マイページ',
-                selected: _selectedIndex == 3,
-                activeColor: const Color(0xFFFF75B5),
-                onTap: () => setState(() => _selectedIndex = 3),
-              ),
+              const SizedBox(width: 10),
+              if (saving)
+                CupertinoActivityIndicator(color: color)
+              else
+                Icon(CupertinoIcons.chevron_right, color: color, size: 19),
             ],
           ),
         ),
@@ -484,6 +732,29 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     );
   }
 }
+
+Color _dailyStatusPromptColor(NomoDailyStatus status) => switch (status) {
+  NomoDailyStatus.canDrinkToday => const Color(0xFF9AF21A),
+  NomoDailyStatus.nonAlcohol => const Color(0xFF5DEBD3),
+  NomoDailyStatus.liverRest => const Color(0xFFFFB84D),
+  NomoDailyStatus.hasPlans => const Color(0xFFB8C1CD),
+  NomoDailyStatus.unselected => const Color(0xFF94A3B8),
+};
+
+IconData _dailyStatusPromptIcon(NomoDailyStatus status) => switch (status) {
+  NomoDailyStatus.canDrinkToday => CupertinoIcons.sparkles,
+  NomoDailyStatus.nonAlcohol => CupertinoIcons.hand_thumbsup_fill,
+  NomoDailyStatus.liverRest => CupertinoIcons.clock_fill,
+  NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
+  NomoDailyStatus.unselected => CupertinoIcons.circle,
+};
+
+String _dailyStatusPromptCopy(NomoDailyStatus status) => status.shortCopy;
+
+String _localDateKey(DateTime date) =>
+    '${date.year.toString().padLeft(4, '0')}-'
+    '${date.month.toString().padLeft(2, '0')}-'
+    '${date.day.toString().padLeft(2, '0')}';
 
 class _DrinkPlanCreateSheet extends ConsumerStatefulWidget {
   const _DrinkPlanCreateSheet();
@@ -511,7 +782,7 @@ class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
       if (!mounted) return;
       NomoToast.show(
         context,
-        '${friend.name}に飲み予定を送りました',
+        '${friend.name}に遊ぶ予定を送りました',
         icon: CupertinoIcons.checkmark_circle_fill,
         placement: NomoToastPlacement.bottom,
       );
@@ -568,7 +839,7 @@ class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '飲み予定を作る',
+                      '予定を作る',
                       style: TextStyle(
                         color: ink,
                         fontSize: 22,
@@ -620,7 +891,7 @@ class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
               if (friends.isEmpty) {
                 return _DrinkPlanEmptyMessage(
                   isWhite: isWhite,
-                  message: '飲み予定を送るには、まずフレンズを追加してください。',
+                  message: '予定を送るには、まずフレンズを追加してください。',
                 );
               }
               final visibleFriends = friends.take(6).toList(growable: false);
@@ -791,25 +1062,21 @@ class _DrinkPlanFriendTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
+              SizedBox(
+                width: 70,
+                child: Nomo3DButton(
+                  label: '誘う',
+                  onTap: disabled ? null : onTap,
+                  height: 34,
+                  radius: 17,
                   color: AppColors.primaryAction,
-                  borderRadius: BorderRadius.circular(999),
+                  foregroundColor: const Color(0xFF06111D),
+                  shadowColor: AppColors.primaryActionShadow,
+                  isLoading: isSending,
+                  enabled: !disabled,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  fontSize: 12,
                 ),
-                child: isSending
-                    ? const CupertinoActivityIndicator(radius: 7)
-                    : const Text(
-                        '誘う',
-                        style: TextStyle(
-                          color: Color(0xFF06111D),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
               ),
             ],
           ),
@@ -907,7 +1174,7 @@ class _DrinkLogStartSheet extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '写真なしでも、あとからでも飲みログを残せます。',
+            '写真なしでも、あとからでも思い出を残せます。',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: sub,
@@ -946,7 +1213,7 @@ class _DrinkLogStartSheet extends StatelessWidget {
           _DrinkLogStartTile(
             icon: CupertinoIcons.calendar_badge_plus,
             color: AppColors.warning,
-            title: '飲み予定を作る',
+            title: '予定を作る',
             subtitle: 'これからの予定を先にメモ',
             onTap: () => Navigator.of(context).pop(_DrinkLogStartAction.plan),
           ),
@@ -1072,7 +1339,7 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
       if (!mounted) return;
       NomoToast.show(
         context,
-        accept ? '飲み予定を受け取りました' : '飲み予定を見送りました',
+        accept ? '予定を受け取りました' : 'お誘いを見送りました',
         icon: CupertinoIcons.checkmark_circle_fill,
         placement: NomoToastPlacement.bottom,
       );
@@ -1141,7 +1408,7 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            '飲みのお誘いが届いたよ！',
+                            'お誘いが届いたよ！',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -1153,7 +1420,7 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            '${from.name}から飲みのお誘い',
+                            '${from.name}からお誘い',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -1225,7 +1492,7 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                     ),
                   ),
                   child: Text(
-                    '${from.name}さんから飲み予定が届いたよ。',
+                    '${from.name}さんから予定が届いたよ。',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: .82),
                       fontSize: 14,
@@ -1251,7 +1518,7 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                 ),
                 const SizedBox(height: 18),
                 Nomo3DButton(
-                  label: '承認して飲みに行く',
+                  label: '承認して遊びに行く',
                   icon: CupertinoIcons.checkmark_circle_fill,
                   onTap: () => _submit(accept: true),
                   isLoading: _busyAction == 'accept',
@@ -1400,147 +1667,132 @@ class _TabItem extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              height: 42,
-              child: Center(child: customIcon ?? const SizedBox.shrink()),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: labelColor,
-                fontSize: 12,
-                height: 1,
-                fontWeight: selected ? FontWeight.w900 : FontWeight.w800,
-                letterSpacing: -.4,
-                shadows: selected
-                    ? [
-                        Shadow(
-                          color: activeColor.withValues(alpha: .34),
-                          blurRadius: 14,
-                        ),
-                      ]
-                    : null,
+        child: Semantics(
+          button: true,
+          label: label,
+          selected: selected,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: 44,
+                child: Center(
+                  child: _TabIconGlow(
+                    selected: selected,
+                    color: activeColor,
+                    child: IconTheme(
+                      data: IconThemeData(color: labelColor),
+                      child: customIcon ?? const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 1),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: labelColor,
+                  fontSize: 9.5,
+                  height: 1,
+                  fontWeight: selected ? FontWeight.w900 : FontWeight.w800,
+                  letterSpacing: -.35,
+                  shadows: selected
+                      ? [
+                          Shadow(
+                            color: activeColor.withValues(alpha: .36),
+                            blurRadius: 10,
+                          ),
+                        ]
+                      : null,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _AddTabIcon extends StatelessWidget {
-  const _AddTabIcon();
+class _TabIconGlow extends StatelessWidget {
+  const _TabIconGlow({
+    required this.selected,
+    required this.color,
+    required this.child,
+  });
+
+  final bool selected;
+  final Color color;
+  final Widget child;
 
   @override
-  Widget build(BuildContext context) => AnimatedScale(
-    duration: const Duration(milliseconds: 180),
-    scale: 1,
-    child: CustomPaint(size: const Size(58, 56), painter: const _AddPainter()),
+  Widget build(BuildContext context) => AnimatedContainer(
+    duration: const Duration(milliseconds: 220),
+    curve: Curves.easeOutCubic,
+    width: 64,
+    height: 50,
+    child: Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        if (selected) ...[
+          _TabIconShapeGlow(
+            color: color,
+            blur: 12,
+            opacity: .24,
+            scale: 1.14,
+            child: child,
+          ),
+          _TabIconShapeGlow(
+            color: color,
+            blur: 6,
+            opacity: .36,
+            scale: 1.06,
+            child: child,
+          ),
+        ],
+        child,
+      ],
+    ),
   );
 }
 
-class _AddPainter extends CustomPainter {
-  const _AddPainter();
+class _TabIconShapeGlow extends StatelessWidget {
+  const _TabIconShapeGlow({
+    required this.color,
+    required this.blur,
+    required this.opacity,
+    required this.scale,
+    required this.child,
+  });
+
+  final Color color;
+  final double blur;
+  final double opacity;
+  final double scale;
+  final Widget child;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromCenter(
-      center: Offset(size.width / 2, size.height * .50),
-      width: 52,
-      height: 52,
-    );
-    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(21));
-    final path = Path()..addRRect(rrect);
-
-    canvas.drawShadow(
-      path,
-      const Color(0xFFFF4FB5).withValues(alpha: .26),
-      11,
-      true,
-    );
-
-    canvas.drawRRect(
-      rrect.shift(const Offset(0, 3)),
-      Paint()..color = const Color(0xFF9E1C63).withValues(alpha: .30),
-    );
-
-    final fill = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFFF8FC5), Color(0xFFFF4FB5), Color(0xFFE92B96)],
-        stops: [0, .55, 1],
-      ).createShader(rect);
-    canvas.drawRRect(rrect, fill);
-
-    final softDepth = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Colors.white.withValues(alpha: .16),
-          Colors.transparent,
-          const Color(0xFF9B155F).withValues(alpha: .18),
-        ],
-        stops: const [0, .48, 1],
-      ).createShader(rect);
-    canvas.drawRRect(rrect.deflate(1.4), softDepth);
-
-    canvas.drawRRect(
-      rrect,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..color = Colors.white.withValues(alpha: .34),
-    );
-
-    final shine = Paint()..color = Colors.white.withValues(alpha: .18);
-    canvas.drawCircle(Offset(size.width * .35, size.height * .29), 4.2, shine);
-
-    final plus = Paint()
-      ..color = Colors.white.withValues(alpha: .96)
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 5.4;
-    final center = Offset(size.width / 2, size.height * .50);
-    final plusShadow = Paint()
-      ..color = const Color(0xFF7A0E4B).withValues(alpha: .42)
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 6.2;
-    canvas.drawLine(
-      Offset(center.dx - 12, center.dy + 2),
-      Offset(center.dx + 12, center.dy + 2),
-      plusShadow,
-    );
-    canvas.drawLine(
-      Offset(center.dx, center.dy - 10),
-      Offset(center.dx, center.dy + 14),
-      plusShadow,
-    );
-    canvas.drawLine(
-      Offset(center.dx - 12, center.dy),
-      Offset(center.dx + 12, center.dy),
-      plus,
-    );
-    canvas.drawLine(
-      Offset(center.dx, center.dy - 12),
-      Offset(center.dx, center.dy + 12),
-      plus,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _AddPainter oldDelegate) => false;
+  Widget build(BuildContext context) => Positioned.fill(
+    child: IgnorePointer(
+      child: ExcludeSemantics(
+        child: ImageFiltered(
+          imageFilter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+          child: Opacity(
+            opacity: opacity,
+            child: ColorFiltered(
+              colorFilter: ColorFilter.mode(color, BlendMode.srcATop),
+              child: Center(
+                child: Transform.scale(scale: scale, child: child),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class _PopTabIcon extends StatelessWidget {
@@ -1689,17 +1941,6 @@ class _FriendsPainter extends CustomPainter {
     final colors = active
         ? const [Color(0xFF9AF21A), Color(0xFF5DC86C)]
         : const [Color(0xFFB1BAC8), Color(0xFF798393)];
-    final glow = Paint()
-      ..color = colors.first.withValues(alpha: active ? .18 : .05)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * .49, size.height * .55),
-        width: 46,
-        height: 34,
-      ),
-      glow,
-    );
     final paint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
@@ -1860,18 +2101,6 @@ class _ProfilePainter extends CustomPainter {
         end: Alignment.bottomRight,
         colors: colors,
       ).createShader(Offset.zero & size);
-
-    final glow = Paint()
-      ..color = colors.first.withValues(alpha: active ? .18 : .05)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * .52, size.height * .62),
-        width: 40,
-        height: 28,
-      ),
-      glow,
-    );
 
     final blob = Path()
       ..moveTo(size.width * .23, size.height * .78)

@@ -39,6 +39,9 @@ class NomoNotification {
   final DateTime? notificationDate;
   final String? systemKey;
 
+  String get displayTitle => _tomolaNotificationText(title);
+  String get displayMessage => _tomolaNotificationText(message);
+
   NomoNotification markRead() => NomoNotification(
     id: id,
     kind: kind,
@@ -148,4 +151,18 @@ String _todayIsoDate() {
   return '${now.year.toString().padLeft(4, '0')}-'
       '${now.month.toString().padLeft(2, '0')}-'
       '${now.day.toString().padLeft(2, '0')}';
+}
+
+String _tomolaNotificationText(String value) {
+  return value
+      .replaceAll('飲みログ', '思い出')
+      .replaceAll('飲みとも', 'フレンズ')
+      .replaceAll('飲み友', 'フレンズ')
+      .replaceAll('飲み会', '集まり')
+      .replaceAll('今日遊べる', '今日遊べる')
+      .replaceAll('休肝日', 'おやすみ')
+      .replaceAll('ノンアル', '軽め')
+      .replaceAll('今日会わない？', '今日会わない？')
+      .replaceAll('お誘い', 'お誘い')
+      .replaceAll('乾杯', '思い出');
 }

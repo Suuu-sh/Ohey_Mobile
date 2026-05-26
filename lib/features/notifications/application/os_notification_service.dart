@@ -5,19 +5,62 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/models/nomo_drink_invite.dart';
+import '../../../core/models/nomo_friend_request_status.dart';
 import '../data/notification_repository.dart';
 
 final osNotificationServiceProvider = Provider<OsNotificationService>((ref) {
   return OsNotificationService();
 });
 
+class _NotificationDeliveryPolicy {
+  const _NotificationDeliveryPolicy._();
+
+  static const _osAllowedKinds = <String>{
+    // Actionable and social-graph changing notifications only.
+    'friend_request_received',
+    'friend_request_accepted',
+    'drink_invite_received',
+    'drink_invite_accepted',
+    'today_reservation_reminder',
+  };
+
+  static bool shouldShowOsNotification(NomoNotification notification) {
+    if (!_osAllowedKinds.contains(notification.kind)) return false;
+    if (notification.kind == 'friend_request_received') {
+      return nomoFriendRequestStatusFromKey(
+        notification.friendRequestStatus,
+      ).isPending;
+    }
+    if (notification.kind == 'drink_invite_received') {
+      return nomoDrinkInviteStatusFromKey(
+        notification.drinkInviteStatus,
+      ).isPending;
+    }
+    return true;
+  }
+
+  static List<NomoNotification> coalesce(List<NomoNotification> notifications) {
+    if (notifications.length <= 2) return notifications;
+    final actionable = notifications
+        .where(
+          (notification) =>
+              notification.kind == 'friend_request_received' ||
+              notification.kind == 'drink_invite_received',
+        )
+        .take(2)
+        .toList(growable: false);
+    if (actionable.isNotEmpty) return actionable;
+    return notifications.take(1).toList(growable: false);
+  }
+}
+
 class OsNotificationService {
   OsNotificationService();
 
   static const _channel = AndroidNotificationChannel(
     'nomo_notifications',
-    'Tomola通知',
-    description: 'フレンズ申請、飲み予定、いいねなどのTomola通知',
+    'Nomo通知',
+    description: 'フレンズ申請、お誘い、今日の思い出など厳選したNomo通知',
     importance: Importance.high,
   );
   static const _lastNotifiedKey = 'nomo_last_os_notification_created_at';
@@ -50,21 +93,25 @@ class OsNotificationService {
             .where(
               (notification) =>
                   notification.isUnread &&
-                  notification.createdAt.isAfter(lastNotifiedAt),
+                  notification.createdAt.isAfter(lastNotifiedAt) &&
+                  _NotificationDeliveryPolicy.shouldShowOsNotification(
+                    notification,
+                  ),
             )
             .toList(growable: false)
           ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-    for (final notification in newUnread) {
+    final deliveryBatch = _NotificationDeliveryPolicy.coalesce(newUnread);
+    for (final notification in deliveryBatch) {
       await _plugin.show(
         id: notification.id.hashCode,
-        title: notification.title,
-        body: notification.message,
+        title: notification.displayTitle,
+        body: notification.displayMessage,
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             'nomo_notifications',
-            'Tomola通知',
-            channelDescription: 'フレンズ申請、飲み予定、いいねなどのTomola通知',
+            'Nomo通知',
+            channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したNomo通知',
             importance: Importance.high,
             priority: Priority.high,
           ),
@@ -92,13 +139,13 @@ class OsNotificationService {
 
     await _plugin.show(
       id: invite.id.hashCode,
-      title: '${invite.fromUser.name}から飲みのお誘い',
-      body: '今日飲みに行かない？アプリで返信できます。',
+      title: '${invite.fromUser.name}からお誘い',
+      body: '今日会わない？アプリで返事してね。',
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'nomo_notifications',
-          'Tomola通知',
-          channelDescription: 'フレンズ申請、飲み予定、いいねなどのTomola通知',
+          'Nomo通知',
+          channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したNomo通知',
           importance: Importance.high,
           priority: Priority.high,
         ),

@@ -134,7 +134,7 @@ class _FeedItem {
               NomoAvatar.defaultAvatar;
     return _FeedItem(
       id: log.id,
-      userName: log.isOfficial ? 'Tomola' : authorName,
+      userName: log.isOfficial ? 'Nomo' : authorName,
       timeAgo: _relativeTime(log.date),
       body: log.memo.trim(),
       place: log.place.trim(),
@@ -224,7 +224,7 @@ class _Companion {
   final Color accent;
   final String? statusKey;
 
-  String get handleLabel => handle.trim().isEmpty ? 'Tomolaフレンズ' : '@$handle';
+  String get handleLabel => handle.trim().isEmpty ? 'Nomoフレンズ' : '@$handle';
 }
 
 String _companionStatusLabel(String? statusKey) {
@@ -275,8 +275,8 @@ class _FeedNotification {
   factory _FeedNotification.fromNotification(NomoNotification notification) {
     return _FeedNotification(
       kind: notification.kind,
-      title: notification.title,
-      message: notification.message,
+      title: notification.displayTitle,
+      message: notification.displayMessage,
       timeAgo: _relativeTimeText(notification.createdAt),
       icon: switch (notification.kind) {
         'drink_log_like' => CupertinoIcons.heart_fill,
@@ -332,40 +332,30 @@ class _FeedNotification {
 
   bool get requiresAction {
     if (kind == 'friend_request_received') {
-      return friendRequestStatus == null || friendRequestStatus == 'pending';
+      return nomoFriendRequestStatusFromKey(friendRequestStatus).isPending;
     }
     if (kind == 'drink_invite_received') {
-      return drinkInviteStatus == null || drinkInviteStatus == 'pending';
+      return nomoDrinkInviteStatusFromKey(drinkInviteStatus).isPending;
     }
     return false;
   }
 
   bool get isResolvedAction {
     if (kind == 'friend_request_received') {
-      return friendRequestStatus != null && friendRequestStatus != 'pending';
+      return !nomoFriendRequestStatusFromKey(friendRequestStatus).isPending;
     }
     if (kind == 'drink_invite_received') {
-      return drinkInviteStatus != null && drinkInviteStatus != 'pending';
+      return !nomoDrinkInviteStatusFromKey(drinkInviteStatus).isPending;
     }
     return false;
   }
 
   String? get actionLabel {
     if (kind == 'friend_request_received') {
-      return switch (friendRequestStatus) {
-        'accepted' => '承認済み',
-        'rejected' => '見送り済み',
-        'cancelled' => '取り消し済み',
-        _ => 'タップして承認',
-      };
+      return nomoFriendRequestStatusFromKey(friendRequestStatus).actionLabel;
     }
     if (kind == 'drink_invite_received') {
-      return switch (drinkInviteStatus) {
-        'accepted' => '参加予定',
-        'rejected' => '見送り済み',
-        'cancelled' => '取り消し済み',
-        _ => 'タップして返信',
-      };
+      return nomoDrinkInviteStatusFromKey(drinkInviteStatus).actionLabel;
     }
     return null;
   }

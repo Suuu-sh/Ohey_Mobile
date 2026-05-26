@@ -596,7 +596,7 @@ class _ArchiveMapPainter extends CustomPainter {
     }
 
     label('中央通り', .48, .46, alpha: .64);
-    label('Tomola Park', .70, .18, alpha: .50);
+    label('Nomo Park', .70, .18, alpha: .50);
     label('Station', .18, .34, alpha: .46);
     label('Cafe area', .62, .63, alpha: .46);
   }
@@ -730,7 +730,7 @@ class _ArchivePlacesEmpty extends StatelessWidget {
             ),
           ),
           title: '場所つきの思い出はまだありません',
-          message: '飲みログに場所を入れると、ここに地図みたいに並びます。',
+          message: '場所つきの思い出、まだないみたい。',
         ),
       ),
     );

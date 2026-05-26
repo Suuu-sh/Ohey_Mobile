@@ -127,7 +127,7 @@ class NomoAvatar {
     return copyWith(hair: hairOptions.first);
   }
 
-  static const backgroundStyles = ['Tomola pink'];
+  static const backgroundStyles = ['Nomo pink'];
 
   static const backgroundGradients = [
     [Color(0xFFFF7BBC), Color(0xFFFFD2E3)],
@@ -165,6 +165,10 @@ class NomoAvatar {
     Color(0xFFFF9FC7),
     Color(0xFFF8F8F8),
     Color(0xFF3D4850),
+    Color(0xFF7C5CFF),
+    Color(0xFF00B894),
+    Color(0xFFFF6B35),
+    Color(0xFF2F80ED),
   ];
 
   static const hairStyles = [
@@ -177,13 +181,25 @@ class NomoAvatar {
     'ボブ',
     'ロング',
     'ツイン',
+    'ふわショート',
+    'マッシュ',
+    'ポニー',
   ];
-  static const eyeStyles = ['まる目', 'にこ目', 'きらきら', 'ぱっちり'];
-  static const mouthStyles = ['スマイル', 'にっこり', 'むにゅ'];
-  static const accessoryStyles = ['なし', 'メガネ', 'マスク', 'チーク'];
+  static const eyeStyles = ['まる目', 'にこ目', 'きらきら', 'ぱっちり', 'ウインク', 'たれ目', 'ジト目'];
+  static const mouthStyles = ['スマイル', 'にっこり', 'むにゅ', 'おどろき', 'ほほえみ', 'ぷくっ'];
+  static const accessoryStyles = [
+    'なし',
+    'メガネ',
+    'マスク',
+    'チーク',
+    'そばかす',
+    'ほくろ',
+    'ヘッドホン',
+    'ヘアピン',
+  ];
 
-  static const maleHairIndices = [0, 1, 2, 3, 5];
-  static const femaleHairIndices = [1, 4, 6, 7, 8];
+  static const maleHairIndices = [0, 1, 2, 3, 5, 9, 10];
+  static const femaleHairIndices = [1, 4, 6, 7, 8, 9, 11];
 
   static List<int> selectableHairIndicesForGender(NomoGender gender) =>
       switch (gender) {

@@ -16,20 +16,20 @@ void main() {
   test('authProfileMetadata uses only profile fields accepted by backend', () {
     final payload = authProfileMetadata(
       userId: 'nomo_user',
-      displayName: 'Tomola User',
+      displayName: 'Nomo User',
       gender: NomoGender.female,
       avatar: NomoAvatar.defaultAvatar,
     );
 
     expect(payload['user_id'], 'nomo_user');
-    expect(payload['display_name'], 'Tomola User');
+    expect(payload['display_name'], 'Nomo User');
     expect(payload['gender'], 'female');
     expect(payload['character_key'], 'avatar');
     expect(payload['avatar_url'], isA<String>());
     expect(payload.keys, hasLength(5));
   });
 
-  test('Tomola user id helpers validate and derive stable defaults', () {
+  test('Nomo user id helpers validate and derive stable defaults', () {
     expect(isValidNomoUserId('nomo_user_2026'), isTrue);
     expect(isValidNomoUserId('ab'), isFalse);
     expect(isValidNomoUserId('bad user'), isFalse);
@@ -42,13 +42,13 @@ void main() {
   test('profile payload helpers keep create and update scopes explicit', () {
     expect(
       createProfilePayload(
-        name: 'Tomola User',
+        name: 'Nomo User',
         userId: 'nomo_user',
         gender: NomoGender.male,
       ),
       <String, dynamic>{
         'user_id': 'nomo_user',
-        'display_name': 'Tomola User',
+        'display_name': 'Nomo User',
         'gender': 'male',
         'character_key': 'avatar',
         'avatar_url': '',
@@ -76,7 +76,7 @@ void main() {
 
     expect(profile.id, 'friend-id');
     expect(profile.userId, 'friend_user');
-    expect(profile.displayName, 'Tomola friend');
+    expect(profile.displayName, 'Nomo friend');
     expect(profile.avatar, NomoAvatar.defaultAvatar);
   });
 

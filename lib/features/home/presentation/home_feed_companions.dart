@@ -37,7 +37,7 @@ class _FeedCompanionListSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '一緒に飲んだフレンズ',
+                      '一緒に遊んだフレンズ',
                       style: TextStyle(
                         color: titleColor,
                         fontSize: 20,

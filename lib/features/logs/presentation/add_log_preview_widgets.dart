@@ -47,7 +47,7 @@ class _PhotoCapturePrompt extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '写真なしでも保存できます。撮る場合はこちら',
+                  '写真を足してみる？',
                   style: TextStyle(
                     color: _AddLogColors.secondaryTextFor(context),
                     fontSize: 12,
@@ -66,6 +66,76 @@ class _PhotoCapturePrompt extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _QuickPostHintCard extends StatelessWidget {
+  const _QuickPostHintCard({
+    required this.hasCaption,
+    required this.hasFriends,
+  });
+
+  final bool hasCaption;
+  final bool hasFriends;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = _AddLogColors.isWhite(context);
+    final ink = _AddLogColors.primaryTextFor(context);
+    final sub = _AddLogColors.secondaryTextFor(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      child: Container(
+        padding: const EdgeInsets.all(13),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? Colors.white.withValues(alpha: .86)
+              : Colors.white.withValues(alpha: .07),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: _AddLogColors.lineFor(context)),
+        ),
+        child: Row(
+          children: [
+            NomoPopIcon(
+              icon: hasCaption
+                  ? CupertinoIcons.checkmark_alt
+                  : CupertinoIcons.text_quote,
+              color: hasCaption ? AppColors.success : _AddLogColors.lime,
+              size: 38,
+              iconSize: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hasCaption ? 'あとは投稿するだけ' : 'ひと言だけ添えてみよ',
+                    style: TextStyle(
+                      color: ink,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    hasFriends
+                        ? 'フレンズもタグ付け済み。投稿後はフィードで反応を待てます。'
+                        : '場所やフレンズは任意。あとで思い出を見返しやすくなります。',
+                    style: TextStyle(
+                      color: sub,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                      height: 1.25,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _PostPreviewCard extends StatelessWidget {
@@ -496,7 +566,7 @@ class _PreviewFooter extends StatelessWidget {
               _PreviewActionPill(
                 semanticLabel: 'いいねで反応',
                 icon: CupertinoIcons.heart,
-                label: 'Like',
+                label: 'いいね',
                 color: _postPreviewActionPurple,
                 isWhite: isWhite,
               ),
@@ -507,7 +577,7 @@ class _PreviewFooter extends StatelessWidget {
                   color: _postPreviewActionPurple,
                   size: 18,
                 ),
-                label: 'Share',
+                label: 'また誘う',
                 color: _postPreviewActionPurple,
                 isWhite: isWhite,
               ),
@@ -973,7 +1043,7 @@ class _Header extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Text(
-          '飲みログ作成',
+          '思い出作成',
           style: TextStyle(
             color: titleColor,
             fontSize: 24,
@@ -1064,11 +1134,11 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
 
   String get _friendSummary {
     if (widget.isPrivateRecord) {
-      if (widget.friends.isEmpty) return 'フィードには投稿せず、カレンダーで確認できます';
+      if (widget.friends.isEmpty) return '自分だけの記録にしたよ。';
       final first = widget.friends.first.name;
       final others = widget.friends.length - 1;
-      if (others <= 0) return '$firstとの記録はカレンダーで確認できます';
-      return '$firstほか$others人との記録はカレンダーで確認できます';
+      if (others <= 0) return '$firstとの記録を残したよ。';
+      return '$firstほか$others人との記録を残したよ。';
     }
     if (widget.friends.isEmpty) return '自分だけの思い出に追加しました';
     final first = widget.friends.first.name;
@@ -1127,7 +1197,7 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
             ),
             const SizedBox(height: 14),
             Text(
-              widget.isPrivateRecord ? '記録しました！' : '飲みログを残しました！',
+              widget.isPrivateRecord ? '記録しました！' : '投稿できました！',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: ink,
@@ -1140,7 +1210,7 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
             Text(
               widget.isPrivateRecord
                   ? 'カレンダーに追加しました'
-                  : '今月${widget.monthlyCount}回目の飲みログです',
+                  : '今月${widget.monthlyCount}個目の思い出が増えました',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: widget.isPrivateRecord
@@ -1176,7 +1246,7 @@ class _DrinkLogSuccessSheetState extends State<_DrinkLogSuccessSheet>
                 const SizedBox(width: 10),
                 Expanded(
                   child: Nomo3DButton(
-                    label: widget.isPrivateRecord ? 'カレンダーへ' : 'フィードへ',
+                    label: widget.isPrivateRecord ? 'カレンダーへ' : 'フィードで見る',
                     icon: widget.isPrivateRecord
                         ? CupertinoIcons.calendar_today
                         : CupertinoIcons.house_fill,

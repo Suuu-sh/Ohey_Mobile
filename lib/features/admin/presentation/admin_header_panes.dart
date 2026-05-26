@@ -37,7 +37,7 @@ class _AdminHeader extends StatelessWidget {
                 ),
               ),
               Text(
-                'Tomola ${SupabaseConfig.environment} admin',
+                'Nomo ${SupabaseConfig.environment} admin',
                 style: const TextStyle(
                   color: _AdminColors.sub,
                   fontWeight: FontWeight.w800,
@@ -86,7 +86,7 @@ class _AdminSegmentedControl extends StatelessWidget {
             onTap: () => onChanged(_AdminSection.users),
           ),
           _AdminSegmentButton(
-            label: '飲みログ',
+            label: '思い出',
             selected: section == _AdminSection.posts,
             onTap: () => onChanged(_AdminSection.posts),
           ),
@@ -197,7 +197,7 @@ class _AdminPostsPane extends StatelessWidget {
     return Column(
       children: [
         _AdminPaneToolbar(
-          title: '飲みログ管理',
+          title: '思い出管理',
           actionLabel: '作成',
           onAction: () => _showPostSheet(context, ref),
           onRefresh: () => ref.invalidate(adminDrinkLogsProvider),
@@ -207,7 +207,7 @@ class _AdminPostsPane extends StatelessWidget {
           child: logsAsync.when(
             data: (logs) {
               if (logs.isEmpty) {
-                return const _AdminEmptyState(message: '飲みログがまだありません。');
+                return const _AdminEmptyState(message: '思い出がまだありません。');
               }
               return ListView.separated(
                 padding: const EdgeInsets.only(bottom: 120),
@@ -252,9 +252,8 @@ class _AdminNotificationsPane extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         const _AdminInfoBox(
-          title: '通常通知画面に表示されます',
-          message:
-              'POST /v1/admin/notifications を使って kind=system の通知を作成します。送信先は全ユーザー、または個別ユーザーを選べます。',
+          title: 'アプリ内のお知らせに出るよ',
+          message: 'ユーザー全員、または選んだユーザーにお知らせを届けます。',
         ),
         const SizedBox(height: 12),
         Expanded(

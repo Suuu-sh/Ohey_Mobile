@@ -48,9 +48,11 @@ extension _CreateUserIntroPage on _CreateUserDialogState {
                       ),
                     ],
                   ),
-                  child: const Center(
+                  child: Center(
                     child: NomoPopIcon(
-                      icon: CupertinoIcons.arrow_right,
+                      icon: _demoPage == slides.length - 1
+                          ? CupertinoIcons.camera_fill
+                          : CupertinoIcons.arrow_right,
                       color: Colors.white,
                       foregroundColor: Colors.white,
                       showBubble: false,
@@ -66,7 +68,7 @@ extension _CreateUserIntroPage on _CreateUserDialogState {
           TextButton(
             onPressed: () =>
                 setState(() => _step = _OnboardingStep.accountChoice),
-            child: Text(_demoPage == slides.length - 1 ? 'はじめる' : 'スキップ'),
+            child: Text(_demoPage == slides.length - 1 ? '登録して1枚投稿する' : 'スキップ'),
           ),
         ],
       ),

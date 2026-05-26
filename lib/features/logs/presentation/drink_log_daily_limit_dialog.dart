@@ -149,7 +149,7 @@ class _DrinkLogDailyLimitDialog extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            '1日1回のTomolaルール',
+                            '1日1回のNomoルール',
                             style: TextStyle(
                               color: isWhite
                                   ? AppColors.inviteShadow

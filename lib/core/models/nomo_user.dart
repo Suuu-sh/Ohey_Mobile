@@ -19,26 +19,50 @@ extension NomoDailyStatusX on NomoDailyStatus {
   };
 
   String get label => switch (this) {
-    NomoDailyStatus.unselected => '未設定',
-    NomoDailyStatus.canDrinkToday => '今日飲める',
-    NomoDailyStatus.nonAlcohol => 'ノンアルなら',
-    NomoDailyStatus.liverRest => '今日は休肝日',
-    NomoDailyStatus.hasPlans => '予定あり',
+    NomoDailyStatus.unselected => 'まだ決めてない',
+    NomoDailyStatus.canDrinkToday => '空いてる',
+    NomoDailyStatus.nonAlcohol => '多分空いてる',
+    NomoDailyStatus.liverRest => '時間次第',
+    NomoDailyStatus.hasPlans => '予定ある',
   };
 
   String get description => switch (this) {
-    NomoDailyStatus.unselected => 'ステータス未設定のまま、誘いは受けられます。',
-    NomoDailyStatus.canDrinkToday => '今夜の誘いを受けやすい状態です。',
-    NomoDailyStatus.nonAlcohol => 'ノンアル参加ならOKです。',
-    NomoDailyStatus.liverRest => '今日は飲みを控えたい状態です。',
-    NomoDailyStatus.hasPlans => '今日は予定が入っています。',
+    NomoDailyStatus.unselected => 'まだ決めてないけど、あとで返事できます。',
+    NomoDailyStatus.canDrinkToday => '今日は空いている気分です。',
+    NomoDailyStatus.nonAlcohol => 'たぶん空いてそうです。',
+    NomoDailyStatus.liverRest => '時間が合えば行けそうです。',
+    NomoDailyStatus.hasPlans => 'もう予定が入っています。',
+  };
+
+  String get shortCopy => switch (this) {
+    NomoDailyStatus.unselected => 'あとで決める',
+    NomoDailyStatus.canDrinkToday => '今日は空いてる',
+    NomoDailyStatus.nonAlcohol => 'たぶん空いてる',
+    NomoDailyStatus.liverRest => '時間が合えば行けそう',
+    NomoDailyStatus.hasPlans => '今日はもう予定がある',
+  };
+
+  bool get canJoinPlan => switch (this) {
+    NomoDailyStatus.canDrinkToday ||
+    NomoDailyStatus.nonAlcohol ||
+    NomoDailyStatus.liverRest => true,
+    NomoDailyStatus.unselected || NomoDailyStatus.hasPlans => false,
+  };
+
+  int get availabilityRank => switch (this) {
+    NomoDailyStatus.canDrinkToday => 0,
+    NomoDailyStatus.nonAlcohol => 1,
+    NomoDailyStatus.liverRest => 2,
+    NomoDailyStatus.unselected => 3,
+    NomoDailyStatus.hasPlans => 4,
   };
 
   bool get isAvailable => switch (this) {
     NomoDailyStatus.unselected ||
     NomoDailyStatus.canDrinkToday ||
-    NomoDailyStatus.nonAlcohol => true,
-    NomoDailyStatus.liverRest || NomoDailyStatus.hasPlans => false,
+    NomoDailyStatus.nonAlcohol ||
+    NomoDailyStatus.liverRest => true,
+    NomoDailyStatus.hasPlans => false,
   };
 }
 

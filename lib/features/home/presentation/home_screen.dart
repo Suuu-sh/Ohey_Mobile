@@ -16,6 +16,7 @@ import '../../../core/models/drink_log.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_drink_invite.dart';
 import '../../../core/models/nomo_friend.dart';
+import '../../../core/models/nomo_friend_request_status.dart';
 import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
@@ -55,7 +56,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const _feedSwipeTutorialSeenKey = 'nomo_feed_swipe_tutorial_seen';
-  bool _isRefreshingFeed = false;
   int _currentFeedPageIndex = 0;
   bool _isFeedSwipeTutorialSeen = true;
 
@@ -146,12 +146,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   NomoHeaderIconButton(
-                    icon: CupertinoIcons.arrow_clockwise,
-                    semanticLabel: 'フィードを更新',
-                    color: _isRefreshingFeed
-                        ? _FeedColors.sub
-                        : _FeedColors.teal,
-                    onTap: _isRefreshingFeed ? () {} : _refreshFeed,
+                    icon: CupertinoIcons.camera_fill,
+                    semanticLabel: '投稿する',
+                    color: _FeedColors.teal,
+                    onTap: widget.onAddLogPressed ?? () {},
                   ),
                   const SizedBox(width: 8),
                   NomoHeaderIconButton(
@@ -201,34 +199,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<void> _refreshFeed() async {
-    if (_isRefreshingFeed) return;
-    HapticFeedback.selectionClick();
-    setState(() => _isRefreshingFeed = true);
-    try {
-      await Future.wait([
-        ref.refresh(drinkLogControllerProvider.future),
-        ref.refresh(friendsProvider.future),
-        ref.refresh(notificationControllerProvider.future),
-      ]);
-      if (!mounted) return;
-      NomoToast.show(
-        context,
-        'フィードを更新しました',
-        icon: CupertinoIcons.arrow_clockwise,
-      );
-    } catch (_) {
-      if (!mounted) return;
-      NomoToast.show(
-        context,
-        '更新できなかったよ。あとでもう一度試してね',
-        icon: CupertinoIcons.arrow_clockwise,
-      );
-    } finally {
-      if (mounted) setState(() => _isRefreshingFeed = false);
-    }
-  }
-
   Future<void> _shareFeedItem(BuildContext context, _FeedItem item) async {
     try {
       final imagePath = await _createStoryShareImage(item);
@@ -259,8 +229,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         fileNameOverrides: [
           item.isOfficial ? 'nomo_official_post.png' : 'nomo_drink_log.png',
         ],
-        title: item.isOfficial ? 'Tomola公式投稿を共有' : '飲みログを共有',
-        subject: item.isOfficial ? 'Tomola公式のお知らせ' : 'Tomolaのログ',
+        title: item.isOfficial ? 'Nomo公式投稿を共有' : '思い出を共有',
+        subject: item.isOfficial ? 'Nomo公式のお知らせ' : 'Nomoの思い出',
         sharePositionOrigin: shareOrigin,
       ),
     );

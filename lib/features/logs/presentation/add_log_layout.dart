@@ -80,6 +80,11 @@ extension _AddLogScreenLayout on _AddLogScreenState {
                   padding: const EdgeInsets.fromLTRB(0, 10, 0, 26),
                   children: [
                     if (_hasPhoto) ...[
+                      _QuickPostHintCard(
+                        hasCaption: _memoController.text.trim().isNotEmpty,
+                        hasFriends: selectedFriends.isNotEmpty,
+                      ),
+                      const SizedBox(height: 10),
                       _PostPreviewCard(
                         path: _photoPath!,
                         userName: _previewUserName(user?.name),
@@ -147,7 +152,7 @@ extension _AddLogScreenLayout on _AddLogScreenState {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
                   child: _SaveButton(
-                    label: _hasPhoto ? '飲みログを投稿する' : '記録だけ保存する',
+                    label: _hasPhoto ? 'この1枚を投稿する' : '記録だけ保存する',
                     isSaving: _isSaving,
                     onPressed: () => _save(
                       friendsAsync.asData?.value ?? const <NomoFriend>[],

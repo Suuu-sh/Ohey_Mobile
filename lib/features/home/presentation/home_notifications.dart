@@ -169,7 +169,7 @@ class _FeedNotificationsScreenState
       if (actionItems.isNotEmpty) ...[
         _NotificationSectionHeader(
           title: '対応が必要',
-          message: '飲み招待やフレンズ申請はここから返事できます',
+          message: 'お返事まちだよ',
           count: actionItems.length,
           accent: AppColors.primaryAction,
           isWhite: isWhite,
@@ -188,7 +188,7 @@ class _FeedNotificationsScreenState
       ],
       _NotificationSectionHeader(
         title: '最近のお知らせ',
-        message: actionItems.isEmpty ? '新しい反応や予定がここに届きます' : 'いいね・公式通知・返信済みはこちら',
+        message: actionItems.isEmpty ? 'いいね・今日の思い出・予定が静かにまとまります' : '先にお返事しよっか',
         count: recentItems.length,
         accent: AppColors.invite,
         isWhite: isWhite,
@@ -255,7 +255,7 @@ class _FeedNotificationsScreenState
   ) async {
     final drinkInviteId = notification.drinkInviteId;
     if (drinkInviteId == null || drinkInviteId.isEmpty) {
-      NomoToast.show(context, 'この飲み予定を開けなかったよ。あとでもう一度試してね。');
+      NomoToast.show(context, 'この予定を開けなかったよ。あとでもう一度試してね。');
       return;
     }
 
@@ -385,7 +385,7 @@ class _NotificationSectionEmptyNote extends StatelessWidget {
       ),
     ),
     child: Text(
-      '対応が必要なお知らせはありません。招待や申請が届いたら上に表示されます。',
+      '今はお返事まち、ないよ。',
       style: TextStyle(
         color: isWhite
             ? const Color(0xFF617281)
@@ -407,13 +407,13 @@ class _NotificationEmptyState extends StatelessWidget {
   Widget build(BuildContext context) => _FeedEmptyState(
     icon: CupertinoIcons.bell,
     isWhite: isWhite,
-    title: 'まだお知らせはありません',
-    message: 'フレンズを追加したり飲みログを残すと、反応や招待がここに届きます。',
+    title: 'まだ何も来てないよ',
+    message: '反応やお誘いが来たら知らせるね。',
     action: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'まずはフレンズ追加か飲みログ作成から始めよう',
+          'まずは1枚投稿するか、フレンズを追加してみよう',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: isWhite
@@ -627,9 +627,9 @@ class _FriendRequestNotificationSheetState
     extends State<_FriendRequestNotificationSheet> {
   String? _busyAction;
 
-  bool get _isPending =>
-      widget.notification.friendRequestStatus == null ||
-      widget.notification.friendRequestStatus == 'pending';
+  bool get _isPending => nomoFriendRequestStatusFromKey(
+    widget.notification.friendRequestStatus,
+  ).isPending;
 
   Future<void> _submit({required bool accept}) async {
     if (_busyAction != null || !_isPending) return;
@@ -656,12 +656,9 @@ class _FriendRequestNotificationSheetState
 
   @override
   Widget build(BuildContext context) {
-    final statusLabel = switch (widget.notification.friendRequestStatus) {
-      'accepted' => '承認済み',
-      'rejected' => '見送り済み',
-      'cancelled' => '取り消し済み',
-      _ => '承認待ち',
-    };
+    final statusLabel = nomoFriendRequestStatusFromKey(
+      widget.notification.friendRequestStatus,
+    ).label;
 
     return SafeArea(
       child: Container(
@@ -852,9 +849,9 @@ class _DrinkInviteNotificationSheetState
     extends State<_DrinkInviteNotificationSheet> {
   String? _busyAction;
 
-  bool get _isPending =>
-      widget.notification.drinkInviteStatus == null ||
-      widget.notification.drinkInviteStatus == 'pending';
+  bool get _isPending => nomoDrinkInviteStatusFromKey(
+    widget.notification.drinkInviteStatus,
+  ).isPending;
 
   Future<void> _submit({required bool accept}) async {
     if (_busyAction != null || !_isPending) return;
@@ -867,7 +864,7 @@ class _DrinkInviteNotificationSheetState
         await widget.onReject();
       }
       if (!mounted) return;
-      NomoToast.show(context, accept ? '飲み予定を受け取りました' : '飲み予定を見送りました');
+      NomoToast.show(context, accept ? '予定を受け取りました' : 'お誘いを見送りました');
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
@@ -881,12 +878,9 @@ class _DrinkInviteNotificationSheetState
 
   @override
   Widget build(BuildContext context) {
-    final statusLabel = switch (widget.notification.drinkInviteStatus) {
-      'accepted' => '参加予定',
-      'rejected' => '見送り済み',
-      'cancelled' => '取り消し済み',
-      _ => '返信待ち',
-    };
+    final statusLabel = nomoDrinkInviteStatusFromKey(
+      widget.notification.drinkInviteStatus,
+    ).label;
 
     return SafeArea(
       child: Container(
@@ -1013,7 +1007,7 @@ class _DrinkInviteNotificationSheetState
             const SizedBox(height: 18),
             if (_isPending) ...[
               Nomo3DButton(
-                label: '承認して飲みに行く',
+                label: '承認して遊びに行く',
                 icon: CupertinoIcons.checkmark_circle_fill,
                 onTap: () => _submit(accept: true),
                 isLoading: _busyAction == 'accept',

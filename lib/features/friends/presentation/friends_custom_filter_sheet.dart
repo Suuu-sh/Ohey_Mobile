@@ -18,12 +18,36 @@ class _CustomFilterSheetResult {
   final String? filterId;
 }
 
+enum _CustomFilterManageAction { add, edit, delete, reorder }
+
+class _CustomFilterManageResult {
+  const _CustomFilterManageResult._({
+    required this.action,
+    this.filter,
+    this.filterId,
+    this.filters,
+  });
+
+  const _CustomFilterManageResult.edit(_CustomFriendFilter filter)
+    : this._(action: _CustomFilterManageAction.edit, filter: filter);
+
+  const _CustomFilterManageResult.add()
+    : this._(action: _CustomFilterManageAction.add);
+
+  const _CustomFilterManageResult.delete(String filterId)
+    : this._(action: _CustomFilterManageAction.delete, filterId: filterId);
+
+  const _CustomFilterManageResult.reorder(List<_CustomFriendFilter> filters)
+    : this._(action: _CustomFilterManageAction.reorder, filters: filters);
+
+  final _CustomFilterManageAction action;
+  final _CustomFriendFilter? filter;
+  final String? filterId;
+  final List<_CustomFriendFilter>? filters;
+}
+
 String _customFilterStorageKey(String userId) =>
     'nomo_custom_friend_filters_v1_$userId';
-
-bool _isSelectableGenderKey(String key) => selectableNomoGenders.any(
-  (gender) => gender.key == key.trim().toLowerCase(),
-);
 
 List<_CustomFriendFilter> _decodeCustomFilters(String? raw) {
   if (raw == null || raw.trim().isEmpty) return const [];
@@ -62,26 +86,6 @@ const _customFilterAccents = [
 
 Color _customFilterAccent(int index) =>
     _customFilterAccents[index % _customFilterAccents.length];
-
-class _FriendStatusOption {
-  const _FriendStatusOption({
-    required this.key,
-    required this.label,
-    required this.enabled,
-  });
-
-  final String key;
-  final String label;
-  final bool enabled;
-}
-
-const _statusOptions = [
-  _FriendStatusOption(key: 'can_drink_today', label: '今日飲める', enabled: true),
-  _FriendStatusOption(key: 'non_alcohol', label: 'ノンアルなら', enabled: true),
-  _FriendStatusOption(key: 'liver_rest', label: '休肝日', enabled: false),
-  _FriendStatusOption(key: 'has_plans', label: '予定あり', enabled: false),
-  _FriendStatusOption(key: 'unset', label: '未設定', enabled: true),
-];
 
 class _FilterChip extends StatelessWidget {
   const _FilterChip({
@@ -192,6 +196,258 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
+class _CustomFilterManageSheet extends StatefulWidget {
+  const _CustomFilterManageSheet({required this.filters});
+
+  final List<_CustomFriendFilter> filters;
+
+  @override
+  State<_CustomFilterManageSheet> createState() =>
+      _CustomFilterManageSheetState();
+}
+
+class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
+  late List<_CustomFriendFilter> _filters;
+
+  @override
+  void initState() {
+    super.initState();
+    _filters = [...widget.filters];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite ? const Color(0xFF657282) : Colors.white70;
+    return NomoBottomSheetShell(
+      title: 'グループ編集',
+      showHandle: true,
+      radius: 32,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '追加・並び替え・削除をここでまとめてできるよ。',
+            style: TextStyle(color: sub, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 14),
+          _CustomFilterManageAddButton(isWhite: isWhite),
+          const SizedBox(height: 10),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 360),
+            child: ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const BouncingScrollPhysics(),
+              buildDefaultDragHandles: false,
+              itemCount: _filters.length,
+              onReorder: (oldIndex, newIndex) {
+                HapticFeedback.selectionClick();
+                setState(() {
+                  if (oldIndex < newIndex) newIndex -= 1;
+                  final item = _filters.removeAt(oldIndex);
+                  _filters.insert(newIndex, item);
+                });
+              },
+              itemBuilder: (context, index) {
+                final filter = _filters[index];
+                return _CustomFilterManageRow(
+                  key: ValueKey(filter.id),
+                  filter: filter,
+                  index: index,
+                  ink: ink,
+                  isWhite: isWhite,
+                  onEdit: () {
+                    HapticFeedback.selectionClick();
+                    Navigator.of(
+                      context,
+                    ).pop(_CustomFilterManageResult.edit(filter));
+                  },
+                  onDelete: () {
+                    HapticFeedback.mediumImpact();
+                    Navigator.of(
+                      context,
+                    ).pop(_CustomFilterManageResult.delete(filter.id));
+                  },
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 14),
+          NomoPrimaryButton(
+            label: 'この順番で保存',
+            icon: CupertinoIcons.checkmark_alt_circle_fill,
+            onPressed: () => Navigator.of(
+              context,
+            ).pop(_CustomFilterManageResult.reorder(_filters)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomFilterManageAddButton extends StatelessWidget {
+  const _CustomFilterManageAddButton({required this.isWhite});
+
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        Navigator.of(context).pop(const _CustomFilterManageResult.add());
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: _FriendsColors.lime.withValues(alpha: isWhite ? .18 : .13),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _FriendsColors.lime.withValues(alpha: .46)),
+        ),
+        child: Row(
+          children: [
+            const NomoPopIcon(
+              icon: CupertinoIcons.plus,
+              color: _FriendsColors.lime,
+              size: 36,
+              iconSize: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'グループを追加',
+                style: TextStyle(
+                  color: ink,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            NomoGeneratedIcon(
+              CupertinoIcons.chevron_right,
+              color: _FriendsColors.lime,
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomFilterManageRow extends StatelessWidget {
+  const _CustomFilterManageRow({
+    super.key,
+    required this.filter,
+    required this.index,
+    required this.ink,
+    required this.isWhite,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final _CustomFriendFilter filter;
+  final int index;
+  final Color ink;
+  final bool isWhite;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = _customFilterAccent(index);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? const Color(0xFFF7F9FC)
+              : Colors.white.withValues(alpha: .06),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isWhite ? const Color(0xFFE2E8F0) : Colors.white12,
+          ),
+        ),
+        child: Row(
+          children: [
+            ReorderableDragStartListener(
+              index: index,
+              child: NomoPopIcon(
+                icon: CupertinoIcons.line_horizontal_3,
+                color: accent,
+                size: 36,
+                iconSize: 18,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                filter.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: ink,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            _ManageIconButton(
+              icon: CupertinoIcons.pencil,
+              color: accent,
+              onTap: onEdit,
+            ),
+            const SizedBox(width: 6),
+            _ManageIconButton(
+              icon: CupertinoIcons.trash_fill,
+              color: const Color(0xFFFF6B9A),
+              onTap: onDelete,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ManageIconButton extends StatelessWidget {
+  const _ManageIconButton({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        width: 38,
+        height: 38,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: .14),
+          shape: BoxShape.circle,
+          border: Border.all(color: color.withValues(alpha: .26)),
+        ),
+        child: NomoGeneratedIcon(icon, color: color, size: 17),
+      ),
+    );
+  }
+}
+
 class _CustomFilterSheet extends StatefulWidget {
   const _CustomFilterSheet({
     required this.friends,
@@ -210,24 +466,12 @@ class _CustomFilterSheet extends StatefulWidget {
 class _CustomFilterSheetState extends State<_CustomFilterSheet> {
   late final TextEditingController _nameController;
   late Set<String> _selectedFriendIds;
-  late Set<String> _selectedStatusKeys;
-  late Set<String> _selectedGenderKeys;
-  late bool _favoriteOnly;
-  late bool _drinkableOnly;
-  late bool _onlineOnly;
   String? _errorText;
 
   bool get _isEditing => widget.initialFilter != null;
 
-  bool get _canSave => _nameController.text.trim().isNotEmpty && _hasCriteria;
-
-  bool get _hasCriteria =>
-      _selectedFriendIds.isNotEmpty ||
-      _selectedStatusKeys.isNotEmpty ||
-      _selectedGenderKeys.isNotEmpty ||
-      _favoriteOnly ||
-      _drinkableOnly ||
-      _onlineOnly;
+  bool get _canSave =>
+      _nameController.text.trim().isNotEmpty && _selectedFriendIds.isNotEmpty;
 
   @override
   void initState() {
@@ -238,11 +482,6 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
             setState(() => _errorText = null);
           });
     _selectedFriendIds = {...?widget.initialFilter?.friendIds};
-    _selectedStatusKeys = {...?widget.initialFilter?.statusKeys};
-    _selectedGenderKeys = {...?widget.initialFilter?.genderKeys};
-    _favoriteOnly = widget.initialFilter?.favoriteOnly ?? false;
-    _drinkableOnly = widget.initialFilter?.drinkableOnly ?? false;
-    _onlineOnly = widget.initialFilter?.onlineOnly ?? false;
   }
 
   @override
@@ -261,69 +500,23 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
     });
   }
 
-  void _toggleStatus(String statusKey) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      if (!_selectedStatusKeys.add(statusKey)) {
-        _selectedStatusKeys.remove(statusKey);
-      }
-      _errorText = null;
-    });
-  }
-
-  void _toggleGender(String genderKey) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      if (!_selectedGenderKeys.add(genderKey)) {
-        _selectedGenderKeys.remove(genderKey);
-      }
-      _errorText = null;
-    });
-  }
-
-  void _setBoolCondition({
-    required bool value,
-    required ValueChanged<bool> setter,
-  }) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      setter(!value);
-      _errorText = null;
-    });
-  }
-
   void _save() {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      setState(() => _errorText = 'フィルター名を入力してね');
+      setState(() => _errorText = 'グループ名を入れてね');
       return;
     }
-    if (!_hasCriteria) {
-      setState(() => _errorText = '条件を1つ以上選んでね');
+    if (_selectedFriendIds.isEmpty) {
+      setState(() => _errorText = 'メンバーを1人以上選んでね');
       return;
     }
     final existingOrder = {
       for (var i = 0; i < widget.friends.length; i++) widget.friends[i].id: i,
     };
-    final statusOrder = {
-      for (var i = 0; i < _statusOptions.length; i++) _statusOptions[i].key: i,
-    };
     final friendIds = _selectedFriendIds.toList()
       ..sort(
         (a, b) =>
             (existingOrder[a] ?? 9999).compareTo(existingOrder[b] ?? 9999),
-      );
-    final statusKeys = _selectedStatusKeys.toList()
-      ..sort(
-        (a, b) => (statusOrder[a] ?? 9999).compareTo(statusOrder[b] ?? 9999),
-      );
-    final genderOrder = {
-      for (var i = 0; i < selectableNomoGenders.length; i++)
-        selectableNomoGenders[i].key: i,
-    };
-    final genderKeys = _selectedGenderKeys.toList()
-      ..sort(
-        (a, b) => (genderOrder[a] ?? 9999).compareTo(genderOrder[b] ?? 9999),
       );
     Navigator.of(context).pop(
       _CustomFilterSheetResult.save(
@@ -333,11 +526,6 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
               DateTime.now().microsecondsSinceEpoch.toString(),
           name: name,
           friendIds: friendIds,
-          statusKeys: statusKeys,
-          genderKeys: genderKeys,
-          favoriteOnly: _favoriteOnly,
-          drinkableOnly: _drinkableOnly,
-          onlineOnly: _onlineOnly,
         ),
       ),
     );
@@ -398,7 +586,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _isEditing ? 'フィルター編集' : 'フィルター作成',
+                      _isEditing ? 'グループ編集' : 'グループ作成',
                       style: TextStyle(
                         color: ink,
                         fontSize: 20,
@@ -408,7 +596,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'よく使う条件だけ選んで保存できます',
+                      'よく遊ぶメンバーをまとめておけるよ。',
                       style: TextStyle(
                         color: sub,
                         fontSize: 12,
@@ -449,7 +637,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                       fontWeight: FontWeight.w900,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'フィルター名（例：いつメン）',
+                      hintText: 'グループ名（例：いつメン）',
                       hintStyle: TextStyle(
                         color: sub,
                         fontWeight: FontWeight.w800,
@@ -465,89 +653,6 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                         borderSide: BorderSide.none,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  _FilterSectionTitle(label: 'よく使う条件', color: ink),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _CriteriaToggleChip(
-                        label: 'お気に入りのみ',
-                        icon: CupertinoIcons.star_fill,
-                        selected: _favoriteOnly,
-                        accent: const Color(0xFFFFC700),
-                        isWhite: isWhite,
-                        onTap: () => _setBoolCondition(
-                          value: _favoriteOnly,
-                          setter: (value) => _favoriteOnly = value,
-                        ),
-                      ),
-                      _CriteriaToggleChip(
-                        label: '今日誘える',
-                        icon: CupertinoIcons.paperplane_fill,
-                        selected: _drinkableOnly,
-                        accent: const Color(0xFF12C9A4),
-                        isWhite: isWhite,
-                        onTap: () => _setBoolCondition(
-                          value: _drinkableOnly,
-                          setter: (value) => _drinkableOnly = value,
-                        ),
-                      ),
-                      _CriteriaToggleChip(
-                        label: 'オンライン',
-                        icon: CupertinoIcons.circle_fill,
-                        selected: _onlineOnly,
-                        accent: const Color(0xFF18AFFF),
-                        isWhite: isWhite,
-                        onTap: () => _setBoolCondition(
-                          value: _onlineOnly,
-                          setter: (value) => _onlineOnly = value,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _FilterSectionTitle(label: '性別', color: ink),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final gender in selectableNomoGenders)
-                        _CriteriaToggleChip(
-                          label: gender.label,
-                          icon: gender == NomoGender.male
-                              ? CupertinoIcons.person_fill
-                              : CupertinoIcons.person_crop_circle_fill,
-                          selected: _selectedGenderKeys.contains(gender.key),
-                          accent: gender == NomoGender.male
-                              ? const Color(0xFF18AFFF)
-                              : const Color(0xFFFF5AA6),
-                          isWhite: isWhite,
-                          onTap: () => _toggleGender(gender.key),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _FilterSectionTitle(label: 'ステータス', color: ink),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final option in _statusOptions)
-                        _CriteriaToggleChip(
-                          label: option.label,
-                          selected: _selectedStatusKeys.contains(option.key),
-                          accent: option.enabled
-                              ? _FriendsColors.lime
-                              : _FriendsColors.muted,
-                          isWhite: isWhite,
-                          onTap: () => _toggleStatus(option.key),
-                        ),
-                    ],
                   ),
                   const SizedBox(height: 16),
                   _FilterSectionTitle(label: 'フレンズ', color: ink),
@@ -642,82 +747,6 @@ class _FilterSectionTitle extends StatelessWidget {
       ),
     ],
   );
-}
-
-class _CriteriaToggleChip extends StatelessWidget {
-  const _CriteriaToggleChip({
-    required this.label,
-    required this.selected,
-    required this.accent,
-    required this.isWhite,
-    required this.onTap,
-    this.icon,
-  });
-
-  final String label;
-  final bool selected;
-  final Color accent;
-  final bool isWhite;
-  final VoidCallback onTap;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final ink = selected
-        ? _FriendsColors.bg
-        : isWhite
-        ? const Color(0xFF101820)
-        : Colors.white;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected
-              ? accent
-              : isWhite
-              ? const Color(0xFFF7F9FB)
-              : AppColors.darkBackground,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: selected
-                ? Colors.white.withValues(alpha: .20)
-                : isWhite
-                ? const Color(0xFFDCE4EC)
-                : Colors.white.withValues(alpha: .10),
-          ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: accent.withValues(alpha: .20),
-                    blurRadius: 16,
-                    offset: const Offset(0, 7),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              NomoGeneratedIcon(icon!, color: ink, size: 15),
-              const SizedBox(width: 6),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                color: ink,
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _CustomFilterFriendRow extends StatelessWidget {

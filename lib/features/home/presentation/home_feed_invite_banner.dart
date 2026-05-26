@@ -70,7 +70,7 @@ class _FeedInviteBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      hasInvite ? '返信待ちの飲み招待' : '今日の予定あり',
+                      hasInvite ? '返信待ちのお誘い' : '今日の予定あり',
                       style: TextStyle(
                         color: accent,
                         fontSize: 12,
@@ -80,8 +80,8 @@ class _FeedInviteBanner extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       hasInvite
-                          ? '${target.name}から飲みのお誘いが届いています'
-                          : '${target.name}との飲み予定があります',
+                          ? '${target.name}からお誘いが届いています'
+                          : '${target.name}との予定があります',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

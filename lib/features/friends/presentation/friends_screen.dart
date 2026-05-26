@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
-import '../../../core/models/nomo_gender.dart';
+import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
@@ -18,6 +18,7 @@ import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
+import '../../../core/widgets/nomo_primary_button.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
@@ -101,11 +102,65 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     );
   }
 
+  Future<void> _deleteCustomFilter(_CustomFriendFilter filter) async {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _customFilters = [
+        for (final item in _customFilters)
+          if (item.id != filter.id) item,
+      ];
+      if (_selectedCustomFilterId == filter.id) {
+        _selectedCustomFilterId = null;
+        _selectedFilter = _FriendFilterType.all;
+      }
+    });
+    await _persistCustomFilters();
+    if (mounted) NomoToast.show(context, 'グループを削除したよ');
+  }
+
+  Future<void> _openCustomFilterManageSheet() async {
+    HapticFeedback.selectionClick();
+    final result = await showNomoBottomSheet<_CustomFilterManageResult>(
+      context: context,
+      useSafeArea: true,
+      barrierColor: Colors.black.withValues(alpha: .58),
+      builder: (_) => _CustomFilterManageSheet(filters: _customFilters),
+    );
+    if (!mounted || result == null) return;
+
+    switch (result.action) {
+      case _CustomFilterManageAction.add:
+        await _openCustomFilterSheet();
+        break;
+      case _CustomFilterManageAction.edit:
+        await _openCustomFilterSheet(filter: result.filter);
+        break;
+      case _CustomFilterManageAction.delete:
+        final filterId = result.filterId;
+        _CustomFriendFilter? filter;
+        for (final item in _customFilters) {
+          if (item.id == filterId) {
+            filter = item;
+            break;
+          }
+        }
+        if (filter != null) await _deleteCustomFilter(filter);
+        break;
+      case _CustomFilterManageAction.reorder:
+        final filters = result.filters;
+        if (filters == null) return;
+        setState(() => _customFilters = filters);
+        await _persistCustomFilters();
+        if (mounted) NomoToast.show(context, 'グループの順番を保存したよ');
+        break;
+    }
+  }
+
   Future<void> _openCustomFilterSheet({_CustomFriendFilter? filter}) async {
     final friends =
         ref.read(friendsProvider).asData?.value ?? const <NomoFriend>[];
     if (friends.isEmpty) {
-      NomoToast.show(context, 'フレンズを追加するとフィルターを作れます');
+      NomoToast.show(context, 'フレンズを追加するとグループを作れるよ');
       return;
     }
     HapticFeedback.selectionClick();
@@ -140,7 +195,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           _selectedCustomFilterId = saved.id;
         });
         await _persistCustomFilters();
-        if (mounted) NomoToast.show(context, 'フィルターを保存しました');
+        if (mounted) NomoToast.show(context, 'グループを保存したよ');
         break;
       case _CustomFilterSheetAction.delete:
         final filterId = result.filterId!;
@@ -155,7 +210,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           }
         });
         await _persistCustomFilters();
-        if (mounted) NomoToast.show(context, 'フィルターを削除しました');
+        if (mounted) NomoToast.show(context, 'グループを削除したよ');
         break;
     }
   }
@@ -212,7 +267,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       HapticFeedback.lightImpact();
       NomoToast.show(
         context,
-        '${friend.name}に飲み招待を送りました。',
+        '${friend.name}にお誘いを送りました。',
         icon: CupertinoIcons.checkmark_circle_fill,
         placement: NomoToastPlacement.bottom,
       );
@@ -321,7 +376,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                       }),
                       onCustomLongPress: (filter) =>
                           _openCustomFilterSheet(filter: filter),
-                      onCreateCustom: () => _openCustomFilterSheet(),
+                      onManageCustom: _openCustomFilterManageSheet,
                     ),
                     const SizedBox(height: 18),
                     Expanded(

@@ -64,14 +64,14 @@ class NomoFriend {
 
 String nomiTomoStatusLabel(int count) {
   if (count == 0) return 'まだ静かなおなか';
-  if (count <= 2) return 'にこにこ乾杯';
+  if (count <= 2) return 'にこにこメモリー';
   if (count <= 5) return '盛り上がり中';
   return '今月の主役級！';
 }
 
 String nomiTomoStatusMessage(NomoFriend friend, int count) {
-  if (count == 0) return '${friend.name}とそろそろ乾杯する？';
-  if (count <= 2) return '${friend.name}といいペースで乾杯中。';
+  if (count == 0) return '${friend.name}と思い出を増やす？';
+  if (count <= 2) return '${friend.name}と思い出が増えてきたね。';
   if (count <= 5) return '${friend.name}との思い出、増えてるよ。';
   return '${friend.name}とは今月かなり仲良し。';
 }

@@ -28,13 +28,13 @@ void main() {
     await tester.tap(find.text('スキップ'));
     await tester.pumpAndSettle();
 
-    expect(find.text('すでにアカウントをお持ち\nですか？'), findsOneWidget);
+    expect(find.text('まずはアカウントを作って\n今日を1枚残そう'), findsOneWidget);
     expect(find.text('ログイン'), findsOneWidget);
-    expect(find.text('Tomolaは初めてですか'), findsOneWidget);
-    expect(find.text('サインアップ'), findsOneWidget);
+    expect(find.text('30秒で始められます'), findsOneWidget);
+    expect(find.text('新しくはじめる'), findsOneWidget);
     expect(find.byType(SingleChildScrollView), findsNothing);
 
-    await tester.tap(find.text('サインアップ'));
+    await tester.tap(find.text('新しくはじめる'));
     await tester.pumpAndSettle();
 
     expect(find.text('メールアドレスを入力して\nください'), findsOneWidget);
@@ -86,10 +86,10 @@ void main() {
     await tester.tap(find.text('別のアカウントを追加'));
     await tester.pumpAndSettle();
 
-    expect(find.text('すでにアカウントをお持ち\nですか？'), findsOneWidget);
+    expect(find.text('まずはアカウントを作って\n今日を1枚残そう'), findsOneWidget);
     expect(find.text('ログイン'), findsOneWidget);
-    expect(find.text('Tomolaは初めてですか'), findsOneWidget);
-    expect(find.text('サインアップ'), findsOneWidget);
+    expect(find.text('30秒で始められます'), findsOneWidget);
+    expect(find.text('新しくはじめる'), findsOneWidget);
     expect(find.byType(SingleChildScrollView), findsNothing);
 
     await tester.tap(find.text('ログイン'));

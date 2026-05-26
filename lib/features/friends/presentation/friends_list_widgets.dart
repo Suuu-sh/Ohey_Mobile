@@ -31,8 +31,9 @@ class _FriendsList extends StatelessWidget {
             favoriteOverrides[friends[i].id] ?? friends[i].isFavorite,
           ),
           status: _statusForFriend(friends[i], i),
+          originalIndex: i,
         ),
-    ];
+    ]..sort(_compareFriendsForList);
     final filtered = decorated.where((item) {
       if (selectedCustomFilter != null) {
         return _matchesCustomFilter(item, selectedCustomFilter!);
@@ -46,7 +47,9 @@ class _FriendsList extends StatelessWidget {
         (a, b) =>
             _recommendationScoreFor(b).compareTo(_recommendationScoreFor(a)),
       );
-    final hasRecommendations = recommendations.isNotEmpty;
+    final isGroupView = selectedCustomFilter != null;
+    final hasRecommendations = !isGroupView && recommendations.isNotEmpty;
+    final hasGroupSchedule = isGroupView && filtered.length >= 2;
 
     if (filtered.isEmpty) {
       return LayoutBuilder(
@@ -69,7 +72,7 @@ class _FriendsList extends StatelessWidget {
                         ? 'QRコードかIDでフレンズを追加しよう'
                         : selectedCustomFilter == null
                         ? '別の条件を選ぶと見つかるかも'
-                        : 'フィルターを長押しすると編集できます',
+                        : '長押しでグループ編集',
                     onAddFriend: onAddFriend,
                   ),
                 ),
@@ -85,7 +88,11 @@ class _FriendsList extends StatelessWidget {
         parent: BouncingScrollPhysics(),
       ),
       padding: const EdgeInsets.only(bottom: 116),
-      itemCount: filtered.length + 1 + (hasRecommendations ? 1 : 0),
+      itemCount:
+          filtered.length +
+          1 +
+          (hasRecommendations ? 1 : 0) +
+          (hasGroupSchedule ? 1 : 0),
       separatorBuilder: (_, _) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
         if (hasRecommendations && index == 0) {
@@ -94,7 +101,14 @@ class _FriendsList extends StatelessWidget {
             onInvite: onInvite,
           );
         }
-        final friendIndex = index - (hasRecommendations ? 1 : 0);
+        if (hasGroupSchedule && index == 0) {
+          return _GroupScheduleSection(
+            groupName: selectedCustomFilter!.name,
+            friends: filtered,
+          );
+        }
+        final friendIndex =
+            index - (hasRecommendations ? 1 : 0) - (hasGroupSchedule ? 1 : 0);
         if (friendIndex == filtered.length) {
           return _AddFriendsPromoCard(onTap: onAddFriend);
         }
@@ -159,7 +173,7 @@ class _TodayInviteSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '今誘いやすいフレンズを表示しています。',
+                      'あなたにおすすめのフレンズを表示しています。',
                       style: TextStyle(
                         color: sub,
                         fontSize: 12,
@@ -178,23 +192,19 @@ class _TodayInviteSection extends StatelessWidget {
           else
             SizedBox(
               height: 178,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final cardWidth = (constraints.maxWidth - 12) / 2;
-                  return ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: candidates.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) => SizedBox(
-                      width: cardWidth,
-                      child: _TodayInviteCandidateCard(
-                        item: candidates[index],
-                        onInvite: () => onInvite(candidates[index].friend),
-                      ),
-                    ),
-                  );
-                },
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 520),
+                switchInCurve: Curves.easeOutBack,
+                switchOutCurve: Curves.easeInBack,
+                transitionBuilder: (child, animation) =>
+                    _SlimeSplitTransition(animation: animation, child: child),
+                child: _TodayInviteCardsStrip(
+                  key: ValueKey(
+                    '${candidates.length}-${candidates.map((item) => item.friend.id).join(',')}',
+                  ),
+                  candidates: candidates,
+                  onInvite: onInvite,
+                ),
               ),
             ),
           if (blocked.isNotEmpty) ...[
@@ -222,22 +232,259 @@ class _TodayInviteSection extends StatelessWidget {
   }
 }
 
-class _TodayInviteCandidateCard extends StatelessWidget {
-  const _TodayInviteCandidateCard({required this.item, required this.onInvite});
+class _TodayInviteCardsStrip extends StatelessWidget {
+  const _TodayInviteCardsStrip({
+    super.key,
+    required this.candidates,
+    required this.onInvite,
+  });
 
-  final _DecoratedFriend item;
-  final VoidCallback onInvite;
+  final List<_DecoratedFriend> candidates;
+  final ValueChanged<NomoFriend> onInvite;
 
   @override
   Widget build(BuildContext context) {
-    final friend = item.friend;
-    final accent = _accentForFriend(friend);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSingle = candidates.length == 1;
+        final cardWidth = isSingle
+            ? constraints.maxWidth
+            : (constraints.maxWidth - 12) / 2;
+        return ListView.separated(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          itemCount: candidates.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 12),
+          itemBuilder: (context, index) => TweenAnimationBuilder<double>(
+            key: ValueKey(candidates[index].friend.id),
+            tween: Tween(begin: 0, end: 1),
+            duration: Duration(milliseconds: 420 + index * 70),
+            curve: Curves.easeOutBack,
+            builder: (context, value, child) {
+              final squeeze = 1 - value;
+              return Transform.scale(
+                scaleX: 1 + squeeze * (isSingle ? .10 : .18),
+                scaleY: 1 - squeeze * .08,
+                alignment: Alignment.center,
+                child: Opacity(opacity: value.clamp(0, 1), child: child),
+              );
+            },
+            child: SizedBox(
+              width: cardWidth,
+              child: _TodayInviteCandidateCard(
+                item: candidates[index],
+                onInvite: () => onInvite(candidates[index].friend),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SlimeSplitTransition extends StatelessWidget {
+  const _SlimeSplitTransition({required this.animation, required this.child});
+
+  final Animation<double> animation;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      child: child,
+      builder: (context, child) {
+        final value = Curves.easeOutBack.transform(animation.value.clamp(0, 1));
+        final squash = 1 - value;
+        return Transform.scale(
+          scaleX: 1 + squash * .16,
+          scaleY: 1 - squash * .10,
+          alignment: Alignment.centerLeft,
+          child: Opacity(opacity: animation.value.clamp(0, 1), child: child),
+        );
+      },
+    );
+  }
+}
+
+class _GroupScheduleSection extends StatelessWidget {
+  const _GroupScheduleSection({required this.groupName, required this.friends});
+
+  final String groupName;
+  final List<_DecoratedFriend> friends;
+
+  @override
+  Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    final reason = _recommendationReasonFor(item);
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .60);
+    final suggestions = _groupScheduleSuggestions(friends);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const NomoPopIcon(
+                icon: CupertinoIcons.calendar_badge_plus,
+                color: Color(0xFF5DEBD3),
+                size: 38,
+                iconSize: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$groupNameで集まる日',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.4,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'みんなの今の予定から、集まりやすそうな日を出すね。',
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 142,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 520),
+              switchInCurve: Curves.easeOutBack,
+              switchOutCurve: Curves.easeInBack,
+              transitionBuilder: (child, animation) =>
+                  _SlimeSplitTransition(animation: animation, child: child),
+              child: _GroupScheduleCardsStrip(
+                key: ValueKey(
+                  suggestions
+                      .map(
+                        (suggestion) =>
+                            '${suggestion.title}-${suggestion.badge}',
+                      )
+                      .join(','),
+                ),
+                suggestions: suggestions,
+                isWhite: isWhite,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _groupScheduleNote(friends),
+            style: TextStyle(
+              color: sub,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Container(
+            width: double.infinity,
+            height: 1.5,
+            color: isWhite
+                ? const Color(0xFFE1E7DE)
+                : Colors.white.withValues(alpha: .14),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GroupScheduleCardsStrip extends StatelessWidget {
+  const _GroupScheduleCardsStrip({
+    super.key,
+    required this.suggestions,
+    required this.isWhite,
+  });
+
+  final List<_GroupScheduleSuggestion> suggestions;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSingle = suggestions.length == 1;
+        final cardWidth = isSingle
+            ? constraints.maxWidth
+            : (constraints.maxWidth - 12) / 2;
+        return ListView.separated(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          itemCount: suggestions.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 12),
+          itemBuilder: (context, index) => TweenAnimationBuilder<double>(
+            key: ValueKey(
+              '${suggestions[index].title}-${suggestions[index].badge}',
+            ),
+            tween: Tween(begin: 0, end: 1),
+            duration: Duration(milliseconds: 420 + index * 70),
+            curve: Curves.easeOutBack,
+            builder: (context, value, child) {
+              final squeeze = 1 - value;
+              return Transform.scale(
+                scaleX: 1 + squeeze * (isSingle ? .10 : .18),
+                scaleY: 1 - squeeze * .08,
+                alignment: Alignment.center,
+                child: Opacity(opacity: value.clamp(0, 1), child: child),
+              );
+            },
+            child: SizedBox(
+              width: cardWidth,
+              child: _GroupScheduleSuggestionCard(
+                suggestion: suggestions[index],
+                isWhite: isWhite,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _GroupScheduleSuggestionCard extends StatelessWidget {
+  const _GroupScheduleSuggestionCard({
+    required this.suggestion,
+    required this.isWhite,
+  });
+
+  final _GroupScheduleSuggestion suggestion;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .62);
     return NomoThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
-      accentColor: accent,
+      accentColor: suggestion.accent,
       backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
       gradient: LinearGradient(
         begin: Alignment.topLeft,
@@ -246,7 +493,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
             ? const [Color(0xFFFFFFFF), Color(0xFFF7FFE9)]
             : [
                 Colors.white.withValues(alpha: .06),
-                accent.withValues(alpha: .08),
+                suggestion.accent.withValues(alpha: .08),
               ],
       ),
       borderRadius: 24,
@@ -258,11 +505,100 @@ class _TodayInviteCandidateCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            children: [
+              NomoPopIcon(
+                icon: CupertinoIcons.calendar_badge_plus,
+                color: suggestion.accent,
+                size: 40,
+                iconSize: 20,
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                decoration: BoxDecoration(
+                  color: suggestion.accent.withValues(alpha: .16),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  suggestion.badge,
+                  style: TextStyle(
+                    color: suggestion.accent,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 11),
+          Text(
+            suggestion.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: ink,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.25,
+            ),
+          ),
+          const SizedBox(height: 7),
+          Text(
+            suggestion.subtitle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: sub,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TodayInviteCandidateCard extends StatelessWidget {
+  const _TodayInviteCandidateCard({required this.item, required this.onInvite});
+
+  final _DecoratedFriend item;
+  final VoidCallback onInvite;
+
+  @override
+  Widget build(BuildContext context) {
+    final friend = item.friend;
+    final frameAccent = _friendBlockFrameColor(item.status);
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = item.status.enabled
+        ? (isWhite ? const Color(0xFF101820) : Colors.white)
+        : (isWhite ? const Color(0xFF667381) : _FriendsColors.muted);
+    final reason = _recommendationReasonFor(item);
+    return NomoThemedPanel(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
+      accentColor: frameAccent,
+      backgroundColor: _friendBlockSurfaceColor(isWhite: isWhite),
+      borderRadius: 24,
+      borderAlpha: _friendBlockBorderAlpha(
+        isWhite: isWhite,
+        status: item.status,
+      ),
+      glowAlpha: _friendInviteCardGlowAlpha(
+        isWhite: isWhite,
+        status: item.status,
+      ),
+      glowBlur: 18,
+      glowOffset: const Offset(0, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _FriendMiniAvatarBubble(
                 avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
-                accent: accent,
+                accent: frameAccent,
                 size: 42,
               ),
               const SizedBox(width: 9),
@@ -282,7 +618,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    _CompactStatusPill(status: item.status, accent: accent),
+                    _CompactStatusPill(status: item.status),
                   ],
                 ),
               ),
@@ -324,12 +660,15 @@ class _TodayInviteCandidateCard extends StatelessWidget {
             child: Nomo3DButton(
               label: '誘う',
               icon: CupertinoIcons.paperplane_fill,
-              onTap: onInvite,
+              onTap: item.status.enabled ? onInvite : null,
+              enabled: item.status.enabled,
               height: 36,
               radius: 18,
-              color: _FriendsColors.lime,
-              foregroundColor: _FriendsColors.limeForeground,
-              shadowColor: _FriendsColors.limeShadow,
+              color: _friendInviteButtonColor(item.status),
+              foregroundColor: _friendInviteButtonForegroundColor(item.status),
+              shadowColor: _friendInviteButtonShadowColor(item.status),
+              disabledColor: _FriendsColors.disabledButton,
+              disabledOpacity: 1,
               padding: const EdgeInsets.symmetric(horizontal: 10),
               fontSize: 12.5,
             ),
@@ -341,17 +680,17 @@ class _TodayInviteCandidateCard extends StatelessWidget {
 }
 
 class _CompactStatusPill extends StatelessWidget {
-  const _CompactStatusPill({required this.status, required this.accent});
+  const _CompactStatusPill({required this.status});
 
   final _FriendStatus status;
-  final Color accent;
 
   @override
   Widget build(BuildContext context) {
+    final accent = _friendStatusPillColor(status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: status.enabled ? .18 : .10),
+        color: accent.withValues(alpha: status.enabled ? .20 : .38),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
@@ -359,7 +698,9 @@ class _CompactStatusPill extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          color: status.enabled ? accent : _FriendsColors.muted,
+          color: status.enabled
+              ? accent
+              : _friendInviteButtonForegroundColor(status),
           fontWeight: FontWeight.w900,
           fontSize: 11,
           letterSpacing: -.15,
@@ -455,7 +796,7 @@ class _TodayInviteEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-    '今日は誘えそうなフレンズがまだいません。ステータスが更新されるとここに出ます。',
+    '今日はまだ誘えそうなフレンズがいないみたい。',
     style: TextStyle(
       color: isWhite
           ? const Color(0xFF667381)
@@ -467,6 +808,206 @@ class _TodayInviteEmpty extends StatelessWidget {
   );
 }
 
+class _GroupScheduleSuggestion {
+  const _GroupScheduleSuggestion({
+    required this.title,
+    required this.subtitle,
+    required this.badge,
+    required this.accent,
+  });
+
+  final String title;
+  final String subtitle;
+  final String badge;
+  final Color accent;
+}
+
+List<_GroupScheduleSuggestion> _groupScheduleSuggestions(
+  List<_DecoratedFriend> friends,
+) {
+  final stats = _groupAvailabilityStats(friends);
+  final now = DateTime.now();
+
+  final tiers = <_GroupScheduleTier>[
+    if (stats.isAllOk)
+      const _GroupScheduleTier(
+        dayOffset: 0,
+        title: '全員OK',
+        subtitle: '全員いけそう。まずこの日を押さえよ。',
+        accent: Color(0xFFFF5EA8),
+      ),
+    if (stats.isAlmostOk)
+      const _GroupScheduleTier(
+        dayOffset: 1,
+        title: 'ほぼOK',
+        subtitle: '1人だけまだ決めてない。確認したらまとまりそう。',
+        accent: Color(0xFF20B9FF),
+      ),
+    if (stats.isMaybeOk)
+      const _GroupScheduleTier(
+        dayOffset: 2,
+        title: '確認すればいけそう',
+        subtitle: '予定ある人が少なめ。候補として聞いてみよ。',
+        accent: Color(0xFF8A62FF),
+      ),
+  ];
+
+  if (tiers.isEmpty && stats.hasNoPlannedMembers) {
+    return [
+      for (var i = 0; i < 2; i++)
+        _GroupScheduleSuggestion(
+          title: _groupScheduleDayLabel(now.add(Duration(days: i))),
+          subtitle: i == 0
+              ? '誰も予定は入ってない日。予定を入れてもらってね。'
+              : 'ここも候補にできそう。みんなに予定を入れてもらおう。',
+          badge: '${stats.okCount}/${stats.total}人OK',
+          accent: const Color(0xFFB8FF00),
+        ),
+    ];
+  }
+
+  final visibleTiers = tiers.isEmpty
+      ? const [
+          _GroupScheduleTier(
+            dayOffset: 1,
+            title: '確認してみよ',
+            subtitle: 'まだ揃いきってないから、まず予定を聞いてみよ。',
+            accent: Color(0xFF94A3B8),
+          ),
+        ]
+      : tiers;
+
+  return [
+    for (final tier in visibleTiers)
+      _GroupScheduleSuggestion(
+        title: _groupScheduleDayLabel(now.add(Duration(days: tier.dayOffset))),
+        subtitle: tier.subtitle,
+        badge: tier.title == '全員OK'
+            ? '全員OK'
+            : '${stats.okCount}/${stats.total}人OK',
+        accent: tier.accent,
+      ),
+  ];
+}
+
+class _GroupScheduleTier {
+  const _GroupScheduleTier({
+    required this.dayOffset,
+    required this.title,
+    required this.subtitle,
+    required this.accent,
+  });
+
+  final int dayOffset;
+  final String title;
+  final String subtitle;
+  final Color accent;
+}
+
+class _GroupAvailabilityStats {
+  const _GroupAvailabilityStats({
+    required this.total,
+    required this.okCount,
+    required this.maybeCount,
+    required this.blockedCount,
+    required this.undecidedCount,
+    required this.plannedCount,
+    required this.weightedScore,
+  });
+
+  final int total;
+  final int okCount;
+  final int maybeCount;
+  final int blockedCount;
+  final int undecidedCount;
+  final int plannedCount;
+  final double weightedScore;
+
+  double get averageWeight => total == 0 ? 0 : weightedScore / total;
+
+  bool get isAllOk => total > 0 && blockedCount == 0 && averageWeight >= .8;
+
+  bool get hasNoPlannedMembers => total > 0 && plannedCount == 0;
+
+  bool get isAlmostOk => total >= 3 && averageWeight >= .75;
+
+  bool get isMaybeOk => total > 0 && averageWeight >= .5;
+}
+
+_GroupAvailabilityStats _groupAvailabilityStats(
+  List<_DecoratedFriend> friends,
+) {
+  var okCount = 0;
+  var maybeCount = 0;
+  var blockedCount = 0;
+  var undecidedCount = 0;
+  var plannedCount = 0;
+  var weightedScore = 0.0;
+  for (final item in friends) {
+    final weight = _availabilityWeightForStatusKey(item.friend.statusKey);
+    weightedScore += weight;
+    if (weight >= .8) okCount += 1;
+    if (weight > 0) {
+      maybeCount += 1;
+    } else {
+      blockedCount += 1;
+    }
+    if (_isUndecidedStatusKey(item.friend.statusKey)) {
+      undecidedCount += 1;
+    }
+    if (item.friend.statusKey == 'has_plans') {
+      plannedCount += 1;
+    }
+  }
+  return _GroupAvailabilityStats(
+    total: friends.length,
+    okCount: okCount,
+    maybeCount: maybeCount,
+    blockedCount: blockedCount,
+    undecidedCount: undecidedCount,
+    plannedCount: plannedCount,
+    weightedScore: weightedScore,
+  );
+}
+
+double _availabilityWeightForStatusKey(String? statusKey) {
+  return switch (statusKey) {
+    'can_drink_today' => 1.0,
+    'non_alcohol' => .8,
+    'liver_rest' => .5,
+    'has_plans' => 0,
+    'unselected' || 'unset' || null || '' => 0,
+    _ => 0,
+  };
+}
+
+bool _isUndecidedStatusKey(String? statusKey) =>
+    statusKey == null ||
+    statusKey.isEmpty ||
+    statusKey == 'unselected' ||
+    statusKey == 'unset';
+
+String _groupScheduleDayLabel(DateTime day) {
+  final now = DateTime.now();
+  if (_isSameLocalDay(day, now)) return '今日';
+  if (_isSameLocalDay(day, now.add(const Duration(days: 1)))) return '明日';
+  const weekdays = ['月', '火', '水', '木', '金', '土', '日'];
+  return '${day.month}/${day.day}（${weekdays[day.weekday - 1]}）';
+}
+
+String _groupScheduleNote(List<_DecoratedFriend> friends) {
+  final stats = _groupAvailabilityStats(friends);
+  if (stats.hasNoPlannedMembers && stats.weightedScore == 0) {
+    return '候補日を出して、みんなに予定を入れてもらってね。';
+  }
+  if (stats.isAlmostOk) return 'あと1人確認できたら決めやすいよ。';
+  if (stats.isMaybeOk) return 'まず候補日を出して、みんなに聞いてみよ。';
+  return '予定が合いにくそう。別の日も候補にしよ。';
+}
+
+bool _isSameLocalDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
 String _recommendationReasonFor(_DecoratedFriend item) {
   final friend = item.friend;
   if (friend.totalDrinkCount == 0) {
@@ -476,12 +1017,12 @@ String _recommendationReasonFor(_DecoratedFriend item) {
     return '30日以上行ってない';
   }
   if (friend.statusKey == 'can_drink_today') {
-    return '今日飲めそう';
+    return '今日遊べそう';
   }
   if (friend.statusKey == 'non_alcohol') {
-    return '軽く誘いやすい';
+    return 'たぶん空いてそう';
   }
-  return '誘いやすい状態';
+  return '誘って大丈夫そう';
 }
 
 bool _isRecommendedFriend(_DecoratedFriend item) {
@@ -726,39 +1267,32 @@ class _PromoAvatarBubble extends StatelessWidget {
 }
 
 class _DecoratedFriend {
-  const _DecoratedFriend({required this.friend, required this.status});
+  const _DecoratedFriend({
+    required this.friend,
+    required this.status,
+    required this.originalIndex,
+  });
 
   final NomoFriend friend;
   final _FriendStatus status;
+  final int originalIndex;
+}
+
+int _compareFriendsForList(_DecoratedFriend a, _DecoratedFriend b) {
+  if (a.friend.isFavorite != b.friend.isFavorite) {
+    return a.friend.isFavorite ? -1 : 1;
+  }
+
+  final statusRankCompare = nomoDailyStatusFromKey(a.friend.statusKey)
+      .availabilityRank
+      .compareTo(nomoDailyStatusFromKey(b.friend.statusKey).availabilityRank);
+  if (statusRankCompare != 0) return statusRankCompare;
+
+  return a.originalIndex.compareTo(b.originalIndex);
 }
 
 bool _matchesCustomFilter(_DecoratedFriend item, _CustomFriendFilter filter) {
-  if (filter.friendIds.isNotEmpty &&
-      !filter.friendIds.contains(item.friend.id)) {
-    return false;
-  }
-  if (filter.statusKeys.isNotEmpty &&
-      !filter.statusKeys.contains(_normalizedStatusKey(item.friend))) {
-    return false;
-  }
-  if (filter.genderKeys.isNotEmpty &&
-      !filter.genderKeys.contains(item.friend.gender.key)) {
-    return false;
-  }
-  if (filter.favoriteOnly && !item.friend.isFavorite) return false;
-  if (filter.drinkableOnly && !_isDrinkableStatus(item.status)) return false;
-  if (filter.onlineOnly && item.friend.isOnline != true) return false;
-  return true;
-}
-
-String _normalizedStatusKey(NomoFriend friend) {
-  return switch (friend.statusKey) {
-    'can_drink_today' => 'can_drink_today',
-    'non_alcohol' => 'non_alcohol',
-    'liver_rest' => 'liver_rest',
-    'has_plans' => 'has_plans',
-    _ => 'unset',
-  };
+  return filter.friendIds.contains(item.friend.id);
 }
 
 NomoFriend _friendWithFavorite(NomoFriend friend, bool isFavorite) {
@@ -800,8 +1334,10 @@ class _EmptyFriendsState extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     return NomoEmptyState(
       visual: _EmptyFriendsVisual(avatar: avatar),
-      title: message,
-      message: subtitle,
+      title: message == 'フレンズがいません' ? '一緒に残すフレンズを追加しよう' : message,
+      message: message == 'フレンズがいません'
+          ? 'QRかIDでつながると、投稿にタグ付けしたり、反応を送り合えます。'
+          : subtitle,
       titleColor: isWhite ? const Color(0xFF1B2633) : Colors.white,
       messageColor: isWhite
           ? const Color(0xFF6D7784)
@@ -828,7 +1364,7 @@ class _EmptyFriendsActions extends StatelessWidget {
         SizedBox(
           width: 118,
           child: Nomo3DButton(
-            label: 'QRで追加',
+            label: 'QRでつながる',
             icon: CupertinoIcons.qrcode_viewfinder,
             onTap: onAddFriend,
             height: 44,
@@ -844,7 +1380,7 @@ class _EmptyFriendsActions extends StatelessWidget {
         SizedBox(
           width: 118,
           child: Nomo3DButton.secondary(
-            label: 'IDで追加',
+            label: 'IDで探す',
             icon: CupertinoIcons.at,
             onTap: onAddFriend,
             height: 44,
@@ -937,11 +1473,4 @@ class _EmptyFriendsVisual extends StatelessWidget {
       ),
     );
   }
-}
-
-bool _isDrinkableStatus(_FriendStatus status) {
-  return switch (status.label) {
-    '今日飲める' || 'ノンアルなら' || '未設定' => true,
-    _ => false,
-  };
 }

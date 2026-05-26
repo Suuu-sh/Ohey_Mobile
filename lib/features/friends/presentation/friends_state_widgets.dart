@@ -268,59 +268,81 @@ class _FriendStatus {
     required this.label,
     required this.enabled,
     required this.reason,
+    required this.buttonColor,
   });
 
   final String label;
   final bool enabled;
   final String reason;
+  final Color buttonColor;
+}
+
+Color _friendBlockSurfaceColor({required bool isWhite}) =>
+    isWhite ? Colors.white : AppColors.darkBackgroundBottom;
+
+Color _friendBlockFrameColor(_FriendStatus status) =>
+    _friendInviteButtonColor(status);
+
+Color _friendStatusPillColor(_FriendStatus status) =>
+    _friendInviteButtonColor(status);
+
+Color _friendInviteButtonColor(_FriendStatus status) {
+  if (!status.enabled) return _FriendsColors.disabledButton;
+  if (status.buttonColor == _FriendsColors.statusGreen) {
+    return _FriendsColors.lime;
+  }
+  return status.buttonColor;
+}
+
+Color _friendInviteButtonShadowColor(_FriendStatus status) {
+  if (!status.enabled) return _FriendsColors.disabledButtonShadow;
+  final color = _friendInviteButtonColor(status);
+  if (color == _FriendsColors.lime) return _FriendsColors.limeShadow;
+  return Color.lerp(color, Colors.black, .32)!;
+}
+
+Color _friendInviteButtonForegroundColor(_FriendStatus status) => status.enabled
+    ? _FriendsColors.limeForeground
+    : _FriendsColors.disabledButtonForeground;
+
+double _friendBlockGlowAlpha({
+  required bool isWhite,
+  required _FriendStatus status,
+}) {
+  if (!status.enabled) return isWhite ? .035 : .06;
+  return isWhite ? .09 : .18;
+}
+
+double _friendInviteCardGlowAlpha({
+  required bool isWhite,
+  required _FriendStatus status,
+}) {
+  if (!status.enabled) return isWhite ? .03 : .05;
+  return isWhite ? .075 : .15;
+}
+
+double _friendBlockBorderAlpha({
+  required bool isWhite,
+  required _FriendStatus status,
+}) {
+  if (!status.enabled) return isWhite ? .20 : .24;
+  return isWhite ? .34 : .42;
 }
 
 _FriendStatus _statusForFriend(NomoFriend friend, int _) {
-  switch (friend.statusKey) {
-    case 'can_drink_today':
-      return const _FriendStatus(
-        label: '今日飲める',
-        enabled: true,
-        reason: '今夜誘いやすい状態です',
-      );
-    case 'non_alcohol':
-      return const _FriendStatus(
-        label: 'ノンアルなら',
-        enabled: true,
-        reason: 'ノンアル参加なら誘えます',
-      );
-    case 'liver_rest':
-      return const _FriendStatus(
-        label: '休肝日',
-        enabled: false,
-        reason: '今日は飲みを控えたい日です',
-      );
-    case 'has_plans':
-      return const _FriendStatus(
-        label: '予定あり',
-        enabled: false,
-        reason: '今日は予定が入っています',
-      );
-    case 'unselected' || 'unset' || null || '':
-      return const _FriendStatus(
-        label: '未設定',
-        enabled: true,
-        reason: '未設定だけど誘えます',
-      );
-  }
-
-  return const _FriendStatus(label: '未設定', enabled: true, reason: '未設定だけど誘えます');
-}
-
-Color _accentForFriend(NomoFriend friend) {
-  return switch (friend.palette) {
-    NomiTomoPalette.peach => const Color(0xFFFFB03B),
-    NomiTomoPalette.sky => const Color(0xFF18AFFF),
-    NomiTomoPalette.lemon => _FriendsColors.lime,
-    NomiTomoPalette.lavender => const Color(0xFFA855F7),
-    NomiTomoPalette.mint => const Color(0xFF46E68A),
-    NomiTomoPalette.blush => const Color(0xFFFF4B9A),
-  };
+  final status = nomoDailyStatusFromKey(friend.statusKey);
+  return _FriendStatus(
+    label: status.label,
+    enabled: status.isAvailable,
+    reason: status.description,
+    buttonColor: switch (status) {
+      NomoDailyStatus.canDrinkToday => _FriendsColors.statusPink,
+      NomoDailyStatus.nonAlcohol => _FriendsColors.statusBlue,
+      NomoDailyStatus.liverRest => _FriendsColors.statusPurple,
+      NomoDailyStatus.hasPlans => _FriendsColors.statusBlocked,
+      NomoDailyStatus.unselected => _FriendsColors.statusGreen,
+    },
+  );
 }
 
 NomoAvatar _fallbackAvatarForFriend(NomoFriend friend) {
@@ -343,4 +365,12 @@ class _FriendsColors {
   static const limeShadow = Color(0xFF6FB600);
   static const limeForeground = Color(0xFF071320);
   static const muted = Color(0xFF8792A3);
+  static const statusPink = Color(0xFFFF5EA8);
+  static const statusBlue = Color(0xFF20B9FF);
+  static const statusPurple = Color(0xFF8A62FF);
+  static const statusGreen = Color(0xFF9AF21A);
+  static const statusBlocked = Color(0xFF2B3644);
+  static const disabledButton = Color(0xFF2B3441);
+  static const disabledButtonShadow = Color(0xFF111923);
+  static const disabledButtonForeground = Color(0xFF738092);
 }

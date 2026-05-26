@@ -41,4 +41,20 @@ extension NomoDrinkInviteStatusX on NomoDrinkInviteStatus {
     NomoDrinkInviteStatus.rejected => 'rejected',
     NomoDrinkInviteStatus.cancelled => 'cancelled',
   };
+
+  String get label => switch (this) {
+    NomoDrinkInviteStatus.pending => '返信待ち',
+    NomoDrinkInviteStatus.accepted => '予定あり',
+    NomoDrinkInviteStatus.rejected => '見送り済み',
+    NomoDrinkInviteStatus.cancelled => '取り消し済み',
+  };
+
+  String get actionLabel => switch (this) {
+    NomoDrinkInviteStatus.pending => 'タップして返信',
+    NomoDrinkInviteStatus.accepted => label,
+    NomoDrinkInviteStatus.rejected => label,
+    NomoDrinkInviteStatus.cancelled => label,
+  };
+
+  bool get isPending => this == NomoDrinkInviteStatus.pending;
 }

@@ -160,7 +160,7 @@ class ProfileScreen extends ConsumerWidget {
                                   _showProfileStatusSheet(context, ref),
                               onLogsTap: () => NomoToast.show(
                                 context,
-                                '飲みログはカレンダーで確認できます',
+                                'カレンダーを見てみてね。',
                                 icon: CupertinoIcons.calendar,
                               ),
                               onArchiveTap: () => Navigator.of(context).push(
@@ -244,7 +244,7 @@ Color _statusColor(NomoDailyStatus status) => switch (status) {
 IconData _statusIcon(NomoDailyStatus status) => switch (status) {
   NomoDailyStatus.canDrinkToday => CupertinoIcons.checkmark_circle_fill,
   NomoDailyStatus.nonAlcohol => CupertinoIcons.drop_fill,
-  NomoDailyStatus.liverRest => CupertinoIcons.moon_fill,
+  NomoDailyStatus.liverRest => CupertinoIcons.clock_fill,
   NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
   NomoDailyStatus.unselected => CupertinoIcons.circle,
 };
@@ -263,7 +263,7 @@ Future<void> _respondDrinkInvite(
       await controller.reject(invite.id);
     }
     if (!context.mounted) return;
-    NomoToast.show(context, accept ? '飲み予定が成立しました。' : '招待を見送りました。');
+    NomoToast.show(context, accept ? '予定が成立しました。' : '招待を見送りました。');
   } catch (error) {
     if (!context.mounted) return;
     NomoToast.show(context, '返信できなかったよ。あとでもう一度試してね');

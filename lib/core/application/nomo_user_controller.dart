@@ -38,7 +38,7 @@ class NomoUserController extends Notifier<NomoUser?> {
     final repository = ref.read(userRepositoryProvider);
     final authUserId = repository.currentUserId;
     if (authUserId == null || authUserId.isEmpty) {
-      throw StateError('Login is required before creating a Tomola user.');
+      throw StateError('Login is required before creating a Nomo user.');
     }
 
     final trimmed = name.trim();
@@ -77,7 +77,7 @@ class NomoUserController extends Notifier<NomoUser?> {
     final repository = ref.read(userRepositoryProvider);
     final authUserId = repository.currentUserId;
     if (authUserId == null || authUserId.isEmpty) {
-      throw StateError('Login is required before updating a Tomola user.');
+      throw StateError('Login is required before updating a Nomo user.');
     }
 
     final trimmed = name.trim();
@@ -113,19 +113,27 @@ class NomoUserController extends Notifier<NomoUser?> {
             );
   }
 
-  Future<void> updateDailyStatus(NomoDailyStatus status) async {
+  Future<void> updateDailyStatus(
+    NomoDailyStatus status, {
+    DateTime? date,
+  }) async {
     final repository = ref.read(userRepositoryProvider);
     final authUserId = repository.currentUserId;
     if (authUserId == null || authUserId.isEmpty) {
       throw StateError('Login is required before updating daily status.');
     }
 
-    await repository.updateDailyStatus(status);
+    await repository.updateDailyStatus(status, date: date);
 
-    state =
-        (state ??
-                NomoUser(name: 'mi-mu', userId: defaultNomoUserId(authUserId)))
-            .copyWith(dailyStatus: status);
+    if (date == null || _isSameLocalDate(date, DateTime.now())) {
+      state =
+          (state ??
+                  NomoUser(
+                    name: 'mi-mu',
+                    userId: defaultNomoUserId(authUserId),
+                  ))
+              .copyWith(dailyStatus: status);
+    }
   }
 
   Future<void> signOut() async {
@@ -149,3 +157,6 @@ class NomoUserController extends Notifier<NomoUser?> {
     }
   }
 }
+
+bool _isSameLocalDate(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;

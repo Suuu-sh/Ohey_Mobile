@@ -22,7 +22,7 @@ class _FeedPostCard extends StatelessWidget {
     final caption = _feedCardCaption(item);
     final surfaceColor = NomoThemedPanel.surfaceColor(isWhite: isWhite);
     return Semantics(
-      label: '${item.userName}の飲みログ',
+      label: '${item.userName}の思い出',
       child: NomoThemedPanel(
         accentColor: _FeedColors.teal,
         backgroundColor: surfaceColor,
@@ -158,9 +158,9 @@ class _FeedCardAuthorBar extends StatelessWidget {
         : Color.lerp(menuAccent, Colors.white, .18)!;
     final place = item.place.trim();
     final metadataLabel = item.isOfficial
-        ? (place.isEmpty ? 'Tomola公式からのお知らせ' : 'Tomola公式 ・ $place')
+        ? (place.isEmpty ? 'Nomo公式からのお知らせ' : 'Nomo公式 ・ $place')
         : place.isEmpty
-        ? '飲みログ'
+        ? '思い出'
         : place;
     final kind = item.postKind;
 
@@ -293,7 +293,7 @@ class _FeedCardFooter extends StatelessWidget {
                     : '投稿を共有',
                 customIcon: item.isOfficial
                     ? null
-                    : _VectorShareIcon(color: shareAccent, size: 18),
+                    : _VectorShareIcon(color: shareAccent, size: 19),
                 icon: item.isOfficial ? CupertinoIcons.doc_text_fill : null,
                 label: _feedShareActionLabel(item),
                 color: shareAccent,
@@ -378,7 +378,8 @@ class _FeedActionPill extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.fromLTRB(10, 7, 12, 7),
+          height: 44,
+          padding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
           decoration: BoxDecoration(
             color: color.withValues(alpha: isWhite ? .16 : .26),
             borderRadius: BorderRadius.circular(999),
@@ -432,27 +433,40 @@ class _FeedCompanionInlineButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isWhite ? const Color(0xFF344152) : Colors.white;
-    final borderColor = isWhite
-        ? const Color(0xFFE0E7EF)
-        : Colors.white.withValues(alpha: .13);
-    final backgroundColor = isWhite
-        ? const Color(0xFFF4F7FA)
-        : Colors.white.withValues(alpha: .07);
+    const withPurple = Color(0xFFC08BFF);
+    final textColor = isWhite ? const Color(0xFF2B2440) : Colors.white;
+    final borderColor = withPurple.withValues(alpha: isWhite ? .34 : .42);
+    final backgroundGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: isWhite
+          ? [withPurple.withValues(alpha: .18), const Color(0xFFFFFFFF)]
+          : [
+              withPurple.withValues(alpha: .28),
+              const Color(0xFF101B2B).withValues(alpha: .88),
+            ],
+    );
     const label = 'With';
 
     return Semantics(
       button: true,
-      label: '一緒に飲んだフレンズを表示',
+      label: '一緒に遊んだフレンズを表示',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => _showFeedCompanionList(context, friends),
         child: Container(
           padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
           decoration: BoxDecoration(
-            color: backgroundColor,
+            gradient: backgroundGradient,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(color: borderColor),
+            boxShadow: [
+              BoxShadow(
+                color: withPurple.withValues(alpha: isWhite ? .10 : .22),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 182),
@@ -553,20 +567,21 @@ String _feedCardCaption(_FeedItem item) {
 }
 
 String _feedLikeActionLabel(_FeedItem item) {
-  return item.liked ? 'Liked' : 'Like';
+  return item.liked ? 'いいね済み' : 'いいね';
 }
 
 String _feedShareActionLabel(_FeedItem item) {
-  if (item.isOfficial) return 'More';
-  return 'Share';
+  if (item.isOfficial) return '詳しく';
+  if (!item.ownedByMe && item.friends.isNotEmpty) return 'また誘う';
+  return item.ownedByMe ? '共有' : '送る';
 }
 
 String _feedReactionSummary(_FeedItem item) {
   if (item.isOfficial) {
-    return item.likes > 0 ? '${item.likes}人がチェックしました' : 'Tomolaからのお知らせです';
+    return item.likes > 0 ? '${item.likes}人がチェックしました' : 'Nomoからのお知らせです';
   }
   if (item.likes <= 0) {
-    return item.ownedByMe ? 'まだリアクションはありません' : '最初にリアクションしよう';
+    return item.ownedByMe ? '友達のリアクションを待とう' : 'いいねで気持ちを送ろう';
   }
   final companion = item.friends.isNotEmpty
       ? item.friends.first.name.trim()
@@ -788,8 +803,8 @@ bool _isDisplayablePostPhoto(String? path) {
 String _duoStyleBody(_FeedItem item) {
   if (item.isOfficial) {
     return switch (item.prop) {
-      _PostProp.spark => '飲みともとの思い出を、もっと楽しく。',
-      _PostProp.ticket => 'フレンズと一緒に今月の飲みログをふり返ろう。',
+      _PostProp.spark => 'フレンズとの思い出を、もっと楽しく。',
+      _PostProp.ticket => 'フレンズと一緒に今月の思い出をふり返ろう。',
       _ => item.body,
     };
   }

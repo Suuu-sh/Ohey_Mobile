@@ -19,7 +19,7 @@ final drinkLogRepositoryProvider = Provider<DrinkLogRepository>((ref) {
 
 abstract interface class DrinkLogRepository {
   Future<List<DrinkLog>> fetchLogs();
-  Future<List<NomoFriend>> fetchFriends();
+  Future<List<NomoFriend>> fetchFriends({DateTime? date});
   Future<DrinkLog> addLog(DrinkLog log);
   Future<void> deleteLog(String logId);
   Future<void> reportLog(String logId, {String reason = 'other'});
@@ -71,7 +71,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
   }
 
   @override
-  Future<List<NomoFriend>> fetchFriends() async {
+  Future<List<NomoFriend>> fetchFriends({DateTime? date}) async {
     final userId = _client.currentUserId;
     if (userId == null || userId.isEmpty) {
       throw StateError('フレンズを読み込むにはログインが必要です。');
@@ -79,7 +79,7 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
 
     final rows = await _client.getRows(
       '/v1/friends',
-      query: {'date': _todayIsoDate()},
+      query: {'date': _isoDate(date ?? DateTime.now())},
     );
 
     return rows
@@ -277,7 +277,7 @@ NomoFriend _friendFromProfileRow(
   };
   return NomoFriend(
     id: profile['id'] as String,
-    name: (profile['display_name'] as String?) ?? 'Tomola friend',
+    name: (profile['display_name'] as String?) ?? 'Nomo friend',
     avatarEmoji: '🍻',
     vibe: (profile['user_id'] as String?) ?? '',
     characterAssetPath: '',
@@ -303,9 +303,8 @@ NomiTomoPalette _paletteFromKey(String? key) {
   };
 }
 
-String _todayIsoDate() {
-  final now = DateTime.now();
-  return '${now.year.toString().padLeft(4, '0')}-'
-      '${now.month.toString().padLeft(2, '0')}-'
-      '${now.day.toString().padLeft(2, '0')}';
+String _isoDate(DateTime date) {
+  return '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
 }

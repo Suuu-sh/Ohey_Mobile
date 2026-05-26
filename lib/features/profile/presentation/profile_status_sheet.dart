@@ -89,7 +89,7 @@ class _ProfileStatusHelpCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isUnset ? '未設定だと誘われにくいかも' : 'ステータス設定中',
+                  isUnset ? '今の気分、選んでみよ。' : '今の気分だよ',
                   style: TextStyle(
                     color: isWhite ? const Color(0xFF17212B) : Colors.white,
                     fontSize: 14,
@@ -98,7 +98,7 @@ class _ProfileStatusHelpCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '今日飲めるか、休みたいかを出しておくとフレンズが誘いやすくなります。',
+                  '今空いてるか、時間次第かを出しておくとフレンズと予定を合わせやすくなります。',
                   style: TextStyle(
                     color: isWhite
                         ? const Color(0xFF667381)

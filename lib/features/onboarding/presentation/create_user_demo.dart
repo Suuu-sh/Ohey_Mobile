@@ -3,27 +3,31 @@ part of 'create_user_dialog.dart';
 const _demoSlides = [
   _DemoSlideData(
     step: '1 / 4',
-    title: 'Tomolaで今日を\nかわいく残そう',
-    subtitle: '友達との今日を、写真とメモでゆるく残そう。',
+    title: '写真1枚で、今日が\n友達との思い出になる',
+    subtitle: 'Nomoは、写真・場所・一緒にいたフレンズをかわいく残すアプリです。',
     kind: _DemoKind.hero,
+    chips: ['撮る', '残る', 'また誘える'],
   ),
   _DemoSlideData(
     step: '2 / 4',
-    title: 'プロフィールと\nアバターを作ろう',
-    subtitle: '名前とアバターで、自分らしくはじめよう。',
+    title: 'まずは自分の\nアバターを作ろう',
+    subtitle: 'プロフィールができると、投稿もフレンズ追加も自分らしく始められます。',
     kind: _DemoKind.profile,
+    chips: ['30秒で作成', 'あとから変更OK'],
   ),
   _DemoSlideData(
     step: '3 / 4',
-    title: '友達との思い出を\nログに残そう',
-    subtitle: '場所や一緒にいた友達を残して、あとで見返せるよ。',
+    title: 'オンボーディング後は\n1枚投稿してみよう',
+    subtitle: '今日の写真にひと言だけ。最初の思い出を飾ろう。',
     kind: _DemoKind.log,
+    chips: ['写真 + ひと言', '場所も残せる'],
   ),
   _DemoSlideData(
     step: '4 / 4',
-    title: 'フレンズとつながって\nまた誘おう',
-    subtitle: 'QRやIDでつながって、今日のノリでまた誘おう。',
+    title: 'フレンズとつながると\nもっと楽しくなる',
+    subtitle: 'QRやIDでつながって、投稿に反応したり、また遊ぶきっかけを作れます。',
     kind: _DemoKind.friends,
+    chips: ['反応', '思い出共有', 'また誘う'],
   ),
 ];
 
@@ -35,12 +39,14 @@ class _DemoSlideData {
     required this.title,
     required this.subtitle,
     required this.kind,
+    this.chips = const <String>[],
   });
 
   final String step;
   final String title;
   final String subtitle;
   final _DemoKind kind;
+  final List<String> chips;
 }
 
 class _DemoSlide extends StatelessWidget {
@@ -94,6 +100,16 @@ class _DemoSlide extends StatelessWidget {
             height: 1.6,
           ),
         ),
+        if (slide.chips.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final chip in slide.chips) _DemoValueChip(label: chip),
+            ],
+          ),
+        ],
         const Spacer(),
         _DemoVisual(kind: slide.kind),
       ],
@@ -202,7 +218,7 @@ class _ProfileDemoVisual extends StatelessWidget {
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      '@tomola_friend',
+                      '@nomo_friend',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -234,19 +250,15 @@ class _LogDemoVisual extends StatelessWidget {
     ),
     child: const Column(
       children: [
-        _DemoRow(
-          icon: CupertinoIcons.camera_fill,
-          label: '今月の思い出',
-          value: '3回',
-        ),
+        _DemoRow(icon: CupertinoIcons.camera_fill, label: '最初の投稿', value: '1枚'),
         SizedBox(height: 14),
         _DemoRow(
           icon: CupertinoIcons.person_2_fill,
           label: '一緒にいたフレンズ',
-          value: '5人',
+          value: 'タグ',
         ),
         SizedBox(height: 14),
-        _DemoRow(icon: CupertinoIcons.calendar, label: 'ログに保存', value: 'OK'),
+        _DemoRow(icon: CupertinoIcons.calendar, label: 'ホームに表示', value: 'すぐ'),
       ],
     ),
   );
@@ -311,6 +323,30 @@ class _FriendsDemoVisual extends StatelessWidget {
         ),
       ),
     ],
+  );
+}
+
+class _DemoValueChip extends StatelessWidget {
+  const _DemoValueChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: .09),
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(color: Colors.white.withValues(alpha: .12)),
+    ),
+    child: Text(
+      label,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 12,
+        fontWeight: FontWeight.w900,
+      ),
+    ),
   );
 }
 

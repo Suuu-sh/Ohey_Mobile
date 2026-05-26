@@ -15,25 +15,20 @@ class _FriendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = _accentForFriend(friend);
+    final frameAccent = _friendBlockFrameColor(status);
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = status.enabled
+        ? (isWhite ? const Color(0xFF101820) : Colors.white)
+        : (isWhite ? const Color(0xFF667381) : _FriendsColors.muted);
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 98),
       child: NomoThemedPanel(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-        accentColor: accent,
-        backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
-        gradient: isWhite
-            ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.white, Color(0xFFF7FBF4)],
-              )
-            : null,
+        accentColor: frameAccent,
+        backgroundColor: _friendBlockSurfaceColor(isWhite: isWhite),
         borderRadius: 20,
-        borderAlpha: isWhite ? .45 : .18,
-        glowAlpha: isWhite ? .04 : .08,
+        borderAlpha: _friendBlockBorderAlpha(isWhite: isWhite, status: status),
+        glowAlpha: _friendBlockGlowAlpha(isWhite: isWhite, status: status),
         glowBlur: 24,
         glowOffset: const Offset(0, 8),
         child: Row(
@@ -41,7 +36,7 @@ class _FriendCard extends StatelessWidget {
           children: [
             _FriendCardAvatarBubble(
               avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
-              accent: accent,
+              accent: frameAccent,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -90,14 +85,13 @@ class _FriendCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 7),
-                  _StatusPill(status: status, accent: accent),
+                  _StatusPill(status: status),
                 ],
               ),
             ),
             const SizedBox(width: 10),
             _InviteButton(
               status: status,
-              accent: accent,
               name: friend.name,
               onInvite: onInvite,
             ),
@@ -178,23 +172,25 @@ class _FriendAvatarBubbleBackground extends StatelessWidget {
 }
 
 class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.status, required this.accent});
+  const _StatusPill({required this.status});
 
   final _FriendStatus status;
-  final Color accent;
 
   @override
   Widget build(BuildContext context) {
+    final accent = _friendStatusPillColor(status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: status.enabled ? .16 : .10),
+        color: accent.withValues(alpha: status.enabled ? .22 : .38),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         status.label,
         style: TextStyle(
-          color: status.enabled ? accent : _FriendsColors.muted,
+          color: status.enabled
+              ? accent
+              : _friendInviteButtonForegroundColor(status),
           fontWeight: FontWeight.w900,
           fontSize: 13,
         ),
@@ -288,13 +284,11 @@ class _FavoriteStarPainter extends CustomPainter {
 class _InviteButton extends StatelessWidget {
   const _InviteButton({
     required this.status,
-    required this.accent,
     required this.name,
     required this.onInvite,
   });
 
   final _FriendStatus status;
-  final Color accent;
   final String name;
   final VoidCallback onInvite;
 
@@ -310,9 +304,11 @@ class _InviteButton extends StatelessWidget {
         enabled: enabled,
         height: 36,
         radius: 18,
-        color: _FriendsColors.lime,
-        foregroundColor: _FriendsColors.limeForeground,
-        shadowColor: _FriendsColors.limeShadow,
+        color: _friendInviteButtonColor(status),
+        foregroundColor: _friendInviteButtonForegroundColor(status),
+        shadowColor: _friendInviteButtonShadowColor(status),
+        disabledColor: _FriendsColors.disabledButton,
+        disabledOpacity: 1,
         padding: const EdgeInsets.symmetric(horizontal: 13),
         fontSize: 12,
       ),

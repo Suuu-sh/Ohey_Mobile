@@ -101,7 +101,7 @@ class _AdminPostCard extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                log.placeName.isEmpty ? '場所未設定の飲みログ' : log.placeName,
+                log.placeName.isEmpty ? '場所未設定の思い出' : log.placeName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -183,6 +183,7 @@ Future<void> _showUserSheet(
   );
   if (saved == true && context.mounted) {
     ref.invalidate(adminUsersProvider);
+    ref.invalidate(friendsProvider);
     NomoToast.show(context, 'ユーザーを保存しました。');
   }
 }

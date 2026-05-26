@@ -188,7 +188,7 @@ class _AdminUserEditorScreenState
               ),
               const SizedBox(height: 10),
               _AdminSwitchRow(
-                label: 'Tomola Plus',
+                label: 'Nomo Plus',
                 value: _isPlus,
                 onChanged: (value) => setState(() => _isPlus = value),
               ),
@@ -231,6 +231,6 @@ Future<void> _showPostSheet(
 
   if (didSave == true && context.mounted) {
     ref.invalidate(adminDrinkLogsProvider);
-    NomoToast.show(context, '飲みログを保存しました。');
+    NomoToast.show(context, '思い出を保存しました。');
   }
 }
