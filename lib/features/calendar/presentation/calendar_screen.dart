@@ -2103,7 +2103,7 @@ Color _calendarStatus3DShadowColor(
 
 Color _calendarStatus3DForegroundColor(NomoDailyStatus status) {
   if (status == NomoDailyStatus.hasPlans) {
-    return const Color(0xFF9EABBA);
+    return const Color(0xFF111827);
   }
   return _calendarPrimaryActionForegroundColor;
 }
