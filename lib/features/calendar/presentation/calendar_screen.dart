@@ -913,7 +913,7 @@ class _CalendarFriendStatusSheet extends StatelessWidget {
           _CalendarFriendStatusSummary(friends: friends, isWhite: isWhite),
           const SizedBox(height: 12),
           Flexible(
-            child: _CalendarFriendStatusBlockGrid(
+            child: _CalendarFriendStatusBlockList(
               friends: friends,
               isWhite: isWhite,
             ),
@@ -1000,8 +1000,8 @@ class _CalendarFriendStatusModalOverview extends StatelessWidget {
   }
 }
 
-class _CalendarFriendStatusBlockGrid extends StatelessWidget {
-  const _CalendarFriendStatusBlockGrid({
+class _CalendarFriendStatusBlockList extends StatelessWidget {
+  const _CalendarFriendStatusBlockList({
     required this.friends,
     required this.isWhite,
   });
@@ -1011,44 +1011,13 @@ class _CalendarFriendStatusBlockGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final count = friends.length;
-        final columns = count == 1
-            ? 1
-            : count > 8
-            ? 3
-            : 2;
-        final rows = (count + columns - 1) ~/ columns;
-        const spacing = 9.0;
-        final availableHeight = constraints.maxHeight.isFinite
-            ? constraints.maxHeight
-            : 360.0;
-        final fitHeight =
-            (availableHeight - spacing * (rows - 1)) / rows.clamp(1, 999);
-        final itemHeight = fitHeight.clamp(52.0, 116.0).toDouble();
-        final gridHeight = itemHeight * rows + spacing * (rows - 1);
-        return SizedBox(
-          height: gridHeight,
-          child: GridView.builder(
-            padding: EdgeInsets.zero,
-            primary: false,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: count,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: columns,
-              crossAxisSpacing: spacing,
-              mainAxisSpacing: spacing,
-              mainAxisExtent: itemHeight,
-            ),
-            itemBuilder: (context, index) => _CalendarFriendStatusBlock(
-              friend: friends[index],
-              isWhite: isWhite,
-              compact: itemHeight < 82,
-            ),
-          ),
-        );
-      },
+    return ListView.separated(
+      padding: EdgeInsets.zero,
+      physics: const BouncingScrollPhysics(),
+      itemCount: friends.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 14),
+      itemBuilder: (context, index) =>
+          _CalendarFriendStatusBlock(friend: friends[index], isWhite: isWhite),
     );
   }
 }
@@ -1057,12 +1026,10 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
   const _CalendarFriendStatusBlock({
     required this.friend,
     required this.isWhite,
-    required this.compact,
   });
 
   final NomoFriend friend;
   final bool isWhite;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -1074,7 +1041,6 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
       statusColor: _calendarFriendBlockStatusColor(status),
       statusEnabled: status.isAvailable,
       fallbackAvatar: _fallbackAvatarForCalendarFriend(friend),
-      compact: compact,
     );
   }
 }
