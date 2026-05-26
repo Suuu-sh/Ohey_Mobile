@@ -520,6 +520,7 @@ class _SelectedDayPanel extends StatelessWidget {
           _CalendarFriendStatusList(
             friendsAsync: friendsAsync,
             isWhite: isWhite,
+            onCreateMemory: onCreatePlan,
           ),
           const SizedBox(height: 10),
           _CalendarSectionLabel(label: '思い出', accent: const Color(0xFF54D7FF)),
@@ -655,10 +656,12 @@ class _CalendarFriendStatusList extends StatelessWidget {
   const _CalendarFriendStatusList({
     required this.friendsAsync,
     required this.isWhite,
+    required this.onCreateMemory,
   });
 
   final AsyncValue<List<NomoFriend>> friendsAsync;
   final bool isWhite;
+  final VoidCallback? onCreateMemory;
 
   @override
   Widget build(BuildContext context) {
@@ -711,14 +714,18 @@ class _CalendarFriendStatusList extends StatelessWidget {
         final availableCount = friends
             .where((friend) => _calendarFriendIsAvailable(friend.statusKey))
             .length;
-
-        return _CalendarFriendStatusFrame(
-          isWhite: isWhite,
-          onTap: () => _showCalendarFriendStatusSheet(
+        void openStatusSheet() {
+          _showCalendarFriendStatusSheet(
             context,
             friends: sorted,
             isWhite: isWhite,
-          ),
+            onCreateMemory: onCreateMemory,
+          );
+        }
+
+        return _CalendarFriendStatusFrame(
+          isWhite: isWhite,
+          onTap: openStatusSheet,
           child: Row(
             children: [
               NomoPopIcon(
@@ -761,22 +768,18 @@ class _CalendarFriendStatusList extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: _calendarPrimaryActionColor.withValues(alpha: .16),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  '見る',
-                  style: TextStyle(
-                    color: _calendarPrimaryActionColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                  ),
+              SizedBox(
+                width: 62,
+                child: Nomo3DButton(
+                  label: '見る',
+                  onTap: openStatusSheet,
+                  height: 30,
+                  radius: 15,
+                  color: _calendarPrimaryActionColor,
+                  foregroundColor: _calendarPrimaryActionForegroundColor,
+                  shadowColor: _calendarPrimaryActionShadowColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  fontSize: 12,
                 ),
               ),
             ],
@@ -861,13 +864,17 @@ Future<void> _showCalendarFriendStatusSheet(
   BuildContext context, {
   required List<NomoFriend> friends,
   required bool isWhite,
+  required VoidCallback? onCreateMemory,
 }) {
   return showNomoBottomSheet<void>(
     context: context,
     useSafeArea: true,
     barrierColor: Colors.black.withValues(alpha: .58),
-    builder: (_) =>
-        _CalendarFriendStatusSheet(friends: friends, isWhite: isWhite),
+    builder: (_) => _CalendarFriendStatusSheet(
+      friends: friends,
+      isWhite: isWhite,
+      onCreateMemory: onCreateMemory,
+    ),
   );
 }
 
@@ -875,10 +882,12 @@ class _CalendarFriendStatusSheet extends StatelessWidget {
   const _CalendarFriendStatusSheet({
     required this.friends,
     required this.isWhite,
+    required this.onCreateMemory,
   });
 
   final List<NomoFriend> friends;
   final bool isWhite;
+  final VoidCallback? onCreateMemory;
 
   @override
   Widget build(BuildContext context) {
@@ -929,6 +938,29 @@ class _CalendarFriendStatusSheet extends StatelessWidget {
               friends: friends,
               isWhite: isWhite,
             ),
+          ),
+          const SizedBox(height: 12),
+          Nomo3DButton(
+            label: '思い出を残す',
+            icon: CupertinoIcons.photo_fill_on_rectangle_fill,
+            onTap: onCreateMemory == null
+                ? null
+                : () {
+                    Navigator.of(context).pop();
+                    onCreateMemory!();
+                  },
+            enabled: onCreateMemory != null,
+            height: 46,
+            radius: 23,
+            color: _calendarPrimaryActionColor,
+            foregroundColor: onCreateMemory == null
+                ? const Color(0xFF738092)
+                : _calendarPrimaryActionForegroundColor,
+            shadowColor: _calendarPrimaryActionShadowColor,
+            disabledColor: const Color(0xFF2B3441),
+            disabledOpacity: 1,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            fontSize: 13,
           ),
         ],
       ),
