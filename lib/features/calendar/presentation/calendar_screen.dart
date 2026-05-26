@@ -1356,19 +1356,12 @@ class _CalendarStatusOption extends StatelessWidget {
       borderWidth: 1.2,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       useGradient: true,
-      outerShadows: [
-        BoxShadow(
-          color: blockAccent.withValues(alpha: selected ? .34 : .18),
-          blurRadius: selected ? 28 : 18,
-          offset: const Offset(0, 10),
-        ),
-      ],
-      innerShadows: [
-        BoxShadow(
-          color: Colors.white.withValues(alpha: selected ? .16 : .10),
-          blurRadius: selected ? 18 : 12,
-        ),
-      ],
+      outerShadows: _calendarStatus3DOuterShadows(
+        status,
+        accent: blockAccent,
+        selected: selected,
+      ),
+      innerShadows: _calendarStatus3DInnerShadows(status, selected: selected),
       child: Row(
         children: [
           NomoPopIcon(
@@ -2087,7 +2080,9 @@ Color _calendarStatus3DSurfaceColor(
   required bool isWhite,
   required bool selected,
 }) {
-  if (status == NomoDailyStatus.hasPlans) return _calendarStatusBlocked;
+  if (status == NomoDailyStatus.hasPlans) {
+    return isWhite ? const Color(0xFFE8EEF5) : const Color(0xFF33404E);
+  }
   return _calendarStatusColor(status);
 }
 
@@ -2097,7 +2092,7 @@ Color _calendarStatus3DShadowColor(
   required bool selected,
 }) {
   if (status == NomoDailyStatus.hasPlans) {
-    return const Color(0xFF111923);
+    return isWhite ? const Color(0xFFC2CCD8) : const Color(0xFF16202B);
   }
   return Color.lerp(
     _calendarStatus3DSurfaceColor(status, isWhite: isWhite, selected: selected),
@@ -2108,7 +2103,7 @@ Color _calendarStatus3DShadowColor(
 
 Color _calendarStatus3DForegroundColor(NomoDailyStatus status) {
   if (status == NomoDailyStatus.hasPlans) {
-    return _calendarStatusBlockedForeground;
+    return const Color(0xFF9EABBA);
   }
   return _calendarPrimaryActionForegroundColor;
 }
@@ -2119,9 +2114,58 @@ Color _calendarStatus3DBorderColor(
   required bool selected,
 }) {
   if (status == NomoDailyStatus.hasPlans) {
-    return Colors.white.withValues(alpha: selected ? .12 : .08);
+    return Colors.white.withValues(alpha: selected ? .24 : .18);
   }
   return Colors.white.withValues(alpha: selected ? .30 : .20);
+}
+
+List<BoxShadow> _calendarStatus3DOuterShadows(
+  NomoDailyStatus status, {
+  required Color accent,
+  required bool selected,
+}) {
+  if (status == NomoDailyStatus.hasPlans) {
+    return [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: selected ? .34 : .28),
+        blurRadius: selected ? 28 : 22,
+        offset: const Offset(0, 12),
+      ),
+      BoxShadow(
+        color: Colors.white.withValues(alpha: selected ? .08 : .05),
+        blurRadius: 10,
+        offset: const Offset(0, -2),
+      ),
+    ];
+  }
+  return [
+    BoxShadow(
+      color: accent.withValues(alpha: selected ? .34 : .18),
+      blurRadius: selected ? 28 : 18,
+      offset: const Offset(0, 10),
+    ),
+  ];
+}
+
+List<BoxShadow> _calendarStatus3DInnerShadows(
+  NomoDailyStatus status, {
+  required bool selected,
+}) {
+  if (status == NomoDailyStatus.hasPlans) {
+    return [
+      BoxShadow(
+        color: Colors.white.withValues(alpha: selected ? .20 : .15),
+        blurRadius: selected ? 18 : 14,
+        offset: const Offset(0, -1),
+      ),
+    ];
+  }
+  return [
+    BoxShadow(
+      color: Colors.white.withValues(alpha: selected ? .16 : .10),
+      blurRadius: selected ? 18 : 12,
+    ),
+  ];
 }
 
 IconData _calendarStatusIcon(NomoDailyStatus status) => switch (status) {
