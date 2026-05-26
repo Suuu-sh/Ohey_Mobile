@@ -305,14 +305,6 @@ Color _friendInviteButtonForegroundColor(_FriendStatus status) => status.enabled
     ? _FriendsColors.limeForeground
     : _FriendsColors.disabledButtonForeground;
 
-double _friendBlockGlowAlpha({
-  required bool isWhite,
-  required _FriendStatus status,
-}) {
-  if (!status.enabled) return isWhite ? .035 : .06;
-  return isWhite ? .09 : .18;
-}
-
 double _friendInviteCardGlowAlpha({
   required bool isWhite,
   required _FriendStatus status,

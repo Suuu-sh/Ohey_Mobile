@@ -10,12 +10,14 @@ import '../../../core/models/drink_log.dart';
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/data/user_repository.dart';
 import '../../../core/models/nomo_drink_invite.dart';
+import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
 import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_bottom_sheet.dart';
+import '../../../core/widgets/nomo_friend_user_block.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
@@ -1065,161 +1067,34 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = nomoDailyStatusFromKey(friend.statusKey);
-    final color = _calendarStatusColor(status);
-    final accent = _calendarStatusBlockAccent(status);
-    final surface = _calendarStatusBlockBackground(
-      status,
-      isWhite: isWhite,
-      selected: false,
-    );
-    final background = Color.alphaBlend(
-      surface,
-      isWhite ? Colors.white : AppColors.darkBackgroundBottom,
-    );
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .62);
-
-    return Container(
-      padding: EdgeInsets.fromLTRB(10, compact ? 8 : 10, 10, compact ? 8 : 10),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: accent.withValues(alpha: isWhite ? .30 : .26),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: isWhite ? .06 : .10),
-            blurRadius: 14,
-            offset: const Offset(0, 7),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: compact
-            ? MainAxisAlignment.center
-            : MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: compact ? 28 : 34,
-                height: compact ? 28 : 34,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: friend.accentColor.withValues(alpha: .24),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isWhite
-                        ? Colors.white.withValues(alpha: .78)
-                        : Colors.white.withValues(alpha: .10),
-                    width: 1,
-                  ),
-                ),
-                child: Text(
-                  friend.name.characters.take(1).toString(),
-                  style: TextStyle(
-                    color: ink,
-                    fontSize: compact ? 12 : 14,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 7),
-              Expanded(
-                child: Text(
-                  friend.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: ink,
-                    fontSize: compact ? 12 : 14,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.2,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: compact ? 5 : 7),
-          _CalendarFriendStatusMiniPill(
-            status: status,
-            color: color,
-            isWhite: isWhite,
-            compact: compact,
-          ),
-          if (!compact) ...[
-            const SizedBox(height: 5),
-            Text(
-              _calendarStatusCopy(status, day: DateTime.now()),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: sub,
-                fontSize: 10.5,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ],
-      ),
+    return NomoFriendUserBlock(
+      friend: friend,
+      statusLabel: _calendarStatusLabel(status, day: DateTime.now()),
+      statusReason: _calendarStatusCopy(status, day: DateTime.now()),
+      statusColor: _calendarFriendBlockStatusColor(status),
+      statusEnabled: status.isAvailable,
+      fallbackAvatar: _fallbackAvatarForCalendarFriend(friend),
+      compact: compact,
     );
   }
 }
 
-class _CalendarFriendStatusMiniPill extends StatelessWidget {
-  const _CalendarFriendStatusMiniPill({
-    required this.status,
-    required this.color,
-    required this.isWhite,
-    required this.compact,
-  });
+NomoAvatar _fallbackAvatarForCalendarFriend(NomoFriend friend) {
+  final hash = friend.id.hashCode.abs();
+  return NomoAvatar(
+    skin: hash % NomoAvatar.skinColors.length,
+    hair: (hash ~/ 3) % NomoAvatar.hairStyles.length,
+    shirt: (hash ~/ 5) % NomoAvatar.shirtColors.length,
+    eyes: (hash ~/ 7) % NomoAvatar.eyeStyles.length,
+    mouth: (hash ~/ 11) % NomoAvatar.mouthStyles.length,
+    accessory: (hash ~/ 13) % NomoAvatar.accessoryStyles.length,
+  );
+}
 
-  final NomoDailyStatus status;
-  final Color color;
-  final bool isWhite;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 7 : 8,
-        vertical: compact ? 4 : 5,
-      ),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: isWhite ? .18 : .15),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: .36)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _calendarStatusIcon(status),
-            color: color,
-            size: compact ? 11 : 12,
-          ),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              _calendarStatusLabel(status, day: DateTime.now()),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isWhite ? const Color(0xFF17212B) : Colors.white,
-                fontSize: compact ? 10 : 11,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+Color _calendarFriendBlockStatusColor(NomoDailyStatus status) {
+  final color = _calendarStatusColor(status);
+  if (status == NomoDailyStatus.unselected) return _calendarStatusGreen;
+  return color;
 }
 
 class _CalendarFriendStatusFrame extends StatelessWidget {
@@ -2057,23 +1932,6 @@ Color _calendarStatusBlockAccent(NomoDailyStatus status) => switch (status) {
   NomoDailyStatus.hasPlans => _calendarStatusBlocked,
   _ => _calendarStatusColor(status),
 };
-
-Color _calendarStatusBlockBackground(
-  NomoDailyStatus status, {
-  required bool isWhite,
-  required bool selected,
-}) {
-  if (status == NomoDailyStatus.hasPlans) {
-    if (isWhite) return selected ? const Color(0xFFE9EEF4) : Colors.white;
-    return selected
-        ? const Color(0xFF172230)
-        : Colors.white.withValues(alpha: .05);
-  }
-  final color = _calendarStatusColor(status);
-  return color.withValues(
-    alpha: selected ? (isWhite ? .20 : .18) : (isWhite ? .11 : .09),
-  );
-}
 
 Color _calendarStatus3DSurfaceColor(
   NomoDailyStatus status, {
