@@ -282,6 +282,9 @@ class _FeedCardFooter extends StatelessWidget {
                 label: _feedLikeActionLabel(item),
                 color: likeAccent,
                 isWhite: isWhite,
+                burstOnTap: !item.liked,
+                burstIcon: CupertinoIcons.heart_fill,
+                burstColor: likeAccent,
                 onTap: onLike,
               ),
               const SizedBox(width: 8),
@@ -358,6 +361,9 @@ class _FeedActionPill extends StatelessWidget {
     required this.isWhite,
     this.icon,
     this.customIcon,
+    this.burstOnTap = false,
+    this.burstIcon = CupertinoIcons.sparkles,
+    this.burstColor,
     this.onTap,
   });
 
@@ -367,57 +373,74 @@ class _FeedActionPill extends StatelessWidget {
   final Widget? customIcon;
   final Color color;
   final bool isWhite;
+  final bool burstOnTap;
+  final IconData burstIcon;
+  final Color? burstColor;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final textColor = _feedActionForeground(color);
     final shadowColor = Color.lerp(color, Colors.black, .34)!;
-    return Semantics(
-      button: true,
-      label: semanticLabel,
-      child: Nomo3DButtonSurface(
-        onTap: onTap,
-        height: 38,
-        radius: 19,
-        color: color,
-        bottomColor: shadowColor,
-        padding: const EdgeInsets.symmetric(horizontal: 13),
-        borderColor: Colors.white.withValues(alpha: .18),
-        outerShadows: [
-          BoxShadow(
-            color: color.withValues(alpha: isWhite ? .18 : .30),
-            blurRadius: 20,
-            offset: const Offset(0, 9),
+    Widget buildButton(VoidCallback? effectiveTap) => Nomo3DButtonSurface(
+      onTap: effectiveTap,
+      height: 38,
+      radius: 19,
+      color: color,
+      bottomColor: shadowColor,
+      padding: const EdgeInsets.symmetric(horizontal: 13),
+      borderColor: Colors.white.withValues(alpha: .18),
+      outerShadows: [
+        BoxShadow(
+          color: color.withValues(alpha: isWhite ? .18 : .30),
+          blurRadius: 20,
+          offset: const Offset(0, 9),
+        ),
+      ],
+      innerShadows: [
+        BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
+      ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          customIcon ??
+              NomoPopIcon(
+                icon: icon ?? CupertinoIcons.circle,
+                color: textColor,
+                size: 19,
+                iconSize: 16,
+                showBubble: false,
+              ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
           ),
         ],
-        innerShadows: [
-          BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
-        ],
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            customIcon ??
-                NomoPopIcon(
-                  icon: icon ?? CupertinoIcons.circle,
-                  color: textColor,
-                  size: 19,
-                  iconSize: 16,
-                  showBubble: false,
-                ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: textColor,
-                fontWeight: FontWeight.w900,
-                height: 1,
-              ),
-            ),
-          ],
-        ),
       ),
     );
+
+    final child = burstOnTap
+        ? NomoInviteSuccessBurst(
+            burstIcon: burstIcon,
+            burstColor: burstColor ?? color,
+            confettiColors: [
+              color,
+              const Color(0xFFFF75B5),
+              const Color(0xFFC08BFF),
+              const Color(0xFFFFD166),
+              Colors.white,
+            ],
+            builder: (context, runWithBurst) =>
+                buildButton(onTap == null ? null : () => runWithBurst(onTap)),
+          )
+        : buildButton(onTap);
+
+    return Semantics(button: true, label: semanticLabel, child: child);
   }
 }
 

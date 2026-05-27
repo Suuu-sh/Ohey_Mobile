@@ -13,9 +13,26 @@ typedef NomoInviteBurstBuilder =
     );
 
 class NomoInviteSuccessBurst extends StatefulWidget {
-  const NomoInviteSuccessBurst({super.key, required this.builder});
+  const NomoInviteSuccessBurst({
+    super.key,
+    required this.builder,
+    this.burstIcon = CupertinoIcons.paperplane_fill,
+    this.burstColor = AppColors.primaryAction,
+    this.confettiColors = _defaultConfettiColors,
+  });
 
   final NomoInviteBurstBuilder builder;
+  final IconData burstIcon;
+  final Color burstColor;
+  final List<Color> confettiColors;
+
+  static const _defaultConfettiColors = [
+    Color(0xFFFF5EA8),
+    Color(0xFF20B9FF),
+    Color(0xFFB8FF00),
+    Color(0xFF8A62FF),
+    Color(0xFFFFD166),
+  ];
 
   @override
   State<NomoInviteSuccessBurst> createState() => _NomoInviteSuccessBurstState();
@@ -65,7 +82,10 @@ class _NomoInviteSuccessBurstState extends State<NomoInviteSuccessBurst>
             child: AnimatedBuilder(
               animation: _controller,
               builder: (context, child) => CustomPaint(
-                painter: _InviteConfettiPainter(_controller.value),
+                painter: _InviteConfettiPainter(
+                  progress: _controller.value,
+                  colors: widget.confettiColors,
+                ),
               ),
             ),
           ),
@@ -85,8 +105,8 @@ class _NomoInviteSuccessBurstState extends State<NomoInviteSuccessBurst>
                       angle: -.45 * t,
                       child: Center(
                         child: NomoGeneratedIcon(
-                          CupertinoIcons.paperplane_fill,
-                          color: AppColors.primaryAction,
+                          widget.burstIcon,
+                          color: widget.burstColor,
                           size: 22 - (4 * t),
                         ),
                       ),
@@ -103,17 +123,10 @@ class _NomoInviteSuccessBurstState extends State<NomoInviteSuccessBurst>
 }
 
 class _InviteConfettiPainter extends CustomPainter {
-  const _InviteConfettiPainter(this.progress);
+  const _InviteConfettiPainter({required this.progress, required this.colors});
 
   final double progress;
-
-  static const _colors = [
-    Color(0xFFFF5EA8),
-    Color(0xFF20B9FF),
-    Color(0xFFB8FF00),
-    Color(0xFF8A62FF),
-    Color(0xFFFFD166),
-  ];
+  final List<Color> colors;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -133,7 +146,7 @@ class _InviteConfettiPainter extends CustomPainter {
             math.sin(angle) * distance + drift,
           );
       final paint = Paint()
-        ..color = _colors[i % _colors.length].withValues(alpha: fade);
+        ..color = colors[i % colors.length].withValues(alpha: fade);
       canvas.save();
       canvas.translate(offset.dx, offset.dy);
       canvas.rotate(angle + progress * math.pi * 1.5);
@@ -152,5 +165,5 @@ class _InviteConfettiPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _InviteConfettiPainter oldDelegate) =>
-      oldDelegate.progress != progress;
+      oldDelegate.progress != progress || oldDelegate.colors != colors;
 }
