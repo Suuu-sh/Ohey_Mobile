@@ -198,9 +198,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   Future<void> _loadStatusesForMonth(DateTime month) async {
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+    final leadingEmptyCells = DateTime(month.year, month.month).weekday % 7;
+    final totalCells = leadingEmptyCells + daysInMonth;
+    final rows = (totalCells / 7).ceil();
     final targets = <DateTime>[];
-    for (var day = 1; day <= daysInMonth; day++) {
-      final date = DateTime(month.year, month.month, day);
+    for (var index = 0; index < rows * 7; index++) {
+      final dayNumber = index - leadingEmptyCells + 1;
+      final date = DateTime(month.year, month.month, dayNumber);
       final key = _dateKey(date);
       if (_statusByDate.containsKey(key) || !_loadingStatusKeys.add(key)) {
         continue;
@@ -2028,10 +2032,8 @@ class _PlayfulMonthGrid extends StatelessWidget {
                   final marker = inMonth ? markers[dayNumber] : null;
                   final isToday = inMonth && _isSameDate(DateTime.now(), day);
                   final hasPlan = isToday && todayReservations.isNotEmpty;
-                  final dailyStatus = inMonth
-                      ? statusByDate[_dateKey(day)] ??
-                            NomoDailyStatus.unselected
-                      : NomoDailyStatus.unselected;
+                  final dailyStatus =
+                      statusByDate[_dateKey(day)] ?? NomoDailyStatus.unselected;
                   return _DayTile(
                     day: displayDay,
                     date: day,
@@ -2105,14 +2107,14 @@ class _DayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final hasStatus = inMonth && dailyStatus != NomoDailyStatus.unselected;
+    final hasStatus = dailyStatus != NomoDailyStatus.unselected;
     final statusAccent = _calendarStatusTileAccent(dailyStatus);
-    final dayColor = !inMonth
+    final dayColor = hasStatus
+        ? _calendarStatusTileForeground(dailyStatus, isWhite: isWhite)
+        : !inMonth
         ? (isWhite
               ? Colors.black.withValues(alpha: .20)
               : Colors.white.withValues(alpha: .20))
-        : hasStatus
-        ? _calendarStatusTileForeground(dailyStatus, isWhite: isWhite)
         : column == 0
         ? const Color(0xFFFF6FA6)
         : column == 6
