@@ -2,10 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
+import '../../../core/config/supabase_config.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_avatar.dart';
@@ -14,6 +16,21 @@ import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../data/friend_repository.dart';
+
+String _friendQrPayload(String userId) {
+  final scheme = SupabaseConfig.authRedirectUrl.split('://').first;
+  return '$scheme://friend/${Uri.encodeComponent(userId)}';
+}
+
+String _normalizedFriendInput(String value) {
+  var input = value.trim();
+  if (input.startsWith('@')) input = input.substring(1).trim();
+  final uri = Uri.tryParse(input);
+  if (uri != null && uri.pathSegments.isNotEmpty) {
+    input = uri.pathSegments.last.trim();
+  }
+  return Uri.decodeComponent(input);
+}
 
 Future<void> showFriendAddSheet(BuildContext context, WidgetRef ref) {
   return showGeneralDialog<void>(
@@ -68,11 +85,44 @@ class _FriendQrDialog extends StatelessWidget {
     );
   }
 
+  Future<void> _scanFriendQr(BuildContext context) async {
+    final scanned = await showNomoBottomSheet<String>(
+      context: context,
+      useSafeArea: true,
+      barrierColor: Colors.black.withValues(alpha: .70),
+      builder: (_) => const _FriendQrScannerSheet(),
+    );
+    final friendId = scanned == null ? '' : _normalizedFriendInput(scanned);
+    if (friendId.isEmpty || !context.mounted) return;
+    try {
+      final repository = ref.read(friendRepositoryProvider);
+      final profile = await repository.findProfileByUserId(friendId);
+      if (profile == null) {
+        if (context.mounted) {
+          NomoToast.show(context, 'このQRのユーザーが見つかりませんでした');
+        }
+        return;
+      }
+      await repository.sendFriendRequest(profile.id);
+      ref.invalidate(friendsProvider);
+      if (!context.mounted) return;
+      Navigator.of(context).pop();
+      NomoToast.show(
+        context,
+        '${profile.displayName}さんに申請を送りました',
+        icon: CupertinoIcons.person_badge_plus_fill,
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      NomoToast.show(context, 'QRから申請できませんでした。あとでもう一度試してね');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(nomoUserProvider);
     final myUserId = user?.userId.trim() ?? '';
-    final qrPayload = myUserId.isEmpty ? null : 'tomola://friend/$myUserId';
+    final qrPayload = myUserId.isEmpty ? null : _friendQrPayload(myUserId);
     return SafeArea(
       child: Center(
         child: Material(
@@ -94,6 +144,7 @@ class _FriendQrDialog extends StatelessWidget {
                 onShare: qrPayload == null
                     ? null
                     : () => _shareFriendLink(myUserId, qrPayload),
+                onScan: () => _scanFriendQr(context),
               ),
             ),
           ),
@@ -126,15 +177,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     super.dispose();
   }
 
-  String _normalizedInput(String value) {
-    var input = value.trim();
-    if (input.startsWith('@')) input = input.substring(1).trim();
-    final uri = Uri.tryParse(input);
-    if (uri != null && uri.pathSegments.isNotEmpty) {
-      input = uri.pathSegments.last.trim();
-    }
-    return input;
-  }
+  String _normalizedInput(String value) => _normalizedFriendInput(value);
 
   Future<void> _pasteAndSearch() async {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
@@ -169,6 +212,39 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     await SharePlus.instance.share(
       ShareParams(title: 'Nomoでつながろ', text: 'Nomoで@$userId とつながろう：$payload'),
     );
+  }
+
+  Future<void> _scanFriendQr(BuildContext context) async {
+    final scanned = await showNomoBottomSheet<String>(
+      context: context,
+      useSafeArea: true,
+      barrierColor: Colors.black.withValues(alpha: .70),
+      builder: (_) => const _FriendQrScannerSheet(),
+    );
+    final friendId = scanned == null ? '' : _normalizedFriendInput(scanned);
+    if (friendId.isEmpty || !context.mounted) return;
+    try {
+      final repository = widget.ref.read(friendRepositoryProvider);
+      final profile = await repository.findProfileByUserId(friendId);
+      if (profile == null) {
+        if (context.mounted) {
+          NomoToast.show(context, 'このQRのユーザーが見つかりませんでした');
+        }
+        return;
+      }
+      await repository.sendFriendRequest(profile.id);
+      widget.ref.invalidate(friendsProvider);
+      if (!context.mounted) return;
+      Navigator.of(context).pop();
+      NomoToast.show(
+        context,
+        '${profile.displayName}さんに申請を送りました',
+        icon: CupertinoIcons.person_badge_plus_fill,
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      NomoToast.show(context, 'QRから申請できませんでした。あとでもう一度試してね');
+    }
   }
 
   Future<void> _search() async {
@@ -239,7 +315,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     final status = _status;
     final user = widget.ref.watch(nomoUserProvider);
     final myUserId = user?.userId.trim() ?? '';
-    final qrPayload = myUserId.isEmpty ? null : 'tomola://friend/$myUserId';
+    final qrPayload = myUserId.isEmpty ? null : _friendQrPayload(myUserId);
     return NomoBottomSheetShell(
       title: null,
       showHandle: true,
@@ -328,6 +404,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
                 onShare: qrPayload == null
                     ? null
                     : () => _shareFriendLink(myUserId, qrPayload),
+                onScan: () => _scanFriendQr(context),
               ),
             ],
             const SizedBox(height: 18),
@@ -376,6 +453,7 @@ class _CuteQrCard extends StatelessWidget {
     required this.onCopyLink,
     required this.onShare,
     this.onClose,
+    this.onScan,
   });
 
   final String userId;
@@ -386,6 +464,7 @@ class _CuteQrCard extends StatelessWidget {
   final VoidCallback? onCopyLink;
   final VoidCallback? onShare;
   final VoidCallback? onClose;
+  final VoidCallback? onScan;
 
   @override
   Widget build(BuildContext context) {
@@ -536,17 +615,37 @@ class _CuteQrCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          GestureDetector(
-            onTap: onCopyId,
-            child: Text(
-              'IDだけコピー',
-              style: TextStyle(
-                color: softInk.withValues(alpha: .82),
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                decoration: TextDecoration.underline,
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 18,
+            runSpacing: 6,
+            children: [
+              GestureDetector(
+                onTap: onCopyId,
+                child: Text(
+                  'IDだけコピー',
+                  style: TextStyle(
+                    color: softInk.withValues(alpha: .82),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
               ),
-            ),
+              if (onScan != null)
+                GestureDetector(
+                  onTap: onScan,
+                  child: Text(
+                    'QRを読み取る',
+                    style: TextStyle(
+                      color: softInk.withValues(alpha: .82),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -734,6 +833,113 @@ class _CuteMessageBox extends StatelessWidget {
                 fontSize: 12,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendQrScannerSheet extends StatefulWidget {
+  const _FriendQrScannerSheet();
+
+  @override
+  State<_FriendQrScannerSheet> createState() => _FriendQrScannerSheetState();
+}
+
+class _FriendQrScannerSheetState extends State<_FriendQrScannerSheet> {
+  final MobileScannerController _controller = MobileScannerController(
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
+  bool _didScan = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleDetect(BarcodeCapture capture) {
+    if (_didScan) return;
+    final value = capture.barcodes
+        .map((barcode) => barcode.rawValue?.trim())
+        .whereType<String>()
+        .where((value) => value.isNotEmpty)
+        .firstOrNull;
+    if (value == null) return;
+    _didScan = true;
+    HapticFeedback.selectionClick();
+    Navigator.of(context).pop(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF18222E) : Colors.white;
+    final sub = isWhite ? const Color(0xFF6C7480) : Colors.white70;
+    return NomoBottomSheetShell(
+      title: null,
+      showHandle: true,
+      radius: 34,
+      maxHeightFactor: .82,
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'QRを読み取る',
+            style: TextStyle(
+              color: ink,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '相手のNomo QRをカメラにかざしてね。',
+            style: TextStyle(
+              color: sub,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(26),
+            child: SizedBox(
+              height: 280,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  MobileScanner(
+                    controller: _controller,
+                    onDetect: _handleDetect,
+                  ),
+                  Center(
+                    child: Container(
+                      width: 210,
+                      height: 210,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(
+                          color: const Color(0xFFB7F15B),
+                          width: 3,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Nomo3DButton.secondary(
+            label: '閉じる',
+            onTap: () => Navigator.of(context).pop(),
+            height: 44,
+            radius: 20,
           ),
         ],
       ),
