@@ -688,7 +688,7 @@ class _SelectedDayPanel extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(14, compact ? 10 : 12, 14, 0),
+                padding: EdgeInsets.fromLTRB(14, compact ? 10 : 12, 24, 0),
                 child: Row(
                   children: [
                     _CalendarDateBadge(day: day, isWhite: isWhite),
