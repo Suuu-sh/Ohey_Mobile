@@ -27,6 +27,7 @@ Widget _buildFeedPage({
   required ValueChanged<_FeedItem> onLikePressed,
   required ValueChanged<_FeedItem> onSharePressed,
   required ValueChanged<_FeedItem> onMorePressed,
+  required ValueChanged<_FeedItem> onAuthorPressed,
 }) {
   if (isLoading && items.isEmpty) {
     return ListView(
@@ -70,6 +71,7 @@ Widget _buildFeedPage({
         onLike: item.isLikeable ? () => onLikePressed(item) : null,
         onShare: item.id.isEmpty ? null : () => onSharePressed(item),
         onMore: item.id.isEmpty ? null : () => onMorePressed(item),
+        onAuthorTap: () => onAuthorPressed(item),
       );
     },
   );
@@ -85,6 +87,7 @@ class _FeedPostPage extends StatelessWidget {
     this.onLike,
     this.onShare,
     this.onMore,
+    this.onAuthorTap,
   });
 
   final double topPadding;
@@ -95,6 +98,7 @@ class _FeedPostPage extends StatelessWidget {
   final VoidCallback? onLike;
   final VoidCallback? onShare;
   final VoidCallback? onMore;
+  final VoidCallback? onAuthorTap;
 
   @override
   Widget build(BuildContext context) {
@@ -113,6 +117,7 @@ class _FeedPostPage extends StatelessWidget {
               onLike: onLike,
               onShare: onShare,
               onMore: onMore,
+              onAuthorTap: onAuthorTap,
             ),
           ),
         ),

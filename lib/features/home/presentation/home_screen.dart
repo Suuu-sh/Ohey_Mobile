@@ -35,6 +35,7 @@ import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../notifications/data/notification_repository.dart';
+import '../../profile/presentation/profile_screen.dart';
 
 part 'home_feed_layout.dart';
 part 'home_feed_invite_banner.dart';
@@ -134,6 +135,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   !_isFeedSwipeTutorialSeen && feedItems.length > 1,
               onSwipeTutorialDismissed: _markFeedSwipeTutorialSeen,
               onMorePressed: (item) => _showFeedPostActions(context, ref, item),
+              onAuthorPressed: (item) => _showFeedAuthorProfile(context, item),
             ),
           ),
           _FeedHeaderBackdropLayer(isWhite: isWhite),
@@ -198,6 +200,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (index > 0) {
       _markFeedSwipeTutorialSeen();
     }
+  }
+
+  Future<void> _showFeedAuthorProfile(
+    BuildContext context,
+    _FeedItem item,
+  ) async {
+    if (item.ownedByMe) {
+      HapticFeedback.selectionClick();
+      await Navigator.of(
+        context,
+      ).push(CupertinoPageRoute<void>(builder: (_) => const ProfileScreen()));
+      return;
+    }
+
+    HapticFeedback.selectionClick();
+    await showNomoBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      barrierColor: Colors.black.withValues(alpha: .62),
+      builder: (context) => _FeedCompanionProfileSheet(
+        friend: _Companion(
+          name: item.userName,
+          handle: item.isOfficial ? 'Nomo公式' : item.place,
+          avatar: item.avatar,
+          accent: item.accent,
+          statusKey: null,
+        ),
+      ),
+    );
   }
 
   Future<void> _shareFeedItem(BuildContext context, _FeedItem item) async {

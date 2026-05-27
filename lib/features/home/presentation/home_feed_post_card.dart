@@ -7,6 +7,7 @@ class _FeedPostCard extends StatelessWidget {
     this.onLike,
     this.onShare,
     this.onMore,
+    this.onAuthorTap,
   });
 
   final _FeedItem item;
@@ -14,6 +15,7 @@ class _FeedPostCard extends StatelessWidget {
   final VoidCallback? onLike;
   final VoidCallback? onShare;
   final VoidCallback? onMore;
+  final VoidCallback? onAuthorTap;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +39,12 @@ class _FeedPostCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _FeedCardAuthorBar(item: item, isWhite: isWhite, onMore: onMore),
+            _FeedCardAuthorBar(
+              item: item,
+              isWhite: isWhite,
+              onMore: onMore,
+              onAuthorTap: onAuthorTap,
+            ),
             _FeedPhotoLikeSurface(
               item: item,
               hasPhoto: hasPhoto,
@@ -343,11 +350,13 @@ class _FeedCardAuthorBar extends StatelessWidget {
     required this.item,
     required this.isWhite,
     this.onMore,
+    this.onAuthorTap,
   });
 
   final _FeedItem item;
   final bool isWhite;
   final VoidCallback? onMore;
+  final VoidCallback? onAuthorTap;
 
   @override
   Widget build(BuildContext context) {
@@ -372,48 +381,69 @@ class _FeedCardAuthorBar extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _AvatarBubble(avatar: item.avatar, size: 40, glowColor: item.accent),
-          const SizedBox(width: 10),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+            child: Semantics(
+              button: true,
+              label: '${item.userName}のプロフィールを開く',
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onAuthorTap,
+                child: Row(
                   children: [
-                    Flexible(
-                      child: Text(
-                        item.userName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: primaryText,
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w900,
-                          height: 1.05,
-                          letterSpacing: -.25,
-                        ),
+                    _AvatarBubble(
+                      avatar: item.avatar,
+                      size: 40,
+                      glowColor: item.accent,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  item.userName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.titleSmall
+                                      ?.copyWith(
+                                        color: primaryText,
+                                        fontSize: 15.5,
+                                        fontWeight: FontWeight.w900,
+                                        height: 1.05,
+                                        letterSpacing: -.25,
+                                      ),
+                                ),
+                              ),
+                              const SizedBox(width: 7),
+                              _FeedPostKindBadge(kind: kind, isWhite: isWhite),
+                              if (item.isOfficial)
+                                const _OfficialVerifiedBadge(),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            metadataLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: secondaryText,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1,
+                                ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 7),
-                    _FeedPostKindBadge(kind: kind, isWhite: isWhite),
-                    if (item.isOfficial) const _OfficialVerifiedBadge(),
                   ],
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  metadataLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: secondaryText,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w900,
-                    height: 1,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
           Semantics(
