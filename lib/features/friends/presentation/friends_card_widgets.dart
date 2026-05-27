@@ -60,137 +60,135 @@ class _FriendProfileSheet extends StatelessWidget {
     final avatar = friend.avatar ?? _fallbackAvatarForFriend(friend);
     final statusColor = _friendInviteButtonColor(status);
 
-    final sheetContentHeight = (MediaQuery.sizeOf(context).height * .72)
-        .clamp(520.0, 680.0)
+    final sheetContentHeight = (MediaQuery.sizeOf(context).height * .84)
+        .clamp(560.0, 720.0)
         .toDouble();
 
     return NomoBottomSheetShell(
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
+      padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
       radius: 32,
-      maxHeightFactor: .88,
+      maxHeightFactor: .90,
       child: SizedBox(
         height: sheetContentHeight,
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const NomoBottomSheetHandle(),
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: NomoGeneratedIcon(
-                    CupertinoIcons.xmark,
-                    color: sub,
-                    size: 30,
-                  ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const NomoBottomSheetHandle(),
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: NomoGeneratedIcon(
+                  CupertinoIcons.xmark,
+                  color: sub,
+                  size: 30,
                 ),
               ),
-              _FriendProfileHero(friend: friend, avatar: avatar),
-              const SizedBox(height: 14),
-              Text(
-                friend.name,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: ink,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.7,
-                ),
+            ),
+            _FriendProfileHero(friend: friend, avatar: avatar),
+            const SizedBox(height: 10),
+            Text(
+              friend.name,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: ink,
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.7,
               ),
-              const SizedBox(height: 8),
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: isWhite
+                      ? const Color(0xFFF2F6F8)
+                      : Colors.white.withValues(alpha: .08),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
                     color: isWhite
-                        ? const Color(0xFFF2F6F8)
-                        : Colors.white.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                      color: isWhite
-                          ? const Color(0xFFE1E8F1)
-                          : Colors.white.withValues(alpha: .10),
-                    ),
+                        ? const Color(0xFFE1E8F1)
+                        : Colors.white.withValues(alpha: .10),
                   ),
-                  child: Text(
-                    friend.vibe.trim().isEmpty
-                        ? '@${friend.id}'
-                        : '@${friend.vibe}',
-                    style: TextStyle(
-                      color: sub,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                    ),
+                ),
+                child: Text(
+                  friend.vibe.trim().isEmpty
+                      ? '@${friend.id}'
+                      : '@${friend.vibe}',
+                  style: TextStyle(
+                    color: sub,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              NomoThemedPanel(
-                padding: const EdgeInsets.all(12),
-                accentColor: statusColor,
-                borderRadius: 22,
-                backgroundColor: isWhite
-                    ? Colors.white
-                    : AppColors.darkBackgroundBottom,
-                child: Row(
-                  children: [
-                    NomoPopIcon(
-                      icon: CupertinoIcons.cloud_fill,
-                      color: statusColor,
-                      size: 38,
-                      iconSize: 21,
-                      showBubble: false,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            status.label,
-                            style: TextStyle(
-                              color: ink,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 15,
-                            ),
+            ),
+            const SizedBox(height: 12),
+            NomoThemedPanel(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
+              accentColor: statusColor,
+              borderRadius: 22,
+              backgroundColor: isWhite
+                  ? Colors.white
+                  : AppColors.darkBackgroundBottom,
+              child: Row(
+                children: [
+                  NomoPopIcon(
+                    icon: CupertinoIcons.cloud_fill,
+                    color: statusColor,
+                    size: 38,
+                    iconSize: 21,
+                    showBubble: false,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          status.label,
+                          style: TextStyle(
+                            color: ink,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            status.reason,
-                            style: TextStyle(
-                              color: sub,
-                              fontWeight: FontWeight.w800,
-                              height: 1.35,
-                            ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          status.reason,
+                          style: TextStyle(
+                            color: sub,
+                            fontWeight: FontWeight.w800,
+                            height: 1.35,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              _FriendProfileCalendar(friend: friend, status: status),
-              const SizedBox(height: 14),
-              Nomo3DButton.secondary(
-                label: '閉じる',
-                onTap: () => Navigator.of(context).pop(),
-                height: 48,
-                radius: 22,
-                color: const Color(0xFF252044),
-                foregroundColor: const Color(0xFFC08BFF),
-                shadowColor: const Color(0xFF15142C),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: _FriendProfileCalendar(friend: friend, status: status),
+            ),
+            const SizedBox(height: 12),
+            Nomo3DButton.secondary(
+              label: '閉じる',
+              onTap: () => Navigator.of(context).pop(),
+              height: 48,
+              radius: 22,
+              color: const Color(0xFF252044),
+              foregroundColor: const Color(0xFFC08BFF),
+              shadowColor: const Color(0xFF15142C),
+            ),
+          ],
         ),
       ),
     );
@@ -210,7 +208,7 @@ class _FriendProfileHero extends StatelessWidget {
         NomoAvatar.backgroundGradients[avatar.background %
             NomoAvatar.backgroundGradients.length];
     return Container(
-      height: 156,
+      height: 96,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
         gradient: usesMascotBackdrop
@@ -242,15 +240,15 @@ class _FriendProfileHero extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             Container(
-              width: 118,
-              height: 118,
+              width: 86,
+              height: 86,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white.withValues(alpha: .72),
                 border: Border.all(color: Colors.white, width: 5),
               ),
             ),
-            ClipOval(child: NomoAvatarView(avatar: avatar, size: 100)),
+            ClipOval(child: NomoAvatarView(avatar: avatar, size: 74)),
             const Positioned(
               right: 4,
               top: 8,
@@ -300,8 +298,8 @@ class _FriendProfileCalendar extends StatelessWidget {
               NomoPopIcon(
                 icon: CupertinoIcons.calendar,
                 color: accent,
-                size: 34,
-                iconSize: 18,
+                size: 30,
+                iconSize: 16,
                 showBubble: false,
               ),
               const SizedBox(width: 9),
@@ -311,15 +309,6 @@ class _FriendProfileCalendar extends StatelessWidget {
                   color: ink,
                   fontWeight: FontWeight.w900,
                   fontSize: 16,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '今日の予定',
-                style: TextStyle(
-                  color: sub,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 11,
                 ),
               ),
             ],
@@ -333,9 +322,9 @@ class _FriendProfileCalendar extends StatelessWidget {
                       child: Text(
                         label,
                         style: TextStyle(
-                          color: Color(0xFF8B96A3),
+                          color: Color(0xFFB7C0CA),
                           fontWeight: FontWeight.w900,
-                          fontSize: 10,
+                          fontSize: 13,
                         ),
                       ),
                     ),
@@ -352,7 +341,7 @@ class _FriendProfileCalendar extends StatelessWidget {
               crossAxisCount: 7,
               mainAxisSpacing: 4,
               crossAxisSpacing: 4,
-              mainAxisExtent: 28,
+              mainAxisExtent: 32,
             ),
             itemBuilder: (context, index) {
               final day = index - leading + 1;
@@ -362,15 +351,20 @@ class _FriendProfileCalendar extends StatelessWidget {
                 duration: const Duration(milliseconds: 160),
                 decoration: BoxDecoration(
                   color: isToday
-                      ? accent.withValues(alpha: isWhite ? .22 : .30)
+                      ? _friendProfileStatusTileBackground(
+                          status,
+                          isWhite: isWhite,
+                        )
                       : isWhite
-                      ? const Color(0xFFF5F8FB)
-                      : Colors.white.withValues(alpha: .045),
+                      ? Colors.white
+                      : AppColors.darkBackground,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: isToday
-                        ? accent.withValues(alpha: .80)
-                        : Colors.white.withValues(alpha: isWhite ? .0 : .08),
+                        ? accent.withValues(alpha: .90)
+                        : const Color(
+                            0xFF20B9FF,
+                          ).withValues(alpha: isWhite ? .34 : .24),
                     width: isToday ? 2 : 1,
                   ),
                 ),
@@ -378,8 +372,13 @@ class _FriendProfileCalendar extends StatelessWidget {
                   child: Text(
                     inMonth ? '$day' : '',
                     style: TextStyle(
-                      color: isToday ? accent : sub,
-                      fontSize: 12,
+                      color: isToday
+                          ? _friendProfileStatusTileForeground(
+                              status,
+                              isWhite: isWhite,
+                            )
+                          : sub,
+                      fontSize: 14,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -391,4 +390,25 @@ class _FriendProfileCalendar extends StatelessWidget {
       ),
     );
   }
+}
+
+Color _friendProfileStatusTileBackground(
+  _FriendStatus status, {
+  required bool isWhite,
+}) {
+  final accent = _friendInviteButtonColor(status);
+  if (!status.enabled) {
+    return isWhite ? const Color(0xFFE9EEF4) : const Color(0xFF2B3644);
+  }
+  return accent.withValues(alpha: isWhite ? .30 : .36);
+}
+
+Color _friendProfileStatusTileForeground(
+  _FriendStatus status, {
+  required bool isWhite,
+}) {
+  if (!status.enabled) {
+    return isWhite ? const Color(0xFF475569) : const Color(0xFF9EABBA);
+  }
+  return isWhite ? const Color(0xFF101820) : Colors.white;
 }
