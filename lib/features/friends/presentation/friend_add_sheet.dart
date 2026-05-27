@@ -40,7 +40,7 @@ Future<void> showFriendAddSheet(BuildContext context, WidgetRef ref) {
     barrierColor: Colors.black.withValues(alpha: .70),
     transitionDuration: const Duration(milliseconds: 180),
     pageBuilder: (context, animation, secondaryAnimation) =>
-        _FriendQrDialog(ref: ref),
+        const _FriendQrDialog(),
     transitionBuilder: (context, animation, secondaryAnimation, child) {
       final curved = CurvedAnimation(
         parent: animation,
@@ -57,10 +57,29 @@ Future<void> showFriendAddSheet(BuildContext context, WidgetRef ref) {
   );
 }
 
-class _FriendQrDialog extends StatelessWidget {
-  const _FriendQrDialog({required this.ref});
+class _FriendQrDialog extends ConsumerStatefulWidget {
+  const _FriendQrDialog();
 
-  final WidgetRef ref;
+  @override
+  ConsumerState<_FriendQrDialog> createState() => _FriendQrDialogState();
+}
+
+class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  NomoFriendProfile? _searchProfile;
+  NomoFriendRelationshipStatus? _searchStatus;
+  bool _isSearchExpanded = false;
+  bool _isSearching = false;
+  bool _isSending = false;
+  String? _searchError;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   Future<void> _copyMyId(BuildContext context, String userId) async {
     await Clipboard.setData(ClipboardData(text: userId));
@@ -83,6 +102,73 @@ class _FriendQrDialog extends StatelessWidget {
     await SharePlus.instance.share(
       ShareParams(title: 'Nomoでつながろ', text: 'Nomoで@$userId とつながろう：$payload'),
     );
+  }
+
+  void _expandSearch() {
+    HapticFeedback.selectionClick();
+    setState(() => _isSearchExpanded = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _searchFocusNode.requestFocus();
+    });
+  }
+
+  Future<void> _searchById() async {
+    final friendId = _normalizedFriendInput(_searchController.text);
+    _searchController.text = friendId;
+    if (friendId.isEmpty) {
+      setState(() => _searchError = 'IDを入力してください');
+      return;
+    }
+    setState(() {
+      _isSearching = true;
+      _searchError = null;
+      _searchProfile = null;
+      _searchStatus = null;
+    });
+    try {
+      final repository = ref.read(friendRepositoryProvider);
+      final profile = await repository.findProfileByUserId(friendId);
+      final status = profile == null
+          ? null
+          : await repository.relationshipStatus(profile.id);
+      if (!mounted) return;
+      setState(() {
+        _searchProfile = profile;
+        _searchStatus = status;
+        _searchError = profile == null ? 'このIDのユーザーが見つかりませんでした' : null;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _searchError = '検索に失敗しました。あとでもう一度試してね');
+    } finally {
+      if (mounted) setState(() => _isSearching = false);
+    }
+  }
+
+  Future<void> _sendSearchRequest() async {
+    final profile = _searchProfile;
+    if (profile == null) return;
+    setState(() {
+      _isSending = true;
+      _searchError = null;
+    });
+    try {
+      final repository = ref.read(friendRepositoryProvider);
+      await repository.sendFriendRequest(profile.id);
+      ref.invalidate(friendsProvider);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      NomoToast.show(
+        context,
+        '${profile.displayName}さんに申請を送りました',
+        icon: CupertinoIcons.person_badge_plus_fill,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _searchError = '申請できませんでした。あとでもう一度試してね');
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
   }
 
   Future<void> _scanFriendQr(BuildContext context) async {
@@ -124,27 +210,46 @@ class _FriendQrDialog extends StatelessWidget {
     final myUserId = user?.userId.trim() ?? '';
     final qrPayload = myUserId.isEmpty ? null : _friendQrPayload(myUserId);
     return SafeArea(
-      child: Center(
-        child: Material(
-          color: Colors.transparent,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 430),
-              child: _CuteQrCard(
-                userId: myUserId,
-                payload: qrPayload,
-                avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
-                isWhite: false,
-                onClose: () => Navigator.of(context).pop(),
-                onCopyId: () => _copyMyId(context, myUserId),
-                onCopyLink: qrPayload == null
-                    ? null
-                    : () => _copyFriendLink(context, qrPayload),
-                onShare: qrPayload == null
-                    ? null
-                    : () => _shareFriendLink(myUserId, qrPayload),
-                onScan: () => _scanFriendQr(context),
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 18),
+            child: Material(
+              color: Colors.transparent,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 430),
+                child: _CuteQrCard(
+                  userId: myUserId,
+                  payload: qrPayload,
+                  avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
+                  isWhite: false,
+                  onClose: () => Navigator.of(context).pop(),
+                  onCopyId: () => _copyMyId(context, myUserId),
+                  onCopyLink: qrPayload == null
+                      ? null
+                      : () => _copyFriendLink(context, qrPayload),
+                  onShare: qrPayload == null
+                      ? null
+                      : () => _shareFriendLink(myUserId, qrPayload),
+                  onScan: () => _scanFriendQr(context),
+                  searchController: _searchController,
+                  searchFocusNode: _searchFocusNode,
+                  isSearchExpanded: _isSearchExpanded,
+                  isSearching: _isSearching,
+                  searchError: _searchError,
+                  searchProfile: _searchProfile,
+                  searchStatus: _searchStatus,
+                  isSendingSearchRequest: _isSending,
+                  onExpandSearch: _expandSearch,
+                  onSubmitSearch: _searchById,
+                  onSendSearchRequest: _sendSearchRequest,
+                ),
               ),
             ),
           ),
@@ -454,6 +559,17 @@ class _CuteQrCard extends StatelessWidget {
     required this.onShare,
     this.onClose,
     this.onScan,
+    this.searchController,
+    this.searchFocusNode,
+    this.isSearchExpanded = false,
+    this.isSearching = false,
+    this.searchError,
+    this.searchProfile,
+    this.searchStatus,
+    this.isSendingSearchRequest = false,
+    this.onExpandSearch,
+    this.onSubmitSearch,
+    this.onSendSearchRequest,
   });
 
   final String userId;
@@ -465,6 +581,17 @@ class _CuteQrCard extends StatelessWidget {
   final VoidCallback? onShare;
   final VoidCallback? onClose;
   final VoidCallback? onScan;
+  final TextEditingController? searchController;
+  final FocusNode? searchFocusNode;
+  final bool isSearchExpanded;
+  final bool isSearching;
+  final String? searchError;
+  final NomoFriendProfile? searchProfile;
+  final NomoFriendRelationshipStatus? searchStatus;
+  final bool isSendingSearchRequest;
+  final VoidCallback? onExpandSearch;
+  final VoidCallback? onSubmitSearch;
+  final VoidCallback? onSendSearchRequest;
 
   @override
   Widget build(BuildContext context) {
@@ -631,8 +758,38 @@ class _CuteQrCard extends StatelessWidget {
                   icon: CupertinoIcons.qrcode_viewfinder,
                   onTap: onScan!,
                 ),
+              if (searchController != null &&
+                  searchFocusNode != null &&
+                  onExpandSearch != null &&
+                  onSubmitSearch != null)
+                _QrIdSearchChip(
+                  controller: searchController!,
+                  focusNode: searchFocusNode!,
+                  isExpanded: isSearchExpanded,
+                  isLoading: isSearching,
+                  onExpand: onExpandSearch!,
+                  onSearch: onSubmitSearch!,
+                ),
             ],
           ),
+          if (searchError != null) ...[
+            const SizedBox(height: 10),
+            _CuteMessageBox(
+              icon: CupertinoIcons.exclamationmark_bubble_fill,
+              message: searchError!,
+              color: const Color(0xFFFF7A9E),
+            ),
+          ],
+          if (searchProfile != null && onSendSearchRequest != null) ...[
+            const SizedBox(height: 10),
+            _FriendSearchResultCard(
+              profile: searchProfile!,
+              status: searchStatus,
+              isSending: isSendingSearchRequest,
+              isWhite: true,
+              onSend: onSendSearchRequest!,
+            ),
+          ],
         ],
       ),
     );
@@ -756,6 +913,132 @@ class _QrTextActionChip extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QrIdSearchChip extends StatelessWidget {
+  const _QrIdSearchChip({
+    required this.controller,
+    required this.focusNode,
+    required this.isExpanded,
+    required this.isLoading,
+    required this.onExpand,
+    required this.onSearch,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final bool isExpanded;
+  final bool isLoading;
+  final VoidCallback onExpand;
+  final VoidCallback onSearch;
+
+  @override
+  Widget build(BuildContext context) {
+    const ink = Color(0xFF222222);
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      width: isExpanded ? 270 : 130,
+      child: Nomo3DButtonSurface(
+        onTap: isExpanded ? null : onExpand,
+        height: 34,
+        radius: 17,
+        color: const Color(0xFFF7F7F7),
+        bottomColor: const Color(0xFFE1E1E1),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        useGradient: true,
+        borderColor: Colors.black.withValues(alpha: .08),
+        outerShadows: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .055),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 160),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          child: isExpanded
+              ? Row(
+                  key: const ValueKey('search-input'),
+                  children: [
+                    NomoGeneratedIcon(
+                      CupertinoIcons.search,
+                      color: ink.withValues(alpha: .68),
+                      size: 16,
+                    ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: CupertinoTextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        placeholder: 'Nomo ID',
+                        textInputAction: TextInputAction.search,
+                        onSubmitted: (_) => isLoading ? null : onSearch(),
+                        padding: EdgeInsets.zero,
+                        style: TextStyle(
+                          color: ink.withValues(alpha: .86),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                        ),
+                        placeholderStyle: TextStyle(
+                          color: ink.withValues(alpha: .36),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                        ),
+                        decoration: const BoxDecoration(),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: isLoading ? null : onSearch,
+                      child: SizedBox(
+                        width: 26,
+                        height: 26,
+                        child: Center(
+                          child: isLoading
+                              ? const CupertinoActivityIndicator(radius: 7)
+                              : NomoGeneratedIcon(
+                                  CupertinoIcons.arrow_right_circle_fill,
+                                  color: ink.withValues(alpha: .68),
+                                  size: 20,
+                                ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  key: const ValueKey('search-chip'),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    NomoGeneratedIcon(
+                      CupertinoIcons.search,
+                      color: ink.withValues(alpha: .68),
+                      size: 15,
+                    ),
+                    const SizedBox(width: 5),
+                    Flexible(
+                      child: Text(
+                        'ID検索',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: ink.withValues(alpha: .62),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
         ),
       ),
     );
