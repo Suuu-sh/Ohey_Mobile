@@ -27,19 +27,19 @@ extension NomoDailyStatusX on NomoDailyStatus {
   };
 
   String get description => switch (this) {
-    NomoDailyStatus.unselected => 'まだ決めてないけど、あとで返事できます。',
-    NomoDailyStatus.canDrinkToday => '今日は空いている気分です。',
-    NomoDailyStatus.nonAlcohol => 'たぶん空いてそうです。',
-    NomoDailyStatus.liverRest => '時間が合えば行けそうです。',
-    NomoDailyStatus.hasPlans => 'もう予定が入っています。',
+    NomoDailyStatus.unselected => 'あとで返事できます',
+    NomoDailyStatus.canDrinkToday => '今日空いてます',
+    NomoDailyStatus.nonAlcohol => 'たぶん空いてます',
+    NomoDailyStatus.liverRest => '時間が合えばOK',
+    NomoDailyStatus.hasPlans => '予定があります',
   };
 
   String get shortCopy => switch (this) {
     NomoDailyStatus.unselected => 'あとで決める',
     NomoDailyStatus.canDrinkToday => '今日は空いてる',
     NomoDailyStatus.nonAlcohol => 'たぶん空いてる',
-    NomoDailyStatus.liverRest => '時間が合えば行けそう',
-    NomoDailyStatus.hasPlans => '今日はもう予定がある',
+    NomoDailyStatus.liverRest => '時間が合えばOK',
+    NomoDailyStatus.hasPlans => '予定があります',
   };
 
   bool get canJoinPlan => switch (this) {

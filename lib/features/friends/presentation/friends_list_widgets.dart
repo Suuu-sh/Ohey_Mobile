@@ -710,6 +710,28 @@ class _CompactStatusPill extends StatelessWidget {
   }
 }
 
+class _FriendAvatarBubbleBackground extends StatelessWidget {
+  const _FriendAvatarBubbleBackground({required this.avatar});
+
+  final NomoAvatar avatar;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors =
+        NomoAvatar.backgroundGradients[avatar.background %
+            NomoAvatar.backgroundGradients.length];
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
+        ),
+      ),
+    );
+  }
+}
+
 class _FriendMiniAvatarBubble extends StatelessWidget {
   const _FriendMiniAvatarBubble({
     required this.avatar,
