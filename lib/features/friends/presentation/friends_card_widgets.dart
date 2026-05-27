@@ -61,7 +61,7 @@ class _FriendProfileSheet extends StatelessWidget {
         .toDouble();
 
     return NomoBottomSheetShell(
-      padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
       radius: 32,
       maxHeightFactor: .90,
       child: SizedBox(
@@ -79,17 +79,23 @@ class _FriendProfileSheet extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: _FriendProfileCalendar(friend: friend, status: status),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                child: _FriendProfileCalendar(friend: friend, status: status),
+              ),
             ),
             const SizedBox(height: 12),
-            Nomo3DButton.secondary(
-              label: '閉じる',
-              onTap: () => Navigator.of(context).pop(),
-              height: 48,
-              radius: 22,
-              color: const Color(0xFF252044),
-              foregroundColor: const Color(0xFFC08BFF),
-              shadowColor: const Color(0xFF15142C),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Nomo3DButton.secondary(
+                label: '閉じる',
+                onTap: () => Navigator.of(context).pop(),
+                height: 48,
+                radius: 22,
+                color: const Color(0xFF252044),
+                foregroundColor: const Color(0xFFC08BFF),
+                shadowColor: const Color(0xFF15142C),
+              ),
             ),
           ],
         ),
