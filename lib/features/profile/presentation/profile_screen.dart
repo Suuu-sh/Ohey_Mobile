@@ -65,7 +65,7 @@ class ProfileScreen extends ConsumerWidget {
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
     final canOpenAdmin = hasAdminEmail || hasAdminAccess;
     const bodyBackground = AppColors.darkBackgroundBottom;
-    final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 340;
+    final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 318;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(

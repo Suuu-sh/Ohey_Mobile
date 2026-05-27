@@ -206,9 +206,9 @@ class _SimpleHero extends StatelessWidget {
         children: [
           SizedBox(
             width: double.infinity,
-            height: 154,
+            height: 132,
             child: Center(
-              child: NomoAvatarView(avatar: displayAvatar, size: 158),
+              child: NomoAvatarView(avatar: displayAvatar, size: 146),
             ),
           ),
           Container(
@@ -551,7 +551,7 @@ class _ProfileActivityHome extends StatelessWidget {
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 132),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 112),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -559,19 +559,18 @@ class _ProfileActivityHome extends StatelessWidget {
             friendsCount: friendsCount,
             logCount: logs.length,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
           _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
           _ProfileInfoCard(profileName: profileName, joinedMonth: joinedMonth),
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
           _ProfileRecentMemoriesCard(
             logs: recentLogs,
             photoLogCount: photoLogs.length,
             onLogsTap: onLogsTap,
             onArchiveTap: onArchiveTap,
+            onAddFriendsTap: onAddFriendsTap,
           ),
-          const SizedBox(height: 12),
-          _ProfileMemoryHintCard(onTap: onAddFriendsTap),
         ],
       ),
     );
@@ -593,7 +592,7 @@ class _ProfileSummaryStats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, 14, 18, 15),
+      padding: const EdgeInsets.fromLTRB(18, 8, 18, 8),
       decoration: BoxDecoration(
         color: AppColors.darkBackgroundBottom,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(34)),
@@ -648,7 +647,7 @@ class _ProfileStatsDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     width: 1,
-    height: 46,
+    height: 40,
     color: Colors.white.withValues(alpha: .13),
   );
 }
@@ -675,14 +674,14 @@ class _ProfileSummaryStat extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            NomoGeneratedIcon(icon, color: iconColor, size: 27),
-            const SizedBox(width: 10),
+            NomoGeneratedIcon(icon, color: iconColor, size: 22),
+            const SizedBox(width: 7),
             Text(
               value,
               maxLines: 1,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 30,
+                fontSize: 26,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.9,
                 height: .95,
@@ -690,14 +689,14 @@ class _ProfileSummaryStat extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 3),
         Text(
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: Colors.white.withValues(alpha: .62),
-            fontSize: 14,
+            fontSize: 12,
             fontWeight: FontWeight.w900,
             letterSpacing: -.35,
           ),
@@ -718,14 +717,14 @@ class _ProfileFriendActionRow extends StatelessWidget {
       onTap: onAddFriendsTap,
       child: const Row(
         children: [
-          SizedBox(width: 18),
+          SizedBox(width: 15),
           NomoPopIcon(
             icon: CupertinoIcons.person_2_fill,
             color: Colors.white,
-            size: 42,
-            iconSize: 22,
+            size: 32,
+            iconSize: 18,
           ),
-          SizedBox(width: 14),
+          SizedBox(width: 10),
           Expanded(
             child: Text(
               'フレンズを追加',
@@ -733,7 +732,7 @@ class _ProfileFriendActionRow extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 22,
+                fontSize: 19,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.7,
               ),
@@ -742,9 +741,9 @@ class _ProfileFriendActionRow extends StatelessWidget {
           NomoGeneratedIcon(
             CupertinoIcons.chevron_forward,
             color: Colors.white,
-            size: 26,
+            size: 24,
           ),
-          SizedBox(width: 18),
+          SizedBox(width: 15),
         ],
       ),
     );
@@ -763,7 +762,7 @@ class _ProfileGradientButton extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
-        height: 68,
+        height: 50,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
@@ -824,7 +823,7 @@ class _ProfileInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 16, 14, 15),
+      padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -856,15 +855,15 @@ class _ProfileInfoCard extends StatelessWidget {
               NomoPopIcon(
                 icon: CupertinoIcons.person_fill,
                 color: Color(0xFFFF8AD1),
-                size: 36,
-                iconSize: 20,
+                size: 27,
+                iconSize: 16,
               ),
-              SizedBox(width: 10),
+              SizedBox(width: 7),
               Text(
                 'プロフィール',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 24,
+                  fontSize: 20,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.8,
                   height: 1,
@@ -872,14 +871,14 @@ class _ProfileInfoCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 7),
           _ProfileInfoLine(
             icon: CupertinoIcons.smiley_fill,
             iconColor: const Color(0xFFFF8AD1),
             label: 'なまえ',
             value: profileName,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 5),
           _ProfileInfoLine(
             icon: CupertinoIcons.calendar,
             iconColor: const Color(0xFFC08BFF),
@@ -908,8 +907,8 @@ class _ProfileInfoLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 58),
-      padding: const EdgeInsets.fromLTRB(14, 9, 11, 9),
+      constraints: const BoxConstraints(minHeight: 40),
+      padding: const EdgeInsets.fromLTRB(12, 3, 10, 3),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: .075),
         borderRadius: BorderRadius.circular(25),
@@ -918,27 +917,27 @@ class _ProfileInfoLine extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 30,
+            height: 30,
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha: .18),
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: NomoGeneratedIcon(icon, color: iconColor, size: 23),
+              child: NomoGeneratedIcon(icon, color: iconColor, size: 18),
             ),
           ),
-          const SizedBox(width: 13),
+          const SizedBox(width: 10),
           Text(
             label,
             style: TextStyle(
               color: Colors.white.withValues(alpha: .78),
-              fontSize: 15,
+              fontSize: 13,
               fontWeight: FontWeight.w900,
               letterSpacing: -.35,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               value,
@@ -947,17 +946,17 @@ class _ProfileInfoLine extends StatelessWidget {
               textAlign: TextAlign.right,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.35,
               ),
             ),
           ),
-          const SizedBox(width: 9),
+          const SizedBox(width: 7),
           NomoGeneratedIcon(
             CupertinoIcons.chevron_forward,
             color: Colors.white.withValues(alpha: .65),
-            size: 19,
+            size: 17,
           ),
         ],
       ),
@@ -971,12 +970,14 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
     required this.photoLogCount,
     required this.onLogsTap,
     required this.onArchiveTap,
+    required this.onAddFriendsTap,
   });
 
   final List<DrinkLog> logs;
   final int photoLogCount;
   final VoidCallback onLogsTap;
   final VoidCallback onArchiveTap;
+  final VoidCallback onAddFriendsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -985,7 +986,7 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
     final openAll = photoLogCount > 0 ? onArchiveTap : onLogsTap;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 16, 14, 15),
+      padding: const EdgeInsets.fromLTRB(14, 9, 14, 9),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -1017,16 +1018,16 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
               const NomoPopIcon(
                 icon: CupertinoIcons.sparkles,
                 color: Color(0xFFFF75B5),
-                size: 36,
-                iconSize: 19,
+                size: 27,
+                iconSize: 15,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 7),
               const Expanded(
                 child: Text(
                   '最近の思い出',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 23,
+                    fontSize: 20,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -.8,
                     height: 1,
@@ -1037,7 +1038,7 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
                 behavior: HitTestBehavior.opaque,
                 onTap: openAll,
                 child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1045,7 +1046,7 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
                         'すべて見る',
                         style: TextStyle(
                           color: Color(0xFFFF86C8),
-                          fontSize: 13,
+                          fontSize: 11,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -1061,7 +1062,7 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 6),
           Row(
             children: [
               Expanded(
@@ -1072,7 +1073,7 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
                   onTap: firstLog == null ? onLogsTap : openAll,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 child: _ProfileMemoryPreviewTile(
                   log: secondLog,
@@ -1083,6 +1084,8 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 6),
+          _ProfileMemoryHintCard(onTap: onAddFriendsTap),
         ],
       ),
     );
@@ -1113,7 +1116,7 @@ class _ProfileMemoryPreviewTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            height: 78,
+            height: 44,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
@@ -1173,7 +1176,7 @@ class _ProfileMemoryPreviewTile extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 3),
           Text(
             title,
             maxLines: 1,
@@ -1181,7 +1184,7 @@ class _ProfileMemoryPreviewTile extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 14,
+              fontSize: 11,
               fontWeight: FontWeight.w900,
               letterSpacing: -.4,
             ),
@@ -1203,7 +1206,7 @@ class _ProfileMemoryHintCard extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 13, 14, 13),
+        padding: const EdgeInsets.fromLTRB(14, 7, 12, 7),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -1224,7 +1227,7 @@ class _ProfileMemoryHintCard extends StatelessWidget {
               size: 44,
               iconSize: 22,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1233,28 +1236,28 @@ class _ProfileMemoryHintCard extends StatelessWidget {
                     '思い出をふやそう',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 15,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -.5,
                     ),
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 0),
                   Text(
                     'フレンズと遊ぶとここに残るよ',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: .62),
-                      fontSize: 13,
+                      fontSize: 10,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             NomoGeneratedIcon(
               CupertinoIcons.chevron_forward,
               color: Colors.white.withValues(alpha: .72),
-              size: 24,
+              size: 20,
             ),
           ],
         ),
