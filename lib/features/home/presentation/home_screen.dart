@@ -32,6 +32,7 @@ import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
 import '../../friends/application/drink_invite_controller.dart';
+import '../../friends/data/friend_repository.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../notifications/data/notification_repository.dart';
@@ -222,6 +223,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       barrierColor: Colors.black.withValues(alpha: .62),
       builder: (context) => _FeedCompanionProfileSheet(
         friend: _Companion(
+          userId: item.ownerUserId,
           name: item.userName,
           handle: item.isOfficial ? 'Nomo公式' : item.place,
           avatar: item.avatar,

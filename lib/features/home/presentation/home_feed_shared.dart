@@ -203,6 +203,7 @@ enum _FeedPostKind { mine, friend, official }
 
 class _Companion {
   const _Companion({
+    required this.userId,
     required this.name,
     required this.handle,
     required this.avatar,
@@ -211,6 +212,7 @@ class _Companion {
   });
 
   factory _Companion.fromFriend(NomoFriend friend) => _Companion(
+    userId: friend.id,
     name: friend.name,
     handle: friend.vibe,
     avatar: friend.avatar ?? NomoAvatar.defaultAvatar,
@@ -218,6 +220,7 @@ class _Companion {
     statusKey: friend.statusKey,
   );
 
+  final String userId;
   final String name;
   final String handle;
   final NomoAvatar avatar;
