@@ -113,7 +113,6 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       'memo': log.memo,
       'caption_y': log.captionY.clamp(0.0, 1.0),
       'photo_path': uploadedPhotoPath ?? '',
-      'marker_rarity': log.rarity.key,
       'friend_ids': log.friends
           .map((friend) => friend.id)
           .toList(growable: false),

@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/optimistic_update.dart';
@@ -112,7 +110,6 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
       captionY: captionY.clamp(0.0, 1.0),
       placeLatitude: placeLatitude,
       placeLongitude: placeLongitude,
-      rarity: _rarityForNewLog(photoAssetPath),
     );
 
     try {
@@ -122,18 +119,6 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
       state = AsyncValue.error(error, stackTrace);
       Error.throwWithStackTrace(error, stackTrace);
     }
-  }
-
-  DrinkLogRarity _rarityForNewLog(String? photoAssetPath) {
-    final hasPhoto = photoAssetPath?.trim().isNotEmpty == true;
-    if (!hasPhoto) return DrinkLogRarity.normal;
-
-    final roll = math.Random.secure().nextDouble();
-    if (roll < .001) return DrinkLogRarity.secret;
-    if (roll < .010) return DrinkLogRarity.ultraRare;
-    if (roll < .070) return DrinkLogRarity.superRare;
-    if (roll < .250) return DrinkLogRarity.rare;
-    return DrinkLogRarity.uncommon;
   }
 }
 
