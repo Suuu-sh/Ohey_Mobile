@@ -151,23 +151,38 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
     final file = File(normalized);
     if (!await file.exists()) return normalized;
 
-    final userId = _client.currentUserId;
-    if (userId == null || userId.isEmpty) {
-      throw StateError('写真をアップロードするにはログインが必要です。');
+    final extension = _safeExtension(normalized);
+    final contentType = _contentTypeForExtension(extension);
+    final upload = await _client.postRow('/v1/media/upload-url', {
+      'kind': 'drink_log_photo',
+      'file_extension': extension,
+      'content_type': contentType,
+    });
+    final bucket = (upload['bucket'] as String?)?.trim();
+    final storagePath = (upload['path'] as String?)?.trim();
+    final token = (upload['token'] as String?)?.trim();
+    final uploadContentType =
+        (upload['content_type'] as String?)?.trim().isNotEmpty == true
+        ? (upload['content_type'] as String).trim()
+        : contentType;
+    if (bucket == null ||
+        bucket.isEmpty ||
+        storagePath == null ||
+        storagePath.isEmpty ||
+        token == null ||
+        token.isEmpty) {
+      throw const FormatException('写真アップロードURLの形式が不正です。');
     }
 
-    final extension = _safeExtension(normalized);
-    final storagePath =
-        'users/$userId/drink_logs/${DateTime.now().toUtc().microsecondsSinceEpoch}$extension';
-
     await _supabase.storage
-        .from(_photoBucket)
-        .upload(
+        .from(bucket)
+        .uploadToSignedUrl(
           storagePath,
+          token,
           file,
-          fileOptions: FileOptions(
+          FileOptions(
             cacheControl: '3600',
-            contentType: _contentTypeForExtension(extension),
+            contentType: uploadContentType,
             upsert: false,
           ),
         );
