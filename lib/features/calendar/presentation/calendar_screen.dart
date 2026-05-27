@@ -166,23 +166,30 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     _loadStatusesForMonth(_month);
   }
 
-  void _selectDay(DateTime day) {
+  Future<void> _selectDay(DateTime day) async {
     setState(() => _selectedDay = day);
-    _loadStatusFor(day);
+    final status = await _loadStatusFor(day);
+    if (!mounted || status != NomoDailyStatus.unselected) return;
+    await _openStatusPicker(showLockedExplanation: true);
   }
 
-  Future<void> _loadStatusFor(DateTime day) async {
+  Future<NomoDailyStatus> _loadStatusFor(DateTime day) async {
     final key = _dateKey(day);
-    if (_statusByDate.containsKey(key) || !_loadingStatusKeys.add(key)) return;
+    final cached = _statusByDate[key];
+    if (cached != null) return cached;
+    if (!_loadingStatusKeys.add(key)) return NomoDailyStatus.unselected;
     try {
       final status = await ref
           .read(userRepositoryProvider)
           .fetchDailyStatus(day);
-      if (!mounted) return;
+      if (!mounted) return status;
       setState(() => _statusByDate[key] = status);
+      return status;
     } catch (_) {
-      if (!mounted) return;
-      setState(() => _statusByDate[key] = NomoDailyStatus.unselected);
+      if (mounted) {
+        setState(() => _statusByDate[key] = NomoDailyStatus.unselected);
+      }
+      return NomoDailyStatus.unselected;
     } finally {
       _loadingStatusKeys.remove(key);
     }
@@ -244,7 +251,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     }
   }
 
-  Future<void> _openStatusPicker() async {
+  Future<void> _openStatusPicker({bool showLockedExplanation = false}) async {
     final picked = await showNomoBottomSheet<NomoDailyStatus>(
       context: context,
       useSafeArea: true,
@@ -253,6 +260,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         day: _selectedDay,
         selected:
             _statusByDate[_dateKey(_selectedDay)] ?? NomoDailyStatus.unselected,
+        showLockedExplanation: showLockedExplanation,
       ),
     );
     if (picked == null) return;
@@ -299,6 +307,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final selectedFriendsAsync = ref.watch(
       friendsForDateProvider(_dateOnly(_selectedDay)),
     );
+    final selectedStatus =
+        _statusByDate[_dateKey(_selectedDay)] ?? NomoDailyStatus.unselected;
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     final user = ref.watch(nomoUserProvider);
     if (_calendarGroupUserId != user?.userId) {
@@ -407,11 +417,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   friendsAsync: selectedFriendsAsync,
                                   groups: _calendarGroups,
                                   isWhite: isWhite,
-                                  status:
-                                      _statusByDate[_dateKey(_selectedDay)] ??
-                                      NomoDailyStatus.unselected,
+                                  status: selectedStatus,
                                   isStatusSaving: _isStatusSaving,
-                                  onChangeStatus: _openStatusPicker,
+                                  onChangeStatus: () => _openStatusPicker(
+                                    showLockedExplanation:
+                                        selectedStatus ==
+                                        NomoDailyStatus.unselected,
+                                  ),
                                 ),
                               ),
                             ),
@@ -1502,10 +1514,15 @@ int _calendarFriendStatusRank(String? statusKey) =>
     nomoDailyStatusFromKey(statusKey).availabilityRank;
 
 class _CalendarStatusSheet extends StatelessWidget {
-  const _CalendarStatusSheet({required this.day, required this.selected});
+  const _CalendarStatusSheet({
+    required this.day,
+    required this.selected,
+    required this.showLockedExplanation,
+  });
 
   final DateTime day;
   final NomoDailyStatus selected;
+  final bool showLockedExplanation;
 
   @override
   Widget build(BuildContext context) {
@@ -1526,7 +1543,9 @@ class _CalendarStatusSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            '${day.month}/${day.day} の予定決めに使えるよ。',
+            showLockedExplanation
+                ? 'フレンズの空き状況を見るには、先に自分の予定を設定してね。'
+                : '${day.month}/${day.day} の予定決めに使えるよ。',
             style: TextStyle(color: sub, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 14),
