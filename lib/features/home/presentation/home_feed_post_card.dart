@@ -38,22 +38,12 @@ class _FeedPostCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _FeedCardAuthorBar(item: item, isWhite: isWhite, onMore: onMore),
-            AspectRatio(
-              aspectRatio: 1,
-              child: ClipRect(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    hasPhoto
-                        ? _PostPhoto(path: photoPath!)
-                        : _FeedPhotoPlaceholder(accent: item.accent),
-                    _FeedPhotoCaptionOverlay(
-                      caption: caption,
-                      captionY: item.captionY,
-                    ),
-                  ],
-                ),
-              ),
+            _FeedPhotoLikeSurface(
+              item: item,
+              hasPhoto: hasPhoto,
+              photoPath: photoPath,
+              caption: caption,
+              onLike: onLike,
             ),
             _FeedCardFooter(
               item: item,
@@ -66,6 +56,215 @@ class _FeedPostCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _FeedPhotoLikeSurface extends StatefulWidget {
+  const _FeedPhotoLikeSurface({
+    required this.item,
+    required this.hasPhoto,
+    required this.photoPath,
+    required this.caption,
+    this.onLike,
+  });
+
+  final _FeedItem item;
+  final bool hasPhoto;
+  final String? photoPath;
+  final String caption;
+  final VoidCallback? onLike;
+
+  @override
+  State<_FeedPhotoLikeSurface> createState() => _FeedPhotoLikeSurfaceState();
+}
+
+class _FeedPhotoLikeSurfaceState extends State<_FeedPhotoLikeSurface>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 720),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleDoubleTap() {
+    if (widget.onLike == null) return;
+    if (!widget.item.liked) {
+      widget.onLike!();
+    }
+    _controller.forward(from: 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onDoubleTap: widget.onLike == null ? null : _handleDoubleTap,
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: ClipRect(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              widget.hasPhoto
+                  ? _PostPhoto(path: widget.photoPath!)
+                  : _FeedPhotoPlaceholder(accent: widget.item.accent),
+              _FeedPhotoCaptionOverlay(
+                caption: widget.caption,
+                captionY: widget.item.captionY,
+              ),
+              _FeedPhotoDoubleTapLikeBurst(
+                animation: _controller,
+                color: Color.lerp(
+                  AppColors.danger,
+                  const Color(0xFFC08BFF),
+                  .42,
+                )!,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedPhotoDoubleTapLikeBurst extends StatelessWidget {
+  const _FeedPhotoDoubleTapLikeBurst({
+    required this.animation,
+    required this.color,
+  });
+
+  final Animation<double> animation;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (context, child) {
+          final raw = animation.value.clamp(0.0, 1.0);
+          if (raw <= 0 || raw >= 1) return const SizedBox.shrink();
+
+          final scaleIn = Curves.easeOutBack.transform((raw / .34).clamp(0, 1));
+          final fadeOut = raw < .58 ? 1.0 : ((1 - raw) / .42).clamp(0.0, 1.0);
+          final scale = .58 + scaleIn * .62 + raw * .16;
+
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              CustomPaint(
+                painter: _FeedPhotoLikeParticlePainter(
+                  progress: raw,
+                  color: color,
+                ),
+              ),
+              Center(
+                child: Opacity(
+                  opacity: fadeOut,
+                  child: Transform.rotate(
+                    angle: math.sin(raw * math.pi * 2) * .08 * (1 - raw),
+                    child: Transform.scale(scale: scale, child: child),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: .42),
+                blurRadius: 34,
+                spreadRadius: 8,
+              ),
+            ],
+          ),
+          child: NomoPopIcon(
+            icon: CupertinoIcons.heart_fill,
+            color: color,
+            size: 96,
+            iconSize: 78,
+            showBubble: false,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedPhotoLikeParticlePainter extends CustomPainter {
+  const _FeedPhotoLikeParticlePainter({
+    required this.progress,
+    required this.color,
+  });
+
+  final double progress;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0 || progress >= 1) return;
+    final center = Offset(size.width / 2, size.height / 2);
+    final ease = Curves.easeOutCubic.transform(progress);
+    final fade = progress < .68 ? 1.0 : ((1 - progress) / .32).clamp(0.0, 1.0);
+
+    for (var i = 0; i < 14; i++) {
+      final angle = -math.pi + (math.pi * 2 * (i / 14));
+      final distance = 40 + (34 + (i % 4) * 9) * ease;
+      final drift = math.sin(progress * math.pi * 2 + i) * 9;
+      final point =
+          center +
+          Offset(
+            math.cos(angle) * distance,
+            math.sin(angle) * distance + drift,
+          );
+      final paint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = Color.lerp(
+          color,
+          i.isEven ? Colors.white : const Color(0xFFFF75B5),
+          i.isEven ? .56 : .30,
+        )!.withValues(alpha: .86 * fade);
+      canvas.save();
+      canvas.translate(point.dx, point.dy);
+      canvas.rotate(angle + progress * math.pi);
+      _drawParticleHeart(canvas, paint, 5.2 + (i % 3) * 1.6);
+      canvas.restore();
+    }
+  }
+
+  void _drawParticleHeart(Canvas canvas, Paint paint, double size) {
+    final path = Path()
+      ..moveTo(0, size * .42)
+      ..cubicTo(
+        -size * .82,
+        -size * .18,
+        -size * .46,
+        -size * .78,
+        0,
+        -size * .28,
+      )
+      ..cubicTo(size * .46, -size * .78, size * .82, -size * .18, 0, size * .42)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _FeedPhotoLikeParticlePainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.color != color;
 }
 
 class _FeedPhotoCaptionOverlay extends StatelessWidget {
