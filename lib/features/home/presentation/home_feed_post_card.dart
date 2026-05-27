@@ -445,6 +445,7 @@ class _FeedActionPill extends StatelessWidget {
 
     final child = animateIconOnBurst
         ? _FeedInlineIconBurstHost(
+            particleColor: burstColor ?? color,
             builder: (context, runWithBurst, iconAnimation) {
               final effectiveTap = onTap == null
                   ? null
@@ -482,9 +483,13 @@ typedef _FeedInlineIconBurstBuilder =
     );
 
 class _FeedInlineIconBurstHost extends StatefulWidget {
-  const _FeedInlineIconBurstHost({required this.builder});
+  const _FeedInlineIconBurstHost({
+    required this.builder,
+    required this.particleColor,
+  });
 
   final _FeedInlineIconBurstBuilder builder;
+  final Color particleColor;
 
   @override
   State<_FeedInlineIconBurstHost> createState() =>
@@ -522,8 +527,28 @@ class _FeedInlineIconBurstHostState extends State<_FeedInlineIconBurstHost>
   }
 
   @override
-  Widget build(BuildContext context) =>
-      widget.builder(context, _run, _controller);
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        widget.builder(context, _run, _controller),
+        Positioned.fill(
+          child: IgnorePointer(
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) => CustomPaint(
+                painter: _FeedFlyingHeartBurstPainter(
+                  progress: _controller.value,
+                  color: widget.particleColor,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _FeedLikeBurstIcon extends StatelessWidget {
@@ -651,6 +676,179 @@ class _FeedLikeIconBurstPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _FeedLikeIconBurstPainter oldDelegate) =>
       oldDelegate.progress != progress || oldDelegate.color != color;
+}
+
+class _FeedFlyingHeartBurstPainter extends CustomPainter {
+  const _FeedFlyingHeartBurstPainter({
+    required this.progress,
+    required this.color,
+  });
+
+  final double progress;
+  final Color color;
+
+  static const _particles = [
+    _FlyingHeartParticle(angle: -2.70, distance: 48, size: 6.4, delay: .00),
+    _FlyingHeartParticle(angle: -2.25, distance: 66, size: 8.6, delay: .02),
+    _FlyingHeartParticle(angle: -1.82, distance: 58, size: 6.8, delay: .06),
+    _FlyingHeartParticle(angle: -1.36, distance: 74, size: 10.4, delay: .00),
+    _FlyingHeartParticle(angle: -0.94, distance: 68, size: 7.6, delay: .04),
+    _FlyingHeartParticle(angle: -0.42, distance: 60, size: 6.8, delay: .09),
+    _FlyingHeartParticle(angle: 0.20, distance: 48, size: 5.8, delay: .12),
+    _FlyingHeartParticle(angle: 0.78, distance: 42, size: 6.4, delay: .15),
+    _FlyingHeartParticle(angle: 2.62, distance: 34, size: 5.6, delay: .08),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0 || progress >= 1) return;
+
+    final origin = Offset(22, size.height * .42);
+    final flashProgress = (progress / .24).clamp(0.0, 1.0);
+    final flashFade = (1 - Curves.easeOutCubic.transform(flashProgress)).clamp(
+      0.0,
+      1.0,
+    );
+    if (flashFade > 0) {
+      final flashPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6 * flashFade
+        ..color = Color.lerp(
+          color,
+          Colors.white,
+          .72,
+        )!.withValues(alpha: .56 * flashFade);
+      canvas.drawCircle(origin, 6 + 17 * flashProgress, flashPaint);
+    }
+
+    for (var i = 0; i < _particles.length; i++) {
+      final particle = _particles[i];
+      final local = ((progress - particle.delay) / (1 - particle.delay)).clamp(
+        0.0,
+        1.0,
+      );
+      if (local <= 0 || local >= 1) continue;
+
+      final ease = Curves.easeOutBack.transform(local.clamp(0.0, .88) / .88);
+      final drift = math.sin((local * math.pi * 2.2) + i) * 7;
+      final floatUp = math.sin(local * math.pi) * -15;
+      final offset =
+          origin +
+          Offset(
+            math.cos(particle.angle) * particle.distance * ease,
+            math.sin(particle.angle) * particle.distance * ease +
+                drift +
+                floatUp,
+          );
+      final fade = local < .72 ? 1.0 : ((1 - local) / .28).clamp(0.0, 1.0);
+      final scale = .58 + math.sin(local * math.pi).clamp(0.0, 1.0) * .62;
+      final rotation =
+          particle.angle * .20 + math.sin((local + i) * math.pi * 2) * .36;
+      final particleColor = Color.lerp(
+        color,
+        i.isEven ? Colors.white : const Color(0xFFFF75B5),
+        i.isEven ? .34 : .22,
+      )!.withValues(alpha: .94 * fade);
+
+      _drawFlyingHeart(
+        canvas,
+        center: offset,
+        size: particle.size * scale,
+        rotation: rotation,
+        color: particleColor,
+      );
+    }
+
+    for (var i = 0; i < 8; i++) {
+      final local = ((progress - i * .035) / .82).clamp(0.0, 1.0);
+      if (local <= 0 || local >= 1) continue;
+      final angle = -math.pi + (math.pi * 1.6 * (i / 7));
+      final distance = 18 + 44 * Curves.easeOutCubic.transform(local);
+      final point =
+          origin +
+          Offset(math.cos(angle) * distance, math.sin(angle) * distance);
+      final fade = (1 - local).clamp(0.0, 1.0);
+      final paint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = Colors.white.withValues(alpha: .72 * fade);
+      canvas.drawCircle(point, (2.2 - local).clamp(.7, 2.2), paint);
+    }
+  }
+
+  void _drawFlyingHeart(
+    Canvas canvas, {
+    required Offset center,
+    required double size,
+    required double rotation,
+    required Color color,
+  }) {
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = color;
+    final highlightPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = math.max(.6, size * .10)
+      ..strokeCap = StrokeCap.round
+      ..color = Colors.white.withValues(alpha: .46);
+
+    final path = Path()
+      ..moveTo(0, size * .38)
+      ..cubicTo(
+        -size * .78,
+        -size * .24,
+        -size * .50,
+        -size * .82,
+        -size * .10,
+        -size * .56,
+      )
+      ..cubicTo(
+        size * .04,
+        -size * .46,
+        size * .08,
+        -size * .30,
+        0,
+        -size * .17,
+      )
+      ..cubicTo(
+        size * .08,
+        -size * .30,
+        size * .04,
+        -size * .46,
+        size * .10,
+        -size * .56,
+      )
+      ..cubicTo(size * .50, -size * .82, size * .78, -size * .24, 0, size * .38)
+      ..close();
+
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(rotation);
+    canvas.drawPath(path, paint);
+    canvas.drawLine(
+      Offset(-size * .20, -size * .30),
+      Offset(-size * .05, -size * .40),
+      highlightPaint,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _FeedFlyingHeartBurstPainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.color != color;
+}
+
+class _FlyingHeartParticle {
+  const _FlyingHeartParticle({
+    required this.angle,
+    required this.distance,
+    required this.size,
+    required this.delay,
+  });
+
+  final double angle;
+  final double distance;
+  final double size;
+  final double delay;
 }
 
 class _FeedCompanionInlineButton extends StatelessWidget {
