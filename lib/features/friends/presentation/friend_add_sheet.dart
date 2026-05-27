@@ -392,7 +392,7 @@ class _CuteQrCard extends StatelessWidget {
     const ink = Color(0xFF151515);
     const softInk = Color(0xFF6D6D6D);
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(34),
@@ -406,6 +406,7 @@ class _CuteQrCard extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
@@ -435,7 +436,7 @@ class _CuteQrCard extends StatelessWidget {
                       'Nomo',
                       style: TextStyle(
                         color: ink,
-                        fontSize: 24,
+                        fontSize: 21,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -.7,
                       ),
@@ -447,7 +448,7 @@ class _CuteQrCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: softInk,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -457,10 +458,10 @@ class _CuteQrCard extends StatelessWidget {
               const SizedBox(width: 30),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           Container(
-            width: 238,
-            height: 238,
+            width: 196,
+            height: 196,
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -485,9 +486,9 @@ class _CuteQrCard extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        width: 76,
-                        height: 76,
-                        padding: const EdgeInsets.all(7),
+                        width: 62,
+                        height: 62,
+                        padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF3F3F3),
                           borderRadius: BorderRadius.circular(18),
@@ -499,12 +500,12 @@ class _CuteQrCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: NomoAvatarView(avatar: avatar, size: 62),
+                        child: NomoAvatarView(avatar: avatar, size: 50),
                       ),
                     ],
                   ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           const Text(
             'nomo',
             style: TextStyle(
@@ -514,7 +515,7 @@ class _CuteQrCard extends StatelessWidget {
               letterSpacing: -.6,
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -534,7 +535,7 @@ class _CuteQrCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           GestureDetector(
             onTap: onCopyId,
             child: Text(
@@ -574,11 +575,11 @@ class _QrActionButton extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              width: 70,
-              height: 70,
+              width: 54,
+              height: 54,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: Colors.black.withValues(alpha: .09),
                   width: 2,
@@ -592,10 +593,10 @@ class _QrActionButton extends StatelessWidget {
                 ],
               ),
               child: Center(
-                child: NomoGeneratedIcon(icon, color: ink, size: 32),
+                child: NomoGeneratedIcon(icon, color: ink, size: 25),
               ),
             ),
-            const SizedBox(height: 9),
+            const SizedBox(height: 6),
             Text(
               label,
               textAlign: TextAlign.center,
