@@ -378,7 +378,6 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
     context: context,
     builder: (sheetContext) => Consumer(
       builder: (context, ref, _) {
-        final themeMode = ref.watch(nomoThemeModeProvider);
         final currentAuthUserId = ref
             .watch(supabaseClientProvider)
             .auth
@@ -392,30 +391,6 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
           user: user,
           onClose: () => Navigator.of(sheetContext).pop(),
           children: [
-            _SettingsTile(
-              icon: themeMode.isWhite
-                  ? CupertinoIcons.moon_stars_fill
-                  : CupertinoIcons.sun_max_fill,
-              label: themeMode.isWhite ? 'ダークモード' : 'ホワイトモード',
-              subtitle: themeMode.isWhite
-                  ? '夜でも見やすい配色に切り替え'
-                  : '明るい場所で見やすい配色に切り替え',
-              accent: themeMode.isWhite
-                  ? const Color(0xFFC08BFF)
-                  : const Color(0xFFFFC857),
-              onTap: () {
-                ref
-                    .read(nomoThemeModeProvider.notifier)
-                    .setMode(
-                      themeMode.isWhite
-                          ? NomoThemeMode.dark
-                          : NomoThemeMode.white,
-                    );
-                if (sheetContext.mounted) {
-                  Navigator.of(sheetContext).pop();
-                }
-              },
-            ),
             _SettingsTile(
               icon: CupertinoIcons.person_crop_circle,
               label: 'プロフィール編集',
