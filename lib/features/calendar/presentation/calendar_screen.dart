@@ -279,45 +279,50 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       onHorizontalDragStart: _handleMonthDragStart,
                       onHorizontalDragUpdate: _handleMonthDragUpdate,
                       onHorizontalDragEnd: _handleMonthDragEnd,
-                      child: ListView(
-                        physics: const AlwaysScrollableScrollPhysics(
-                          parent: BouncingScrollPhysics(),
-                        ),
+                      child: Padding(
                         padding: const EdgeInsets.fromLTRB(
                           NomoPageHeader.horizontalPadding,
                           8,
                           NomoPageHeader.horizontalPadding,
                           116,
                         ),
-                        children: [
-                          _PlayfulMonthGrid(
-                            month: _month,
-                            selectedDay: _selectedDay,
-                            logs: monthlyLogs,
-                            statusByDate: _statusByDate,
-                            todayReservations: todayReservations,
-                            onSelectDay: _selectDay,
-                          ),
-                          if (!_isIntroSeen) ...[
-                            const SizedBox(height: 14),
-                            _CalendarIntroCard(
-                              isWhite: isWhite,
-                              onDismiss: _dismissIntro,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _PlayfulMonthGrid(
+                              month: _month,
+                              selectedDay: _selectedDay,
+                              logs: monthlyLogs,
+                              statusByDate: _statusByDate,
+                              todayReservations: todayReservations,
+                              onSelectDay: _selectDay,
+                            ),
+                            if (!_isIntroSeen) ...[
+                              const SizedBox(height: 10),
+                              _CalendarIntroCard(
+                                isWhite: isWhite,
+                                onDismiss: _dismissIntro,
+                              ),
+                            ],
+                            const SizedBox(height: 12),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _SelectedDayPanel(
+                                  day: _selectedDay,
+                                  logs: selectedLogs,
+                                  friendsAsync: selectedFriendsAsync,
+                                  isWhite: isWhite,
+                                  status:
+                                      _statusByDate[_dateKey(_selectedDay)] ??
+                                      NomoDailyStatus.unselected,
+                                  isStatusSaving: _isStatusSaving,
+                                  onChangeStatus: _openStatusPicker,
+                                ),
+                              ),
                             ),
                           ],
-                          const SizedBox(height: 16),
-                          _SelectedDayPanel(
-                            day: _selectedDay,
-                            logs: selectedLogs,
-                            friendsAsync: selectedFriendsAsync,
-                            isWhite: isWhite,
-                            status:
-                                _statusByDate[_dateKey(_selectedDay)] ??
-                                NomoDailyStatus.unselected,
-                            isStatusSaving: _isStatusSaving,
-                            onChangeStatus: _openStatusPicker,
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
