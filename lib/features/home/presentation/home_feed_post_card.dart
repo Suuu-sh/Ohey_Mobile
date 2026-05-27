@@ -293,7 +293,10 @@ class _FeedCardFooter extends StatelessWidget {
                     : '投稿を共有',
                 customIcon: item.isOfficial
                     ? null
-                    : _VectorShareIcon(color: shareAccent, size: 19),
+                    : _VectorShareIcon(
+                        color: _feedActionForeground(shareAccent),
+                        size: 19,
+                      ),
                 icon: item.isOfficial ? CupertinoIcons.doc_text_fill : null,
                 label: _feedShareActionLabel(item),
                 color: shareAccent,
@@ -368,54 +371,50 @@ class _FeedActionPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isWhite
-        ? Color.lerp(color, Colors.black, .22)!
-        : Colors.white;
+    final textColor = _feedActionForeground(color);
+    final shadowColor = Color.lerp(color, Colors.black, .34)!;
     return Semantics(
       button: true,
       label: semanticLabel,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: Nomo3DButtonSurface(
         onTap: onTap,
-        child: Container(
-          height: 44,
-          padding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: isWhite ? .16 : .26),
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: color.withValues(alpha: isWhite ? .40 : .50),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: isWhite ? .18 : .28),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
-              ),
-            ],
+        height: 38,
+        radius: 19,
+        color: color,
+        bottomColor: shadowColor,
+        padding: const EdgeInsets.symmetric(horizontal: 13),
+        borderColor: Colors.white.withValues(alpha: .18),
+        outerShadows: [
+          BoxShadow(
+            color: color.withValues(alpha: isWhite ? .18 : .30),
+            blurRadius: 20,
+            offset: const Offset(0, 9),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              customIcon ??
-                  NomoPopIcon(
-                    icon: icon ?? CupertinoIcons.circle,
-                    color: color,
-                    size: 19,
-                    iconSize: 16,
-                    showBubble: false,
-                  ),
-              const SizedBox(width: 5),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+        ],
+        innerShadows: [
+          BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
+        ],
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            customIcon ??
+                NomoPopIcon(
+                  icon: icon ?? CupertinoIcons.circle,
                   color: textColor,
-                  fontWeight: FontWeight.w900,
-                  height: 1,
+                  size: 19,
+                  iconSize: 16,
+                  showBubble: false,
                 ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: textColor,
+                fontWeight: FontWeight.w900,
+                height: 1,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -434,64 +433,58 @@ class _FeedCompanionInlineButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const withPurple = Color(0xFFC08BFF);
-    final textColor = isWhite ? const Color(0xFF2B2440) : Colors.white;
-    final borderColor = withPurple.withValues(alpha: isWhite ? .34 : .42);
-    final backgroundGradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: isWhite
-          ? [withPurple.withValues(alpha: .18), const Color(0xFFFFFFFF)]
-          : [
-              withPurple.withValues(alpha: .28),
-              const Color(0xFF101B2B).withValues(alpha: .88),
-            ],
-    );
+    final textColor = _feedActionForeground(withPurple);
     const label = 'With';
 
     return Semantics(
       button: true,
       label: '一緒に遊んだフレンズを表示',
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: Nomo3DButtonSurface(
         onTap: () => _showFeedCompanionList(context, friends),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
-          decoration: BoxDecoration(
-            gradient: backgroundGradient,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: borderColor),
-            boxShadow: [
-              BoxShadow(
-                color: withPurple.withValues(alpha: isWhite ? .10 : .22),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
-              ),
-            ],
+        height: 38,
+        radius: 19,
+        color: withPurple,
+        bottomColor: Color.lerp(withPurple, Colors.black, .34),
+        padding: const EdgeInsets.fromLTRB(13, 0, 8, 0),
+        borderColor: Colors.white.withValues(alpha: .18),
+        outerShadows: [
+          BoxShadow(
+            color: withPurple.withValues(alpha: isWhite ? .18 : .30),
+            blurRadius: 20,
+            offset: const Offset(0, 9),
           ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 182),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.w900,
-                    height: 1.05,
-                  ),
+        ],
+        innerShadows: [
+          BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
+        ],
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 182),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w900,
+                  height: 1.05,
                 ),
-                const SizedBox(width: 7),
-                _FriendAvatarStack(friends: friends),
-              ],
-            ),
+              ),
+              const SizedBox(width: 7),
+              _FriendAvatarStack(friends: friends),
+            ],
           ),
         ),
       ),
     );
   }
+}
+
+Color _feedActionForeground(Color color) {
+  final brightness = ThemeData.estimateBrightnessForColor(color);
+  return brightness == Brightness.dark ? Colors.white : const Color(0xFF06111D);
 }
 
 class _FeedPhotoPlaceholder extends StatelessWidget {
