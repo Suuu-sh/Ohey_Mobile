@@ -10,6 +10,7 @@ class Nomo3DButton extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.icon,
+    this.customIcon,
     this.height = 58,
     this.radius = 24,
     this.color = AppColors.primaryAction,
@@ -30,6 +31,7 @@ class Nomo3DButton extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.icon,
+    this.customIcon,
     this.height = 58,
     this.radius = 24,
     this.color = const Color(0xFF52606B),
@@ -50,6 +52,7 @@ class Nomo3DButton extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.icon,
+    this.customIcon,
     this.height = 58,
     this.radius = 24,
     this.color = AppColors.danger,
@@ -68,6 +71,7 @@ class Nomo3DButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final IconData? icon;
+  final Widget? customIcon;
   final double height;
   final double radius;
   final Color color;
@@ -103,12 +107,13 @@ class Nomo3DButton extends StatelessWidget {
           if (isLoading)
             CupertinoActivityIndicator(color: foregroundColor)
           else ...[
-            if (icon != null) ...[
-              NomoGeneratedIcon(
-                icon!,
-                color: foregroundColor,
-                size: fontSize + 7,
-              ),
+            if (customIcon != null || icon != null) ...[
+              customIcon ??
+                  NomoGeneratedIcon(
+                    icon!,
+                    color: foregroundColor,
+                    size: fontSize + 7,
+                  ),
               const SizedBox(width: 10),
             ],
             Text(

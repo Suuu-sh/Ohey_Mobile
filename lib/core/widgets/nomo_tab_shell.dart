@@ -958,19 +958,25 @@ class _DrinkPlanFriendTile extends StatelessWidget {
               SizedBox(
                 width: 70,
                 child: NomoInviteSuccessBurst(
-                  builder: (context, runWithBurst) => Nomo3DButton(
-                    label: '誘う',
-                    onTap: disabled ? null : () => runWithBurst(onTap),
-                    height: 34,
-                    radius: 17,
-                    color: AppColors.primaryAction,
-                    foregroundColor: const Color(0xFF06111D),
-                    shadowColor: AppColors.primaryActionShadow,
-                    isLoading: isSending,
-                    enabled: !disabled,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    fontSize: 12,
-                  ),
+                  builder: (context, runWithBurst, flightAnimation) =>
+                      Nomo3DButton(
+                        label: '誘う',
+                        customIcon: NomoInviteFlyingIcon(
+                          animation: flightAnimation,
+                          color: const Color(0xFF06111D),
+                          size: 18,
+                        ),
+                        onTap: disabled ? null : () => runWithBurst(onTap),
+                        height: 34,
+                        radius: 17,
+                        color: AppColors.primaryAction,
+                        foregroundColor: const Color(0xFF06111D),
+                        shadowColor: AppColors.primaryActionShadow,
+                        isLoading: isSending,
+                        enabled: !disabled,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        fontSize: 12,
+                      ),
                 ),
               ),
             ],

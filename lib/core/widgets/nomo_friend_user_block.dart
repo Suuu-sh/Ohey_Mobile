@@ -140,25 +140,34 @@ class NomoFriendUserBlock extends StatelessWidget {
               SizedBox(
                 width: 92,
                 child: NomoInviteSuccessBurst(
-                  builder: (context, runWithBurst) => Nomo3DButton(
-                    label: '誘う',
-                    icon: CupertinoIcons.paperplane_fill,
-                    onTap: statusEnabled ? () => runWithBurst(onInvite) : null,
-                    enabled: statusEnabled,
-                    height: 36,
-                    radius: 18,
-                    color: accent,
-                    foregroundColor: statusEnabled
-                        ? const Color(0xFF071320)
-                        : const Color(0xFF738092),
-                    shadowColor: statusEnabled
-                        ? Color.lerp(accent, Colors.black, .32)
-                        : const Color(0xFF111923),
-                    disabledColor: const Color(0xFF2B3441),
-                    disabledOpacity: 1,
-                    padding: const EdgeInsets.symmetric(horizontal: 13),
-                    fontSize: 12,
-                  ),
+                  builder: (context, runWithBurst, flightAnimation) =>
+                      Nomo3DButton(
+                        label: '誘う',
+                        customIcon: NomoInviteFlyingIcon(
+                          animation: flightAnimation,
+                          color: statusEnabled
+                              ? const Color(0xFF071320)
+                              : const Color(0xFF738092),
+                          size: 19,
+                        ),
+                        onTap: statusEnabled
+                            ? () => runWithBurst(onInvite)
+                            : null,
+                        enabled: statusEnabled,
+                        height: 36,
+                        radius: 18,
+                        color: accent,
+                        foregroundColor: statusEnabled
+                            ? const Color(0xFF071320)
+                            : const Color(0xFF738092),
+                        shadowColor: statusEnabled
+                            ? Color.lerp(accent, Colors.black, .32)
+                            : const Color(0xFF111923),
+                        disabledColor: const Color(0xFF2B3441),
+                        disabledOpacity: 1,
+                        padding: const EdgeInsets.symmetric(horizontal: 13),
+                        fontSize: 12,
+                      ),
                 ),
               ),
             ],

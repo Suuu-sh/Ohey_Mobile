@@ -661,9 +661,13 @@ class _TodayInviteCandidateCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: NomoInviteSuccessBurst(
-              builder: (context, runWithBurst) => Nomo3DButton(
+              builder: (context, runWithBurst, flightAnimation) => Nomo3DButton(
                 label: '誘う',
-                icon: CupertinoIcons.paperplane_fill,
+                customIcon: NomoInviteFlyingIcon(
+                  animation: flightAnimation,
+                  color: _friendInviteButtonForegroundColor(item.status),
+                  size: 19.5,
+                ),
                 onTap: item.status.enabled
                     ? () => runWithBurst(onInvite)
                     : null,

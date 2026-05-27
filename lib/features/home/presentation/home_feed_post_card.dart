@@ -435,7 +435,7 @@ class _FeedActionPill extends StatelessWidget {
               const Color(0xFFFFD166),
               Colors.white,
             ],
-            builder: (context, runWithBurst) =>
+            builder: (context, runWithBurst, flightAnimation) =>
                 buildButton(onTap == null ? null : () => runWithBurst(onTap)),
           )
         : buildButton(onTap);

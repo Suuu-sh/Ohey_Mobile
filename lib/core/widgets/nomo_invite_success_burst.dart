@@ -10,6 +10,7 @@ typedef NomoInviteBurstBuilder =
     Widget Function(
       BuildContext context,
       Future<void> Function(FutureOr<void> Function()? action) runWithBurst,
+      Animation<double> flightAnimation,
     );
 
 class NomoInviteSuccessBurst extends StatefulWidget {
@@ -76,7 +77,7 @@ class _NomoInviteSuccessBurstState extends State<NomoInviteSuccessBurst>
       clipBehavior: Clip.none,
       alignment: Alignment.center,
       children: [
-        widget.builder(context, _run),
+        widget.builder(context, _run, _controller),
         Positioned.fill(
           child: IgnorePointer(
             child: AnimatedBuilder(
@@ -90,34 +91,41 @@ class _NomoInviteSuccessBurstState extends State<NomoInviteSuccessBurst>
             ),
           ),
         ),
-        Positioned.fill(
-          child: IgnorePointer(
-            child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                final t = Curves.easeOutCubic.transform(_controller.value);
-                final opacity = (1 - _controller.value).clamp(0.0, 1.0);
-                return Opacity(
-                  opacity: opacity,
-                  child: Transform.translate(
-                    offset: Offset(36 * t, -34 * t),
-                    child: Transform.rotate(
-                      angle: -.45 * t,
-                      child: Center(
-                        child: NomoGeneratedIcon(
-                          widget.burstIcon,
-                          color: widget.burstColor,
-                          size: 22 - (4 * t),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
       ],
+    );
+  }
+}
+
+class NomoInviteFlyingIcon extends StatelessWidget {
+  const NomoInviteFlyingIcon({
+    super.key,
+    required this.animation,
+    this.icon = CupertinoIcons.paperplane_fill,
+    required this.color,
+    required this.size,
+  });
+
+  final Animation<double> animation;
+  final IconData icon;
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        final t = Curves.easeOutCubic.transform(animation.value);
+        final opacity = (1 - animation.value).clamp(0.0, 1.0);
+        return Opacity(
+          opacity: opacity,
+          child: Transform.translate(
+            offset: Offset(36 * t, -34 * t),
+            child: Transform.rotate(angle: -.45 * t, child: child),
+          ),
+        );
+      },
+      child: NomoGeneratedIcon(icon, color: color, size: size),
     );
   }
 }
