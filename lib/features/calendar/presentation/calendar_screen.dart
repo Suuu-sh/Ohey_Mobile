@@ -417,7 +417,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                 ),
                               ),
                             ],
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 8),
+                            const _CalendarGlowDivider(),
+                            const SizedBox(height: 7),
                             Expanded(
                               child: Padding(
                                 padding: const EdgeInsets.only(bottom: 20),
@@ -447,6 +449,28 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CalendarGlowDivider extends StatelessWidget {
+  const _CalendarGlowDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 1,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: _calendarPrimaryActionColor.withValues(alpha: .72),
+        boxShadow: [
+          BoxShadow(
+            color: _calendarPrimaryActionColor.withValues(alpha: .62),
+            blurRadius: 10,
+            spreadRadius: 1,
+          ),
+        ],
       ),
     );
   }
