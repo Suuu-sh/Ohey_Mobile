@@ -683,7 +683,9 @@ class _SelectedDayPanel extends StatelessWidget {
       glowOffset: const Offset(0, 12),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final compact = constraints.maxHeight < 245;
+          final compact = _useCompactCalendarDetailLayout(
+            constraints.maxHeight,
+          );
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -735,10 +737,10 @@ class _SelectedDayPanel extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: compact ? 8 : 10),
+              SizedBox(height: compact ? 6 : 10),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(12, 0, 12, compact ? 10 : 12),
+                  padding: EdgeInsets.fromLTRB(12, 0, 12, compact ? 8 : 12),
                   child: Column(
                     children: [
                       Expanded(
@@ -757,7 +759,7 @@ class _SelectedDayPanel extends StatelessWidget {
                                 compact: compact,
                               ),
                       ),
-                      SizedBox(height: compact ? 7 : 9),
+                      SizedBox(height: compact ? 6 : 9),
                       Expanded(
                         flex: compact ? 5 : 5,
                         child: _CalendarMemoryPreview(
@@ -777,6 +779,12 @@ class _SelectedDayPanel extends StatelessWidget {
       ),
     );
   }
+}
+
+bool _useCompactCalendarDetailLayout(double availableHeight) {
+  // カレンダー行数で下ブロックの表現が変わらないよう、常に小さい範囲向けの
+  // 省スペースレイアウトに統一する。
+  return true;
 }
 
 class _CalendarDateBadge extends StatelessWidget {
@@ -988,13 +996,13 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
               child: Nomo3DButton(
                 label: '設定',
                 onTap: onTap,
-                height: compact ? 22 : 30,
-                radius: compact ? 11 : 15,
+                height: compact ? 28 : 30,
+                radius: compact ? 14 : 15,
                 color: _calendarStatusPink,
                 foregroundColor: _calendarPrimaryActionForegroundColor,
                 shadowColor: Color.lerp(_calendarStatusPink, Colors.black, .32),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                fontSize: compact ? 10 : 12,
+                fontSize: compact ? 11 : 12,
               ),
             ),
           ],
@@ -1169,13 +1177,13 @@ class _CalendarFriendStatusList extends StatelessWidget {
                   child: Nomo3DButton(
                     label: '見る',
                     onTap: openStatusSheet,
-                    height: compact ? 22 : 30,
-                    radius: compact ? 11 : 15,
+                    height: compact ? 28 : 30,
+                    radius: compact ? 14 : 15,
                     color: _calendarPrimaryActionColor,
                     foregroundColor: _calendarPrimaryActionForegroundColor,
                     shadowColor: _calendarPrimaryActionShadowColor,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
-                    fontSize: compact ? 10 : 12,
+                    fontSize: compact ? 11 : 12,
                   ),
                 ),
               ],
@@ -1473,13 +1481,13 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
             child: Nomo3DButton(
               label: '投稿',
               onTap: onAddLogPressed ?? () {},
-              height: compact ? 22 : 30,
-              radius: compact ? 11 : 15,
+              height: compact ? 28 : 30,
+              radius: compact ? 14 : 15,
               color: _calendarPrimaryActionColor,
               foregroundColor: _calendarPrimaryActionForegroundColor,
               shadowColor: _calendarPrimaryActionShadowColor,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              fontSize: compact ? 10 : 12,
+              fontSize: compact ? 11 : 12,
             ),
           ),
         ],
