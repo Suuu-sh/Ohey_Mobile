@@ -36,6 +36,7 @@ import 'nomo_3d_button.dart';
 import 'nomo_avatar.dart';
 import 'nomo_backend_busy_screen.dart';
 import 'nomo_bottom_sheet.dart';
+import 'nomo_daily_status_3d_option.dart';
 import 'nomo_pop_icon.dart';
 import 'nomo_toast.dart';
 
@@ -624,11 +625,14 @@ class _DailyStatusRequiredSheetState
             ),
             const SizedBox(height: 18),
             for (final status in _options) ...[
-              _DailyStatusRequiredOption(
+              NomoDailyStatus3DOption(
                 status: status,
-                saving: _savingStatus == status,
-                disabled: _savingStatus != null,
+                title: status.label,
+                subtitle: status.shortCopy,
                 onTap: () => _select(status),
+                enabled: _savingStatus == null,
+                isLoading: _savingStatus == status,
+                showChevron: _savingStatus == null,
               ),
               if (status != _options.last) const SizedBox(height: 10),
             ],
@@ -638,115 +642,6 @@ class _DailyStatusRequiredSheetState
     );
   }
 }
-
-class _DailyStatusRequiredOption extends StatelessWidget {
-  const _DailyStatusRequiredOption({
-    required this.status,
-    required this.onTap,
-    required this.saving,
-    required this.disabled,
-  });
-
-  final NomoDailyStatus status;
-  final VoidCallback onTap;
-  final bool saving;
-  final bool disabled;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final color = _dailyStatusPromptColor(status);
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .64);
-    return AnimatedOpacity(
-      duration: const Duration(milliseconds: 160),
-      opacity: disabled && !saving ? .46 : 1,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: disabled ? null : onTap,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
-          decoration: BoxDecoration(
-            color: isWhite
-                ? color.withValues(alpha: .10)
-                : Colors.white.withValues(alpha: .06),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: color.withValues(alpha: .34), width: 1.2),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: isWhite ? .05 : .10),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              NomoPopIcon(
-                icon: _dailyStatusPromptIcon(status),
-                color: color,
-                size: 42,
-                iconSize: 22,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      status.label,
-                      style: TextStyle(
-                        color: ink,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.25,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      _dailyStatusPromptCopy(status),
-                      style: TextStyle(
-                        color: sub,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        height: 1.25,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              if (saving)
-                CupertinoActivityIndicator(color: color)
-              else
-                Icon(CupertinoIcons.chevron_right, color: color, size: 19),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-Color _dailyStatusPromptColor(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.canDrinkToday => const Color(0xFF9AF21A),
-  NomoDailyStatus.nonAlcohol => const Color(0xFF5DEBD3),
-  NomoDailyStatus.liverRest => const Color(0xFFFFB84D),
-  NomoDailyStatus.hasPlans => const Color(0xFFB8C1CD),
-  NomoDailyStatus.unselected => const Color(0xFF94A3B8),
-};
-
-IconData _dailyStatusPromptIcon(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.canDrinkToday => CupertinoIcons.sparkles,
-  NomoDailyStatus.nonAlcohol => CupertinoIcons.hand_thumbsup_fill,
-  NomoDailyStatus.liverRest => CupertinoIcons.clock_fill,
-  NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
-  NomoDailyStatus.unselected => CupertinoIcons.circle,
-};
-
-String _dailyStatusPromptCopy(NomoDailyStatus status) => status.shortCopy;
 
 String _localDateKey(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-'
