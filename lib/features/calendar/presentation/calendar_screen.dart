@@ -945,8 +945,8 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
             NomoPopIcon(
               icon: CupertinoIcons.lock_fill,
               color: const Color(0xFF94A3B8),
-              size: compact ? 34 : 38,
-              iconSize: compact ? 15 : 17,
+              size: compact ? 30 : 38,
+              iconSize: compact ? 13 : 17,
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -988,13 +988,13 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
               child: Nomo3DButton(
                 label: '設定',
                 onTap: onTap,
-                height: compact ? 28 : 30,
-                radius: 15,
+                height: compact ? 22 : 30,
+                radius: compact ? 11 : 15,
                 color: _calendarStatusPink,
                 foregroundColor: _calendarPrimaryActionForegroundColor,
                 shadowColor: Color.lerp(_calendarStatusPink, Colors.black, .32),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                fontSize: compact ? 11 : 12,
+                fontSize: compact ? 10 : 12,
               ),
             ),
           ],
@@ -1114,8 +1114,8 @@ class _CalendarFriendStatusList extends StatelessWidget {
                 NomoPopIcon(
                   icon: CupertinoIcons.person_2_fill,
                   color: accent,
-                  size: compact ? 34 : 38,
-                  iconSize: compact ? 16 : 18,
+                  size: compact ? 30 : 38,
+                  iconSize: compact ? 14 : 18,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -1169,13 +1169,13 @@ class _CalendarFriendStatusList extends StatelessWidget {
                   child: Nomo3DButton(
                     label: '見る',
                     onTap: openStatusSheet,
-                    height: compact ? 28 : 30,
-                    radius: 15,
+                    height: compact ? 22 : 30,
+                    radius: compact ? 11 : 15,
                     color: _calendarPrimaryActionColor,
                     foregroundColor: _calendarPrimaryActionForegroundColor,
                     shadowColor: _calendarPrimaryActionShadowColor,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
-                    fontSize: compact ? 11 : 12,
+                    fontSize: compact ? 10 : 12,
                   ),
                 ),
               ],
@@ -1214,7 +1214,7 @@ class _CalendarSectionSurface extends StatelessWidget {
     final content = Container(
       width: double.infinity,
       height: double.infinity,
-      padding: EdgeInsets.fromLTRB(12, compact ? 8 : 9, 12, compact ? 8 : 10),
+      padding: EdgeInsets.fromLTRB(12, compact ? 5 : 9, 12, compact ? 5 : 10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -1430,8 +1430,8 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
           NomoPopIcon(
             icon: CupertinoIcons.sparkles,
             color: const Color(0xFF54D7FF),
-            size: compact ? 32 : 36,
-            iconSize: compact ? 15 : 17,
+            size: compact ? 28 : 36,
+            iconSize: compact ? 13 : 17,
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -1473,13 +1473,13 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
             child: Nomo3DButton(
               label: '投稿',
               onTap: onAddLogPressed ?? () {},
-              height: compact ? 28 : 30,
-              radius: 15,
+              height: compact ? 22 : 30,
+              radius: compact ? 11 : 15,
               color: _calendarPrimaryActionColor,
               foregroundColor: _calendarPrimaryActionForegroundColor,
               shadowColor: _calendarPrimaryActionShadowColor,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              fontSize: compact ? 11 : 12,
+              fontSize: compact ? 10 : 12,
             ),
           ),
         ],
