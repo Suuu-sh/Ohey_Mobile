@@ -305,7 +305,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     final friendsAsync = ref.watch(friendsProvider);
     final persistedInvitedFriendIds =
         ref
-            .watch(outgoingActiveDrinkInvitesProvider)
+            .watch(outgoingActiveDrinkInvitesProvider(null))
             .asData
             ?.value
             .map((invite) => invite.toUserId)

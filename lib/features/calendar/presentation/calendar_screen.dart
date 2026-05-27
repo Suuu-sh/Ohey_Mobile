@@ -1636,6 +1636,7 @@ class _CalendarFriendStatusSheetState
     extends ConsumerState<_CalendarFriendStatusSheet> {
   String? _selectedGroupId;
   String? _sendingFriendId;
+  final Set<String> _invitedFriendIds = <String>{};
 
   Future<void> _sendInvite(NomoFriend friend) async {
     if (_sendingFriendId != null) return;
@@ -1647,7 +1648,9 @@ class _CalendarFriendStatusSheetState
           .sendInvite(friendId: friend.id, date: widget.day);
       ref.invalidate(todayReservationsProvider);
       ref.invalidate(incomingDrinkInvitesProvider);
+      ref.invalidate(outgoingActiveDrinkInvitesProvider(widget.day));
       if (!mounted) return;
+      setState(() => _invitedFriendIds.add(friend.id));
       NomoToast.show(
         context,
         '${widget.day.month}/${widget.day.day}で${friend.name}にお誘いを送りました。',
@@ -1670,6 +1673,18 @@ class _CalendarFriendStatusSheetState
 
   @override
   Widget build(BuildContext context) {
+    final persistedInvitedFriendIds =
+        ref
+            .watch(outgoingActiveDrinkInvitesProvider(widget.day))
+            .asData
+            ?.value
+            .map((invite) => invite.toUserId)
+            .toSet() ??
+        const <String>{};
+    final invitedFriendIds = <String>{
+      ...persistedInvitedFriendIds,
+      ..._invitedFriendIds,
+    };
     final selectedGroup = _findCalendarFriendGroup(
       _selectedGroupId,
       widget.groups,
@@ -1743,6 +1758,7 @@ class _CalendarFriendStatusSheetState
                 friends: friends,
                 isWhite: isWhite,
                 sendingFriendId: _sendingFriendId,
+                invitedFriendIds: invitedFriendIds,
                 onInvite: _sendInvite,
               ),
             ),
@@ -1947,12 +1963,14 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
     required this.friends,
     required this.isWhite,
     required this.sendingFriendId,
+    required this.invitedFriendIds,
     required this.onInvite,
   });
 
   final List<NomoFriend> friends;
   final bool isWhite;
   final String? sendingFriendId;
+  final Set<String> invitedFriendIds;
   final Future<void> Function(NomoFriend friend) onInvite;
 
   @override
@@ -1983,6 +2001,7 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
           friend: friend,
           isWhite: isWhite,
           inviteEnabled: sendingFriendId == null,
+          inviteSent: invitedFriendIds.contains(friend.id),
           onInvite: () => onInvite(friend),
         );
       },
@@ -1995,12 +2014,14 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
     required this.friend,
     required this.isWhite,
     required this.inviteEnabled,
+    required this.inviteSent,
     required this.onInvite,
   });
 
   final NomoFriend friend;
   final bool isWhite;
   final bool inviteEnabled;
+  final bool inviteSent;
   final Future<void> Function() onInvite;
 
   @override
@@ -2014,6 +2035,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
       statusEnabled: status.isAvailable,
       fallbackAvatar: _fallbackAvatarForCalendarFriend(friend),
       showInvite: true,
+      inviteSent: inviteSent,
       onInvite: inviteEnabled ? onInvite : null,
     );
   }

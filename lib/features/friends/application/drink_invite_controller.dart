@@ -15,10 +15,10 @@ final incomingDrinkInvitesProvider = FutureProvider<List<NomoDrinkInvite>>((
 });
 
 final outgoingActiveDrinkInvitesProvider =
-    FutureProvider<List<NomoDrinkInvite>>((ref) {
+    FutureProvider.family<List<NomoDrinkInvite>, DateTime?>((ref, date) {
       return ref
           .watch(drinkInviteRepositoryProvider)
-          .fetchOutgoingActiveInvites();
+          .fetchOutgoingActiveInvites(date: date);
     });
 
 class DrinkInviteController {
