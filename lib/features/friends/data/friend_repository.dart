@@ -38,6 +38,17 @@ class FriendRepository {
     return NomoFriendRelationshipStatus.fromRow(row);
   }
 
+  Future<List<Map<String, dynamic>>> fetchFriendGroups() async {
+    return _client.getRows('/v1/friend-groups');
+  }
+
+  Future<List<Map<String, dynamic>>> saveFriendGroups(
+    List<Map<String, dynamic>> groups,
+  ) async {
+    final response = await _client.put('/v1/friend-groups', {'groups': groups});
+    return BackendApiClient.rowsFrom(response);
+  }
+
   Future<void> addFriend(String friendId) async {
     await _client.post('/v1/friends', {'friend_id': friendId});
   }

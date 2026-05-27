@@ -87,8 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final logsAsync = ref.watch(drinkLogControllerProvider);
-    final friendsAsync = ref.watch(friendsProvider);
+    final logsAsync = ref.watch(homeFeedControllerProvider);
     final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
     final user = ref.watch(nomoUserProvider);
     final incomingInvites =
@@ -104,17 +103,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .currentUser
         ?.id;
     final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
-    final friendUserIds =
-        friendsAsync.asData?.value
-            .map((friend) => friend.id)
-            .where((id) => id.isNotEmpty)
-            .toSet() ??
-        const <String>{};
     final feedItems = _feedItems(
       logs,
       user: user,
       currentUserId: currentUserId,
-      friendUserIds: friendUserIds,
     );
 
     return const _FeedBackground(child: SizedBox.expand()).copyWith(
@@ -126,11 +118,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               topPadding: _feedHeaderScrollInset(context),
               items: feedItems,
               isWhite: isWhite,
-              isLoading: logsAsync.isLoading || friendsAsync.isLoading,
+              isLoading: logsAsync.isLoading,
               onPageChanged: _handleFeedPageChanged,
               onAddLogPressed: widget.onAddLogPressed ?? () {},
               onLikePressed: (item) => ref
-                  .read(drinkLogControllerProvider.notifier)
+                  .read(homeFeedControllerProvider.notifier)
                   .toggleLike(item.id),
               onSharePressed: (item) => _shareFeedItem(context, item),
               showSwipeTutorial:

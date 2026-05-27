@@ -118,7 +118,7 @@ class _CustomFriendFilter {
     if (value is! Map) return null;
     final id = (value['id'] as String?)?.trim();
     final name = (value['name'] as String?)?.trim();
-    final rawFriendIds = value['friendIds'];
+    final rawFriendIds = value['friendIds'] ?? value['friend_ids'];
     if (id == null || id.isEmpty || name == null || name.isEmpty) {
       return null;
     }

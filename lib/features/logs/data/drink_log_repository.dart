@@ -19,6 +19,7 @@ final drinkLogRepositoryProvider = Provider<DrinkLogRepository>((ref) {
 
 abstract interface class DrinkLogRepository {
   Future<List<DrinkLog>> fetchLogs();
+  Future<List<DrinkLog>> fetchHomeFeed();
   Future<List<NomoFriend>> fetchFriends({DateTime? date});
   Future<DrinkLog> addLog(DrinkLog log);
   Future<void> deleteLog(String logId);
@@ -45,6 +46,12 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
   @override
   Future<List<DrinkLog>> fetchLogs() async {
     final rows = await _client.getRows('/v1/drink-logs');
+    return Future.wait(rows.map(_drinkLogFromRow));
+  }
+
+  @override
+  Future<List<DrinkLog>> fetchHomeFeed() async {
+    final rows = await _client.getRows('/v1/home/feed');
     return Future.wait(rows.map(_drinkLogFromRow));
   }
 
@@ -118,6 +125,8 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
           .toList(growable: false),
     });
 
+    final feed = _feedFromRow(row);
+
     return DrinkLog(
       id: row['id'] as String,
       date: DateTime.parse(row['drank_at'] as String).toLocal(),
@@ -135,6 +144,23 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       ownerUserId:
           (row['owner_user_id'] as String?) ?? _client.currentUserId ?? '',
       isOfficial: (row['is_official'] as bool?) ?? false,
+      feedAuthorName: (feed['author_name'] as String?) ?? '',
+      feedPostKind: (feed['post_kind'] as String?) ?? '',
+      feedDisplayable:
+          (feed['displayable'] as bool?) ??
+          (row['feed_displayable'] as bool?) ??
+          true,
+      feedCanReport:
+          (feed['can_report'] as bool?) ??
+          (row['feed_can_report'] as bool?) ??
+          true,
+      feedCanDelete:
+          (feed['can_delete'] as bool?) ??
+          (row['feed_can_delete'] as bool?) ??
+          false,
+      feedTilt:
+          (feed['tilt'] as num?)?.toDouble() ??
+          (row['feed_tilt'] as num?)?.toDouble(),
     );
   }
 
@@ -252,6 +278,8 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
         ? Map<String, dynamic>.from(row['owner'] as Map)
         : const <String, dynamic>{};
 
+    final feed = _feedFromRow(row);
+
     return DrinkLog(
       id: row['id'] as String,
       date: DateTime.parse(row['drank_at'] as String).toLocal(),
@@ -270,7 +298,30 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       ownerDisplayName: (owner['display_name'] as String?) ?? '',
       ownerAvatar: NomoAvatar.decode(owner['avatar_url'] as String?),
       isOfficial: (row['is_official'] as bool?) ?? false,
+      feedAuthorName: (feed['author_name'] as String?) ?? '',
+      feedPostKind: (feed['post_kind'] as String?) ?? '',
+      feedDisplayable:
+          (feed['displayable'] as bool?) ??
+          (row['feed_displayable'] as bool?) ??
+          true,
+      feedCanReport:
+          (feed['can_report'] as bool?) ??
+          (row['feed_can_report'] as bool?) ??
+          true,
+      feedCanDelete:
+          (feed['can_delete'] as bool?) ??
+          (row['feed_can_delete'] as bool?) ??
+          false,
+      feedTilt:
+          (feed['tilt'] as num?)?.toDouble() ??
+          (row['feed_tilt'] as num?)?.toDouble(),
     );
+  }
+
+  Map<String, dynamic> _feedFromRow(Map<String, dynamic> row) {
+    return row['feed_item'] is Map
+        ? Map<String, dynamic>.from(row['feed_item'] as Map)
+        : const <String, dynamic>{};
   }
 
   NomoFriend _friendFromProfile(

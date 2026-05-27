@@ -83,7 +83,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
             ),
             const SizedBox(height: 10),
           ],
-          if (item.ownedByMe)
+          if (item.canDelete || item.ownedByMe)
             NomoActionTile(
               icon: CupertinoIcons.trash_fill,
               title: '思い出を削除',
@@ -92,7 +92,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               destructive: true,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.delete),
             )
-          else
+          else if (item.canReport)
             NomoActionTile(
               icon: CupertinoIcons.exclamationmark_bubble_fill,
               title: '思い出を報告',

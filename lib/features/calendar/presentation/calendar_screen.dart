@@ -26,6 +26,7 @@ import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../friends/application/drink_invite_controller.dart';
+import '../../friends/data/friend_repository.dart';
 import '../../logs/application/drink_log_controller.dart';
 
 const _calendarPrimaryActionColor = Color(0xFF20B9FF);
@@ -50,7 +51,7 @@ class _CalendarFriendGroup {
     if (value is! Map) return null;
     final id = (value['id'] as String?)?.trim();
     final name = (value['name'] as String?)?.trim();
-    final rawFriendIds = value['friendIds'];
+    final rawFriendIds = value['friendIds'] ?? value['friend_ids'];
     if (id == null || id.isEmpty || name == null || name.isEmpty) return null;
     final friendIds = rawFriendIds is List
         ? [
@@ -138,9 +139,27 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   Future<void> _loadCalendarGroups(String userId) async {
     final prefs = await SharedPreferences.getInstance();
-    final groups = _decodeCalendarFriendGroups(
+    final cachedGroups = _decodeCalendarFriendGroups(
       prefs.getString(_calendarGroupStorageKey(userId)),
     );
+    var groups = cachedGroups;
+    try {
+      final rows = await ref.read(friendRepositoryProvider).fetchFriendGroups();
+      groups = rows
+          .map(_CalendarFriendGroup.fromJson)
+          .whereType<_CalendarFriendGroup>()
+          .toList(growable: false);
+      await prefs.setString(
+        _calendarGroupStorageKey(userId),
+        jsonEncode([
+          for (final group in groups)
+            {'id': group.id, 'name': group.name, 'friendIds': group.friendIds},
+        ]),
+      );
+    } catch (_) {
+      // Fall back to the local cache while backend group sync rolls out.
+      groups = cachedGroups;
+    }
     if (!mounted || _calendarGroupUserId != userId) return;
     setState(() => _calendarGroups = groups);
   }
