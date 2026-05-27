@@ -2041,10 +2041,10 @@ class _PlayfulMonthGrid extends StatelessWidget {
                     dailyStatus: dailyStatus,
                     marker: marker,
                     isToday: isToday,
-                    isSelected: inMonth && _isSameDate(selectedDay, day),
+                    isSelected: _isSameDate(selectedDay, day),
                     hasPlan: hasPlan,
                     column: index % 7,
-                    onTap: inMonth ? () => onSelectDay(day) : null,
+                    onTap: () => onSelectDay(day),
                   );
                 },
               ),
