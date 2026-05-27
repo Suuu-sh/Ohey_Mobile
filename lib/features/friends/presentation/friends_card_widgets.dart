@@ -53,10 +53,6 @@ class _FriendProfileSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .62);
     final avatar = friend.avatar ?? _fallbackAvatarForFriend(friend);
     final statusColor = _friendInviteButtonColor(status);
 
@@ -73,106 +69,13 @@ class _FriendProfileSheet extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const NomoBottomSheetHandle(),
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: NomoGeneratedIcon(
-                  CupertinoIcons.xmark,
-                  color: sub,
-                  size: 30,
-                ),
-              ),
-            ),
-            _FriendProfileHero(friend: friend, avatar: avatar),
-            const SizedBox(height: 10),
-            Text(
-              friend.name,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: ink,
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.7,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: isWhite
-                      ? const Color(0xFFF2F6F8)
-                      : Colors.white.withValues(alpha: .08),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: isWhite
-                        ? const Color(0xFFE1E8F1)
-                        : Colors.white.withValues(alpha: .10),
-                  ),
-                ),
-                child: Text(
-                  friend.vibe.trim().isEmpty
-                      ? '@${friend.id}'
-                      : '@${friend.vibe}',
-                  style: TextStyle(
-                    color: sub,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            NomoThemedPanel(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-              accentColor: statusColor,
-              borderRadius: 22,
-              backgroundColor: isWhite
-                  ? Colors.white
-                  : AppColors.darkBackgroundBottom,
-              child: Row(
-                children: [
-                  NomoPopIcon(
-                    icon: CupertinoIcons.cloud_fill,
-                    color: statusColor,
-                    size: 38,
-                    iconSize: 21,
-                    showBubble: false,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          status.label,
-                          style: TextStyle(
-                            color: ink,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          status.reason,
-                          style: TextStyle(
-                            color: sub,
-                            fontWeight: FontWeight.w800,
-                            height: 1.35,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            _FriendProfileTopBackdrop(
+              friend: friend,
+              avatar: avatar,
+              status: status,
+              statusColor: statusColor,
+              isWhite: isWhite,
+              onClose: () => Navigator.of(context).pop(),
             ),
             const SizedBox(height: 12),
             Expanded(
@@ -195,11 +98,22 @@ class _FriendProfileSheet extends StatelessWidget {
   }
 }
 
-class _FriendProfileHero extends StatelessWidget {
-  const _FriendProfileHero({required this.friend, required this.avatar});
+class _FriendProfileTopBackdrop extends StatelessWidget {
+  const _FriendProfileTopBackdrop({
+    required this.friend,
+    required this.avatar,
+    required this.status,
+    required this.statusColor,
+    required this.isWhite,
+    required this.onClose,
+  });
 
   final NomoFriend friend;
   final NomoAvatar avatar;
+  final _FriendStatus status;
+  final Color statusColor;
+  final bool isWhite;
+  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -207,8 +121,12 @@ class _FriendProfileHero extends StatelessWidget {
     final backgroundColors =
         NomoAvatar.backgroundGradients[avatar.background %
             NomoAvatar.backgroundGradients.length];
+    final nameColor = Colors.white;
+    final subColor = Colors.white.withValues(alpha: .70);
+
     return Container(
-      height: 96,
+      height: 326,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
         gradient: usesMascotBackdrop
@@ -225,42 +143,183 @@ class _FriendProfileHero extends StatelessWidget {
                 : 'assets/images/profile_header_scene.png',
           ),
           fit: BoxFit.cover,
-          opacity: usesMascotBackdrop ? 1 : .18,
+          opacity: usesMascotBackdrop ? 1 : .48,
         ),
         boxShadow: [
           BoxShadow(
-            color: friend.accentColor.withValues(alpha: .20),
-            blurRadius: 26,
-            offset: const Offset(0, 12),
+            color: friend.accentColor.withValues(alpha: .24),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
-      child: Center(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: 86,
-              height: 86,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: .72),
-                border: Border.all(color: Colors.white, width: 5),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.darkBackgroundBottom.withValues(alpha: .06),
+                  AppColors.darkBackgroundBottom.withValues(alpha: .28),
+                  AppColors.darkBackgroundBottom.withValues(alpha: .82),
+                ],
+                stops: const [0, .42, 1],
               ),
             ),
-            ClipOval(child: NomoAvatarView(avatar: avatar, size: 74)),
-            const Positioned(
-              right: 4,
-              top: 8,
-              child: NomoPopIcon(
-                icon: CupertinoIcons.sparkles,
-                color: Color(0xFFFFD166),
-                size: 32,
-                iconSize: 18,
-              ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 2),
+                const NomoBottomSheetHandle(),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    onPressed: onClose,
+                    icon: NomoGeneratedIcon(
+                      CupertinoIcons.xmark,
+                      color: Colors.white.withValues(alpha: .78),
+                      size: 30,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Center(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 86,
+                        height: 86,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: .72),
+                          border: Border.all(color: Colors.white, width: 5),
+                        ),
+                      ),
+                      ClipOval(child: NomoAvatarView(avatar: avatar, size: 74)),
+                      const Positioned(
+                        right: 0,
+                        top: 4,
+                        child: NomoPopIcon(
+                          icon: CupertinoIcons.sparkles,
+                          color: Color(0xFFFFD166),
+                          size: 30,
+                          iconSize: 17,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  friend.name,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: nameColor,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.7,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: .28),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.darkBackgroundBottom.withValues(
+                        alpha: .62,
+                      ),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: .18),
+                      ),
+                    ),
+                    child: Text(
+                      friend.vibe.trim().isEmpty
+                          ? '@${friend.id}'
+                          : '@${friend.vibe}',
+                      style: TextStyle(
+                        color: subColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  child: NomoThemedPanel(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
+                    accentColor: statusColor,
+                    borderRadius: 22,
+                    backgroundColor: AppColors.darkBackgroundBottom.withValues(
+                      alpha: .76,
+                    ),
+                    borderAlpha: isWhite ? .34 : .46,
+                    glowAlpha: .10,
+                    glowBlur: 20,
+                    glowOffset: const Offset(0, 8),
+                    child: Row(
+                      children: [
+                        NomoPopIcon(
+                          icon: CupertinoIcons.cloud_fill,
+                          color: statusColor,
+                          size: 38,
+                          iconSize: 21,
+                          showBubble: false,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                status.label,
+                                style: TextStyle(
+                                  color: nameColor,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                status.reason,
+                                style: TextStyle(
+                                  color: subColor,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
