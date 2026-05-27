@@ -46,12 +46,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   bool _isIntroSeen = true;
   bool _isStatusSaving = false;
   final Map<String, NomoDailyStatus> _statusByDate = {};
+  final Set<String> _loadingStatusKeys = {};
 
   @override
   void initState() {
     super.initState();
     _loadIntroSeen();
-    _loadStatusFor(_selectedDay);
+    _loadStatusesForMonth(_month);
   }
 
   Future<void> _loadIntroSeen() async {
@@ -75,7 +76,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       _month = DateTime(nextSelectedDay.year, nextSelectedDay.month);
       _selectedDay = nextSelectedDay;
     });
-    _loadStatusFor(nextSelectedDay);
+    _loadStatusesForMonth(_month);
   }
 
   void _selectDay(DateTime day) {
@@ -85,7 +86,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   Future<void> _loadStatusFor(DateTime day) async {
     final key = _dateKey(day);
-    if (_statusByDate.containsKey(key)) return;
+    if (_statusByDate.containsKey(key) || !_loadingStatusKeys.add(key)) return;
     try {
       final status = await ref
           .read(userRepositoryProvider)
@@ -95,7 +96,46 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _statusByDate[key] = NomoDailyStatus.unselected);
+    } finally {
+      _loadingStatusKeys.remove(key);
     }
+  }
+
+  Future<void> _loadStatusesForMonth(DateTime month) async {
+    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+    final targets = <DateTime>[];
+    for (var day = 1; day <= daysInMonth; day++) {
+      final date = DateTime(month.year, month.month, day);
+      final key = _dateKey(date);
+      if (_statusByDate.containsKey(key) || !_loadingStatusKeys.add(key)) {
+        continue;
+      }
+      targets.add(date);
+    }
+    if (targets.isEmpty) return;
+
+    final repository = ref.read(userRepositoryProvider);
+    final entries = await Future.wait(
+      targets.map((date) async {
+        try {
+          return MapEntry(
+            _dateKey(date),
+            await repository.fetchDailyStatus(date),
+          );
+        } catch (_) {
+          return MapEntry(_dateKey(date), NomoDailyStatus.unselected);
+        }
+      }),
+    );
+    for (final date in targets) {
+      _loadingStatusKeys.remove(_dateKey(date));
+    }
+    if (!mounted) return;
+    setState(() {
+      for (final entry in entries) {
+        _statusByDate[entry.key] = entry.value;
+      }
+    });
   }
 
   Future<void> _setStatusForSelectedDay(NomoDailyStatus status) async {
@@ -254,6 +294,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             month: _month,
                             selectedDay: _selectedDay,
                             logs: monthlyLogs,
+                            statusByDate: _statusByDate,
                             todayReservations: todayReservations,
                             onSelectDay: _selectDay,
                           ),
@@ -265,21 +306,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             ),
                           ],
                           const SizedBox(height: 16),
-                          _CalendarDayStatusRow(
-                            day: _selectedDay,
-                            status:
-                                _statusByDate[_dateKey(_selectedDay)] ??
-                                NomoDailyStatus.unselected,
-                            isSaving: _isStatusSaving,
-                            isWhite: isWhite,
-                            onTap: _openStatusPicker,
-                          ),
-                          const SizedBox(height: 12),
                           _SelectedDayPanel(
                             day: _selectedDay,
                             logs: selectedLogs,
                             friendsAsync: selectedFriendsAsync,
                             isWhite: isWhite,
+                            status:
+                                _statusByDate[_dateKey(_selectedDay)] ??
+                                NomoDailyStatus.unselected,
+                            isStatusSaving: _isStatusSaving,
+                            onChangeStatus: _openStatusPicker,
                           ),
                         ],
                       ),
@@ -463,12 +499,18 @@ class _SelectedDayPanel extends StatelessWidget {
     required this.logs,
     required this.friendsAsync,
     required this.isWhite,
+    required this.status,
+    required this.isStatusSaving,
+    required this.onChangeStatus,
   });
 
   final DateTime day;
   final List<DrinkLog> logs;
   final AsyncValue<List<NomoFriend>> friendsAsync;
   final bool isWhite;
+  final NomoDailyStatus status;
+  final bool isStatusSaving;
+  final VoidCallback onChangeStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -485,14 +527,27 @@ class _SelectedDayPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '${day.month}/${day.day} の空き状況と思い出',
-            style: TextStyle(
-              color: isWhite ? const Color(0xFF101820) : Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              height: 1.1,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${day.month}/${day.day} の空き状況と思い出',
+                  style: TextStyle(
+                    color: isWhite ? const Color(0xFF101820) : Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    height: 1.1,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _CalendarStatusChangeButton(
+                status: status,
+                isSaving: isStatusSaving,
+                isWhite: isWhite,
+                onTap: onChangeStatus,
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           _CalendarSectionLabel(
@@ -557,16 +612,14 @@ class _SelectedDayPanel extends StatelessWidget {
   }
 }
 
-class _CalendarDayStatusRow extends StatelessWidget {
-  const _CalendarDayStatusRow({
-    required this.day,
+class _CalendarStatusChangeButton extends StatelessWidget {
+  const _CalendarStatusChangeButton({
     required this.status,
     required this.isSaving,
     required this.isWhite,
     required this.onTap,
   });
 
-  final DateTime day;
   final NomoDailyStatus status;
   final bool isSaving;
   final bool isWhite;
@@ -574,74 +627,70 @@ class _CalendarDayStatusRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = _calendarStatusLabel(status, day: day);
-    final accent = _calendarStatusBlockAccent(status);
-    final foreground = _calendarStatus3DForegroundColor(status);
-    return Nomo3DButtonSurface(
-      onTap: isSaving ? null : onTap,
-      enabled: !isSaving,
-      height: 48,
-      radius: 22,
-      color: _calendarStatus3DSurfaceColor(
-        status,
-        isWhite: isWhite,
-        selected: true,
-      ),
-      bottomColor: _calendarStatus3DShadowColor(
-        status,
-        isWhite: isWhite,
-        selected: true,
-      ),
-      borderColor: _calendarStatus3DBorderColor(
-        status,
-        isWhite: isWhite,
-        selected: true,
-      ),
-      borderWidth: 1.2,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      useGradient: true,
-      outerShadows: [
-        BoxShadow(
-          color: accent.withValues(alpha: .28),
-          blurRadius: 24,
-          offset: const Offset(0, 10),
+    final effectiveStatus = status == NomoDailyStatus.unselected
+        ? NomoDailyStatus.canDrinkToday
+        : status;
+    final accent = _calendarStatusBlockAccent(effectiveStatus);
+    final foreground = _calendarStatus3DForegroundColor(effectiveStatus);
+    return SizedBox(
+      width: 74,
+      child: Nomo3DButtonSurface(
+        onTap: isSaving ? null : onTap,
+        enabled: !isSaving,
+        height: 28,
+        radius: 14,
+        color: _calendarStatus3DSurfaceColor(
+          effectiveStatus,
+          isWhite: isWhite,
+          selected: true,
         ),
-      ],
-      innerShadows: [
-        BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
-      ],
-      child: Row(
-        children: [
-          NomoGeneratedIcon(
-            _calendarStatusIcon(status),
-            color: foreground,
-            size: 20,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              status == NomoDailyStatus.unselected
-                  ? 'この日の気分、入れておく？'
-                  : '$label にしてあるよ',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: foreground,
-                fontSize: 13,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            isSaving ? '保存中' : '変える',
-            style: TextStyle(
-              color: foreground.withValues(alpha: .82),
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-            ),
+        bottomColor: _calendarStatus3DShadowColor(
+          effectiveStatus,
+          isWhite: isWhite,
+          selected: true,
+        ),
+        borderColor: _calendarStatus3DBorderColor(
+          effectiveStatus,
+          isWhite: isWhite,
+          selected: true,
+        ),
+        borderWidth: 1.1,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        outerShadows: [
+          BoxShadow(
+            color: accent.withValues(alpha: .24),
+            blurRadius: 16,
+            offset: const Offset(0, 7),
           ),
         ],
+        innerShadows: [
+          BoxShadow(color: Colors.white.withValues(alpha: .12), blurRadius: 10),
+        ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            NomoGeneratedIcon(
+              _calendarStatusIcon(status),
+              color: foreground,
+              size: 15,
+            ),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                isSaving ? '保存中' : '変更',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: foreground,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1459,6 +1508,7 @@ class _PlayfulMonthGrid extends StatelessWidget {
     required this.month,
     required this.selectedDay,
     required this.logs,
+    required this.statusByDate,
     required this.todayReservations,
     required this.onSelectDay,
   });
@@ -1466,6 +1516,7 @@ class _PlayfulMonthGrid extends StatelessWidget {
   final DateTime month;
   final DateTime selectedDay;
   final List<DrinkLog> logs;
+  final Map<String, NomoDailyStatus> statusByDate;
   final List<NomoDrinkInvite> todayReservations;
   final ValueChanged<DateTime> onSelectDay;
 
@@ -1548,10 +1599,15 @@ class _PlayfulMonthGrid extends StatelessWidget {
                   final marker = inMonth ? markers[dayNumber] : null;
                   final isToday = inMonth && _isSameDate(DateTime.now(), day);
                   final hasPlan = isToday && todayReservations.isNotEmpty;
+                  final dailyStatus = inMonth
+                      ? statusByDate[_dateKey(day)] ??
+                            NomoDailyStatus.unselected
+                      : NomoDailyStatus.unselected;
                   return _DayTile(
                     day: displayDay,
                     date: day,
                     inMonth: inMonth,
+                    dailyStatus: dailyStatus,
                     marker: marker,
                     isToday: isToday,
                     isSelected: inMonth && _isSameDate(selectedDay, day),
@@ -1597,6 +1653,7 @@ class _DayTile extends StatelessWidget {
     required this.day,
     required this.date,
     required this.inMonth,
+    required this.dailyStatus,
     required this.marker,
     required this.isToday,
     required this.isSelected,
@@ -1608,6 +1665,7 @@ class _DayTile extends StatelessWidget {
   final int day;
   final DateTime date;
   final bool inMonth;
+  final NomoDailyStatus dailyStatus;
   final _Marker? marker;
   final bool isToday;
   final bool isSelected;
@@ -1618,10 +1676,14 @@ class _DayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
+    final hasStatus = inMonth && dailyStatus != NomoDailyStatus.unselected;
+    final statusAccent = _calendarStatusTileAccent(dailyStatus);
     final dayColor = !inMonth
         ? (isWhite
               ? Colors.black.withValues(alpha: .20)
               : Colors.white.withValues(alpha: .20))
+        : hasStatus
+        ? _calendarStatusTileForeground(dailyStatus, isWhite: isWhite)
         : column == 0
         ? const Color(0xFFFF6FA6)
         : column == 6
@@ -1635,13 +1697,21 @@ class _DayTile extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
         decoration: BoxDecoration(
-          color: isWhite
+          color: hasStatus
+              ? _calendarStatusTileBackground(
+                  dailyStatus,
+                  isWhite: isWhite,
+                  selected: isSelected,
+                )
+              : isWhite
               ? (isSelected ? const Color(0xFFEAF8FF) : Colors.white)
               : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(13),
           border: Border.all(
             color: hasPlan
                 ? _calendarPrimaryActionColor
+                : hasStatus
+                ? statusAccent.withValues(alpha: isSelected ? .90 : .52)
                 : isSelected
                 ? const Color(0xFF54D7FF)
                 : _calendarPrimaryActionColor.withValues(
@@ -1651,8 +1721,10 @@ class _DayTile extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isWhite ? .05 : .20),
-              blurRadius: 12,
+              color: hasStatus
+                  ? statusAccent.withValues(alpha: isWhite ? .16 : .24)
+                  : Colors.black.withValues(alpha: isWhite ? .05 : .20),
+              blurRadius: hasStatus ? 16 : 12,
               offset: const Offset(0, 8),
             ),
           ],
@@ -1732,6 +1804,39 @@ const _calendarStatusPurple = Color(0xFF8A62FF);
 const _calendarStatusGreen = Color(0xFF9AF21A);
 const _calendarStatusBlocked = Color(0xFF2B3644);
 const _calendarStatusBlockedForeground = Color(0xFF738092);
+
+Color _calendarStatusTileAccent(NomoDailyStatus status) {
+  if (status == NomoDailyStatus.hasPlans) {
+    return _calendarStatusBlockedForeground;
+  }
+  return _calendarStatusColor(status);
+}
+
+Color _calendarStatusTileBackground(
+  NomoDailyStatus status, {
+  required bool isWhite,
+  required bool selected,
+}) {
+  if (status == NomoDailyStatus.hasPlans) {
+    return isWhite
+        ? const Color(0xFFE2E8F0)
+        : _calendarStatusBlocked.withValues(alpha: selected ? .92 : .76);
+  }
+  final color = _calendarStatusColor(status);
+  return color.withValues(
+    alpha: isWhite ? (selected ? .34 : .22) : (selected ? .52 : .36),
+  );
+}
+
+Color _calendarStatusTileForeground(
+  NomoDailyStatus status, {
+  required bool isWhite,
+}) {
+  if (status == NomoDailyStatus.hasPlans) {
+    return isWhite ? const Color(0xFF111827) : Colors.white;
+  }
+  return _calendarPrimaryActionForegroundColor;
+}
 
 Color _calendarStatusColor(NomoDailyStatus status) => switch (status) {
   NomoDailyStatus.canDrinkToday => _calendarStatusPink,
