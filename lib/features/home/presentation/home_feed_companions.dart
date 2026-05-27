@@ -102,84 +102,94 @@ class _FeedCompanionTile extends StatelessWidget {
     final subtitleColor = isWhite
         ? const Color(0xFF697684)
         : Colors.white.withValues(alpha: .56);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return Nomo3DButtonSurface(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isWhite ? const Color(0xFFF7FAFC) : AppColors.darkBackground,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: isWhite
-                ? const Color(0xFFE1E8F1)
-                : Colors.white.withValues(alpha: .10),
+      height: 68,
+      radius: 22,
+      color: isWhite ? const Color(0xFFF7FAFC) : AppColors.darkBackground,
+      bottomColor: isWhite ? const Color(0xFFDCE4EC) : const Color(0xFF09131D),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      borderColor: isWhite
+          ? const Color(0xFFE1E8F1)
+          : Colors.white.withValues(alpha: .12),
+      outerShadows: [
+        BoxShadow(
+          color: friend.accent.withValues(alpha: isWhite ? .10 : .18),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
+      innerShadows: [
+        BoxShadow(
+          color: Colors.white.withValues(alpha: isWhite ? .40 : .08),
+          blurRadius: 10,
+          offset: const Offset(-2, -2),
+        ),
+      ],
+      child: Row(
+        children: [
+          _AvatarBubble(
+            avatar: friend.avatar,
+            size: 44,
+            glowColor: friend.accent,
           ),
-        ),
-        child: Row(
-          children: [
-            _AvatarBubble(
-              avatar: friend.avatar,
-              size: 44,
-              glowColor: friend.accent,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    friend.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: titleColor,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.3,
-                    ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  friend.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: titleColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.3,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    friend.handleLabel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: subtitleColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-              decoration: BoxDecoration(
-                color: _companionStatusColor(
-                  friend.statusKey,
-                ).withValues(alpha: isWhite ? .13 : .11),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                _companionStatusLabel(friend.statusKey),
-                style: TextStyle(
-                  color: _companionStatusColor(friend.statusKey),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  friend.handleLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: subtitleColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              color: _companionStatusColor(
+                friend.statusKey,
+              ).withValues(alpha: isWhite ? .13 : .11),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              _companionStatusLabel(friend.statusKey),
+              style: TextStyle(
+                color: _companionStatusColor(friend.statusKey),
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
               ),
             ),
-            const SizedBox(width: 8),
-            NomoPopIcon(
-              icon: CupertinoIcons.chevron_forward,
-              color: subtitleColor,
-              size: 28,
-              iconSize: 15,
-              shadow: false,
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 8),
+          NomoPopIcon(
+            icon: CupertinoIcons.chevron_forward,
+            color: subtitleColor,
+            size: 28,
+            iconSize: 15,
+            shadow: false,
+          ),
+        ],
       ),
     );
   }

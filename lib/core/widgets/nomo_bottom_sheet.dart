@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'nomo_3d_button.dart';
 import 'nomo_pop_icon.dart';
 
 Future<T?> showNomoBottomSheet<T>({
@@ -131,12 +132,38 @@ class NomoBottomSheetShell extends StatelessWidget {
                                 ),
                           ),
                           const Spacer(),
-                          IconButton(
-                            onPressed:
-                                onClose ?? () => Navigator.of(context).pop(),
-                            icon: NomoGeneratedIcon(
-                              CupertinoIcons.xmark,
-                              color: ink,
+                          SizedBox(
+                            width: 48,
+                            child: Nomo3DButtonSurface(
+                              onTap:
+                                  onClose ?? () => Navigator.of(context).pop(),
+                              height: 40,
+                              radius: 20,
+                              color: isWhite
+                                  ? const Color(0xFFF3F7FA)
+                                  : Colors.white.withValues(alpha: .08),
+                              bottomColor: isWhite
+                                  ? const Color(0xFFD6DEE7)
+                                  : Colors.black.withValues(alpha: .36),
+                              padding: EdgeInsets.zero,
+                              useGradient: true,
+                              borderColor: isWhite
+                                  ? const Color(0xFFE0E7EE)
+                                  : Colors.white.withValues(alpha: .10),
+                              outerShadows: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(
+                                    alpha: isWhite ? .08 : .16,
+                                  ),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                              child: NomoGeneratedIcon(
+                                CupertinoIcons.xmark,
+                                color: ink,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ],

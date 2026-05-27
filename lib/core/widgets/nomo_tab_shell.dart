@@ -786,60 +786,66 @@ class _DrinkLogStartTile extends StatelessWidget {
     final sub = isWhite
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .58);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return Nomo3DButtonSurface(
       onTap: () {
         HapticFeedback.selectionClick();
         onTap();
       },
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-        decoration: BoxDecoration(
-          color: isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: isWhite
-                ? const Color(0xFFE0E6ED)
-                : Colors.white.withValues(alpha: .10),
+      height: 72,
+      radius: 22,
+      color: isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground,
+      bottomColor: isWhite ? const Color(0xFFD8E1EA) : const Color(0xFF09131D),
+      padding: const EdgeInsets.fromLTRB(14, 0, 12, 0),
+      borderColor: isWhite
+          ? const Color(0xFFE0E6ED)
+          : Colors.white.withValues(alpha: .12),
+      outerShadows: [
+        BoxShadow(
+          color: color.withValues(alpha: isWhite ? .10 : .18),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
+      innerShadows: [
+        BoxShadow(
+          color: Colors.white.withValues(alpha: isWhite ? .40 : .08),
+          blurRadius: 10,
+          offset: const Offset(-2, -2),
+        ),
+      ],
+      child: Row(
+        children: [
+          NomoPopIcon(icon: icon, color: color, size: 46, iconSize: 25),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.2,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: sub,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            NomoPopIcon(icon: icon, color: color, size: 46, iconSize: 25),
-            const SizedBox(width: 13),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: ink,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.2,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: sub,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      height: 1.25,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            NomoGeneratedIcon(
-              CupertinoIcons.chevron_right,
-              color: sub,
-              size: 22,
-            ),
-          ],
-        ),
+          NomoGeneratedIcon(CupertinoIcons.chevron_right, color: sub, size: 22),
+        ],
       ),
     );
   }
@@ -1000,19 +1006,19 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                         ],
                       ),
                     ),
-                    CupertinoButton(
-                      minimumSize: const Size(42, 42),
-                      padding: EdgeInsets.zero,
-                      onPressed: _busyAction == null
-                          ? () => Navigator.of(context).pop()
-                          : null,
-                      child: Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: .08),
-                          shape: BoxShape.circle,
-                        ),
+                    SizedBox(
+                      width: 48,
+                      child: Nomo3DButtonSurface(
+                        onTap: _busyAction == null
+                            ? () => Navigator.of(context).pop()
+                            : null,
+                        height: 40,
+                        radius: 20,
+                        color: Colors.white.withValues(alpha: .08),
+                        bottomColor: Colors.black.withValues(alpha: .34),
+                        padding: EdgeInsets.zero,
+                        useGradient: true,
+                        borderColor: Colors.white.withValues(alpha: .10),
                         child: const Icon(
                           CupertinoIcons.xmark,
                           color: Colors.white,
@@ -1071,19 +1077,21 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                   fontSize: 15,
                 ),
                 const SizedBox(height: 10),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _busyAction == null
+                Nomo3DButton.secondary(
+                  label: _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
+                  icon: CupertinoIcons.xmark_circle_fill,
+                  onTap: _busyAction == null
                       ? () => _submit(accept: false)
                       : null,
-                  child: Text(
-                    _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .60),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
+                  isLoading: _busyAction == 'reject',
+                  enabled: _busyAction == null,
+                  height: 48,
+                  radius: 21,
+                  color: Colors.white.withValues(alpha: .07),
+                  foregroundColor: Colors.white.withValues(alpha: .72),
+                  shadowColor: Colors.black.withValues(alpha: .30),
+                  fontSize: 14,
+                  useGradient: false,
                 ),
               ],
             ),

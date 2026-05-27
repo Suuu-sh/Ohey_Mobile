@@ -198,25 +198,35 @@ class _FeedModalTextButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    final surfaceColor = Color.lerp(
+      isWhite ? Colors.white : AppColors.darkBackground,
+      color,
+      isWhite ? .16 : .22,
+    )!;
+    final bottomColor = Color.lerp(color, Colors.black, isWhite ? .18 : .42)!;
+    return Nomo3DButtonSurface(
       onTap: onTap,
-      child: Container(
-        height: 54,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: isWhite ? .13 : .10),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withValues(alpha: .30)),
+      height: 52,
+      radius: 20,
+      color: surfaceColor,
+      bottomColor: bottomColor,
+      padding: EdgeInsets.zero,
+      useGradient: true,
+      borderColor: color.withValues(alpha: isWhite ? .34 : .38),
+      outerShadows: [
+        BoxShadow(
+          color: color.withValues(alpha: isWhite ? .12 : .20),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: 16,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.35,
-          ),
+      ],
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 16,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -.35,
         ),
       ),
     );

@@ -242,19 +242,27 @@ class _AdminPhotoPickerField extends StatelessWidget {
                 ),
               ),
               if (_hasPhoto)
-                CupertinoButton(
-                  minimumSize: Size.zero,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  onPressed: onClear,
-                  child: const Text(
-                    '削除',
-                    style: TextStyle(
-                      color: _AdminColors.pink,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 12,
+                SizedBox(
+                  width: 62,
+                  child: Nomo3DButtonSurface(
+                    onTap: onClear,
+                    height: 30,
+                    radius: 14,
+                    color: _AdminColors.pink.withValues(alpha: .16),
+                    bottomColor: Color.lerp(
+                      _AdminColors.pink,
+                      Colors.black,
+                      .46,
+                    )!,
+                    padding: EdgeInsets.zero,
+                    borderColor: _AdminColors.pink.withValues(alpha: .28),
+                    child: const Text(
+                      '削除',
+                      style: TextStyle(
+                        color: _AdminColors.pink,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ),
@@ -271,32 +279,16 @@ class _AdminPhotoPickerField extends StatelessWidget {
             ),
             const SizedBox(height: 10),
           ],
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
+          Nomo3DButton(
+            label: _hasPhoto ? '写真を変更する' : '写真を選択する',
+            icon: CupertinoIcons.photo_on_rectangle,
             onTap: onPick,
-            child: Container(
-              height: 48,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: _AdminColors.lime,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0xFF5D8B00),
-                    offset: Offset(0, 5),
-                    blurRadius: 0,
-                  ),
-                ],
-              ),
-              child: Text(
-                _hasPhoto ? '写真を変更する' : '写真を選択する',
-                style: const TextStyle(
-                  color: Color(0xFF101820),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 14,
-                ),
-              ),
-            ),
+            height: 48,
+            radius: 18,
+            color: _AdminColors.lime,
+            foregroundColor: const Color(0xFF101820),
+            shadowColor: const Color(0xFF5D8B00),
+            fontSize: 14,
           ),
           if (_hasPhoto) ...[
             const SizedBox(height: 8),

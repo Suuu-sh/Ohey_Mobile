@@ -10,67 +10,77 @@ class _AvatarEditCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return Nomo3DButtonSurface(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isWhite
-              ? const Color(0xFFF6F8FA)
-              : Colors.white.withValues(alpha: .05),
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: isWhite ? const Color(0xFFDDE4EA) : _ProfileColors.line,
+      height: 110,
+      radius: 22,
+      color: isWhite
+          ? const Color(0xFFF6F8FA)
+          : Colors.white.withValues(alpha: .06),
+      bottomColor: isWhite ? const Color(0xFFD8E1EA) : const Color(0xFF09131D),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      borderColor: isWhite ? const Color(0xFFDDE4EA) : _ProfileColors.line,
+      outerShadows: [
+        BoxShadow(
+          color: _ProfileColors.lime.withValues(alpha: isWhite ? .10 : .16),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
+      innerShadows: [
+        BoxShadow(
+          color: Colors.white.withValues(alpha: isWhite ? .42 : .08),
+          blurRadius: 10,
+          offset: const Offset(-2, -2),
+        ),
+      ],
+      child: Row(
+        children: [
+          Container(
+            width: 82,
+            height: 82,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [Color(0xFF223544), Color(0xFF101B28)],
+              ),
+            ),
+            child: NomoAvatarView(avatar: avatar, size: 82),
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 82,
-              height: 82,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [Color(0xFF223544), Color(0xFF101B28)],
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '自分のアバター',
+                  style: TextStyle(
+                    color: ink,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-              child: NomoAvatarView(avatar: avatar, size: 82),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '自分のアバター',
-                    style: TextStyle(
-                      color: ink,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                    ),
+                const SizedBox(height: 5),
+                Text(
+                  '肌・髪型・服・表情をカスタム',
+                  style: TextStyle(
+                    color: isWhite
+                        ? const Color(0xFF687481)
+                        : Colors.white.withValues(alpha: .58),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
                   ),
-                  const SizedBox(height: 5),
-                  Text(
-                    '肌・髪型・服・表情をカスタム',
-                    style: TextStyle(
-                      color: isWhite
-                          ? const Color(0xFF687481)
-                          : Colors.white.withValues(alpha: .58),
-                      fontWeight: FontWeight.w800,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const NomoGeneratedIcon(
-              CupertinoIcons.chevron_forward,
-              color: _ProfileColors.lime,
-              size: 22,
-            ),
-          ],
-        ),
+          ),
+          const NomoGeneratedIcon(
+            CupertinoIcons.chevron_forward,
+            color: _ProfileColors.lime,
+            size: 22,
+          ),
+        ],
       ),
     );
   }
@@ -222,18 +232,18 @@ class _SettingsCloseButton extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    behavior: HitTestBehavior.opaque,
-    onTap: onTap,
-    child: Container(
-      width: 46,
-      height: 46,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: .08),
-        shape: BoxShape.circle,
-      ),
+  Widget build(BuildContext context) => SizedBox(
+    width: 50,
+    child: Nomo3DButtonSurface(
+      onTap: onTap,
+      height: 42,
+      radius: 21,
+      color: color.withValues(alpha: .08),
+      bottomColor: Colors.black.withValues(alpha: .26),
+      padding: EdgeInsets.zero,
+      borderColor: color.withValues(alpha: .10),
       child: Center(
-        child: NomoGeneratedIcon(CupertinoIcons.xmark, color: color, size: 25),
+        child: NomoGeneratedIcon(CupertinoIcons.xmark, color: color, size: 23),
       ),
     ),
   );
@@ -265,31 +275,35 @@ class _SettingsTile extends StatelessWidget {
         : Colors.white.withValues(alpha: .58);
     final textColor = destructive ? _ProfileColors.pink : ink;
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-        decoration: BoxDecoration(
-          color: NomoThemedPanel.surfaceColor(isWhite: isWhite),
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: isWhite
-                ? const Color(0xFFE1E8EF)
-                : Colors.white.withValues(alpha: .10),
-            width: 1.4,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Nomo3DButtonSurface(
+        onTap: onTap,
+        height: 72,
+        radius: 22,
+        color: NomoThemedPanel.surfaceColor(isWhite: isWhite),
+        bottomColor: isWhite
+            ? const Color(0xFFD9E2EB)
+            : const Color(0xFF09131D),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        borderColor: isWhite
+            ? const Color(0xFFE1E8EF)
+            : Colors.white.withValues(alpha: .12),
+        borderWidth: 1.4,
+        outerShadows: [
+          BoxShadow(
+            color: accent.withValues(alpha: isWhite ? .10 : .16),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
-          boxShadow: isWhite
-              ? [
-                  BoxShadow(
-                    color: accent.withValues(alpha: .07),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                ]
-              : null,
-        ),
+        ],
+        innerShadows: [
+          BoxShadow(
+            color: Colors.white.withValues(alpha: isWhite ? .42 : .08),
+            blurRadius: 10,
+            offset: const Offset(-2, -2),
+          ),
+        ],
         child: Row(
           children: [
             Container(
@@ -380,35 +394,15 @@ class _SheetPrimaryButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => Nomo3DButton(
+    label: label,
     onTap: busy ? null : onTap,
-    child: Container(
-      height: 54,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: AppColors.primaryAction,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: .16),
-          width: 1.2,
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.primaryActionShadow,
-            offset: Offset(0, 7),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      child: busy
-          ? const CupertinoActivityIndicator(color: Colors.white)
-          : Text(
-              label,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-    ),
+    isLoading: busy,
+    enabled: !busy,
+    height: 54,
+    radius: 22,
+    color: AppColors.primaryAction,
+    foregroundColor: Colors.white,
+    shadowColor: AppColors.primaryActionShadow,
   );
 }

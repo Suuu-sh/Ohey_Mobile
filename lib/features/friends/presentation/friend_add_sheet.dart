@@ -617,33 +617,19 @@ class _CuteQrCard extends StatelessWidget {
           const SizedBox(height: 8),
           Wrap(
             alignment: WrapAlignment.center,
-            spacing: 18,
-            runSpacing: 6,
+            spacing: 10,
+            runSpacing: 8,
             children: [
-              GestureDetector(
+              _QrTextActionChip(
+                label: 'IDだけコピー',
+                icon: CupertinoIcons.doc_on_doc,
                 onTap: onCopyId,
-                child: Text(
-                  'IDだけコピー',
-                  style: TextStyle(
-                    color: softInk.withValues(alpha: .82),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
               ),
               if (onScan != null)
-                GestureDetector(
-                  onTap: onScan,
-                  child: Text(
-                    'QRを読み取る',
-                    style: TextStyle(
-                      color: softInk.withValues(alpha: .82),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
+                _QrTextActionChip(
+                  label: 'QRを読み取る',
+                  icon: CupertinoIcons.qrcode_viewfinder,
+                  onTap: onScan!,
                 ),
             ],
           ),
@@ -667,32 +653,35 @@ class _QrActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const ink = Color(0xFF222222);
-    return GestureDetector(
-      onTap: onTap,
+    return Semantics(
+      button: true,
+      label: label,
       child: Opacity(
         opacity: onTap == null ? .45 : 1,
         child: Column(
           children: [
-            Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(
+            SizedBox(
+              width: 62,
+              child: Nomo3DButtonSurface(
+                onTap: onTap,
+                height: 54,
+                radius: 16,
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.black.withValues(alpha: .09),
-                  width: 2,
-                ),
-                boxShadow: [
+                bottomColor: const Color(0xFFE1E1E1),
+                padding: EdgeInsets.zero,
+                useGradient: true,
+                borderColor: Colors.black.withValues(alpha: .09),
+                borderWidth: 2,
+                outerShadows: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: .04),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
+                    color: Colors.black.withValues(alpha: .07),
+                    blurRadius: 14,
+                    offset: const Offset(0, 7),
                   ),
                 ],
-              ),
-              child: Center(
-                child: NomoGeneratedIcon(icon, color: ink, size: 25),
+                child: Center(
+                  child: NomoGeneratedIcon(icon, color: ink, size: 25),
+                ),
               ),
             ),
             const SizedBox(height: 6),
@@ -703,6 +692,67 @@ class _QrActionButton extends StatelessWidget {
                 color: ink.withValues(alpha: .50),
                 fontSize: 13,
                 fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QrTextActionChip extends StatelessWidget {
+  const _QrTextActionChip({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    const ink = Color(0xFF222222);
+    return SizedBox(
+      width: 130,
+      child: Nomo3DButtonSurface(
+        onTap: onTap,
+        height: 34,
+        radius: 17,
+        color: const Color(0xFFF7F7F7),
+        bottomColor: const Color(0xFFE1E1E1),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        useGradient: true,
+        borderColor: Colors.black.withValues(alpha: .08),
+        outerShadows: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .055),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            NomoGeneratedIcon(
+              icon,
+              color: ink.withValues(alpha: .68),
+              size: 15,
+            ),
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: ink.withValues(alpha: .62),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           ],
