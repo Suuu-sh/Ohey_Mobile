@@ -892,34 +892,22 @@ class _CalendarStatusChangeButton extends StatelessWidget {
         innerShadows: [
           BoxShadow(color: Colors.white.withValues(alpha: .12), blurRadius: 10),
         ],
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            NomoGeneratedIcon(
-              _calendarStatusIcon(status),
+        child: Center(
+          child: Text(
+            isSaving
+                ? '保存中'
+                : status == NomoDailyStatus.unselected
+                ? '設定'
+                : '変更',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
               color: foreground,
-              size: 15,
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              height: 1,
             ),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                isSaving
-                    ? '保存中'
-                    : status == NomoDailyStatus.unselected
-                    ? '設定'
-                    : '変更',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: foreground,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
-                  height: 1,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -2668,14 +2656,6 @@ Color _calendarStatus3DBorderColor(
   }
   return Colors.white.withValues(alpha: selected ? .30 : .20);
 }
-
-IconData _calendarStatusIcon(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.canDrinkToday => CupertinoIcons.sparkles,
-  NomoDailyStatus.nonAlcohol => CupertinoIcons.drop_fill,
-  NomoDailyStatus.liverRest => CupertinoIcons.clock_fill,
-  NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
-  NomoDailyStatus.unselected => CupertinoIcons.circle,
-};
 
 String _calendarStatusLabel(NomoDailyStatus status, {required DateTime day}) =>
     status.label;
