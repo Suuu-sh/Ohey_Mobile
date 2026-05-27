@@ -102,18 +102,26 @@ class _FeedCompanionTile extends StatelessWidget {
     final subtitleColor = isWhite
         ? const Color(0xFF697684)
         : Colors.white.withValues(alpha: .56);
+    final statusColor = _companionStatusColor(friend.statusKey);
+    final tileColor = isWhite
+        ? const Color(0xFFF7FAFC)
+        : Color.lerp(AppColors.darkBackground, friend.accent, .20)!;
+    final tileBorderColor = isWhite
+        ? const Color(0xFFE1E8F1)
+        : Color.lerp(friend.accent, Colors.white, .18)!.withValues(alpha: .26);
+    final statusBackgroundColor = isWhite
+        ? statusColor.withValues(alpha: .13)
+        : Color.lerp(AppColors.darkBackground, statusColor, .34)!;
     return Nomo3DButtonSurface(
       onTap: onTap,
       height: 68,
       radius: 22,
-      color: isWhite ? const Color(0xFFF7FAFC) : AppColors.darkBackground,
+      color: tileColor,
       bottomColor: isWhite
           ? const Color(0xFFDCE4EC)
           : nomo3DShadowColorFor(friend.accent, lightnessScale: .50),
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      borderColor: isWhite
-          ? const Color(0xFFE1E8F1)
-          : Colors.white.withValues(alpha: .12),
+      borderColor: tileBorderColor,
       outerShadows: isWhite
           ? [
               BoxShadow(
@@ -171,15 +179,13 @@ class _FeedCompanionTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
-              color: _companionStatusColor(
-                friend.statusKey,
-              ).withValues(alpha: isWhite ? .13 : .11),
+              color: statusBackgroundColor,
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
               _companionStatusLabel(friend.statusKey),
               style: TextStyle(
-                color: _companionStatusColor(friend.statusKey),
+                color: statusColor,
                 fontSize: 11,
                 fontWeight: FontWeight.w900,
               ),
