@@ -642,94 +642,103 @@ class _SelectedDayPanel extends StatelessWidget {
       glowAlpha: isWhite ? .12 : .20,
       glowBlur: 28,
       glowOffset: const Offset(0, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${day.month}/${day.day} の空き状況と思い出',
-                  style: TextStyle(
-                    color: isWhite ? const Color(0xFF101820) : Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    height: 1.1,
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${day.month}/${day.day} の空き状況と思い出',
+                    style: TextStyle(
+                      color: isWhite ? const Color(0xFF101820) : Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      height: 1.1,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              _CalendarStatusChangeButton(
-                status: status,
-                isSaving: isStatusSaving,
+                const SizedBox(width: 8),
+                _CalendarStatusChangeButton(
+                  status: status,
+                  isSaving: isStatusSaving,
+                  isWhite: isWhite,
+                  onTap: onChangeStatus,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _CalendarSectionLabel(
+              label: 'フレンズの空き状況',
+              accent: AppColors.primaryAction,
+            ),
+            const SizedBox(height: 5),
+            if (status == NomoDailyStatus.unselected)
+              _CalendarFriendStatusLocked(
                 isWhite: isWhite,
                 onTap: onChangeStatus,
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          _CalendarSectionLabel(
-            label: 'フレンズの空き状況',
-            accent: AppColors.primaryAction,
-          ),
-          const SizedBox(height: 5),
-          if (status == NomoDailyStatus.unselected)
-            _CalendarFriendStatusLocked(isWhite: isWhite, onTap: onChangeStatus)
-          else
-            _CalendarFriendStatusList(
-              day: day,
-              friendsAsync: friendsAsync,
-              groups: groups,
-              isWhite: isWhite,
-            ),
-          const SizedBox(height: 10),
-          _CalendarSectionLabel(label: '思い出', accent: const Color(0xFF54D7FF)),
-          const SizedBox(height: 5),
-          if (logs.isNotEmpty)
-            ...logs.take(3).map((log) {
-              final isPrivateRecord =
-                  log.photoAssetPath == null ||
-                  log.photoAssetPath!.trim().isEmpty;
-              return _CalendarInfoRow(
-                icon: isPrivateRecord
-                    ? CupertinoIcons.lock_fill
-                    : CupertinoIcons.photo_fill_on_rectangle_fill,
-                accent: isPrivateRecord
-                    ? AppColors.success
-                    : const Color(0xFF54D7FF),
-                text: log.memo.trim().isEmpty
-                    ? (isPrivateRecord ? '記録だけ保存しました' : '思い出を残しました')
-                    : log.memo.trim(),
+              )
+            else
+              _CalendarFriendStatusList(
+                day: day,
+                friendsAsync: friendsAsync,
+                groups: groups,
                 isWhite: isWhite,
-                badgeLabel: isPrivateRecord ? '記録のみ' : null,
-                badgeColor: AppColors.success,
-                actionLabel: isPrivateRecord ? null : '写真を見る',
-                onActionTap: isPrivateRecord
-                    ? null
-                    : () => _showCalendarLogPhoto(context, log),
-              );
-            })
-          else
-            SizedBox(
-              height: 34,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'この日の思い出はまだありません',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isWhite
-                        ? const Color(0xFF657282)
-                        : Colors.white.withValues(alpha: .62),
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
-                    height: 1.1,
+              ),
+            const SizedBox(height: 10),
+            _CalendarSectionLabel(
+              label: '思い出',
+              accent: const Color(0xFF54D7FF),
+            ),
+            const SizedBox(height: 5),
+            if (logs.isNotEmpty)
+              ...logs.take(3).map((log) {
+                final isPrivateRecord =
+                    log.photoAssetPath == null ||
+                    log.photoAssetPath!.trim().isEmpty;
+                return _CalendarInfoRow(
+                  icon: isPrivateRecord
+                      ? CupertinoIcons.lock_fill
+                      : CupertinoIcons.photo_fill_on_rectangle_fill,
+                  accent: isPrivateRecord
+                      ? AppColors.success
+                      : const Color(0xFF54D7FF),
+                  text: log.memo.trim().isEmpty
+                      ? (isPrivateRecord ? '記録だけ保存しました' : '思い出を残しました')
+                      : log.memo.trim(),
+                  isWhite: isWhite,
+                  badgeLabel: isPrivateRecord ? '記録のみ' : null,
+                  badgeColor: AppColors.success,
+                  actionLabel: isPrivateRecord ? null : '写真を見る',
+                  onActionTap: isPrivateRecord
+                      ? null
+                      : () => _showCalendarLogPhoto(context, log),
+                );
+              })
+            else
+              SizedBox(
+                height: 34,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'この日の思い出はまだありません',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isWhite
+                          ? const Color(0xFF657282)
+                          : Colors.white.withValues(alpha: .62),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
