@@ -1195,6 +1195,9 @@ class _CalendarSectionSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fillColors = isWhite
+        ? [Colors.white, const Color(0xFFF7FBFF)]
+        : const [Color(0xFF050B13), Color(0xFF07101B)];
     final content = Container(
       width: double.infinity,
       height: double.infinity,
@@ -1203,20 +1206,17 @@ class _CalendarSectionSurface extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: isWhite
-              ? [Colors.white, accent.withValues(alpha: .06)]
-              : [
-                  Colors.white.withValues(alpha: .075),
-                  accent.withValues(alpha: .055),
-                ],
+          colors: fillColors,
         ),
         borderRadius: BorderRadius.circular(21),
         border: Border.all(
-          color: accent.withValues(alpha: isWhite ? .24 : .30),
+          color: accent.withValues(alpha: isWhite ? .24 : .22),
         ),
         boxShadow: [
           BoxShadow(
-            color: accent.withValues(alpha: isWhite ? .06 : .12),
+            color: isWhite
+                ? accent.withValues(alpha: .06)
+                : Colors.black.withValues(alpha: .26),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
