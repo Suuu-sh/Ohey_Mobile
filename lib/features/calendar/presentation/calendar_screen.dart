@@ -415,7 +415,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             const SizedBox(height: 12),
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.only(bottom: 32),
                                 child: _SelectedDayPanel(
                                   day: _selectedDay,
                                   logs: selectedLogs,
@@ -1467,7 +1467,7 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
   final List<NomoFriend> friends;
   final bool isWhite;
   final String? sendingFriendId;
-  final ValueChanged<NomoFriend> onInvite;
+  final Future<void> Function(NomoFriend friend) onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -1515,7 +1515,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
   final NomoFriend friend;
   final bool isWhite;
   final bool inviteEnabled;
-  final VoidCallback onInvite;
+  final Future<void> Function() onInvite;
 
   @override
   Widget build(BuildContext context) {
