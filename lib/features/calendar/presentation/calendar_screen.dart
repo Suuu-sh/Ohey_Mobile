@@ -759,7 +759,7 @@ class _SelectedDayPanel extends StatelessWidget {
                       ),
                       SizedBox(height: compact ? 7 : 9),
                       Expanded(
-                        flex: compact ? 4 : 5,
+                        flex: compact ? 5 : 5,
                         child: _CalendarMemoryPreview(
                           logs: logs,
                           isWhite: isWhite,
@@ -1504,28 +1504,36 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
     final hasPhoto =
         log.photoAssetPath != null && log.photoAssetPath!.trim().isNotEmpty;
     final accent = hasPhoto ? const Color(0xFF54D7FF) : AppColors.success;
-    final row = Container(
+    final foreground = isWhite
+        ? Color.lerp(accent, Colors.black, .26)!
+        : Colors.white;
+    final content = Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(9, compact ? 6 : 7, 8, compact ? 6 : 7),
-      decoration: BoxDecoration(
-        color: isWhite
-            ? const Color(0xFFF7FAFD)
-            : Colors.black.withValues(alpha: .14),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: accent.withValues(alpha: isWhite ? .18 : .24),
-        ),
-      ),
+      constraints: BoxConstraints(minHeight: compact ? 48 : 56),
+      padding: EdgeInsets.fromLTRB(4, compact ? 6 : 8, 0, compact ? 6 : 8),
       child: Row(
         children: [
-          NomoGeneratedIcon(
-            hasPhoto
-                ? CupertinoIcons.photo_fill_on_rectangle_fill
-                : CupertinoIcons.lock_fill,
-            color: accent,
-            size: compact ? 16 : 18,
+          Container(
+            width: compact ? 34 : 38,
+            height: compact ? 34 : 38,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: isWhite ? .12 : .18),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: accent.withValues(alpha: isWhite ? .24 : .32),
+              ),
+            ),
+            child: Center(
+              child: NomoGeneratedIcon(
+                hasPhoto
+                    ? CupertinoIcons.photo_fill_on_rectangle_fill
+                    : CupertinoIcons.lock_fill,
+                color: accent,
+                size: compact ? 17 : 19,
+              ),
+            ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               _calendarMemoryTitle(log),
@@ -1533,29 +1541,38 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: isWhite ? const Color(0xFF344152) : Colors.white,
-                fontSize: compact ? 11.5 : 12.5,
+                fontSize: compact ? 13.5 : 15,
                 fontWeight: FontWeight.w900,
-                height: 1,
+                height: 1.05,
               ),
             ),
           ),
-          const SizedBox(width: 7),
-          if (hasPhoto)
-            _CalendarTinyPill(label: '見る', color: accent, isWhite: isWhite)
-          else
-            _CalendarTinyPill(
-              label: '記録',
-              color: AppColors.success,
-              isWhite: isWhite,
+          const SizedBox(width: 10),
+          SizedBox(
+            width: compact ? 58 : 66,
+            child: Nomo3DButton(
+              label: hasPhoto ? '見る' : '記録',
+              onTap: hasPhoto
+                  ? () => _showCalendarLogPhoto(context, log)
+                  : null,
+              height: compact ? 32 : 36,
+              radius: compact ? 16 : 18,
+              color: accent,
+              foregroundColor: foreground,
+              shadowColor: Color.lerp(accent, Colors.black, .34)!,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              fontSize: compact ? 12 : 13,
+              enabled: hasPhoto,
             ),
+          ),
         ],
       ),
     );
-    if (!hasPhoto) return row;
+    if (!hasPhoto) return content;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => _showCalendarLogPhoto(context, log),
-      child: row,
+      child: content,
     );
   }
 }
