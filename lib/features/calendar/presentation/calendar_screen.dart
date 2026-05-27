@@ -1544,7 +1544,7 @@ class _CalendarStatusSheet extends StatelessWidget {
         children: [
           Text(
             showLockedExplanation
-                ? 'フレンズの空き状況を見るには、先に自分の予定を設定してね。'
+                ? '先に自分の予定を設定すると見られるよ。'
                 : '${day.month}/${day.day} の予定決めに使えるよ。',
             style: TextStyle(color: sub, fontWeight: FontWeight.w800),
           ),
