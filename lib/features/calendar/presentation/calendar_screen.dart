@@ -879,61 +879,58 @@ class _CalendarFriendStatusSheet extends StatelessWidget {
     final availableCount = friends
         .where((friend) => _calendarFriendIsAvailable(friend.statusKey))
         .length;
-    final maxListHeight = (MediaQuery.sizeOf(context).height * .36)
-        .clamp(190.0, 320.0)
-        .toDouble();
-    final estimatedListHeight =
-        (friends.length * 98.0) + ((friends.length - 1).clamp(0, 999) * 14.0);
-    final listHeight = estimatedListHeight
-        .clamp(98.0, maxListHeight)
+    final media = MediaQuery.of(context);
+    final contentHeight = (media.size.height * .80 - media.padding.bottom - 24)
+        .clamp(460.0, 680.0)
         .toDouble();
     return NomoBottomSheetShell(
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
       radius: 32,
-      maxHeightFactor: .88,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const NomoBottomSheetHandle(),
-          const SizedBox(height: 14),
-          Text(
-            'フレンズの空き状況',
-            style: TextStyle(
-              color: isWhite ? const Color(0xFF101820) : Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
+      maxHeightFactor: .82,
+      child: SizedBox(
+        height: contentHeight,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const NomoBottomSheetHandle(),
+            const SizedBox(height: 14),
+            Text(
+              'フレンズの空き状況',
+              style: TextStyle(
+                color: isWhite ? const Color(0xFF101820) : Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '予定を決める前に、誰が空いているか一目で見られるよ。',
-            style: TextStyle(
-              color: isWhite
-                  ? const Color(0xFF667381)
-                  : Colors.white.withValues(alpha: .62),
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              height: 1.35,
+            const SizedBox(height: 4),
+            Text(
+              '予定を決める前に、誰が空いているか一目で見られるよ。',
+              style: TextStyle(
+                color: isWhite
+                    ? const Color(0xFF667381)
+                    : Colors.white.withValues(alpha: .62),
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                height: 1.35,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          _CalendarFriendStatusModalOverview(
-            availableCount: availableCount,
-            totalCount: friends.length,
-            isWhite: isWhite,
-          ),
-          const SizedBox(height: 8),
-          _CalendarFriendStatusSummary(friends: friends, isWhite: isWhite),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: listHeight,
-            child: _CalendarFriendStatusBlockList(
-              friends: friends,
+            const SizedBox(height: 12),
+            _CalendarFriendStatusModalOverview(
+              availableCount: availableCount,
+              totalCount: friends.length,
               isWhite: isWhite,
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            _CalendarFriendStatusSummary(friends: friends, isWhite: isWhite),
+            const SizedBox(height: 12),
+            Expanded(
+              child: _CalendarFriendStatusBlockList(
+                friends: friends,
+                isWhite: isWhite,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
