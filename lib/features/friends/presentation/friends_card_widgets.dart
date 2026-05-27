@@ -348,19 +348,23 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
   }
 }
 
-class _FriendProfileCalendar extends StatefulWidget {
+class _FriendProfileCalendar extends ConsumerStatefulWidget {
   const _FriendProfileCalendar({required this.friend, required this.status});
 
   final NomoFriend friend;
   final _FriendStatus status;
 
   @override
-  State<_FriendProfileCalendar> createState() => _FriendProfileCalendarState();
+  ConsumerState<_FriendProfileCalendar> createState() =>
+      _FriendProfileCalendarState();
 }
 
-class _FriendProfileCalendarState extends State<_FriendProfileCalendar> {
+class _FriendProfileCalendarState
+    extends ConsumerState<_FriendProfileCalendar> {
   late DateTime _month;
   late DateTime _selectedDay;
+  final Map<String, NomoDailyStatus> _statusByDate = {};
+  final Set<String> _loadingStatusKeys = {};
 
   @override
   void initState() {
@@ -368,6 +372,9 @@ class _FriendProfileCalendarState extends State<_FriendProfileCalendar> {
     final now = DateTime.now();
     _month = DateTime(now.year, now.month);
     _selectedDay = _friendProfileDateOnly(now);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadStatusesForMonth(_month);
+    });
   }
 
   void _moveMonth(int offset) {
@@ -378,6 +385,54 @@ class _FriendProfileCalendarState extends State<_FriendProfileCalendar> {
       _selectedDay = _friendProfileIsSameMonth(nextMonth, today)
           ? today
           : DateTime(nextMonth.year, nextMonth.month);
+    });
+    _loadStatusesForMonth(_month);
+  }
+
+  Future<void> _loadStatusesForMonth(DateTime month) async {
+    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+    final leadingEmptyCells = DateTime(month.year, month.month).weekday % 7;
+    final totalCells = leadingEmptyCells + daysInMonth;
+    final rows = (totalCells / 7).ceil();
+    final targets = <DateTime>[];
+    for (var index = 0; index < rows * 7; index++) {
+      final dayNumber = index - leadingEmptyCells + 1;
+      final date = DateTime(month.year, month.month, dayNumber);
+      final key = _friendProfileDateKey(date);
+      if (_statusByDate.containsKey(key) || !_loadingStatusKeys.add(key)) {
+        continue;
+      }
+      targets.add(date);
+    }
+    if (targets.isEmpty) return;
+
+    final entries = await Future.wait(
+      targets.map((date) async {
+        try {
+          final friends = await ref.read(friendsForDateProvider(date).future);
+          final friend = friends
+              .where((candidate) => candidate.id == widget.friend.id)
+              .firstOrNull;
+          return MapEntry(
+            _friendProfileDateKey(date),
+            nomoDailyStatusFromKey(friend?.statusKey),
+          );
+        } catch (_) {
+          return MapEntry(
+            _friendProfileDateKey(date),
+            NomoDailyStatus.unselected,
+          );
+        }
+      }),
+    );
+    for (final date in targets) {
+      _loadingStatusKeys.remove(_friendProfileDateKey(date));
+    }
+    if (!mounted) return;
+    setState(() {
+      for (final entry in entries) {
+        _statusByDate[entry.key] = entry.value;
+      }
     });
   }
 
@@ -390,12 +445,7 @@ class _FriendProfileCalendarState extends State<_FriendProfileCalendar> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final now = DateTime.now();
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    final dailyStatus = nomoDailyStatusFromKey(widget.friend.statusKey);
-    final statusByDate = _friendProfileIsSameMonth(_month, now)
-        ? {_friendProfileDateKey(now): dailyStatus}
-        : const <String, NomoDailyStatus>{};
 
     return GestureDetector(
       onHorizontalDragEnd: _handleMonthSwipe,
@@ -412,7 +462,11 @@ class _FriendProfileCalendarState extends State<_FriendProfileCalendar> {
             child: _FriendProfileMonthGrid(
               month: _month,
               selectedDay: _selectedDay,
-              statusByDate: statusByDate,
+              statusByDate: _statusByDate,
+              onSelectDay: (day) {
+                HapticFeedback.selectionClick();
+                setState(() => _selectedDay = day);
+              },
             ),
           ),
         ],
@@ -497,11 +551,13 @@ class _FriendProfileMonthGrid extends StatelessWidget {
     required this.month,
     required this.selectedDay,
     required this.statusByDate,
+    required this.onSelectDay,
   });
 
   final DateTime month;
   final DateTime selectedDay;
   final Map<String, NomoDailyStatus> statusByDate;
+  final ValueChanged<DateTime> onSelectDay;
 
   @override
   Widget build(BuildContext context) {
@@ -594,6 +650,7 @@ class _FriendProfileMonthGrid extends StatelessWidget {
                         isSelected: _friendProfileIsSameDate(selectedDay, day),
                         column: index % 7,
                         tileExtent: tileExtent,
+                        onTap: inMonth ? () => onSelectDay(day) : null,
                       );
                     },
                   ),
@@ -616,6 +673,7 @@ class _FriendProfileDayTile extends StatelessWidget {
     required this.isSelected,
     required this.column,
     required this.tileExtent,
+    this.onTap,
   });
 
   final int day;
@@ -625,6 +683,7 @@ class _FriendProfileDayTile extends StatelessWidget {
   final bool isSelected;
   final int column;
   final double tileExtent;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -648,44 +707,50 @@ class _FriendProfileDayTile extends StatelessWidget {
         ? const Color(0xFF101820)
         : Colors.white;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
-      decoration: BoxDecoration(
-        color: hasStatus
-            ? _friendProfileCalendarStatusTileBackground(
-                dailyStatus,
-                isWhite: isWhite,
-                selected: isSelected,
-              )
-            : isWhite
-            ? (isSelected ? const Color(0xFFEAF8FF) : Colors.white)
-            : AppColors.darkBackground,
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        decoration: BoxDecoration(
           color: hasStatus
-              ? statusAccent.withValues(alpha: isSelected ? .90 : .52)
-              : isSelected
-              ? const Color(0xFF54D7FF)
-              : const Color(0xFF20B9FF).withValues(alpha: isWhite ? .34 : .24),
-          width: isSelected ? 2 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
+              ? _friendProfileCalendarStatusTileBackground(
+                  dailyStatus,
+                  isWhite: isWhite,
+                  selected: isSelected,
+                )
+              : isWhite
+              ? (isSelected ? const Color(0xFFEAF8FF) : Colors.white)
+              : AppColors.darkBackground,
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(
             color: hasStatus
-                ? statusAccent.withValues(alpha: isWhite ? .16 : .24)
-                : Colors.black.withValues(alpha: isWhite ? .05 : .20),
-            blurRadius: hasStatus ? 16 : 12,
-            offset: const Offset(0, 8),
+                ? statusAccent.withValues(alpha: isSelected ? .90 : .52)
+                : isSelected
+                ? const Color(0xFF54D7FF)
+                : const Color(
+                    0xFF20B9FF,
+                  ).withValues(alpha: isWhite ? .34 : .24),
+            width: isSelected ? 2 : 1,
           ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          '$day',
-          style: TextStyle(
-            color: isToday && !isWhite ? Colors.white : dayColor,
-            fontSize: tileExtent >= 42 ? 18 : 16,
-            fontWeight: FontWeight.w900,
+          boxShadow: [
+            BoxShadow(
+              color: hasStatus
+                  ? statusAccent.withValues(alpha: isWhite ? .16 : .24)
+                  : Colors.black.withValues(alpha: isWhite ? .05 : .20),
+              blurRadius: hasStatus ? 16 : 12,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            '$day',
+            style: TextStyle(
+              color: isToday && !isWhite ? Colors.white : dayColor,
+              fontSize: tileExtent >= 42 ? 18 : 16,
+              fontWeight: FontWeight.w900,
+            ),
           ),
         ),
       ),
