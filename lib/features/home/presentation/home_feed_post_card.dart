@@ -98,8 +98,12 @@ class _FeedPhotoLikeSurfaceState extends State<_FeedPhotoLikeSurface>
 
   void _handleDoubleTap() {
     if (widget.onLike == null) return;
-    if (!widget.item.liked) {
-      widget.onLike!();
+    final wasLiked = widget.item.liked;
+    widget.onLike!();
+    if (wasLiked) {
+      _controller.stop();
+      _controller.value = 0;
+      return;
     }
     _controller.forward(from: 0);
   }
