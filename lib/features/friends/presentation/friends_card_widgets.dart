@@ -37,6 +37,17 @@ class _FriendCard extends StatelessWidget {
   );
 }
 
+Future<void> showNomoFriendProfileSheet(
+  BuildContext context, {
+  required NomoFriend friend,
+}) {
+  return _showFriendProfileSheet(
+    context,
+    friend: friend,
+    status: _statusForFriend(friend, 0),
+  );
+}
+
 Future<void> _showFriendProfileSheet(
   BuildContext context, {
   required NomoFriend friend,

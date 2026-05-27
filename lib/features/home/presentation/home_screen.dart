@@ -33,6 +33,7 @@ import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
 import '../../friends/application/drink_invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
+import '../../friends/presentation/friends_screen.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../notifications/data/notification_repository.dart';

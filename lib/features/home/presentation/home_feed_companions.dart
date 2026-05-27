@@ -339,9 +339,13 @@ class _FeedCompanionRequestCard extends StatelessWidget {
 }
 
 class _FeedCompanionProfileSheet extends ConsumerStatefulWidget {
-  const _FeedCompanionProfileSheet({required this.friend});
+  const _FeedCompanionProfileSheet({
+    required this.friend,
+    this.initialRelationship,
+  });
 
   final _Companion friend;
+  final NomoFriendRelationshipStatus? initialRelationship;
 
   @override
   ConsumerState<_FeedCompanionProfileSheet> createState() =>
@@ -393,14 +397,18 @@ class _FeedCompanionProfileSheetState
         : Colors.white.withValues(alpha: .58);
     final friend = widget.friend;
     final statusColor = _companionStatusColor(friend.statusKey);
-    final relationshipAsync = friend.userId.trim().isEmpty
-        ? const AsyncValue<NomoFriendRelationshipStatus>.data(
-            NomoFriendRelationshipStatus(
-              alreadyFriend: true,
-              requestState: NomoFriendRequestState.none,
-            ),
-          )
-        : ref.watch(_feedCompanionRelationshipProvider(friend.userId));
+    final relationshipAsync = widget.initialRelationship == null
+        ? (friend.userId.trim().isEmpty
+              ? const AsyncValue<NomoFriendRelationshipStatus>.data(
+                  NomoFriendRelationshipStatus(
+                    alreadyFriend: false,
+                    requestState: NomoFriendRequestState.none,
+                  ),
+                )
+              : ref.watch(_feedCompanionRelationshipProvider(friend.userId)))
+        : AsyncValue<NomoFriendRelationshipStatus>.data(
+            widget.initialRelationship!,
+          );
     return NomoBottomSheetShell(
       child: Column(
         mainAxisSize: MainAxisSize.min,

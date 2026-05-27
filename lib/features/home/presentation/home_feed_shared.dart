@@ -228,6 +228,18 @@ class _Companion {
   final String? statusKey;
 
   String get handleLabel => handle.trim().isEmpty ? 'Nomoフレンズ' : '@$handle';
+
+  NomoFriend toNomoFriend() => NomoFriend(
+    id: userId,
+    name: name,
+    avatarEmoji: '👤',
+    vibe: handle.replaceFirst('@', ''),
+    characterAssetPath: '',
+    kind: NomiTomoKind.cloud,
+    palette: NomiTomoPalette.lavender,
+    avatar: avatar,
+    statusKey: statusKey,
+  );
 }
 
 String _companionStatusLabel(String? statusKey) {

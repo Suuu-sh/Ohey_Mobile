@@ -237,12 +237,35 @@ Future<void> _showFeedCompanionList(
     builder: (context) => _FeedCompanionListSheet(friends: friends),
   );
   if (!context.mounted || selected == null) return;
+
   HapticFeedback.selectionClick();
+  final repository = ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(friendRepositoryProvider);
+  NomoFriendRelationshipStatus? relationship;
+  if (selected.userId.trim().isNotEmpty) {
+    try {
+      relationship = await repository.relationshipStatus(selected.userId);
+    } catch (_) {
+      relationship = null;
+    }
+  }
+  if (!context.mounted) return;
+
+  if (relationship?.alreadyFriend == true) {
+    await showNomoFriendProfileSheet(context, friend: selected.toNomoFriend());
+    return;
+  }
+
   await showNomoBottomSheet<void>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
     barrierColor: Colors.black.withValues(alpha: .62),
-    builder: (context) => _FeedCompanionProfileSheet(friend: selected),
+    builder: (context) => _FeedCompanionProfileSheet(
+      friend: selected,
+      initialRelationship: relationship,
+    ),
   );
 }
