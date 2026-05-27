@@ -145,8 +145,7 @@ extension _NomoCameraScreenActions on _NomoCameraScreenState {
 
   Future<void> _selectNextFilter() async {
     final next = switch (_selectedFilter) {
-      _CameraFilter.avatar => _CameraFilter.natural,
-      _CameraFilter.natural => _CameraFilter.original,
+      _CameraFilter.avatar => _CameraFilter.original,
       _CameraFilter.original => _CameraFilter.avatar,
     };
     await _setFilter(next);
