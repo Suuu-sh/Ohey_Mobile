@@ -148,7 +148,7 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                           Expanded(
                             child: _ProfileActivityHome(
-                              isWhite: bodyIsWhite,
+                              profileName: user?.name ?? 'ユーザー名',
                               logs: myLogs,
                               photoLogs: photoLogs,
                               friendsCount: friends.length,

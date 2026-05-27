@@ -527,7 +527,7 @@ class _InviteResponseButton extends StatelessWidget {
 
 class _ProfileActivityHome extends StatelessWidget {
   const _ProfileActivityHome({
-    required this.isWhite,
+    required this.profileName,
     required this.logs,
     required this.photoLogs,
     required this.friendsCount,
@@ -538,7 +538,7 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.onAddFriendsTap,
   });
 
-  final bool isWhite;
+  final String profileName;
   final List<DrinkLog> logs;
   final List<DrinkLog> photoLogs;
   final int friendsCount;
@@ -550,11 +550,12 @@ class _ProfileActivityHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final monthlyLogs = logs.where((log) => log.isInMonth(now)).toList();
+    final joinedMonth = _profileJoinedMonth(DateTime.now());
+    final recentLogs = logs.take(2).toList(growable: false);
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(26, 0, 26, 0),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(26, 0, 26, 126),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -562,23 +563,32 @@ class _ProfileActivityHome extends StatelessWidget {
             friendsCount: friendsCount,
             logCount: logs.length,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
-          const SizedBox(height: 24),
-          _ProfileLearningStatus(
+          const SizedBox(height: 14),
+          _ProfileInfoCard(
+            profileName: profileName,
+            joinedMonth: joinedMonth,
             status: status,
-            monthlyLogCount: monthlyLogs.length,
-            photoLogCount: photoLogs.length,
             onStatusTap: onStatusTap,
+          ),
+          const SizedBox(height: 14),
+          _ProfileRecentMemoriesCard(
+            logs: recentLogs,
+            photoLogCount: photoLogs.length,
             onLogsTap: onLogsTap,
             onArchiveTap: onArchiveTap,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 12),
+          _ProfileMemoryHintCard(onTap: onAddFriendsTap),
         ],
       ),
     );
   }
 }
+
+String _profileJoinedMonth(DateTime date) =>
+    '${date.year}/${date.month.toString().padLeft(2, '0')}';
 
 class _ProfileSummaryStats extends StatelessWidget {
   const _ProfileSummaryStats({
@@ -749,22 +759,18 @@ class _ProfileOutlineButton extends StatelessWidget {
   }
 }
 
-class _ProfileLearningStatus extends StatelessWidget {
-  const _ProfileLearningStatus({
+class _ProfileInfoCard extends StatelessWidget {
+  const _ProfileInfoCard({
+    required this.profileName,
+    required this.joinedMonth,
     required this.status,
-    required this.monthlyLogCount,
-    required this.photoLogCount,
     required this.onStatusTap,
-    required this.onLogsTap,
-    required this.onArchiveTap,
   });
 
+  final String profileName;
+  final String joinedMonth;
   final NomoDailyStatus status;
-  final int monthlyLogCount;
-  final int photoLogCount;
   final VoidCallback onStatusTap;
-  final VoidCallback onLogsTap;
-  final VoidCallback onArchiveTap;
 
   @override
   Widget build(BuildContext context) {
@@ -801,7 +807,7 @@ class _ProfileLearningStatus extends StatelessWidget {
           Row(
             children: [
               const NomoPopIcon(
-                icon: CupertinoIcons.sparkles,
+                icon: CupertinoIcons.person_crop_circle_fill,
                 color: Color(0xFFC08BFF),
                 size: 38,
                 iconSize: 20,
@@ -812,7 +818,7 @@ class _ProfileLearningStatus extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'マイルームの成長',
+                      'プロフィール',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: .94),
                         fontSize: 20,
@@ -823,7 +829,7 @@ class _ProfileLearningStatus extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '遊んだ日と思い出で、部屋が育つよ',
+                      'あなたの基本情報',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: .55),
                         fontSize: 11.5,
@@ -834,54 +840,269 @@ class _ProfileLearningStatus extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 10),
+              _ProfileStatusChip(
+                label: statusLabel,
+                color: unset ? const Color(0xFF28B9FF) : _statusColor(status),
+                icon: unset ? CupertinoIcons.smiley : _statusIcon(status),
+                onTap: onStatusTap,
+              ),
             ],
           ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              Expanded(
-                child: _ProfileLearningItem(
-                  icon: CupertinoIcons.calendar_today,
-                  iconColor: const Color(0xFF5DEBD3),
-                  text: '$monthlyLogCount日',
-                  label: '遊んだ日',
-                  onTap: onLogsTap,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _ProfileLearningItem(
-                  icon: CupertinoIcons.bolt_fill,
-                  iconColor: const Color(0xFFFFD60A),
-                  text: '${monthlyLogCount * 120} XP',
-                  label: '経験値',
-                  onTap: onLogsTap,
-                ),
-              ),
-            ],
+          const SizedBox(height: 14),
+          _ProfileInfoLine(
+            icon: CupertinoIcons.person_fill,
+            iconColor: const Color(0xFF5DEBD3),
+            label: 'なまえ',
+            value: profileName,
           ),
           const SizedBox(height: 10),
+          _ProfileInfoLine(
+            icon: CupertinoIcons.calendar_today,
+            iconColor: const Color(0xFFFF75B5),
+            label: '参加日',
+            value: '$joinedMonth 参加',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileStatusChip extends StatelessWidget {
+  const _ProfileStatusChip({
+    required this.label,
+    required this.color,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final Color color;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: .15),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: color.withValues(alpha: .28)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            NomoGeneratedIcon(icon, color: color, size: 15),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.25,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileInfoLine extends StatelessWidget {
+  const _ProfileInfoLine({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .065),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: .08)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: .16),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Center(
+              child: NomoGeneratedIcon(icon, color: iconColor, size: 20),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: .48),
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.2,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileRecentMemoriesCard extends StatelessWidget {
+  const _ProfileRecentMemoriesCard({
+    required this.logs,
+    required this.photoLogCount,
+    required this.onLogsTap,
+    required this.onArchiveTap,
+  });
+
+  final List<DrinkLog> logs;
+  final int photoLogCount;
+  final VoidCallback onLogsTap;
+  final VoidCallback onArchiveTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final firstLog = logs.isNotEmpty ? logs[0] : null;
+    final secondLog = logs.length > 1 ? logs[1] : null;
+    final openAll = photoLogCount > 0 ? onArchiveTap : onLogsTap;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFFFF5EA8).withValues(alpha: .14),
+            const Color(0xFF102033).withValues(alpha: .90),
+            const Color(0xFFC08BFF).withValues(alpha: .13),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: const Color(0xFFFF75B5).withValues(alpha: .26),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF75B5).withValues(alpha: .12),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const NomoPopIcon(
+                icon: CupertinoIcons.photo_fill_on_rectangle_fill,
+                color: Color(0xFFFF75B5),
+                size: 36,
+                iconSize: 19,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '最近の思い出',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .94),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.6,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: openAll,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 6,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'すべて見る',
+                        style: TextStyle(
+                          color: const Color(0xFFFF9BCC).withValues(alpha: .95),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      const NomoGeneratedIcon(
+                        CupertinoIcons.chevron_forward,
+                        color: Color(0xFFFF9BCC),
+                        size: 14,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 13),
           Row(
             children: [
               Expanded(
-                child: _ProfileLearningItem(
-                  icon: unset ? CupertinoIcons.smiley : _statusIcon(status),
-                  iconColor: unset
-                      ? const Color(0xFF28B9FF)
-                      : _statusColor(status),
-                  text: statusLabel,
-                  label: '今日の気分',
-                  onTap: onStatusTap,
+                child: _ProfileMemoryPreviewTile(
+                  log: firstLog,
+                  fallbackTitle: 'はじめての思い出',
+                  fallbackSubtitle: 'まだこれから',
+                  accent: const Color(0xFFFF75B5),
+                  icon: CupertinoIcons.sparkles,
+                  onTap: firstLog == null ? onLogsTap : openAll,
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: _ProfileLearningItem(
-                  icon: CupertinoIcons.photo_fill_on_rectangle_fill,
-                  iconColor: const Color(0xFFFF5EA8),
-                  text: '$photoLogCount枚',
-                  label: '写真の思い出',
-                  onTap: onArchiveTap,
+                child: _ProfileMemoryPreviewTile(
+                  log: secondLog,
+                  fallbackTitle: 'また遊ぼう',
+                  fallbackSubtitle: 'フレンズと一緒に',
+                  accent: const Color(0xFFC08BFF),
+                  icon: CupertinoIcons.person_2_fill,
+                  onTap: secondLog == null ? onLogsTap : openAll,
                 ),
               ),
             ],
@@ -892,78 +1113,96 @@ class _ProfileLearningStatus extends StatelessWidget {
   }
 }
 
-class _ProfileLearningItem extends StatelessWidget {
-  const _ProfileLearningItem({
+class _ProfileMemoryPreviewTile extends StatelessWidget {
+  const _ProfileMemoryPreviewTile({
+    required this.log,
+    required this.fallbackTitle,
+    required this.fallbackSubtitle,
+    required this.accent,
     required this.icon,
-    required this.iconColor,
-    required this.text,
-    required this.label,
     required this.onTap,
   });
 
+  final DrinkLog? log;
+  final String fallbackTitle;
+  final String fallbackSubtitle;
+  final Color accent;
   final IconData icon;
-  final Color iconColor;
-  final String text;
-  final String label;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final title = log == null ? fallbackTitle : _profileMemoryTitle(log!);
+    final subtitle = log == null
+        ? fallbackSubtitle
+        : _profileMemoryDate(log!.date);
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
-        constraints: const BoxConstraints(minHeight: 76),
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        constraints: const BoxConstraints(minHeight: 106),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: .065),
-          borderRadius: BorderRadius.circular(22),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              accent.withValues(alpha: .25),
+              Colors.white.withValues(alpha: .06),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(color: Colors.white.withValues(alpha: .09)),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 34,
-              height: 34,
+              height: 44,
               decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: .16),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Center(
-                child: NomoGeneratedIcon(icon, color: iconColor, size: 21),
-              ),
-            ),
-            const SizedBox(width: 9),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    text,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.45,
-                      height: 1.05,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .50),
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w800,
-                      height: 1,
-                    ),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    accent.withValues(alpha: .85),
+                    const Color(0xFF5DEBD3).withValues(alpha: .72),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: accent.withValues(alpha: .16),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
                   ),
                 ],
+              ),
+              child: Center(
+                child: NomoGeneratedIcon(icon, color: Colors.white, size: 24),
+              ),
+            ),
+            const SizedBox(height: 9),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13.5,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.35,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: .48),
+                fontSize: 10.5,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ],
@@ -972,3 +1211,78 @@ class _ProfileLearningItem extends StatelessWidget {
     );
   }
 }
+
+class _ProfileMemoryHintCard extends StatelessWidget {
+  const _ProfileMemoryHintCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: .055),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withValues(alpha: .08)),
+        ),
+        child: Row(
+          children: [
+            const NomoPopIcon(
+              icon: CupertinoIcons.wand_stars,
+              color: Color(0xFFFF75B5),
+              size: 42,
+              iconSize: 22,
+            ),
+            const SizedBox(width: 11),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '思い出をふやそう',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.4,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'フレンズと遊ぶとここに残るよ',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: .50),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const NomoGeneratedIcon(
+              CupertinoIcons.chevron_forward,
+              color: Color(0xFFFF9BCC),
+              size: 17,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _profileMemoryTitle(DrinkLog log) {
+  final place = log.place.trim();
+  if (place.isNotEmpty) return place;
+  final memo = log.memo.trim();
+  if (memo.isNotEmpty) return memo;
+  return '思い出';
+}
+
+String _profileMemoryDate(DateTime date) =>
+    '${date.month}/${date.day.toString().padLeft(2, '0')}';
