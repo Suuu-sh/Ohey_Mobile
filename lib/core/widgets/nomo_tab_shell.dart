@@ -37,6 +37,7 @@ import 'nomo_avatar.dart';
 import 'nomo_backend_busy_screen.dart';
 import 'nomo_bottom_sheet.dart';
 import 'nomo_daily_status_3d_option.dart';
+import 'nomo_invite_success_burst.dart';
 import 'nomo_pop_icon.dart';
 import 'nomo_toast.dart';
 
@@ -956,18 +957,20 @@ class _DrinkPlanFriendTile extends StatelessWidget {
               const SizedBox(width: 10),
               SizedBox(
                 width: 70,
-                child: Nomo3DButton(
-                  label: '誘う',
-                  onTap: disabled ? null : onTap,
-                  height: 34,
-                  radius: 17,
-                  color: AppColors.primaryAction,
-                  foregroundColor: const Color(0xFF06111D),
-                  shadowColor: AppColors.primaryActionShadow,
-                  isLoading: isSending,
-                  enabled: !disabled,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  fontSize: 12,
+                child: NomoInviteSuccessBurst(
+                  builder: (context, runWithBurst) => Nomo3DButton(
+                    label: '誘う',
+                    onTap: disabled ? null : () => runWithBurst(onTap),
+                    height: 34,
+                    radius: 17,
+                    color: AppColors.primaryAction,
+                    foregroundColor: const Color(0xFF06111D),
+                    shadowColor: AppColors.primaryActionShadow,
+                    isLoading: isSending,
+                    enabled: !disabled,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ],

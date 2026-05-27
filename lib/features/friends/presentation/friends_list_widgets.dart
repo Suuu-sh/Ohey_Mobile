@@ -20,7 +20,7 @@ class _FriendsList extends StatelessWidget {
   final Map<String, bool> favoriteOverrides;
   final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
   final VoidCallback onAddFriend;
-  final ValueChanged<NomoFriend> onInvite;
+  final Future<void> Function(NomoFriend friend) onInvite;
   final void Function(NomoFriend friend, _FriendStatus status) onProfile;
 
   @override
@@ -132,7 +132,7 @@ class _TodayInviteSection extends StatelessWidget {
   const _TodayInviteSection({required this.friends, required this.onInvite});
 
   final List<_DecoratedFriend> friends;
-  final ValueChanged<NomoFriend> onInvite;
+  final Future<void> Function(NomoFriend friend) onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -243,7 +243,7 @@ class _TodayInviteCardsStrip extends StatelessWidget {
   });
 
   final List<_DecoratedFriend> candidates;
-  final ValueChanged<NomoFriend> onInvite;
+  final Future<void> Function(NomoFriend friend) onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -567,7 +567,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
   const _TodayInviteCandidateCard({required this.item, required this.onInvite});
 
   final _DecoratedFriend item;
-  final VoidCallback onInvite;
+  final Future<void> Function() onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -660,20 +660,26 @@ class _TodayInviteCandidateCard extends StatelessWidget {
           const Spacer(),
           SizedBox(
             width: double.infinity,
-            child: Nomo3DButton(
-              label: '誘う',
-              icon: CupertinoIcons.paperplane_fill,
-              onTap: item.status.enabled ? onInvite : null,
-              enabled: item.status.enabled,
-              height: 36,
-              radius: 18,
-              color: _friendInviteButtonColor(item.status),
-              foregroundColor: _friendInviteButtonForegroundColor(item.status),
-              shadowColor: _friendInviteButtonShadowColor(item.status),
-              disabledColor: _FriendsColors.disabledButton,
-              disabledOpacity: 1,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              fontSize: 12.5,
+            child: NomoInviteSuccessBurst(
+              builder: (context, runWithBurst) => Nomo3DButton(
+                label: '誘う',
+                icon: CupertinoIcons.paperplane_fill,
+                onTap: item.status.enabled
+                    ? () => runWithBurst(onInvite)
+                    : null,
+                enabled: item.status.enabled,
+                height: 36,
+                radius: 18,
+                color: _friendInviteButtonColor(item.status),
+                foregroundColor: _friendInviteButtonForegroundColor(
+                  item.status,
+                ),
+                shadowColor: _friendInviteButtonShadowColor(item.status),
+                disabledColor: _FriendsColors.disabledButton,
+                disabledOpacity: 1,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                fontSize: 12.5,
+              ),
             ),
           ),
         ],

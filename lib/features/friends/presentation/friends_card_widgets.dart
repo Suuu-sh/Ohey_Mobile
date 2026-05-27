@@ -12,7 +12,7 @@ class _FriendCard extends StatelessWidget {
   final NomoFriend friend;
   final _FriendStatus status;
   final VoidCallback onFavoriteToggle;
-  final VoidCallback onInvite;
+  final Future<void> Function() onInvite;
   final VoidCallback onProfile;
 
   @override
