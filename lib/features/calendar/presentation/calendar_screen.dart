@@ -388,28 +388,33 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       onHorizontalDragUpdate: _handleMonthDragUpdate,
                       onHorizontalDragEnd: _handleMonthDragEnd,
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          NomoPageHeader.horizontalPadding,
-                          8,
-                          NomoPageHeader.horizontalPadding,
-                          116,
-                        ),
+                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 116),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _PlayfulMonthGrid(
-                              month: _month,
-                              selectedDay: _selectedDay,
-                              logs: monthlyLogs,
-                              statusByDate: _statusByDate,
-                              todayReservations: todayReservations,
-                              onSelectDay: _selectDay,
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: NomoPageHeader.horizontalPadding,
+                              ),
+                              child: _PlayfulMonthGrid(
+                                month: _month,
+                                selectedDay: _selectedDay,
+                                logs: monthlyLogs,
+                                statusByDate: _statusByDate,
+                                todayReservations: todayReservations,
+                                onSelectDay: _selectDay,
+                              ),
                             ),
                             if (!_isIntroSeen) ...[
                               const SizedBox(height: 10),
-                              _CalendarIntroCard(
-                                isWhite: isWhite,
-                                onDismiss: _dismissIntro,
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: NomoPageHeader.horizontalPadding,
+                                ),
+                                child: _CalendarIntroCard(
+                                  isWhite: isWhite,
+                                  onDismiss: _dismissIntro,
+                                ),
                               ),
                             ],
                             const SizedBox(height: 16),
@@ -652,9 +657,10 @@ class _SelectedDayPanel extends StatelessWidget {
                 const Color(0xFF071320),
               ],
       ),
-      borderRadius: 24,
-      borderAlpha: isWhite ? .46 : .52,
-      glowAlpha: isWhite ? .12 : .20,
+      borderRadius: 0,
+      borderWidth: 0,
+      borderAlpha: 0,
+      glowAlpha: 0,
       glowBlur: 28,
       glowOffset: const Offset(0, 12),
       child: LayoutBuilder(
