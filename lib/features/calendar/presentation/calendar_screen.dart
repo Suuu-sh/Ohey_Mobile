@@ -555,10 +555,13 @@ class _SelectedDayPanel extends StatelessWidget {
             accent: AppColors.primaryAction,
           ),
           const SizedBox(height: 5),
-          _CalendarFriendStatusList(
-            friendsAsync: friendsAsync,
-            isWhite: isWhite,
-          ),
+          if (status == NomoDailyStatus.unselected)
+            _CalendarFriendStatusLocked(isWhite: isWhite, onTap: onChangeStatus)
+          else
+            _CalendarFriendStatusList(
+              friendsAsync: friendsAsync,
+              isWhite: isWhite,
+            ),
           const SizedBox(height: 10),
           _CalendarSectionLabel(label: '思い出', accent: const Color(0xFF54D7FF)),
           const SizedBox(height: 5),
@@ -678,7 +681,11 @@ class _CalendarStatusChangeButton extends StatelessWidget {
             const SizedBox(width: 4),
             Flexible(
               child: Text(
-                isSaving ? '保存中' : '変更',
+                isSaving
+                    ? '保存中'
+                    : status == NomoDailyStatus.unselected
+                    ? '設定'
+                    : '変更',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -691,6 +698,80 @@ class _CalendarStatusChangeButton extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CalendarFriendStatusLocked extends StatelessWidget {
+  const _CalendarFriendStatusLocked({
+    required this.isWhite,
+    required this.onTap,
+  });
+
+  final bool isWhite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return _CalendarFriendStatusFrame(
+      isWhite: isWhite,
+      onTap: onTap,
+      child: Row(
+        children: [
+          NomoPopIcon(
+            icon: CupertinoIcons.lock_fill,
+            color: const Color(0xFF94A3B8),
+            size: 38,
+            iconSize: 17,
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '自分の予定を設定すると見られるよ',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isWhite ? const Color(0xFF101820) : Colors.white,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '先にこの日の空き状況を設定してね',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isWhite
+                        ? const Color(0xFF667381)
+                        : Colors.white.withValues(alpha: .62),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 62,
+            child: Nomo3DButton(
+              label: '設定',
+              onTap: onTap,
+              height: 30,
+              radius: 15,
+              color: _calendarStatusPink,
+              foregroundColor: _calendarPrimaryActionForegroundColor,
+              shadowColor: Color.lerp(_calendarStatusPink, Colors.black, .32),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }
