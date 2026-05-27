@@ -107,7 +107,7 @@ class ProfileScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 0),
                   Expanded(
                     child: ColoredBox(
                       color: bodyBackground,
@@ -152,11 +152,6 @@ class ProfileScreen extends ConsumerWidget {
                               logs: myLogs,
                               photoLogs: photoLogs,
                               friendsCount: friends.length,
-                              status:
-                                  user?.dailyStatus ??
-                                  NomoDailyStatus.unselected,
-                              onStatusTap: () =>
-                                  _showProfileStatusSheet(context, ref),
                               onLogsTap: () => NomoToast.show(
                                 context,
                                 'カレンダーを見てみてね。',
