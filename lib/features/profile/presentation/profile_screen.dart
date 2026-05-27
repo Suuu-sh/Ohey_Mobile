@@ -65,7 +65,7 @@ class ProfileScreen extends ConsumerWidget {
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
     final canOpenAdmin = hasAdminEmail || hasAdminAccess;
     const bodyBackground = AppColors.darkBackgroundBottom;
-    final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 390;
+    final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 340;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -98,7 +98,7 @@ class ProfileScreen extends ConsumerWidget {
                           onSettings: () => _showSettingsSheet(context, ref),
                           onAdmin: () => _openAdminScreen(context),
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 6),
                         _SimpleHero(
                           isWhite: headerIsWhite,
                           name: user?.name ?? 'ユーザー名',

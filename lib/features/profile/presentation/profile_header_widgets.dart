@@ -170,9 +170,9 @@ class _ProfileTopSheet extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(
         NomoPageHeader.horizontalPadding,
-        NomoPageHeader.topPadding,
+        4,
         NomoPageHeader.horizontalPadding,
-        18,
+        6,
       ),
       decoration: BoxDecoration(
         color: Colors.transparent,
@@ -206,14 +206,14 @@ class _SimpleHero extends StatelessWidget {
         children: [
           SizedBox(
             width: double.infinity,
-            height: 196,
+            height: 154,
             child: Center(
-              child: NomoAvatarView(avatar: displayAvatar, size: 194),
+              child: NomoAvatarView(avatar: displayAvatar, size: 158),
             ),
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(18, 13, 18, 14),
+            padding: const EdgeInsets.fromLTRB(18, 8, 18, 9),
             color: AppColors.darkBackgroundBottom,
             child: Center(
               child: Text(
