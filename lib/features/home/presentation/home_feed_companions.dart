@@ -107,18 +107,22 @@ class _FeedCompanionTile extends StatelessWidget {
       height: 68,
       radius: 22,
       color: isWhite ? const Color(0xFFF7FAFC) : AppColors.darkBackground,
-      bottomColor: isWhite ? const Color(0xFFDCE4EC) : const Color(0xFF09131D),
+      bottomColor: isWhite
+          ? const Color(0xFFDCE4EC)
+          : nomo3DShadowColorFor(friend.accent, lightnessScale: .50),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       borderColor: isWhite
           ? const Color(0xFFE1E8F1)
           : Colors.white.withValues(alpha: .12),
-      outerShadows: [
-        BoxShadow(
-          color: friend.accent.withValues(alpha: isWhite ? .10 : .18),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
-        ),
-      ],
+      outerShadows: isWhite
+          ? [
+              BoxShadow(
+                color: friend.accent.withValues(alpha: .08),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ]
+          : const [],
       innerShadows: [
         BoxShadow(
           color: Colors.white.withValues(alpha: isWhite ? .40 : .08),
