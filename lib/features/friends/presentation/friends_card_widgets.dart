@@ -337,58 +337,145 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
   }
 }
 
-class _FriendProfileCalendar extends StatelessWidget {
+class _FriendProfileCalendar extends StatefulWidget {
   const _FriendProfileCalendar({required this.friend, required this.status});
 
   final NomoFriend friend;
   final _FriendStatus status;
 
   @override
+  State<_FriendProfileCalendar> createState() => _FriendProfileCalendarState();
+}
+
+class _FriendProfileCalendarState extends State<_FriendProfileCalendar> {
+  late DateTime _month;
+  late DateTime _selectedDay;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _month = DateTime(now.year, now.month);
+    _selectedDay = _friendProfileDateOnly(now);
+  }
+
+  void _moveMonth(int offset) {
+    final nextMonth = DateTime(_month.year, _month.month + offset);
+    final today = _friendProfileDateOnly(DateTime.now());
+    setState(() {
+      _month = nextMonth;
+      _selectedDay = _friendProfileIsSameMonth(nextMonth, today)
+          ? today
+          : DateTime(nextMonth.year, nextMonth.month);
+    });
+  }
+
+  void _handleMonthSwipe(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity.abs() < 220) return;
+    _moveMonth(velocity > 0 ? -1 : 1);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final now = DateTime.now();
-    final month = DateTime(now.year, now.month);
-    final accent = _friendInviteButtonColor(status);
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    final dailyStatus = nomoDailyStatusFromKey(friend.statusKey);
+    final dailyStatus = nomoDailyStatusFromKey(widget.friend.statusKey);
+    final statusByDate = _friendProfileIsSameMonth(_month, now)
+        ? {_friendProfileDateKey(now): dailyStatus}
+        : const <String, NomoDailyStatus>{};
 
-    return NomoThemedPanel(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-      accentColor: accent,
-      borderRadius: 24,
-      backgroundColor: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
+    return GestureDetector(
+      onHorizontalDragEnd: _handleMonthSwipe,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              NomoPopIcon(
-                icon: CupertinoIcons.calendar,
-                color: accent,
-                size: 30,
-                iconSize: 16,
-                showBubble: false,
-              ),
-              const SizedBox(width: 9),
-              Text(
-                '${now.year}/${now.month.toString().padLeft(2, '0')}',
-                style: TextStyle(
-                  color: ink,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                ),
-              ),
-            ],
+          _FriendProfileMonthHeader(
+            month: _month,
+            ink: ink,
+            onMove: _moveMonth,
           ),
           const SizedBox(height: 10),
           Expanded(
             child: _FriendProfileMonthGrid(
-              month: month,
-              selectedDay: now,
-              statusByDate: {_friendProfileDateKey(now): dailyStatus},
+              month: _month,
+              selectedDay: _selectedDay,
+              statusByDate: statusByDate,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FriendProfileMonthHeader extends StatelessWidget {
+  const _FriendProfileMonthHeader({
+    required this.month,
+    required this.ink,
+    required this.onMove,
+  });
+
+  final DateTime month;
+  final Color ink;
+  final ValueChanged<int> onMove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _FriendProfileMonthArrowButton(label: '<', onTap: () => onMove(-1)),
+        Expanded(
+          child: Text(
+            '${month.year}/${month.month.toString().padLeft(2, '0')}',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: ink,
+              fontWeight: FontWeight.w900,
+              fontSize: 20,
+              letterSpacing: -.4,
+            ),
+          ),
+        ),
+        _FriendProfileMonthArrowButton(label: '>', onTap: () => onMove(1)),
+      ],
+    );
+  }
+}
+
+class _FriendProfileMonthArrowButton extends StatelessWidget {
+  const _FriendProfileMonthArrowButton({
+    required this.label,
+    required this.onTap,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        width: 34,
+        height: 34,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: .12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: .10)),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            height: .95,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
       ),
     );
   }
@@ -597,6 +684,12 @@ class _FriendProfileDayTile extends StatelessWidget {
 
 String _friendProfileDateKey(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+DateTime _friendProfileDateOnly(DateTime date) =>
+    DateTime(date.year, date.month, date.day);
+
+bool _friendProfileIsSameMonth(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month;
 
 bool _friendProfileIsSameDate(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
