@@ -61,17 +61,36 @@ Future<void> _showFriendProfileSheet(
   );
 }
 
-class _FriendProfileSheet extends StatelessWidget {
+class _FriendProfileSheet extends StatefulWidget {
   const _FriendProfileSheet({required this.friend, required this.status});
 
   final NomoFriend friend;
   final _FriendStatus status;
 
   @override
+  State<_FriendProfileSheet> createState() => _FriendProfileSheetState();
+}
+
+class _FriendProfileSheetState extends State<_FriendProfileSheet> {
+  late _FriendStatus _selectedStatus = widget.status;
+
+  void _handleSelectedStatusChanged(NomoDailyStatus status) {
+    final nextStatus = _friendStatusForDailyStatus(status);
+    if (_selectedStatus.label == nextStatus.label &&
+        _selectedStatus.reason == nextStatus.reason &&
+        _selectedStatus.enabled == nextStatus.enabled &&
+        _selectedStatus.buttonColor == nextStatus.buttonColor) {
+      return;
+    }
+    setState(() => _selectedStatus = nextStatus);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final avatar = friend.avatar ?? _fallbackAvatarForFriend(friend);
-    final statusColor = _friendInviteButtonColor(status);
+    final avatar =
+        widget.friend.avatar ?? _fallbackAvatarForFriend(widget.friend);
+    final statusColor = _friendInviteButtonColor(_selectedStatus);
 
     final sheetContentHeight = (MediaQuery.sizeOf(context).height * .84)
         .clamp(560.0, 720.0)
@@ -87,9 +106,9 @@ class _FriendProfileSheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _FriendProfileTopBackdrop(
-              friend: friend,
+              friend: widget.friend,
               avatar: avatar,
-              status: status,
+              status: _selectedStatus,
               statusColor: statusColor,
               isWhite: isWhite,
               onClose: () => Navigator.of(context).pop(),
@@ -98,7 +117,11 @@ class _FriendProfileSheet extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: _FriendProfileCalendar(friend: friend, status: status),
+                child: _FriendProfileCalendar(
+                  friend: widget.friend,
+                  status: widget.status,
+                  onSelectedStatusChanged: _handleSelectedStatusChanged,
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -349,10 +372,15 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
 }
 
 class _FriendProfileCalendar extends ConsumerStatefulWidget {
-  const _FriendProfileCalendar({required this.friend, required this.status});
+  const _FriendProfileCalendar({
+    required this.friend,
+    required this.status,
+    required this.onSelectedStatusChanged,
+  });
 
   final NomoFriend friend;
   final _FriendStatus status;
+  final ValueChanged<NomoDailyStatus> onSelectedStatusChanged;
 
   @override
   ConsumerState<_FriendProfileCalendar> createState() =>
@@ -434,6 +462,10 @@ class _FriendProfileCalendarState
         _statusByDate[entry.key] = entry.value;
       }
     });
+    final selectedStatus = _statusByDate[_friendProfileDateKey(_selectedDay)];
+    if (selectedStatus != null) {
+      widget.onSelectedStatusChanged(selectedStatus);
+    }
   }
 
   void _handleMonthSwipe(DragEndDetails details) {
@@ -466,6 +498,10 @@ class _FriendProfileCalendarState
               onSelectDay: (day) {
                 HapticFeedback.selectionClick();
                 setState(() => _selectedDay = day);
+                widget.onSelectedStatusChanged(
+                  _statusByDate[_friendProfileDateKey(day)] ??
+                      NomoDailyStatus.unselected,
+                );
               },
             ),
           ),

@@ -321,8 +321,10 @@ double _friendBlockBorderAlpha({
   return isWhite ? .34 : .42;
 }
 
-_FriendStatus _statusForFriend(NomoFriend friend, int _) {
-  final status = nomoDailyStatusFromKey(friend.statusKey);
+_FriendStatus _statusForFriend(NomoFriend friend, int _) =>
+    _friendStatusForDailyStatus(nomoDailyStatusFromKey(friend.statusKey));
+
+_FriendStatus _friendStatusForDailyStatus(NomoDailyStatus status) {
   return _FriendStatus(
     label: status.label,
     enabled: status.isAvailable,
