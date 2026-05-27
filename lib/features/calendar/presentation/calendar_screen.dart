@@ -1273,41 +1273,60 @@ class _CalendarFriendGroupChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = selected ? AppColors.primaryAction : const Color(0xFF94A3B8);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    final surface = selected
+        ? accent.withValues(alpha: isWhite ? .32 : .42)
+        : isWhite
+        ? const Color(0xFFF6F8FA)
+        : const Color(0xFF26323C);
+    final bottom = selected
+        ? Color.lerp(accent, Colors.black, .34)!
+        : isWhite
+        ? const Color(0xFFD3DBE3)
+        : const Color(0xFF151D25);
+    final foreground = selected
+        ? const Color(0xFFFF86B7)
+        : isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .78);
+
+    return Nomo3DButtonSurface(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: selected
-              ? accent.withValues(alpha: isWhite ? .18 : .24)
-              : isWhite
-              ? const Color(0xFFF6F8FA)
-              : Colors.white.withValues(alpha: .07),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: selected
-                ? accent.withValues(alpha: .56)
-                : isWhite
-                ? const Color(0xFFE0E6ED)
-                : Colors.white.withValues(alpha: .12),
+      height: 29,
+      radius: 999,
+      color: surface,
+      bottomColor: bottom,
+      useGradient: true,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      borderColor: selected
+          ? foreground.withValues(alpha: .48)
+          : isWhite
+          ? const Color(0xFFE0E6ED)
+          : Colors.white.withValues(alpha: .14),
+      outerShadows: [
+        BoxShadow(
+          color: (selected ? foreground : Colors.black).withValues(
+            alpha: selected ? .20 : .12,
           ),
+          blurRadius: selected ? 16 : 10,
+          offset: const Offset(0, 6),
         ),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: selected
-                ? accent
-                : isWhite
-                ? const Color(0xFF667381)
-                : Colors.white.withValues(alpha: .68),
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
-            height: 1,
-          ),
+      ],
+      innerShadows: [
+        BoxShadow(
+          color: Colors.white.withValues(alpha: selected ? .10 : .06),
+          blurRadius: 8,
+          offset: const Offset(-2, -2),
+        ),
+      ],
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: foreground,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+          height: 1,
         ),
       ),
     );
