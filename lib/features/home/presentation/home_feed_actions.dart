@@ -203,7 +203,10 @@ class _FeedModalTextButton extends StatelessWidget {
       color,
       isWhite ? .16 : .22,
     )!;
-    final bottomColor = Color.lerp(color, Colors.black, isWhite ? .18 : .42)!;
+    final bottomColor = nomo3DShadowColorFor(
+      color,
+      lightnessScale: isWhite ? .72 : .58,
+    );
     return Nomo3DButtonSurface(
       onTap: onTap,
       height: 52,

@@ -284,7 +284,7 @@ Future<bool?> _confirmDestructive(
             radius: 20,
             color: Colors.white.withValues(alpha: .07),
             foregroundColor: _AdminColors.sub,
-            shadowColor: Colors.black.withValues(alpha: .28),
+            shadowColor: const Color(0xFF324860).withValues(alpha: .78),
             fontSize: 13,
             useGradient: false,
           ),

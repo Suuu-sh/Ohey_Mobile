@@ -144,7 +144,9 @@ class NomoBottomSheetShell extends StatelessWidget {
                                   : Colors.white.withValues(alpha: .08),
                               bottomColor: isWhite
                                   ? const Color(0xFFD6DEE7)
-                                  : Colors.black.withValues(alpha: .36),
+                                  : const Color(
+                                      0xFF314760,
+                                    ).withValues(alpha: .72),
                               padding: EdgeInsets.zero,
                               useGradient: true,
                               borderColor: isWhite

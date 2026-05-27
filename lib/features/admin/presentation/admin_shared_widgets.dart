@@ -566,7 +566,7 @@ class _AdminIconButton extends StatelessWidget {
         height: 32,
         radius: 14,
         color: color.withValues(alpha: .18),
-        bottomColor: Color.lerp(color, Colors.black, .46)!,
+        bottomColor: nomo3DShadowColorFor(color, lightnessScale: .56),
         padding: EdgeInsets.zero,
         borderColor: color.withValues(alpha: .28),
         outerShadows: [

@@ -239,7 +239,7 @@ class _SettingsCloseButton extends StatelessWidget {
       height: 42,
       radius: 21,
       color: color.withValues(alpha: .08),
-      bottomColor: Colors.black.withValues(alpha: .26),
+      bottomColor: const Color(0xFF68537D).withValues(alpha: .55),
       padding: EdgeInsets.zero,
       borderColor: color.withValues(alpha: .10),
       child: Center(

@@ -46,7 +46,10 @@ class NomoActionTile extends StatelessWidget {
         ? const Color(0xFFF7FAFC)
         : AppColors.darkBackground;
     final bottomColor = destructive
-        ? Color.lerp(destructiveColor, Colors.black, isWhite ? .18 : .42)!
+        ? nomo3DShadowColorFor(
+            destructiveColor,
+            lightnessScale: isWhite ? .72 : .58,
+          )
         : isWhite
         ? const Color(0xFFDCE4EC)
         : const Color(0xFF09131D);

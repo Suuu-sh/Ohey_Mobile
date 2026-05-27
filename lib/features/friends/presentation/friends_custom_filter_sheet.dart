@@ -308,7 +308,10 @@ class _CustomFilterManageAddButton extends StatelessWidget {
         _FriendsColors.lime,
         isWhite ? .20 : .15,
       )!,
-      bottomColor: Color.lerp(_FriendsColors.lime, Colors.black, .34)!,
+      bottomColor: nomo3DShadowColorFor(
+        _FriendsColors.lime,
+        lightnessScale: .58,
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       borderColor: _FriendsColors.lime.withValues(alpha: .46),
       outerShadows: [
@@ -445,7 +448,7 @@ class _ManageIconButton extends StatelessWidget {
         height: 34,
         radius: 17,
         color: color.withValues(alpha: .18),
-        bottomColor: Color.lerp(color, Colors.black, .44)!,
+        bottomColor: nomo3DShadowColorFor(color, lightnessScale: .56),
         padding: EdgeInsets.zero,
         borderColor: color.withValues(alpha: .30),
         outerShadows: [
@@ -630,7 +633,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                       : Colors.white.withValues(alpha: .08),
                   bottomColor: isWhite
                       ? const Color(0xFFD6DEE7)
-                      : Colors.black.withValues(alpha: .36),
+                      : const Color(0xFF30445C).withValues(alpha: .72),
                   padding: EdgeInsets.zero,
                   borderColor: isWhite
                       ? const Color(0xFFE0E7EE)
@@ -796,7 +799,7 @@ class _CustomFilterFriendRow extends StatelessWidget {
         ? const Color(0xFFF7F9FB)
         : AppColors.darkBackground;
     final bottom = selected
-        ? Color.lerp(_FriendsColors.lime, Colors.black, .32)!
+        ? nomo3DShadowColorFor(_FriendsColors.lime, lightnessScale: .60)
         : isWhite
         ? const Color(0xFFD9E2EB)
         : const Color(0xFF09131D);

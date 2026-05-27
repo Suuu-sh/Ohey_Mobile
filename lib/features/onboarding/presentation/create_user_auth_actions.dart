@@ -273,7 +273,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
                 radius: 21,
                 color: Colors.white.withValues(alpha: .07),
                 foregroundColor: Colors.white.withValues(alpha: .76),
-                shadowColor: Colors.black.withValues(alpha: .28),
+                shadowColor: const Color(0xFF6E3E5D).withValues(alpha: .72),
                 fontSize: 14,
                 useGradient: false,
               ),

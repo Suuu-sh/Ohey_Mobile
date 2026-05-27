@@ -347,7 +347,10 @@ class NomoProfileResultSheet extends StatelessWidget {
               radius: 22,
               color: accentColor,
               foregroundColor: Colors.white,
-              shadowColor: Color.lerp(accentColor, Colors.black, .34),
+              shadowColor: nomo3DShadowColorFor(
+                accentColor,
+                lightnessScale: .58,
+              ),
               fontSize: 16,
             ),
           ],

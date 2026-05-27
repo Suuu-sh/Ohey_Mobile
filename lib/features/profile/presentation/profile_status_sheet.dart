@@ -141,7 +141,7 @@ class _ProfileStatusOption extends StatelessWidget {
         ? color.withValues(alpha: isWhite ? .24 : .20)
         : (isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground);
     final bottom = selected
-        ? Color.lerp(color, Colors.black, isWhite ? .20 : .38)!
+        ? nomo3DShadowColorFor(color, lightnessScale: isWhite ? .72 : .60)
         : isWhite
         ? const Color(0xFFD8E1EA)
         : const Color(0xFF09131D);

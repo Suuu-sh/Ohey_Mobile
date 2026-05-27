@@ -4,6 +4,25 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'nomo_pop_icon.dart';
 
+Color nomo3DShadowColorFor(
+  Color color, {
+  double lightnessScale = .62,
+  double minLightness = .16,
+}) {
+  final hsl = HSLColor.fromColor(color);
+  if (hsl.saturation < .08) {
+    return Color.lerp(
+      color,
+      const Color(0xFF3F5266),
+      .58,
+    )!.withValues(alpha: color.a);
+  }
+  return hsl
+      .withSaturation((hsl.saturation * 1.08).clamp(.24, 1.0))
+      .withLightness((hsl.lightness * lightnessScale).clamp(minLightness, .42))
+      .toColor();
+}
+
 class Nomo3DButton extends StatelessWidget {
   const Nomo3DButton({
     super.key,
@@ -231,7 +250,7 @@ class _Nomo3DButtonSurfaceState extends State<Nomo3DButtonSurface> {
     final base = isUnavailable && widget.disabledColor != null
         ? widget.disabledColor!
         : widget.color;
-    final bottom = widget.bottomColor ?? Color.lerp(base, Colors.black, .28)!;
+    final bottom = widget.bottomColor ?? nomo3DShadowColorFor(base);
     final opacity = isUnavailable && widget.disabledColor != null
         ? widget.disabledOpacity
         : 1.0;

@@ -249,11 +249,10 @@ class _AdminPhotoPickerField extends StatelessWidget {
                     height: 30,
                     radius: 14,
                     color: _AdminColors.pink.withValues(alpha: .16),
-                    bottomColor: Color.lerp(
+                    bottomColor: nomo3DShadowColorFor(
                       _AdminColors.pink,
-                      Colors.black,
-                      .46,
-                    )!,
+                      lightnessScale: .56,
+                    ),
                     padding: EdgeInsets.zero,
                     borderColor: _AdminColors.pink.withValues(alpha: .28),
                     child: const Text(
