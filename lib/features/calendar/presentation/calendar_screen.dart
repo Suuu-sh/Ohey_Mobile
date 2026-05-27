@@ -30,9 +30,7 @@ const _calendarPrimaryActionShadowColor = Color(0xFF0B78B7);
 const _calendarPrimaryActionForegroundColor = Color(0xFF06111D);
 
 class CalendarScreen extends ConsumerStatefulWidget {
-  const CalendarScreen({super.key, this.onCreatePlan});
-
-  final VoidCallback? onCreatePlan;
+  const CalendarScreen({super.key});
 
   @override
   ConsumerState<CalendarScreen> createState() => _CalendarScreenState();
@@ -131,17 +129,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
     if (picked == null) return;
     await _setStatusForSelectedDay(picked);
-  }
-
-  Future<void> _createPlanForSelectedDay() async {
-    final status =
-        _statusByDate[_dateKey(_selectedDay)] ?? NomoDailyStatus.unselected;
-    if (status == NomoDailyStatus.unselected) {
-      HapticFeedback.selectionClick();
-      await _openStatusPicker();
-      return;
-    }
-    widget.onCreatePlan?.call();
   }
 
   void _handleMonthDragStart(DragStartDetails details) {
@@ -292,9 +279,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             logs: selectedLogs,
                             friendsAsync: selectedFriendsAsync,
                             isWhite: isWhite,
-                            onCreatePlan: widget.onCreatePlan == null
-                                ? null
-                                : _createPlanForSelectedDay,
                           ),
                         ],
                       ),
@@ -478,14 +462,12 @@ class _SelectedDayPanel extends StatelessWidget {
     required this.logs,
     required this.friendsAsync,
     required this.isWhite,
-    required this.onCreatePlan,
   });
 
   final DateTime day;
   final List<DrinkLog> logs;
   final AsyncValue<List<NomoFriend>> friendsAsync;
   final bool isWhite;
-  final VoidCallback? onCreatePlan;
 
   @override
   Widget build(BuildContext context) {
@@ -549,11 +531,24 @@ class _SelectedDayPanel extends StatelessWidget {
               );
             })
           else
-            _CalendarEmptyRow(
-              text: 'この日の思い出はまだありません',
-              buttonLabel: '思い出を残す',
-              isWhite: isWhite,
-              onTap: onCreatePlan,
+            SizedBox(
+              height: 34,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'この日の思い出はまだありません',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isWhite
+                        ? const Color(0xFF657282)
+                        : Colors.white.withValues(alpha: .62),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                    height: 1.1,
+                  ),
+                ),
+              ),
             ),
         ],
       ),
@@ -1559,72 +1554,6 @@ class _CalendarLogBadge extends StatelessWidget {
       ),
     ),
   );
-}
-
-class _CalendarEmptyRow extends StatelessWidget {
-  const _CalendarEmptyRow({
-    required this.text,
-    required this.buttonLabel,
-    required this.isWhite,
-    required this.onTap,
-  });
-
-  final String text;
-  final String buttonLabel;
-  final bool isWhite;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    height: 34,
-    child: Row(
-      children: [
-        Expanded(
-          child: Text(
-            text,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: isWhite
-                  ? const Color(0xFF657282)
-                  : Colors.white.withValues(alpha: .62),
-              fontSize: 11.5,
-              fontWeight: FontWeight.w800,
-              height: 1.1,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        _MiniCalendarCta(label: buttonLabel, onTap: onTap),
-      ],
-    ),
-  );
-}
-
-class _MiniCalendarCta extends StatelessWidget {
-  const _MiniCalendarCta({required this.label, this.onTap});
-
-  final String label;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final width = label.length >= 7 ? 116.0 : 104.0;
-    return SizedBox(
-      width: width,
-      child: Nomo3DButton(
-        label: label,
-        onTap: onTap,
-        height: 27,
-        radius: 14,
-        color: _calendarPrimaryActionColor,
-        foregroundColor: _calendarPrimaryActionForegroundColor,
-        shadowColor: _calendarPrimaryActionShadowColor,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        fontSize: 11,
-      ),
-    );
-  }
 }
 
 class _PlayfulMonthGrid extends StatelessWidget {
