@@ -261,6 +261,14 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
         });
   }
 
+  Future<void> _openFriendProfile(
+    NomoFriend friend,
+    _FriendStatus status,
+  ) async {
+    HapticFeedback.selectionClick();
+    await _showFriendProfileSheet(context, friend: friend, status: status);
+  }
+
   Future<void> _sendDrinkInvite(NomoFriend friend) async {
     try {
       await ref.read(drinkInviteControllerProvider).sendTodayInvite(friend.id);
@@ -398,6 +406,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                               _onToggleFavorite(context, friend, isFavorite),
                           onAddFriend: _openAddFriend,
                           onInvite: (friend) => _sendDrinkInvite(friend),
+                          onProfile: (friend, status) =>
+                              _openFriendProfile(friend, status),
                         ),
                       ),
                     ),

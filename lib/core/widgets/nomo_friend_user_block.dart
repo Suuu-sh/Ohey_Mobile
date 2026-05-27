@@ -19,6 +19,7 @@ class NomoFriendUserBlock extends StatelessWidget {
     required this.fallbackAvatar,
     this.onFavoriteToggle,
     this.onInvite,
+    this.onTap,
     this.showFavorite = false,
     this.showInvite = false,
     this.compact = false,
@@ -32,6 +33,7 @@ class NomoFriendUserBlock extends StatelessWidget {
   final NomoAvatar fallbackAvatar;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onInvite;
+  final VoidCallback? onTap;
   final bool showFavorite;
   final bool showInvite;
   final bool compact;
@@ -45,7 +47,7 @@ class NomoFriendUserBlock extends StatelessWidget {
         : (isWhite ? const Color(0xFF667381) : const Color(0xFF8792A3));
     final avatarSize = compact ? 52.0 : 62.0;
 
-    return ConstrainedBox(
+    final block = ConstrainedBox(
       constraints: BoxConstraints(minHeight: compact ? 88 : 98),
       child: NomoThemedPanel(
         padding: EdgeInsets.fromLTRB(
@@ -158,6 +160,13 @@ class NomoFriendUserBlock extends StatelessWidget {
           ],
         ),
       ),
+    );
+
+    if (onTap == null) return block;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: block,
     );
   }
 }

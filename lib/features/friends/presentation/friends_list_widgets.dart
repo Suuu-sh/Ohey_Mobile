@@ -10,6 +10,7 @@ class _FriendsList extends StatelessWidget {
     required this.onFavoriteToggle,
     required this.onAddFriend,
     required this.onInvite,
+    required this.onProfile,
   });
 
   final List<NomoFriend> friends;
@@ -20,6 +21,7 @@ class _FriendsList extends StatelessWidget {
   final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
   final VoidCallback onAddFriend;
   final ValueChanged<NomoFriend> onInvite;
+  final void Function(NomoFriend friend, _FriendStatus status) onProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -119,6 +121,7 @@ class _FriendsList extends StatelessWidget {
           onFavoriteToggle: () =>
               onFavoriteToggle(item.friend, !item.friend.isFavorite),
           onInvite: () => onInvite(item.friend),
+          onProfile: () => onProfile(item.friend, item.status),
         );
       },
     );
