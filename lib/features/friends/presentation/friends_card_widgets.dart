@@ -276,22 +276,18 @@ class _FriendProfileCalendar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final now = DateTime.now();
-    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
-    final leading = DateTime(now.year, now.month).weekday % 7;
-    final rows = ((leading + daysInMonth) / 7).ceil();
+    final month = DateTime(now.year, now.month);
     final accent = _friendInviteButtonColor(status);
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .62);
+    final dailyStatus = nomoDailyStatusFromKey(friend.statusKey);
 
     return NomoThemedPanel(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
       accentColor: accent,
       borderRadius: 24,
       backgroundColor: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
@@ -314,77 +310,12 @@ class _FriendProfileCalendar extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Row(
-            children: const ['日', '月', '火', '水', '木', '金', '土']
-                .map(
-                  (label) => Expanded(
-                    child: Center(
-                      child: Text(
-                        label,
-                        style: TextStyle(
-                          color: Color(0xFFB7C0CA),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-          const SizedBox(height: 6),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: rows * 7,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              mainAxisSpacing: 4,
-              crossAxisSpacing: 4,
-              mainAxisExtent: 32,
+          Expanded(
+            child: _FriendProfileMonthGrid(
+              month: month,
+              selectedDay: now,
+              statusByDate: {_friendProfileDateKey(now): dailyStatus},
             ),
-            itemBuilder: (context, index) {
-              final day = index - leading + 1;
-              final inMonth = day >= 1 && day <= daysInMonth;
-              final isToday = inMonth && day == now.day;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 160),
-                decoration: BoxDecoration(
-                  color: isToday
-                      ? _friendProfileStatusTileBackground(
-                          status,
-                          isWhite: isWhite,
-                        )
-                      : isWhite
-                      ? Colors.white
-                      : AppColors.darkBackground,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: isToday
-                        ? accent.withValues(alpha: .90)
-                        : const Color(
-                            0xFF20B9FF,
-                          ).withValues(alpha: isWhite ? .34 : .24),
-                    width: isToday ? 2 : 1,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    inMonth ? '$day' : '',
-                    style: TextStyle(
-                      color: isToday
-                          ? _friendProfileStatusTileForeground(
-                              status,
-                              isWhite: isWhite,
-                            )
-                          : sub,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-              );
-            },
           ),
         ],
       ),
@@ -392,23 +323,244 @@ class _FriendProfileCalendar extends StatelessWidget {
   }
 }
 
-Color _friendProfileStatusTileBackground(
-  _FriendStatus status, {
-  required bool isWhite,
-}) {
-  final accent = _friendInviteButtonColor(status);
-  if (!status.enabled) {
-    return isWhite ? const Color(0xFFE9EEF4) : const Color(0xFF2B3644);
+class _FriendProfileMonthGrid extends StatelessWidget {
+  const _FriendProfileMonthGrid({
+    required this.month,
+    required this.selectedDay,
+    required this.statusByDate,
+  });
+
+  final DateTime month;
+  final DateTime selectedDay;
+  final Map<String, NomoDailyStatus> statusByDate;
+
+  @override
+  Widget build(BuildContext context) {
+    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+    final leadingEmptyCells = DateTime(month.year, month.month).weekday % 7;
+    final totalCells = leadingEmptyCells + daysInMonth;
+    final rows = (totalCells / 7).ceil();
+    final previousMonthDays = DateTime(month.year, month.month, 0).day;
+
+    return Column(
+      children: [
+        Row(
+          children: const ['日', '月', '火', '水', '木', '金', '土']
+              .asMap()
+              .entries
+              .map(
+                (entry) => Expanded(
+                  child: Center(
+                    child: Text(
+                      entry.value,
+                      style: TextStyle(
+                        color: entry.key == 0
+                            ? Color(0xFFFF6FA6)
+                            : entry.key == 6
+                            ? Color(0xFF46C8FF)
+                            : Color(0xFFB7C0CA),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+        const SizedBox(height: 7),
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              const crossAxisSpacing = 6.0;
+              const mainAxisSpacing = 5.0;
+              final widthBasedExtent =
+                  ((constraints.maxWidth - (crossAxisSpacing * 6)) / 7).clamp(
+                    42.0,
+                    54.0,
+                  );
+              final heightBasedExtent = rows <= 1
+                  ? widthBasedExtent
+                  : ((constraints.maxHeight - (mainAxisSpacing * (rows - 1))) /
+                            rows)
+                        .clamp(34.0, 54.0);
+              final tileExtent = widthBasedExtent < heightBasedExtent
+                  ? widthBasedExtent
+                  : heightBasedExtent;
+              final gridHeight =
+                  (tileExtent * rows) + (mainAxisSpacing * (rows - 1));
+              return Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  height: gridHeight,
+                  child: GridView.builder(
+                    itemCount: rows * 7,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 7,
+                      mainAxisSpacing: mainAxisSpacing,
+                      crossAxisSpacing: crossAxisSpacing,
+                      mainAxisExtent: tileExtent,
+                    ),
+                    itemBuilder: (context, index) {
+                      final dayNumber = index - leadingEmptyCells + 1;
+                      final inMonth =
+                          dayNumber >= 1 && dayNumber <= daysInMonth;
+                      final displayDay = inMonth
+                          ? dayNumber
+                          : (dayNumber < 1
+                                ? previousMonthDays + dayNumber
+                                : dayNumber - daysInMonth);
+                      final day = DateTime(month.year, month.month, dayNumber);
+                      final dailyStatus =
+                          statusByDate[_friendProfileDateKey(day)] ??
+                          NomoDailyStatus.unselected;
+                      return _FriendProfileDayTile(
+                        day: displayDay,
+                        inMonth: inMonth,
+                        dailyStatus: dailyStatus,
+                        isToday:
+                            inMonth &&
+                            _friendProfileIsSameDate(DateTime.now(), day),
+                        isSelected: _friendProfileIsSameDate(selectedDay, day),
+                        column: index % 7,
+                        tileExtent: tileExtent,
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
-  return accent.withValues(alpha: isWhite ? .30 : .36);
 }
 
-Color _friendProfileStatusTileForeground(
-  _FriendStatus status, {
+class _FriendProfileDayTile extends StatelessWidget {
+  const _FriendProfileDayTile({
+    required this.day,
+    required this.inMonth,
+    required this.dailyStatus,
+    required this.isToday,
+    required this.isSelected,
+    required this.column,
+    required this.tileExtent,
+  });
+
+  final int day;
+  final bool inMonth;
+  final NomoDailyStatus dailyStatus;
+  final bool isToday;
+  final bool isSelected;
+  final int column;
+  final double tileExtent;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final hasStatus = dailyStatus != NomoDailyStatus.unselected;
+    final statusAccent = _friendProfileCalendarStatusTileAccent(dailyStatus);
+    final dayColor = hasStatus
+        ? _friendProfileCalendarStatusTileForeground(
+            dailyStatus,
+            isWhite: isWhite,
+          )
+        : !inMonth
+        ? (isWhite
+              ? Colors.black.withValues(alpha: .20)
+              : Colors.white.withValues(alpha: .20))
+        : column == 0
+        ? const Color(0xFFFF6FA6)
+        : column == 6
+        ? const Color(0xFF46C8FF)
+        : isWhite
+        ? const Color(0xFF101820)
+        : Colors.white;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 160),
+      decoration: BoxDecoration(
+        color: hasStatus
+            ? _friendProfileCalendarStatusTileBackground(
+                dailyStatus,
+                isWhite: isWhite,
+                selected: isSelected,
+              )
+            : isWhite
+            ? (isSelected ? const Color(0xFFEAF8FF) : Colors.white)
+            : AppColors.darkBackground,
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(
+          color: hasStatus
+              ? statusAccent.withValues(alpha: isSelected ? .90 : .52)
+              : isSelected
+              ? const Color(0xFF54D7FF)
+              : const Color(0xFF20B9FF).withValues(alpha: isWhite ? .34 : .24),
+          width: isSelected ? 2 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: hasStatus
+                ? statusAccent.withValues(alpha: isWhite ? .16 : .24)
+                : Colors.black.withValues(alpha: isWhite ? .05 : .20),
+            blurRadius: hasStatus ? 16 : 12,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          '$day',
+          style: TextStyle(
+            color: isToday && !isWhite ? Colors.white : dayColor,
+            fontSize: tileExtent >= 42 ? 18 : 16,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _friendProfileDateKey(DateTime date) =>
+    '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+bool _friendProfileIsSameDate(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
+Color _friendProfileCalendarStatusTileAccent(NomoDailyStatus status) =>
+    switch (status) {
+      NomoDailyStatus.canDrinkToday => const Color(0xFFFF5EA8),
+      NomoDailyStatus.nonAlcohol => const Color(0xFF20B9FF),
+      NomoDailyStatus.liverRest => const Color(0xFF8A62FF),
+      NomoDailyStatus.hasPlans => const Color(0xFF738092),
+      NomoDailyStatus.unselected => const Color(0xFF9AF21A),
+    };
+
+Color _friendProfileCalendarStatusTileBackground(
+  NomoDailyStatus status, {
+  required bool isWhite,
+  required bool selected,
+}) {
+  if (status == NomoDailyStatus.hasPlans) {
+    return isWhite
+        ? const Color(0xFFE2E8F0)
+        : const Color(0xFF2B3644).withValues(alpha: selected ? .92 : .76);
+  }
+  final color = _friendProfileCalendarStatusTileAccent(status);
+  return color.withValues(
+    alpha: isWhite ? (selected ? .34 : .22) : (selected ? .52 : .36),
+  );
+}
+
+Color _friendProfileCalendarStatusTileForeground(
+  NomoDailyStatus status, {
   required bool isWhite,
 }) {
-  if (!status.enabled) {
-    return isWhite ? const Color(0xFF475569) : const Color(0xFF9EABBA);
+  if (status == NomoDailyStatus.hasPlans) {
+    return isWhite ? const Color(0xFF111827) : Colors.white;
   }
-  return isWhite ? const Color(0xFF101820) : Colors.white;
+  return const Color(0xFF06111D);
 }
