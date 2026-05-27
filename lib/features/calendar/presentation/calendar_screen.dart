@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -30,6 +31,65 @@ const _calendarPrimaryActionColor = Color(0xFF20B9FF);
 const _calendarPrimaryActionShadowColor = Color(0xFF0B78B7);
 const _calendarPrimaryActionForegroundColor = Color(0xFF06111D);
 
+String _calendarGroupStorageKey(String userId) =>
+    'nomo_custom_friend_filters_v1_$userId';
+
+class _CalendarFriendGroup {
+  const _CalendarFriendGroup({
+    required this.id,
+    required this.name,
+    required this.friendIds,
+  });
+
+  final String id;
+  final String name;
+  final List<String> friendIds;
+
+  static _CalendarFriendGroup? fromJson(Object? value) {
+    if (value is! Map) return null;
+    final id = (value['id'] as String?)?.trim();
+    final name = (value['name'] as String?)?.trim();
+    final rawFriendIds = value['friendIds'];
+    if (id == null || id.isEmpty || name == null || name.isEmpty) return null;
+    final friendIds = rawFriendIds is List
+        ? [
+            for (final friendId in rawFriendIds)
+              if (friendId is String && friendId.trim().isNotEmpty)
+                friendId.trim(),
+          ]
+        : const <String>[];
+    if (friendIds.isEmpty) return null;
+    return _CalendarFriendGroup(id: id, name: name, friendIds: friendIds);
+  }
+}
+
+List<_CalendarFriendGroup> _decodeCalendarFriendGroups(String? raw) {
+  if (raw == null || raw.trim().isEmpty) return const [];
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is! List) return const [];
+    final groups = <_CalendarFriendGroup>[];
+    for (final item in decoded) {
+      final group = _CalendarFriendGroup.fromJson(item);
+      if (group != null) groups.add(group);
+    }
+    return groups;
+  } catch (_) {
+    return const [];
+  }
+}
+
+_CalendarFriendGroup? _findCalendarFriendGroup(
+  String? id,
+  List<_CalendarFriendGroup> groups,
+) {
+  if (id == null) return null;
+  for (final group in groups) {
+    if (group.id == id) return group;
+  }
+  return null;
+}
+
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
 
@@ -47,12 +107,39 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   bool _isStatusSaving = false;
   final Map<String, NomoDailyStatus> _statusByDate = {};
   final Set<String> _loadingStatusKeys = {};
+  String? _calendarGroupUserId;
+  List<_CalendarFriendGroup> _calendarGroups = const [];
 
   @override
   void initState() {
     super.initState();
     _loadIntroSeen();
     _loadStatusesForMonth(_month);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _syncCalendarGroupsForUser(ref.read(nomoUserProvider)?.userId);
+      }
+    });
+  }
+
+  void _syncCalendarGroupsForUser(String? userId) {
+    if (_calendarGroupUserId == userId) return;
+    _calendarGroupUserId = userId;
+    if (mounted) {
+      setState(() => _calendarGroups = const []);
+    }
+    if (userId != null && userId.trim().isNotEmpty) {
+      _loadCalendarGroups(userId);
+    }
+  }
+
+  Future<void> _loadCalendarGroups(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final groups = _decodeCalendarFriendGroups(
+      prefs.getString(_calendarGroupStorageKey(userId)),
+    );
+    if (!mounted || _calendarGroupUserId != userId) return;
+    setState(() => _calendarGroups = groups);
   }
 
   Future<void> _loadIntroSeen() async {
@@ -213,6 +300,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       friendsForDateProvider(_dateOnly(_selectedDay)),
     );
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
+    final user = ref.watch(nomoUserProvider);
+    if (_calendarGroupUserId != user?.userId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _syncCalendarGroupsForUser(user?.userId);
+      });
+    }
     final headerBackgroundHeight =
         NomoPageHeader.contentTopInset(context) + 100;
 
@@ -312,6 +405,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   day: _selectedDay,
                                   logs: selectedLogs,
                                   friendsAsync: selectedFriendsAsync,
+                                  groups: _calendarGroups,
                                   isWhite: isWhite,
                                   status:
                                       _statusByDate[_dateKey(_selectedDay)] ??
@@ -503,6 +597,7 @@ class _SelectedDayPanel extends StatelessWidget {
     required this.day,
     required this.logs,
     required this.friendsAsync,
+    required this.groups,
     required this.isWhite,
     required this.status,
     required this.isStatusSaving,
@@ -512,6 +607,7 @@ class _SelectedDayPanel extends StatelessWidget {
   final DateTime day;
   final List<DrinkLog> logs;
   final AsyncValue<List<NomoFriend>> friendsAsync;
+  final List<_CalendarFriendGroup> groups;
   final bool isWhite;
   final NomoDailyStatus status;
   final bool isStatusSaving;
@@ -565,6 +661,7 @@ class _SelectedDayPanel extends StatelessWidget {
           else
             _CalendarFriendStatusList(
               friendsAsync: friendsAsync,
+              groups: groups,
               isWhite: isWhite,
             ),
           const SizedBox(height: 10),
@@ -785,10 +882,12 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
 class _CalendarFriendStatusList extends StatelessWidget {
   const _CalendarFriendStatusList({
     required this.friendsAsync,
+    required this.groups,
     required this.isWhite,
   });
 
   final AsyncValue<List<NomoFriend>> friendsAsync;
+  final List<_CalendarFriendGroup> groups;
   final bool isWhite;
 
   @override
@@ -846,6 +945,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
           _showCalendarFriendStatusSheet(
             context,
             friends: sorted,
+            groups: groups,
             isWhite: isWhite,
           );
         }
@@ -990,28 +1090,53 @@ class _CalendarFriendStatusCountChip extends StatelessWidget {
 Future<void> _showCalendarFriendStatusSheet(
   BuildContext context, {
   required List<NomoFriend> friends,
+  required List<_CalendarFriendGroup> groups,
   required bool isWhite,
 }) {
   return showNomoBottomSheet<void>(
     context: context,
     useSafeArea: true,
     barrierColor: Colors.black.withValues(alpha: .58),
-    builder: (_) =>
-        _CalendarFriendStatusSheet(friends: friends, isWhite: isWhite),
+    builder: (_) => _CalendarFriendStatusSheet(
+      friends: friends,
+      groups: groups,
+      isWhite: isWhite,
+    ),
   );
 }
 
-class _CalendarFriendStatusSheet extends StatelessWidget {
+class _CalendarFriendStatusSheet extends StatefulWidget {
   const _CalendarFriendStatusSheet({
     required this.friends,
+    required this.groups,
     required this.isWhite,
   });
 
   final List<NomoFriend> friends;
+  final List<_CalendarFriendGroup> groups;
   final bool isWhite;
 
   @override
+  State<_CalendarFriendStatusSheet> createState() =>
+      _CalendarFriendStatusSheetState();
+}
+
+class _CalendarFriendStatusSheetState
+    extends State<_CalendarFriendStatusSheet> {
+  String? _selectedGroupId;
+
+  @override
   Widget build(BuildContext context) {
+    final selectedGroup = _findCalendarFriendGroup(
+      _selectedGroupId,
+      widget.groups,
+    );
+    final friends = selectedGroup == null
+        ? widget.friends
+        : widget.friends
+              .where((friend) => selectedGroup.friendIds.contains(friend.id))
+              .toList(growable: false);
+    final isWhite = widget.isWhite;
     final availableCount = friends
         .where((friend) => _calendarFriendIsAvailable(friend.statusKey))
         .length;
@@ -1056,6 +1181,17 @@ class _CalendarFriendStatusSheet extends StatelessWidget {
               totalCount: friends.length,
               isWhite: isWhite,
             ),
+            if (widget.groups.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              _CalendarFriendGroupSelector(
+                groups: widget.groups,
+                selectedGroupId: _selectedGroupId,
+                isWhite: isWhite,
+                onChanged: (groupId) => setState(() {
+                  _selectedGroupId = groupId;
+                }),
+              ),
+            ],
             const SizedBox(height: 8),
             _CalendarFriendStatusSummary(friends: friends, isWhite: isWhite),
             const SizedBox(height: 12),
@@ -1066,6 +1202,100 @@ class _CalendarFriendStatusSheet extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CalendarFriendGroupSelector extends StatelessWidget {
+  const _CalendarFriendGroupSelector({
+    required this.groups,
+    required this.selectedGroupId,
+    required this.isWhite,
+    required this.onChanged,
+  });
+
+  final List<_CalendarFriendGroup> groups;
+  final String? selectedGroupId;
+  final bool isWhite;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 34,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: groups.length + 1,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final group = index == 0 ? null : groups[index - 1];
+          final selected = group?.id == selectedGroupId;
+          return _CalendarFriendGroupChip(
+            label: group?.name ?? 'みんな',
+            selected: index == 0 ? selectedGroupId == null : selected,
+            isWhite: isWhite,
+            onTap: () => onChanged(group?.id),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _CalendarFriendGroupChip extends StatelessWidget {
+  const _CalendarFriendGroupChip({
+    required this.label,
+    required this.selected,
+    required this.isWhite,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final bool isWhite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = selected ? AppColors.primaryAction : const Color(0xFF94A3B8);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected
+              ? accent.withValues(alpha: isWhite ? .18 : .24)
+              : isWhite
+              ? const Color(0xFFF6F8FA)
+              : Colors.white.withValues(alpha: .07),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected
+                ? accent.withValues(alpha: .56)
+                : isWhite
+                ? const Color(0xFFE0E6ED)
+                : Colors.white.withValues(alpha: .12),
+          ),
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: selected
+                ? accent
+                : isWhite
+                ? const Color(0xFF667381)
+                : Colors.white.withValues(alpha: .68),
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+            height: 1,
+          ),
         ),
       ),
     );
@@ -1159,6 +1389,21 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (friends.isEmpty) {
+      return Center(
+        child: Text(
+          'このグループのフレンズはいません',
+          style: TextStyle(
+            color: isWhite
+                ? const Color(0xFF667381)
+                : Colors.white.withValues(alpha: .62),
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      );
+    }
+
     return ListView.separated(
       padding: EdgeInsets.zero,
       physics: const BouncingScrollPhysics(),
