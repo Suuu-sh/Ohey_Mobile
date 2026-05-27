@@ -154,9 +154,7 @@ class NomoFriendUserBlock extends StatelessWidget {
                   builder: (context, runWithBurst, flightAnimation) =>
                       Nomo3DButton(
                         label: inviteSent ? '招待済み' : '誘う',
-                        icon: inviteSent
-                            ? CupertinoIcons.checkmark_circle_fill
-                            : null,
+                        icon: null,
                         customIcon: inviteSent
                             ? null
                             : NomoInviteFlyingIcon(

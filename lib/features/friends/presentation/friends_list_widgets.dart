@@ -704,7 +704,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
             child: NomoInviteSuccessBurst(
               builder: (context, runWithBurst, flightAnimation) => Nomo3DButton(
                 label: isInvited ? '招待済み' : '誘う',
-                icon: isInvited ? CupertinoIcons.checkmark_circle_fill : null,
+                icon: null,
                 customIcon: isInvited
                     ? null
                     : NomoInviteFlyingIcon(
