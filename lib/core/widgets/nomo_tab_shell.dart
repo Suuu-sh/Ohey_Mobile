@@ -127,7 +127,10 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       child: HomeScreen(onAddLogPressed: _openDrinkLogFlow),
     ),
     const NomoToastAccent(color: _friendsAccentColor, child: FriendsScreen()),
-    NomoToastAccent(color: _calendarAccentColor, child: const CalendarScreen()),
+    NomoToastAccent(
+      color: _calendarAccentColor,
+      child: CalendarScreen(onAddLogPressed: _openDrinkLogFlow),
+    ),
     const NomoToastAccent(color: _profileAccentColor, child: ProfileScreen()),
   ];
 

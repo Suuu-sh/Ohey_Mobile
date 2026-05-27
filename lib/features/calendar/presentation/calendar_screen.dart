@@ -92,7 +92,9 @@ _CalendarFriendGroup? _findCalendarFriendGroup(
 }
 
 class CalendarScreen extends ConsumerStatefulWidget {
-  const CalendarScreen({super.key});
+  const CalendarScreen({super.key, this.onAddLogPressed});
+
+  final VoidCallback? onAddLogPressed;
 
   @override
   ConsumerState<CalendarScreen> createState() => _CalendarScreenState();
@@ -431,6 +433,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   isWhite: isWhite,
                                   status: selectedStatus,
                                   isStatusSaving: _isStatusSaving,
+                                  onAddLogPressed: widget.onAddLogPressed,
                                   onChangeStatus: () => _openStatusPicker(
                                     showLockedExplanation:
                                         selectedStatus ==
@@ -647,6 +650,7 @@ class _SelectedDayPanel extends StatelessWidget {
     required this.isWhite,
     required this.status,
     required this.isStatusSaving,
+    required this.onAddLogPressed,
     required this.onChangeStatus,
   });
 
@@ -657,6 +661,7 @@ class _SelectedDayPanel extends StatelessWidget {
   final bool isWhite;
   final NomoDailyStatus status;
   final bool isStatusSaving;
+  final VoidCallback? onAddLogPressed;
   final VoidCallback onChangeStatus;
 
   @override
@@ -759,6 +764,7 @@ class _SelectedDayPanel extends StatelessWidget {
                           logs: logs,
                           isWhite: isWhite,
                           compact: compact,
+                          onAddLogPressed: onAddLogPressed,
                         ),
                       ),
                     ],
@@ -859,7 +865,7 @@ class _CalendarStatusChangeButton extends StatelessWidget {
     final accent = _calendarStatusBlockAccent(effectiveStatus);
     final foreground = _calendarStatus3DForegroundColor(effectiveStatus);
     return SizedBox(
-      width: 74,
+      width: 56,
       child: Nomo3DButtonSurface(
         onTap: isSaving ? null : onTap,
         enabled: !isSaving,
@@ -1357,11 +1363,13 @@ class _CalendarMemoryPreview extends StatelessWidget {
     required this.logs,
     required this.isWhite,
     required this.compact,
+    required this.onAddLogPressed,
   });
 
   final List<DrinkLog> logs;
   final bool isWhite;
   final bool compact;
+  final VoidCallback? onAddLogPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -1381,7 +1389,11 @@ class _CalendarMemoryPreview extends StatelessWidget {
             )
           : null,
       child: logs.isEmpty
-          ? _CalendarMemoryEmptyState(isWhite: isWhite, compact: compact)
+          ? _CalendarMemoryEmptyState(
+              isWhite: isWhite,
+              compact: compact,
+              onAddLogPressed: onAddLogPressed,
+            )
           : Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -1403,10 +1415,12 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
   const _CalendarMemoryEmptyState({
     required this.isWhite,
     required this.compact,
+    required this.onAddLogPressed,
   });
 
   final bool isWhite;
   final bool compact;
+  final VoidCallback? onAddLogPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -1451,6 +1465,21 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(width: 9),
+          SizedBox(
+            width: compact ? 56 : 62,
+            child: Nomo3DButton(
+              label: '投稿',
+              onTap: onAddLogPressed ?? () {},
+              height: compact ? 28 : 30,
+              radius: 15,
+              color: _calendarPrimaryActionColor,
+              foregroundColor: _calendarPrimaryActionForegroundColor,
+              shadowColor: _calendarPrimaryActionShadowColor,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              fontSize: compact ? 11 : 12,
             ),
           ),
         ],
