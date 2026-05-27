@@ -12,7 +12,7 @@ class _LoadingState extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(
         parent: BouncingScrollPhysics(),
       ),
-      padding: const EdgeInsets.only(bottom: 116),
+      padding: const EdgeInsets.only(bottom: 168),
       children: [
         SizedBox(
           height: 360,
@@ -48,7 +48,7 @@ class _ErrorState extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(
         parent: BouncingScrollPhysics(),
       ),
-      padding: const EdgeInsets.only(bottom: 116),
+      padding: const EdgeInsets.only(bottom: 168),
       children: [
         SizedBox(
           height: 360,

@@ -56,7 +56,7 @@ class _FriendsList extends StatelessWidget {
     if (filtered.isEmpty) {
       return LayoutBuilder(
         builder: (context, constraints) {
-          const bottomInset = 116.0;
+          const bottomInset = 168.0;
           final contentHeight = constraints.maxHeight - bottomInset;
           return ListView(
             physics: const AlwaysScrollableScrollPhysics(
@@ -89,7 +89,7 @@ class _FriendsList extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(
         parent: BouncingScrollPhysics(),
       ),
-      padding: const EdgeInsets.only(bottom: 116),
+      padding: const EdgeInsets.only(bottom: 168),
       itemCount:
           filtered.length +
           1 +
