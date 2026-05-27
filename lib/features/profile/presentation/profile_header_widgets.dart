@@ -591,22 +591,13 @@ class _ProfileSummaryStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return NomoThemedPanel(
+      accentColor: _ProfileColors.pink,
+      backgroundColor: AppColors.darkBackground,
       padding: const EdgeInsets.fromLTRB(18, 8, 18, 8),
-      decoration: BoxDecoration(
-        color: AppColors.darkBackgroundBottom,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(34)),
-        border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: .06)),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFC08BFF).withValues(alpha: .10),
-            blurRadius: 28,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+      borderRadius: 24,
+      borderAlpha: .16,
+      glowAlpha: 0,
       child: Row(
         children: [
           const Expanded(
@@ -713,99 +704,24 @@ class _ProfileFriendActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _ProfileGradientButton(
+    return Nomo3DButton(
+      label: 'フレンズを追加',
       onTap: onAddFriendsTap,
-      child: const Row(
-        children: [
-          SizedBox(width: 15),
-          NomoPopIcon(
-            icon: CupertinoIcons.person_2_fill,
-            color: Colors.white,
-            size: 32,
-            iconSize: 18,
-          ),
-          SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'フレンズを追加',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 19,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.7,
-              ),
-            ),
-          ),
-          NomoGeneratedIcon(
-            CupertinoIcons.chevron_forward,
-            color: Colors.white,
-            size: 24,
-          ),
-          SizedBox(width: 15),
-        ],
+      height: 48,
+      radius: 24,
+      color: AppColors.primaryAction,
+      shadowColor: AppColors.primaryActionShadow,
+      fontSize: 18,
+      customIcon: const NomoPopIcon(
+        icon: CupertinoIcons.person_2_fill,
+        color: Colors.white,
+        size: 32,
+        iconSize: 18,
       ),
-    );
-  }
-}
-
-class _ProfileGradientButton extends StatelessWidget {
-  const _ProfileGradientButton({required this.child, required this.onTap});
-
-  final Widget child;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        height: 50,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [Color(0xFFA970FF), Color(0xFFFF5EBC)],
-          ),
-          borderRadius: BorderRadius.circular(34),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: .28),
-            width: 1.4,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFF65C2).withValues(alpha: .32),
-              blurRadius: 30,
-              offset: const Offset(0, 12),
-            ),
-            BoxShadow(
-              color: const Color(0xFFC08BFF).withValues(alpha: .28),
-              blurRadius: 22,
-              offset: const Offset(-8, 7),
-            ),
-          ],
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned(
-              left: 18,
-              right: 18,
-              top: 7,
-              height: 18,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .18),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-            ),
-            Positioned.fill(child: child),
-          ],
-        ),
+      trailing: const NomoGeneratedIcon(
+        CupertinoIcons.chevron_forward,
+        color: Colors.white,
+        size: 22,
       ),
     );
   }
@@ -822,31 +738,13 @@ class _ProfileInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return NomoThemedPanel(
+      accentColor: _ProfileColors.pink,
+      backgroundColor: AppColors.darkBackground,
       padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF291C55).withValues(alpha: .78),
-            const Color(0xFF0D1A2B).withValues(alpha: .94),
-            const Color(0xFFFF5EA8).withValues(alpha: .16),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: const Color(0xFFC08BFF).withValues(alpha: .54),
-          width: 1.35,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFC08BFF).withValues(alpha: .16),
-            blurRadius: 34,
-            offset: const Offset(0, 16),
-          ),
-        ],
-      ),
+      borderRadius: 24,
+      borderAlpha: .28,
+      glowAlpha: 0,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -910,9 +808,9 @@ class _ProfileInfoLine extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 40),
       padding: const EdgeInsets.fromLTRB(12, 3, 10, 3),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .075),
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: Colors.white.withValues(alpha: .11)),
+        color: AppColors.darkBackground,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white.withValues(alpha: .12)),
       ),
       child: Row(
         children: [
@@ -920,8 +818,9 @@ class _ProfileInfoLine extends StatelessWidget {
             width: 30,
             height: 30,
             decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: .18),
+              color: iconColor.withValues(alpha: .16),
               shape: BoxShape.circle,
+              border: Border.all(color: iconColor.withValues(alpha: .20)),
             ),
             child: Center(
               child: NomoGeneratedIcon(icon, color: iconColor, size: 18),
@@ -985,31 +884,13 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
     final secondLog = logs.length > 1 ? logs[1] : null;
     final openAll = photoLogCount > 0 ? onArchiveTap : onLogsTap;
 
-    return Container(
+    return NomoThemedPanel(
+      accentColor: _ProfileColors.pink,
+      backgroundColor: AppColors.darkBackground,
       padding: const EdgeInsets.fromLTRB(14, 9, 14, 9),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF2A1B58).withValues(alpha: .80),
-            const Color(0xFF0C1829).withValues(alpha: .94),
-            const Color(0xFFFF5EA8).withValues(alpha: .12),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: const Color(0xFFC08BFF).withValues(alpha: .54),
-          width: 1.35,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFFF75B5).withValues(alpha: .14),
-            blurRadius: 32,
-            offset: const Offset(0, 16),
-          ),
-        ],
-      ),
+      borderRadius: 24,
+      borderAlpha: .28,
+      glowAlpha: 0,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -1119,15 +1000,9 @@ class _ProfileMemoryPreviewTile extends StatelessWidget {
             height: 44,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
+              color: AppColors.darkBackground,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withValues(alpha: .28)),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFF75B5).withValues(alpha: .16),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+              border: Border.all(color: Colors.white.withValues(alpha: .16)),
             ),
             child: Stack(
               fit: StackFit.expand,
@@ -1139,14 +1014,7 @@ class _ProfileMemoryPreviewTile extends StatelessWidget {
                 ),
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.white.withValues(alpha: .12),
-                        Colors.black.withValues(alpha: .08),
-                      ],
-                    ),
+                    color: AppColors.darkBackground.withValues(alpha: .08),
                   ),
                 ),
                 Positioned(
@@ -1202,65 +1070,56 @@ class _ProfileMemoryHintCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return Nomo3DButtonSurface(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 7, 12, 7),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: .08),
-              const Color(0xFFC08BFF).withValues(alpha: .10),
-            ],
+      height: 48,
+      radius: 22,
+      color: AppColors.darkBackground,
+      bottomColor: const Color(0xFF09131D),
+      useGradient: false,
+      padding: const EdgeInsets.fromLTRB(14, 0, 12, 0),
+      borderColor: Colors.white.withValues(alpha: .12),
+      outerShadows: const [],
+      child: Row(
+        children: [
+          const NomoPopIcon(
+            icon: CupertinoIcons.sparkles,
+            color: Colors.white,
+            size: 30,
+            iconSize: 16,
           ),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withValues(alpha: .12)),
-        ),
-        child: Row(
-          children: [
-            const NomoPopIcon(
-              icon: CupertinoIcons.sparkles,
-              color: Color(0xFFFFFFFF),
-              size: 44,
-              iconSize: 22,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '思い出をふやそう',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.5,
-                    ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '思い出をふやそう',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.5,
                   ),
-                  const SizedBox(height: 0),
-                  Text(
-                    'フレンズと遊ぶとここに残るよ',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .62),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                    ),
+                ),
+                Text(
+                  'フレンズと遊ぶとここに残るよ',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .62),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const SizedBox(width: 6),
-            NomoGeneratedIcon(
-              CupertinoIcons.chevron_forward,
-              color: Colors.white.withValues(alpha: .72),
-              size: 20,
-            ),
-          ],
-        ),
+          ),
+          NomoGeneratedIcon(
+            CupertinoIcons.chevron_forward,
+            color: Colors.white.withValues(alpha: .72),
+            size: 17,
+          ),
+        ],
       ),
     );
   }
