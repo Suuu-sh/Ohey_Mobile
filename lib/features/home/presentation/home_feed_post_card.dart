@@ -285,6 +285,7 @@ class _FeedCardFooter extends StatelessWidget {
                 burstOnTap: !item.liked,
                 burstIcon: CupertinoIcons.heart_fill,
                 burstColor: likeAccent,
+                animateIconOnBurst: true,
                 onTap: onLike,
               ),
               const SizedBox(width: 8),
@@ -364,6 +365,7 @@ class _FeedActionPill extends StatelessWidget {
     this.burstOnTap = false,
     this.burstIcon = CupertinoIcons.sparkles,
     this.burstColor,
+    this.animateIconOnBurst = false,
     this.onTap,
   });
 
@@ -376,13 +378,37 @@ class _FeedActionPill extends StatelessWidget {
   final bool burstOnTap;
   final IconData burstIcon;
   final Color? burstColor;
+  final bool animateIconOnBurst;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final textColor = _feedActionForeground(color);
     final shadowColor = Color.lerp(color, Colors.black, .34)!;
-    Widget buildButton(VoidCallback? effectiveTap) => Nomo3DButtonSurface(
+    Widget buildIcon(Animation<double>? iconAnimation) {
+      if (customIcon != null) return customIcon!;
+      final resolvedIcon = icon ?? CupertinoIcons.circle;
+      if (animateIconOnBurst) {
+        return _FeedLikeBurstIcon(
+          animation: iconAnimation ?? const AlwaysStoppedAnimation<double>(0),
+          icon: resolvedIcon,
+          color: textColor,
+          particleColor: burstColor ?? color,
+        );
+      }
+      return NomoPopIcon(
+        icon: resolvedIcon,
+        color: textColor,
+        size: 19,
+        iconSize: 16,
+        showBubble: false,
+      );
+    }
+
+    Widget buildButton(
+      VoidCallback? effectiveTap, {
+      Animation<double>? iconAnimation,
+    }) => Nomo3DButtonSurface(
       onTap: effectiveTap,
       height: 38,
       radius: 19,
@@ -403,14 +429,7 @@ class _FeedActionPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          customIcon ??
-              NomoPopIcon(
-                icon: icon ?? CupertinoIcons.circle,
-                color: textColor,
-                size: 19,
-                iconSize: 16,
-                showBubble: false,
-              ),
+          buildIcon(iconAnimation),
           const SizedBox(width: 6),
           Text(
             label,
@@ -424,7 +443,18 @@ class _FeedActionPill extends StatelessWidget {
       ),
     );
 
-    final child = burstOnTap
+    final child = animateIconOnBurst
+        ? _FeedInlineIconBurstHost(
+            builder: (context, runWithBurst, iconAnimation) {
+              final effectiveTap = onTap == null
+                  ? null
+                  : burstOnTap
+                  ? () => runWithBurst(onTap)
+                  : onTap;
+              return buildButton(effectiveTap, iconAnimation: iconAnimation);
+            },
+          )
+        : burstOnTap
         ? NomoInviteSuccessBurst(
             burstIcon: burstIcon,
             burstColor: burstColor ?? color,
@@ -442,6 +472,185 @@ class _FeedActionPill extends StatelessWidget {
 
     return Semantics(button: true, label: semanticLabel, child: child);
   }
+}
+
+typedef _FeedInlineIconBurstBuilder =
+    Widget Function(
+      BuildContext context,
+      void Function(VoidCallback? action) runWithBurst,
+      Animation<double> iconAnimation,
+    );
+
+class _FeedInlineIconBurstHost extends StatefulWidget {
+  const _FeedInlineIconBurstHost({required this.builder});
+
+  final _FeedInlineIconBurstBuilder builder;
+
+  @override
+  State<_FeedInlineIconBurstHost> createState() =>
+      _FeedInlineIconBurstHostState();
+}
+
+class _FeedInlineIconBurstHostState extends State<_FeedInlineIconBurstHost>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  bool _running = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 620),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _run(VoidCallback? action) {
+    if (action == null || _running) return;
+    setState(() => _running = true);
+    action();
+    _controller.forward(from: 0).whenComplete(() {
+      if (!mounted) return;
+      setState(() => _running = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      widget.builder(context, _run, _controller);
+}
+
+class _FeedLikeBurstIcon extends StatelessWidget {
+  const _FeedLikeBurstIcon({
+    required this.animation,
+    required this.icon,
+    required this.color,
+    required this.particleColor,
+  });
+
+  final Animation<double> animation;
+  final IconData icon;
+  final Color color;
+  final Color particleColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        final raw = animation.value.clamp(0.0, 1.0);
+        final active = raw > 0 && raw < 1;
+        final pop = !active
+            ? 0.0
+            : raw < .32
+            ? Curves.easeOutBack.transform(raw / .32)
+            : (1 - Curves.easeOutCubic.transform((raw - .32) / .68)).clamp(
+                0.0,
+                1.0,
+              );
+        final bounce = active && raw > .26 && raw < .58
+            ? math.sin(((raw - .26) / .32) * math.pi) * .07
+            : 0.0;
+        final scale = 1 + (.23 * pop) - bounce;
+        final angle = active
+            ? math.sin(raw * math.pi * 2.4) * .12 * (1 - raw)
+            : 0.0;
+
+        return SizedBox(
+          width: 19,
+          height: 19,
+          child: ClipRect(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CustomPaint(
+                  size: const Size.square(19),
+                  painter: _FeedLikeIconBurstPainter(
+                    progress: raw,
+                    color: particleColor,
+                  ),
+                ),
+                Transform.rotate(
+                  angle: angle,
+                  child: Transform.scale(scale: scale, child: child),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      child: NomoPopIcon(
+        icon: icon,
+        color: color,
+        size: 19,
+        iconSize: 16,
+        showBubble: false,
+      ),
+    );
+  }
+}
+
+class _FeedLikeIconBurstPainter extends CustomPainter {
+  const _FeedLikeIconBurstPainter({
+    required this.progress,
+    required this.color,
+  });
+
+  final double progress;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0 || progress >= .96) return;
+
+    final t = Curves.easeOutCubic.transform(progress.clamp(0.0, 1.0));
+    final fade = progress < .68
+        ? 1.0
+        : ((.96 - progress) / .28).clamp(0.0, 1.0);
+    final shortest = math.min(size.width, size.height);
+    final center = Offset(size.width / 2, size.height / 2);
+
+    final ringPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.15 * (1 - t)
+      ..color = Color.lerp(
+        color,
+        Colors.white,
+        .44,
+      )!.withValues(alpha: .42 * fade);
+    canvas.drawCircle(center, shortest * (.16 + .28 * t), ringPaint);
+
+    for (var i = 0; i < 8; i++) {
+      final angle = (-math.pi / 2) + (math.pi * 2 * i / 8);
+      final distance = shortest * (.10 + .36 * t);
+      final twinkle = math.sin((progress * math.pi * 2.6) + i) * shortest * .03;
+      final offset =
+          center +
+          Offset(
+            math.cos(angle) * (distance + twinkle),
+            math.sin(angle) * (distance + twinkle),
+          );
+      final paint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = Color.lerp(
+          color,
+          i.isEven ? Colors.white : const Color(0xFFFF75B5),
+          i.isEven ? .62 : .46,
+        )!.withValues(alpha: .86 * fade);
+
+      canvas.drawCircle(offset, (1.35 - .42 * t).clamp(.7, 1.35), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _FeedLikeIconBurstPainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.color != color;
 }
 
 class _FeedCompanionInlineButton extends StatelessWidget {
