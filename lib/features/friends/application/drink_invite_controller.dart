@@ -14,6 +14,13 @@ final incomingDrinkInvitesProvider = FutureProvider<List<NomoDrinkInvite>>((
   return ref.watch(drinkInviteRepositoryProvider).fetchIncomingPendingInvites();
 });
 
+final outgoingActiveDrinkInvitesProvider =
+    FutureProvider<List<NomoDrinkInvite>>((ref) {
+      return ref
+          .watch(drinkInviteRepositoryProvider)
+          .fetchOutgoingActiveInvites();
+    });
+
 class DrinkInviteController {
   DrinkInviteController(this._ref);
 
@@ -67,6 +74,7 @@ class DrinkInviteController {
   void _invalidate() {
     _ref.invalidate(todayReservationsProvider);
     _ref.invalidate(incomingDrinkInvitesProvider);
+    _ref.invalidate(outgoingActiveDrinkInvitesProvider);
   }
 }
 

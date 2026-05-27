@@ -303,6 +303,18 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   @override
   Widget build(BuildContext context) {
     final friendsAsync = ref.watch(friendsProvider);
+    final persistedInvitedFriendIds =
+        ref
+            .watch(outgoingActiveDrinkInvitesProvider)
+            .asData
+            ?.value
+            .map((invite) => invite.toUserId)
+            .toSet() ??
+        const <String>{};
+    final invitedFriendIds = {
+      ...persistedInvitedFriendIds,
+      ..._invitedFriendIds,
+    };
     final user = ref.watch(nomoUserProvider);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     if (_customFilterUserId != user?.userId) {
@@ -410,7 +422,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           selectedFilter: _selectedFilter,
                           selectedCustomFilter: selectedCustomFilter,
                           favoriteOverrides: _favoriteOverrides,
-                          invitedFriendIds: _invitedFriendIds,
+                          invitedFriendIds: invitedFriendIds,
                           onFavoriteToggle: (friend, isFavorite) =>
                               _onToggleFavorite(context, friend, isFavorite),
                           onAddFriend: _openAddFriend,

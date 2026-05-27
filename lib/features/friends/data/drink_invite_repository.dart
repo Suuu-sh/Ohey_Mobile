@@ -67,6 +67,16 @@ class DrinkInviteRepository {
     return rows.map(_inviteFromRow).toList(growable: false);
   }
 
+  Future<List<NomoDrinkInvite>> fetchOutgoingActiveInvites() async {
+    final userId = _userId;
+    if (userId == null) return const [];
+    final rows = await _client.getRows(
+      '/v1/drink-invites/outgoing-active',
+      query: {'date': _todayIsoDate()},
+    );
+    return rows.map(_inviteFromRow).toList(growable: false);
+  }
+
   NomoDrinkInvite _inviteFromRow(Map<String, dynamic> row) {
     return NomoDrinkInvite(
       id: row['id'] as String,
