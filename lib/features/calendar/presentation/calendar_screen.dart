@@ -24,6 +24,7 @@ import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
+import '../../../core/widgets/nomo_toast.dart';
 import '../../friends/application/drink_invite_controller.dart';
 import '../../logs/application/drink_log_controller.dart';
 
@@ -672,6 +673,7 @@ class _SelectedDayPanel extends StatelessWidget {
             _CalendarFriendStatusLocked(isWhite: isWhite, onTap: onChangeStatus)
           else
             _CalendarFriendStatusList(
+              day: day,
               friendsAsync: friendsAsync,
               groups: groups,
               isWhite: isWhite,
@@ -893,11 +895,13 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
 
 class _CalendarFriendStatusList extends StatelessWidget {
   const _CalendarFriendStatusList({
+    required this.day,
     required this.friendsAsync,
     required this.groups,
     required this.isWhite,
   });
 
+  final DateTime day;
   final AsyncValue<List<NomoFriend>> friendsAsync;
   final List<_CalendarFriendGroup> groups;
   final bool isWhite;
@@ -956,6 +960,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
         void openStatusSheet() {
           _showCalendarFriendStatusSheet(
             context,
+            day: day,
             friends: sorted,
             groups: groups,
             isWhite: isWhite,
@@ -1101,6 +1106,7 @@ class _CalendarFriendStatusCountChip extends StatelessWidget {
 
 Future<void> _showCalendarFriendStatusSheet(
   BuildContext context, {
+  required DateTime day,
   required List<NomoFriend> friends,
   required List<_CalendarFriendGroup> groups,
   required bool isWhite,
@@ -1110,6 +1116,7 @@ Future<void> _showCalendarFriendStatusSheet(
     useSafeArea: true,
     barrierColor: Colors.black.withValues(alpha: .58),
     builder: (_) => _CalendarFriendStatusSheet(
+      day: day,
       friends: friends,
       groups: groups,
       isWhite: isWhite,
@@ -1117,25 +1124,59 @@ Future<void> _showCalendarFriendStatusSheet(
   );
 }
 
-class _CalendarFriendStatusSheet extends StatefulWidget {
+class _CalendarFriendStatusSheet extends ConsumerStatefulWidget {
   const _CalendarFriendStatusSheet({
+    required this.day,
     required this.friends,
     required this.groups,
     required this.isWhite,
   });
 
+  final DateTime day;
   final List<NomoFriend> friends;
   final List<_CalendarFriendGroup> groups;
   final bool isWhite;
 
   @override
-  State<_CalendarFriendStatusSheet> createState() =>
+  ConsumerState<_CalendarFriendStatusSheet> createState() =>
       _CalendarFriendStatusSheetState();
 }
 
 class _CalendarFriendStatusSheetState
-    extends State<_CalendarFriendStatusSheet> {
+    extends ConsumerState<_CalendarFriendStatusSheet> {
   String? _selectedGroupId;
+  String? _sendingFriendId;
+
+  Future<void> _sendInvite(NomoFriend friend) async {
+    if (_sendingFriendId != null) return;
+    HapticFeedback.selectionClick();
+    setState(() => _sendingFriendId = friend.id);
+    try {
+      await ref
+          .read(drinkInviteControllerProvider)
+          .sendInvite(friendId: friend.id, date: widget.day);
+      ref.invalidate(todayReservationsProvider);
+      ref.invalidate(incomingDrinkInvitesProvider);
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        '${widget.day.month}/${widget.day.day}で${friend.name}にお誘いを送りました。',
+        icon: CupertinoIcons.checkmark_circle_fill,
+        placement: NomoToastPlacement.bottom,
+      );
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (!mounted) return;
+      HapticFeedback.mediumImpact();
+      setState(() => _sendingFriendId = null);
+      NomoToast.show(
+        context,
+        '招待を送れなかったよ。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+        placement: NomoToastPlacement.bottom,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1211,6 +1252,8 @@ class _CalendarFriendStatusSheetState
               child: _CalendarFriendStatusBlockList(
                 friends: friends,
                 isWhite: isWhite,
+                sendingFriendId: _sendingFriendId,
+                onInvite: _sendInvite,
               ),
             ),
           ],
@@ -1413,10 +1456,14 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
   const _CalendarFriendStatusBlockList({
     required this.friends,
     required this.isWhite,
+    required this.sendingFriendId,
+    required this.onInvite,
   });
 
   final List<NomoFriend> friends;
   final bool isWhite;
+  final String? sendingFriendId;
+  final ValueChanged<NomoFriend> onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -1440,8 +1487,15 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       itemCount: friends.length,
       separatorBuilder: (_, _) => const SizedBox(height: 14),
-      itemBuilder: (context, index) =>
-          _CalendarFriendStatusBlock(friend: friends[index], isWhite: isWhite),
+      itemBuilder: (context, index) {
+        final friend = friends[index];
+        return _CalendarFriendStatusBlock(
+          friend: friend,
+          isWhite: isWhite,
+          inviteEnabled: sendingFriendId == null,
+          onInvite: () => onInvite(friend),
+        );
+      },
     );
   }
 }
@@ -1450,10 +1504,14 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
   const _CalendarFriendStatusBlock({
     required this.friend,
     required this.isWhite,
+    required this.inviteEnabled,
+    required this.onInvite,
   });
 
   final NomoFriend friend;
   final bool isWhite;
+  final bool inviteEnabled;
+  final VoidCallback onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -1465,6 +1523,8 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
       statusColor: _calendarFriendBlockStatusColor(status),
       statusEnabled: status.isAvailable,
       fallbackAvatar: _fallbackAvatarForCalendarFriend(friend),
+      showInvite: true,
+      onInvite: inviteEnabled ? onInvite : null,
     );
   }
 }

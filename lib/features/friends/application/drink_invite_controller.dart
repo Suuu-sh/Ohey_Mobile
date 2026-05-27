@@ -19,12 +19,19 @@ class DrinkInviteController {
 
   final Ref _ref;
 
-  Future<void> sendTodayInvite(String friendId) async {
+  Future<void> sendTodayInvite(String friendId) =>
+      sendInvite(friendId: friendId, date: DateTime.now());
+
+  Future<void> sendInvite({
+    required String friendId,
+    required DateTime date,
+  }) async {
     await runOptimistic<void>(
       apply: _invalidate,
       rollback: _invalidate,
-      commit: () =>
-          _ref.read(drinkInviteRepositoryProvider).sendTodayInvite(friendId),
+      commit: () => _ref
+          .read(drinkInviteRepositoryProvider)
+          .sendInvite(friendId: friendId, date: date),
       confirm: (_) => _invalidate(),
     );
   }
