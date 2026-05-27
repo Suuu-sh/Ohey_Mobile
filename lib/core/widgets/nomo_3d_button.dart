@@ -21,6 +21,7 @@ class Nomo3DButton extends StatelessWidget {
     this.trailing,
     this.isLoading = false,
     this.enabled = true,
+    this.forcePressed = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
     this.useGradient = true,
@@ -42,6 +43,7 @@ class Nomo3DButton extends StatelessWidget {
     this.trailing,
     this.isLoading = false,
     this.enabled = true,
+    this.forcePressed = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
     this.useGradient = false,
@@ -63,6 +65,7 @@ class Nomo3DButton extends StatelessWidget {
     this.trailing,
     this.isLoading = false,
     this.enabled = true,
+    this.forcePressed = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
     this.useGradient = true,
@@ -82,6 +85,7 @@ class Nomo3DButton extends StatelessWidget {
   final Widget? trailing;
   final bool isLoading;
   final bool enabled;
+  final bool forcePressed;
   final EdgeInsetsGeometry padding;
   final double fontSize;
   final bool useGradient;
@@ -98,6 +102,7 @@ class Nomo3DButton extends StatelessWidget {
       disabledOpacity: disabledOpacity,
       isLoading: isLoading,
       enabled: enabled,
+      forcePressed: forcePressed,
       padding: padding,
       useGradient: useGradient,
       child: Row(
@@ -148,6 +153,7 @@ class Nomo3DButtonSurface extends StatefulWidget {
     this.disabledOpacity = 1,
     this.isLoading = false,
     this.enabled = true,
+    this.forcePressed = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.useGradient = true,
     this.borderColor,
@@ -167,6 +173,7 @@ class Nomo3DButtonSurface extends StatefulWidget {
   final double disabledOpacity;
   final bool isLoading;
   final bool enabled;
+  final bool forcePressed;
   final EdgeInsetsGeometry padding;
   final bool useGradient;
   final Color? borderColor;
@@ -220,7 +227,7 @@ class _Nomo3DButtonSurfaceState extends State<Nomo3DButtonSurface> {
   Widget build(BuildContext context) {
     final canTap = widget.enabled && widget.onTap != null && !widget.isLoading;
     final isUnavailable = !widget.enabled || widget.onTap == null;
-    final isPressed = canTap && _isPressed;
+    final isPressed = widget.forcePressed || (canTap && _isPressed);
     final base = isUnavailable && widget.disabledColor != null
         ? widget.disabledColor!
         : widget.color;

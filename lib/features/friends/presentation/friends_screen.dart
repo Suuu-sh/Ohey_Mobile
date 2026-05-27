@@ -48,6 +48,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   List<_CustomFriendFilter> _customFilters = const [];
   bool _isRefreshingFriends = false;
   final Map<String, bool> _favoriteOverrides = {};
+  final Set<String> _invitedFriendIds = <String>{};
 
   @override
   void initState() {
@@ -290,7 +291,13 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
         icon: CupertinoIcons.exclamationmark_triangle_fill,
         placement: NomoToastPlacement.bottom,
       );
+      rethrow;
     }
+  }
+
+  void _markDrinkInviteSent(NomoFriend friend) {
+    if (!mounted) return;
+    setState(() => _invitedFriendIds.add(friend.id));
   }
 
   @override
@@ -403,10 +410,12 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           selectedFilter: _selectedFilter,
                           selectedCustomFilter: selectedCustomFilter,
                           favoriteOverrides: _favoriteOverrides,
+                          invitedFriendIds: _invitedFriendIds,
                           onFavoriteToggle: (friend, isFavorite) =>
                               _onToggleFavorite(context, friend, isFavorite),
                           onAddFriend: _openAddFriend,
                           onInvite: (friend) => _sendDrinkInvite(friend),
+                          onInviteAnimationComplete: _markDrinkInviteSent,
                           onProfile: (friend, status) =>
                               _openFriendProfile(friend, status),
                         ),

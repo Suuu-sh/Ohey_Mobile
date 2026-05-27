@@ -7,9 +7,11 @@ class _FriendsList extends StatelessWidget {
     required this.selectedFilter,
     required this.selectedCustomFilter,
     required this.favoriteOverrides,
+    required this.invitedFriendIds,
     required this.onFavoriteToggle,
     required this.onAddFriend,
     required this.onInvite,
+    required this.onInviteAnimationComplete,
     required this.onProfile,
   });
 
@@ -18,9 +20,11 @@ class _FriendsList extends StatelessWidget {
   final _FriendFilterType selectedFilter;
   final _CustomFriendFilter? selectedCustomFilter;
   final Map<String, bool> favoriteOverrides;
+  final Set<String> invitedFriendIds;
   final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
   final VoidCallback onAddFriend;
   final Future<void> Function(NomoFriend friend) onInvite;
+  final void Function(NomoFriend friend) onInviteAnimationComplete;
   final void Function(NomoFriend friend, _FriendStatus status) onProfile;
 
   @override
@@ -100,7 +104,9 @@ class _FriendsList extends StatelessWidget {
         if (hasRecommendations && index == 0) {
           return _TodayInviteSection(
             friends: recommendations,
+            invitedFriendIds: invitedFriendIds,
             onInvite: onInvite,
+            onInviteAnimationComplete: onInviteAnimationComplete,
           );
         }
         if (hasGroupSchedule && index == 0) {
@@ -120,7 +126,10 @@ class _FriendsList extends StatelessWidget {
           status: item.status,
           onFavoriteToggle: () =>
               onFavoriteToggle(item.friend, !item.friend.isFavorite),
+          isInvited: invitedFriendIds.contains(item.friend.id),
           onInvite: () => onInvite(item.friend),
+          onInviteAnimationComplete: () =>
+              onInviteAnimationComplete(item.friend),
           onProfile: () => onProfile(item.friend, item.status),
         );
       },
@@ -129,10 +138,17 @@ class _FriendsList extends StatelessWidget {
 }
 
 class _TodayInviteSection extends StatelessWidget {
-  const _TodayInviteSection({required this.friends, required this.onInvite});
+  const _TodayInviteSection({
+    required this.friends,
+    required this.invitedFriendIds,
+    required this.onInvite,
+    required this.onInviteAnimationComplete,
+  });
 
   final List<_DecoratedFriend> friends;
+  final Set<String> invitedFriendIds;
   final Future<void> Function(NomoFriend friend) onInvite;
+  final void Function(NomoFriend friend) onInviteAnimationComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +222,9 @@ class _TodayInviteSection extends StatelessWidget {
                     '${candidates.length}-${candidates.map((item) => item.friend.id).join(',')}',
                   ),
                   candidates: candidates,
+                  invitedFriendIds: invitedFriendIds,
                   onInvite: onInvite,
+                  onInviteAnimationComplete: onInviteAnimationComplete,
                 ),
               ),
             ),
@@ -239,11 +257,15 @@ class _TodayInviteCardsStrip extends StatelessWidget {
   const _TodayInviteCardsStrip({
     super.key,
     required this.candidates,
+    required this.invitedFriendIds,
     required this.onInvite,
+    required this.onInviteAnimationComplete,
   });
 
   final List<_DecoratedFriend> candidates;
+  final Set<String> invitedFriendIds;
   final Future<void> Function(NomoFriend friend) onInvite;
+  final void Function(NomoFriend friend) onInviteAnimationComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -276,7 +298,12 @@ class _TodayInviteCardsStrip extends StatelessWidget {
               width: cardWidth,
               child: _TodayInviteCandidateCard(
                 item: candidates[index],
+                isInvited: invitedFriendIds.contains(
+                  candidates[index].friend.id,
+                ),
                 onInvite: () => onInvite(candidates[index].friend),
+                onInviteAnimationComplete: () =>
+                    onInviteAnimationComplete(candidates[index].friend),
               ),
             ),
           ),
@@ -564,16 +591,30 @@ class _GroupScheduleSuggestionCard extends StatelessWidget {
 }
 
 class _TodayInviteCandidateCard extends StatelessWidget {
-  const _TodayInviteCandidateCard({required this.item, required this.onInvite});
+  const _TodayInviteCandidateCard({
+    required this.item,
+    required this.isInvited,
+    required this.onInvite,
+    required this.onInviteAnimationComplete,
+  });
 
   final _DecoratedFriend item;
+  final bool isInvited;
   final Future<void> Function() onInvite;
+  final VoidCallback onInviteAnimationComplete;
 
   @override
   Widget build(BuildContext context) {
     final friend = item.friend;
     final frameAccent = _friendBlockFrameColor(item.status);
     final isWhite = Theme.of(context).brightness == Brightness.light;
+    final isInviteEnabled = item.status.enabled && !isInvited;
+    final buttonColor = isInvited
+        ? _FriendsColors.invitedButton
+        : _friendInviteButtonColor(item.status);
+    final buttonForeground = isInvited
+        ? _FriendsColors.invitedButtonForeground
+        : _friendInviteButtonForegroundColor(item.status);
     final ink = item.status.enabled
         ? (isWhite ? const Color(0xFF101820) : Colors.white)
         : (isWhite ? const Color(0xFF667381) : _FriendsColors.muted);
@@ -662,24 +703,33 @@ class _TodayInviteCandidateCard extends StatelessWidget {
             width: double.infinity,
             child: NomoInviteSuccessBurst(
               builder: (context, runWithBurst, flightAnimation) => Nomo3DButton(
-                label: '誘う',
-                customIcon: NomoInviteFlyingIcon(
-                  animation: flightAnimation,
-                  color: _friendInviteButtonForegroundColor(item.status),
-                  size: 19.5,
-                ),
-                onTap: item.status.enabled
-                    ? () => runWithBurst(onInvite)
+                label: isInvited ? '招待済み' : '誘う',
+                icon: isInvited ? CupertinoIcons.checkmark_circle_fill : null,
+                customIcon: isInvited
+                    ? null
+                    : NomoInviteFlyingIcon(
+                        animation: flightAnimation,
+                        color: buttonForeground,
+                        size: 19.5,
+                      ),
+                onTap: isInviteEnabled
+                    ? () => runWithBurst(
+                        onInvite,
+                        afterAnimation: onInviteAnimationComplete,
+                      )
                     : null,
-                enabled: item.status.enabled,
+                enabled: isInviteEnabled,
+                forcePressed: isInvited,
                 height: 36,
                 radius: 18,
-                color: _friendInviteButtonColor(item.status),
-                foregroundColor: _friendInviteButtonForegroundColor(
-                  item.status,
-                ),
-                shadowColor: _friendInviteButtonShadowColor(item.status),
-                disabledColor: _FriendsColors.disabledButton,
+                color: buttonColor,
+                foregroundColor: buttonForeground,
+                shadowColor: isInvited
+                    ? _FriendsColors.invitedButtonShadow
+                    : _friendInviteButtonShadowColor(item.status),
+                disabledColor: isInvited
+                    ? _FriendsColors.invitedButton
+                    : _FriendsColors.disabledButton,
                 disabledOpacity: 1,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 fontSize: 12.5,

@@ -9,9 +9,15 @@ import 'nomo_pop_icon.dart';
 typedef NomoInviteBurstBuilder =
     Widget Function(
       BuildContext context,
-      Future<void> Function(FutureOr<void> Function()? action) runWithBurst,
+      NomoInviteBurstRunner runWithBurst,
       Animation<double> flightAnimation,
     );
+
+typedef NomoInviteBurstRunner =
+    Future<void> Function(
+      FutureOr<void> Function()? action, {
+      FutureOr<void> Function()? afterAnimation,
+    });
 
 class NomoInviteSuccessBurst extends StatefulWidget {
   const NomoInviteSuccessBurst({
@@ -59,13 +65,20 @@ class _NomoInviteSuccessBurstState extends State<NomoInviteSuccessBurst>
     super.dispose();
   }
 
-  Future<void> _run(FutureOr<void> Function()? action) async {
+  Future<void> _run(
+    FutureOr<void> Function()? action, {
+    FutureOr<void> Function()? afterAnimation,
+  }) async {
     if (action == null || _running) return;
     setState(() => _running = true);
     try {
       await action();
       if (!mounted) return;
-      unawaited(_controller.forward(from: 0));
+      await _controller.forward(from: 0);
+      if (!mounted) return;
+      await afterAnimation?.call();
+    } catch (_) {
+      // The caller shows the failure UI; don't play a success animation.
     } finally {
       if (mounted) setState(() => _running = false);
     }

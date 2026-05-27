@@ -25,6 +25,8 @@ class NomoFriendUserBlock extends StatelessWidget {
     this.onTap,
     this.showFavorite = false,
     this.showInvite = false,
+    this.inviteSent = false,
+    this.onInviteAnimationComplete,
     this.compact = false,
   });
 
@@ -39,6 +41,8 @@ class NomoFriendUserBlock extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showFavorite;
   final bool showInvite;
+  final bool inviteSent;
+  final VoidCallback? onInviteAnimationComplete;
   final bool compact;
 
   @override
@@ -49,6 +53,13 @@ class NomoFriendUserBlock extends StatelessWidget {
         ? (isWhite ? const Color(0xFF101820) : Colors.white)
         : (isWhite ? const Color(0xFF667381) : const Color(0xFF8792A3));
     final avatarSize = compact ? 52.0 : 62.0;
+    final inviteEnabled = statusEnabled && !inviteSent;
+    final inviteButtonColor = inviteSent ? const Color(0xFF3C4652) : accent;
+    final inviteForeground = inviteSent
+        ? const Color(0xFFC3CAD3)
+        : statusEnabled
+        ? const Color(0xFF071320)
+        : const Color(0xFF738092);
 
     final block = ConstrainedBox(
       constraints: BoxConstraints(minHeight: compact ? 88 : 98),
@@ -142,28 +153,37 @@ class NomoFriendUserBlock extends StatelessWidget {
                 child: NomoInviteSuccessBurst(
                   builder: (context, runWithBurst, flightAnimation) =>
                       Nomo3DButton(
-                        label: '誘う',
-                        customIcon: NomoInviteFlyingIcon(
-                          animation: flightAnimation,
-                          color: statusEnabled
-                              ? const Color(0xFF071320)
-                              : const Color(0xFF738092),
-                          size: 19,
-                        ),
-                        onTap: statusEnabled
-                            ? () => runWithBurst(onInvite)
+                        label: inviteSent ? '招待済み' : '誘う',
+                        icon: inviteSent
+                            ? CupertinoIcons.checkmark_circle_fill
                             : null,
-                        enabled: statusEnabled,
+                        customIcon: inviteSent
+                            ? null
+                            : NomoInviteFlyingIcon(
+                                animation: flightAnimation,
+                                color: inviteForeground,
+                                size: 19,
+                              ),
+                        onTap: inviteEnabled
+                            ? () => runWithBurst(
+                                onInvite,
+                                afterAnimation: onInviteAnimationComplete,
+                              )
+                            : null,
+                        enabled: inviteEnabled,
+                        forcePressed: inviteSent,
                         height: 36,
                         radius: 18,
-                        color: accent,
-                        foregroundColor: statusEnabled
-                            ? const Color(0xFF071320)
-                            : const Color(0xFF738092),
-                        shadowColor: statusEnabled
+                        color: inviteButtonColor,
+                        foregroundColor: inviteForeground,
+                        shadowColor: inviteSent
+                            ? const Color(0xFF1A222C)
+                            : statusEnabled
                             ? Color.lerp(accent, Colors.black, .32)
                             : const Color(0xFF111923),
-                        disabledColor: const Color(0xFF2B3441),
+                        disabledColor: inviteSent
+                            ? const Color(0xFF3C4652)
+                            : const Color(0xFF2B3441),
                         disabledOpacity: 1,
                         padding: const EdgeInsets.symmetric(horizontal: 13),
                         fontSize: 12,

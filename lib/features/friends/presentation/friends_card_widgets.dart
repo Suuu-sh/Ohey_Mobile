@@ -5,14 +5,18 @@ class _FriendCard extends StatelessWidget {
     required this.friend,
     required this.status,
     required this.onFavoriteToggle,
+    required this.isInvited,
     required this.onInvite,
+    required this.onInviteAnimationComplete,
     required this.onProfile,
   });
 
   final NomoFriend friend;
   final _FriendStatus status;
   final VoidCallback onFavoriteToggle;
+  final bool isInvited;
   final Future<void> Function() onInvite;
+  final VoidCallback onInviteAnimationComplete;
   final VoidCallback onProfile;
 
   @override
@@ -22,11 +26,13 @@ class _FriendCard extends StatelessWidget {
     statusReason: status.reason,
     statusColor: _friendInviteButtonColor(status),
     statusEnabled: status.enabled,
+    inviteSent: isInvited,
     fallbackAvatar: _fallbackAvatarForFriend(friend),
     showFavorite: true,
     showInvite: true,
     onFavoriteToggle: onFavoriteToggle,
     onInvite: onInvite,
+    onInviteAnimationComplete: onInviteAnimationComplete,
     onTap: onProfile,
   );
 }

@@ -365,4 +365,7 @@ class _FriendsColors {
   static const disabledButton = Color(0xFF2B3441);
   static const disabledButtonShadow = Color(0xFF111923);
   static const disabledButtonForeground = Color(0xFF738092);
+  static const invitedButton = Color(0xFF3C4652);
+  static const invitedButtonShadow = Color(0xFF1A222C);
+  static const invitedButtonForeground = Color(0xFFC3CAD3);
 }
