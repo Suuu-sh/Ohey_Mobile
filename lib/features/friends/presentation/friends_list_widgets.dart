@@ -1049,6 +1049,8 @@ String _recommendationReasonFor(_DecoratedFriend item) {
 
 bool _isRecommendedFriend(_DecoratedFriend item) {
   final friend = item.friend;
+  if (friend.statusKey == 'has_plans') return false;
+
   return friend.totalDrinkCount == 0 ||
       (friend.isFavorite && _daysSinceLastDrink(friend) >= 30) ||
       friend.statusKey == 'can_drink_today' ||
