@@ -171,7 +171,7 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
     final subColor = Colors.white.withValues(alpha: .70);
 
     return Container(
-      height: 326,
+      height: 338,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
@@ -312,17 +312,19 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
                 ),
                 const Spacer(),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                   child: NomoThemedPanel(
                     padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
                     accentColor: statusColor,
                     borderRadius: 22,
-                    backgroundColor: AppColors.darkBackgroundBottom.withValues(
-                      alpha: .76,
-                    ),
-                    borderAlpha: isWhite ? .34 : .46,
-                    glowAlpha: .10,
-                    glowBlur: 20,
+                    backgroundColor: Color.lerp(
+                      AppColors.darkBackgroundBottom,
+                      statusColor,
+                      isWhite ? .24 : .34,
+                    )!.withValues(alpha: .90),
+                    borderAlpha: isWhite ? .42 : .56,
+                    glowAlpha: .16,
+                    glowBlur: 22,
                     glowOffset: const Offset(0, 8),
                     child: Row(
                       children: [
