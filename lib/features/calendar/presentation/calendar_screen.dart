@@ -645,18 +645,7 @@ class _SelectedDayPanel extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.zero,
       accentColor: _calendarPrimaryActionColor,
-      backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: isWhite
-            ? const [Colors.white, Color(0xFFF7FBFF)]
-            : [
-                const Color(0xFF071320),
-                const Color(0xFF081A28),
-                const Color(0xFF071320),
-              ],
-      ),
+      backgroundColor: Colors.transparent,
       borderRadius: 0,
       borderWidth: 0,
       borderAlpha: 0,
