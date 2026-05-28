@@ -1,5 +1,22 @@
 part of 'friends_screen.dart';
 
+enum _FriendProfileAction { remove, mute, block, report }
+
+enum _FriendProfileReportReason {
+  spam('spam', 'スパム・宣伝', '宣伝、詐欺、迷惑な勧誘'),
+  harassment('harassment', '不快・いやがらせ', '攻撃的、差別的、嫌がらせに感じる内容'),
+  inappropriate('inappropriate', '不適切な内容', '性的・過度に不快な表現'),
+  violence('violence', '暴力・危険行為', '暴力、危険行為、自傷を助長する内容'),
+  minorSafety('minor_safety', '未成年・危険', '未成年の安全や飲酒に関わる懸念'),
+  other('other', 'その他', '上記に当てはまらない問題');
+
+  const _FriendProfileReportReason(this.value, this.label, this.description);
+
+  final String value;
+  final String label;
+  final String description;
+}
+
 class _FriendCard extends StatelessWidget {
   const _FriendCard({
     required this.friend,
@@ -74,7 +91,7 @@ class _FriendProfileSheet extends ConsumerStatefulWidget {
 
 class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
   late _FriendStatus _selectedStatus = widget.status;
-  bool _isRemovingFriend = false;
+  _FriendProfileAction? _busyAction;
 
   void _handleSelectedStatusChanged(NomoDailyStatus status) {
     final nextStatus = _friendStatusForDailyStatus(status);
@@ -88,7 +105,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
   }
 
   Future<void> _confirmRemoveFriend() async {
-    if (_isRemovingFriend) return;
+    if (_busyAction != null) return;
     final confirmed = await showCupertinoDialog<bool>(
       context: context,
       builder: (dialogContext) => CupertinoAlertDialog(
@@ -108,14 +125,15 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
       ),
     );
     if (confirmed != true || !mounted) return;
-    setState(() => _isRemovingFriend = true);
+    setState(() => _busyAction = _FriendProfileAction.remove);
     try {
+      final toastContext = Navigator.of(context, rootNavigator: true).context;
       await ref.read(friendRepositoryProvider).deleteFriend(widget.friend.id);
       ref.invalidate(friendsProvider);
-      if (!mounted) return;
+      if (!mounted || !toastContext.mounted) return;
       Navigator.of(context).pop();
       NomoToast.show(
-        context,
+        toastContext,
         'フレンズを解除しました',
         icon: CupertinoIcons.person_badge_minus_fill,
       );
@@ -127,7 +145,155 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
         icon: CupertinoIcons.exclamationmark_triangle_fill,
       );
     } finally {
-      if (mounted) setState(() => _isRemovingFriend = false);
+      if (mounted) setState(() => _busyAction = null);
+    }
+  }
+
+  Future<void> _openActionMenu() async {
+    if (_busyAction != null) return;
+    HapticFeedback.selectionClick();
+    final action = await showNomoBottomSheet<_FriendProfileAction>(
+      context: context,
+      useSafeArea: true,
+      barrierColor: Colors.black.withValues(alpha: .58),
+      builder: (_) => _FriendProfileActionSheet(friend: widget.friend),
+    );
+    if (!mounted || action == null) return;
+    switch (action) {
+      case _FriendProfileAction.remove:
+        await _confirmRemoveFriend();
+      case _FriendProfileAction.mute:
+        await _muteFriend();
+      case _FriendProfileAction.block:
+        await _confirmBlockFriend();
+      case _FriendProfileAction.report:
+        await _reportFriend();
+    }
+  }
+
+  Future<void> _muteFriend() async {
+    if (_busyAction != null) return;
+    setState(() => _busyAction = _FriendProfileAction.mute);
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      final toastContext = Navigator.of(context, rootNavigator: true).context;
+      await ref.read(userSafetyRepositoryProvider).muteUser(widget.friend.id);
+      ref.invalidate(mutedUsersProvider);
+      ref.invalidate(homeFeedControllerProvider);
+      if (!mounted || !toastContext.mounted) return;
+      Navigator.of(context).pop();
+      _showFriendSafetyUndoToast(
+        toastContext,
+        message: '${widget.friend.name}さんをミュートしました',
+        onUndo: () async {
+          await container
+              .read(userSafetyRepositoryProvider)
+              .unmuteUser(widget.friend.id);
+          container.invalidate(mutedUsersProvider);
+          container.invalidate(homeFeedControllerProvider);
+        },
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        'ミュートできませんでした。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
+    } finally {
+      if (mounted) setState(() => _busyAction = null);
+    }
+  }
+
+  Future<void> _confirmBlockFriend() async {
+    if (_busyAction != null) return;
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (dialogContext) => CupertinoAlertDialog(
+        title: const Text('ブロックしますか？'),
+        content: Text('${widget.friend.name}さんとのフレンズ関係を解除し、投稿・申請・お誘いを制限します。'),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('キャンセル'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('ブロックする'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await _blockFriend();
+    }
+  }
+
+  Future<void> _blockFriend() async {
+    if (_busyAction != null) return;
+    setState(() => _busyAction = _FriendProfileAction.block);
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      final toastContext = Navigator.of(context, rootNavigator: true).context;
+      await ref.read(userSafetyRepositoryProvider).blockUser(widget.friend.id);
+      ref.invalidate(blockedUsersProvider);
+      ref.invalidate(friendsProvider);
+      ref.invalidate(homeFeedControllerProvider);
+      if (!mounted || !toastContext.mounted) return;
+      Navigator.of(context).pop();
+      _showFriendSafetyUndoToast(
+        toastContext,
+        message: '${widget.friend.name}さんをブロックしました',
+        onUndo: () async {
+          await container
+              .read(userSafetyRepositoryProvider)
+              .unblockUser(widget.friend.id);
+          await container
+              .read(friendRepositoryProvider)
+              .addFriend(widget.friend.id);
+          container.invalidate(blockedUsersProvider);
+          container.invalidate(friendsProvider);
+          container.invalidate(homeFeedControllerProvider);
+        },
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        'ブロックできませんでした。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
+    } finally {
+      if (mounted) setState(() => _busyAction = null);
+    }
+  }
+
+  Future<void> _reportFriend() async {
+    if (_busyAction != null) return;
+    final reason = await _selectFriendReportReason(context);
+    if (!mounted || reason == null) return;
+    setState(() => _busyAction = _FriendProfileAction.report);
+    try {
+      await ref
+          .read(userSafetyRepositoryProvider)
+          .reportUser(widget.friend.id, reason: reason.value);
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        '「${reason.label}」として通報しました',
+        icon: CupertinoIcons.exclamationmark_bubble_fill,
+        accentColor: const Color(0xFFFFD166),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        '通報できませんでした。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
+    } finally {
+      if (mounted) setState(() => _busyAction = null);
     }
   }
 
@@ -182,14 +348,14 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
                   children: [
                     Expanded(
                       child: Nomo3DButton.secondary(
-                        label: _isRemovingFriend ? '解除中' : 'フレンズ解除',
-                        icon: CupertinoIcons.person_badge_minus,
-                        onTap: _isRemovingFriend ? null : _confirmRemoveFriend,
+                        label: _busyAction == null ? '操作メニュー' : '処理中',
+                        icon: CupertinoIcons.ellipsis_circle,
+                        onTap: _busyAction == null ? _openActionMenu : null,
                         height: 48,
                         radius: 22,
-                        color: const Color(0xFF3A2231),
-                        foregroundColor: const Color(0xFFFF8AA8),
-                        shadowColor: const Color(0xFF1E121B),
+                        color: const Color(0xFF203247),
+                        foregroundColor: const Color(0xFF65D6FF),
+                        shadowColor: const Color(0xFF111C2B),
                         fontSize: 13,
                       ),
                     ),
@@ -212,6 +378,196 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+void _showFriendSafetyUndoToast(
+  BuildContext context, {
+  required String message,
+  required Future<void> Function() onUndo,
+}) {
+  NomoToast.show(
+    context,
+    message,
+    icon: CupertinoIcons.checkmark_circle_fill,
+    duration: const Duration(milliseconds: 5200),
+    actionLabel: '元に戻す',
+    onAction: () async {
+      try {
+        await onUndo();
+        if (context.mounted) {
+          NomoToast.show(
+            context,
+            '元に戻しました',
+            icon: CupertinoIcons.arrow_uturn_left_circle_fill,
+          );
+        }
+      } catch (_) {
+        if (context.mounted) {
+          NomoToast.show(
+            context,
+            '元に戻せませんでした。あとでもう一度試してね',
+            icon: CupertinoIcons.exclamationmark_triangle_fill,
+          );
+        }
+      }
+    },
+  );
+}
+
+class _FriendProfileActionSheet extends StatelessWidget {
+  const _FriendProfileActionSheet({required this.friend});
+
+  final NomoFriend friend;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final sub = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .58);
+
+    return NomoBottomSheetShell(
+      title: 'フレンズ管理',
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+      radius: 30,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '${friend.name}さんへの操作を選んでください。',
+            style: TextStyle(
+              color: sub,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 16),
+          NomoActionTile(
+            icon: CupertinoIcons.person_badge_minus,
+            title: 'フレンズ解除',
+            subtitle: '関係を解除して、あとで再申請できます',
+            accent: const Color(0xFFFF8AA8),
+            destructive: true,
+            onTap: () => Navigator.of(context).pop(_FriendProfileAction.remove),
+          ),
+          const SizedBox(height: 10),
+          NomoActionTile(
+            icon: CupertinoIcons.bell_slash_fill,
+            title: 'ミュート',
+            subtitle: '投稿をフィードに出しにくくします',
+            accent: const Color(0xFF88B8FF),
+            onTap: () => Navigator.of(context).pop(_FriendProfileAction.mute),
+          ),
+          const SizedBox(height: 10),
+          NomoActionTile(
+            icon: CupertinoIcons.hand_raised_fill,
+            title: 'ブロック',
+            subtitle: '投稿・申請・お誘いを制限します',
+            accent: const Color(0xFFFF5F8F),
+            destructive: true,
+            onTap: () => Navigator.of(context).pop(_FriendProfileAction.block),
+          ),
+          const SizedBox(height: 10),
+          NomoActionTile(
+            icon: CupertinoIcons.exclamationmark_bubble_fill,
+            title: '通報',
+            subtitle: '理由を選んで運営に送信します',
+            accent: const Color(0xFFFFD166),
+            onTap: () => Navigator.of(context).pop(_FriendProfileAction.report),
+          ),
+          const SizedBox(height: 12),
+          Nomo3DButton.secondary(
+            label: 'キャンセル',
+            onTap: () => Navigator.of(context).pop(),
+            height: 48,
+            radius: 20,
+            color: isWhite
+                ? const Color(0xFFF2F6FA)
+                : Colors.white.withValues(alpha: .06),
+            foregroundColor: isWhite
+                ? const Color(0xFF101820)
+                : Colors.white.withValues(alpha: .82),
+            shadowColor: const Color(0xFF243240).withValues(alpha: .46),
+            useGradient: false,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<_FriendProfileReportReason?> _selectFriendReportReason(
+  BuildContext context,
+) {
+  return showNomoBottomSheet<_FriendProfileReportReason>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (_) => const _FriendReportReasonSheet(),
+  );
+}
+
+class _FriendReportReasonSheet extends StatelessWidget {
+  const _FriendReportReasonSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final sub = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .58);
+    return NomoBottomSheetShell(
+      title: '通報理由',
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+      radius: 30,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '近い理由を選ぶと、運営が確認しやすくなります。',
+            style: TextStyle(
+              color: sub,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 16),
+          for (final reason in _FriendProfileReportReason.values) ...[
+            NomoActionTile(
+              icon: CupertinoIcons.exclamationmark_triangle_fill,
+              title: reason.label,
+              subtitle: reason.description,
+              accent: const Color(0xFFFFD166),
+              onTap: () => Navigator.of(context).pop(reason),
+            ),
+            if (reason != _FriendProfileReportReason.values.last)
+              const SizedBox(height: 9),
+          ],
+          const SizedBox(height: 12),
+          Nomo3DButton.secondary(
+            label: 'キャンセル',
+            onTap: () => Navigator.of(context).pop(),
+            height: 48,
+            radius: 20,
+            color: isWhite
+                ? const Color(0xFFF2F6FA)
+                : Colors.white.withValues(alpha: .06),
+            foregroundColor: isWhite
+                ? const Color(0xFF101820)
+                : Colors.white.withValues(alpha: .82),
+            shadowColor: const Color(0xFF243240).withValues(alpha: .46),
+            useGradient: false,
+          ),
+        ],
       ),
     );
   }

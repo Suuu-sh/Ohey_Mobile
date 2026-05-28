@@ -37,6 +37,7 @@ import '../../friends/presentation/friends_screen.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../notifications/data/notification_repository.dart';
+import '../../profile/data/user_safety_repository.dart';
 import '../../profile/presentation/profile_screen.dart';
 
 part 'home_feed_layout.dart';

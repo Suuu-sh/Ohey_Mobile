@@ -20,6 +20,21 @@ class UserSafetyRepository {
 
   final BackendApiClient _client;
 
+  Future<void> blockUser(String userId) async {
+    await _client.post('/v1/user-blocks', {'target_user_id': userId});
+  }
+
+  Future<void> muteUser(String userId) async {
+    await _client.post('/v1/user-mutes', {'target_user_id': userId});
+  }
+
+  Future<void> reportUser(String userId, {String reason = 'other'}) async {
+    await _client.post('/v1/user-reports', {
+      'target_user_id': userId,
+      'reason': reason,
+    });
+  }
+
   Future<List<NomoSafetyUser>> fetchBlockedUsers() async {
     final rows = await _client.getRows('/v1/user-blocks');
     return rows.map(NomoSafetyUser.fromRow).toList(growable: false);

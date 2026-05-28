@@ -233,7 +233,18 @@ Future<void> _showFeedPostActions(
             .read(homeFeedControllerProvider.notifier)
             .muteUser(item.ownerUserId);
         if (context.mounted) {
-          NomoToast.show(context, '${item.userName}さんをミュートしました');
+          _showUserSafetyUndoToast(
+            context,
+            message: '${item.userName}さんをミュートしました',
+            undoLabel: '元に戻す',
+            onUndo: () async {
+              await ref
+                  .read(userSafetyRepositoryProvider)
+                  .unmuteUser(item.ownerUserId);
+              ref.invalidate(mutedUsersProvider);
+              ref.invalidate(homeFeedControllerProvider);
+            },
+          );
         }
       } catch (_) {
         if (context.mounted) {
@@ -255,7 +266,19 @@ Future<void> _showFeedPostActions(
             .read(homeFeedControllerProvider.notifier)
             .blockUser(item.ownerUserId);
         if (context.mounted) {
-          NomoToast.show(context, '${item.userName}さんをブロックしました');
+          _showUserSafetyUndoToast(
+            context,
+            message: '${item.userName}さんをブロックしました',
+            undoLabel: '元に戻す',
+            onUndo: () async {
+              await ref
+                  .read(userSafetyRepositoryProvider)
+                  .unblockUser(item.ownerUserId);
+              ref.invalidate(blockedUsersProvider);
+              ref.invalidate(friendsProvider);
+              ref.invalidate(homeFeedControllerProvider);
+            },
+          );
         }
       } catch (_) {
         if (context.mounted) {
@@ -263,6 +286,41 @@ Future<void> _showFeedPostActions(
         }
       }
   }
+}
+
+void _showUserSafetyUndoToast(
+  BuildContext context, {
+  required String message,
+  required String undoLabel,
+  required Future<void> Function() onUndo,
+}) {
+  NomoToast.show(
+    context,
+    message,
+    icon: CupertinoIcons.checkmark_circle_fill,
+    duration: const Duration(milliseconds: 5200),
+    actionLabel: undoLabel,
+    onAction: () async {
+      try {
+        await onUndo();
+        if (context.mounted) {
+          NomoToast.show(
+            context,
+            '元に戻しました',
+            icon: CupertinoIcons.arrow_uturn_left_circle_fill,
+          );
+        }
+      } catch (_) {
+        if (context.mounted) {
+          NomoToast.show(
+            context,
+            '元に戻せませんでした。あとでもう一度試してね',
+            icon: CupertinoIcons.exclamationmark_triangle_fill,
+          );
+        }
+      }
+    },
+  );
 }
 
 Future<bool> _confirmDeleteFeedPost(BuildContext context) async {

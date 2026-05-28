@@ -13,6 +13,7 @@ import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
+import '../../../core/widgets/nomo_action_tile.dart';
 import '../../../core/widgets/nomo_empty_state.dart';
 import '../../../core/widgets/nomo_friend_user_block.dart';
 import '../../../core/widgets/nomo_invite_success_burst.dart';
@@ -28,6 +29,7 @@ import '../application/drink_invite_controller.dart';
 import '../data/friend_repository.dart';
 import 'friend_add_sheet.dart';
 import '../../logs/application/drink_log_controller.dart';
+import '../../profile/data/user_safety_repository.dart';
 
 part 'friends_header_filters.dart';
 part 'friends_custom_filter_sheet.dart';
