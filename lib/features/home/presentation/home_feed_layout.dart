@@ -211,6 +211,51 @@ Future<void> _showFeedPostActions(
           NomoToast.show(context, '報告できなかったよ。あとでもう一度試してね');
         }
       }
+    case _FeedPostAction.hide:
+      try {
+        await ref.read(homeFeedControllerProvider.notifier).hideLog(item.id);
+        if (context.mounted) NomoToast.show(context, 'フィードから非表示にしました');
+      } catch (_) {
+        if (context.mounted) {
+          NomoToast.show(context, '非表示にできなかったよ。あとでもう一度試してね');
+        }
+      }
+    case _FeedPostAction.muteUser:
+      if (item.ownerUserId.trim().isEmpty) return;
+      try {
+        await ref
+            .read(homeFeedControllerProvider.notifier)
+            .muteUser(item.ownerUserId);
+        if (context.mounted) {
+          NomoToast.show(context, '${item.userName}さんをミュートしました');
+        }
+      } catch (_) {
+        if (context.mounted) {
+          NomoToast.show(context, 'ミュートできなかったよ。あとでもう一度試してね');
+        }
+      }
+    case _FeedPostAction.blockUser:
+      if (item.ownerUserId.trim().isEmpty) return;
+      final confirmed = await _confirmUserSafetyAction(
+        context,
+        title: '${item.userName}さんをブロックしますか？',
+        message: '相手の投稿やお誘いが表示されにくくなります。必要ならあとで解除できます。',
+        actionLabel: 'ブロックする',
+        color: const Color(0xFFFF5F8F),
+      );
+      if (!confirmed || !context.mounted) return;
+      try {
+        await ref
+            .read(homeFeedControllerProvider.notifier)
+            .blockUser(item.ownerUserId);
+        if (context.mounted) {
+          NomoToast.show(context, '${item.userName}さんをブロックしました');
+        }
+      } catch (_) {
+        if (context.mounted) {
+          NomoToast.show(context, 'ブロックできなかったよ。あとでもう一度試してね');
+        }
+      }
   }
 }
 
@@ -221,6 +266,28 @@ Future<bool> _confirmDeleteFeedPost(BuildContext context) async {
     isScrollControlled: true,
     barrierColor: Colors.black.withValues(alpha: .62),
     builder: (context) => const _FeedDeleteConfirmSheet(),
+  );
+  return result ?? false;
+}
+
+Future<bool> _confirmUserSafetyAction(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String actionLabel,
+  required Color color,
+}) async {
+  final result = await showNomoBottomSheet<bool>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: Colors.black.withValues(alpha: .62),
+    builder: (context) => _FeedUserSafetyConfirmSheet(
+      title: title,
+      message: message,
+      actionLabel: actionLabel,
+      color: color,
+    ),
   );
   return result ?? false;
 }

@@ -20,12 +20,25 @@ final drinkLogRepositoryProvider = Provider<DrinkLogRepository>((ref) {
 abstract interface class DrinkLogRepository {
   Future<List<DrinkLog>> fetchLogs();
   Future<List<DrinkLog>> fetchHomeFeed();
+  Future<DrinkLogPage> fetchHomeFeedPage({int limit = 20, String? cursor});
   Future<List<NomoFriend>> fetchFriends({DateTime? date});
   Future<DrinkLog> addLog(DrinkLog log);
   Future<void> deleteLog(String logId);
   Future<void> reportLog(String logId, {String reason = 'other'});
+  Future<void> hideLogFromFeed(String logId);
+  Future<void> muteUser(String userId);
+  Future<void> blockUser(String userId);
   Future<DrinkLogLikeState> setLike(String logId, {required bool liked});
   Future<void> setFriendFavorite(String friendId, {required bool isFavorite});
+}
+
+class DrinkLogPage {
+  const DrinkLogPage({required this.logs, this.nextCursor});
+
+  final List<DrinkLog> logs;
+  final String? nextCursor;
+
+  bool get hasMore => nextCursor != null && nextCursor!.trim().isNotEmpty;
 }
 
 class DrinkLogLikeState {
@@ -51,8 +64,38 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
 
   @override
   Future<List<DrinkLog>> fetchHomeFeed() async {
-    final rows = await _client.getRows('/v1/home/feed');
-    return Future.wait(rows.map(_drinkLogFromRow));
+    return (await fetchHomeFeedPage()).logs;
+  }
+
+  @override
+  Future<DrinkLogPage> fetchHomeFeedPage({
+    int limit = 20,
+    String? cursor,
+  }) async {
+    final query = <String, String>{'limit': limit.toString()};
+    final cleanCursor = cursor?.trim();
+    if (cleanCursor != null && cleanCursor.isNotEmpty) {
+      query['cursor'] = cleanCursor;
+    }
+    final rows = await _client.getRows('/v1/home/feed', query: query);
+    final logs = await Future.wait(rows.map(_drinkLogFromRow));
+    final nextCursor = logs.isEmpty ? null : logs.last.feedCursor.trim();
+    return DrinkLogPage(logs: logs, nextCursor: nextCursor);
+  }
+
+  @override
+  Future<void> hideLogFromFeed(String logId) async {
+    await _client.post('/v1/feed-hidden-drink-logs', {'drink_log_id': logId});
+  }
+
+  @override
+  Future<void> muteUser(String userId) async {
+    await _client.post('/v1/user-mutes', {'target_user_id': userId});
+  }
+
+  @override
+  Future<void> blockUser(String userId) async {
+    await _client.post('/v1/user-blocks', {'target_user_id': userId});
   }
 
   @override
@@ -161,6 +204,10 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       feedTilt:
           (feed['tilt'] as num?)?.toDouble() ??
           (row['feed_tilt'] as num?)?.toDouble(),
+      feedCursor:
+          (feed['feed_cursor'] as String?) ??
+          (row['feed_cursor'] as String?) ??
+          '',
     );
   }
 
@@ -226,11 +273,18 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
     }
 
     try {
-      return await _supabase.storage
-          .from(_photoBucket)
-          .createSignedUrl(normalized, 60 * 60);
+      final row = await _client.postRow('/v1/media/display-url', {
+        'path': normalized,
+      });
+      return (row['signed_url'] as String?)?.trim();
     } catch (_) {
-      return null;
+      try {
+        return await _supabase.storage
+            .from(_photoBucket)
+            .createSignedUrl(normalized, 60 * 60);
+      } catch (_) {
+        return null;
+      }
     }
   }
 
@@ -315,6 +369,10 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       feedTilt:
           (feed['tilt'] as num?)?.toDouble() ??
           (row['feed_tilt'] as num?)?.toDouble(),
+      feedCursor:
+          (feed['feed_cursor'] as String?) ??
+          (row['feed_cursor'] as String?) ??
+          '',
     );
   }
 

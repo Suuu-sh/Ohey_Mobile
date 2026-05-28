@@ -1,6 +1,6 @@
 part of 'home_screen.dart';
 
-enum _FeedPostAction { copy, delete, report }
+enum _FeedPostAction { copy, delete, report, hide, muteUser, blockUser }
 
 class _FeedPostActionsSheet extends StatelessWidget {
   const _FeedPostActionsSheet({required this.item, required this.body});
@@ -92,14 +92,42 @@ class _FeedPostActionsSheet extends StatelessWidget {
               destructive: true,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.delete),
             )
-          else if (item.canReport)
+          else if (!item.isOfficial) ...[
             NomoActionTile(
-              icon: CupertinoIcons.exclamationmark_bubble_fill,
-              title: '思い出を報告',
-              subtitle: '気になる投稿を運営に送る',
-              accent: const Color(0xFFFFD166),
-              onTap: () => Navigator.of(context).pop(_FeedPostAction.report),
+              icon: CupertinoIcons.eye_slash_fill,
+              title: 'この投稿を非表示',
+              subtitle: '自分のフィードからだけ消す',
+              accent: _FeedColors.teal,
+              onTap: () => Navigator.of(context).pop(_FeedPostAction.hide),
             ),
+            const SizedBox(height: 10),
+            NomoActionTile(
+              icon: CupertinoIcons.bell_slash_fill,
+              title: '${item.userName}さんをミュート',
+              subtitle: '投稿をフィードに出しにくくする',
+              accent: const Color(0xFF88B8FF),
+              onTap: () => Navigator.of(context).pop(_FeedPostAction.muteUser),
+            ),
+            const SizedBox(height: 10),
+            NomoActionTile(
+              icon: CupertinoIcons.hand_raised_fill,
+              title: '${item.userName}さんをブロック',
+              subtitle: '投稿・申請・お誘いを制限する',
+              accent: const Color(0xFFFF5F8F),
+              destructive: true,
+              onTap: () => Navigator.of(context).pop(_FeedPostAction.blockUser),
+            ),
+            if (item.canReport) ...[
+              const SizedBox(height: 10),
+              NomoActionTile(
+                icon: CupertinoIcons.exclamationmark_bubble_fill,
+                title: '思い出を報告',
+                subtitle: '気になる投稿を運営に送る',
+                accent: const Color(0xFFFFD166),
+                onTap: () => Navigator.of(context).pop(_FeedPostAction.report),
+              ),
+            ],
+          ],
           const SizedBox(height: 12),
           _FeedModalTextButton(
             label: 'キャンセル',
@@ -173,6 +201,89 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
                 child: _FeedModalTextButton(
                   label: '削除する',
                   color: const Color(0xFFFF5F8F),
+                  onTap: () => Navigator.of(context).pop(true),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeedUserSafetyConfirmSheet extends StatelessWidget {
+  const _FeedUserSafetyConfirmSheet({
+    required this.title,
+    required this.message,
+    required this.actionLabel,
+    required this.color,
+  });
+
+  final String title;
+  final String message;
+  final String actionLabel;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final subtitleColor = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .58);
+    return NomoBottomSheetShell(
+      showHandle: false,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const NomoBottomSheetHandle(),
+          const SizedBox(height: 20),
+          Center(
+            child: NomoPopIcon(
+              icon: CupertinoIcons.hand_raised_fill,
+              color: color,
+              size: 64,
+              iconSize: 34,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: titleColor,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.7,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: subtitleColor,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _FeedModalTextButton(
+                  label: 'やめる',
+                  onTap: () => Navigator.of(context).pop(false),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _FeedModalTextButton(
+                  label: actionLabel,
+                  color: color,
                   onTap: () => Navigator.of(context).pop(true),
                 ),
               ),

@@ -29,9 +29,49 @@ final friendsForDateProvider =
     });
 
 class HomeFeedController extends AsyncNotifier<List<DrinkLog>> {
+  static const _pageSize = 20;
+
+  String? _nextCursor;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+
   @override
   Future<List<DrinkLog>> build() async {
-    return ref.watch(drinkLogRepositoryProvider).fetchHomeFeed();
+    final page = await ref
+        .watch(drinkLogRepositoryProvider)
+        .fetchHomeFeedPage(limit: _pageSize);
+    _nextCursor = page.nextCursor;
+    _hasMore = page.logs.length == _pageSize && page.hasMore;
+    return page.logs;
+  }
+
+  Future<void> loadMore() async {
+    if (!_hasMore || _isLoadingMore) return;
+    final cursor = _nextCursor?.trim();
+    if (cursor == null || cursor.isEmpty) {
+      _hasMore = false;
+      return;
+    }
+    _isLoadingMore = true;
+    try {
+      final previous = state.asData?.value ?? const <DrinkLog>[];
+      final page = await ref
+          .read(drinkLogRepositoryProvider)
+          .fetchHomeFeedPage(limit: _pageSize, cursor: cursor);
+      final seen = previous.map((log) => log.id).toSet();
+      final appended = [
+        ...previous,
+        for (final log in page.logs)
+          if (seen.add(log.id)) log,
+      ];
+      _nextCursor = page.nextCursor;
+      _hasMore = page.logs.length == _pageSize && page.hasMore;
+      state = AsyncValue.data(appended);
+    } catch (_) {
+      // Keep the current feed; the next page-change can retry.
+    } finally {
+      _isLoadingMore = false;
+    }
   }
 
   Future<void> toggleLike(String logId) async {
@@ -98,6 +138,52 @@ class HomeFeedController extends AsyncNotifier<List<DrinkLog>> {
           if (log.id != logId) log,
       ]);
     } catch (error, stackTrace) {
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+  }
+
+  Future<void> hideLog(String logId) async {
+    final previous = state.asData?.value ?? const <DrinkLog>[];
+    state = AsyncValue.data([
+      for (final log in previous)
+        if (log.id != logId) log,
+    ]);
+    try {
+      await ref.read(drinkLogRepositoryProvider).hideLogFromFeed(logId);
+    } catch (error, stackTrace) {
+      state = AsyncValue.data(previous);
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+  }
+
+  Future<void> muteUser(String userId) async {
+    await _hideUserPosts(
+      userId,
+      () => ref.read(drinkLogRepositoryProvider).muteUser(userId),
+    );
+  }
+
+  Future<void> blockUser(String userId) async {
+    await _hideUserPosts(
+      userId,
+      () => ref.read(drinkLogRepositoryProvider).blockUser(userId),
+    );
+  }
+
+  Future<void> _hideUserPosts(
+    String userId,
+    Future<void> Function() commit,
+  ) async {
+    final previous = state.asData?.value ?? const <DrinkLog>[];
+    state = AsyncValue.data([
+      for (final log in previous)
+        if (log.ownerUserId != userId) log,
+    ]);
+    try {
+      await commit();
+      ref.invalidate(friendsProvider);
+    } catch (error, stackTrace) {
+      state = AsyncValue.data(previous);
       Error.throwWithStackTrace(error, stackTrace);
     }
   }

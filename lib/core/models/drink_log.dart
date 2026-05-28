@@ -48,6 +48,7 @@ class DrinkLog {
     this.feedCanReport = true,
     this.feedCanDelete = false,
     this.feedTilt,
+    this.feedCursor = '',
   });
 
   final String id;
@@ -73,6 +74,7 @@ class DrinkLog {
   final bool feedCanReport;
   final bool feedCanDelete;
   final double? feedTilt;
+  final String feedCursor;
 
   DrinkLog copyWith({int? likeCount, bool? likedByMe}) => DrinkLog(
     id: id,
@@ -98,6 +100,7 @@ class DrinkLog {
     feedCanReport: feedCanReport,
     feedCanDelete: feedCanDelete,
     feedTilt: feedTilt,
+    feedCursor: feedCursor,
   );
 
   bool isInMonth(DateTime month) =>
