@@ -243,16 +243,39 @@ class _DateTimeBox extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: _AddLogColors.primaryTextFor(context),
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '日程を決める',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: _AddLogColors.primaryTextFor(context),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: _AddLogColors.secondaryTextFor(context),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    height: 1.2,
+                  ),
+                ),
+              ],
             ),
+          ),
+          const SizedBox(width: 10),
+          NomoGeneratedIcon(
+            CupertinoIcons.chevron_right,
+            color: _AddLogColors.secondaryTextFor(context),
+            size: 20,
           ),
         ],
       ),

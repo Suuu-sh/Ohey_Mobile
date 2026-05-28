@@ -78,6 +78,7 @@ class _PostPreviewCard extends StatelessWidget {
     required this.place,
     required this.date,
     required this.friends,
+    required this.dateEditor,
     required this.friendEditor,
     required this.placeEditor,
     required this.onEditDateTime,
@@ -94,6 +95,7 @@ class _PostPreviewCard extends StatelessWidget {
   final String place;
   final DateTime date;
   final List<NomoFriend> friends;
+  final Widget dateEditor;
   final Widget friendEditor;
   final Widget placeEditor;
   final VoidCallback onEditDateTime;
@@ -186,6 +188,7 @@ class _PostPreviewCard extends StatelessWidget {
               ),
               _PreviewFooter(friends: friends, isWhite: isWhite),
               _PreviewInlineEditors(
+                dateEditor: dateEditor,
                 friendEditor: friendEditor,
                 placeEditor: placeEditor,
                 isWhite: isWhite,
@@ -578,11 +581,13 @@ class _PreviewPostKindBadge extends StatelessWidget {
 
 class _PreviewInlineEditors extends StatelessWidget {
   const _PreviewInlineEditors({
+    required this.dateEditor,
     required this.friendEditor,
     required this.placeEditor,
     required this.isWhite,
   });
 
+  final Widget dateEditor;
   final Widget friendEditor;
   final Widget placeEditor;
   final bool isWhite;
@@ -603,7 +608,13 @@ class _PreviewInlineEditors extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [friendEditor, const SizedBox(height: 10), placeEditor],
+        children: [
+          dateEditor,
+          const SizedBox(height: 10),
+          friendEditor,
+          const SizedBox(height: 10),
+          placeEditor,
+        ],
       ),
     ),
   );

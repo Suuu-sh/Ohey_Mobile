@@ -60,6 +60,12 @@ extension _AddLogScreenLayout on _AddLogScreenState {
       onChanged: (_) => setState(() {}),
       suffix: _PlaceSearchButton(onTap: _openPlaceSearch),
     );
+    final dateEditor = _DateTimeBox(
+      icon: CupertinoIcons.calendar,
+      iconColor: _AddLogColors.calendarIcon,
+      label: _addLogDateTimeLabel(_selectedDate),
+      onTap: _pickDateTime,
+    );
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -89,6 +95,7 @@ extension _AddLogScreenLayout on _AddLogScreenState {
                         place: _placeController.text,
                         date: _selectedDate,
                         friends: selectedFriends,
+                        dateEditor: dateEditor,
                         friendEditor: friendEditor,
                         placeEditor: placeEditor,
                         onEditDateTime: _pickDateTime,
@@ -106,12 +113,7 @@ extension _AddLogScreenLayout on _AddLogScreenState {
                       const SizedBox(height: 14),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 18),
-                        child: _DateTimeBox(
-                          icon: CupertinoIcons.calendar,
-                          iconColor: _AddLogColors.calendarIcon,
-                          label: _addLogDateTimeLabel(_selectedDate),
-                          onTap: _pickDateTime,
-                        ),
+                        child: dateEditor,
                       ),
                       const SizedBox(height: 14),
                       Padding(
