@@ -30,8 +30,20 @@ Future<T?> showNomoBottomSheet<T>({
     ),
     backgroundColor: Colors.transparent,
     barrierColor: barrierColor,
-    builder: builder,
+    builder: (context) => NomoModalButtonScope(child: builder(context)),
   );
+}
+
+class NomoModalButtonScope extends InheritedWidget {
+  const NomoModalButtonScope({super.key, required super.child});
+
+  static bool maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<NomoModalButtonScope>() !=
+        null;
+  }
+
+  @override
+  bool updateShouldNotify(NomoModalButtonScope oldWidget) => false;
 }
 
 class NomoBottomSheetShell extends StatelessWidget {

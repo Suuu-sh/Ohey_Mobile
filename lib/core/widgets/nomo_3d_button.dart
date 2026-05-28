@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'nomo_bottom_sheet.dart';
 import 'nomo_pop_icon.dart';
 
 Color nomo3DShadowColorFor(
@@ -258,6 +259,32 @@ class _Nomo3DButtonSurfaceState extends State<Nomo3DButtonSurface> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final expandsWidth = constraints.hasBoundedWidth;
+        final isModalFlat = NomoModalButtonScope.maybeOf(context);
+
+        if (isModalFlat) {
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: canTap ? widget.onTap : null,
+            child: Opacity(
+              opacity: opacity,
+              child: Container(
+                width: expandsWidth ? double.infinity : null,
+                height: widget.height,
+                alignment: widget.alignment,
+                padding: widget.padding,
+                decoration: BoxDecoration(
+                  color: base.withValues(alpha: .18),
+                  borderRadius: BorderRadius.circular(widget.radius),
+                  border: Border.all(
+                    color: widget.borderColor ?? base.withValues(alpha: .40),
+                    width: widget.borderWidth,
+                  ),
+                ),
+                child: widget.child,
+              ),
+            ),
+          );
+        }
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
