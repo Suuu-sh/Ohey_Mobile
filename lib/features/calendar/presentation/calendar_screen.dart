@@ -710,8 +710,6 @@ class _SelectedDayPanel extends StatelessWidget {
                 padding: EdgeInsets.fromLTRB(14, compact ? 10 : 12, 24, 0),
                 child: Row(
                   children: [
-                    _CalendarDateBadge(day: day, isWhite: isWhite),
-                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -730,7 +728,7 @@ class _SelectedDayPanel extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '空き状況と思い出',
+                            _calendarSelectedDayTitle(day),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -804,70 +802,8 @@ bool _useCompactCalendarDetailLayout(double availableHeight) {
   return true;
 }
 
-class _CalendarDateBadge extends StatelessWidget {
-  const _CalendarDateBadge({required this.day, required this.isWhite});
-
-  final DateTime day;
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = day.weekday == DateTime.sunday
-        ? const Color(0xFFFF6FA6)
-        : day.weekday == DateTime.saturday
-        ? const Color(0xFF46C8FF)
-        : _calendarPrimaryActionColor;
-    return Container(
-      width: 54,
-      height: 42,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            accent.withValues(alpha: isWhite ? .22 : .30),
-            accent.withValues(alpha: isWhite ? .10 : .16),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: accent.withValues(alpha: .42)),
-        boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: isWhite ? .10 : .22),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            '${day.month}/${day.day}',
-            style: TextStyle(
-              color: isWhite ? const Color(0xFF101820) : Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              height: 1,
-              letterSpacing: -.3,
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            _calendarWeekdayLabel(day),
-            style: TextStyle(
-              color: accent,
-              fontSize: 9.5,
-              fontWeight: FontWeight.w900,
-              height: 1,
-              letterSpacing: .5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+String _calendarSelectedDayTitle(DateTime day) =>
+    '${day.month}/${day.day}(${_calendarWeekdayLabel(day)}) の空き状況と思い出';
 
 class _CalendarStatusChangeButton extends StatelessWidget {
   const _CalendarStatusChangeButton({
