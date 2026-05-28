@@ -105,6 +105,9 @@ class AdminController {
     );
   }
 
+  Future<String?> displayPhotoUrl(String path) =>
+      _repository.displayPhotoUrl(path);
+
   Future<void> createDrinkLog({
     String? ownerUserId,
     required String placeName,

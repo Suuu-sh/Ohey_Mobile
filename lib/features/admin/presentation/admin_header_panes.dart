@@ -132,9 +132,16 @@ class _AdminReportsPane extends StatelessWidget {
               return ListView.separated(
                 padding: const EdgeInsets.only(bottom: 120),
                 itemBuilder: (context, index) => _AdminReportCard(
+                  ref: ref,
                   report: reports[index],
-                  onStatus: (status) =>
-                      _updateReportStatus(context, ref, reports[index], status),
+                  onStatus: (status) => _showReportStatusSheet(
+                    context,
+                    ref,
+                    reports[index],
+                    status,
+                  ),
+                  onDeletePost: () =>
+                      _confirmDeleteReportedPost(context, ref, reports[index]),
                 ),
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemCount: reports.length,
@@ -155,10 +162,17 @@ class _AdminReportsPane extends StatelessWidget {
 }
 
 class _AdminReportCard extends StatelessWidget {
-  const _AdminReportCard({required this.report, required this.onStatus});
+  const _AdminReportCard({
+    required this.ref,
+    required this.report,
+    required this.onStatus,
+    required this.onDeletePost,
+  });
 
+  final WidgetRef ref;
   final AdminDrinkLogReport report;
   final ValueChanged<String> onStatus;
+  final VoidCallback onDeletePost;
 
   @override
   Widget build(BuildContext context) => _AdminCard(
@@ -204,6 +218,10 @@ class _AdminReportCard extends StatelessWidget {
             fontSize: 16,
           ),
         ),
+        if (report.photoPath.trim().isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _AdminReportPhotoPreview(ref: ref, path: report.photoPath),
+        ],
         const SizedBox(height: 8),
         Text(
           '投稿者: ${report.ownerDisplayName} @${report.ownerHandle}',
@@ -220,6 +238,18 @@ class _AdminReportCard extends StatelessWidget {
             fontWeight: FontWeight.w800,
           ),
         ),
+        if ((report.moderationNote ?? '').trim().isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            'メモ: ${report.moderationNote!.trim()}',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
         const SizedBox(height: 14),
         Wrap(
           spacing: 8,
@@ -238,11 +268,77 @@ class _AdminReportCard extends StatelessWidget {
               destructive: true,
               onTap: () => onStatus('dismissed'),
             ),
+            _AdminSmallActionButton(
+              label: '投稿削除',
+              destructive: true,
+              onTap: onDeletePost,
+            ),
           ],
         ),
       ],
     ),
   );
+}
+
+class _AdminReportPhotoPreview extends StatelessWidget {
+  const _AdminReportPhotoPreview({required this.ref, required this.path});
+
+  final WidgetRef ref;
+  final String path;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: ref.read(adminControllerProvider).displayPhotoUrl(path),
+      builder: (context, snapshot) {
+        final url = snapshot.data;
+        Widget child;
+        if (snapshot.connectionState != ConnectionState.done) {
+          child = const Center(
+            child: CupertinoActivityIndicator(color: _AdminColors.lime),
+          );
+        } else if (url == null || url.isEmpty) {
+          child = const Center(
+            child: Text(
+              '写真を表示できません',
+              style: TextStyle(
+                color: _AdminColors.sub,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          );
+        } else if (url.startsWith('assets/')) {
+          child = Image.asset(url, fit: BoxFit.cover);
+        } else if (url.startsWith('/')) {
+          child = Image.file(File(url), fit: BoxFit.cover);
+        } else {
+          child = Image.network(
+            url,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => const Center(
+              child: Text(
+                '写真を表示できません',
+                style: TextStyle(
+                  color: _AdminColors.sub,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          );
+        }
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: ColoredBox(
+              color: Colors.black.withValues(alpha: .24),
+              child: child,
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _AdminSmallActionButton extends StatelessWidget {

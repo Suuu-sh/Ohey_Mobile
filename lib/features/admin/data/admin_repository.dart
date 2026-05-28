@@ -109,6 +109,21 @@ class AdminRepository {
     });
   }
 
+  Future<String?> displayPhotoUrl(String path) async {
+    final normalized = path.trim();
+    if (normalized.isEmpty) return null;
+    if (normalized.startsWith('http://') ||
+        normalized.startsWith('https://') ||
+        normalized.startsWith('assets/') ||
+        normalized.startsWith('/')) {
+      return normalized;
+    }
+    final row = await _client.postRow('/v1/media/display-url', {
+      'path': normalized,
+    });
+    return row['signed_url'] as String?;
+  }
+
   Future<void> createDrinkLog({
     String? ownerUserId,
     required String placeName,

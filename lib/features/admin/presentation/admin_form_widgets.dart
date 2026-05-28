@@ -259,19 +259,55 @@ Future<void> _confirmDeletePost(
   }
 }
 
-Future<void> _updateReportStatus(
+Future<void> _showReportStatusSheet(
   BuildContext context,
   WidgetRef ref,
   AdminDrinkLogReport report,
   String status,
 ) async {
+  final noteController = TextEditingController(text: report.moderationNote);
+  final note = await showNomoBottomSheet<String>(
+    context: context,
+    builder: (sheetContext) => _AdminSheet(
+      title: '通報を${_adminReportStatusLabel(status)}にする',
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _AdminInput(
+              controller: noteController,
+              label: 'モデレーションメモ',
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            _AdminPrimaryButton(
+              label: '更新する',
+              busy: false,
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(noteController.text.trim()),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  noteController.dispose();
+  if (note == null) return;
+
   try {
+    final moderationNote = note.trim().isEmpty
+        ? 'Updated from admin app'
+        : note.trim();
     await ref
         .read(adminControllerProvider)
         .updateDrinkLogReport(
           id: report.id,
           status: status,
-          moderationNote: 'Updated from admin app',
+          moderationNote: moderationNote,
         );
     ref.invalidate(adminDrinkLogReportsProvider);
     if (context.mounted) {
@@ -279,6 +315,34 @@ Future<void> _updateReportStatus(
     }
   } catch (e) {
     if (context.mounted) NomoToast.show(context, '更新できませんでした: $e');
+  }
+}
+
+Future<void> _confirmDeleteReportedPost(
+  BuildContext context,
+  WidgetRef ref,
+  AdminDrinkLogReport report,
+) async {
+  final ok = await _confirmDestructive(
+    context,
+    title: '通報された投稿を削除しますか？',
+    message: report.memo.isEmpty ? report.drinkLogId : report.memo,
+  );
+  if (ok != true) return;
+  try {
+    await ref.read(adminControllerProvider).deleteDrinkLog(report.drinkLogId);
+    await ref
+        .read(adminControllerProvider)
+        .updateDrinkLogReport(
+          id: report.id,
+          status: 'resolved',
+          moderationNote: 'Deleted reported post from admin app',
+        );
+    ref.invalidate(adminDrinkLogReportsProvider);
+    ref.invalidate(adminDrinkLogsProvider);
+    if (context.mounted) NomoToast.show(context, '投稿を削除し、通報を解決済みにしました。');
+  } catch (e) {
+    if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
   }
 }
 
