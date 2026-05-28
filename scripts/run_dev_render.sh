@@ -15,7 +15,7 @@ SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-app.ohey.ohey://login-
 OHEY_ADMIN_EMAILS="${OHEY_ADMIN_EMAILS:-}"
 
 # Run Ohey against dev-ohey Supabase and the dev Render backend.
-DEV_OHEY_BACKEND_URL="${DEV_OHEY_BACKEND_URL:-https://dev-nomo-backend.onrender.com}"
+DEV_OHEY_BACKEND_URL="${DEV_OHEY_BACKEND_URL:-https://dev-ohey-backend.onrender.com}"
 
 flutter run \
   --dart-define=OHEY_ENV=dev \

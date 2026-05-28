@@ -49,10 +49,10 @@ go run ./cmd/api
 Run Flutter against it:
 
 ```sh
-flutter run --dart-define=OHEY_BACKEND_URL=https://dev-nomo-backend.onrender.com
+flutter run --dart-define=OHEY_BACKEND_URL=https://dev-ohey-backend.onrender.com
 ```
 
-For prod builds, set `OHEY_BACKEND_URL=https://nomo-backend-nezf.onrender.com`. For dev/Simulator use `https://dev-nomo-backend.onrender.com`. Render service display names are `ohey-backend` / `dev-ohey-backend`; the generated hostnames are legacy immutable slugs.
+For prod builds, set `OHEY_BACKEND_URL=https://ohey-backend.onrender.com`. For dev/Simulator use `https://dev-ohey-backend.onrender.com`. Render service display names are `ohey-backend` / `dev-ohey-backend`; the generated hostnames are Ohey slugs.
 
 ## Run
 

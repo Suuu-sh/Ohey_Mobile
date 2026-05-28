@@ -82,7 +82,7 @@ Dev Render backend:
 
 ```bash
 cd /Users/yota/Projects/Products/Nomo/Mobile
-OHEY_BACKEND_URL=https://dev-nomo-backend.onrender.com \
+OHEY_BACKEND_URL=https://dev-ohey-backend.onrender.com \
 SUPABASE_URL=... \
 SUPABASE_PUBLISHABLE_KEY=... \
 OHEY_SMOKE_EMAIL=dev-yuta@ohey.app \

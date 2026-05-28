@@ -10,9 +10,9 @@ class BackendConfig {
   const BackendConfig._();
 
   // Render service display names are dev-ohey-backend / ohey-backend.
-  // The generated onrender.com hostnames are legacy immutable slugs.
-  static const _devBaseUrl = 'https://dev-nomo-backend.onrender.com';
-  static const _prodBaseUrl = 'https://nomo-backend-nezf.onrender.com';
+  // The generated onrender.com hostnames are Ohey slugs.
+  static const _devBaseUrl = 'https://dev-ohey-backend.onrender.com';
+  static const _prodBaseUrl = 'https://ohey-backend.onrender.com';
 
   static const _definedBaseUrl = String.fromEnvironment('OHEY_BACKEND_URL');
 

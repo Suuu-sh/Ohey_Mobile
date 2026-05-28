@@ -67,7 +67,7 @@ app.ohey.ohey://login-callback/
 ## Important: dev and production must stay separate
 
 `ohey` Supabase and `ohey-backend` are production resources. Do not use them for local/dev checks.
-Dev/Simulator must use `dev-ohey` Supabase and the `dev-ohey-backend` Render backend (legacy generated URL: `https://dev-nomo-backend.onrender.com`).
+Dev/Simulator must use `dev-ohey` Supabase and the `dev-ohey-backend` Render backend (generated URL: `https://dev-ohey-backend.onrender.com`).
 
 If Flutter and the backend point to different Supabase projects, PostgREST returns:
 

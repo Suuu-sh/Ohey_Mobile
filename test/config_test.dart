@@ -9,7 +9,7 @@ void main() {
       SupabaseConfig.authRedirectUrl,
       'app.ohey.ohey.dev://login-callback/',
     );
-    expect(BackendConfig.baseUrl, 'https://dev-nomo-backend.onrender.com');
+    expect(BackendConfig.baseUrl, 'https://dev-ohey-backend.onrender.com');
     expect(
       SupabaseConfig.expectedAuthIssuer,
       '${SupabaseConfig.uri.origin}/auth/v1',
