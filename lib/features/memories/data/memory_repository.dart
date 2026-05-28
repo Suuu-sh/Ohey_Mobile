@@ -406,7 +406,7 @@ NomoFriend _friendFromProfileRow(
     avatarEmoji: '🍻',
     vibe: (profile['user_id'] as String?) ?? '',
     characterAssetPath: '',
-    kind: NomiTomoKind.cloud,
+    kind: NomoFriendKind.cloud,
     palette: _paletteFromKey(profile['palette'] as String?),
     gender: nomoGenderFromKey(profile['gender'] as String?),
     avatar: NomoAvatar.decode(profile['avatar_url'] as String?),
@@ -419,14 +419,14 @@ NomoFriend _friendFromProfileRow(
   );
 }
 
-NomiTomoPalette _paletteFromKey(String? key) {
+NomoFriendPalette _paletteFromKey(String? key) {
   return switch (key) {
-    'sky' => NomiTomoPalette.sky,
-    'lavender' => NomiTomoPalette.lavender,
-    'mint' => NomiTomoPalette.mint,
-    'peach' => NomiTomoPalette.peach,
-    'blush' => NomiTomoPalette.blush,
-    _ => NomiTomoPalette.lemon,
+    'sky' => NomoFriendPalette.sky,
+    'lavender' => NomoFriendPalette.lavender,
+    'mint' => NomoFriendPalette.mint,
+    'peach' => NomoFriendPalette.peach,
+    'blush' => NomoFriendPalette.blush,
+    _ => NomoFriendPalette.lemon,
   };
 }
 

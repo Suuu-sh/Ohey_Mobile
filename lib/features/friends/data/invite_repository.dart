@@ -114,8 +114,8 @@ class InviteRepository {
       avatarEmoji: '🍻',
       vibe: (profile['user_id'] as String?) ?? '',
       characterAssetPath: '',
-      kind: NomiTomoKind.cloud,
-      palette: NomiTomoPalette.mint,
+      kind: NomoFriendKind.cloud,
+      palette: NomoFriendPalette.mint,
       gender: nomoGenderFromKey(profile['gender'] as String?),
       avatar: NomoAvatar.decode(profile['avatar_url'] as String?),
     );

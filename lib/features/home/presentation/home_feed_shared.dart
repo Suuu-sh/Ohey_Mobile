@@ -151,7 +151,7 @@ class _FeedItem {
       likes: memory.likeCount,
       saved: memory.id.hashCode.isEven,
       liked: memory.likedByMe,
-      prop: _PostProp.beer,
+      prop: _PostProp.memory,
       tilt: memory.feedTilt ?? (memory.id.hashCode.isEven ? -.08 : .08),
       ownerUserId: memory.ownerUserId,
       ownedByMe: memory.feedPostKind == 'mine' || isOwnedByCurrentUser,
@@ -211,7 +211,7 @@ class _FeedItem {
   final bool canDelete;
 }
 
-enum _PostProp { beer, ticket, spark }
+enum _PostProp { memory, ticket, spark }
 
 enum _FeedPostKind { mine, friend, official }
 
@@ -249,8 +249,8 @@ class _Companion {
     avatarEmoji: '👤',
     vibe: handle.replaceFirst('@', ''),
     characterAssetPath: '',
-    kind: NomiTomoKind.cloud,
-    palette: NomiTomoPalette.lavender,
+    kind: NomoFriendKind.cloud,
+    palette: NomoFriendPalette.lavender,
     avatar: avatar,
     statusKey: statusKey,
   );

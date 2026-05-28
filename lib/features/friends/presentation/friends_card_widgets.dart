@@ -7,7 +7,7 @@ enum _FriendProfileReportReason {
   harassment('harassment', '不快・いやがらせ', '攻撃的、差別的、嫌がらせに感じる内容'),
   inappropriate('inappropriate', '不適切な内容', '性的・過度に不快な表現'),
   violence('violence', '暴力・危険行為', '暴力、危険行為、自傷を助長する内容'),
-  minorSafety('minor_safety', '未成年・危険', '未成年の安全や飲酒に関わる懸念'),
+  minorSafety('minor_safety', '未成年・危険', '未成年の安全に関わる懸念'),
   other('other', 'その他', '上記に当てはまらない問題');
 
   const _FriendProfileReportReason(this.value, this.label, this.description);

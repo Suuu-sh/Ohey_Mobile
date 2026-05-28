@@ -173,7 +173,7 @@ import WidgetKit
   private func searchNearbyPlaces(_ arguments: Any?, result: @escaping FlutterResult) {
     let payload = arguments as? [String: Any]
     let query = (payload?["query"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-    let searchQuery = query.isEmpty ? "飲食店" : query
+    let searchQuery = query.isEmpty ? "スポット" : query
     let radiusMeters = payload?["radiusMeters"] as? CLLocationDistance ?? 2500
     let limit = payload?["limit"] as? Int ?? 20
 
