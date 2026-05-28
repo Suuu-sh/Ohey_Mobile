@@ -187,6 +187,27 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute function private.handle_new_user();
 
+-- Backfill profiles for existing Auth users when this baseline is applied to
+-- pre-release dev/prod projects. New users are handled by the Auth trigger above.
+insert into public.profiles (id, user_id, display_name, character_key, avatar_url)
+select
+  u.id,
+  'nomo_' || right(replace(u.id::text, '-', ''), 12),
+  coalesce(
+    nullif(substr(u.raw_user_meta_data->>'display_name', 1, 40), ''),
+    nullif(substr(split_part(coalesce(u.email, ''), '@', 1), 1, 40), ''),
+    'Nomo'
+  ),
+  coalesce(nullif(u.raw_user_meta_data->>'character_key', ''), 'icon_smile'),
+  nullif(u.raw_user_meta_data->>'avatar_url', '')
+from auth.users u
+where not exists (
+  select 1
+  from public.profiles p
+  where p.id = u.id
+)
+on conflict (id) do nothing;
+
 create table public.friendships (
   id uuid primary key default gen_random_uuid(),
   user_a_id uuid not null references public.profiles(id) on delete cascade,
