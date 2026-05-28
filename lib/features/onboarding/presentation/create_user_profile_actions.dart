@@ -23,7 +23,7 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
           password: password,
         );
         final loaded = await ref
-            .read(tomoUserProvider.notifier)
+            .read(oheyUserProvider.notifier)
             .loadFromBackendProfile();
         if (loaded && mounted) {
           await _saveLastAccount(email);
@@ -87,7 +87,7 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
         }
       }
       await ref
-          .read(tomoUserProvider.notifier)
+          .read(oheyUserProvider.notifier)
           .createUser(
             name: name,
             userId: userId,
@@ -125,7 +125,7 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
       });
       return false;
     }
-    if (_gender == TomoGender.unspecified) {
+    if (_gender == OheyGender.unspecified) {
       setState(() {
         _error = '性別を選択してください。';
         _notice = null;
@@ -141,22 +141,22 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
     final userId = metadata['user_id'] as String?;
     final displayName = metadata['display_name'] as String?;
     final avatarUrl = metadata['avatar_url'] as String?;
-    final gender = tomoGenderFromKey(metadata['gender'] as String?);
+    final gender = oheyGenderFromKey(metadata['gender'] as String?);
     if (userId != null && _userIdController.text.trim().isEmpty) {
       _userIdController.text = userId;
     }
     if (displayName != null && _nameController.text.trim().isEmpty) {
       _nameController.text = displayName;
     }
-    final avatar = TomoAvatar.decode(avatarUrl);
+    final avatar = OheyAvatar.decode(avatarUrl);
     if (avatar != null) _avatar = avatar;
-    if (gender != TomoGender.unspecified) _gender = gender;
+    if (gender != OheyGender.unspecified) _gender = gender;
   }
 
   Future<void> _saveLastAccount(String email) async {
-    final user = ref.read(tomoUserProvider);
+    final user = ref.read(oheyUserProvider);
     final displayName = await _latestDisplayName(user?.name);
-    await TomoLastAccountStore.save(
+    await OheyLastAccountStore.save(
       name: displayName,
       email: email,
       avatar: user?.avatar ?? _avatar,
@@ -164,18 +164,18 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
   }
 
   Future<String?> _latestDisplayName(String? fallback) {
-    return ref.read(tomoUserProvider.notifier).latestDisplayName(fallback);
+    return ref.read(oheyUserProvider.notifier).latestDisplayName(fallback);
   }
 
   Future<void> _openAvatarBuilder() async {
-    if (_gender == TomoGender.unspecified) {
+    if (_gender == OheyGender.unspecified) {
       setState(() {
         _error = '先に性別を選択してください。';
         _notice = null;
       });
       return;
     }
-    final result = await Navigator.of(context).push<TomoAvatar>(
+    final result = await Navigator.of(context).push<OheyAvatar>(
       CupertinoPageRoute(
         fullscreenDialog: true,
         builder: (_) =>

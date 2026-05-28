@@ -11,15 +11,15 @@ fi
 
 : "${SUPABASE_URL:?SUPABASE_URL is required. Put it in .env.local or export it.}"
 : "${SUPABASE_PUBLISHABLE_KEY:?SUPABASE_PUBLISHABLE_KEY is required. Put it in .env.local or export it.}"
-SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-app.tomo.tomo://login-callback/}"
-TOMO_ADMIN_EMAILS="${TOMO_ADMIN_EMAILS:-}"
+SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-app.ohey.ohey://login-callback/}"
+OHEY_ADMIN_EMAILS="${OHEY_ADMIN_EMAILS:-}"
 
-# Run Tomo locally against dev-nomo Supabase and a local Go backend on :8080.
+# Run Ohey locally against dev-nomo Supabase and a local Go backend on :8080.
 flutter run \
-  --dart-define=TOMO_ENV=local \
+  --dart-define=OHEY_ENV=local \
   --dart-define=SUPABASE_URL="$SUPABASE_URL" \
   --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
   --dart-define=SUPABASE_AUTH_REDIRECT_URL="$SUPABASE_AUTH_REDIRECT_URL" \
-  --dart-define=TOMO_BACKEND_URL="${TOMO_BACKEND_URL:-http://localhost:8080}" \
-  --dart-define=TOMO_ADMIN_EMAILS="$TOMO_ADMIN_EMAILS" \
+  --dart-define=OHEY_BACKEND_URL="${OHEY_BACKEND_URL:-http://localhost:8080}" \
+  --dart-define=OHEY_ADMIN_EMAILS="$OHEY_ADMIN_EMAILS" \
   "$@"

@@ -1,19 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/optimistic_update.dart';
-import '../../../core/models/tomo_invite.dart';
+import '../../../core/models/ohey_invite.dart';
 import '../data/invite_repository.dart';
 
-final todayReservationsProvider = FutureProvider<List<TomoInvite>>((ref) {
+final todayReservationsProvider = FutureProvider<List<OheyInvite>>((ref) {
   return ref.watch(inviteRepositoryProvider).fetchTodayReservations();
 });
 
-final incomingInvitesProvider = FutureProvider<List<TomoInvite>>((ref) {
+final incomingInvitesProvider = FutureProvider<List<OheyInvite>>((ref) {
   return ref.watch(inviteRepositoryProvider).fetchIncomingPendingInvites();
 });
 
 final outgoingActiveInvitesProvider =
-    FutureProvider.family<List<TomoInvite>, DateTime?>((ref, date) {
+    FutureProvider.family<List<OheyInvite>, DateTime?>((ref, date) {
       return ref
           .watch(inviteRepositoryProvider)
           .fetchOutgoingActiveInvites(date: date);
@@ -66,20 +66,20 @@ class InviteController {
   Future<void> accept(String inviteId) async {
     await _respondOptimistically(
       inviteId: inviteId,
-      status: TomoInviteStatus.accepted,
+      status: OheyInviteStatus.accepted,
     );
   }
 
   Future<void> reject(String inviteId) async {
     await _respondOptimistically(
       inviteId: inviteId,
-      status: TomoInviteStatus.rejected,
+      status: OheyInviteStatus.rejected,
     );
   }
 
   Future<void> _respondOptimistically({
     required String inviteId,
-    required TomoInviteStatus status,
+    required OheyInviteStatus status,
   }) async {
     await runOptimistic<void>(
       apply: _invalidate,

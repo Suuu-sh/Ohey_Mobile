@@ -18,8 +18,8 @@ class _FeedEmptyState extends StatelessWidget {
   final Widget? action;
 
   @override
-  Widget build(BuildContext context) => TomoEmptyState(
-    visual: TomoPopIcon(icon: icon, color: accent, size: 58),
+  Widget build(BuildContext context) => OheyEmptyState(
+    visual: OheyPopIcon(icon: icon, color: accent, size: 58),
     title: title,
     message: message,
     titleColor: isWhite ? const Color(0xFF27313B) : Colors.white,
@@ -37,7 +37,7 @@ class _AvatarBubble extends StatelessWidget {
     required this.glowColor,
   });
 
-  final TomoAvatar avatar;
+  final OheyAvatar avatar;
   final double size;
   final Color glowColor;
 
@@ -54,7 +54,7 @@ class _AvatarBubble extends StatelessWidget {
         ],
       ),
     ),
-    child: TomoAvatarView(avatar: avatar, size: size * .96),
+    child: OheyAvatarView(avatar: avatar, size: size * .96),
   );
 }
 
@@ -73,7 +73,7 @@ BoxDecoration _feedCardDecoration({required double radius}) => BoxDecoration(
 
 List<_FeedItem> _feedItems(
   List<Memory> memories, {
-  TomoUser? user,
+  OheyUser? user,
   String? currentUserId,
 }) => memories
     .map(
@@ -115,7 +115,7 @@ class _FeedItem {
 
   factory _FeedItem.fromMemory(
     Memory memory, {
-    TomoUser? user,
+    OheyUser? user,
     String? currentUserId,
   }) {
     final accent = _accentForId(memory.id);
@@ -130,15 +130,15 @@ class _FeedItem {
         ? ownerName
         : (isOwnedByCurrentUser && user?.name.trim().isNotEmpty == true)
         ? user!.name.trim()
-        : user?.userId ?? 'tomo_user';
+        : user?.userId ?? 'ohey_user';
     final avatar = memory.isOfficial
-        ? TomoAvatar.adminAvatar
+        ? OheyAvatar.adminAvatar
         : memory.ownerAvatar ??
               (isOwnedByCurrentUser ? user?.avatar : null) ??
-              TomoAvatar.defaultAvatar;
+              OheyAvatar.defaultAvatar;
     return _FeedItem(
       id: memory.id,
-      userName: memory.isOfficial ? 'Tomo' : authorName,
+      userName: memory.isOfficial ? 'Ohey' : authorName,
       timeAgo: _relativeTime(memory.date),
       body: memory.memo.trim(),
       place: memory.place.trim(),
@@ -191,7 +191,7 @@ class _FeedItem {
   final String timeAgo;
   final String body;
   final String place;
-  final TomoAvatar avatar;
+  final OheyAvatar avatar;
   final Color accent;
   final String? photoAssetPath;
   final double captionY;
@@ -225,11 +225,11 @@ class _Companion {
     required this.statusKey,
   });
 
-  factory _Companion.fromFriend(TomoFriend friend) => _Companion(
+  factory _Companion.fromFriend(OheyFriend friend) => _Companion(
     userId: friend.id,
     name: friend.name,
     handle: friend.vibe,
-    avatar: friend.avatar ?? TomoAvatar.defaultAvatar,
+    avatar: friend.avatar ?? OheyAvatar.defaultAvatar,
     accent: friend.accentColor,
     statusKey: friend.statusKey,
   );
@@ -237,52 +237,52 @@ class _Companion {
   final String userId;
   final String name;
   final String handle;
-  final TomoAvatar avatar;
+  final OheyAvatar avatar;
   final Color accent;
   final String? statusKey;
 
-  String get handleLabel => handle.trim().isEmpty ? 'Tomoフレンズ' : '@$handle';
+  String get handleLabel => handle.trim().isEmpty ? 'Oheyフレンズ' : '@$handle';
 
-  TomoFriend toTomoFriend() => TomoFriend(
+  OheyFriend toOheyFriend() => OheyFriend(
     id: userId,
     name: name,
     avatarEmoji: '👤',
     vibe: handle.replaceFirst('@', ''),
     characterAssetPath: '',
-    kind: TomoFriendKind.cloud,
-    palette: TomoFriendPalette.lavender,
+    kind: OheyFriendKind.cloud,
+    palette: OheyFriendPalette.lavender,
     avatar: avatar,
     statusKey: statusKey,
   );
 }
 
 String _companionStatusLabel(String? statusKey) {
-  return tomoDailyStatusFromKey(statusKey).label;
+  return oheyDailyStatusFromKey(statusKey).label;
 }
 
 String _companionStatusMessage(String? statusKey) {
-  return tomoDailyStatusFromKey(statusKey).description;
+  return oheyDailyStatusFromKey(statusKey).description;
 }
 
 IconData _companionStatusIcon(String? statusKey) {
-  final status = tomoDailyStatusFromKey(statusKey);
+  final status = oheyDailyStatusFromKey(statusKey);
   return switch (status) {
-    TomoDailyStatus.available => CupertinoIcons.checkmark_circle_fill,
-    TomoDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
-    TomoDailyStatus.dependsOnTime => CupertinoIcons.moon_fill,
-    TomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
-    TomoDailyStatus.unselected => CupertinoIcons.circle,
+    OheyDailyStatus.available => CupertinoIcons.checkmark_circle_fill,
+    OheyDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
+    OheyDailyStatus.dependsOnTime => CupertinoIcons.moon_fill,
+    OheyDailyStatus.hasPlans => CupertinoIcons.calendar_today,
+    OheyDailyStatus.unselected => CupertinoIcons.circle,
   };
 }
 
 Color _companionStatusColor(String? statusKey) {
-  final status = tomoDailyStatusFromKey(statusKey);
+  final status = oheyDailyStatusFromKey(statusKey);
   return switch (status) {
-    TomoDailyStatus.available => const Color(0xFF9AF21A),
-    TomoDailyStatus.maybeAvailable => const Color(0xFF5DEBD3),
-    TomoDailyStatus.dependsOnTime => const Color(0xFFFF5EA8),
-    TomoDailyStatus.hasPlans => const Color(0xFFB8C1CD),
-    TomoDailyStatus.unselected => _FeedColors.sub,
+    OheyDailyStatus.available => const Color(0xFF9AF21A),
+    OheyDailyStatus.maybeAvailable => const Color(0xFF5DEBD3),
+    OheyDailyStatus.dependsOnTime => const Color(0xFFFF5EA8),
+    OheyDailyStatus.hasPlans => const Color(0xFFB8C1CD),
+    OheyDailyStatus.unselected => _FeedColors.sub,
   };
 }
 
@@ -301,7 +301,7 @@ class _FeedNotification {
     this.inviteStatus,
   });
 
-  factory _FeedNotification.fromNotification(TomoNotification notification) {
+  factory _FeedNotification.fromNotification(OheyNotification notification) {
     return _FeedNotification(
       kind: notification.kind,
       title: notification.displayTitle,
@@ -361,30 +361,30 @@ class _FeedNotification {
 
   bool get requiresAction {
     if (kind == 'friend_request_received') {
-      return tomoFriendRequestStatusFromKey(friendRequestStatus).isPending;
+      return oheyFriendRequestStatusFromKey(friendRequestStatus).isPending;
     }
     if (kind == 'invite_received') {
-      return tomoInviteStatusFromKey(inviteStatus).isPending;
+      return oheyInviteStatusFromKey(inviteStatus).isPending;
     }
     return false;
   }
 
   bool get isResolvedAction {
     if (kind == 'friend_request_received') {
-      return !tomoFriendRequestStatusFromKey(friendRequestStatus).isPending;
+      return !oheyFriendRequestStatusFromKey(friendRequestStatus).isPending;
     }
     if (kind == 'invite_received') {
-      return !tomoInviteStatusFromKey(inviteStatus).isPending;
+      return !oheyInviteStatusFromKey(inviteStatus).isPending;
     }
     return false;
   }
 
   String? get actionLabel {
     if (kind == 'friend_request_received') {
-      return tomoFriendRequestStatusFromKey(friendRequestStatus).actionLabel;
+      return oheyFriendRequestStatusFromKey(friendRequestStatus).actionLabel;
     }
     if (kind == 'invite_received') {
-      return tomoInviteStatusFromKey(inviteStatus).actionLabel;
+      return oheyInviteStatusFromKey(inviteStatus).actionLabel;
     }
     return null;
   }
@@ -523,7 +523,7 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
     throw StateError('共有画像を作成できませんでした。');
   }
   final path =
-      '${Directory.systemTemp.path}/tomo_story_${DateTime.now().microsecondsSinceEpoch}.png';
+      '${Directory.systemTemp.path}/ohey_story_${DateTime.now().microsecondsSinceEpoch}.png';
   await File(path).writeAsBytes(byteData.buffer.asUint8List());
   output.dispose();
   picture.dispose();

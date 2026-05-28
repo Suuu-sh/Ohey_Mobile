@@ -1,13 +1,13 @@
 part of 'create_user_dialog.dart';
 
-class TomoDemoScreen extends StatefulWidget {
-  const TomoDemoScreen({super.key});
+class OheyDemoScreen extends StatefulWidget {
+  const OheyDemoScreen({super.key});
 
   @override
-  State<TomoDemoScreen> createState() => _TomoDemoScreenState();
+  State<OheyDemoScreen> createState() => _OheyDemoScreenState();
 }
 
-class _TomoDemoScreenState extends State<TomoDemoScreen> {
+class _OheyDemoScreenState extends State<OheyDemoScreen> {
   final _controller = PageController();
   int _page = 0;
 
@@ -33,7 +33,7 @@ class _TomoDemoScreenState extends State<TomoDemoScreen> {
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const TomoGeneratedIcon(
+                    icon: const OheyGeneratedIcon(
                       CupertinoIcons.xmark,
                       color: Colors.white,
                       size: 28,
@@ -86,7 +86,7 @@ class _TomoDemoScreenState extends State<TomoDemoScreen> {
                         ],
                       ),
                       child: Center(
-                        child: TomoPopIcon(
+                        child: OheyPopIcon(
                           icon: _page == slides.length - 1
                               ? CupertinoIcons.checkmark
                               : CupertinoIcons.arrow_right,

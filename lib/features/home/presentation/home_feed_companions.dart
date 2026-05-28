@@ -16,16 +16,16 @@ class _FeedCompanionListSheet extends StatelessWidget {
       78.0,
       MediaQuery.sizeOf(context).height * .44,
     );
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const TomoBottomSheetHandle(),
+          const OheyBottomSheetHandle(),
           const SizedBox(height: 18),
           Row(
             children: [
-              TomoPopIcon(
+              OheyPopIcon(
                 icon: CupertinoIcons.person_2_fill,
                 color: _FeedColors.teal,
                 size: 46,
@@ -59,7 +59,7 @@ class _FeedCompanionListSheet extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () => Navigator.of(context).pop(),
-                icon: TomoPopIcon(
+                icon: OheyPopIcon(
                   icon: CupertinoIcons.xmark,
                   color: subtitleColor,
                   size: 34,
@@ -177,7 +177,7 @@ class _FeedCompanionTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            TomoPopIcon(
+            OheyPopIcon(
               icon: CupertinoIcons.chevron_forward,
               color: subtitleColor,
               size: 28,
@@ -192,7 +192,7 @@ class _FeedCompanionTile extends StatelessWidget {
 }
 
 final _feedCompanionRelationshipProvider = FutureProvider.autoDispose
-    .family<TomoFriendRelationshipStatus, String>((ref, userId) {
+    .family<OheyFriendRelationshipStatus, String>((ref, userId) {
       return ref.read(friendRepositoryProvider).relationshipStatus(userId);
     });
 
@@ -228,7 +228,7 @@ class _FeedCompanionStatusCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          TomoPopIcon(
+          OheyPopIcon(
             icon: _companionStatusIcon(friend.statusKey),
             color: statusColor,
             size: 40,
@@ -305,7 +305,7 @@ class _FeedCompanionRequestCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const TomoPopIcon(
+              const OheyPopIcon(
                 icon: CupertinoIcons.lock_fill,
                 color: Color(0xFFC08BFF),
                 size: 40,
@@ -326,7 +326,7 @@ class _FeedCompanionRequestCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          Tomo3DButton(
+          Ohey3DButton(
             label: buttonLabel,
             icon: CupertinoIcons.person_badge_plus_fill,
             onTap: enabled ? onTap : null,
@@ -351,7 +351,7 @@ class _FeedCompanionProfileSheet extends ConsumerStatefulWidget {
   });
 
   final _Companion friend;
-  final TomoFriendRelationshipStatus? initialRelationship;
+  final OheyFriendRelationshipStatus? initialRelationship;
 
   @override
   ConsumerState<_FeedCompanionProfileSheet> createState() =>
@@ -376,11 +376,11 @@ class _FeedCompanionProfileSheetState
           .sendFriendRequest(widget.friend.userId);
       ref.invalidate(friendsProvider);
       if (!mounted) return;
-      TomoToast.show(
+      OheyToast.show(
         context,
         '${widget.friend.name}にフレンド申請を送りました',
         icon: CupertinoIcons.paperplane_fill,
-        placement: TomoToastPlacement.bottom,
+        placement: OheyToastPlacement.bottom,
       );
       setState(() => _isSendingRequest = false);
       ref.invalidate(_feedCompanionRelationshipProvider(widget.friend.userId));
@@ -405,28 +405,28 @@ class _FeedCompanionProfileSheetState
     final statusColor = _companionStatusColor(friend.statusKey);
     final relationshipAsync = widget.initialRelationship == null
         ? (friend.userId.trim().isEmpty
-              ? const AsyncValue<TomoFriendRelationshipStatus>.data(
-                  TomoFriendRelationshipStatus(
+              ? const AsyncValue<OheyFriendRelationshipStatus>.data(
+                  OheyFriendRelationshipStatus(
                     alreadyFriend: false,
-                    requestState: TomoFriendRequestState.none,
+                    requestState: OheyFriendRequestState.none,
                   ),
                 )
               : ref.watch(_feedCompanionRelationshipProvider(friend.userId)))
-        : AsyncValue<TomoFriendRelationshipStatus>.data(
+        : AsyncValue<OheyFriendRelationshipStatus>.data(
             widget.initialRelationship!,
           );
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const TomoBottomSheetHandle(),
+          const OheyBottomSheetHandle(),
           const SizedBox(height: 14),
           Align(
             alignment: Alignment.centerRight,
             child: IconButton(
               onPressed: () => Navigator.of(context).pop(),
-              icon: TomoPopIcon(
+              icon: OheyPopIcon(
                 icon: CupertinoIcons.xmark,
                 color: subtitleColor,
                 size: 34,
@@ -461,13 +461,13 @@ class _FeedCompanionProfileSheetState
                     border: Border.all(color: Colors.white, width: 5),
                   ),
                   child: ClipOval(
-                    child: TomoAvatarView(avatar: friend.avatar, size: 112),
+                    child: OheyAvatarView(avatar: friend.avatar, size: 112),
                   ),
                 ),
                 const Positioned(
                   right: 12,
                   top: 14,
-                  child: TomoPopIcon(
+                  child: OheyPopIcon(
                     icon: CupertinoIcons.sparkles,
                     color: Color(0xFFFFD166),
                     size: 32,
@@ -535,15 +535,15 @@ class _FeedCompanionProfileSheetState
                   subtitleColor: subtitleColor,
                   message: _requestError ?? 'フレンズになるとカレンダーを見られます。',
                   buttonLabel: switch (relationship.requestState) {
-                    TomoFriendRequestState.outgoing => '申請済み',
-                    TomoFriendRequestState.incoming => '申請を確認する',
-                    TomoFriendRequestState.none => 'フレンド申請する',
+                    OheyFriendRequestState.outgoing => '申請済み',
+                    OheyFriendRequestState.incoming => '申請を確認する',
+                    OheyFriendRequestState.none => 'フレンド申請する',
                   },
                   isLoading: _isSendingRequest,
                   enabled:
-                      relationship.requestState == TomoFriendRequestState.none,
+                      relationship.requestState == OheyFriendRequestState.none,
                   onTap:
-                      relationship.requestState == TomoFriendRequestState.none
+                      relationship.requestState == OheyFriendRequestState.none
                       ? _sendRequest
                       : () => Navigator.of(context).pop(),
                 );

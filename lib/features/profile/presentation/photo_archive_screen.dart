@@ -7,10 +7,10 @@ import 'package:flutter/services.dart';
 
 import '../../../core/models/memory.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/tomo_page_header.dart';
-import '../../../core/widgets/tomo_bottom_sheet.dart';
-import '../../../core/widgets/tomo_pop_icon.dart';
-import '../../../core/widgets/tomo_empty_state.dart';
+import '../../../core/widgets/ohey_page_header.dart';
+import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_pop_icon.dart';
+import '../../../core/widgets/ohey_empty_state.dart';
 
 part 'photo_archive_visuals.dart';
 part 'photo_archive_detail_widgets.dart';
@@ -86,7 +86,7 @@ class PhotoArchivePreview extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: const TomoGeneratedIcon(
+                  child: const OheyGeneratedIcon(
                     CupertinoIcons.photo_on_rectangle,
                     color: Colors.white,
                     size: 22,
@@ -127,7 +127,7 @@ class PhotoArchivePreview extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                const TomoGeneratedIcon(
+                const OheyGeneratedIcon(
                   CupertinoIcons.chevron_forward,
                   color: Color(0xFFFF6FA8),
                   size: 16,
@@ -223,14 +223,14 @@ class _PhotoArchiveScreenState extends State<PhotoArchiveScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
-                    TomoPageHeader.horizontalPadding,
-                    TomoPageHeader.topPadding,
-                    TomoPageHeader.horizontalPadding,
+                    OheyPageHeader.horizontalPadding,
+                    OheyPageHeader.topPadding,
+                    OheyPageHeader.horizontalPadding,
                     0,
                   ),
-                  child: TomoPageHeader(
+                  child: OheyPageHeader(
                     title: 'アーカイブ',
-                    trailing: TomoHeaderIconButton(
+                    trailing: OheyHeaderIconButton(
                       icon: CupertinoIcons.xmark,
                       color: isWhite ? const Color(0xFF101820) : Colors.white,
                       semanticLabel: '閉じる',
@@ -257,7 +257,7 @@ class _PhotoArchiveScreenState extends State<PhotoArchiveScreen> {
   }
 
   void _showArchiveDetail(BuildContext context, Memory memory) {
-    showTomoBottomSheet<void>(
+    showOheyBottomSheet<void>(
       context: context,
       builder: (context) => _ArchiveDetailSheet(memory: memory),
     );

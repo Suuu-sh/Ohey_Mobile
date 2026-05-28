@@ -5,9 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/memory.dart';
-import '../../../core/models/tomo_avatar.dart';
-import '../../../core/models/tomo_friend.dart';
-import '../../../core/models/tomo_gender.dart';
+import '../../../core/models/ohey_avatar.dart';
+import '../../../core/models/ohey_friend.dart';
+import '../../../core/models/ohey_gender.dart';
 import '../application/memory_daily_limit.dart';
 
 final memoryRepositoryProvider = Provider<MemoryRepository>((ref) {
@@ -21,7 +21,7 @@ abstract interface class MemoryRepository {
   Future<List<Memory>> fetchMemories();
   Future<List<Memory>> fetchHomeFeed();
   Future<MemoryPage> fetchHomeFeedPage({int limit = 20, String? cursor});
-  Future<List<TomoFriend>> fetchFriends({DateTime? date});
+  Future<List<OheyFriend>> fetchFriends({DateTime? date});
   Future<Memory> addMemory(Memory memory);
   Future<void> deleteMemory(String memoryId);
   Future<void> reportMemory(String memoryId, {String reason = 'other'});
@@ -51,7 +51,7 @@ class MemoryLikeState {
 class BackendMemoryRepository implements MemoryRepository {
   const BackendMemoryRepository(this._client, this._supabase);
 
-  static const _photoBucket = 'tomo-photos';
+  static const _photoBucket = 'ohey-photos';
 
   final BackendApiClient _client;
   final SupabaseClient _supabase;
@@ -123,7 +123,7 @@ class BackendMemoryRepository implements MemoryRepository {
   }
 
   @override
-  Future<List<TomoFriend>> fetchFriends({DateTime? date}) async {
+  Future<List<OheyFriend>> fetchFriends({DateTime? date}) async {
     final userId = _client.currentUserId;
     if (userId == null || userId.isEmpty) {
       throw StateError('フレンズを読み込むにはログインが必要です。');
@@ -135,7 +135,7 @@ class BackendMemoryRepository implements MemoryRepository {
     );
 
     return rows
-        .map<TomoFriend>((row) {
+        .map<OheyFriend>((row) {
           final other = row['user_a_id'] == userId
               ? row['user_b']
               : row['user_a'];
@@ -352,7 +352,7 @@ class BackendMemoryRepository implements MemoryRepository {
       likedByMe: (row['liked_by_me'] as bool?) ?? false,
       ownerUserId: (row['owner_user_id'] as String?) ?? '',
       ownerDisplayName: (owner['display_name'] as String?) ?? '',
-      ownerAvatar: TomoAvatar.decode(owner['avatar_url'] as String?),
+      ownerAvatar: OheyAvatar.decode(owner['avatar_url'] as String?),
       isOfficial: (row['is_official'] as bool?) ?? false,
       feedAuthorName: (feed['author_name'] as String?) ?? '',
       feedPostKind: (feed['post_kind'] as String?) ?? '',
@@ -384,7 +384,7 @@ class BackendMemoryRepository implements MemoryRepository {
         : const <String, dynamic>{};
   }
 
-  TomoFriend _friendFromProfile(
+  OheyFriend _friendFromProfile(
     Map<String, dynamic> profile, {
     bool isFavorite = false,
   }) {
@@ -392,7 +392,7 @@ class BackendMemoryRepository implements MemoryRepository {
   }
 }
 
-TomoFriend _friendFromProfileRow(
+OheyFriend _friendFromProfileRow(
   Map<String, dynamic> profile, {
   bool isFavorite = false,
 }) {
@@ -400,16 +400,16 @@ TomoFriend _friendFromProfileRow(
     String value when value.trim().isNotEmpty => value,
     _ => profile['status'] as String?,
   };
-  return TomoFriend(
+  return OheyFriend(
     id: profile['id'] as String,
-    name: (profile['display_name'] as String?) ?? 'Tomo friend',
+    name: (profile['display_name'] as String?) ?? 'Ohey friend',
     avatarEmoji: '🍻',
     vibe: (profile['user_id'] as String?) ?? '',
     characterAssetPath: '',
-    kind: TomoFriendKind.cloud,
+    kind: OheyFriendKind.cloud,
     palette: _paletteFromKey(profile['palette'] as String?),
-    gender: tomoGenderFromKey(profile['gender'] as String?),
-    avatar: TomoAvatar.decode(profile['avatar_url'] as String?),
+    gender: oheyGenderFromKey(profile['gender'] as String?),
+    avatar: OheyAvatar.decode(profile['avatar_url'] as String?),
     isFavorite: isFavorite,
     statusKey: statusKey,
     totalMemoryCount: (profile['total_memory_count'] as num?)?.toInt(),
@@ -419,14 +419,14 @@ TomoFriend _friendFromProfileRow(
   );
 }
 
-TomoFriendPalette _paletteFromKey(String? key) {
+OheyFriendPalette _paletteFromKey(String? key) {
   return switch (key) {
-    'sky' => TomoFriendPalette.sky,
-    'lavender' => TomoFriendPalette.lavender,
-    'mint' => TomoFriendPalette.mint,
-    'peach' => TomoFriendPalette.peach,
-    'blush' => TomoFriendPalette.blush,
-    _ => TomoFriendPalette.lemon,
+    'sky' => OheyFriendPalette.sky,
+    'lavender' => OheyFriendPalette.lavender,
+    'mint' => OheyFriendPalette.mint,
+    'peach' => OheyFriendPalette.peach,
+    'blush' => OheyFriendPalette.blush,
+    _ => OheyFriendPalette.lemon,
   };
 }
 

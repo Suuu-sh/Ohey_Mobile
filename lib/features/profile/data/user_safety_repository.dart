@@ -1,17 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/data/backend_api_client.dart';
-import '../../../core/models/tomo_avatar.dart';
+import '../../../core/models/ohey_avatar.dart';
 
 final userSafetyRepositoryProvider = Provider<UserSafetyRepository>((ref) {
   return UserSafetyRepository(ref.watch(backendApiClientProvider));
 });
 
-final blockedUsersProvider = FutureProvider<List<TomoSafetyUser>>((ref) {
+final blockedUsersProvider = FutureProvider<List<OheySafetyUser>>((ref) {
   return ref.watch(userSafetyRepositoryProvider).fetchBlockedUsers();
 });
 
-final mutedUsersProvider = FutureProvider<List<TomoSafetyUser>>((ref) {
+final mutedUsersProvider = FutureProvider<List<OheySafetyUser>>((ref) {
   return ref.watch(userSafetyRepositoryProvider).fetchMutedUsers();
 });
 
@@ -35,14 +35,14 @@ class UserSafetyRepository {
     });
   }
 
-  Future<List<TomoSafetyUser>> fetchBlockedUsers() async {
+  Future<List<OheySafetyUser>> fetchBlockedUsers() async {
     final rows = await _client.getRows('/v1/user-blocks');
-    return rows.map(TomoSafetyUser.fromRow).toList(growable: false);
+    return rows.map(OheySafetyUser.fromRow).toList(growable: false);
   }
 
-  Future<List<TomoSafetyUser>> fetchMutedUsers() async {
+  Future<List<OheySafetyUser>> fetchMutedUsers() async {
     final rows = await _client.getRows('/v1/user-mutes');
-    return rows.map(TomoSafetyUser.fromRow).toList(growable: false);
+    return rows.map(OheySafetyUser.fromRow).toList(growable: false);
   }
 
   Future<void> unblockUser(String userId) async {
@@ -54,8 +54,8 @@ class UserSafetyRepository {
   }
 }
 
-class TomoSafetyUser {
-  const TomoSafetyUser({
+class OheySafetyUser {
+  const OheySafetyUser({
     required this.id,
     required this.userId,
     required this.displayName,
@@ -63,21 +63,21 @@ class TomoSafetyUser {
     this.createdAt,
   });
 
-  factory TomoSafetyUser.fromRow(Map<String, dynamic> row) {
+  factory OheySafetyUser.fromRow(Map<String, dynamic> row) {
     final id = (row['target_user_id'] as String?)?.trim().isNotEmpty == true
         ? (row['target_user_id'] as String).trim()
         : (row['id'] as String?)?.trim() ?? '';
     final displayName = (row['display_name'] as String?)?.trim();
     final handle = (row['user_id'] as String?)?.trim();
-    return TomoSafetyUser(
+    return OheySafetyUser(
       id: id,
       userId: handle ?? '',
       displayName: displayName == null || displayName.isEmpty
-          ? 'Tomo friend'
+          ? 'Ohey friend'
           : displayName,
       avatar:
-          TomoAvatar.decode(row['avatar_url'] as String?) ??
-          TomoAvatar.defaultAvatar,
+          OheyAvatar.decode(row['avatar_url'] as String?) ??
+          OheyAvatar.defaultAvatar,
       createdAt: DateTime.tryParse((row['created_at'] as String?) ?? ''),
     );
   }
@@ -85,6 +85,6 @@ class TomoSafetyUser {
   final String id;
   final String userId;
   final String displayName;
-  final TomoAvatar avatar;
+  final OheyAvatar avatar;
   final DateTime? createdAt;
 }

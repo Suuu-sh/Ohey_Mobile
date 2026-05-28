@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/data/backend_api_client.dart';
-import '../../../core/models/tomo_avatar.dart';
+import '../../../core/models/ohey_avatar.dart';
 
 final friendRepositoryProvider = Provider<FriendRepository>((ref) {
   return FriendRepository(ref.watch(backendApiClientProvider));
 });
 
 final pendingFriendRequestsProvider =
-    FutureProvider<List<TomoFriendRequestItem>>((ref) {
+    FutureProvider<List<OheyFriendRequestItem>>((ref) {
       return ref.watch(friendRepositoryProvider).fetchPendingFriendRequests();
     });
 
@@ -19,28 +19,28 @@ class FriendRepository {
 
   String? get currentUserId => _client.currentUserId;
 
-  Future<TomoFriendProfile?> findProfileByUserId(String userId) async {
+  Future<OheyFriendProfile?> findProfileByUserId(String userId) async {
     final exactUserId = userId.trim();
     if (exactUserId.isEmpty) return null;
     try {
       final row = await _client.getRow(
         '/v1/profiles/by-user-id/${Uri.encodeComponent(exactUserId)}',
       );
-      return TomoFriendProfile.fromRow(row);
+      return OheyFriendProfile.fromRow(row);
     } on BackendApiException catch (error) {
       if (error.statusCode == 404) return null;
       rethrow;
     }
   }
 
-  Future<TomoFriendRelationshipStatus> relationshipStatus(
+  Future<OheyFriendRelationshipStatus> relationshipStatus(
     String friendId,
   ) async {
     final row = await _client.getRow(
       '/v1/friend-requests/status',
       query: {'friend_id': friendId},
     );
-    return TomoFriendRelationshipStatus.fromRow(row);
+    return OheyFriendRelationshipStatus.fromRow(row);
   }
 
   Future<List<Map<String, dynamic>>> fetchFriendGroups() async {
@@ -66,7 +66,7 @@ class FriendRepository {
     await _client.post('/v1/friend-requests', {'to_user_id': friendId});
   }
 
-  Future<List<TomoFriendRequestItem>> fetchPendingFriendRequests({
+  Future<List<OheyFriendRequestItem>> fetchPendingFriendRequests({
     String direction = 'all',
   }) async {
     final rows = await _client.getRows(
@@ -75,7 +75,7 @@ class FriendRepository {
     );
     final currentUserId = _client.currentUserId ?? '';
     return rows
-        .map((row) => TomoFriendRequestItem.fromRow(row, currentUserId))
+        .map((row) => OheyFriendRequestItem.fromRow(row, currentUserId))
         .toList(growable: false);
   }
 
@@ -91,49 +91,49 @@ class FriendRepository {
   }
 }
 
-class TomoFriendProfile {
-  const TomoFriendProfile({
+class OheyFriendProfile {
+  const OheyFriendProfile({
     required this.id,
     required this.userId,
     required this.displayName,
     required this.avatar,
   });
 
-  factory TomoFriendProfile.fromRow(Map<String, dynamic> row) {
-    return TomoFriendProfile(
+  factory OheyFriendProfile.fromRow(Map<String, dynamic> row) {
+    return OheyFriendProfile(
       id: row['id'] as String,
       userId: (row['user_id'] as String?) ?? '',
       displayName: (row['display_name'] as String?)?.trim().isNotEmpty == true
           ? (row['display_name'] as String).trim()
-          : 'Tomo friend',
+          : 'Ohey friend',
       avatar:
-          TomoAvatar.decode(row['avatar_url'] as String?) ??
-          TomoAvatar.defaultAvatar,
+          OheyAvatar.decode(row['avatar_url'] as String?) ??
+          OheyAvatar.defaultAvatar,
     );
   }
 
   final String id;
   final String userId;
   final String displayName;
-  final TomoAvatar avatar;
+  final OheyAvatar avatar;
 }
 
-enum TomoFriendRequestState { none, outgoing, incoming }
+enum OheyFriendRequestState { none, outgoing, incoming }
 
-class TomoFriendRelationshipStatus {
-  const TomoFriendRelationshipStatus({
+class OheyFriendRelationshipStatus {
+  const OheyFriendRelationshipStatus({
     required this.alreadyFriend,
     required this.requestState,
     this.requestId,
   });
 
-  factory TomoFriendRelationshipStatus.fromRow(Map<String, dynamic> row) {
+  factory OheyFriendRelationshipStatus.fromRow(Map<String, dynamic> row) {
     final requestState = switch (row['request_state'] as String?) {
-      'outgoing' => TomoFriendRequestState.outgoing,
-      'incoming' => TomoFriendRequestState.incoming,
-      _ => TomoFriendRequestState.none,
+      'outgoing' => OheyFriendRequestState.outgoing,
+      'incoming' => OheyFriendRequestState.incoming,
+      _ => OheyFriendRequestState.none,
     };
-    return TomoFriendRelationshipStatus(
+    return OheyFriendRelationshipStatus(
       alreadyFriend: (row['already_friend'] as bool?) ?? false,
       requestState: requestState,
       requestId: (row['request_id'] as String?)?.trim(),
@@ -141,14 +141,14 @@ class TomoFriendRelationshipStatus {
   }
 
   final bool alreadyFriend;
-  final TomoFriendRequestState requestState;
+  final OheyFriendRequestState requestState;
   final String? requestId;
 }
 
-enum TomoFriendRequestDirection { incoming, outgoing }
+enum OheyFriendRequestDirection { incoming, outgoing }
 
-class TomoFriendRequestItem {
-  const TomoFriendRequestItem({
+class OheyFriendRequestItem {
+  const OheyFriendRequestItem({
     required this.id,
     required this.fromUserId,
     required this.toUserId,
@@ -157,7 +157,7 @@ class TomoFriendRequestItem {
     this.createdAt,
   });
 
-  factory TomoFriendRequestItem.fromRow(
+  factory OheyFriendRequestItem.fromRow(
     Map<String, dynamic> row,
     String currentUserId,
   ) {
@@ -171,14 +171,14 @@ class TomoFriendRequestItem {
         : <String, dynamic>{'id': fallbackOtherId};
     otherRow.putIfAbsent('id', () => fallbackOtherId);
 
-    return TomoFriendRequestItem(
+    return OheyFriendRequestItem(
       id: row['id'] as String,
       fromUserId: fromUserId,
       toUserId: toUserId,
       direction: isOutgoing
-          ? TomoFriendRequestDirection.outgoing
-          : TomoFriendRequestDirection.incoming,
-      otherUser: TomoFriendProfile.fromRow(otherRow),
+          ? OheyFriendRequestDirection.outgoing
+          : OheyFriendRequestDirection.incoming,
+      otherUser: OheyFriendProfile.fromRow(otherRow),
       createdAt: DateTime.tryParse((row['created_at'] as String?) ?? ''),
     );
   }
@@ -186,10 +186,10 @@ class TomoFriendRequestItem {
   final String id;
   final String fromUserId;
   final String toUserId;
-  final TomoFriendRequestDirection direction;
-  final TomoFriendProfile otherUser;
+  final OheyFriendRequestDirection direction;
+  final OheyFriendProfile otherUser;
   final DateTime? createdAt;
 
-  bool get isOutgoing => direction == TomoFriendRequestDirection.outgoing;
-  bool get isIncoming => direction == TomoFriendRequestDirection.incoming;
+  bool get isOutgoing => direction == OheyFriendRequestDirection.outgoing;
+  bool get isIncoming => direction == OheyFriendRequestDirection.incoming;
 }

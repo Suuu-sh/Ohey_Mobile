@@ -6,7 +6,7 @@ import '../config/supabase_config.dart';
 
 /// Guards against using a cached Supabase session from another project.
 ///
-/// During development we switch between `tomo` and `dev-nomo`. Supabase stores
+/// During development we switch between `ohey` and `dev-nomo`. Supabase stores
 /// the session locally, so an old production JWT can otherwise be sent to the
 /// dev PostgREST API and produce `PGRST301: No suitable key` on calendar/friend
 /// screens.

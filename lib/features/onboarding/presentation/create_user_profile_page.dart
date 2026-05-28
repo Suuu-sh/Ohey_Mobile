@@ -7,7 +7,7 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
     final canSubmit =
         _isValidUserId(_userIdController.text.trim()) &&
         _nameController.text.trim().isNotEmpty &&
-        _gender != TomoGender.unspecified &&
+        _gender != OheyGender.unspecified &&
         !_isBusy;
 
     return LayoutBuilder(
@@ -85,13 +85,13 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                                     ),
                                   ],
                                 ),
-                                child: TomoAvatarView(avatar: _avatar),
+                                child: OheyAvatarView(avatar: _avatar),
                               ),
                             ),
                             SizedBox(height: compact ? 2 : 12),
                             TextButton.icon(
                               onPressed: _isBusy ? null : _openAvatarBuilder,
-                              icon: const TomoGeneratedIcon(
+                              icon: const OheyGeneratedIcon(
                                 CupertinoIcons.pencil,
                                 color: Color(0xFF12C9A4),
                                 size: 20,

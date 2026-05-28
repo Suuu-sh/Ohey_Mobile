@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Tomo</string>
+	<string>Ohey</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Tomo</string>
+	<string>Ohey</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -27,8 +27,8 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>app.tomo.tomo</string>
-				<string>app.tomo.tomo.dev</string>
+				<string>app.ohey.ohey</string>
+				<string>app.ohey.ohey.dev</string>
 			</array>
 		</dict>
 	</array>
@@ -44,7 +44,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>QRコードの読み取りとTomo ARアバター撮影のためにカメラを使用します。</string>
+	<string>QRコードの読み取りとOhey ARアバター撮影のためにカメラを使用します。</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>現在地周辺のお店を検索してログに場所を追加するために使用します。</string>
 	<key>NSPhotoLibraryUsageDescription</key>

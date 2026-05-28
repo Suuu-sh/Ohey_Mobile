@@ -2,31 +2,31 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/models/tomo_avatar.dart';
-import '../../../core/models/tomo_gender.dart';
+import '../../../core/models/ohey_avatar.dart';
+import '../../../core/models/ohey_gender.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/tomo_3d_button.dart';
-import '../../../core/widgets/tomo_avatar.dart';
-import '../../../core/widgets/tomo_bottom_sheet.dart';
-import '../../../core/widgets/tomo_pop_icon.dart';
+import '../../../core/widgets/ohey_3d_button.dart';
+import '../../../core/widgets/ohey_avatar.dart';
+import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_pop_icon.dart';
 
 class AvatarBuilderScreen extends StatefulWidget {
   const AvatarBuilderScreen({
     super.key,
     required this.initialAvatar,
-    this.gender = TomoGender.unspecified,
+    this.gender = OheyGender.unspecified,
   });
 
-  final TomoAvatar initialAvatar;
-  final TomoGender gender;
+  final OheyAvatar initialAvatar;
+  final OheyGender gender;
 
   @override
   State<AvatarBuilderScreen> createState() => _AvatarBuilderScreenState();
 }
 
 class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
-  late TomoAvatar _avatar = widget.initialAvatar.normalizedForGender(
+  late OheyAvatar _avatar = widget.initialAvatar.normalizedForGender(
     widget.gender,
   );
   _AvatarTab _tab = _AvatarTab.face;
@@ -34,7 +34,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
   bool get _hasChanges => _avatar.encode() != widget.initialAvatar.encode();
 
   Future<void> _handleDone() async {
-    final result = await Navigator.of(context).push<TomoAvatar>(
+    final result = await Navigator.of(context).push<OheyAvatar>(
       CupertinoPageRoute(
         fullscreenDialog: true,
         builder: (_) => AvatarBackgroundPickerScreen(initialAvatar: _avatar),
@@ -50,7 +50,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
       return;
     }
 
-    final action = await showTomoBottomSheet<_UnsavedAvatarAction>(
+    final action = await showOheyBottomSheet<_UnsavedAvatarAction>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: .62),
       builder: (context) => const _UnsavedAvatarSheet(),
@@ -93,7 +93,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
                         child: _AvatarPreviewStage(
                           avatar: _avatar,
                           onRandom: () => setState(
-                            () => _avatar = TomoAvatar.random(
+                            () => _avatar = OheyAvatar.random(
                               gender: widget.gender,
                             ),
                           ),
@@ -138,7 +138,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
 class AvatarBackgroundPickerScreen extends StatefulWidget {
   const AvatarBackgroundPickerScreen({super.key, required this.initialAvatar});
 
-  final TomoAvatar initialAvatar;
+  final OheyAvatar initialAvatar;
 
   @override
   State<AvatarBackgroundPickerScreen> createState() =>
@@ -169,7 +169,7 @@ class _AvatarBackgroundPickerScreenState
                   children: [
                     IconButton(
                       onPressed: () => Navigator.of(context).maybePop(),
-                      icon: const TomoGeneratedIcon(
+                      icon: const OheyGeneratedIcon(
                         CupertinoIcons.chevron_left,
                         color: _AvatarColors.ink,
                         size: 34,
@@ -236,10 +236,10 @@ class _AvatarBackgroundPickerScreenState
                     mainAxisSpacing: 12,
                     childAspectRatio: 1.12,
                   ),
-                  itemCount: TomoAvatar.backgroundStyles.length,
+                  itemCount: OheyAvatar.backgroundStyles.length,
                   itemBuilder: (context, index) => _AvatarBackgroundOption(
                     avatar: widget.initialAvatar.copyWith(background: index),
-                    label: TomoAvatar.backgroundStyles[index],
+                    label: OheyAvatar.backgroundStyles[index],
                     selected: _selected == index,
                     onTap: () => setState(() => _selected = index),
                   ),
@@ -261,7 +261,7 @@ class _AvatarBackgroundOption extends StatelessWidget {
     required this.onTap,
   });
 
-  final TomoAvatar avatar;
+  final OheyAvatar avatar;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -320,7 +320,7 @@ class _AvatarBackgroundOption extends StatelessWidget {
               const Positioned(
                 right: 8,
                 top: 8,
-                child: TomoPopIcon(
+                child: OheyPopIcon(
                   icon: CupertinoIcons.checkmark_alt,
                   color: _AvatarColors.accent,
                   size: 32,
@@ -337,12 +337,12 @@ class _AvatarBackgroundOption extends StatelessWidget {
 class _AvatarBackgroundPreview extends StatelessWidget {
   const _AvatarBackgroundPreview({required this.avatar, this.large = false});
 
-  final TomoAvatar avatar;
+  final OheyAvatar avatar;
   final bool large;
 
   @override
   Widget build(BuildContext context) {
-    if (TomoAvatar.usesMascotBackdrop(avatar.background)) {
+    if (OheyAvatar.usesMascotBackdrop(avatar.background)) {
       return Stack(
         fit: StackFit.expand,
         children: [
@@ -354,15 +354,15 @@ class _AvatarBackgroundPreview extends StatelessWidget {
             ),
           ),
           Center(
-            child: TomoAvatarView(avatar: avatar, size: large ? 190 : 96),
+            child: OheyAvatarView(avatar: avatar, size: large ? 190 : 96),
           ),
         ],
       );
     }
 
     final colors =
-        TomoAvatar.backgroundGradients[avatar.background %
-            TomoAvatar.backgroundGradients.length];
+        OheyAvatar.backgroundGradients[avatar.background %
+            OheyAvatar.backgroundGradients.length];
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -376,7 +376,7 @@ class _AvatarBackgroundPreview extends StatelessWidget {
           ),
         ),
         Opacity(
-          opacity: avatar.background == TomoAvatar.dreamRoomBackground
+          opacity: avatar.background == OheyAvatar.dreamRoomBackground
               ? .18
               : .10,
           child: ExcludeSemantics(
@@ -400,7 +400,7 @@ class _AvatarBackgroundPreview extends StatelessWidget {
           ),
         ),
         Center(
-          child: TomoAvatarView(avatar: avatar, size: large ? 190 : 96),
+          child: OheyAvatarView(avatar: avatar, size: large ? 190 : 96),
         ),
       ],
     );
@@ -412,7 +412,7 @@ enum _UnsavedAvatarAction { save, discard, cancel }
 class _AvatarPreviewStage extends StatelessWidget {
   const _AvatarPreviewStage({required this.avatar, required this.onRandom});
 
-  final TomoAvatar avatar;
+  final OheyAvatar avatar;
   final VoidCallback onRandom;
 
   @override
@@ -476,7 +476,7 @@ class _AvatarPreviewStage extends StatelessWidget {
                 stops: const [0, .54, 1],
               ),
             ),
-            child: Center(child: TomoAvatarView(avatar: avatar, size: 250)),
+            child: Center(child: OheyAvatarView(avatar: avatar, size: 250)),
           ),
         ),
         Positioned(
@@ -524,7 +524,7 @@ class _StageChip extends StatelessWidget {
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        TomoGeneratedIcon(icon, color: _AvatarColors.accent, size: 16),
+        OheyGeneratedIcon(icon, color: _AvatarColors.accent, size: 16),
         const SizedBox(width: 6),
         Text(
           label,
@@ -546,7 +546,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Theme(
     data: AppTheme.dark,
-    child: TomoBottomSheetShell(
+    child: OheyBottomSheetShell(
       showHandle: true,
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
@@ -557,7 +557,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
         children: [
           Row(
             children: [
-              const TomoPopIcon(
+              const OheyPopIcon(
                 icon: CupertinoIcons.person_crop_circle_fill,
                 color: AppColors.primaryAction,
                 size: 48,
@@ -602,7 +602,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
             ),
             child: const Row(
               children: [
-                TomoGeneratedIcon(
+                OheyGeneratedIcon(
                   CupertinoIcons.info_circle_fill,
                   color: AppColors.primaryAction,
                   size: 20,
@@ -623,7 +623,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          Tomo3DButton(
+          Ohey3DButton(
             label: '保存して閉じる',
             icon: CupertinoIcons.check_mark_circled_solid,
             color: AppColors.primaryAction,
@@ -635,7 +635,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
             onTap: () => Navigator.of(context).pop(_UnsavedAvatarAction.save),
           ),
           const SizedBox(height: 10),
-          Tomo3DButton.secondary(
+          Ohey3DButton.secondary(
             label: '変更を戻す',
             icon: CupertinoIcons.arrow_uturn_left,
             color: _AvatarColors.card,
@@ -648,7 +648,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
                 Navigator.of(context).pop(_UnsavedAvatarAction.discard),
           ),
           const SizedBox(height: 10),
-          Tomo3DButton.secondary(
+          Ohey3DButton.secondary(
             label: '編集を続ける',
             icon: CupertinoIcons.pencil,
             color: Colors.white.withValues(alpha: .055),
@@ -679,7 +679,7 @@ class _Header extends StatelessWidget {
       children: [
         IconButton(
           onPressed: onClose,
-          icon: const TomoGeneratedIcon(
+          icon: const OheyGeneratedIcon(
             CupertinoIcons.xmark,
             color: _AvatarColors.ink,
             size: 34,
@@ -709,7 +709,7 @@ class _SaveAvatarButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Tomo3DButtonSurface(
+  Widget build(BuildContext context) => Ohey3DButtonSurface(
     onTap: onTap,
     height: 42,
     radius: 21,
@@ -727,7 +727,7 @@ class _SaveAvatarButton extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           child: const Center(
-            child: TomoGeneratedIcon(
+            child: OheyGeneratedIcon(
               CupertinoIcons.checkmark,
               color: Colors.white,
               size: 16,
@@ -781,7 +781,7 @@ class _RoundTool extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          TomoGeneratedIcon(icon, color: _AvatarColors.accent, size: 26),
+          OheyGeneratedIcon(icon, color: _AvatarColors.accent, size: 26),
           const SizedBox(height: 4),
           Text(
             label,
@@ -883,7 +883,7 @@ class _TabIcon extends StatelessWidget {
             ),
           ),
         ),
-        child: TomoGeneratedIcon(
+        child: OheyGeneratedIcon(
           icon,
           color: active ? _AvatarColors.accent : _AvatarColors.sub,
           size: 34,
@@ -902,9 +902,9 @@ class _OptionsPanel extends StatelessWidget {
   });
 
   final _AvatarTab tab;
-  final TomoAvatar avatar;
-  final TomoGender gender;
-  final ValueChanged<TomoAvatar> onChanged;
+  final OheyAvatar avatar;
+  final OheyGender gender;
+  final ValueChanged<OheyAvatar> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -914,17 +914,17 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('肌の色'),
           _ColorRow(
-            colors: TomoAvatar.skinColors,
+            colors: OheyAvatar.skinColors,
             selected: avatar.skin,
             onTap: (i) => onChanged(avatar.copyWith(skin: i)),
           ),
           const SizedBox(height: 24),
           _Title('口'),
           _ChoiceGrid(
-            count: TomoAvatar.mouthStyles.length,
+            count: OheyAvatar.mouthStyles.length,
             selected: avatar.mouth,
-            label: (i) => TomoAvatar.mouthStyles[i],
-            builder: (i) => TomoAvatarView(
+            label: (i) => OheyAvatar.mouthStyles[i],
+            builder: (i) => OheyAvatarView(
               avatar: avatar.copyWith(mouth: i),
               showBody: false,
             ),
@@ -937,10 +937,10 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('目'),
           _ChoiceGrid(
-            count: TomoAvatar.eyeStyles.length,
+            count: OheyAvatar.eyeStyles.length,
             selected: avatar.eyes,
-            label: (i) => TomoAvatar.eyeStyles[i],
-            builder: (i) => TomoAvatarView(
+            label: (i) => OheyAvatar.eyeStyles[i],
+            builder: (i) => OheyAvatarView(
               avatar: avatar.copyWith(eyes: i),
               showBody: false,
             ),
@@ -953,10 +953,10 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('髪型'),
           _ChoiceGrid(
-            indices: TomoAvatar.selectableHairIndicesForGender(gender),
+            indices: OheyAvatar.selectableHairIndicesForGender(gender),
             selected: avatar.hair,
-            label: (i) => TomoAvatar.hairStyles[i],
-            builder: (i) => TomoAvatarView(
+            label: (i) => OheyAvatar.hairStyles[i],
+            builder: (i) => OheyAvatarView(
               avatar: avatar.copyWith(hair: i),
               showBody: false,
             ),
@@ -969,10 +969,10 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('アクセサリー'),
           _ChoiceGrid(
-            count: TomoAvatar.accessoryStyles.length,
+            count: OheyAvatar.accessoryStyles.length,
             selected: avatar.accessory,
-            label: (i) => TomoAvatar.accessoryStyles[i],
-            builder: (i) => TomoAvatarView(
+            label: (i) => OheyAvatar.accessoryStyles[i],
+            builder: (i) => OheyAvatarView(
               avatar: avatar.copyWith(accessory: i),
               showBody: false,
             ),
@@ -985,7 +985,7 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('服の色'),
           _ColorRow(
-            colors: TomoAvatar.shirtColors,
+            colors: OheyAvatar.shirtColors,
             selected: avatar.shirt,
             onTap: (i) => onChanged(avatar.copyWith(shirt: i)),
           ),
@@ -1195,7 +1195,7 @@ class _ChoiceTile extends StatelessWidget {
                 color: _AvatarColors.accent,
                 shape: BoxShape.circle,
               ),
-              child: const TomoGeneratedIcon(
+              child: const OheyGeneratedIcon(
                 CupertinoIcons.checkmark,
                 color: Colors.white,
                 size: 14,

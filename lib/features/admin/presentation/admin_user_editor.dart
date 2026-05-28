@@ -35,9 +35,9 @@ class _AdminUserEditorScreenState
       text: user?.displayName ?? '',
     );
     _isPlus = user?.isPlus ?? false;
-    _gender = _adminNormalizeGender(user?.gender ?? TomoGender.unspecified.key);
+    _gender = _adminNormalizeGender(user?.gender ?? OheyGender.unspecified.key);
     _status = _adminNormalizeStatus(
-      user?.status ?? TomoDailyStatus.unselected.key,
+      user?.status ?? OheyDailyStatus.unselected.key,
     );
   }
 
@@ -140,7 +140,7 @@ class _AdminUserEditorScreenState
                     onPressed: _saving
                         ? null
                         : () => Navigator.of(context).pop(false),
-                    icon: const TomoGeneratedIcon(
+                    icon: const OheyGeneratedIcon(
                       CupertinoIcons.xmark,
                       color: Colors.white,
                       size: 26,
@@ -188,7 +188,7 @@ class _AdminUserEditorScreenState
               ),
               const SizedBox(height: 10),
               _AdminSwitchRow(
-                label: 'Tomo Plus',
+                label: 'Ohey Plus',
                 value: _isPlus,
                 onChanged: (value) => setState(() => _isPlus = value),
               ),
@@ -223,7 +223,7 @@ Future<void> _showPostSheet(
 }) async {
   final users =
       ref.read(adminUsersProvider).asData?.value ?? const <AdminUserProfile>[];
-  final didSave = await showTomoBottomSheet<bool>(
+  final didSave = await showOheyBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     builder: (_) => _AdminPostEditorSheet(memory: memory, users: users),
@@ -231,6 +231,6 @@ Future<void> _showPostSheet(
 
   if (didSave == true && context.mounted) {
     ref.invalidate(adminMemorysProvider);
-    TomoToast.show(context, '思い出を保存しました。');
+    OheyToast.show(context, '思い出を保存しました。');
   }
 }

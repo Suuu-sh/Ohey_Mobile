@@ -2,14 +2,14 @@
 
 Last updated: 2026-05-28
 
-Tomo の Supabase schema は pre-release 中に破壊的に整理済み。現時点の正本は `supabase/migrations/20260528230000_tomo_clean_baseline.sql` の **single clean baseline** です。
+Ohey の Supabase schema は pre-release 中に破壊的に整理済み。現時点の正本は `supabase/migrations/20260528230000_ohey_clean_baseline.sql` の **single clean baseline** です。
 
 ## 方針
 
 - `drink_*` 時代の累積 migration は残さない。
 - dev / production ともテストデータ扱いなので、baseline は app-owned tables を drop/recreate する。
 - `public.app_schema_migrations` は Suuu-sh/Shared の GitHub Actions migration runner が使う独自履歴。baseline の最後で既存履歴を削除し、workflow が baseline 1件だけを記録する。
-- Storage object は SQL で削除しない。Supabase Storage API / dashboard / `scripts/tomo_storage_cleanup.py` を使う。
+- Storage object は SQL で削除しない。Supabase Storage API / dashboard / `scripts/ohey_storage_cleanup.py` を使う。
 
 メリット:
 
@@ -26,7 +26,7 @@ Tomo の Supabase schema は pre-release 中に破壊的に整理済み。現時
 ## GitHub Actions 適用ルール
 
 - `development` push: dev Supabase migration workflow が dev-nomo に適用する。
-- `main` push: production Supabase migration workflow が tomo に適用する。
+- `main` push: production Supabase migration workflow が ohey に適用する。
 - runner は `public.app_schema_migrations(version, name, applied_at)` を見て未適用 SQL を順番に実行する。
 
 ## Required GitHub secrets
@@ -63,9 +63,9 @@ cd /Users/yota/Projects/Products/Nomo/Mobile
 SUPABASE_URL=... \
 SUPABASE_PUBLISHABLE_KEY=... \
 SUPABASE_SERVICE_ROLE_KEY=... \
-TOMO_SMOKE_EMAIL=dev-yuta@tomo.app \
-TOMO_SMOKE_PASSWORD=... \
-python3 scripts/tomo_supabase_runtime_check.py
+OHEY_SMOKE_EMAIL=dev-yuta@ohey.app \
+OHEY_SMOKE_PASSWORD=... \
+python3 scripts/ohey_supabase_runtime_check.py
 ```
 
 期待値:
@@ -82,20 +82,20 @@ Dev Render backend:
 
 ```bash
 cd /Users/yota/Projects/Products/Nomo/Mobile
-TOMO_BACKEND_URL=https://dev-nomo-backend.onrender.com \
+OHEY_BACKEND_URL=https://dev-nomo-backend.onrender.com \
 SUPABASE_URL=... \
 SUPABASE_PUBLISHABLE_KEY=... \
-TOMO_SMOKE_EMAIL=dev-yuta@tomo.app \
-TOMO_SMOKE_PASSWORD=... \
-python3 scripts/tomo_backend_smoke.py --mutating
+OHEY_SMOKE_EMAIL=dev-yuta@ohey.app \
+OHEY_SMOKE_PASSWORD=... \
+python3 scripts/ohey_backend_smoke.py --mutating
 ```
 
 Invite flow まで見る場合:
 
 ```bash
-TOMO_SMOKE_OTHER_EMAIL=dev-ken@tomo.app \
-TOMO_SMOKE_OTHER_PASSWORD=... \
-python3 scripts/tomo_backend_smoke.py --mutating --invite
+OHEY_SMOKE_OTHER_EMAIL=dev-ken@ohey.app \
+OHEY_SMOKE_OTHER_PASSWORD=... \
+python3 scripts/ohey_backend_smoke.py --mutating --invite
 ```
 
 Production backend も同じ script を使う。ただし TestFlight / production user への影響を避けるため、production では専用 smoke account を用意してから `--mutating` を使う。
@@ -108,10 +108,10 @@ Supabase 公式 docs は Storage object の削除を SQL ではなく Storage AP
 cd /Users/yota/Projects/Products/Nomo/Mobile
 SUPABASE_URL=... \
 SUPABASE_SERVICE_ROLE_KEY=... \
-python3 scripts/tomo_storage_cleanup.py --bucket tomo-photos --prefix users
+python3 scripts/ohey_storage_cleanup.py --bucket ohey-photos --prefix users
 
 # 確認後に実削除
-python3 scripts/tomo_storage_cleanup.py --bucket tomo-photos --prefix users --execute
+python3 scripts/ohey_storage_cleanup.py --bucket ohey-photos --prefix users --execute
 ```
 
 `--execute` を付けない限り dry-run。

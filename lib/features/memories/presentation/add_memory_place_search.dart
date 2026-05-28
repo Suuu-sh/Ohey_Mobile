@@ -12,7 +12,7 @@ class _PlaceSearchScreen extends ConsumerStatefulWidget {
 class _PlaceSearchScreenState extends ConsumerState<_PlaceSearchScreen> {
   late final TextEditingController _queryController;
   Timer? _debounce;
-  List<TomoPlaceSearchResult> _places = const [];
+  List<OheyPlaceSearchResult> _places = const [];
   String? _errorMessage;
   bool _isLoading = false;
   int _searchGeneration = 0;
@@ -46,7 +46,7 @@ class _PlaceSearchScreenState extends ConsumerState<_PlaceSearchScreen> {
     });
     try {
       final places = await ref
-          .read(tomoPlaceSearchServiceProvider)
+          .read(oheyPlaceSearchServiceProvider)
           .searchNearby(query: query);
       if (!mounted || generation != _searchGeneration) return;
       setState(() {
@@ -166,7 +166,7 @@ class _PlaceSearchHeader extends StatelessWidget {
               border: Border.all(color: _AddMemoryColors.lineFor(context)),
             ),
             child: Center(
-              child: TomoGeneratedIcon(
+              child: OheyGeneratedIcon(
                 CupertinoIcons.chevron_left,
                 color: titleColor,
                 size: 26,
@@ -207,7 +207,7 @@ class _PlaceSearchInput extends StatelessWidget {
     padding: const EdgeInsets.fromLTRB(15, 12, 12, 12),
     child: Row(
       children: [
-        const TomoPopIcon(
+        const OheyPopIcon(
           icon: CupertinoIcons.search,
           color: _AddMemoryColors.placeIcon,
           size: 32,
@@ -252,7 +252,7 @@ class _PlaceSearchInput extends StatelessWidget {
             onTap: () => onSubmitted(controller.text),
             child: const Padding(
               padding: EdgeInsets.all(6),
-              child: TomoGeneratedIcon(
+              child: OheyGeneratedIcon(
                 CupertinoIcons.arrow_clockwise,
                 color: _AddMemoryColors.placeIcon,
                 size: 20,
@@ -312,7 +312,7 @@ class _PlaceSearchQuickChips extends StatelessWidget {
 class _PlaceSearchTile extends StatelessWidget {
   const _PlaceSearchTile({required this.place, required this.onTap});
 
-  final TomoPlaceSearchResult place;
+  final OheyPlaceSearchResult place;
   final VoidCallback onTap;
 
   @override
@@ -328,7 +328,7 @@ class _PlaceSearchTile extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(14, 13, 12, 13),
         child: Row(
           children: [
-            const TomoPopIcon(
+            const OheyPopIcon(
               icon: CupertinoIcons.location_solid,
               color: _AddMemoryColors.placeIcon,
               size: 40,
@@ -365,7 +365,7 @@ class _PlaceSearchTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            TomoGeneratedIcon(
+            OheyGeneratedIcon(
               CupertinoIcons.chevron_right,
               color: _AddMemoryColors.secondaryTextFor(context),
               size: 20,
@@ -398,7 +398,7 @@ class _PlaceSearchMessage extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        TomoPopIcon(
+        OheyPopIcon(
           icon: icon,
           color: _AddMemoryColors.placeIcon,
           size: 62,

@@ -110,7 +110,7 @@ class _ArchiveInfoPill extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TomoGeneratedIcon(icon, color: const Color(0xFF26D9C7), size: 16),
+            OheyGeneratedIcon(icon, color: const Color(0xFF26D9C7), size: 16),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
@@ -180,7 +180,7 @@ class _ArchivePhotoPlaceholder extends StatelessWidget {
         ),
       ),
       child: const Center(
-        child: TomoGeneratedIcon(
+        child: OheyGeneratedIcon(
           CupertinoIcons.photo_fill_on_rectangle_fill,
           color: Colors.white70,
           size: 32,

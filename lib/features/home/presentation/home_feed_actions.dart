@@ -30,13 +30,13 @@ class _FeedPostActionsSheet extends StatelessWidget {
     final subtitleColor = isWhite
         ? const Color(0xFF697684)
         : Colors.white.withValues(alpha: .58);
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       showHandle: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const TomoBottomSheetHandle(),
+          const OheyBottomSheetHandle(),
           const SizedBox(height: 18),
           Row(
             children: [
@@ -77,7 +77,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () => Navigator.of(context).pop(),
-                icon: TomoPopIcon(
+                icon: OheyPopIcon(
                   icon: CupertinoIcons.xmark,
                   color: subtitleColor,
                   size: 34,
@@ -89,7 +89,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           if (body.isNotEmpty) ...[
-            TomoActionTile(
+            OheyActionTile(
               icon: CupertinoIcons.doc_on_clipboard_fill,
               title: 'コメントをコピー',
               subtitle: 'クリップボードに保存',
@@ -99,7 +99,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
             const SizedBox(height: 10),
           ],
           if (item.canDelete || item.ownedByMe)
-            TomoActionTile(
+            OheyActionTile(
               icon: CupertinoIcons.trash_fill,
               title: '思い出を削除',
               subtitle: 'この投稿をフィードから消す',
@@ -108,7 +108,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               onTap: () => Navigator.of(context).pop(_FeedPostAction.delete),
             )
           else if (!item.isOfficial) ...[
-            TomoActionTile(
+            OheyActionTile(
               icon: CupertinoIcons.eye_slash_fill,
               title: 'この投稿を非表示',
               subtitle: '自分のフィードからだけ消す',
@@ -116,7 +116,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               onTap: () => Navigator.of(context).pop(_FeedPostAction.hide),
             ),
             const SizedBox(height: 10),
-            TomoActionTile(
+            OheyActionTile(
               icon: CupertinoIcons.bell_slash_fill,
               title: '${item.userName}さんをミュート',
               subtitle: '投稿をフィードに出しにくくする',
@@ -124,7 +124,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               onTap: () => Navigator.of(context).pop(_FeedPostAction.muteUser),
             ),
             const SizedBox(height: 10),
-            TomoActionTile(
+            OheyActionTile(
               icon: CupertinoIcons.hand_raised_fill,
               title: '${item.userName}さんをブロック',
               subtitle: '投稿・申請・お誘いを制限する',
@@ -134,7 +134,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
             ),
             if (item.canReport) ...[
               const SizedBox(height: 10),
-              TomoActionTile(
+              OheyActionTile(
                 icon: CupertinoIcons.exclamationmark_bubble_fill,
                 title: '思い出を報告',
                 subtitle: '気になる投稿を運営に送る',
@@ -164,16 +164,16 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
     final subtitleColor = isWhite
         ? const Color(0xFF697684)
         : Colors.white.withValues(alpha: .58);
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       showHandle: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const TomoBottomSheetHandle(),
+          const OheyBottomSheetHandle(),
           const SizedBox(height: 20),
           Center(
-            child: TomoPopIcon(
+            child: OheyPopIcon(
               icon: CupertinoIcons.trash_fill,
               color: const Color(0xFFFF5F8F),
               size: 64,
@@ -247,16 +247,16 @@ class _FeedUserSafetyConfirmSheet extends StatelessWidget {
     final subtitleColor = isWhite
         ? const Color(0xFF697684)
         : Colors.white.withValues(alpha: .58);
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       showHandle: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const TomoBottomSheetHandle(),
+          const OheyBottomSheetHandle(),
           const SizedBox(height: 20),
           Center(
-            child: TomoPopIcon(
+            child: OheyPopIcon(
               icon: CupertinoIcons.hand_raised_fill,
               color: color,
               size: 64,
@@ -320,16 +320,16 @@ class _FeedReportReasonSheet extends StatelessWidget {
     final subtitleColor = isWhite
         ? const Color(0xFF697684)
         : Colors.white.withValues(alpha: .58);
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       showHandle: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const TomoBottomSheetHandle(),
+          const OheyBottomSheetHandle(),
           const SizedBox(height: 18),
           Center(
-            child: TomoPopIcon(
+            child: OheyPopIcon(
               icon: CupertinoIcons.exclamationmark_bubble_fill,
               color: const Color(0xFFFFD166),
               size: 60,
@@ -410,7 +410,7 @@ class _FeedReportReasonTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(15),
               ),
               child: const Center(
-                child: TomoGeneratedIcon(
+                child: OheyGeneratedIcon(
                   CupertinoIcons.exclamationmark_triangle_fill,
                   color: accent,
                   size: 21,
@@ -446,7 +446,7 @@ class _FeedReportReasonTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            TomoGeneratedIcon(
+            OheyGeneratedIcon(
               CupertinoIcons.chevron_right,
               color: sub,
               size: 19,
@@ -477,11 +477,11 @@ class _FeedModalTextButton extends StatelessWidget {
       color,
       isWhite ? .16 : .22,
     )!;
-    final bottomColor = tomo3DShadowColorFor(
+    final bottomColor = ohey3DShadowColorFor(
       color,
       lightnessScale: isWhite ? .72 : .58,
     );
-    return Tomo3DButtonSurface(
+    return Ohey3DButtonSurface(
       onTap: onTap,
       height: 52,
       radius: 20,
@@ -516,7 +516,7 @@ Future<void> _showFeedCompanionList(
 ) async {
   if (friends.isEmpty) return;
   HapticFeedback.selectionClick();
-  final selected = await showTomoBottomSheet<_Companion>(
+  final selected = await showOheyBottomSheet<_Companion>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
@@ -530,7 +530,7 @@ Future<void> _showFeedCompanionList(
     context,
     listen: false,
   ).read(friendRepositoryProvider);
-  TomoFriendRelationshipStatus? relationship;
+  OheyFriendRelationshipStatus? relationship;
   if (selected.userId.trim().isNotEmpty) {
     try {
       relationship = await repository.relationshipStatus(selected.userId);
@@ -541,11 +541,11 @@ Future<void> _showFeedCompanionList(
   if (!context.mounted) return;
 
   if (relationship?.alreadyFriend == true) {
-    await showTomoFriendProfileSheet(context, friend: selected.toTomoFriend());
+    await showOheyFriendProfileSheet(context, friend: selected.toOheyFriend());
     return;
   }
 
-  await showTomoBottomSheet<void>(
+  await showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,

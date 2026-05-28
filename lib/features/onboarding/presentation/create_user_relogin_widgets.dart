@@ -183,21 +183,21 @@ class _ReLoginAccountCard extends StatelessWidget {
     this.compact = false,
   });
 
-  final List<TomoLastAccount> accounts;
-  final ValueChanged<TomoLastAccount> onAccountTap;
+  final List<OheyLastAccount> accounts;
+  final ValueChanged<OheyLastAccount> onAccountTap;
   final VoidCallback onAddAccount;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final visibleAccounts = accounts
-        .take(TomoLastAccountStore.maxAccounts)
+        .take(OheyLastAccountStore.maxAccounts)
         .toList(growable: false);
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
-      child: TomoThemedPanel(
+      child: OheyThemedPanel(
         accentColor: Colors.white,
-        backgroundColor: TomoThemedPanel.surfaceColor(isWhite: false),
+        backgroundColor: OheyThemedPanel.surfaceColor(isWhite: false),
         borderRadius: 20,
         borderAlpha: .20,
         borderWidth: 2,
@@ -232,7 +232,7 @@ class _ReLoginAccountCard extends StatelessWidget {
                         ),
                       ),
                       child: Center(
-                        child: TomoGeneratedIcon(
+                        child: OheyGeneratedIcon(
                           CupertinoIcons.plus,
                           color: Colors.white.withValues(alpha: .44),
                           size: compact ? 24 : 26,
@@ -266,7 +266,7 @@ class _ReLoginAccountRow extends StatelessWidget {
     required this.compact,
   });
 
-  final TomoLastAccount account;
+  final OheyLastAccount account;
   final VoidCallback onTap;
   final bool compact;
 
@@ -289,8 +289,8 @@ class _ReLoginAccountRow extends StatelessWidget {
                 colors: [AppColors.peach, AppColors.lavender],
               ),
             ),
-            child: TomoAvatarView(
-              avatar: account.avatar ?? TomoAvatar.defaultAvatar,
+            child: OheyAvatarView(
+              avatar: account.avatar ?? OheyAvatar.defaultAvatar,
               size: compact ? 40 : 48,
             ),
           ),
@@ -324,7 +324,7 @@ class _ReLoginAccountRow extends StatelessWidget {
               ],
             ),
           ),
-          TomoGeneratedIcon(
+          OheyGeneratedIcon(
             CupertinoIcons.chevron_right,
             color: Colors.white.withValues(alpha: .68),
             size: compact ? 25 : 28,

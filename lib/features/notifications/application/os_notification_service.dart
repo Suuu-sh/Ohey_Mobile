@@ -4,8 +4,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/models/tomo_invite.dart';
-import '../../../core/models/tomo_friend_request_status.dart';
+import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/ohey_friend_request_status.dart';
 import '../data/notification_repository.dart';
 
 final osNotificationServiceProvider = Provider<OsNotificationService>((ref) {
@@ -24,20 +24,20 @@ class _NotificationDeliveryPolicy {
     'today_reservation_reminder',
   };
 
-  static bool shouldShowOsNotification(TomoNotification notification) {
+  static bool shouldShowOsNotification(OheyNotification notification) {
     if (!_osAllowedKinds.contains(notification.kind)) return false;
     if (notification.kind == 'friend_request_received') {
-      return tomoFriendRequestStatusFromKey(
+      return oheyFriendRequestStatusFromKey(
         notification.friendRequestStatus,
       ).isPending;
     }
     if (notification.kind == 'invite_received') {
-      return tomoInviteStatusFromKey(notification.inviteStatus).isPending;
+      return oheyInviteStatusFromKey(notification.inviteStatus).isPending;
     }
     return true;
   }
 
-  static List<TomoNotification> coalesce(List<TomoNotification> notifications) {
+  static List<OheyNotification> coalesce(List<OheyNotification> notifications) {
     if (notifications.length <= 2) return notifications;
     final actionable = notifications
         .where(
@@ -56,19 +56,19 @@ class OsNotificationService {
   OsNotificationService();
 
   static const _channel = AndroidNotificationChannel(
-    'tomo_notifications',
-    'Tomo通知',
-    description: 'フレンズ申請、お誘い、今日の思い出など厳選したTomo通知',
+    'ohey_notifications',
+    'Ohey通知',
+    description: 'フレンズ申請、お誘い、今日の思い出など厳選したOhey通知',
     importance: Importance.high,
   );
-  static const _lastNotifiedKey = 'tomo_last_os_notification_created_at';
+  static const _lastNotifiedKey = 'ohey_last_os_notification_created_at';
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
   Future<void> showNewNotifications(
-    List<TomoNotification> notifications,
+    List<OheyNotification> notifications,
   ) async {
     if (notifications.isEmpty) return;
     await _initialize();
@@ -107,9 +107,9 @@ class OsNotificationService {
         body: notification.displayMessage,
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
-            'tomo_notifications',
-            'Tomo通知',
-            channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したTomo通知',
+            'ohey_notifications',
+            'Ohey通知',
+            channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したOhey通知',
             importance: Importance.high,
             priority: Priority.high,
           ),
@@ -128,11 +128,11 @@ class OsNotificationService {
     }
   }
 
-  Future<void> showInviteReceived(TomoInvite invite) async {
+  Future<void> showInviteReceived(OheyInvite invite) async {
     await _initialize();
 
     final prefs = await SharedPreferences.getInstance();
-    final notifiedKey = 'tomo_notified_invite_${invite.id}';
+    final notifiedKey = 'ohey_notified_invite_${invite.id}';
     if (prefs.getBool(notifiedKey) ?? false) return;
 
     await _plugin.show(
@@ -141,9 +141,9 @@ class OsNotificationService {
       body: '今日会わない？アプリで返事してね。',
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
-          'tomo_notifications',
-          'Tomo通知',
-          channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したTomo通知',
+          'ohey_notifications',
+          'Ohey通知',
+          channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したOhey通知',
           importance: Importance.high,
           priority: Priority.high,
         ),

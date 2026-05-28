@@ -7,21 +7,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/application/tomo_user_controller.dart';
+import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/memory.dart';
-import '../../../core/models/tomo_avatar.dart';
-import '../../../core/models/tomo_invite.dart';
-import '../../../core/models/tomo_gender.dart';
-import '../../../core/models/tomo_friend.dart';
-import '../../../core/models/tomo_user.dart';
+import '../../../core/models/ohey_avatar.dart';
+import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/ohey_gender.dart';
+import '../../../core/models/ohey_friend.dart';
+import '../../../core/models/ohey_user.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/tomo_avatar.dart';
-import '../../../core/widgets/tomo_bottom_sheet.dart';
-import '../../../core/widgets/tomo_3d_button.dart';
-import '../../../core/widgets/tomo_page_header.dart';
-import '../../../core/widgets/tomo_toast.dart';
-import '../../../core/widgets/tomo_themed_panel.dart';
+import '../../../core/widgets/ohey_avatar.dart';
+import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_3d_button.dart';
+import '../../../core/widgets/ohey_page_header.dart';
+import '../../../core/widgets/ohey_toast.dart';
+import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../admin/application/admin_controller.dart';
 import '../../admin/presentation/admin_screen.dart';
 import '../../friends/application/invite_controller.dart';
@@ -33,7 +33,7 @@ import '../../onboarding/presentation/create_user_dialog.dart';
 import '../data/user_safety_repository.dart';
 import 'avatar_builder_screen.dart';
 import 'photo_archive_screen.dart';
-import '../../../core/widgets/tomo_pop_icon.dart';
+import '../../../core/widgets/ohey_pop_icon.dart';
 
 part 'profile_header_widgets.dart';
 part 'profile_memory_widgets.dart';
@@ -48,24 +48,24 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(tomoUserProvider);
+    final user = ref.watch(oheyUserProvider);
     final currentAuthUser = ref.watch(supabaseClientProvider).auth.currentUser;
     final currentAuthUserId = currentAuthUser?.id;
     final reservationsAsync = ref.watch(todayReservationsProvider);
     final incomingInvitesAsync = ref.watch(incomingInvitesProvider);
     final reservations =
-        reservationsAsync.asData?.value ?? const <TomoInvite>[];
+        reservationsAsync.asData?.value ?? const <OheyInvite>[];
     final incomingInvites =
-        incomingInvitesAsync.asData?.value ?? const <TomoInvite>[];
+        incomingInvitesAsync.asData?.value ?? const <OheyInvite>[];
     final memories =
         ref.watch(memoryControllerProvider).asData?.value ?? const <Memory>[];
     final myMemories = _myProfileMemories(memories, currentAuthUserId);
     final photoMemories = _photoArchiveMemories(memories, currentAuthUserId);
     final friends =
-        ref.watch(friendsProvider).asData?.value ?? const <TomoFriend>[];
+        ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
     const headerIsWhite = true;
     const bodyIsWhite = false;
-    final hasAdminEmail = TomoAvatar.isAdminEmail(currentAuthUser?.email);
+    final hasAdminEmail = OheyAvatar.isAdminEmail(currentAuthUser?.email);
     final hasAdminAccess = ref
         .watch(adminAccessProvider)
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
@@ -161,7 +161,7 @@ class ProfileScreen extends ConsumerWidget {
                                 memories: myMemories,
                                 photoMemories: photoMemories,
                                 friendsCount: friends.length,
-                                onMemoriesTap: () => TomoToast.show(
+                                onMemoriesTap: () => OheyToast.show(
                                   context,
                                   'カレンダーを見てみてね。',
                                   icon: CupertinoIcons.calendar,
@@ -178,7 +178,7 @@ class ProfileScreen extends ConsumerWidget {
                                     showFriendAddSheet(context, ref),
                                 onAddMemoryTap:
                                     onAddMemoryPressed ??
-                                    () => TomoToast.show(
+                                    () => OheyToast.show(
                                       context,
                                       'フィードから思い出を投稿してね。',
                                       icon: CupertinoIcons.camera_fill,
@@ -231,8 +231,8 @@ Future<void> _showProfileStatusSheet(
   WidgetRef ref,
 ) async {
   final selected =
-      ref.read(tomoUserProvider)?.dailyStatus ?? TomoDailyStatus.unselected;
-  await showTomoBottomSheet<void>(
+      ref.read(oheyUserProvider)?.dailyStatus ?? OheyDailyStatus.unselected;
+  await showOheyBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     builder: (_) => _SheetShell(
@@ -250,26 +250,26 @@ class _ProfileColors {
   static const pink = Color(0xFFFF5EA8);
 }
 
-Color _statusColor(TomoDailyStatus status) => switch (status) {
-  TomoDailyStatus.available => _ProfileColors.lime,
-  TomoDailyStatus.maybeAvailable => const Color(0xFF5DEBD3),
-  TomoDailyStatus.dependsOnTime => _ProfileColors.pink,
-  TomoDailyStatus.hasPlans => const Color(0xFFB8C1CD),
-  TomoDailyStatus.unselected => _ProfileColors.sub,
+Color _statusColor(OheyDailyStatus status) => switch (status) {
+  OheyDailyStatus.available => _ProfileColors.lime,
+  OheyDailyStatus.maybeAvailable => const Color(0xFF5DEBD3),
+  OheyDailyStatus.dependsOnTime => _ProfileColors.pink,
+  OheyDailyStatus.hasPlans => const Color(0xFFB8C1CD),
+  OheyDailyStatus.unselected => _ProfileColors.sub,
 };
 
-IconData _statusIcon(TomoDailyStatus status) => switch (status) {
-  TomoDailyStatus.available => CupertinoIcons.checkmark_circle_fill,
-  TomoDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
-  TomoDailyStatus.dependsOnTime => CupertinoIcons.clock_fill,
-  TomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
-  TomoDailyStatus.unselected => CupertinoIcons.circle,
+IconData _statusIcon(OheyDailyStatus status) => switch (status) {
+  OheyDailyStatus.available => CupertinoIcons.checkmark_circle_fill,
+  OheyDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
+  OheyDailyStatus.dependsOnTime => CupertinoIcons.clock_fill,
+  OheyDailyStatus.hasPlans => CupertinoIcons.calendar_today,
+  OheyDailyStatus.unselected => CupertinoIcons.circle,
 };
 
 Future<void> _respondInvite(
   BuildContext context,
   WidgetRef ref,
-  TomoInvite invite, {
+  OheyInvite invite, {
   required bool accept,
 }) async {
   try {
@@ -280,16 +280,16 @@ Future<void> _respondInvite(
       await controller.reject(invite.id);
     }
     if (!context.mounted) return;
-    TomoToast.show(context, accept ? '予定が成立しました。' : '招待を見送りました。');
+    OheyToast.show(context, accept ? '予定が成立しました。' : '招待を見送りました。');
   } catch (error) {
     if (!context.mounted) return;
-    TomoToast.show(context, '返信できなかったよ。あとでもう一度試してね');
+    OheyToast.show(context, '返信できなかったよ。あとでもう一度試してね');
   }
 }
 
-const _selectableDailyStatuses = <TomoDailyStatus>[
-  TomoDailyStatus.available,
-  TomoDailyStatus.maybeAvailable,
-  TomoDailyStatus.dependsOnTime,
-  TomoDailyStatus.hasPlans,
+const _selectableDailyStatuses = <OheyDailyStatus>[
+  OheyDailyStatus.available,
+  OheyDailyStatus.maybeAvailable,
+  OheyDailyStatus.dependsOnTime,
+  OheyDailyStatus.hasPlans,
 ];

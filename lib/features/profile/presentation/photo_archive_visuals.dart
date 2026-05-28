@@ -219,7 +219,7 @@ class _ArchiveViewModeButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TomoGeneratedIcon(
+              OheyGeneratedIcon(
                 icon,
                 size: 18,
                 color: selected
@@ -308,13 +308,13 @@ class _ArchiveAppleMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return UiKitView(
-      viewType: 'tomo/archive_map',
+      viewType: 'ohey/archive_map',
       creationParams: {'annotations': annotations},
       creationParamsCodec: const StandardMessageCodec(),
       onPlatformViewCreated: (id) {
         final handler = onAnnotationTap;
         if (handler == null) return;
-        MethodChannel('tomo/archive_map_$id').setMethodCallHandler((
+        MethodChannel('ohey/archive_map_$id').setMethodCallHandler((
           call,
         ) async {
           if (call.method != 'annotationSelected') return;
@@ -602,7 +602,7 @@ class _ArchiveMapPainter extends CustomPainter {
     }
 
     label('中央通り', .48, .46, alpha: .64);
-    label('Tomo Park', .70, .18, alpha: .50);
+    label('Ohey Park', .70, .18, alpha: .50);
     label('Station', .18, .34, alpha: .46);
     label('Cafe area', .62, .63, alpha: .46);
   }
@@ -717,7 +717,7 @@ class _ArchivePlacesEmpty extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(28),
-        child: TomoEmptyState(
+        child: OheyEmptyState(
           visual: Container(
             width: 82,
             height: 82,
@@ -728,7 +728,7 @@ class _ArchivePlacesEmpty extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: const Center(
-              child: TomoGeneratedIcon(
+              child: OheyGeneratedIcon(
                 CupertinoIcons.map,
                 color: AppColors.primaryAction,
                 size: 36,
@@ -964,7 +964,7 @@ class _ArchiveMemorySection extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              TomoHeaderIconButton(
+              OheyHeaderIconButton(
                 icon: CupertinoIcons.xmark,
                 color: subColor,
                 semanticLabel: '思い出を閉じる',

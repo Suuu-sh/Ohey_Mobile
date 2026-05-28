@@ -1,0 +1,689 @@
+import ARKit
+import AVFoundation
+import Flutter
+import SceneKit
+import UIKit
+
+final class OheyArAvatarCameraFactory: NSObject, FlutterPlatformViewFactory {
+  private let messenger: FlutterBinaryMessenger
+
+  init(messenger: FlutterBinaryMessenger) {
+    self.messenger = messenger
+    super.init()
+  }
+
+  func createArgsCodec() -> (NSObjectProtocol & FlutterMessageCodec) {
+    FlutterStandardMessageCodec.sharedInstance()
+  }
+
+  func create(
+    withFrame frame: CGRect,
+    viewIdentifier viewId: Int64,
+    arguments args: Any?
+  ) -> FlutterPlatformView {
+    OheyArAvatarCameraView(frame: frame, viewId: viewId, messenger: messenger, args: args)
+  }
+}
+
+private final class OheyArAvatarCameraView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
+  private let containerView: UIView
+  private let sceneView: ARSCNView
+  private let statusLabel = UILabel()
+  private let channel: FlutterMethodChannel
+  private var avatar: OheyNativeAvatar
+  private var filterMode: OheyArCameraFilterMode
+  private var faceOverlayNode: SCNNode?
+  private var faceGeometryNode: SCNNode?
+  private var didStartSession = false
+
+  init(frame: CGRect, viewId: Int64, messenger: FlutterBinaryMessenger, args: Any?) {
+    containerView = UIView(frame: frame)
+    sceneView = ARSCNView(frame: frame)
+    channel = FlutterMethodChannel(
+      name: "ohey/ar_avatar_camera_\(viewId)",
+      binaryMessenger: messenger
+    )
+    avatar = OheyNativeAvatar(arguments: (args as? [String: Any])?["avatar"] as? [String: Any])
+    filterMode = OheyArCameraFilterMode(arguments: args as? [String: Any])
+    super.init()
+
+    configureView()
+    configureChannel()
+    startIfPossible()
+  }
+
+  func view() -> UIView {
+    containerView
+  }
+
+  deinit {
+    sceneView.session.pause()
+  }
+
+  private func configureView() {
+    containerView.backgroundColor = .black
+
+    sceneView.translatesAutoresizingMaskIntoConstraints = false
+    sceneView.backgroundColor = .black
+    sceneView.scene = SCNScene()
+    sceneView.delegate = self
+    sceneView.automaticallyUpdatesLighting = true
+    sceneView.autoenablesDefaultLighting = true
+    sceneView.preferredFramesPerSecond = 60
+    containerView.addSubview(sceneView)
+
+
+    statusLabel.translatesAutoresizingMaskIntoConstraints = false
+    statusLabel.numberOfLines = 0
+    statusLabel.textAlignment = .center
+    statusLabel.textColor = .white
+    statusLabel.font = .systemFont(ofSize: 16, weight: .bold)
+    statusLabel.backgroundColor = UIColor.black.withAlphaComponent(0.56)
+    statusLabel.layer.cornerRadius = 18
+    statusLabel.layer.masksToBounds = true
+    statusLabel.isHidden = true
+    containerView.addSubview(statusLabel)
+
+    NSLayoutConstraint.activate([
+      sceneView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+      sceneView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+      sceneView.topAnchor.constraint(equalTo: containerView.topAnchor),
+      sceneView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
+
+      statusLabel.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+      statusLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+      statusLabel.leadingAnchor.constraint(greaterThanOrEqualTo: containerView.leadingAnchor, constant: 32),
+      statusLabel.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor, constant: -32),
+    ])
+  }
+
+  private func configureChannel() {
+    channel.setMethodCallHandler { [weak self] call, result in
+      guard let self else {
+        result(FlutterError(code: "view_disposed", message: "AR camera view is no longer available.", details: nil))
+        return
+      }
+
+      switch call.method {
+      case "isSupported":
+        result(ARFaceTrackingConfiguration.isSupported)
+      case "setAvatar":
+        let payload = call.arguments as? [String: Any]
+        self.avatar = OheyNativeAvatar(arguments: payload)
+        self.applyCurrentFilter()
+        result(nil)
+      case "setFilterMode":
+        self.filterMode = OheyArCameraFilterMode(rawValue: call.arguments as? String)
+        self.applyCurrentFilter()
+        result(nil)
+      case "capture":
+        self.capture(result: result)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+  }
+
+  private func startIfPossible() {
+    guard ARFaceTrackingConfiguration.isSupported else {
+      showStatus("Ohey ARアバターは\nTrueDepthカメラ搭載の実機で使えます。")
+      return
+    }
+
+    switch AVCaptureDevice.authorizationStatus(for: .video) {
+    case .authorized:
+      startSession()
+    case .notDetermined:
+      showStatus("カメラの使用許可を待っています…")
+      AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+        DispatchQueue.main.async {
+          guard let self else { return }
+          if granted {
+            self.startSession()
+          } else {
+            self.showStatus("カメラへのアクセスを許可してください。")
+          }
+        }
+      }
+    case .denied, .restricted:
+      showStatus("カメラへのアクセスを許可してください。")
+    @unknown default:
+      showStatus("カメラを起動できませんでした。")
+    }
+  }
+
+  private func startSession() {
+    hideStatus()
+    let configuration = ARFaceTrackingConfiguration()
+    configuration.isLightEstimationEnabled = true
+    if #available(iOS 13.0, *) {
+      configuration.maximumNumberOfTrackedFaces = 1
+    }
+    sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+    didStartSession = true
+  }
+
+  private func capture(result: @escaping FlutterResult) {
+    guard ARFaceTrackingConfiguration.isSupported else {
+      result(FlutterError(
+        code: "face_tracking_unavailable",
+        message: "Ohey ARアバターはTrueDepthカメラ搭載の実機で使えます。",
+        details: nil
+      ))
+      return
+    }
+    guard didStartSession else {
+      result(FlutterError(code: "camera_not_ready", message: "ARカメラの準備中です。", details: nil))
+      return
+    }
+
+    let image = sceneView.snapshot()
+    guard let data = image.jpegData(compressionQuality: 0.92) else {
+      result(FlutterError(code: "snapshot_failed", message: "AR写真を書き出せませんでした。", details: nil))
+      return
+    }
+
+    do {
+      let fileName = "ohey_ar_avatar_\(Int(Date().timeIntervalSince1970 * 1000)).jpg"
+      let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(fileName)
+      try data.write(to: url, options: .atomic)
+      result(url.path)
+    } catch {
+      result(FlutterError(code: "write_failed", message: error.localizedDescription, details: nil))
+    }
+  }
+
+  private func showStatus(_ message: String) {
+    statusLabel.text = "  \(message)  "
+    statusLabel.isHidden = false
+  }
+
+  private func hideStatus() {
+    statusLabel.isHidden = true
+  }
+
+  func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
+    guard anchor is ARFaceAnchor else { return nil }
+
+    let rootNode = SCNNode()
+    if let device = sceneView.device,
+       let faceGeometry = ARSCNFaceGeometry(device: device, fillMesh: true) {
+      if let material = faceGeometry.firstMaterial {
+        OheyArFilterRenderer.configureFaceMaterial(material, mode: filterMode, avatar: avatar)
+      }
+
+      let geometryNode = SCNNode(geometry: faceGeometry)
+      rootNode.addChildNode(geometryNode)
+      faceGeometryNode = geometryNode
+    }
+
+    let overlayNode = SCNNode(geometry: OheyArFilterRenderer.makeOverlayPlane(mode: filterMode, avatar: avatar))
+    overlayNode.name = "ohey-avatar-face-overlay"
+    overlayNode.position = OheyArFilterRenderer.overlayPosition(for: filterMode)
+    overlayNode.eulerAngles = SCNVector3(0, 0, 0)
+    rootNode.addChildNode(overlayNode)
+    faceOverlayNode = overlayNode
+
+    return rootNode
+  }
+
+  func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+    guard let faceAnchor = anchor as? ARFaceAnchor else { return }
+    if let faceGeometry = faceGeometryNode?.geometry as? ARSCNFaceGeometry {
+      faceGeometry.update(from: faceAnchor.geometry)
+    }
+
+    let jawOpen = faceAnchor.blendShapes[.jawOpen]?.floatValue ?? 0
+    let smileLeft = faceAnchor.blendShapes[.mouthSmileLeft]?.floatValue ?? 0
+    let smileRight = faceAnchor.blendShapes[.mouthSmileRight]?.floatValue ?? 0
+    let expressionScale: CGFloat
+    if filterMode == .avatar {
+      expressionScale = 1.0 + CGFloat(min(0.08, (jawOpen + smileLeft + smileRight) * 0.035))
+    } else {
+      expressionScale = 1.0
+    }
+    faceOverlayNode?.scale = SCNVector3(Float(expressionScale), Float(expressionScale), 1)
+
+  }
+
+  private func applyCurrentFilter() {
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      if let material = self.faceGeometryNode?.geometry?.firstMaterial {
+        OheyArFilterRenderer.configureFaceMaterial(material, mode: self.filterMode, avatar: self.avatar)
+      }
+      self.faceOverlayNode?.geometry = OheyArFilterRenderer.makeOverlayPlane(
+        mode: self.filterMode,
+        avatar: self.avatar
+      )
+      self.faceOverlayNode?.position = OheyArFilterRenderer.overlayPosition(for: self.filterMode)
+    }
+  }
+
+}
+
+private enum OheyArCameraFilterMode: String {
+  case avatar
+
+  init(arguments: [String: Any]?) {
+    self.init(rawValue: arguments?["filterMode"] as? String)
+  }
+
+  init(rawValue: String?) {
+    self = .avatar
+  }
+}
+
+private struct OheyNativeAvatar: Equatable {
+  let skin: Int
+  let hair: Int
+  let shirt: Int
+  let eyes: Int
+  let mouth: Int
+  let accessory: Int
+  let isAdmin: Bool
+
+  init(arguments: [String: Any]?) {
+    skin = OheyNativeAvatar.clamped(arguments?["skin"], max: OheyPalette.skinColors.count)
+    hair = OheyNativeAvatar.clamped(arguments?["hair"], max: OheyPalette.hairColors.count)
+    shirt = OheyNativeAvatar.clamped(arguments?["shirt"], max: OheyPalette.shirtColors.count)
+    eyes = OheyNativeAvatar.clamped(arguments?["eyes"], max: 4)
+    mouth = OheyNativeAvatar.clamped(arguments?["mouth"], max: 3)
+    accessory = OheyNativeAvatar.clamped(arguments?["accessory"], max: 4)
+    isAdmin = arguments?["isAdmin"] as? Bool ?? false
+  }
+
+  private static func clamped(_ value: Any?, max: Int) -> Int {
+    let intValue: Int
+    if let value = value as? Int {
+      intValue = value
+    } else if let value = value as? NSNumber {
+      intValue = value.intValue
+    } else {
+      intValue = 0
+    }
+    return Swift.max(0, Swift.min(intValue, max - 1))
+  }
+
+  var skinColor: UIColor {
+    OheyPalette.skinColors[skin]
+  }
+
+  var hairColor: UIColor {
+    OheyPalette.hairColors[hair % OheyPalette.hairColors.count]
+  }
+
+  var shirtColor: UIColor {
+    OheyPalette.shirtColors[shirt]
+  }
+}
+
+private enum OheyPalette {
+  static let skinColors = [
+    UIColor(hex: 0xFFD8C2), UIColor(hex: 0xE9A985), UIColor(hex: 0xB96B54),
+    UIColor(hex: 0x7B3F36), UIColor(hex: 0x4A2824), UIColor(hex: 0xFFC08A),
+  ]
+
+  static let hairColors = [
+    UIColor(hex: 0x2A1715), UIColor(hex: 0x4E2A20), UIColor(hex: 0x8A4B2E),
+    UIColor(hex: 0xD8A24C), UIColor(hex: 0x111820), UIColor(hex: 0xEFE8D8),
+  ]
+
+  static let shirtColors = [
+    UIColor(hex: 0xB777D9), UIColor(hex: 0x2EA8FF), UIColor(hex: 0x39C7D7),
+    UIColor(hex: 0x65B96B), UIColor(hex: 0xFFD25B), UIColor(hex: 0xFF9B38),
+    UIColor(hex: 0xFF6666), UIColor(hex: 0xFF9FC7), UIColor(hex: 0xF8F8F8),
+    UIColor(hex: 0x3D4850),
+  ]
+}
+
+private enum OheyArFilterRenderer {
+  static func configureFaceMaterial(
+    _ material: SCNMaterial,
+    mode: OheyArCameraFilterMode,
+    avatar: OheyNativeAvatar
+  ) {
+    // The avatar is drawn as one flat, opaque avatar face texture below.
+    // Do not paint the AR face mesh itself; otherwise the side of the real
+    // face gets a separate peach/orange cover that looks detached from the
+    // avatar artwork.
+    material.colorBufferWriteMask = []
+    material.diffuse.contents = UIColor.clear
+    material.emission.contents = UIColor.clear
+    material.lightingModel = .constant
+    material.transparency = 0
+    material.blendMode = .alpha
+    material.writesToDepthBuffer = true
+    material.readsFromDepthBuffer = true
+    material.metalness.contents = 0
+    material.roughness.contents = 1
+    material.specular.contents = UIColor.clear
+    material.isDoubleSided = true
+  }
+
+  static func makeOverlayPlane(mode: OheyArCameraFilterMode, avatar: OheyNativeAvatar) -> SCNPlane {
+    let image = makeFeatureImage(for: avatar)
+    let size = overlaySize(for: mode)
+    let plane = SCNPlane(width: size.width, height: size.height)
+    let material = SCNMaterial()
+    material.diffuse.contents = image
+    material.isDoubleSided = true
+    material.lightingModel = .constant
+    material.blendMode = .alpha
+    material.writesToDepthBuffer = false
+    material.readsFromDepthBuffer = true
+    plane.firstMaterial = material
+    return plane
+  }
+
+  static func overlayPosition(for mode: OheyArCameraFilterMode) -> SCNVector3 {
+    SCNVector3(0, 0.002, 0.058)
+  }
+
+  private static func overlaySize(for mode: OheyArCameraFilterMode) -> CGSize {
+    CGSize(width: 0.216, height: 0.276)
+  }
+
+  private static func makeFeatureImage(for avatar: OheyNativeAvatar) -> UIImage {
+    let size = CGSize(width: 512, height: 512)
+    let format = UIGraphicsImageRendererFormat()
+    format.opaque = false
+    format.scale = 1
+    let renderer = UIGraphicsImageRenderer(size: size, format: format)
+    return renderer.image { context in
+      let cg = context.cgContext
+      cg.clear(CGRect(origin: .zero, size: size))
+      cg.translateBy(x: 0, y: 0)
+      let scale = size.width / 180
+      cg.scaleBy(x: scale, y: scale)
+
+      if avatar.isAdmin {
+        drawAdminMascot(includeSkin: true, in: cg)
+      } else {
+        drawFace(avatar, includeSkin: true, in: cg)
+      }
+    }
+  }
+
+  private static func strokeFaceContour(left: Bool, color: UIColor, lineWidth: CGFloat, inset: CGFloat, in cg: CGContext) {
+    let edgeX: CGFloat = left ? 41 + inset : 139 - inset
+    let path = UIBezierPath()
+    path.move(to: CGPoint(x: edgeX, y: 48))
+    path.addCurve(
+      to: CGPoint(x: edgeX + (left ? 16 : -16), y: 122),
+      controlPoint1: CGPoint(x: edgeX + (left ? -8 : 8), y: 70),
+      controlPoint2: CGPoint(x: edgeX + (left ? -3 : 3), y: 104)
+    )
+    color.setStroke()
+    path.lineWidth = lineWidth
+    path.lineCapStyle = .round
+    path.stroke()
+  }
+
+  private static func drawFace(_ avatar: OheyNativeAvatar, includeSkin: Bool, in cg: CGContext) {
+    let skin = avatar.skinColor
+    let hair = avatar.hairColor
+    let outline = UIColor(hex: 0x1B2027).withAlphaComponent(0.22)
+
+    if includeSkin {
+      let head = UIBezierPath(roundedRect: CGRect(x: 26, y: 24, width: 128, height: 134), cornerRadius: 56)
+      cg.saveGState()
+      cg.translateBy(x: 0, y: 3)
+      outline.setFill()
+      head.fill()
+      cg.restoreGState()
+      skin.setFill()
+      head.fill()
+    }
+
+    drawHair(style: avatar.hair, skin: skin, color: hair, featureOnly: !includeSkin, in: cg)
+    drawEyes(style: avatar.eyes, in: cg)
+    drawNose(skin: skin, in: cg)
+    drawMouth(style: avatar.mouth, in: cg)
+    drawAccessory(style: avatar.accessory, in: cg)
+  }
+
+  private static func drawAdminMascot(includeSkin: Bool, in cg: CGContext) {
+    if includeSkin {
+      let head = UIBezierPath(roundedRect: CGRect(x: 26, y: 18, width: 128, height: 140), cornerRadius: 58)
+      UIColor(hex: 0xFFC08A).setFill()
+      head.fill()
+    }
+    let hairPath = UIBezierPath(roundedRect: CGRect(x: 44, y: 26, width: 92, height: 38), cornerRadius: 22)
+    UIColor(hex: 0xEFE8D8).setFill()
+    hairPath.fill()
+    drawEyes(style: 2, in: cg)
+    drawNose(skin: UIColor(hex: 0xFFC08A), in: cg)
+    drawMouth(style: 1, in: cg)
+    drawAccessory(style: 1, in: cg)
+  }
+
+  private static func drawHair(style: Int, skin: UIColor, color: UIColor, featureOnly: Bool, in cg: CGContext) {
+    color.setFill()
+    switch style {
+    case 0:
+      return
+    case 1:
+      for index in 0..<8 {
+        fillEllipse(
+          CGRect(x: 35 + index * 12, y: 27 + (index.isMultiple(of: 2) ? 0 : -5), width: 26, height: 26),
+          color: color,
+          in: cg
+        )
+      }
+    case 2:
+      UIBezierPath(roundedRect: CGRect(x: 46, y: 28, width: 88, height: 34), cornerRadius: 28).fill()
+    case 3:
+      let path = UIBezierPath()
+      path.move(to: CGPoint(x: 43, y: 49))
+      path.addQuadCurve(to: CGPoint(x: 135, y: 48), controlPoint: CGPoint(x: 86, y: 10))
+      path.addLine(to: CGPoint(x: 132, y: 70))
+      path.addQuadCurve(to: CGPoint(x: 45, y: 70), controlPoint: CGPoint(x: 86, y: 40))
+      path.close()
+      path.fill()
+    case 4:
+      fillEllipse(CGRect(x: 70, y: 8, width: 40, height: 40), color: color, in: cg)
+      UIBezierPath(roundedRect: CGRect(x: 48, y: 36, width: 84, height: 24), cornerRadius: 22).fill()
+    case 5:
+      UIColor(hex: 0x21313E).setFill()
+      UIBezierPath(roundedRect: CGRect(x: 46, y: 28, width: 88, height: 30), cornerRadius: 20).fill()
+      UIColor(hex: 0x2EA8FF).setFill()
+      UIBezierPath(roundedRect: CGRect(x: 62, y: 20, width: 56, height: 18), cornerRadius: 16).fill()
+    case 6:
+      UIBezierPath(roundedRect: CGRect(x: 40, y: 36, width: 100, height: 68), cornerRadius: 28).fill()
+      fillSkinCutout(
+        UIBezierPath(roundedRect: CGRect(x: 48, y: 56, width: 84, height: 42), cornerRadius: 24),
+        skin: skin,
+        featureOnly: featureOnly,
+        in: cg
+      )
+    case 7:
+      UIBezierPath(roundedRect: CGRect(x: 36, y: 32, width: 108, height: 108), cornerRadius: 34).fill()
+      fillSkinCutout(
+        UIBezierPath(roundedRect: CGRect(x: 46, y: 50, width: 88, height: 76), cornerRadius: 28),
+        skin: skin,
+        featureOnly: featureOnly,
+        in: cg
+      )
+    default:
+      UIBezierPath(roundedRect: CGRect(x: 34, y: 50, width: 30, height: 82), cornerRadius: 18).fill()
+      UIBezierPath(roundedRect: CGRect(x: 116, y: 50, width: 30, height: 82), cornerRadius: 18).fill()
+      fillEllipse(CGRect(x: 41, y: 17, width: 34, height: 34), color: color, in: cg)
+      fillEllipse(CGRect(x: 105, y: 17, width: 34, height: 34), color: color, in: cg)
+    }
+  }
+
+  private static func fillSkinCutout(_ path: UIBezierPath, skin: UIColor, featureOnly: Bool, in cg: CGContext) {
+    if featureOnly {
+      cg.saveGState()
+      cg.setBlendMode(.clear)
+      UIColor.clear.setFill()
+      path.fill()
+      cg.restoreGState()
+    } else {
+      skin.setFill()
+      path.fill()
+    }
+  }
+
+  private static func drawEyes(style: Int, in cg: CGContext) {
+    let dark = UIColor(hex: 0x24313A)
+    switch style {
+    case 1:
+      strokeArc(CGRect(x: 60, y: 72, width: 24, height: 16), start: .pi, end: .pi * 2, color: dark, width: 5, in: cg)
+      strokeArc(CGRect(x: 98, y: 72, width: 24, height: 16), start: .pi, end: .pi * 2, color: dark, width: 5, in: cg)
+    case 2:
+      for x in [70.0, 108.0] {
+        fillEllipse(CGRect(x: x - 12, y: 61, width: 24, height: 34), color: .white, in: cg)
+        fillEllipse(CGRect(x: x - 6, y: 74, width: 16, height: 16), color: dark, in: cg)
+        fillEllipse(CGRect(x: x - 6, y: 72, width: 6, height: 6), color: .white, in: cg)
+      }
+    case 3:
+      for x in [70.0, 108.0] {
+        fillEllipse(CGRect(x: x - 13, y: 60, width: 26, height: 36), color: .white, in: cg)
+        fillEllipse(CGRect(x: x - 7, y: 74, width: 16, height: 16), color: dark, in: cg)
+        strokeLine(from: CGPoint(x: x - 14, y: 65), to: CGPoint(x: x - 20, y: 60), color: dark, width: 3, in: cg)
+        strokeLine(from: CGPoint(x: x + 14, y: 65), to: CGPoint(x: x + 20, y: 60), color: dark, width: 3, in: cg)
+      }
+    default:
+      for x in [70.0, 108.0] {
+        fillEllipse(CGRect(x: x - 12, y: 61, width: 24, height: 34), color: .white, in: cg)
+        UIColor(hex: 0x24313A).setFill()
+        UIBezierPath(roundedRect: CGRect(x: x - 2, y: 65, width: 10, height: 25), cornerRadius: 8).fill()
+      }
+    }
+  }
+
+  private static func drawNose(skin: UIColor, in cg: CGContext) {
+    let path = UIBezierPath()
+    path.move(to: CGPoint(x: 90, y: 84))
+    path.addQuadCurve(to: CGPoint(x: 82, y: 102), controlPoint: CGPoint(x: 102, y: 102))
+    path.addQuadCurve(to: CGPoint(x: 90, y: 84), controlPoint: CGPoint(x: 86, y: 90))
+    skin.mixed(with: .black, amount: 0.22).setFill()
+    path.fill()
+  }
+
+  private static func drawMouth(style: Int, in cg: CGContext) {
+    let color = UIColor(hex: 0x2A1715).withAlphaComponent(0.72)
+    switch style {
+    case 1:
+      strokeArc(CGRect(x: 70, y: 94, width: 38, height: 24), start: 0, end: .pi, color: color, width: 5, in: cg)
+    case 2:
+      strokeLine(from: CGPoint(x: 78, y: 106), to: CGPoint(x: 101, y: 106), color: color, width: 5, in: cg)
+    default:
+      strokeArc(CGRect(x: 70, y: 88, width: 42, height: 28), start: 0.2, end: .pi * 0.9, color: color, width: 5, in: cg)
+    }
+  }
+
+  private static func drawAccessory(style: Int, in cg: CGContext) {
+    switch style {
+    case 1:
+      let dark = UIColor(hex: 0x151D24)
+      strokeRoundedRect(CGRect(x: 54, y: 66, width: 32, height: 28), radius: 10, color: dark, width: 4, in: cg)
+      strokeRoundedRect(CGRect(x: 94, y: 66, width: 32, height: 28), radius: 10, color: dark, width: 4, in: cg)
+      strokeLine(from: CGPoint(x: 86, y: 78), to: CGPoint(x: 94, y: 78), color: dark, width: 4, in: cg)
+    case 2:
+      UIColor.white.withAlphaComponent(0.86).setFill()
+      UIBezierPath(roundedRect: CGRect(x: 62, y: 94, width: 56, height: 24), cornerRadius: 14).fill()
+    case 3:
+      let blush = UIColor(hex: 0xFF7CA8).withAlphaComponent(0.62)
+      fillEllipse(CGRect(x: 48, y: 86, width: 18, height: 18), color: blush, in: cg)
+      fillEllipse(CGRect(x: 114, y: 86, width: 18, height: 18), color: blush, in: cg)
+    default:
+      break
+    }
+  }
+
+  private static func fillEllipse(_ rect: CGRect, color: UIColor, in cg: CGContext) {
+    color.setFill()
+    cg.fillEllipse(in: rect)
+  }
+
+  private static func drawSoftEllipse(
+    center: CGPoint,
+    radius: CGSize,
+    color: UIColor,
+    alpha: CGFloat,
+    in cg: CGContext
+  ) {
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    guard let gradient = CGGradient(
+      colorsSpace: colorSpace,
+      colors: [
+        color.withAlphaComponent(alpha).cgColor,
+        color.withAlphaComponent(alpha * 0.36).cgColor,
+        color.withAlphaComponent(0).cgColor,
+      ] as CFArray,
+      locations: [0, 0.46, 1]
+    ) else {
+      return
+    }
+
+    cg.saveGState()
+    cg.translateBy(x: center.x, y: center.y)
+    cg.scaleBy(x: radius.width, y: radius.height)
+    cg.drawRadialGradient(
+      gradient,
+      startCenter: .zero,
+      startRadius: 0,
+      endCenter: .zero,
+      endRadius: 1,
+      options: [.drawsAfterEndLocation]
+    )
+    cg.restoreGState()
+  }
+
+  private static func strokeLine(from: CGPoint, to: CGPoint, color: UIColor, width: CGFloat, in cg: CGContext) {
+    color.setStroke()
+    cg.setLineWidth(width)
+    cg.setLineCap(.round)
+    cg.move(to: from)
+    cg.addLine(to: to)
+    cg.strokePath()
+  }
+
+  private static func strokeArc(_ rect: CGRect, start: CGFloat, end: CGFloat, color: UIColor, width: CGFloat, in cg: CGContext) {
+    let path = UIBezierPath(arcCenter: CGPoint(x: rect.midX, y: rect.midY), radius: rect.width / 2, startAngle: start, endAngle: end, clockwise: true)
+    color.setStroke()
+    path.lineWidth = width
+    path.lineCapStyle = .round
+    path.stroke()
+  }
+
+  private static func strokeRoundedRect(_ rect: CGRect, radius: CGFloat, color: UIColor, width: CGFloat, in cg: CGContext) {
+    let path = UIBezierPath(roundedRect: rect, cornerRadius: radius)
+    color.setStroke()
+    path.lineWidth = width
+    path.stroke()
+  }
+}
+
+private extension UIColor {
+  convenience init(hex: Int) {
+    self.init(
+      red: CGFloat((hex >> 16) & 0xff) / 255,
+      green: CGFloat((hex >> 8) & 0xff) / 255,
+      blue: CGFloat(hex & 0xff) / 255,
+      alpha: 1
+    )
+  }
+
+  func mixed(with other: UIColor, amount: CGFloat) -> UIColor {
+    var r1: CGFloat = 0
+    var g1: CGFloat = 0
+    var b1: CGFloat = 0
+    var a1: CGFloat = 0
+    var r2: CGFloat = 0
+    var g2: CGFloat = 0
+    var b2: CGFloat = 0
+    var a2: CGFloat = 0
+    getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
+    other.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
+    return UIColor(
+      red: r1 + (r2 - r1) * amount,
+      green: g1 + (g2 - g1) * amount,
+      blue: b1 + (b2 - b1) * amount,
+      alpha: a1 + (a2 - a1) * amount
+    )
+  }
+}

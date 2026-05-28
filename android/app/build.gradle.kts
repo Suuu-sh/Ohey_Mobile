@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "app.tomo.tomo"
+    namespace = "app.ohey.ohey"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "app.tomo.tomo"
+        applicationId = "app.ohey.ohey"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -33,11 +33,11 @@ android {
         create("dev") {
             dimension = "env"
             applicationIdSuffix = ".dev"
-            resValue("string", "app_name", "Tomo Dev")
+            resValue("string", "app_name", "Ohey Dev")
         }
         create("prod") {
             dimension = "env"
-            resValue("string", "app_name", "Tomo")
+            resValue("string", "app_name", "Ohey")
         }
     }
 

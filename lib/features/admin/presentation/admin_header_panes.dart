@@ -16,7 +16,7 @@ class _AdminHeader extends StatelessWidget {
             color: _AdminColors.lime.withValues(alpha: .16),
             borderRadius: BorderRadius.circular(18),
           ),
-          child: const TomoGeneratedIcon(
+          child: const OheyGeneratedIcon(
             CupertinoIcons.lock_shield_fill,
             color: _AdminColors.lime,
             size: 30,
@@ -37,7 +37,7 @@ class _AdminHeader extends StatelessWidget {
                 ),
               ),
               Text(
-                'Tomo ${SupabaseConfig.environment} admin',
+                'Ohey ${SupabaseConfig.environment} admin',
                 style: const TextStyle(
                   color: _AdminColors.sub,
                   fontWeight: FontWeight.w800,
@@ -49,7 +49,7 @@ class _AdminHeader extends StatelessWidget {
         ),
         IconButton(
           onPressed: onClose,
-          icon: const TomoGeneratedIcon(
+          icon: const OheyGeneratedIcon(
             CupertinoIcons.xmark,
             color: Colors.white,
             size: 26,
@@ -576,7 +576,7 @@ class _AdminRecipientPreview extends StatelessWidget {
   Widget build(BuildContext context) => _AdminCard(
     child: Row(
       children: [
-        const TomoGeneratedIcon(
+        const OheyGeneratedIcon(
           CupertinoIcons.person_crop_circle,
           color: _AdminColors.lime,
           size: 28,
@@ -639,7 +639,7 @@ class _AdminPaneToolbar extends StatelessWidget {
       const Spacer(),
       IconButton(
         onPressed: onRefresh,
-        icon: const TomoGeneratedIcon(
+        icon: const OheyGeneratedIcon(
           CupertinoIcons.arrow_clockwise,
           color: _AdminColors.sub,
           size: 22,

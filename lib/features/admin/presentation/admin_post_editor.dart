@@ -75,8 +75,8 @@ class _AdminPostEditorSheetState extends ConsumerState<_AdminPostEditorSheet> {
               child: _isOfficial
                   ? const _AdminInfoBox(
                       key: ValueKey('official-info'),
-                      title: 'Tomo公式として投稿します',
-                      message: 'Tomo公式として届けるよ。',
+                      title: 'Ohey公式として投稿します',
+                      message: 'Ohey公式として届けるよ。',
                     )
                   : _AdminOwnerField(
                       key: const ValueKey('owner-field'),
@@ -244,12 +244,12 @@ class _AdminPhotoPickerField extends StatelessWidget {
               if (_hasPhoto)
                 SizedBox(
                   width: 62,
-                  child: Tomo3DButtonSurface(
+                  child: Ohey3DButtonSurface(
                     onTap: onClear,
                     height: 30,
                     radius: 14,
                     color: _AdminColors.pink.withValues(alpha: .16),
-                    bottomColor: tomo3DShadowColorFor(
+                    bottomColor: ohey3DShadowColorFor(
                       _AdminColors.pink,
                       lightnessScale: .56,
                     ),
@@ -278,7 +278,7 @@ class _AdminPhotoPickerField extends StatelessWidget {
             ),
             const SizedBox(height: 10),
           ],
-          Tomo3DButton(
+          Ohey3DButton(
             label: _hasPhoto ? '写真を変更する' : '写真を選択する',
             icon: CupertinoIcons.photo_on_rectangle,
             onTap: onPick,

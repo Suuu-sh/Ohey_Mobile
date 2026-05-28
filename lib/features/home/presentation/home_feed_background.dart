@@ -9,7 +9,7 @@ class _FeedBackground extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isWhite = ref.watch(tomoThemeModeProvider).isWhite;
+    final isWhite = ref.watch(oheyThemeModeProvider).isWhite;
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -40,7 +40,7 @@ class _FeedHeaderBackdropLayer extends StatelessWidget {
       height: height,
       child: IgnorePointer(
         child: ClipRect(
-          child: TomoSceneHeaderBackdrop(
+          child: OheySceneHeaderBackdrop(
             assetPath: 'assets/images/feed_header_scene_clear.png',
             fadeColor: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
             accentColor: _FeedColors.teal,
@@ -62,7 +62,7 @@ class _FeedHeaderControlsLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = TomoPageHeader.sceneBackdropHeight(context);
+    final height = OheyPageHeader.sceneBackdropHeight(context);
     return Positioned(
       left: 0,
       right: 0,
@@ -72,9 +72,9 @@ class _FeedHeaderControlsLayer extends StatelessWidget {
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-            TomoPageHeader.horizontalPadding,
-            TomoPageHeader.topPadding,
-            TomoPageHeader.horizontalPadding,
+            OheyPageHeader.horizontalPadding,
+            OheyPageHeader.topPadding,
+            OheyPageHeader.horizontalPadding,
             0,
           ),
           child: child,

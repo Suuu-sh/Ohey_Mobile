@@ -47,7 +47,7 @@ class _CustomFilterManageResult {
 }
 
 String _customFilterStorageKey(String userId) =>
-    'tomo_custom_friend_filters_v1_$userId';
+    'ohey_custom_friend_filters_v1_$userId';
 
 List<_CustomFriendFilter> _decodeCustomFilters(String? raw) {
   if (raw == null || raw.trim().isEmpty) return const [];
@@ -165,7 +165,7 @@ class _FilterChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                TomoGeneratedIcon(
+                OheyGeneratedIcon(
                   icon!,
                   color: selected
                       ? _FriendsColors.bg
@@ -220,7 +220,7 @@ class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
     final sub = isWhite ? const Color(0xFF657282) : Colors.white70;
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       title: 'グループ編集',
       showHandle: true,
       radius: 32,
@@ -275,7 +275,7 @@ class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
             ),
           ),
           const SizedBox(height: 14),
-          TomoPrimaryButton(
+          OheyPrimaryButton(
             label: 'この順番で保存',
             icon: CupertinoIcons.checkmark_alt_circle_fill,
             onPressed: () => Navigator.of(
@@ -322,7 +322,7 @@ class _CustomFilterManageAddButton extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const TomoPopIcon(
+              const OheyPopIcon(
                 icon: CupertinoIcons.plus,
                 color: _FriendsColors.lime,
                 size: 36,
@@ -339,7 +339,7 @@ class _CustomFilterManageAddButton extends StatelessWidget {
                   ),
                 ),
               ),
-              TomoGeneratedIcon(
+              OheyGeneratedIcon(
                 CupertinoIcons.chevron_right,
                 color: _FriendsColors.lime,
                 size: 18,
@@ -390,7 +390,7 @@ class _CustomFilterManageRow extends StatelessWidget {
           children: [
             ReorderableDragStartListener(
               index: index,
-              child: TomoPopIcon(
+              child: OheyPopIcon(
                 icon: CupertinoIcons.line_horizontal_3,
                 color: accent,
                 size: 36,
@@ -444,12 +444,12 @@ class _ManageIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 41,
-      child: Tomo3DButtonSurface(
+      child: Ohey3DButtonSurface(
         onTap: onTap,
         height: 34,
         radius: 17,
         color: color.withValues(alpha: .18),
-        bottomColor: tomo3DShadowColorFor(color, lightnessScale: .56),
+        bottomColor: ohey3DShadowColorFor(color, lightnessScale: .56),
         padding: EdgeInsets.zero,
         borderColor: color.withValues(alpha: .30),
         outerShadows: [
@@ -459,7 +459,7 @@ class _ManageIconButton extends StatelessWidget {
             offset: const Offset(0, 5),
           ),
         ],
-        child: TomoGeneratedIcon(icon, color: color, size: 17),
+        child: OheyGeneratedIcon(icon, color: color, size: 17),
       ),
     );
   }
@@ -472,7 +472,7 @@ class _CustomFilterSheet extends StatefulWidget {
     this.initialFilter,
   });
 
-  final List<TomoFriend> friends;
+  final List<OheyFriend> friends;
   final bool isWhite;
   final _CustomFriendFilter? initialFilter;
 
@@ -565,7 +565,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
     final fieldBg = isWhite
         ? const Color(0xFFF2F6FA)
         : Colors.white.withValues(alpha: .07);
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 30,
@@ -589,7 +589,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
           const SizedBox(height: 16),
           Row(
             children: [
-              TomoPopIcon(
+              OheyPopIcon(
                 icon: _isEditing
                     ? CupertinoIcons.slider_horizontal_3
                     : CupertinoIcons.person_2_fill,
@@ -623,7 +623,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                   ],
                 ),
               ),
-              TomoCloseButton(
+              OheyCloseButton(
                 onTap: () => Navigator.of(context).pop(),
                 iconColor: sub,
               ),
@@ -695,7 +695,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
             ),
           ],
           const SizedBox(height: 16),
-          Tomo3DButton(
+          Ohey3DButton(
             label: _isEditing ? '保存する' : '作成する',
             icon: CupertinoIcons.checkmark_circle_fill,
             onTap: _canSave ? _save : null,
@@ -709,7 +709,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
           ),
           if (_isEditing) ...[
             const SizedBox(height: 8),
-            Tomo3DButton.destructive(
+            Ohey3DButton.destructive(
               label: '削除する',
               icon: CupertinoIcons.trash_fill,
               onTap: _delete,
@@ -764,7 +764,7 @@ class _CustomFilterFriendRow extends StatelessWidget {
     required this.onTap,
   });
 
-  final TomoFriend friend;
+  final OheyFriend friend;
   final bool selected;
   final bool isWhite;
   final VoidCallback onTap;
@@ -781,11 +781,11 @@ class _CustomFilterFriendRow extends StatelessWidget {
         ? const Color(0xFFF7F9FB)
         : AppColors.darkBackground;
     final bottom = selected
-        ? tomo3DShadowColorFor(_FriendsColors.lime, lightnessScale: .60)
+        ? ohey3DShadowColorFor(_FriendsColors.lime, lightnessScale: .60)
         : isWhite
         ? const Color(0xFFD9E2EB)
         : const Color(0xFF09131D);
-    return Tomo3DButtonSurface(
+    return Ohey3DButtonSurface(
       onTap: onTap,
       height: 58,
       radius: 18,
@@ -808,7 +808,7 @@ class _CustomFilterFriendRow extends StatelessWidget {
       ],
       child: Row(
         children: [
-          TomoAvatarView(
+          OheyAvatarView(
             avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
             size: 42,
           ),
@@ -858,7 +858,7 @@ class _CustomFilterFriendRow extends StatelessWidget {
             ),
             child: selected
                 ? const Center(
-                    child: TomoGeneratedIcon(
+                    child: OheyGeneratedIcon(
                       CupertinoIcons.checkmark,
                       color: _FriendsColors.bg,
                       size: 18,

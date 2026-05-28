@@ -3,14 +3,14 @@ part of 'profile_screen.dart';
 class _AvatarEditCard extends StatelessWidget {
   const _AvatarEditCard({required this.avatar, required this.onTap});
 
-  final TomoAvatar avatar;
+  final OheyAvatar avatar;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    return Tomo3DButtonSurface(
+    return Ohey3DButtonSurface(
       onTap: onTap,
       height: 110,
       radius: 22,
@@ -45,7 +45,7 @@ class _AvatarEditCard extends StatelessWidget {
                 colors: [Color(0xFF223544), Color(0xFF101B28)],
               ),
             ),
-            child: TomoAvatarView(avatar: avatar, size: 82),
+            child: OheyAvatarView(avatar: avatar, size: 82),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -75,7 +75,7 @@ class _AvatarEditCard extends StatelessWidget {
               ],
             ),
           ),
-          const TomoGeneratedIcon(
+          const OheyGeneratedIcon(
             CupertinoIcons.chevron_forward,
             color: _ProfileColors.lime,
             size: 22,
@@ -93,7 +93,7 @@ class _SettingsSheetShell extends StatelessWidget {
     required this.onClose,
   });
 
-  final TomoUser? user;
+  final OheyUser? user;
   final List<Widget> children;
   final VoidCallback onClose;
 
@@ -104,15 +104,15 @@ class _SettingsSheetShell extends StatelessWidget {
     final sub = isWhite
         ? const Color(0xFF66727E)
         : Colors.white.withValues(alpha: .62);
-    final avatar = user?.avatar ?? TomoAvatar.defaultAvatar;
+    final avatar = user?.avatar ?? OheyAvatar.defaultAvatar;
     final name = user?.name.trim().isNotEmpty == true
         ? user!.name
-        : 'Tomo user';
+        : 'Ohey user';
     final handle = user?.userId.trim().isNotEmpty == true
         ? '@${user!.userId}'
         : 'プロフィール未設定';
 
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: EdgeInsets.zero,
       radius: 34,
@@ -155,7 +155,7 @@ class _SettingsSheetShell extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Tomoを自分好みに整えよう',
+                          'Oheyを自分好みに整えよう',
                           style: TextStyle(
                             color: sub,
                             fontSize: 13,
@@ -184,7 +184,7 @@ class _SettingsSheetShell extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    TomoAvatarView(avatar: avatar, size: 52),
+                    OheyAvatarView(avatar: avatar, size: 52),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -249,7 +249,7 @@ class _SettingsCloseButton extends StatelessWidget {
           border: Border.all(color: color.withValues(alpha: .10)),
         ),
         child: Center(
-          child: TomoGeneratedIcon(
+          child: OheyGeneratedIcon(
             CupertinoIcons.xmark,
             color: color,
             size: 23,
@@ -300,7 +300,7 @@ class _SettingsTile extends StatelessWidget {
             height: 72,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: TomoThemedPanel.surfaceColor(isWhite: isWhite),
+              color: OheyThemedPanel.surfaceColor(isWhite: isWhite),
               borderRadius: BorderRadius.circular(22),
               border: Border.all(
                 color: isWhite
@@ -326,7 +326,7 @@ class _SettingsTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(17),
                   ),
                   child: Center(
-                    child: TomoPopIcon(
+                    child: OheyPopIcon(
                       icon: icon,
                       color: accent,
                       size: 28,
@@ -390,7 +390,7 @@ class _SettingsTile extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
-                    child: TomoGeneratedIcon(
+                    child: OheyGeneratedIcon(
                       CupertinoIcons.chevron_forward,
                       color: _ProfileColors.sub,
                       size: 18,
@@ -454,7 +454,7 @@ class _SheetPrimaryButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Tomo3DButton(
+  Widget build(BuildContext context) => Ohey3DButton(
     label: label,
     onTap: busy ? null : onTap,
     isLoading: busy,

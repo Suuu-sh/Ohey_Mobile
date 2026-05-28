@@ -3,21 +3,21 @@ part of 'profile_screen.dart';
 Future<void> _showEditProfileSheet(
   BuildContext context,
   WidgetRef ref,
-  TomoUser? user,
+  OheyUser? user,
 ) async {
   final controller = TextEditingController(text: user?.name ?? '');
   final userIdController = TextEditingController(text: user?.userId ?? '');
-  final userController = ref.read(tomoUserProvider.notifier);
+  final userController = ref.read(oheyUserProvider.notifier);
   final initialName = user?.name ?? '';
   final initialUserId = user?.userId ?? '';
-  final initialAvatar = user?.avatar ?? TomoAvatar.defaultAvatar;
-  var avatar = user?.avatar ?? TomoAvatar.defaultAvatar;
-  final gender = user?.gender ?? TomoGender.unspecified;
+  final initialAvatar = user?.avatar ?? OheyAvatar.defaultAvatar;
+  var avatar = user?.avatar ?? OheyAvatar.defaultAvatar;
+  final gender = user?.gender ?? OheyGender.unspecified;
   var saving = false;
   var closing = false;
   String? error;
 
-  await showTomoBottomSheet<void>(
+  await showOheyBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     isDismissible: false,
@@ -169,7 +169,7 @@ Future<void> _showEditProfileSheet(
                                 await Navigator.of(
                                   sheetBuildContext,
                                   rootNavigator: true,
-                                ).push<TomoAvatar>(
+                                ).push<OheyAvatar>(
                                   CupertinoPageRoute(
                                     fullscreenDialog: true,
                                     builder: (_) => AvatarBuilderScreen(
@@ -252,7 +252,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
           const SizedBox(height: 18),
           const Row(
             children: [
-              TomoPopIcon(
+              OheyPopIcon(
                 icon: CupertinoIcons.person_crop_circle_fill,
                 color: Color(0xFF20D0B4),
                 size: 48,
@@ -297,7 +297,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const TomoGeneratedIcon(
+                const OheyGeneratedIcon(
                   CupertinoIcons.info_circle_fill,
                   color: Color(0xFF20D0B4),
                   size: 20,
@@ -318,7 +318,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          Tomo3DButton(
+          Ohey3DButton(
             label: '保存して閉じる',
             icon: CupertinoIcons.check_mark_circled_solid,
             color: const Color(0xFF20D0B4),
@@ -330,7 +330,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
             onTap: () => Navigator.of(context).pop(_UnsavedProfileAction.save),
           ),
           const SizedBox(height: 10),
-          Tomo3DButton(
+          Ohey3DButton(
             label: '変更を戻す',
             icon: CupertinoIcons.arrow_uturn_left,
             color: Colors.white.withValues(alpha: .07),
@@ -344,7 +344,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
                 Navigator.of(context).pop(_UnsavedProfileAction.discard),
           ),
           const SizedBox(height: 10),
-          Tomo3DButton.secondary(
+          Ohey3DButton.secondary(
             label: '編集を続ける',
             icon: CupertinoIcons.pencil,
             color: Colors.white.withValues(alpha: .055),
@@ -374,8 +374,8 @@ Future<void> _openAdminScreen(BuildContext context) async {
 
 Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
   final rootContext = context;
-  final user = ref.read(tomoUserProvider);
-  await showTomoBottomSheet<void>(
+  final user = ref.read(oheyUserProvider);
+  await showOheyBottomSheet<void>(
     context: context,
     builder: (sheetContext) => Consumer(
       builder: (context, ref, _) {
@@ -418,7 +418,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 await _showEditProfileSheet(
                   context,
                   ref,
-                  ref.read(tomoUserProvider),
+                  ref.read(oheyUserProvider),
                 );
               },
             ),
@@ -446,7 +446,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
             _SettingsTile(
               icon: CupertinoIcons.play_circle_fill,
               label: 'はじめてのデモ',
-              subtitle: 'Tomoの使い方をもう一度見る',
+              subtitle: 'Oheyの使い方をもう一度見る',
               accent: const Color(0xFF9AF21A),
               onTap: () async {
                 if (sheetContext.mounted) {
@@ -456,7 +456,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 await Navigator.of(context).push<void>(
                   CupertinoPageRoute(
                     fullscreenDialog: true,
-                    builder: (_) => const TomoDemoScreen(),
+                    builder: (_) => const OheyDemoScreen(),
                   ),
                 );
               },
@@ -527,7 +527,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               destructive: true,
               onTap: () async {
                 try {
-                  await ref.read(tomoUserProvider.notifier).signOut();
+                  await ref.read(oheyUserProvider.notifier).signOut();
                 } catch (e) {
                   if (context.mounted) {
                     _showSnack(context, 'ログアウト処理を完了しました。再度ログインしてください。');
@@ -547,7 +547,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
 }
 
 String _friendRequestSettingsSubtitle(
-  AsyncValue<List<TomoFriendRequestItem>> requestsAsync,
+  AsyncValue<List<OheyFriendRequestItem>> requestsAsync,
 ) {
   return requestsAsync.maybeWhen(
     data: (requests) {
@@ -566,21 +566,21 @@ String _friendRequestSettingsSubtitle(
   );
 }
 
-const _tomoSupportEmail = String.fromEnvironment(
-  'TOMO_SUPPORT_EMAIL',
-  defaultValue: 'support@tomo.app',
+const _oheySupportEmail = String.fromEnvironment(
+  'OHEY_SUPPORT_EMAIL',
+  defaultValue: 'support@ohey.app',
 );
-const _tomoTermsUrl = String.fromEnvironment(
-  'TOMO_TERMS_URL',
-  defaultValue: 'https://tomo.app/terms',
+const _oheyTermsUrl = String.fromEnvironment(
+  'OHEY_TERMS_URL',
+  defaultValue: 'https://ohey.app/terms',
 );
-const _tomoPrivacyUrl = String.fromEnvironment(
-  'TOMO_PRIVACY_URL',
-  defaultValue: 'https://tomo.app/privacy',
+const _oheyPrivacyUrl = String.fromEnvironment(
+  'OHEY_PRIVACY_URL',
+  defaultValue: 'https://ohey.app/privacy',
 );
 
 Future<void> _showSupportLegalSheet(BuildContext context) {
-  return showTomoBottomSheet<void>(
+  return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
     barrierColor: Colors.black.withValues(alpha: .58),
@@ -599,7 +599,7 @@ class _SupportLegalSheet extends StatelessWidget {
         ? const Color(0xFF64717D)
         : Colors.white.withValues(alpha: .64);
 
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       title: 'サポート・法務',
       topSafeArea: true,
       margin: const EdgeInsets.all(14),
@@ -623,7 +623,7 @@ class _SupportLegalSheet extends StatelessWidget {
             icon: CupertinoIcons.mail_solid,
             title: '問い合わせ',
             subtitle: 'サポート窓口メール',
-            value: _tomoSupportEmail,
+            value: _oheySupportEmail,
             accent: const Color(0xFFFFD166),
           ),
           const SizedBox(height: 10),
@@ -631,7 +631,7 @@ class _SupportLegalSheet extends StatelessWidget {
             icon: CupertinoIcons.doc_text_fill,
             title: '利用規約',
             subtitle: 'Terms of Service URL',
-            value: _tomoTermsUrl,
+            value: _oheyTermsUrl,
             accent: const Color(0xFF65D6FF),
           ),
           const SizedBox(height: 10),
@@ -639,7 +639,7 @@ class _SupportLegalSheet extends StatelessWidget {
             icon: CupertinoIcons.lock_shield_fill,
             title: 'プライバシーポリシー',
             subtitle: 'Privacy Policy URL',
-            value: _tomoPrivacyUrl,
+            value: _oheyPrivacyUrl,
             accent: const Color(0xFFFF7AB8),
           ),
           const SizedBox(height: 14),
@@ -653,7 +653,7 @@ class _SupportLegalSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Tomo3DButton.secondary(
+          Ohey3DButton.secondary(
             label: '閉じる',
             height: 48,
             radius: 20,
@@ -698,7 +698,7 @@ class _SupportLegalRow extends StatelessWidget {
       onTap: () async {
         await Clipboard.setData(ClipboardData(text: value));
         if (context.mounted) {
-          TomoToast.show(context, '$titleをコピーしました');
+          OheyToast.show(context, '$titleをコピーしました');
         }
       },
       child: Container(
@@ -712,7 +712,7 @@ class _SupportLegalRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            TomoPopIcon(
+            OheyPopIcon(
               icon: icon,
               color: accent,
               size: 42,
@@ -756,7 +756,7 @@ class _SupportLegalRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            TomoGeneratedIcon(
+            OheyGeneratedIcon(
               CupertinoIcons.doc_on_clipboard,
               color: sub,
               size: 22,
@@ -769,7 +769,7 @@ class _SupportLegalRow extends StatelessWidget {
 }
 
 Future<void> _showFriendRequestManagementSheet(BuildContext context) {
-  return showTomoBottomSheet<void>(
+  return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
     barrierColor: Colors.black.withValues(alpha: .58),
@@ -789,7 +789,7 @@ class _FriendRequestManagementSheetState
     extends ConsumerState<_FriendRequestManagementSheet> {
   final Set<String> _busyRequestIds = <String>{};
 
-  Future<void> _respond(TomoFriendRequestItem request, String status) async {
+  Future<void> _respond(OheyFriendRequestItem request, String status) async {
     if (!_busyRequestIds.add(request.id)) return;
     setState(() {});
     try {
@@ -802,14 +802,14 @@ class _FriendRequestManagementSheetState
         ref.invalidate(friendsProvider);
       }
       if (!mounted) return;
-      TomoToast.show(context, switch (status) {
+      OheyToast.show(context, switch (status) {
         'accepted' => '申請を承認しました',
         'rejected' => '申請を見送りました',
         _ => '申請を取り消しました',
       }, icon: CupertinoIcons.checkmark_circle_fill);
     } catch (_) {
       if (!mounted) return;
-      TomoToast.show(
+      OheyToast.show(
         context,
         '操作できませんでした。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
@@ -820,7 +820,7 @@ class _FriendRequestManagementSheetState
     }
   }
 
-  Future<void> _cancelAll(List<TomoFriendRequestItem> requests) async {
+  Future<void> _cancelAll(List<OheyFriendRequestItem> requests) async {
     final targets = [
       for (final request in requests)
         if (!_busyRequestIds.contains(request.id)) request,
@@ -839,14 +839,14 @@ class _FriendRequestManagementSheetState
       ref.invalidate(pendingFriendRequestsProvider);
       ref.invalidate(notificationControllerProvider);
       if (!mounted) return;
-      TomoToast.show(
+      OheyToast.show(
         context,
         '${targets.length}件の申請を取り消しました',
         icon: CupertinoIcons.arrow_uturn_left_circle_fill,
       );
     } catch (_) {
       if (!mounted) return;
-      TomoToast.show(
+      OheyToast.show(
         context,
         '一括取消に失敗しました。残りはあとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
@@ -867,7 +867,7 @@ class _FriendRequestManagementSheetState
         ? const Color(0xFF64717D)
         : Colors.white.withValues(alpha: .64);
 
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       title: '申請管理',
       topSafeArea: true,
       margin: const EdgeInsets.all(14),
@@ -976,10 +976,10 @@ class _FriendRequestSection extends StatelessWidget {
 
   final String title;
   final String emptyMessage;
-  final List<TomoFriendRequestItem> requests;
+  final List<OheyFriendRequestItem> requests;
   final Color accent;
   final Set<String> busyRequestIds;
-  final Widget Function(TomoFriendRequestItem request) rowBuilder;
+  final Widget Function(OheyFriendRequestItem request) rowBuilder;
   final VoidCallback? onCancelAll;
 
   @override
@@ -1007,7 +1007,7 @@ class _FriendRequestSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              TomoPopIcon(
+              OheyPopIcon(
                 icon: CupertinoIcons.person_2_fill,
                 color: accent,
                 size: 34,
@@ -1082,7 +1082,7 @@ class _FriendRequestRow extends StatelessWidget {
     this.onReject,
   });
 
-  final TomoFriendRequestItem request;
+  final OheyFriendRequestItem request;
   final Color accent;
   final bool busy;
   final VoidCallback? onCancel;
@@ -1114,7 +1114,7 @@ class _FriendRequestRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          TomoAvatarView(avatar: profile.avatar, size: 46),
+          OheyAvatarView(avatar: profile.avatar, size: 46),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -1148,7 +1148,7 @@ class _FriendRequestRow extends StatelessWidget {
           if (onCancel != null)
             SizedBox(
               width: 82,
-              child: Tomo3DButton.secondary(
+              child: Ohey3DButton.secondary(
                 label: busy ? '取消中' : '取消',
                 onTap: busy ? null : onCancel,
                 height: 40,
@@ -1165,7 +1165,7 @@ class _FriendRequestRow extends StatelessWidget {
               children: [
                 SizedBox(
                   width: 68,
-                  child: Tomo3DButton.secondary(
+                  child: Ohey3DButton.secondary(
                     label: '見送り',
                     onTap: busy ? null : onReject,
                     height: 40,
@@ -1180,7 +1180,7 @@ class _FriendRequestRow extends StatelessWidget {
                 const SizedBox(width: 8),
                 SizedBox(
                   width: 68,
-                  child: Tomo3DButton(
+                  child: Ohey3DButton(
                     label: busy ? '処理中' : '承認',
                     onTap: busy ? null : onAccept,
                     height: 40,
@@ -1209,7 +1209,7 @@ String _friendRequestDateLabel(DateTime? date) {
 }
 
 Future<void> _showSafetyCenterSheet(BuildContext context) {
-  return showTomoBottomSheet<void>(
+  return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
     barrierColor: Colors.black.withValues(alpha: .58),
@@ -1239,9 +1239,9 @@ Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
   if (confirmed != true) return;
 
   try {
-    await ref.read(tomoUserProvider.notifier).deleteAccount();
+    await ref.read(oheyUserProvider.notifier).deleteAccount();
     if (!context.mounted) return;
-    TomoToast.show(
+    OheyToast.show(
       context,
       'アカウントを削除しました',
       icon: CupertinoIcons.checkmark_circle_fill,
@@ -1262,7 +1262,7 @@ class _SafetyCenterSheet extends ConsumerStatefulWidget {
 class _SafetyCenterSheetState extends ConsumerState<_SafetyCenterSheet> {
   final Set<String> _releasingUserIds = <String>{};
 
-  Future<void> _releaseUser(TomoSafetyUser user, {required bool block}) async {
+  Future<void> _releaseUser(OheySafetyUser user, {required bool block}) async {
     if (user.id.isEmpty || !_releasingUserIds.add(user.id)) return;
     setState(() {});
     try {
@@ -1277,14 +1277,14 @@ class _SafetyCenterSheetState extends ConsumerState<_SafetyCenterSheet> {
       ref.invalidate(homeFeedControllerProvider);
       ref.invalidate(friendsProvider);
       if (!mounted) return;
-      TomoToast.show(
+      OheyToast.show(
         context,
         block ? 'ブロックを解除しました' : 'ミュートを解除しました',
         icon: CupertinoIcons.checkmark_circle_fill,
       );
     } catch (_) {
       if (!mounted) return;
-      TomoToast.show(
+      OheyToast.show(
         context,
         '解除できませんでした。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
@@ -1304,7 +1304,7 @@ class _SafetyCenterSheetState extends ConsumerState<_SafetyCenterSheet> {
         ? const Color(0xFF64717D)
         : Colors.white.withValues(alpha: .64);
 
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       title: '安全センター',
       topSafeArea: true,
       margin: const EdgeInsets.all(14),
@@ -1369,11 +1369,11 @@ class _SafetyUserSection extends StatelessWidget {
 
   final String title;
   final String emptyMessage;
-  final AsyncValue<List<TomoSafetyUser>> usersAsync;
+  final AsyncValue<List<OheySafetyUser>> usersAsync;
   final Set<String> releasingUserIds;
   final Color accent;
   final String actionLabel;
-  final ValueChanged<TomoSafetyUser> onRelease;
+  final ValueChanged<OheySafetyUser> onRelease;
 
   @override
   Widget build(BuildContext context) {
@@ -1397,7 +1397,7 @@ class _SafetyUserSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              TomoPopIcon(
+              OheyPopIcon(
                 icon: CupertinoIcons.shield_fill,
                 color: accent,
                 size: 34,
@@ -1477,7 +1477,7 @@ class _SafetyUserRow extends StatelessWidget {
     required this.onRelease,
   });
 
-  final TomoSafetyUser user;
+  final OheySafetyUser user;
   final Color accent;
   final String actionLabel;
   final bool isReleasing;
@@ -1505,7 +1505,7 @@ class _SafetyUserRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          TomoAvatarView(avatar: user.avatar, size: 46),
+          OheyAvatarView(avatar: user.avatar, size: 46),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -1538,7 +1538,7 @@ class _SafetyUserRow extends StatelessWidget {
           const SizedBox(width: 10),
           SizedBox(
             width: 82,
-            child: Tomo3DButton.secondary(
+            child: Ohey3DButton.secondary(
               label: isReleasing ? '解除中' : actionLabel,
               onTap: isReleasing ? null : onRelease,
               height: 40,
@@ -1563,7 +1563,7 @@ class _SheetShell extends StatelessWidget {
   final VoidCallback? onClose;
 
   @override
-  Widget build(BuildContext context) => TomoBottomSheetShell(
+  Widget build(BuildContext context) => OheyBottomSheetShell(
     title: title,
     onClose: onClose,
     topSafeArea: true,

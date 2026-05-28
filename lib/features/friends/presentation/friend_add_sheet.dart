@@ -6,14 +6,14 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../core/application/tomo_user_controller.dart';
+import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/config/supabase_config.dart';
-import '../../../core/models/tomo_avatar.dart';
-import '../../../core/widgets/tomo_3d_button.dart';
-import '../../../core/widgets/tomo_avatar.dart';
-import '../../../core/widgets/tomo_pop_icon.dart';
-import '../../../core/widgets/tomo_bottom_sheet.dart';
-import '../../../core/widgets/tomo_toast.dart';
+import '../../../core/models/ohey_avatar.dart';
+import '../../../core/widgets/ohey_3d_button.dart';
+import '../../../core/widgets/ohey_avatar.dart';
+import '../../../core/widgets/ohey_pop_icon.dart';
+import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_toast.dart';
 import '../../memories/application/memory_controller.dart';
 import '../data/friend_repository.dart';
 
@@ -67,8 +67,8 @@ class _FriendQrDialog extends ConsumerStatefulWidget {
 class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
-  TomoFriendProfile? _searchProfile;
-  TomoFriendRelationshipStatus? _searchStatus;
+  OheyFriendProfile? _searchProfile;
+  OheyFriendRelationshipStatus? _searchStatus;
   bool _isSearchExpanded = false;
   bool _isSearching = false;
   bool _isSending = false;
@@ -84,7 +84,7 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
   Future<void> _copyMyId(BuildContext context, String userId) async {
     await Clipboard.setData(ClipboardData(text: userId));
     if (!context.mounted) return;
-    TomoToast.show(
+    OheyToast.show(
       context,
       '@$userId をコピーしました',
       icon: CupertinoIcons.doc_on_clipboard_fill,
@@ -94,13 +94,13 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
   Future<void> _copyFriendLink(BuildContext context, String payload) async {
     await Clipboard.setData(ClipboardData(text: payload));
     if (!context.mounted) return;
-    TomoToast.show(context, 'リンクをコピーしました', icon: CupertinoIcons.link);
+    OheyToast.show(context, 'リンクをコピーしました', icon: CupertinoIcons.link);
   }
 
   Future<void> _shareFriendLink(String userId, String payload) async {
     HapticFeedback.selectionClick();
     await SharePlus.instance.share(
-      ShareParams(title: 'Tomoでつながろ', text: 'Tomoで@$userId とつながろう：$payload'),
+      ShareParams(title: 'Oheyでつながろ', text: 'Oheyで@$userId とつながろう：$payload'),
     );
   }
 
@@ -158,7 +158,7 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
       ref.invalidate(friendsProvider);
       if (!mounted) return;
       Navigator.of(context).pop();
-      TomoToast.show(
+      OheyToast.show(
         context,
         '${profile.displayName}さんに申請を送りました',
         icon: CupertinoIcons.person_badge_plus_fill,
@@ -185,7 +185,7 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
       final status = await repository.relationshipStatus(profile.id);
       if (!mounted) return;
       setState(() => _searchStatus = status);
-      TomoToast.show(
+      OheyToast.show(
         context,
         '申請を取り消しました',
         icon: CupertinoIcons.arrow_uturn_left_circle_fill,
@@ -199,7 +199,7 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
   }
 
   Future<void> _scanFriendQr(BuildContext context) async {
-    final scanned = await showTomoBottomSheet<String>(
+    final scanned = await showOheyBottomSheet<String>(
       context: context,
       useSafeArea: true,
       barrierColor: Colors.black.withValues(alpha: .70),
@@ -212,7 +212,7 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
       final profile = await repository.findProfileByUserId(friendId);
       if (profile == null) {
         if (context.mounted) {
-          TomoToast.show(context, 'このQRのユーザーが見つかりませんでした');
+          OheyToast.show(context, 'このQRのユーザーが見つかりませんでした');
         }
         return;
       }
@@ -220,20 +220,20 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
       ref.invalidate(friendsProvider);
       if (!context.mounted) return;
       Navigator.of(context).pop();
-      TomoToast.show(
+      OheyToast.show(
         context,
         '${profile.displayName}さんに申請を送りました',
         icon: CupertinoIcons.person_badge_plus_fill,
       );
     } catch (_) {
       if (!context.mounted) return;
-      TomoToast.show(context, 'QRから申請できませんでした。あとでもう一度試してね');
+      OheyToast.show(context, 'QRから申請できませんでした。あとでもう一度試してね');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(tomoUserProvider);
+    final user = ref.watch(oheyUserProvider);
     final myUserId = user?.userId.trim() ?? '';
     final qrPayload = myUserId.isEmpty ? null : _friendQrPayload(myUserId);
     return SafeArea(
@@ -254,7 +254,7 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
                 child: _CuteQrCard(
                   userId: myUserId,
                   payload: qrPayload,
-                  avatar: user?.avatar ?? TomoAvatar.defaultAvatar,
+                  avatar: user?.avatar ?? OheyAvatar.defaultAvatar,
                   isWhite: false,
                   onClose: () => Navigator.of(context).pop(),
                   onCopyId: () => _copyMyId(context, myUserId),
@@ -298,8 +298,8 @@ class _FriendAddSheet extends StatefulWidget {
 
 class _FriendAddSheetState extends State<_FriendAddSheet> {
   final TextEditingController _controller = TextEditingController();
-  TomoFriendProfile? _profile;
-  TomoFriendRelationshipStatus? _status;
+  OheyFriendProfile? _profile;
+  OheyFriendRelationshipStatus? _status;
   bool _isLoading = false;
   bool _isSending = false;
   String? _error;
@@ -327,7 +327,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
   Future<void> _copyMyId(String userId) async {
     await Clipboard.setData(ClipboardData(text: userId));
     if (!mounted) return;
-    TomoToast.show(
+    OheyToast.show(
       context,
       '@$userId をコピーしました',
       icon: CupertinoIcons.doc_on_clipboard_fill,
@@ -337,18 +337,18 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
   Future<void> _copyFriendLink(String payload) async {
     await Clipboard.setData(ClipboardData(text: payload));
     if (!mounted) return;
-    TomoToast.show(context, 'リンクをコピーしました', icon: CupertinoIcons.link);
+    OheyToast.show(context, 'リンクをコピーしました', icon: CupertinoIcons.link);
   }
 
   Future<void> _shareFriendLink(String userId, String payload) async {
     HapticFeedback.selectionClick();
     await SharePlus.instance.share(
-      ShareParams(title: 'Tomoでつながろ', text: 'Tomoで@$userId とつながろう：$payload'),
+      ShareParams(title: 'Oheyでつながろ', text: 'Oheyで@$userId とつながろう：$payload'),
     );
   }
 
   Future<void> _scanFriendQr(BuildContext context) async {
-    final scanned = await showTomoBottomSheet<String>(
+    final scanned = await showOheyBottomSheet<String>(
       context: context,
       useSafeArea: true,
       barrierColor: Colors.black.withValues(alpha: .70),
@@ -361,7 +361,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
       final profile = await repository.findProfileByUserId(friendId);
       if (profile == null) {
         if (context.mounted) {
-          TomoToast.show(context, 'このQRのユーザーが見つかりませんでした');
+          OheyToast.show(context, 'このQRのユーザーが見つかりませんでした');
         }
         return;
       }
@@ -369,14 +369,14 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
       widget.ref.invalidate(friendsProvider);
       if (!context.mounted) return;
       Navigator.of(context).pop();
-      TomoToast.show(
+      OheyToast.show(
         context,
         '${profile.displayName}さんに申請を送りました',
         icon: CupertinoIcons.person_badge_plus_fill,
       );
     } catch (_) {
       if (!context.mounted) return;
-      TomoToast.show(context, 'QRから申請できませんでした。あとでもう一度試してね');
+      OheyToast.show(context, 'QRから申請できませんでした。あとでもう一度試してね');
     }
   }
 
@@ -426,7 +426,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
       widget.ref.invalidate(friendsProvider);
       if (!mounted) return;
       Navigator.of(context).pop();
-      TomoToast.show(
+      OheyToast.show(
         context,
         '${profile.displayName}さんに申請を送りました',
         icon: CupertinoIcons.person_badge_plus_fill,
@@ -453,7 +453,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
       final status = await repository.relationshipStatus(profile.id);
       if (!mounted) return;
       setState(() => _status = status);
-      TomoToast.show(
+      OheyToast.show(
         context,
         '申請を取り消しました',
         icon: CupertinoIcons.arrow_uturn_left_circle_fill,
@@ -473,10 +473,10 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     final sub = isWhite ? const Color(0xFF6C7480) : Colors.white70;
     final profile = _profile;
     final status = _status;
-    final user = widget.ref.watch(tomoUserProvider);
+    final user = widget.ref.watch(oheyUserProvider);
     final myUserId = user?.userId.trim() ?? '';
     final qrPayload = myUserId.isEmpty ? null : _friendQrPayload(myUserId);
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       title: null,
       showHandle: true,
       radius: 34,
@@ -507,7 +507,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
                     ],
                   ),
                   child: Center(
-                    child: TomoGeneratedIcon(
+                    child: OheyGeneratedIcon(
                       CupertinoIcons.person_2_fill,
                       color: Colors.white,
                       size: 28,
@@ -542,7 +542,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: TomoGeneratedIcon(
+                  icon: OheyGeneratedIcon(
                     CupertinoIcons.xmark,
                     color: ink.withValues(alpha: .86),
                     size: 30,
@@ -555,7 +555,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
               _CuteQrCard(
                 userId: myUserId,
                 payload: qrPayload,
-                avatar: user?.avatar ?? TomoAvatar.defaultAvatar,
+                avatar: user?.avatar ?? OheyAvatar.defaultAvatar,
                 isWhite: isWhite,
                 onCopyId: () => _copyMyId(myUserId),
                 onCopyLink: qrPayload == null
@@ -631,7 +631,7 @@ class _CuteQrCard extends StatelessWidget {
 
   final String userId;
   final String? payload;
-  final TomoAvatar avatar;
+  final OheyAvatar avatar;
   final bool isWhite;
   final VoidCallback onCopyId;
   final VoidCallback? onCopyLink;
@@ -643,8 +643,8 @@ class _CuteQrCard extends StatelessWidget {
   final bool isSearchExpanded;
   final bool isSearching;
   final String? searchError;
-  final TomoFriendProfile? searchProfile;
-  final TomoFriendRelationshipStatus? searchStatus;
+  final OheyFriendProfile? searchProfile;
+  final OheyFriendRelationshipStatus? searchStatus;
   final bool isSendingSearchRequest;
   final VoidCallback? onExpandSearch;
   final VoidCallback? onSubmitSearch;
@@ -678,7 +678,7 @@ class _CuteQrCard extends StatelessWidget {
                 width: 42,
                 height: 42,
                 child: onClose == null
-                    ? TomoGeneratedIcon(
+                    ? OheyGeneratedIcon(
                         CupertinoIcons.sparkles,
                         color: ink.withValues(alpha: .72),
                         size: 30,
@@ -686,7 +686,7 @@ class _CuteQrCard extends StatelessWidget {
                     : IconButton(
                         padding: EdgeInsets.zero,
                         onPressed: onClose,
-                        icon: TomoGeneratedIcon(
+                        icon: OheyGeneratedIcon(
                           CupertinoIcons.xmark,
                           color: ink.withValues(alpha: .74),
                           size: 32,
@@ -697,7 +697,7 @@ class _CuteQrCard extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      'Tomo',
+                      'Ohey',
                       style: TextStyle(
                         color: ink,
                         fontSize: 21,
@@ -764,14 +764,14 @@ class _CuteQrCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: TomoAvatarView(avatar: avatar, size: 50),
+                        child: OheyAvatarView(avatar: avatar, size: 50),
                       ),
                     ],
                   ),
           ),
           const SizedBox(height: 8),
           const Text(
-            'tomo',
+            'ohey',
             style: TextStyle(
               color: ink,
               fontSize: 24,
@@ -881,7 +881,7 @@ class _QrActionButton extends StatelessWidget {
           children: [
             SizedBox(
               width: 62,
-              child: Tomo3DButtonSurface(
+              child: Ohey3DButtonSurface(
                 onTap: onTap,
                 height: 54,
                 radius: 16,
@@ -899,7 +899,7 @@ class _QrActionButton extends StatelessWidget {
                   ),
                 ],
                 child: Center(
-                  child: TomoGeneratedIcon(icon, color: ink, size: 25),
+                  child: OheyGeneratedIcon(icon, color: ink, size: 25),
                 ),
               ),
             ),
@@ -946,7 +946,7 @@ class _QrIdSearchChip extends StatelessWidget {
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOutCubic,
       width: isExpanded ? 270 : 130,
-      child: Tomo3DButtonSurface(
+      child: Ohey3DButtonSurface(
         onTap: isExpanded ? null : onExpand,
         height: 34,
         radius: 17,
@@ -970,7 +970,7 @@ class _QrIdSearchChip extends StatelessWidget {
               ? Row(
                   key: const ValueKey('search-input'),
                   children: [
-                    TomoGeneratedIcon(
+                    OheyGeneratedIcon(
                       CupertinoIcons.search,
                       color: ink.withValues(alpha: .68),
                       size: 16,
@@ -980,7 +980,7 @@ class _QrIdSearchChip extends StatelessWidget {
                       child: CupertinoTextField(
                         controller: controller,
                         focusNode: focusNode,
-                        placeholder: 'Tomo ID',
+                        placeholder: 'Ohey ID',
                         textInputAction: TextInputAction.search,
                         onSubmitted: (_) => isLoading ? null : onSearch(),
                         padding: EdgeInsets.zero,
@@ -1007,7 +1007,7 @@ class _QrIdSearchChip extends StatelessWidget {
                         child: Center(
                           child: isLoading
                               ? const CupertinoActivityIndicator(radius: 7)
-                              : TomoGeneratedIcon(
+                              : OheyGeneratedIcon(
                                   CupertinoIcons.arrow_right_circle_fill,
                                   color: ink.withValues(alpha: .68),
                                   size: 20,
@@ -1022,7 +1022,7 @@ class _QrIdSearchChip extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TomoGeneratedIcon(
+                    OheyGeneratedIcon(
                       CupertinoIcons.search,
                       color: ink.withValues(alpha: .68),
                       size: 15,
@@ -1079,13 +1079,13 @@ class _CuteIdSearchCard extends StatelessWidget {
         children: [
           CupertinoTextField(
             controller: controller,
-            placeholder: 'Tomo ID',
+            placeholder: 'Ohey ID',
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => onSearch(),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             prefix: Padding(
               padding: const EdgeInsets.only(left: 12),
-              child: TomoGeneratedIcon(
+              child: OheyGeneratedIcon(
                 CupertinoIcons.at,
                 color: Color(0xFFFF7AB8),
                 size: 20,
@@ -1105,7 +1105,7 @@ class _CuteIdSearchCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Tomo3DButton(
+                child: Ohey3DButton(
                   label: isLoading ? '探してる...' : 'IDで探す',
                   icon: CupertinoIcons.search,
                   onTap: isLoading ? null : onSearch,
@@ -1119,7 +1119,7 @@ class _CuteIdSearchCard extends StatelessWidget {
               const SizedBox(width: 10),
               SizedBox(
                 width: 104,
-                child: Tomo3DButton.secondary(
+                child: Ohey3DButton.secondary(
                   label: '貼る',
                   icon: CupertinoIcons.doc_on_clipboard,
                   onTap: isLoading ? null : onPaste,
@@ -1158,7 +1158,7 @@ class _CuteMessageBox extends StatelessWidget {
       ),
       child: Row(
         children: [
-          TomoGeneratedIcon(icon, color: color, size: 18),
+          OheyGeneratedIcon(icon, color: color, size: 18),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1213,7 +1213,7 @@ class _FriendQrScannerSheetState extends State<_FriendQrScannerSheet> {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF18222E) : Colors.white;
     final sub = isWhite ? const Color(0xFF6C7480) : Colors.white70;
-    return TomoBottomSheetShell(
+    return OheyBottomSheetShell(
       title: null,
       showHandle: true,
       radius: 34,
@@ -1234,7 +1234,7 @@ class _FriendQrScannerSheetState extends State<_FriendQrScannerSheet> {
           ),
           const SizedBox(height: 4),
           Text(
-            '相手のTomo QRをカメラにかざしてね。',
+            '相手のOhey QRをカメラにかざしてね。',
             style: TextStyle(
               color: sub,
               fontSize: 13,
@@ -1271,7 +1271,7 @@ class _FriendQrScannerSheetState extends State<_FriendQrScannerSheet> {
             ),
           ),
           const SizedBox(height: 12),
-          Tomo3DButton.secondary(
+          Ohey3DButton.secondary(
             label: '閉じる',
             onTap: () => Navigator.of(context).pop(),
             height: 44,
@@ -1293,8 +1293,8 @@ class _FriendSearchResultCard extends StatelessWidget {
     this.onCancel,
   });
 
-  final TomoFriendProfile profile;
-  final TomoFriendRelationshipStatus? status;
+  final OheyFriendProfile profile;
+  final OheyFriendRelationshipStatus? status;
   final bool isSending;
   final bool isWhite;
   final VoidCallback onSend;
@@ -1306,9 +1306,9 @@ class _FriendSearchResultCard extends StatelessWidget {
     final sub = isWhite ? const Color(0xFF6C7480) : Colors.white70;
     final alreadyFriend = status?.alreadyFriend == true;
     final alreadyRequested =
-        status?.requestState == TomoFriendRequestState.outgoing;
+        status?.requestState == OheyFriendRequestState.outgoing;
     final incomingRequested =
-        status?.requestState == TomoFriendRequestState.incoming;
+        status?.requestState == OheyFriendRequestState.incoming;
     final canCancel =
         alreadyRequested && (status?.requestId?.isNotEmpty == true);
     final buttonLabel = alreadyFriend
@@ -1338,7 +1338,7 @@ class _FriendSearchResultCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          TomoAvatarView(avatar: profile.avatar, size: 54),
+          OheyAvatarView(avatar: profile.avatar, size: 54),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1361,7 +1361,7 @@ class _FriendSearchResultCard extends StatelessWidget {
           ),
           SizedBox(
             width: 104,
-            child: Tomo3DButton(
+            child: Ohey3DButton(
               label: buttonLabel,
               onTap: buttonAction,
               height: 42,

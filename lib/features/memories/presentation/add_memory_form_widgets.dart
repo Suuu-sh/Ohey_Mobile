@@ -39,7 +39,7 @@ class _InputBox extends StatelessWidget {
             : CrossAxisAlignment.center,
         children: [
           if (icon != null) ...[
-            TomoPopIcon(
+            OheyPopIcon(
               icon: icon!,
               color: iconColor,
               size: 34,
@@ -105,7 +105,7 @@ class _FriendChips extends StatelessWidget {
     required this.emptyMessage,
   });
 
-  final List<TomoFriend> friends;
+  final List<OheyFriend> friends;
   final Set<String> selectedIds;
   final ValueChanged<String> onChanged;
   final String emptyMessage;
@@ -153,7 +153,7 @@ class _FriendChip extends StatelessWidget {
     required this.onTap,
   });
 
-  final TomoFriend friend;
+  final OheyFriend friend;
   final bool selected;
   final VoidCallback onTap;
 
@@ -184,8 +184,8 @@ class _FriendChip extends StatelessWidget {
               color: friend.accentColor.withValues(alpha: .24),
               shape: BoxShape.circle,
             ),
-            child: TomoAvatarView(
-              avatar: friend.avatar ?? TomoAvatar.defaultAvatar,
+            child: OheyAvatarView(
+              avatar: friend.avatar ?? OheyAvatar.defaultAvatar,
               size: 34,
             ),
           ),
@@ -199,7 +199,7 @@ class _FriendChip extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          TomoPopIcon(
+          OheyPopIcon(
             icon: selected ? CupertinoIcons.xmark : CupertinoIcons.plus,
             color: selected
                 ? _AddMemoryColors.friendRemoveIcon
@@ -234,7 +234,7 @@ class _DateTimeBox extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 15),
       child: Row(
         children: [
-          TomoPopIcon(
+          OheyPopIcon(
             icon: icon,
             color: iconColor,
             size: 32,
@@ -272,7 +272,7 @@ class _DateTimeBox extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          TomoGeneratedIcon(
+          OheyGeneratedIcon(
             CupertinoIcons.chevron_right,
             color: _AddMemoryColors.secondaryTextFor(context),
             size: 20,
@@ -330,7 +330,7 @@ class _SaveButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) => Tomo3DButton(
+  Widget build(BuildContext context) => Ohey3DButton(
     label: label,
     isLoading: isSaving,
     enabled: onPressed != null,
@@ -351,7 +351,7 @@ class _LoadingBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      TomoStateView.loading(message: '読み込み中...', compact: compact);
+      OheyStateView.loading(message: '読み込み中...', compact: compact);
 }
 
 class _ErrorBox extends StatelessWidget {
@@ -362,7 +362,7 @@ class _ErrorBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      TomoStateView.error(message: message, compact: compact);
+      OheyStateView.error(message: message, compact: compact);
 }
 
 class _AddMemoryColors {

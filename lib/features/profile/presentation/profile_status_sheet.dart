@@ -3,7 +3,7 @@ part of 'profile_screen.dart';
 class _ProfileStatusSheetContent extends StatefulWidget {
   const _ProfileStatusSheetContent({required this.selected, required this.ref});
 
-  final TomoDailyStatus selected;
+  final OheyDailyStatus selected;
   final WidgetRef ref;
 
   @override
@@ -13,29 +13,29 @@ class _ProfileStatusSheetContent extends StatefulWidget {
 
 class _ProfileStatusSheetContentState
     extends State<_ProfileStatusSheetContent> {
-  TomoDailyStatus? _savingStatus;
+  OheyDailyStatus? _savingStatus;
 
-  Future<void> _selectStatus(TomoDailyStatus status) async {
+  Future<void> _selectStatus(OheyDailyStatus status) async {
     if (_savingStatus != null) return;
     final navigator = Navigator.of(context);
     setState(() => _savingStatus = status);
     try {
       await widget.ref
-          .read(tomoUserProvider.notifier)
+          .read(oheyUserProvider.notifier)
           .updateDailyStatus(status);
       if (navigator.mounted) navigator.pop();
-      if (mounted) TomoToast.show(context, 'ステータスを「${status.label}」にしました。');
+      if (mounted) OheyToast.show(context, 'ステータスを「${status.label}」にしました。');
     } catch (e) {
       if (!mounted) return;
       setState(() => _savingStatus = null);
-      TomoToast.show(context, '設定できなかったよ。あとでもう一度試してね');
+      OheyToast.show(context, '設定できなかったよ。あとでもう一度試してね');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final isUnset = widget.selected == TomoDailyStatus.unselected;
+    final isUnset = widget.selected == OheyDailyStatus.unselected;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -75,7 +75,7 @@ class _ProfileStatusHelpCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          TomoPopIcon(
+          OheyPopIcon(
             icon: isUnset
                 ? CupertinoIcons.exclamationmark_bubble_fill
                 : CupertinoIcons.checkmark_circle_fill,
@@ -126,7 +126,7 @@ class _ProfileStatusOption extends StatelessWidget {
     this.disabled = false,
   });
 
-  final TomoDailyStatus status;
+  final OheyDailyStatus status;
   final bool selected;
   final VoidCallback onTap;
   final bool saving;
@@ -141,14 +141,14 @@ class _ProfileStatusOption extends StatelessWidget {
         ? color.withValues(alpha: isWhite ? .24 : .20)
         : (isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground);
     final bottom = selected
-        ? tomo3DShadowColorFor(color, lightnessScale: isWhite ? .72 : .60)
+        ? ohey3DShadowColorFor(color, lightnessScale: isWhite ? .72 : .60)
         : isWhite
         ? const Color(0xFFD8E1EA)
         : const Color(0xFF09131D);
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 160),
       opacity: disabled && !saving ? .55 : 1,
-      child: Tomo3DButtonSurface(
+      child: Ohey3DButtonSurface(
         onTap: disabled ? null : onTap,
         enabled: !disabled || saving,
         height: 82,
@@ -178,7 +178,7 @@ class _ProfileStatusOption extends StatelessWidget {
         ],
         child: Row(
           children: [
-            TomoPopIcon(icon: _statusIcon(status), color: color, size: 46),
+            OheyPopIcon(icon: _statusIcon(status), color: color, size: 46),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -210,7 +210,7 @@ class _ProfileStatusOption extends StatelessWidget {
             if (saving)
               CupertinoActivityIndicator(color: color)
             else
-              TomoGeneratedIcon(
+              OheyGeneratedIcon(
                 selected
                     ? CupertinoIcons.checkmark_circle_fill
                     : CupertinoIcons.circle,

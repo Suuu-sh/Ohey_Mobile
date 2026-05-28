@@ -16,7 +16,7 @@ final adminRepositoryProvider = Provider<AdminRepository>((ref) {
 class AdminRepository {
   const AdminRepository(this._client, this._supabase);
 
-  static const _photoBucket = 'tomo-photos';
+  static const _photoBucket = 'ohey-photos';
 
   final BackendApiClient _client;
   final SupabaseClient _supabase;
@@ -286,7 +286,7 @@ class AdminUserProfile {
     return AdminUserProfile(
       id: json['id'] as String? ?? '',
       userId: json['user_id'] as String? ?? '',
-      displayName: json['display_name'] as String? ?? 'Tomo user',
+      displayName: json['display_name'] as String? ?? 'Ohey user',
       avatarUrl: json['avatar_url'] as String?,
       gender: json['gender'] as String? ?? 'unspecified',
       status: json['status'] as String? ?? 'unselected',
@@ -328,7 +328,7 @@ class AdminMemory {
     return AdminMemory(
       id: json['id'] as String? ?? '',
       ownerUserId: json['owner_user_id'] as String? ?? '',
-      ownerDisplayName: owner['display_name'] as String? ?? 'Tomo user',
+      ownerDisplayName: owner['display_name'] as String? ?? 'Ohey user',
       ownerHandle: owner['user_id'] as String? ?? '',
       happenedAt:
           DateTime.tryParse(json['happened_at'] as String? ?? '') ??
@@ -409,7 +409,7 @@ class AdminMemoryReport {
       status: json['status'] as String? ?? 'pending',
       reporterDisplayName: reporter['display_name'] as String? ?? 'Reporter',
       reporterHandle: reporter['user_id'] as String? ?? '',
-      ownerDisplayName: owner['display_name'] as String? ?? 'Tomo user',
+      ownerDisplayName: owner['display_name'] as String? ?? 'Ohey user',
       ownerHandle: owner['user_id'] as String? ?? '',
       memo: memory['memo'] as String? ?? '',
       photoPath: memory['photo_path'] as String? ?? '',

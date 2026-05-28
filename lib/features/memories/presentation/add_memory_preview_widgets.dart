@@ -25,7 +25,7 @@ class _PhotoCapturePrompt extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
       child: Row(
         children: [
-          const TomoPopIcon(
+          const OheyPopIcon(
             icon: CupertinoIcons.camera_fill,
             color: _AddMemoryColors.lime,
             size: 38,
@@ -57,7 +57,7 @@ class _PhotoCapturePrompt extends StatelessWidget {
               ],
             ),
           ),
-          TomoGeneratedIcon(
+          OheyGeneratedIcon(
             CupertinoIcons.chevron_right,
             color: _AddMemoryColors.secondaryTextFor(context),
             size: 22,
@@ -89,12 +89,12 @@ class _PostPreviewCard extends StatelessWidget {
 
   final String path;
   final String userName;
-  final TomoAvatar avatar;
+  final OheyAvatar avatar;
   final TextEditingController memoController;
   final double captionY;
   final String place;
   final DateTime date;
-  final List<TomoFriend> friends;
+  final List<OheyFriend> friends;
   final Widget dateEditor;
   final Widget friendEditor;
   final Widget placeEditor;
@@ -134,12 +134,12 @@ class _PostPreviewCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        TomoThemedPanel(
+        OheyThemedPanel(
           width: double.infinity,
           accentColor: _postPreviewActionPurple,
-          backgroundColor: TomoThemedPanel.surfaceColor(isWhite: isWhite),
+          backgroundColor: OheyThemedPanel.surfaceColor(isWhite: isWhite),
           borderRadius: 0,
-          border: TomoThemedPanelBorder.horizontal,
+          border: OheyThemedPanelBorder.horizontal,
           borderWidth: 1,
           borderAlpha: isWhite ? .36 : .28,
           glowAlpha: 0,
@@ -211,7 +211,7 @@ class _PreviewAuthorBar extends StatelessWidget {
   });
 
   final String userName;
-  final TomoAvatar avatar;
+  final OheyAvatar avatar;
   final bool isWhite;
   final String metadata;
   final VoidCallback onEditDateTime;
@@ -243,7 +243,7 @@ class _PreviewAuthorBar extends StatelessWidget {
                 ],
               ),
             ),
-            child: TomoAvatarView(avatar: avatar, size: 38.5),
+            child: OheyAvatarView(avatar: avatar, size: 38.5),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -288,7 +288,7 @@ class _PreviewAuthorBar extends StatelessWidget {
               behavior: HitTestBehavior.opaque,
               child: Padding(
                 padding: const EdgeInsets.all(6),
-                child: TomoPopIcon(
+                child: OheyPopIcon(
                   icon: CupertinoIcons.ellipsis,
                   color: iconColor,
                   size: 27,
@@ -478,7 +478,7 @@ class _PreviewPhotoCaptionEditor extends StatelessWidget {
 class _PreviewFooter extends StatelessWidget {
   const _PreviewFooter({required this.friends, required this.isWhite});
 
-  final List<TomoFriend> friends;
+  final List<OheyFriend> friends;
   final bool isWhite;
 
   @override
@@ -496,7 +496,7 @@ class _PreviewFooter extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              TomoPostActionPill(
+              OheyPostActionPill(
                 semanticLabel: 'いいねで反応',
                 icon: CupertinoIcons.heart,
                 label: 'いいね',
@@ -504,10 +504,10 @@ class _PreviewFooter extends StatelessWidget {
                 isWhite: isWhite,
               ),
               const SizedBox(width: 8),
-              TomoPostActionPill(
+              OheyPostActionPill(
                 semanticLabel: '思い出を共有',
-                customIcon: TomoPostShareIcon(
-                  color: tomoPostActionForeground(_postPreviewActionPurple),
+                customIcon: OheyPostShareIcon(
+                  color: oheyPostActionForeground(_postPreviewActionPurple),
                   size: 19,
                 ),
                 label: 'また誘う',
@@ -517,10 +517,10 @@ class _PreviewFooter extends StatelessWidget {
               const Spacer(),
               if (friends.isNotEmpty) ...[
                 const SizedBox(width: 8),
-                TomoPostCompanionPill(
+                OheyPostCompanionPill(
                   avatars: friends
                       .map(
-                        (friend) => friend.avatar ?? TomoAvatar.defaultAvatar,
+                        (friend) => friend.avatar ?? OheyAvatar.defaultAvatar,
                       )
                       .toList(growable: false),
                   isWhite: isWhite,
@@ -660,8 +660,8 @@ class _PhotoPreviewImage extends StatelessWidget {
     );
     if (expand) return image;
 
-    return FutureBuilder<TomoPhotoDimensions>(
-      future: tomoReadPhotoDimensions(path),
+    return FutureBuilder<OheyPhotoDimensions>(
+      future: oheyReadPhotoDimensions(path),
       builder: (context, snapshot) {
         final dimensions = snapshot.data;
         final aspectRatio = dimensions == null
@@ -673,7 +673,7 @@ class _PhotoPreviewImage extends StatelessWidget {
   }
 }
 
-double _safePhotoAspectRatio(TomoPhotoDimensions dimensions) {
+double _safePhotoAspectRatio(OheyPhotoDimensions dimensions) {
   if (dimensions.height <= 0 || dimensions.width <= 0) return 1;
   final aspectRatio = dimensions.width / dimensions.height;
   if (aspectRatio < 1) return 1;
@@ -694,7 +694,7 @@ class _PhotoMissingPlaceholder extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TomoGeneratedIcon(
+            OheyGeneratedIcon(
               CupertinoIcons.photo,
               color: _AddMemoryColors.secondaryTextFor(context),
               size: 36,
@@ -740,7 +740,7 @@ class _MiniActionButton extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TomoGeneratedIcon(icon, color: _AddMemoryColors.lime, size: 15),
+          OheyGeneratedIcon(icon, color: _AddMemoryColors.lime, size: 15),
           const SizedBox(width: 5),
           Text(
             label,
@@ -778,7 +778,7 @@ class _Header extends StatelessWidget {
               border: Border.all(color: _AddMemoryColors.lineFor(context)),
             ),
             child: Center(
-              child: TomoGeneratedIcon(
+              child: OheyGeneratedIcon(
                 CupertinoIcons.chevron_left,
                 color: titleColor,
                 size: 26,
@@ -823,7 +823,7 @@ class _PlaceSearchButton extends StatelessWidget {
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TomoGeneratedIcon(
+          OheyGeneratedIcon(
             CupertinoIcons.location_fill,
             color: _AddMemoryColors.placeIcon,
             size: 14,
@@ -850,7 +850,7 @@ class _MemorySuccessSheet extends StatefulWidget {
     required this.isPrivateRecord,
   });
 
-  final List<TomoFriend> friends;
+  final List<OheyFriend> friends;
   final int monthlyCount;
   final bool isPrivateRecord;
 
@@ -931,7 +931,7 @@ class _MemorySuccessSheetState extends State<_MemorySuccessSheet>
                     .78 + Curves.elasticOut.transform(_controller.value) * .22;
                 return Transform.scale(scale: scale, child: child);
               },
-              child: TomoPopIcon(
+              child: OheyPopIcon(
                 icon: CupertinoIcons.checkmark_alt,
                 color: widget.isPrivateRecord
                     ? AppColors.success
@@ -980,7 +980,7 @@ class _MemorySuccessSheetState extends State<_MemorySuccessSheet>
             Row(
               children: [
                 Expanded(
-                  child: Tomo3DButton.secondary(
+                  child: Ohey3DButton.secondary(
                     label: '閉じる',
                     onTap: () => Navigator.of(context).pop(false),
                     height: 48,
@@ -990,7 +990,7 @@ class _MemorySuccessSheetState extends State<_MemorySuccessSheet>
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Tomo3DButton(
+                  child: Ohey3DButton(
                     label: widget.isPrivateRecord ? 'カレンダーへ' : 'フィードで見る',
                     icon: widget.isPrivateRecord
                         ? CupertinoIcons.calendar_today

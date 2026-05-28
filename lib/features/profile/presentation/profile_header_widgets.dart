@@ -16,7 +16,7 @@ class _PageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final headerColor = isWhite ? const Color(0xFF101820) : Colors.white;
-    return TomoPageHeader(
+    return OheyPageHeader(
       title: 'マイページ',
       titleColor: headerColor,
       trailing: Row(
@@ -53,7 +53,7 @@ class _ProfileAdminButton extends StatelessWidget {
           width: 48,
           height: 48,
           child: Center(
-            child: TomoGeneratedIcon(
+            child: OheyGeneratedIcon(
               CupertinoIcons.lock_shield_fill,
               color: isWhite ? const Color(0xFF101820) : Colors.white,
               size: 36,
@@ -85,7 +85,7 @@ class _ProfileSettingsButton extends StatelessWidget {
           width: 48,
           height: 48,
           child: Center(
-            child: TomoGeneratedIcon(
+            child: OheyGeneratedIcon(
               CupertinoIcons.gear_alt,
               color: isWhite ? const Color(0xFF101820) : Colors.white,
               size: 38,
@@ -100,12 +100,12 @@ class _ProfileSettingsButton extends StatelessWidget {
 class _ProfileHeaderBackdrop extends StatelessWidget {
   const _ProfileHeaderBackdrop({required this.avatar});
 
-  final TomoAvatar? avatar;
+  final OheyAvatar? avatar;
 
   @override
   Widget build(BuildContext context) {
-    final displayAvatar = avatar ?? TomoAvatar.defaultAvatar;
-    if (TomoAvatar.usesMascotBackdrop(displayAvatar.background)) {
+    final displayAvatar = avatar ?? OheyAvatar.defaultAvatar;
+    if (OheyAvatar.usesMascotBackdrop(displayAvatar.background)) {
       return ExcludeSemantics(
         child: Image.asset(
           'assets/images/profile_mascot_backdrop_scene.png',
@@ -116,8 +116,8 @@ class _ProfileHeaderBackdrop extends StatelessWidget {
     }
 
     final backgroundColors =
-        TomoAvatar.backgroundGradients[displayAvatar.background %
-            TomoAvatar.backgroundGradients.length];
+        OheyAvatar.backgroundGradients[displayAvatar.background %
+            OheyAvatar.backgroundGradients.length];
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -131,7 +131,7 @@ class _ProfileHeaderBackdrop extends StatelessWidget {
           ),
         ),
         Opacity(
-          opacity: displayAvatar.background == TomoAvatar.dreamRoomBackground
+          opacity: displayAvatar.background == OheyAvatar.dreamRoomBackground
               ? .18
               : .10,
           child: ExcludeSemantics(
@@ -169,9 +169,9 @@ class _ProfileTopSheet extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(
-        TomoPageHeader.horizontalPadding,
+        OheyPageHeader.horizontalPadding,
         4,
-        TomoPageHeader.horizontalPadding,
+        OheyPageHeader.horizontalPadding,
         6,
       ),
       decoration: BoxDecoration(
@@ -192,13 +192,13 @@ class _SimpleHero extends StatelessWidget {
 
   final bool isWhite;
   final String name;
-  final TomoAvatar? avatar;
+  final OheyAvatar? avatar;
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final joinedMonth = '${now.year}/${now.month.toString().padLeft(2, '0')}';
-    final displayAvatar = avatar ?? TomoAvatar.defaultAvatar;
+    final displayAvatar = avatar ?? OheyAvatar.defaultAvatar;
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
@@ -209,7 +209,7 @@ class _SimpleHero extends StatelessWidget {
             height: 166,
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: TomoAvatarView(avatar: displayAvatar, size: 156),
+              child: OheyAvatarView(avatar: displayAvatar, size: 156),
             ),
           ),
           Container(
@@ -248,12 +248,12 @@ class _ProfileReservationStrip extends StatelessWidget {
   });
 
   final bool isWhite;
-  final TomoAvatar? userAvatar;
+  final OheyAvatar? userAvatar;
   final String? currentUserId;
-  final List<TomoInvite> reservations;
-  final List<TomoInvite> incomingInvites;
-  final ValueChanged<TomoInvite> onAccept;
-  final ValueChanged<TomoInvite> onReject;
+  final List<OheyInvite> reservations;
+  final List<OheyInvite> incomingInvites;
+  final ValueChanged<OheyInvite> onAccept;
+  final ValueChanged<OheyInvite> onReject;
 
   @override
   Widget build(BuildContext context) {
@@ -294,7 +294,7 @@ class _ProfileReservationStrip extends StatelessWidget {
       ),
       child: Row(
         children: [
-          TomoPopIcon(
+          OheyPopIcon(
             icon: CupertinoIcons.checkmark_seal_fill,
             color: AppColors.success,
             size: 44,
@@ -366,7 +366,7 @@ class _IncomingInviteCard extends StatelessWidget {
   });
 
   final bool isWhite;
-  final TomoInvite invite;
+  final OheyInvite invite;
   final String? currentUserId;
   final VoidCallback onAccept;
   final VoidCallback onReject;
@@ -396,7 +396,7 @@ class _IncomingInviteCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          TomoPopIcon(
+          OheyPopIcon(
             icon: CupertinoIcons.bell_fill,
             color: AppColors.primaryAction,
             size: 44,
@@ -470,7 +470,7 @@ class _IncomingInviteCard extends StatelessWidget {
 class _ReservedAvatar extends StatelessWidget {
   const _ReservedAvatar({required this.avatar, required this.label});
 
-  final TomoAvatar? avatar;
+  final OheyAvatar? avatar;
   final String label;
 
   @override
@@ -486,7 +486,7 @@ class _ReservedAvatar extends StatelessWidget {
         border: Border.all(color: Colors.white, width: 2),
       ),
       child: ClipOval(
-        child: TomoAvatarView(avatar: avatar ?? TomoAvatar.defaultAvatar),
+        child: OheyAvatarView(avatar: avatar ?? OheyAvatar.defaultAvatar),
       ),
     ),
   );
@@ -724,7 +724,7 @@ class _ProfileFriendActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tomo3DButton(
+    return Ohey3DButton(
       label: 'フレンズを追加',
       onTap: onAddFriendsTap,
       height: 48,
@@ -733,13 +733,13 @@ class _ProfileFriendActionRow extends StatelessWidget {
       foregroundColor: const Color(0xFF101820),
       shadowColor: AppColors.primaryActionShadow,
       fontSize: 18,
-      customIcon: const TomoPopIcon(
+      customIcon: const OheyPopIcon(
         icon: CupertinoIcons.person_2_fill,
         color: Color(0xFF101820),
         size: 32,
         iconSize: 18,
       ),
-      trailing: const TomoGeneratedIcon(
+      trailing: const OheyGeneratedIcon(
         CupertinoIcons.chevron_forward,
         color: Color(0xFF101820),
         size: 22,
@@ -770,7 +770,7 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
     final hasPhotoMemories = firstMemory != null;
     final openAll = photoMemoryCount > 0 ? onArchiveTap : onMemoriesTap;
 
-    return TomoThemedPanel(
+    return OheyThemedPanel(
       accentColor: _ProfileColors.pink,
       backgroundColor: AppColors.darkBackground,
       padding: const EdgeInsets.fromLTRB(14, 9, 14, 9),
@@ -782,7 +782,7 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const TomoPopIcon(
+              const OheyPopIcon(
                 icon: CupertinoIcons.sparkles,
                 color: Color(0xFFFF75B5),
                 size: 27,
@@ -819,7 +819,7 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
                           ),
                         ),
                         SizedBox(width: 4),
-                        TomoGeneratedIcon(
+                        OheyGeneratedIcon(
                           CupertinoIcons.chevron_forward,
                           color: Color(0xFFFF86C8),
                           size: 16,
@@ -922,7 +922,7 @@ class _ProfileMemoryPreviewTile extends StatelessWidget {
                     ),
                     child: const Padding(
                       padding: EdgeInsets.all(4),
-                      child: TomoGeneratedIcon(
+                      child: OheyGeneratedIcon(
                         CupertinoIcons.star_fill,
                         color: Colors.white,
                         size: 13,
@@ -966,7 +966,7 @@ class _ProfileMemoryImageFallback extends StatelessWidget {
         ),
       ),
       child: Center(
-        child: TomoGeneratedIcon(
+        child: OheyGeneratedIcon(
           CupertinoIcons.photo_fill,
           color: Colors.white.withValues(alpha: .42),
           size: 22,
@@ -1008,7 +1008,7 @@ class _ProfileMemoryPromptTile extends StatelessWidget {
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TomoGeneratedIcon(
+                OheyGeneratedIcon(
                   CupertinoIcons.camera_fill,
                   color: Color(0xFFFF86C8),
                   size: 17,
@@ -1053,7 +1053,7 @@ class _ProfileMemoryHintCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tomo3DButtonSurface(
+    return Ohey3DButtonSurface(
       onTap: onTap,
       height: 48,
       radius: 22,
@@ -1065,7 +1065,7 @@ class _ProfileMemoryHintCard extends StatelessWidget {
       outerShadows: const [],
       child: Row(
         children: [
-          const TomoPopIcon(
+          const OheyPopIcon(
             icon: CupertinoIcons.camera_fill,
             color: Colors.white,
             size: 30,
@@ -1097,7 +1097,7 @@ class _ProfileMemoryHintCard extends StatelessWidget {
               ],
             ),
           ),
-          TomoGeneratedIcon(
+          OheyGeneratedIcon(
             CupertinoIcons.chevron_forward,
             color: Colors.white.withValues(alpha: .72),
             size: 17,
@@ -1114,7 +1114,7 @@ bool _isProfileDisplayablePhoto(Memory memory) =>
 ImageProvider<Object>? _profileMemoryImageProvider(String? value) {
   final normalized = value?.trim();
   if (normalized == null || normalized.isEmpty) return null;
-  if (normalized.startsWith('tomo_memory_template_')) return null;
+  if (normalized.startsWith('ohey_memory_template_')) return null;
   if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
     return NetworkImage(normalized);
   }
