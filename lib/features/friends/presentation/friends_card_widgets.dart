@@ -377,10 +377,7 @@ class _FriendProfileHero extends StatelessWidget {
             height: 190,
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: Transform.translate(
-                offset: const Offset(0, 44),
-                child: NomoAvatarView(avatar: avatar, size: 146),
-              ),
+              child: NomoAvatarView(avatar: avatar, size: 156),
             ),
           ),
           Container(

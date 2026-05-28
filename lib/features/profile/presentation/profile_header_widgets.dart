@@ -206,9 +206,10 @@ class _SimpleHero extends StatelessWidget {
         children: [
           SizedBox(
             width: double.infinity,
-            height: 132,
-            child: Center(
-              child: NomoAvatarView(avatar: displayAvatar, size: 146),
+            height: 166,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: NomoAvatarView(avatar: displayAvatar, size: 156),
             ),
           ),
           Container(
