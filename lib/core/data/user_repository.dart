@@ -88,6 +88,21 @@ class UserRepository {
     return nomoDailyStatusFromKey(rows.first['status'] as String?);
   }
 
+  Future<Map<String, NomoDailyStatus>> fetchDailyStatusesForMonth(
+    DateTime month,
+  ) async {
+    final rows = await _client.getRows(
+      '/v1/daily-statuses/month',
+      query: {'month': _isoMonth(month)},
+    );
+    return {
+      for (final row in rows)
+        if (row['status_date'] is String)
+          row['status_date'] as String:
+              nomoDailyStatusFromKey(row['status'] as String?),
+    };
+  }
+
   Future<void> updateDailyStatus(
     NomoDailyStatus status, {
     DateTime? date,
@@ -128,6 +143,11 @@ String _isoDate(DateTime date) {
   return '${date.year.toString().padLeft(4, '0')}-'
       '${date.month.toString().padLeft(2, '0')}-'
       '${date.day.toString().padLeft(2, '0')}';
+}
+
+String _isoMonth(DateTime date) {
+  return '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}';
 }
 
 Map<String, dynamic> createProfilePayload({

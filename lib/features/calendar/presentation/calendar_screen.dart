@@ -224,6 +224,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final targets = <DateTime>[];
     for (var index = 0; index < rows * 7; index++) {
       final dayNumber = index - leadingEmptyCells + 1;
+      if (dayNumber < 1 || dayNumber > daysInMonth) {
+        continue;
+      }
       final date = DateTime(month.year, month.month, dayNumber);
       final key = _dateKey(date);
       if (_statusByDate.containsKey(key) || !_loadingStatusKeys.add(key)) {
@@ -234,25 +237,20 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     if (targets.isEmpty) return;
 
     final repository = ref.read(userRepositoryProvider);
-    final entries = await Future.wait(
-      targets.map((date) async {
-        try {
-          return MapEntry(
-            _dateKey(date),
-            await repository.fetchDailyStatus(date),
-          );
-        } catch (_) {
-          return MapEntry(_dateKey(date), NomoDailyStatus.unselected);
-        }
-      }),
-    );
+    Map<String, NomoDailyStatus> statuses;
+    try {
+      statuses = await repository.fetchDailyStatusesForMonth(month);
+    } catch (_) {
+      statuses = const {};
+    }
     for (final date in targets) {
       _loadingStatusKeys.remove(_dateKey(date));
     }
     if (!mounted) return;
     setState(() {
-      for (final entry in entries) {
-        _statusByDate[entry.key] = entry.value;
+      for (final date in targets) {
+        final key = _dateKey(date);
+        _statusByDate[key] = statuses[key] ?? NomoDailyStatus.unselected;
       }
     });
   }
