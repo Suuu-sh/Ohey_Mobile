@@ -528,7 +528,6 @@ class _InviteResponseButton extends StatelessWidget {
 
 class _ProfileActivityHome extends StatelessWidget {
   const _ProfileActivityHome({
-    required this.profileName,
     required this.logs,
     required this.photoLogs,
     required this.friendsCount,
@@ -537,7 +536,6 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.onAddFriendsTap,
   });
 
-  final String profileName;
   final List<DrinkLog> logs;
   final List<DrinkLog> photoLogs;
   final int friendsCount;
@@ -547,7 +545,6 @@ class _ProfileActivityHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final joinedMonth = _profileJoinedMonth(DateTime.now());
     final recentLogs = logs.take(2).toList(growable: false);
 
     return SingleChildScrollView(
@@ -563,8 +560,6 @@ class _ProfileActivityHome extends StatelessWidget {
           const SizedBox(height: 8),
           _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
           const SizedBox(height: 8),
-          _ProfileInfoCard(profileName: profileName, joinedMonth: joinedMonth),
-          const SizedBox(height: 8),
           _ProfileRecentMemoriesCard(
             logs: recentLogs,
             photoLogCount: photoLogs.length,
@@ -577,9 +572,6 @@ class _ProfileActivityHome extends StatelessWidget {
     );
   }
 }
-
-String _profileJoinedMonth(DateTime date) =>
-    '${date.year}/${date.month.toString().padLeft(2, '0')}';
 
 class _ProfileSummaryStats extends StatelessWidget {
   const _ProfileSummaryStats({
@@ -748,142 +740,6 @@ class _ProfileFriendActionRow extends StatelessWidget {
         CupertinoIcons.chevron_forward,
         color: Colors.white,
         size: 22,
-      ),
-    );
-  }
-}
-
-class _ProfileInfoCard extends StatelessWidget {
-  const _ProfileInfoCard({
-    required this.profileName,
-    required this.joinedMonth,
-  });
-
-  final String profileName;
-  final String joinedMonth;
-
-  @override
-  Widget build(BuildContext context) {
-    return NomoThemedPanel(
-      accentColor: _ProfileColors.pink,
-      backgroundColor: AppColors.darkBackground,
-      padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
-      borderRadius: 24,
-      borderAlpha: .28,
-      glowAlpha: 0,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              NomoPopIcon(
-                icon: CupertinoIcons.person_fill,
-                color: Color(0xFFFF8AD1),
-                size: 27,
-                iconSize: 16,
-              ),
-              SizedBox(width: 7),
-              Text(
-                'プロフィール',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.8,
-                  height: 1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 7),
-          _ProfileInfoLine(
-            icon: CupertinoIcons.smiley_fill,
-            iconColor: const Color(0xFFFF8AD1),
-            label: 'なまえ',
-            value: profileName,
-          ),
-          const SizedBox(height: 5),
-          _ProfileInfoLine(
-            icon: CupertinoIcons.calendar,
-            iconColor: const Color(0xFFC08BFF),
-            label: '参加日',
-            value: '$joinedMonth 参加',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileInfoLine extends StatelessWidget {
-  const _ProfileInfoLine({
-    required this.icon,
-    required this.iconColor,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 40),
-      padding: const EdgeInsets.fromLTRB(12, 3, 10, 3),
-      decoration: BoxDecoration(
-        color: AppColors.darkBackground,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.white.withValues(alpha: .12)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: .16),
-              shape: BoxShape.circle,
-              border: Border.all(color: iconColor.withValues(alpha: .20)),
-            ),
-            child: Center(
-              child: NomoGeneratedIcon(icon, color: iconColor, size: 18),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: .78),
-              fontSize: 13,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.35,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              value,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.35,
-              ),
-            ),
-          ),
-          const SizedBox(width: 7),
-          NomoGeneratedIcon(
-            CupertinoIcons.chevron_forward,
-            color: Colors.white.withValues(alpha: .65),
-            size: 17,
-          ),
-        ],
       ),
     );
   }
