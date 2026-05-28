@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/camera/presentation/nomo_camera_screen.dart';
 import '../../features/friends/application/drink_invite_controller.dart';
+import '../../features/friends/data/friend_repository.dart';
 import '../../features/friends/presentation/friends_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/logs/application/drink_log_controller.dart';
@@ -347,6 +348,16 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     final hasSession =
         ref.watch(supabaseClientProvider).auth.currentSession != null;
     final incomingDrinkInvitesAsync = ref.watch(incomingDrinkInvitesProvider);
+    final pendingFriendRequestsAsync = user == null
+        ? const AsyncValue<List<NomoFriendRequestItem>>.data(
+            <NomoFriendRequestItem>[],
+          )
+        : ref.watch(pendingFriendRequestsProvider);
+    final incomingFriendRequestCount = pendingFriendRequestsAsync.maybeWhen(
+      data: (requests) =>
+          requests.where((request) => request.isIncoming).length,
+      orElse: () => 0,
+    );
     ref.listen<AsyncValue<List<NomoDrinkInvite>>>(
       incomingDrinkInvitesProvider,
       (previous, next) => next.whenData(_handleIncomingDrinkInvites),
@@ -464,6 +475,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
                   label: 'フレンズ',
                   selected: _selectedIndex == 1,
                   activeColor: const Color(0xFF9AF21A),
+                  badgeCount: incomingFriendRequestCount,
                   onTap: () => _selectTab(1),
                 ),
                 _TabItem(
@@ -1164,6 +1176,7 @@ class _TabItem extends StatelessWidget {
     required this.selected,
     required this.activeColor,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   final Widget? customIcon;
@@ -1171,17 +1184,19 @@ class _TabItem extends StatelessWidget {
   final bool selected;
   final Color activeColor;
   final VoidCallback onTap;
+  final int badgeCount;
 
   @override
   Widget build(BuildContext context) {
     final labelColor = selected ? activeColor : const Color(0xFFA5ADBC);
+    final hasBadge = badgeCount > 0;
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Semantics(
           button: true,
-          label: label,
+          label: hasBadge ? '$label、未処理申請$badgeCount件' : label,
           selected: selected,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1189,13 +1204,24 @@ class _TabItem extends StatelessWidget {
               SizedBox(
                 height: 44,
                 child: Center(
-                  child: _TabIconGlow(
-                    selected: selected,
-                    color: activeColor,
-                    child: IconTheme(
-                      data: IconThemeData(color: labelColor),
-                      child: customIcon ?? const SizedBox.shrink(),
-                    ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      _TabIconGlow(
+                        selected: selected,
+                        color: activeColor,
+                        child: IconTheme(
+                          data: IconThemeData(color: labelColor),
+                          child: customIcon ?? const SizedBox.shrink(),
+                        ),
+                      ),
+                      if (hasBadge)
+                        Positioned(
+                          right: 6,
+                          top: 1,
+                          child: _TabBadge(count: badgeCount),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -1222,6 +1248,45 @@ class _TabItem extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TabBadge extends StatelessWidget {
+  const _TabBadge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = count > 99 ? '99+' : count.toString();
+    return Container(
+      constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFF5F8F), Color(0xFFFF335F)],
+        ),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.darkBackgroundBottom, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF4F7A).withValues(alpha: .42),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 9.5,
+          height: 1,
+          fontWeight: FontWeight.w900,
         ),
       ),
     );

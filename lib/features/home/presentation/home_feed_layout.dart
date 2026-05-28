@@ -203,9 +203,15 @@ Future<void> _showFeedPostActions(
         }
       }
     case _FeedPostAction.report:
+      final reason = await _selectReportReason(context);
+      if (!context.mounted || reason == null) return;
       try {
-        await ref.read(homeFeedControllerProvider.notifier).reportLog(item.id);
-        if (context.mounted) NomoToast.show(context, '思い出を報告しました');
+        await ref
+            .read(homeFeedControllerProvider.notifier)
+            .reportLog(item.id, reason: reason.value);
+        if (context.mounted) {
+          NomoToast.show(context, '「${reason.label}」として報告しました');
+        }
       } catch (error) {
         if (context.mounted) {
           NomoToast.show(context, '報告できなかったよ。あとでもう一度試してね');
@@ -268,6 +274,16 @@ Future<bool> _confirmDeleteFeedPost(BuildContext context) async {
     builder: (context) => const _FeedDeleteConfirmSheet(),
   );
   return result ?? false;
+}
+
+Future<_FeedReportReason?> _selectReportReason(BuildContext context) async {
+  return showNomoBottomSheet<_FeedReportReason>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: Colors.black.withValues(alpha: .62),
+    builder: (context) => const _FeedReportReasonSheet(),
+  );
 }
 
 Future<bool> _confirmUserSafetyAction(

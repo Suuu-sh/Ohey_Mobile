@@ -388,6 +388,12 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
             ref.watch(drinkLogControllerProvider).asData?.value ??
             const <DrinkLog>[];
         final photoLogs = _photoArchiveLogs(logs, currentAuthUserId);
+        final pendingRequestsAsync = ref.watch(pendingFriendRequestsProvider);
+        final pendingRequestBadgeCount = pendingRequestsAsync.maybeWhen(
+          data: (requests) =>
+              requests.where((request) => request.isIncoming).length,
+          orElse: () => 0,
+        );
         return _SettingsSheetShell(
           user: user,
           onClose: () => Navigator.of(sheetContext).pop(),
@@ -455,8 +461,9 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
             _SettingsTile(
               icon: CupertinoIcons.person_2_fill,
               label: '申請管理',
-              subtitle: '送信中・受信中のフレンズ申請',
+              subtitle: _friendRequestSettingsSubtitle(pendingRequestsAsync),
               accent: const Color(0xFFB7F15B),
+              badgeCount: pendingRequestBadgeCount,
               onTap: () async {
                 if (sheetContext.mounted) {
                   Navigator.of(sheetContext).pop();
@@ -478,6 +485,20 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
                 await _showSafetyCenterSheet(rootContext);
+              },
+            ),
+            _SettingsTile(
+              icon: CupertinoIcons.doc_text_fill,
+              label: 'サポート・法務',
+              subtitle: '問い合わせ・利用規約・プライバシー',
+              accent: const Color(0xFFFFD166),
+              onTap: () async {
+                if (sheetContext.mounted) {
+                  Navigator.of(sheetContext).pop();
+                }
+                await Future<void>.delayed(const Duration(milliseconds: 180));
+                if (!rootContext.mounted) return;
+                await _showSupportLegalSheet(rootContext);
               },
             ),
             _SettingsTile(
@@ -520,6 +541,228 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
       },
     ),
   );
+}
+
+String _friendRequestSettingsSubtitle(
+  AsyncValue<List<NomoFriendRequestItem>> requestsAsync,
+) {
+  return requestsAsync.maybeWhen(
+    data: (requests) {
+      final incoming = requests.where((request) => request.isIncoming).length;
+      final outgoing = requests.where((request) => request.isOutgoing).length;
+      final total = incoming + outgoing;
+      if (total == 0) return '送信中・受信中のフレンズ申請';
+      if (incoming > 0 && outgoing > 0) {
+        return '未処理$total件（受信$incoming・送信$outgoing）';
+      }
+      if (incoming > 0) return '受信中$incoming件を確認';
+      return '送信中$outgoing件を確認・取消';
+    },
+    loading: () => '申請件数を確認中',
+    orElse: () => '送信中・受信中のフレンズ申請',
+  );
+}
+
+const _nomoSupportEmail = String.fromEnvironment(
+  'NOMO_SUPPORT_EMAIL',
+  defaultValue: 'support@nomo.app',
+);
+const _nomoTermsUrl = String.fromEnvironment(
+  'NOMO_TERMS_URL',
+  defaultValue: 'https://nomo.app/terms',
+);
+const _nomoPrivacyUrl = String.fromEnvironment(
+  'NOMO_PRIVACY_URL',
+  defaultValue: 'https://nomo.app/privacy',
+);
+
+Future<void> _showSupportLegalSheet(BuildContext context) {
+  return showNomoBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (_) => const _SupportLegalSheet(),
+  );
+}
+
+class _SupportLegalSheet extends StatelessWidget {
+  const _SupportLegalSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF64717D)
+        : Colors.white.withValues(alpha: .64);
+
+    return NomoBottomSheetShell(
+      title: 'サポート・法務',
+      topSafeArea: true,
+      margin: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      radius: 28,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '問い合わせ先と、公開前に確認しておきたいポリシーへの導線です。タップすると値をコピーできます。',
+            style: TextStyle(
+              color: sub,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _SupportLegalRow(
+            icon: CupertinoIcons.mail_solid,
+            title: '問い合わせ',
+            subtitle: 'サポート窓口メール',
+            value: _nomoSupportEmail,
+            accent: const Color(0xFFFFD166),
+          ),
+          const SizedBox(height: 10),
+          _SupportLegalRow(
+            icon: CupertinoIcons.doc_text_fill,
+            title: '利用規約',
+            subtitle: 'Terms of Service URL',
+            value: _nomoTermsUrl,
+            accent: const Color(0xFF65D6FF),
+          ),
+          const SizedBox(height: 10),
+          _SupportLegalRow(
+            icon: CupertinoIcons.lock_shield_fill,
+            title: 'プライバシーポリシー',
+            subtitle: 'Privacy Policy URL',
+            value: _nomoPrivacyUrl,
+            accent: const Color(0xFFFF7AB8),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            '正式なURLやメールはビルド時の dart-define で差し替え可能です。',
+            style: TextStyle(
+              color: sub,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Nomo3DButton.secondary(
+            label: '閉じる',
+            height: 48,
+            radius: 20,
+            color: isWhite
+                ? const Color(0xFFF2F6FA)
+                : Colors.white.withValues(alpha: .06),
+            foregroundColor: ink,
+            shadowColor: const Color(0xFF243240).withValues(alpha: .46),
+            useGradient: false,
+            onTap: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SupportLegalRow extends StatelessWidget {
+  const _SupportLegalRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.accent,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String value;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF6D7884)
+        : Colors.white.withValues(alpha: .62);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () async {
+        await Clipboard.setData(ClipboardData(text: value));
+        if (context.mounted) {
+          NomoToast.show(context, '$titleをコピーしました');
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? const Color(0xFFF5F8FB)
+              : Colors.white.withValues(alpha: .055),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: accent.withValues(alpha: .26)),
+        ),
+        child: Row(
+          children: [
+            NomoPopIcon(
+              icon: icon,
+              color: accent,
+              size: 42,
+              iconSize: 22,
+              showBubble: false,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: ink,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: sub,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: accent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            NomoGeneratedIcon(
+              CupertinoIcons.doc_on_clipboard,
+              color: sub,
+              size: 22,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 Future<void> _showFriendRequestManagementSheet(BuildContext context) {

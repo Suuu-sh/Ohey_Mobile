@@ -129,10 +129,12 @@ class HomeFeedController extends AsyncNotifier<List<DrinkLog>> {
     }
   }
 
-  Future<void> reportLog(String logId) async {
+  Future<void> reportLog(String logId, {String reason = 'other'}) async {
     final previous = state.asData?.value ?? const <DrinkLog>[];
     try {
-      await ref.read(drinkLogRepositoryProvider).reportLog(logId);
+      await ref
+          .read(drinkLogRepositoryProvider)
+          .reportLog(logId, reason: reason);
       state = AsyncValue.data([
         for (final log in previous)
           if (log.id != logId) log,
@@ -249,8 +251,8 @@ class DrinkLogController extends AsyncNotifier<List<DrinkLog>> {
     }
   }
 
-  Future<void> reportLog(String logId) async {
-    await ref.read(drinkLogRepositoryProvider).reportLog(logId);
+  Future<void> reportLog(String logId, {String reason = 'other'}) async {
+    await ref.read(drinkLogRepositoryProvider).reportLog(logId, reason: reason);
   }
 
   Future<void> addLog({

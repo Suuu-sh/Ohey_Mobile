@@ -268,6 +268,7 @@ class _SettingsTile extends StatelessWidget {
     required this.accent,
     required this.onTap,
     this.destructive = false,
+    this.badgeCount = 0,
   });
 
   final IconData icon;
@@ -276,6 +277,7 @@ class _SettingsTile extends StatelessWidget {
   final Color accent;
   final VoidCallback onTap;
   final bool destructive;
+  final int badgeCount;
 
   @override
   Widget build(BuildContext context) {
@@ -338,16 +340,29 @@ class _SettingsTile extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.2,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: textColor,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -.2,
+                              ),
+                            ),
+                          ),
+                          if (badgeCount > 0) ...[
+                            const SizedBox(width: 8),
+                            _SettingsTileBadge(
+                              count: badgeCount,
+                              accent: const Color(0xFFFF5F8F),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -385,6 +400,43 @@ class _SettingsTile extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingsTileBadge extends StatelessWidget {
+  const _SettingsTileBadge({required this.count, required this.accent});
+
+  final int count;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = count > 99 ? '99+' : count.toString();
+    return Container(
+      constraints: const BoxConstraints(minWidth: 24, minHeight: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: accent,
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: .26),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          height: 1,
+          fontWeight: FontWeight.w900,
         ),
       ),
     );
