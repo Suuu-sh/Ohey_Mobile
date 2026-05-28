@@ -800,36 +800,43 @@ class _CuteQrCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 10,
-            runSpacing: 8,
+          Row(
             children: [
-              _QrTextActionChip(
-                label: 'IDだけコピー',
-                icon: CupertinoIcons.doc_on_doc,
-                onTap: onCopyId,
+              Expanded(
+                child: _QrActionButton(
+                  icon: CupertinoIcons.doc_on_doc,
+                  label: 'IDだけコピー',
+                  onTap: onCopyId,
+                ),
               ),
-              if (onScan != null)
-                _QrTextActionChip(
-                  label: 'QRを読み取る',
-                  icon: CupertinoIcons.qrcode_viewfinder,
-                  onTap: onScan!,
+              if (onScan != null) ...[
+                const SizedBox(width: 18),
+                Expanded(
+                  child: _QrActionButton(
+                    icon: CupertinoIcons.qrcode_viewfinder,
+                    label: 'QRを読み取る',
+                    onTap: onScan!,
+                  ),
                 ),
-              if (searchController != null &&
-                  searchFocusNode != null &&
-                  onExpandSearch != null &&
-                  onSubmitSearch != null)
-                _QrIdSearchChip(
-                  controller: searchController!,
-                  focusNode: searchFocusNode!,
-                  isExpanded: isSearchExpanded,
-                  isLoading: isSearching,
-                  onExpand: onExpandSearch!,
-                  onSearch: onSubmitSearch!,
-                ),
+              ],
             ],
           ),
+          if (searchController != null &&
+              searchFocusNode != null &&
+              onExpandSearch != null &&
+              onSubmitSearch != null) ...[
+            const SizedBox(height: 8),
+            Center(
+              child: _QrIdSearchChip(
+                controller: searchController!,
+                focusNode: searchFocusNode!,
+                isExpanded: isSearchExpanded,
+                isLoading: isSearching,
+                onExpand: onExpandSearch!,
+                onSearch: onSubmitSearch!,
+              ),
+            ),
+          ],
           if (searchError != null) ...[
             const SizedBox(height: 10),
             _CuteMessageBox(
@@ -908,67 +915,6 @@ class _QrActionButton extends StatelessWidget {
                 color: ink.withValues(alpha: .50),
                 fontSize: 13,
                 fontWeight: FontWeight.w900,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _QrTextActionChip extends StatelessWidget {
-  const _QrTextActionChip({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    const ink = Color(0xFF222222);
-    return SizedBox(
-      width: 130,
-      child: Nomo3DButtonSurface(
-        onTap: onTap,
-        height: 34,
-        radius: 17,
-        color: const Color(0xFFF7F7F7),
-        bottomColor: const Color(0xFFE1E1E1),
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        useGradient: true,
-        borderColor: Colors.black.withValues(alpha: .08),
-        outerShadows: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .055),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            NomoGeneratedIcon(
-              icon,
-              color: ink.withValues(alpha: .68),
-              size: 15,
-            ),
-            const SizedBox(width: 5),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: ink.withValues(alpha: .62),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                ),
               ),
             ),
           ],
