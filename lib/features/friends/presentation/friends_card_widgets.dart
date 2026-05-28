@@ -255,7 +255,7 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: _FriendProfileCloseButton(onTap: onClose),
                 ),
-                const SizedBox(height: 6),
+                const Spacer(),
                 _FriendProfileHero(friend: friend, avatar: avatar),
               ],
             ),
@@ -374,11 +374,11 @@ class _FriendProfileHero extends StatelessWidget {
         children: [
           SizedBox(
             width: double.infinity,
-            height: 132,
+            height: 146,
             child: Align(
               alignment: Alignment.bottomCenter,
               child: Transform.translate(
-                offset: const Offset(0, 20),
+                offset: const Offset(0, 44),
                 child: NomoAvatarView(avatar: avatar, size: 146),
               ),
             ),
