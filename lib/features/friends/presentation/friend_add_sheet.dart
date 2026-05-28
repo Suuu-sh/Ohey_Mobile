@@ -789,7 +789,7 @@ class _CuteQrCard extends StatelessWidget {
                   onTap: onShare,
                 ),
               ),
-              const SizedBox(width: 18),
+              const SizedBox(width: 8),
               Expanded(
                 child: _QrActionButton(
                   icon: CupertinoIcons.link,
@@ -797,11 +797,7 @@ class _CuteQrCard extends StatelessWidget {
                   onTap: onCopyLink,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
+              const SizedBox(width: 8),
               Expanded(
                 child: _QrActionButton(
                   icon: CupertinoIcons.doc_on_doc,
@@ -810,7 +806,7 @@ class _CuteQrCard extends StatelessWidget {
                 ),
               ),
               if (onScan != null) ...[
-                const SizedBox(width: 18),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _QrActionButton(
                     icon: CupertinoIcons.qrcode_viewfinder,
@@ -911,9 +907,11 @@ class _QrActionButton extends StatelessWidget {
             Text(
               label,
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: ink.withValues(alpha: .50),
-                fontSize: 13,
+                fontSize: 11,
                 fontWeight: FontWeight.w900,
               ),
             ),
