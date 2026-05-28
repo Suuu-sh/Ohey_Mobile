@@ -1714,6 +1714,16 @@ class _CalendarFriendStatusSheetState
 
   Future<void> _sendInvite(NomoFriend friend) async {
     if (_sendingFriendId != null) return;
+    if (_isPastCalendarDate(widget.day)) {
+      HapticFeedback.mediumImpact();
+      NomoToast.show(
+        context,
+        '過去の日には招待できません',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+        placement: NomoToastPlacement.bottom,
+      );
+      return;
+    }
     HapticFeedback.selectionClick();
     setState(() => _sendingFriendId = friend.id);
     try {
@@ -1759,6 +1769,7 @@ class _CalendarFriendStatusSheetState
       ...persistedInvitedFriendIds,
       ..._invitedFriendIds,
     };
+    final inviteAvailable = !_isPastCalendarDate(widget.day);
     final selectedGroup = _findCalendarFriendGroup(
       _selectedGroupId,
       widget.groups,
@@ -1833,6 +1844,7 @@ class _CalendarFriendStatusSheetState
                 isWhite: isWhite,
                 sendingFriendId: _sendingFriendId,
                 invitedFriendIds: invitedFriendIds,
+                inviteAvailable: inviteAvailable,
                 onInvite: _sendInvite,
               ),
             ),
@@ -2038,6 +2050,7 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
     required this.isWhite,
     required this.sendingFriendId,
     required this.invitedFriendIds,
+    required this.inviteAvailable,
     required this.onInvite,
   });
 
@@ -2045,6 +2058,7 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
   final bool isWhite;
   final String? sendingFriendId;
   final Set<String> invitedFriendIds;
+  final bool inviteAvailable;
   final Future<void> Function(NomoFriend friend) onInvite;
 
   @override
@@ -2074,7 +2088,8 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
         return _CalendarFriendStatusBlock(
           friend: friend,
           isWhite: isWhite,
-          inviteEnabled: sendingFriendId == null,
+          inviteEnabled: sendingFriendId == null && inviteAvailable,
+          inviteAvailable: inviteAvailable,
           inviteSent: invitedFriendIds.contains(friend.id),
           onInvite: () => onInvite(friend),
         );
@@ -2088,6 +2103,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
     required this.friend,
     required this.isWhite,
     required this.inviteEnabled,
+    required this.inviteAvailable,
     required this.inviteSent,
     required this.onInvite,
   });
@@ -2095,6 +2111,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
   final NomoFriend friend;
   final bool isWhite;
   final bool inviteEnabled;
+  final bool inviteAvailable;
   final bool inviteSent;
   final Future<void> Function() onInvite;
 
@@ -2109,6 +2126,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
       statusEnabled: status.isAvailable,
       fallbackAvatar: _fallbackAvatarForCalendarFriend(friend),
       showInvite: true,
+      inviteAvailable: inviteAvailable,
       inviteSent: inviteSent,
       onInvite: inviteEnabled ? onInvite : null,
     );
@@ -2135,6 +2153,9 @@ Color _calendarFriendBlockStatusColor(NomoDailyStatus status) {
 
 bool _calendarFriendIsAvailable(String? statusKey) =>
     nomoDailyStatusFromKey(statusKey).canJoinPlan;
+
+bool _isPastCalendarDate(DateTime day) =>
+    _dateOnly(day).isBefore(_dateOnly(DateTime.now()));
 
 int _calendarFriendStatusRank(String? statusKey) =>
     nomoDailyStatusFromKey(statusKey).availabilityRank;
