@@ -31,6 +31,11 @@ final adminDrinkLogsProvider = FutureProvider.autoDispose<List<AdminDrinkLog>>((
   return ref.watch(adminControllerProvider).listDrinkLogs();
 });
 
+final adminDrinkLogReportsProvider =
+    FutureProvider.autoDispose<List<AdminDrinkLogReport>>((ref) async {
+      return ref.watch(adminControllerProvider).listDrinkLogReports();
+    });
+
 class AdminController {
   const AdminController(this._repository);
 
@@ -83,6 +88,22 @@ class AdminController {
   Future<void> deleteUser(String id) => _repository.deleteUser(id);
 
   Future<List<AdminDrinkLog>> listDrinkLogs() => _repository.listDrinkLogs();
+
+  Future<List<AdminDrinkLogReport>> listDrinkLogReports() {
+    return _repository.listDrinkLogReports();
+  }
+
+  Future<void> updateDrinkLogReport({
+    required String id,
+    required String status,
+    String? moderationNote,
+  }) {
+    return _repository.updateDrinkLogReport(
+      id: id,
+      status: status,
+      moderationNote: moderationNote,
+    );
+  }
 
   Future<void> createDrinkLog({
     String? ownerUserId,

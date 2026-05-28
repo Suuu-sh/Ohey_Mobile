@@ -49,8 +49,12 @@ class BackendApiClient {
     return _send('PUT', path, body: body);
   }
 
-  Future<dynamic> delete(String path) {
-    return _send('DELETE', path);
+  Future<dynamic> delete(
+    String path, {
+    Map<String, String>? query,
+    Map<String, dynamic>? body,
+  }) {
+    return _send('DELETE', path, query: query, body: body);
   }
 
   Future<List<Map<String, dynamic>>> getRows(

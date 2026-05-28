@@ -7,6 +7,7 @@ import '../data/supabase_client_provider.dart';
 import '../models/nomo_avatar.dart';
 import '../models/nomo_gender.dart';
 import '../models/nomo_user.dart';
+import '../services/nomo_push_notification_service.dart';
 
 final nomoUserProvider = NotifierProvider<NomoUserController, NomoUser?>(
   NomoUserController.new,
@@ -150,6 +151,9 @@ class NomoUserController extends Notifier<NomoUser?> {
       } catch (_) {
         // 保存に失敗してもログアウト自体は止めない。
       }
+      await ref
+          .read(nomoPushNotificationServiceProvider)
+          .unregisterCurrentToken();
       await supabase.auth.signOut(scope: SignOutScope.local);
     } finally {
       // ローカルセッション削除が例外になっても、UI上は必ず未ログイン状態へ戻す。

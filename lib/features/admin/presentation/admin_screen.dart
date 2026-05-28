@@ -28,7 +28,7 @@ part 'admin_form_widgets.dart';
 part 'admin_shared_widgets.dart';
 part 'admin_screen_body.dart';
 
-enum _AdminSection { users, posts, notifications }
+enum _AdminSection { users, posts, reports, notifications }
 
 class AdminScreen extends ConsumerStatefulWidget {
   const AdminScreen({super.key});

@@ -91,6 +91,11 @@ class _AdminSegmentedControl extends StatelessWidget {
             onTap: () => onChanged(_AdminSection.posts),
           ),
           _AdminSegmentButton(
+            label: '通報',
+            selected: section == _AdminSection.reports,
+            onTap: () => onChanged(_AdminSection.reports),
+          ),
+          _AdminSegmentButton(
             label: '通知',
             selected: section == _AdminSection.notifications,
             onTap: () => onChanged(_AdminSection.notifications),
@@ -99,6 +104,184 @@ class _AdminSegmentedControl extends StatelessWidget {
       ),
     );
   }
+}
+
+class _AdminReportsPane extends StatelessWidget {
+  const _AdminReportsPane({required this.ref});
+
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final reportsAsync = ref.watch(adminDrinkLogReportsProvider);
+    return Column(
+      children: [
+        _AdminPaneToolbar(
+          title: '通報・モデレーション',
+          actionLabel: '更新',
+          onAction: () => ref.invalidate(adminDrinkLogReportsProvider),
+          onRefresh: () => ref.invalidate(adminDrinkLogReportsProvider),
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: reportsAsync.when(
+            data: (reports) {
+              if (reports.isEmpty) {
+                return const _AdminEmptyState(message: '未対応の通報はありません。');
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.only(bottom: 120),
+                itemBuilder: (context, index) => _AdminReportCard(
+                  report: reports[index],
+                  onStatus: (status) =>
+                      _updateReportStatus(context, ref, reports[index], status),
+                ),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemCount: reports.length,
+              );
+            },
+            loading: () => const Center(
+              child: CupertinoActivityIndicator(color: _AdminColors.lime),
+            ),
+            error: (error, _) => _AdminErrorState(
+              message: '$error',
+              onRetry: () => ref.invalidate(adminDrinkLogReportsProvider),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AdminReportCard extends StatelessWidget {
+  const _AdminReportCard({required this.report, required this.onStatus});
+
+  final AdminDrinkLogReport report;
+  final ValueChanged<String> onStatus;
+
+  @override
+  Widget build(BuildContext context) => _AdminCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: _AdminColors.lime.withValues(alpha: .16),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                _adminReportReasonLabel(report.reason),
+                style: const TextStyle(
+                  color: _AdminColors.lime,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _adminReportStatusLabel(report.status),
+              style: const TextStyle(
+                color: _AdminColors.sub,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          report.memo.isEmpty ? 'メモなし' : report.memo,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '投稿者: ${report.ownerDisplayName} @${report.ownerHandle}',
+          style: const TextStyle(
+            color: _AdminColors.sub,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '通報者: ${report.reporterDisplayName} @${report.reporterHandle}',
+          style: const TextStyle(
+            color: _AdminColors.sub,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _AdminSmallActionButton(
+              label: '対応中',
+              onTap: () => onStatus('reviewing'),
+            ),
+            _AdminSmallActionButton(
+              label: '解決',
+              onTap: () => onStatus('resolved'),
+            ),
+            _AdminSmallActionButton(
+              label: '却下',
+              destructive: true,
+              onTap: () => onStatus('dismissed'),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+class _AdminSmallActionButton extends StatelessWidget {
+  const _AdminSmallActionButton({
+    required this.label,
+    required this.onTap,
+    this.destructive = false,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: destructive
+            ? const Color(0xFFFF5A72).withValues(alpha: .16)
+            : _AdminColors.lime.withValues(alpha: .16),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: destructive
+              ? const Color(0xFFFF5A72).withValues(alpha: .35)
+              : _AdminColors.lime.withValues(alpha: .35),
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: destructive ? const Color(0xFFFF8EA0) : _AdminColors.lime,
+          fontWeight: FontWeight.w900,
+          fontSize: 12,
+        ),
+      ),
+    ),
+  );
 }
 
 class _AdminSegmentButton extends StatelessWidget {

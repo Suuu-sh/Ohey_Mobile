@@ -380,6 +380,27 @@ String _adminGenderLabel(String gender) {
   return nomoGenderFromKey(gender).label;
 }
 
+String _adminReportReasonLabel(String reason) {
+  return switch (reason) {
+    'spam' => 'スパム',
+    'harassment' => '嫌がらせ',
+    'inappropriate' => '不適切',
+    'violence' => '暴力・危険',
+    'minor_safety' => '未成年安全',
+    _ => 'その他',
+  };
+}
+
+String _adminReportStatusLabel(String status) {
+  return switch (status) {
+    'pending' => '未対応',
+    'reviewing' => '対応中',
+    'resolved' => '解決済み',
+    'dismissed' => '却下',
+    _ => status,
+  };
+}
+
 String _adminNormalizeStatus(String status) {
   return nomoDailyStatusFromKey(status).key;
 }

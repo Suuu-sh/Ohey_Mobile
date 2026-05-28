@@ -50,6 +50,7 @@ class _AdminAccessContent extends ConsumerWidget {
         return switch (section) {
           _AdminSection.users => _AdminUsersPane(ref: ref),
           _AdminSection.posts => _AdminPostsPane(ref: ref),
+          _AdminSection.reports => _AdminReportsPane(ref: ref),
           _AdminSection.notifications => _AdminNotificationsPane(ref: ref),
         };
       },

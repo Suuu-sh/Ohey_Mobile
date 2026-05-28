@@ -259,6 +259,29 @@ Future<void> _confirmDeletePost(
   }
 }
 
+Future<void> _updateReportStatus(
+  BuildContext context,
+  WidgetRef ref,
+  AdminDrinkLogReport report,
+  String status,
+) async {
+  try {
+    await ref
+        .read(adminControllerProvider)
+        .updateDrinkLogReport(
+          id: report.id,
+          status: status,
+          moderationNote: 'Updated from admin app',
+        );
+    ref.invalidate(adminDrinkLogReportsProvider);
+    if (context.mounted) {
+      NomoToast.show(context, '通報を${_adminReportStatusLabel(status)}にしました。');
+    }
+  } catch (e) {
+    if (context.mounted) NomoToast.show(context, '更新できませんでした: $e');
+  }
+}
+
 Future<bool?> _confirmDestructive(
   BuildContext context, {
   required String title,

@@ -88,6 +88,27 @@ class AdminRepository {
     return rows.map(AdminDrinkLog.fromJson).toList(growable: false);
   }
 
+  Future<List<AdminDrinkLogReport>> listDrinkLogReports({
+    String status = 'pending',
+  }) async {
+    final rows = await _client.getRows(
+      '/v1/admin/drink-log-reports',
+      query: {'status': status},
+    );
+    return rows.map(AdminDrinkLogReport.fromJson).toList(growable: false);
+  }
+
+  Future<void> updateDrinkLogReport({
+    required String id,
+    required String status,
+    String? moderationNote,
+  }) async {
+    await _client.patch('/v1/admin/drink-log-reports/$id', {
+      'status': status,
+      'moderation_note': moderationNote?.trim() ?? '',
+    });
+  }
+
   Future<void> createDrinkLog({
     String? ownerUserId,
     required String placeName,
@@ -319,6 +340,68 @@ class AdminNotificationResult {
     return AdminNotificationResult(
       recipientCount: (json['recipient_count'] as num?)?.toInt() ?? 0,
       createdCount: (json['created_count'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+class AdminDrinkLogReport {
+  const AdminDrinkLogReport({
+    required this.id,
+    required this.drinkLogId,
+    required this.reason,
+    required this.status,
+    required this.reporterDisplayName,
+    required this.reporterHandle,
+    required this.ownerDisplayName,
+    required this.ownerHandle,
+    required this.memo,
+    required this.photoPath,
+    required this.isOfficial,
+    this.createdAt,
+    this.reviewedAt,
+    this.moderationNote,
+  });
+
+  final String id;
+  final String drinkLogId;
+  final String reason;
+  final String status;
+  final String reporterDisplayName;
+  final String reporterHandle;
+  final String ownerDisplayName;
+  final String ownerHandle;
+  final String memo;
+  final String photoPath;
+  final bool isOfficial;
+  final DateTime? createdAt;
+  final DateTime? reviewedAt;
+  final String? moderationNote;
+
+  factory AdminDrinkLogReport.fromJson(Map<String, dynamic> json) {
+    final drinkLog = json['drink_log'] is Map
+        ? Map<String, dynamic>.from(json['drink_log'] as Map)
+        : const <String, dynamic>{};
+    final owner = drinkLog['owner'] is Map
+        ? Map<String, dynamic>.from(drinkLog['owner'] as Map)
+        : const <String, dynamic>{};
+    final reporter = json['reporter'] is Map
+        ? Map<String, dynamic>.from(json['reporter'] as Map)
+        : const <String, dynamic>{};
+    return AdminDrinkLogReport(
+      id: json['id'] as String? ?? '',
+      drinkLogId: json['drink_log_id'] as String? ?? '',
+      reason: json['reason'] as String? ?? 'other',
+      status: json['status'] as String? ?? 'pending',
+      reporterDisplayName: reporter['display_name'] as String? ?? 'Reporter',
+      reporterHandle: reporter['user_id'] as String? ?? '',
+      ownerDisplayName: owner['display_name'] as String? ?? 'Nomo user',
+      ownerHandle: owner['user_id'] as String? ?? '',
+      memo: drinkLog['memo'] as String? ?? '',
+      photoPath: drinkLog['photo_path'] as String? ?? '',
+      isOfficial: drinkLog['is_official'] as bool? ?? false,
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? ''),
+      reviewedAt: DateTime.tryParse(json['reviewed_at'] as String? ?? ''),
+      moderationNote: json['moderation_note'] as String?,
     );
   }
 }
