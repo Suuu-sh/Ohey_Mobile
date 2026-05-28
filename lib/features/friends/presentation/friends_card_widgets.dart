@@ -216,6 +216,18 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
               ),
             ),
           ),
+          Positioned(
+            top: 14,
+            right: 10,
+            child: IconButton(
+              onPressed: onClose,
+              icon: NomoGeneratedIcon(
+                CupertinoIcons.xmark,
+                color: Colors.white.withValues(alpha: .78),
+                size: 30,
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
             child: Column(
@@ -223,46 +235,9 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
               children: [
                 const SizedBox(height: 2),
                 const NomoBottomSheetHandle(),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    onPressed: onClose,
-                    icon: NomoGeneratedIcon(
-                      CupertinoIcons.xmark,
-                      color: Colors.white.withValues(alpha: .78),
-                      size: 30,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        width: 86,
-                        height: 86,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: .72),
-                          border: Border.all(color: Colors.white, width: 5),
-                        ),
-                      ),
-                      ClipOval(child: NomoAvatarView(avatar: avatar, size: 74)),
-                      const Positioned(
-                        right: 0,
-                        top: 4,
-                        child: NomoPopIcon(
-                          icon: CupertinoIcons.sparkles,
-                          color: Color(0xFFFFD166),
-                          size: 30,
-                          iconSize: 17,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
+                Center(child: _FriendProfileAvatarFigure(avatar: avatar)),
+                const SizedBox(height: 5),
                 Text(
                   friend.name,
                   textAlign: TextAlign.center,
@@ -365,6 +340,58 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendProfileAvatarFigure extends StatelessWidget {
+  const _FriendProfileAvatarFigure({required this.avatar});
+
+  final NomoAvatar avatar;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 172,
+      height: 142,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            bottom: 8,
+            child: Container(
+              width: 98,
+              height: 18,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(999),
+                color: AppColors.darkBackgroundBottom.withValues(alpha: .18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: .18),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Transform.translate(
+            offset: const Offset(0, -2),
+            child: NomoAvatarView(avatar: avatar, size: 146),
+          ),
+          const Positioned(
+            right: 16,
+            top: 16,
+            child: NomoPopIcon(
+              icon: CupertinoIcons.sparkles,
+              color: Color(0xFFFFD166),
+              size: 32,
+              iconSize: 18,
             ),
           ),
         ],
