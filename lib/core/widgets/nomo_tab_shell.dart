@@ -92,6 +92,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
           .loadFromBackendProfile()
           .catchError((_) => false),
     );
+    ref.invalidate(homeFeedControllerProvider);
     ref.invalidate(incomingInvitesProvider);
     ref.invalidate(notificationControllerProvider);
   }
@@ -134,16 +135,58 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
   ];
 
   void _selectTab(int index) {
-    if (_selectedIndex == index) return;
+    if (_selectedIndex == index) {
+      _refreshCurrentTabByIndex(index, showToast: true);
+      return;
+    }
     setState(() => _selectedIndex = index);
     if (index == 0) {
       _refreshFeedOnOpen();
+    } else if (index == 1) {
+      _refreshFriendsOnOpen();
+    }
+  }
+
+  void _refreshCurrentTabByIndex(int index, {required bool showToast}) {
+    switch (index) {
+      case 0:
+        HapticFeedback.selectionClick();
+        _refreshFeedOnOpen();
+        if (showToast) {
+          NomoToast.show(
+            context,
+            'フィードを更新しました',
+            icon: CupertinoIcons.arrow_clockwise,
+          );
+        }
+        break;
+      case 1:
+        HapticFeedback.selectionClick();
+        _refreshFriendsOnOpen();
+        if (showToast) {
+          NomoToast.show(
+            context,
+            'フレンズを更新しました',
+            icon: CupertinoIcons.arrow_clockwise,
+          );
+        }
+        break;
+      default:
+        break;
     }
   }
 
   void _refreshFeedOnOpen() {
+    ref.invalidate(homeFeedControllerProvider);
     ref.invalidate(memoryControllerProvider);
     ref.invalidate(friendsProvider);
+    ref.invalidate(notificationControllerProvider);
+  }
+
+  void _refreshFriendsOnOpen() {
+    ref.invalidate(friendsProvider);
+    ref.invalidate(pendingFriendRequestsProvider);
+    ref.invalidate(incomingInvitesProvider);
     ref.invalidate(notificationControllerProvider);
   }
 
@@ -171,7 +214,11 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
             ),
           ),
         );
-        if (mounted && openCalendar == true) {
+        if (!mounted) return;
+        if (openCalendar != null) {
+          _refreshFeedOnOpen();
+        }
+        if (openCalendar == true) {
           setState(() => _selectedIndex = 2);
         }
       case _MemoryStartAction.gallery:
@@ -191,7 +238,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     );
     if (!mounted || result == null) return;
 
-    await Navigator.of(context).push<void>(
+    final openCalendar = await Navigator.of(context).push<bool>(
       CupertinoPageRoute(
         builder: (_) => NomoToastAccent(
           color: _selectedToastAccentColor,
@@ -199,6 +246,13 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
         ),
       ),
     );
+    if (!mounted) return;
+    if (openCalendar != null) {
+      _refreshFeedOnOpen();
+    }
+    if (openCalendar == true) {
+      setState(() => _selectedIndex = 2);
+    }
   }
 
   Future<void> _openGalleryMemoryFlow() async {
@@ -208,7 +262,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     );
     if (!mounted || picked == null) return;
 
-    await Navigator.of(context).push<void>(
+    final openCalendar = await Navigator.of(context).push<bool>(
       CupertinoPageRoute(
         builder: (_) => NomoToastAccent(
           color: _selectedToastAccentColor,
@@ -216,6 +270,13 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
         ),
       ),
     );
+    if (!mounted) return;
+    if (openCalendar != null) {
+      _refreshFeedOnOpen();
+    }
+    if (openCalendar == true) {
+      setState(() => _selectedIndex = 2);
+    }
   }
 
   void _handleIncomingInvites(List<NomoInvite> invites) {
