@@ -18,73 +18,73 @@ create extension if not exists pgcrypto;
 
 -- Some dev projects may not have the latest feed migrations yet. Create the
 -- feed helper tables here so this seed can populate likes/reports safely.
-create table if not exists public.drink_log_likes (
-  drink_log_id uuid not null references public.drink_logs(id) on delete cascade,
+create table if not exists public.memory_likes (
+  memory_id uuid not null references public.memories(id) on delete cascade,
   user_id uuid not null references public.profiles(id) on delete cascade,
   created_at timestamptz not null default now(),
-  primary key (drink_log_id, user_id)
+  primary key (memory_id, user_id)
 );
 
-create index if not exists drink_log_likes_user_id_idx
-  on public.drink_log_likes(user_id);
+create index if not exists memory_likes_user_id_idx
+  on public.memory_likes(user_id);
 
-create table if not exists public.drink_log_reports (
+create table if not exists public.memory_reports (
   id uuid primary key default gen_random_uuid(),
-  drink_log_id uuid not null references public.drink_logs(id) on delete cascade,
+  memory_id uuid not null references public.memories(id) on delete cascade,
   reporter_user_id uuid not null references public.profiles(id) on delete cascade,
   reason text not null default 'other',
   created_at timestamptz not null default now(),
-  unique (drink_log_id, reporter_user_id)
+  unique (memory_id, reporter_user_id)
 );
 
-create index if not exists drink_logs_owner_drank_at_idx
-  on public.drink_logs(owner_user_id, drank_at desc);
+create index if not exists memories_owner_happened_at_idx
+  on public.memories(owner_user_id, happened_at desc);
 
-alter table public.drink_log_likes enable row level security;
+alter table public.memory_likes enable row level security;
 
-drop policy if exists "drink_log_likes_select_authenticated" on public.drink_log_likes;
-create policy "drink_log_likes_select_authenticated"
-  on public.drink_log_likes
+drop policy if exists "memory_likes_select_authenticated" on public.memory_likes;
+create policy "memory_likes_select_authenticated"
+  on public.memory_likes
   for select
   to authenticated
   using (true);
 
-drop policy if exists "drink_log_likes_insert_own" on public.drink_log_likes;
-create policy "drink_log_likes_insert_own"
-  on public.drink_log_likes
+drop policy if exists "memory_likes_insert_own" on public.memory_likes;
+create policy "memory_likes_insert_own"
+  on public.memory_likes
   for insert
   to authenticated
   with check (auth.uid() = user_id);
 
-drop policy if exists "drink_log_likes_delete_own" on public.drink_log_likes;
-create policy "drink_log_likes_delete_own"
-  on public.drink_log_likes
+drop policy if exists "memory_likes_delete_own" on public.memory_likes;
+create policy "memory_likes_delete_own"
+  on public.memory_likes
   for delete
   to authenticated
   using (auth.uid() = user_id);
 
-alter table public.drink_log_reports enable row level security;
+alter table public.memory_reports enable row level security;
 
-drop policy if exists "drink_log_reports_insert_own" on public.drink_log_reports;
-create policy "drink_log_reports_insert_own"
-  on public.drink_log_reports
+drop policy if exists "memory_reports_insert_own" on public.memory_reports;
+create policy "memory_reports_insert_own"
+  on public.memory_reports
   for insert
   to authenticated
   with check (auth.uid() = reporter_user_id);
 
-drop policy if exists "drink_log_reports_select_own" on public.drink_log_reports;
-create policy "drink_log_reports_select_own"
-  on public.drink_log_reports
+drop policy if exists "memory_reports_select_own" on public.memory_reports;
+create policy "memory_reports_select_own"
+  on public.memory_reports
   for select
   to authenticated
   using (auth.uid() = reporter_user_id);
 
-grant select, insert on public.drink_log_reports to authenticated;
-grant select, insert, delete on public.drink_log_likes to authenticated;
+grant select, insert on public.memory_reports to authenticated;
+grant select, insert, delete on public.memory_likes to authenticated;
 
-drop policy if exists "drink_logs_select_feed_visible" on public.drink_logs;
-create policy "drink_logs_select_feed_visible"
-  on public.drink_logs
+drop policy if exists "memories_select_feed_visible" on public.memories;
+create policy "memories_select_feed_visible"
+  on public.memories
   for select
   to authenticated
   using (
@@ -92,34 +92,29 @@ create policy "drink_logs_select_feed_visible"
     or exists (
       select 1
       from public.friendships f
-      where (f.user_a_id = auth.uid() and f.user_b_id = drink_logs.owner_user_id)
-         or (f.user_b_id = auth.uid() and f.user_a_id = drink_logs.owner_user_id)
+      where (f.user_a_id = auth.uid() and f.user_b_id = memories.owner_user_id)
+         or (f.user_b_id = auth.uid() and f.user_a_id = memories.owner_user_id)
     )
   );
 
-drop policy if exists "drink_logs_delete_own" on public.drink_logs;
-create policy "drink_logs_delete_own"
-  on public.drink_logs
+drop policy if exists "memories_delete_own" on public.memories;
+create policy "memories_delete_own"
+  on public.memories
   for delete
   to authenticated
   using (owner_user_id = auth.uid());
 
-grant select, delete on public.drink_logs to authenticated;
-grant select on public.drink_log_friends to authenticated;
+grant select, delete on public.memories to authenticated;
+grant select on public.memory_tagged_users to authenticated;
 
 -- Some dev projects may still have the original 3-value status constraint.
 alter table public.daily_statuses drop constraint if exists daily_statuses_status_check;
 alter table public.daily_statuses add constraint daily_statuses_status_check
   check (status in (
     'unselected',
-    'want_drink',
-    'busy',
-    'can_drink_today',
-    'light_drink',
-    'want_drink_hard',
-    'non_alcohol',
-    'liver_rest',
-    'waiting_invite',
+    'available',
+    'maybe_available',
+    'depends_on_time',
     'has_plans'
   ));
 
@@ -225,16 +220,16 @@ on conflict (id) do update set
   updated_at = now();
 
 -- Reset deterministic seed-only social data without touching real dev users.
-delete from public.drink_log_reports
-where drink_log_id in (select id from public.drink_logs where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
+delete from public.memory_reports
+where memory_id in (select id from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
 
-delete from public.drink_log_likes
-where drink_log_id in (select id from public.drink_logs where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
+delete from public.memory_likes
+where memory_id in (select id from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
 
-delete from public.drink_log_friends
-where drink_log_id in (select id from public.drink_logs where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
+delete from public.memory_tagged_users
+where memory_id in (select id from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
 
-delete from public.drink_logs
+delete from public.memories
 where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110';
 
 delete from public.daily_statuses
@@ -277,23 +272,23 @@ on conflict (id) do update set
 -- Today's statuses cover every UI filter/state.
 insert into public.daily_statuses (user_id, status_date, status, updated_at)
 values
-  ('00000000-0000-4000-8000-000000000101', current_date, 'can_drink_today', now() - interval '15 minutes'),
-  ('00000000-0000-4000-8000-000000000102', current_date, 'light_drink',      now() - interval '20 minutes'),
-  ('00000000-0000-4000-8000-000000000103', current_date, 'want_drink_hard',  now() - interval '35 minutes'),
-  ('00000000-0000-4000-8000-000000000104', current_date, 'non_alcohol',      now() - interval '50 minutes'),
-  ('00000000-0000-4000-8000-000000000105', current_date, 'liver_rest',       now() - interval '1 hour'),
-  ('00000000-0000-4000-8000-000000000106', current_date, 'waiting_invite',   now() - interval '90 minutes'),
+  ('00000000-0000-4000-8000-000000000101', current_date, 'available', now() - interval '15 minutes'),
+  ('00000000-0000-4000-8000-000000000102', current_date, 'maybe_available',      now() - interval '20 minutes'),
+  ('00000000-0000-4000-8000-000000000103', current_date, 'depends_on_time',  now() - interval '35 minutes'),
+  ('00000000-0000-4000-8000-000000000104', current_date, 'maybe_available',      now() - interval '50 minutes'),
+  ('00000000-0000-4000-8000-000000000105', current_date, 'depends_on_time',       now() - interval '1 hour'),
+  ('00000000-0000-4000-8000-000000000106', current_date, 'depends_on_time',   now() - interval '90 minutes'),
   ('00000000-0000-4000-8000-000000000107', current_date, 'has_plans',        now() - interval '2 hours'),
   ('00000000-0000-4000-8000-000000000108', current_date, 'unselected',       now() - interval '3 hours'),
-  ('00000000-0000-4000-8000-000000000109', current_date, 'can_drink_today', now() - interval '4 hours'),
-  ('00000000-0000-4000-8000-000000000110', current_date, 'liver_rest',      now() - interval '5 hours'),
+  ('00000000-0000-4000-8000-000000000109', current_date, 'available', now() - interval '4 hours'),
+  ('00000000-0000-4000-8000-000000000110', current_date, 'depends_on_time',      now() - interval '5 hours'),
   ('00000000-0000-4000-8000-000000000101', current_date - 1, 'has_plans',    now() - interval '1 day'),
-  ('00000000-0000-4000-8000-000000000102', current_date - 1, 'liver_rest',   now() - interval '1 day')
+  ('00000000-0000-4000-8000-000000000102', current_date - 1, 'depends_on_time',   now() - interval '1 day')
 on conflict (user_id, status_date) do update set
   status = excluded.status,
   updated_at = excluded.updated_at;
 
-with logs(id, owner_user_id, days_ago, hour_text, place_name, memo, photo_path, place_lat, place_lng) as (
+with seed_memories(id, owner_user_id, days_ago, hour_text, place_name, memo, photo_path, place_lat, place_lng) as (
   values
     ('10000000-0000-4000-8000-000000000001'::uuid, '00000000-0000-4000-8000-000000000101'::uuid, 0,  '20:30', '渋谷・のものも横丁',   'カレンダー確認用のタグ',       'seed/feed_shibuya.png', 35.6595, 139.7005),
     ('10000000-0000-4000-8000-000000000002'::uuid, '00000000-0000-4000-8000-000000000101'::uuid, 2,  '19:45', '恵比寿・泡酒場',       '軽めに一杯だけ',               null, 35.6467, 139.7101),
@@ -314,7 +309,7 @@ with logs(id, owner_user_id, days_ago, hour_text, place_name, memo, photo_path, 
     ('10000000-0000-4000-8000-000000000017'::uuid, '00000000-0000-4000-8000-000000000108'::uuid, 33, '19:20', '浅草・ホッピー通り',   '先月の記録も表示確認',         null, 35.7148, 139.7967),
     ('10000000-0000-4000-8000-000000000018'::uuid, '00000000-0000-4000-8000-000000000101'::uuid, 42, '20:00', '銀座・ワインバー',     '前月比較用の思い出',           null, 35.6719, 139.7648)
 )
-insert into public.drink_logs (id, owner_user_id, drank_at, place_name, memo, photo_path, place_lat, place_lng, created_at, updated_at)
+insert into public.memories (id, owner_user_id, happened_at, place_name, memo, photo_path, place_lat, place_lng, created_at, updated_at)
 select
   id,
   owner_user_id,
@@ -326,9 +321,9 @@ select
   place_lng,
   now() - make_interval(days => days_ago),
   now() - make_interval(days => days_ago)
-from logs;
+from seed_memories;
 
-insert into public.drink_log_friends (drink_log_id, friend_user_id)
+insert into public.memory_tagged_users (memory_id, tagged_user_id)
 values
   ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000102'),
   ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000103'),
@@ -352,9 +347,9 @@ values
   ('10000000-0000-4000-8000-000000000016', '00000000-0000-4000-8000-000000000104'),
   ('10000000-0000-4000-8000-000000000017', '00000000-0000-4000-8000-000000000105'),
   ('10000000-0000-4000-8000-000000000018', '00000000-0000-4000-8000-000000000102')
-on conflict (drink_log_id, friend_user_id) do nothing;
+on conflict (memory_id, tagged_user_id) do nothing;
 
-insert into public.drink_log_likes (drink_log_id, user_id)
+insert into public.memory_likes (memory_id, user_id)
 values
   ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000102'),
   ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000103'),
@@ -363,17 +358,17 @@ values
   ('10000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000101'),
   ('10000000-0000-4000-8000-000000000010', '00000000-0000-4000-8000-000000000101'),
   ('10000000-0000-4000-8000-000000000013', '00000000-0000-4000-8000-000000000102')
-on conflict (drink_log_id, user_id) do nothing;
+on conflict (memory_id, user_id) do nothing;
 
-insert into public.drink_log_reports (id, drink_log_id, reporter_user_id, reason, created_at)
+insert into public.memory_reports (id, memory_id, reporter_user_id, reason, created_at)
 values
-  ('30000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000017', '00000000-0000-4000-8000-000000000101', 'dev_seed_report_sample', now() - interval '1 day')
-on conflict (drink_log_id, reporter_user_id) do update set reason = excluded.reason;
+  ('30000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000017', '00000000-0000-4000-8000-000000000101', 'other', now() - interval '1 day')
+on conflict (memory_id, reporter_user_id) do update set reason = excluded.reason;
 
 select
   (select count(*) from public.profiles where user_id like 'dev_%') as dev_profiles,
   (select count(*) from public.friendships where user_a_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_friendships,
   (select count(*) from public.daily_statuses where user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_statuses,
-  (select count(*) from public.drink_logs where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_drink_logs,
-  (select count(*) from public.drink_log_friends where drink_log_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_drink_log_friends,
-  (select count(*) from public.drink_log_likes where drink_log_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_likes;
+  (select count(*) from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_memories,
+  (select count(*) from public.memory_tagged_users where memory_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_memory_tagged_users,
+  (select count(*) from public.memory_likes where memory_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_likes;

@@ -64,21 +64,21 @@ class NotificationController extends AsyncNotifier<List<NomoNotification>> {
     );
   }
 
-  Future<void> acceptDrinkInvite(String drinkInviteId) async {
+  Future<void> acceptInvite(String inviteId) async {
     await _respondToNotification(
-      id: drinkInviteId,
+      id: inviteId,
       update: () => ref
           .read(notificationRepositoryProvider)
-          .updateDrinkInvite(drinkInviteId: drinkInviteId, status: 'accepted'),
+          .updateInvite(inviteId: inviteId, status: 'accepted'),
     );
   }
 
-  Future<void> rejectDrinkInvite(String drinkInviteId) async {
+  Future<void> rejectInvite(String inviteId) async {
     await _respondToNotification(
-      id: drinkInviteId,
+      id: inviteId,
       update: () => ref
           .read(notificationRepositoryProvider)
-          .updateDrinkInvite(drinkInviteId: drinkInviteId, status: 'rejected'),
+          .updateInvite(inviteId: inviteId, status: 'rejected'),
     );
   }
 
@@ -90,8 +90,7 @@ class NotificationController extends AsyncNotifier<List<NomoNotification>> {
     await runOptimistic<void>(
       apply: () => state = AsyncValue.data([
         for (final notification in previous)
-          if (notification.friendRequestId != id &&
-              notification.drinkInviteId != id)
+          if (notification.friendRequestId != id && notification.inviteId != id)
             notification,
       ]),
       rollback: () => state = AsyncValue.data(previous),

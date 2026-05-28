@@ -10,8 +10,8 @@ class _FeedInviteBanner extends StatelessWidget {
   });
 
   final bool isWhite;
-  final NomoDrinkInvite? invite;
-  final NomoDrinkInvite? reservation;
+  final NomoInvite? invite;
+  final NomoInvite? reservation;
   final String? currentUserId;
   final VoidCallback onOpenNotifications;
 
@@ -20,12 +20,12 @@ class _FeedInviteBanner extends StatelessWidget {
     final hasInvite = invite != null;
     final target = hasInvite
         ? (currentUserId == null
-              ? invite!.fromUser
+              ? invite!.inviter
               : invite!.otherUser(currentUserId!))
         : reservation == null
         ? null
         : (currentUserId == null
-              ? reservation!.fromUser
+              ? reservation!.inviter
               : reservation!.otherUser(currentUserId!));
     if (target == null) return const SizedBox.shrink();
 

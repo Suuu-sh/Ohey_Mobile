@@ -1,18 +1,18 @@
 # Nomo
 
-Nomo is a Flutter prototype for a cozy, overseas-app-inspired drinking log SNS.
-It focuses on cute memories with friends: “who did I drink with this month, and how many times?”
+Nomo is a Flutter prototype for a cozy, overseas-app-inspired social memory app.
+It focuses on cute memories, friend availability, invites, and lightweight photo sharing.
 
 ## Highlights
 
 - Pastel, iOS-native-feeling UI with soft cards, rounded corners, and gentle shadows
 - Original placeholder character assets: **Nomo Friends**
-- Character mood changes from the current month drink count
+- Character mood changes from the current month memory count
   - 0: さみしい
   - 1–2: にこにこ
   - 3–5: たのしい
   - 6+: ハイテンション
-- Home, add log, friends, and calendar screens
+- Home, add memory, friends, and calendar screens
 - Riverpod state management
 - Repository Pattern with Flutter → Go Backend → Supabase for app data
 - Feature First Architecture under `lib/features/*`
@@ -27,7 +27,7 @@ lib/
     widgets/
   features/
     home/
-    logs/
+    memories/
     friends/
     calendar/
 assets/
@@ -36,7 +36,7 @@ assets/
 
 ## Backend
 
-Auth stays in Flutter via Supabase Auth. Drink logs and friend reads now go through the Go backend.
+Auth stays in Flutter via Supabase Auth. Memories, invites, and friend reads go through the Go backend.
 
 Local backend:
 

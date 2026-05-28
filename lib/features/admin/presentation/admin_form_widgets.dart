@@ -232,7 +232,7 @@ Future<void> _confirmDeleteUser(
   try {
     await ref.read(adminControllerProvider).deleteUser(user.id);
     ref.invalidate(adminUsersProvider);
-    ref.invalidate(adminDrinkLogsProvider);
+    ref.invalidate(adminMemorysProvider);
     if (context.mounted) NomoToast.show(context, 'ユーザーを削除しました。');
   } catch (e) {
     if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
@@ -242,17 +242,17 @@ Future<void> _confirmDeleteUser(
 Future<void> _confirmDeletePost(
   BuildContext context,
   WidgetRef ref,
-  AdminDrinkLog log,
+  AdminMemory memory,
 ) async {
   final ok = await _confirmDestructive(
     context,
     title: '思い出を削除しますか？',
-    message: log.placeName.isEmpty ? log.id : log.placeName,
+    message: memory.placeName.isEmpty ? memory.id : memory.placeName,
   );
   if (ok != true) return;
   try {
-    await ref.read(adminControllerProvider).deleteDrinkLog(log.id);
-    ref.invalidate(adminDrinkLogsProvider);
+    await ref.read(adminControllerProvider).deleteMemory(memory.id);
+    ref.invalidate(adminMemorysProvider);
     if (context.mounted) NomoToast.show(context, '思い出を削除しました。');
   } catch (e) {
     if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
@@ -262,7 +262,7 @@ Future<void> _confirmDeletePost(
 Future<void> _showReportStatusSheet(
   BuildContext context,
   WidgetRef ref,
-  AdminDrinkLogReport report,
+  AdminMemoryReport report,
   String status,
 ) async {
   final noteController = TextEditingController(text: report.moderationNote);
@@ -304,12 +304,12 @@ Future<void> _showReportStatusSheet(
         : note.trim();
     await ref
         .read(adminControllerProvider)
-        .updateDrinkLogReport(
+        .updateMemoryReport(
           id: report.id,
           status: status,
           moderationNote: moderationNote,
         );
-    ref.invalidate(adminDrinkLogReportsProvider);
+    ref.invalidate(adminMemoryReportsProvider);
     if (context.mounted) {
       NomoToast.show(context, '通報を${_adminReportStatusLabel(status)}にしました。');
     }
@@ -321,25 +321,25 @@ Future<void> _showReportStatusSheet(
 Future<void> _confirmDeleteReportedPost(
   BuildContext context,
   WidgetRef ref,
-  AdminDrinkLogReport report,
+  AdminMemoryReport report,
 ) async {
   final ok = await _confirmDestructive(
     context,
     title: '通報された投稿を削除しますか？',
-    message: report.memo.isEmpty ? report.drinkLogId : report.memo,
+    message: report.memo.isEmpty ? report.memoryId : report.memo,
   );
   if (ok != true) return;
   try {
-    await ref.read(adminControllerProvider).deleteDrinkLog(report.drinkLogId);
+    await ref.read(adminControllerProvider).deleteMemory(report.memoryId);
     await ref
         .read(adminControllerProvider)
-        .updateDrinkLogReport(
+        .updateMemoryReport(
           id: report.id,
           status: 'resolved',
           moderationNote: 'Deleted reported post from admin app',
         );
-    ref.invalidate(adminDrinkLogReportsProvider);
-    ref.invalidate(adminDrinkLogsProvider);
+    ref.invalidate(adminMemoryReportsProvider);
+    ref.invalidate(adminMemorysProvider);
     if (context.mounted) NomoToast.show(context, '投稿を削除し、通報を解決済みにしました。');
   } catch (e) {
     if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');

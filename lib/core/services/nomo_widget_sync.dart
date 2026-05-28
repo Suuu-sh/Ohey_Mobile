@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/logs/application/drink_log_controller.dart';
+import '../../features/memories/application/memory_controller.dart';
 import '../application/nomo_user_controller.dart';
 import '../models/nomo_friend.dart';
 import '../models/nomo_user.dart';

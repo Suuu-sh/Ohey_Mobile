@@ -92,7 +92,7 @@ class _CuteGlyph extends StatelessWidget {
 }
 
 enum _CuteGlyphKind {
-  drink,
+  beverage,
   friends,
   friendAdd,
   flame,
@@ -135,7 +135,7 @@ _CuteGlyphKind? _cuteGlyphKindFromIcon(IconData icon) {
   final code = icon.codePoint;
   if (code == Icons.local_bar_rounded.codePoint ||
       code == Icons.sports_bar_rounded.codePoint) {
-    return _CuteGlyphKind.drink;
+    return _CuteGlyphKind.beverage;
   }
   if (code == CupertinoIcons.person_badge_plus_fill.codePoint ||
       code == CupertinoIcons.person_add_solid.codePoint) {
@@ -247,7 +247,9 @@ _CuteGlyphKind? _cuteGlyphKindFromIcon(IconData icon) {
       code == CupertinoIcons.location_solid.codePoint) {
     return _CuteGlyphKind.location;
   }
-  if (code == CupertinoIcons.drop_fill.codePoint) return _CuteGlyphKind.drink;
+  if (code == CupertinoIcons.drop_fill.codePoint) {
+    return _CuteGlyphKind.beverage;
+  }
   if (code == CupertinoIcons.scissors.codePoint) return _CuteGlyphKind.pencil;
   if (code == CupertinoIcons.chevron_left.codePoint ||
       code == CupertinoIcons.arrow_left.codePoint) {
@@ -282,8 +284,8 @@ class _CuteGlyphPainter extends CustomPainter {
       ..strokeWidth = size.width * .12;
 
     switch (kind) {
-      case _CuteGlyphKind.drink:
-        _drawDrink(canvas, size, p, stroke);
+      case _CuteGlyphKind.beverage:
+        _drawBeverage(canvas, size, p, stroke);
       case _CuteGlyphKind.friends:
         _drawFriends(canvas, size, p);
       case _CuteGlyphKind.friendAdd:
@@ -359,7 +361,7 @@ class _CuteGlyphPainter extends CustomPainter {
     }
   }
 
-  void _drawDrink(Canvas canvas, Size s, Paint p, Paint stroke) {
+  void _drawBeverage(Canvas canvas, Size s, Paint p, Paint stroke) {
     final bowl = Path()
       ..moveTo(s.width * .16, s.height * .20)
       ..lineTo(s.width * .84, s.height * .20)

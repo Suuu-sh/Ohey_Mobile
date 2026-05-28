@@ -1217,9 +1217,9 @@ bool _friendProfileIsSameDate(DateTime a, DateTime b) =>
 
 Color _friendProfileCalendarStatusTileAccent(NomoDailyStatus status) =>
     switch (status) {
-      NomoDailyStatus.canDrinkToday => const Color(0xFFFF5EA8),
-      NomoDailyStatus.nonAlcohol => const Color(0xFF20B9FF),
-      NomoDailyStatus.liverRest => const Color(0xFF8A62FF),
+      NomoDailyStatus.available => const Color(0xFFFF5EA8),
+      NomoDailyStatus.maybeAvailable => const Color(0xFF20B9FF),
+      NomoDailyStatus.dependsOnTime => const Color(0xFF8A62FF),
       NomoDailyStatus.hasPlans => const Color(0xFF738092),
       NomoDailyStatus.unselected => const Color(0xFF9AF21A),
     };

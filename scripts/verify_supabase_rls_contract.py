@@ -36,16 +36,41 @@ CHECKS = {
         ],
         "forbidden": [r"grant\s+.*\s+on\s+public\.friend_group_members\s+to\s+anon"],
     },
-    "drink_log_reports": {
+    "memories": {
         "required": [
-            r"alter\s+table\s+public\.drink_log_reports[\s\S]*add\s+column\s+if\s+not\s+exists\s+status",
-            r"drink_log_reports_reason_check",
-            r"drink_log_reports_status_check",
-            r"drink_log_reports_status_created_at_idx",
-            r"drink_log_reports_reporter_hidden_idx",
+            r"create\s+table\s+(?:if\s+not\s+exists\s+)?public\.memories",
+            r"alter\s+table\s+public\.memories\s+enable\s+row\s+level\s+security",
+            r"create\s+policy\s+memories_select_feed_visible",
+            r"create\s+policy\s+memories_insert_own",
+            r"create\s+policy\s+memories_delete_own",
+            r"grant\s+select\s*,\s*insert\s*,\s*update\s*,\s*delete\s+on\s+public\.memories\s+to\s+authenticated",
+        ],
+        "forbidden": [r"grant\s+.*\s+on\s+public\.memories\s+to\s+anon"],
+    },
+    "memory_tagged_users": {
+        "required": [
+            r"create\s+table\s+(?:if\s+not\s+exists\s+)?public\.memory_tagged_users",
+            r"alter\s+table\s+public\.memory_tagged_users\s+enable\s+row\s+level\s+security",
+            r"create\s+policy\s+memory_tagged_users_select_visible",
+            r"create\s+policy\s+memory_tagged_users_insert_owner_friend",
+            r"create\s+policy\s+memory_tagged_users_delete_owner",
+            r"grant\s+select\s*,\s*insert\s*,\s*delete\s+on\s+public\.memory_tagged_users\s+to\s+authenticated",
+        ],
+        "forbidden": [r"grant\s+.*\s+on\s+public\.memory_tagged_users\s+to\s+anon"],
+    },
+    "memory_reports": {
+        "required": [
+            r"create\s+table\s+(?:if\s+not\s+exists\s+)?public\.memory_reports",
+            r"alter\s+table\s+public\.memory_reports\s+enable\s+row\s+level\s+security",
+            r"create\s+policy\s+memory_reports_insert_own",
+            r"create\s+policy\s+memory_reports_select_own",
+            r"memory_reports_reason_check",
+            r"memory_reports_status_check",
+            r"memory_reports_status_created_at_idx",
+            r"memory_reports_reporter_hidden_idx",
             r"status\s+in\s*\(\s*'pending'\s*,\s*'reviewing'\s*,\s*'resolved'\s*,\s*'dismissed'\s*\)",
         ],
-        "forbidden": [],
+        "forbidden": [r"grant\s+.*\s+on\s+public\.memory_reports\s+to\s+anon"],
     },
     "notification_outbox": {
         "required": [
@@ -82,16 +107,16 @@ CHECKS = {
         ],
         "forbidden": [r"grant\s+.*\s+on\s+public\.user_mutes\s+to\s+anon"],
     },
-    "feed_hidden_drink_logs": {
+    "memory_hides": {
         "required": [
-            r"create\s+table\s+if\s+not\s+exists\s+public\.feed_hidden_drink_logs",
-            r"alter\s+table\s+public\.feed_hidden_drink_logs\s+enable\s+row\s+level\s+security",
-            r"create\s+policy\s+feed_hidden_drink_logs_select_owner",
-            r"create\s+policy\s+feed_hidden_drink_logs_insert_owner",
-            r"create\s+policy\s+feed_hidden_drink_logs_delete_owner",
-            r"grant\s+select\s*,\s*insert\s*,\s*delete\s+on\s+public\.feed_hidden_drink_logs\s+to\s+authenticated",
+            r"create\s+table\s+(?:if\s+not\s+exists\s+)?public\.memory_hides",
+            r"alter\s+table\s+public\.memory_hides\s+enable\s+row\s+level\s+security",
+            r"create\s+policy\s+memory_hides_select_owner",
+            r"create\s+policy\s+memory_hides_insert_owner",
+            r"create\s+policy\s+memory_hides_delete_owner",
+            r"grant\s+select\s*,\s*insert\s*,\s*delete\s+on\s+public\.memory_hides\s+to\s+authenticated",
         ],
-        "forbidden": [r"grant\s+.*\s+on\s+public\.feed_hidden_drink_logs\s+to\s+anon"],
+        "forbidden": [r"grant\s+.*\s+on\s+public\.memory_hides\s+to\s+anon"],
     },
     "push_tokens": {
         "required": [

@@ -1,24 +1,27 @@
 part of 'photo_archive_screen.dart';
 
 class _ArchivePreviewCollage extends StatelessWidget {
-  const _ArchivePreviewCollage({required this.logs, required this.totalCount});
+  const _ArchivePreviewCollage({
+    required this.memories,
+    required this.totalCount,
+  });
 
-  final List<DrinkLog> logs;
+  final List<Memory> memories;
   final int totalCount;
 
   @override
   Widget build(BuildContext context) {
-    final first = logs.first;
-    final second = logs.length > 1 ? logs[1] : null;
-    final third = logs.length > 2 ? logs[2] : null;
+    final first = memories.first;
+    final second = memories.length > 1 ? memories[1] : null;
+    final third = memories.length > 2 ? memories[2] : null;
 
-    if (logs.length == 1) {
+    if (memories.length == 1) {
       return SizedBox(
         height: 174,
         child: _ArchivePhotoFrame(
-          log: first,
+          memory: first,
           borderRadius: BorderRadius.circular(24),
-          overlay: _PreviewOverlay(log: first),
+          overlay: _PreviewOverlay(memory: first),
         ),
       );
     }
@@ -30,31 +33,31 @@ class _ArchivePreviewCollage extends StatelessWidget {
           Expanded(
             flex: 7,
             child: _ArchivePhotoFrame(
-              log: first,
+              memory: first,
               borderRadius: BorderRadius.circular(24),
-              overlay: _PreviewOverlay(log: first),
+              overlay: _PreviewOverlay(memory: first),
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
             flex: 4,
-            child: logs.length == 2
+            child: memories.length == 2
                 ? _ArchivePhotoFrame(
-                    log: second!,
+                    memory: second!,
                     borderRadius: BorderRadius.circular(20),
                   )
                 : Column(
                     children: [
                       Expanded(
                         child: _ArchivePhotoFrame(
-                          log: second!,
+                          memory: second!,
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Expanded(
                         child: _ArchivePhotoFrame(
-                          log: third!,
+                          memory: third!,
                           borderRadius: BorderRadius.circular(20),
                           overlay: totalCount > 3
                               ? Container(
@@ -87,9 +90,9 @@ class _ArchivePreviewCollage extends StatelessWidget {
 }
 
 class _PreviewOverlay extends StatelessWidget {
-  const _PreviewOverlay({required this.log});
+  const _PreviewOverlay({required this.memory});
 
-  final DrinkLog log;
+  final Memory memory;
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +112,7 @@ class _PreviewOverlay extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _archiveTitle(log),
+              _archiveTitle(memory),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -119,7 +122,7 @@ class _PreviewOverlay extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${_memoryAgoLabel(log.date)}の思い出',
+              '${_memoryAgoLabel(memory.date)}の思い出',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 color: Colors.white.withValues(alpha: .82),
                 fontWeight: FontWeight.w800,
@@ -249,35 +252,38 @@ class _ArchiveViewModeButton extends StatelessWidget {
 
 class _ArchiveMapPage extends StatelessWidget {
   const _ArchiveMapPage({
-    required this.logs,
+    required this.memories,
     required this.isWhite,
-    required this.onLogTap,
+    required this.onMemoryTap,
   });
 
-  final List<DrinkLog> logs;
+  final List<Memory> memories;
   final bool isWhite;
-  final ValueChanged<DrinkLog> onLogTap;
+  final ValueChanged<Memory> onMemoryTap;
 
   @override
   Widget build(BuildContext context) {
-    final mapLogs = logs
-        .where((log) => log.place.trim().isNotEmpty || log.hasPlaceCoordinate)
+    final mapMemories = memories
+        .where(
+          (memory) =>
+              memory.place.trim().isNotEmpty || memory.hasPlaceCoordinate,
+        )
         .toList(growable: false);
-    if (mapLogs.isEmpty) {
+    if (mapMemories.isEmpty) {
       return _ArchivePlacesEmpty(isWhite: isWhite);
     }
 
     if (Platform.isIOS) {
       return _ArchiveAppleMap(
-        annotations: _archiveLogMapAnnotations(mapLogs),
+        annotations: _archiveMemoryMapAnnotations(mapMemories),
         onAnnotationTap: (id) {
-          final index = mapLogs.indexWhere((log) => log.id == id);
-          if (index >= 0) onLogTap(mapLogs[index]);
+          final index = mapMemories.indexWhere((memory) => memory.id == id);
+          if (index >= 0) onMemoryTap(mapMemories[index]);
         },
       );
     }
 
-    final places = _archivePlaceGroups(mapLogs);
+    final places = _archivePlaceGroups(mapMemories);
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -286,7 +292,7 @@ class _ArchiveMapPage extends StatelessWidget {
           _ArchiveMapPin(
             place: places[i],
             alignment: _archivePinAlignment(places[i].name, i),
-            onTap: () => onLogTap(places[i].latestLog),
+            onTap: () => onMemoryTap(places[i].latestMemory),
           ),
       ],
     );
@@ -323,17 +329,17 @@ class _ArchiveAppleMap extends StatelessWidget {
   }
 }
 
-List<Map<String, Object?>> _archiveLogMapAnnotations(List<DrinkLog> logs) {
-  return logs
+List<Map<String, Object?>> _archiveMemoryMapAnnotations(List<Memory> memories) {
+  return memories
       .map(
-        (log) => <String, Object?>{
-          'id': log.id,
-          'title': _archiveTitle(log),
-          'subtitle': _archiveDate(log.date),
-          'place': log.place.trim(),
-          if (log.hasPlaceCoordinate) ...{
-            'latitude': log.placeLatitude,
-            'longitude': log.placeLongitude,
+        (memory) => <String, Object?>{
+          'id': memory.id,
+          'title': _archiveTitle(memory),
+          'subtitle': _archiveDate(memory.date),
+          'place': memory.place.trim(),
+          if (memory.hasPlaceCoordinate) ...{
+            'latitude': memory.placeLatitude,
+            'longitude': memory.placeLongitude,
           },
         },
       )
@@ -645,10 +651,10 @@ class _ArchiveMapPin extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   _ArchivePhotoFrame(
-                    log: place.latestLog,
+                    memory: place.latestMemory,
                     borderRadius: BorderRadius.circular(13),
                   ),
-                  if (place.logs.length > 1)
+                  if (place.memories.length > 1)
                     Positioned(
                       right: -1,
                       top: -1,
@@ -663,7 +669,7 @@ class _ArchiveMapPin extends StatelessWidget {
                           border: Border.all(color: Colors.white, width: 2),
                         ),
                         child: Text(
-                          '${place.logs.length}',
+                          '${place.memories.length}',
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
                                 color: Colors.white,
@@ -738,28 +744,30 @@ class _ArchivePlacesEmpty extends StatelessWidget {
 }
 
 class _ArchivePlaceGroup {
-  const _ArchivePlaceGroup({required this.name, required this.logs});
+  const _ArchivePlaceGroup({required this.name, required this.memories});
 
   final String name;
-  final List<DrinkLog> logs;
+  final List<Memory> memories;
 
-  DrinkLog get latestLog => logs.first;
+  Memory get latestMemory => memories.first;
 }
 
-List<_ArchivePlaceGroup> _archivePlaceGroups(List<DrinkLog> logs) {
-  final grouped = <String, List<DrinkLog>>{};
-  for (final log in logs) {
-    final place = log.place.trim();
+List<_ArchivePlaceGroup> _archivePlaceGroups(List<Memory> memories) {
+  final grouped = <String, List<Memory>>{};
+  for (final memory in memories) {
+    final place = memory.place.trim();
     if (place.isEmpty) continue;
-    grouped.putIfAbsent(place, () => <DrinkLog>[]).add(log);
+    grouped.putIfAbsent(place, () => <Memory>[]).add(memory);
   }
   final places = grouped.entries
-      .map((entry) => _ArchivePlaceGroup(name: entry.key, logs: entry.value))
+      .map(
+        (entry) => _ArchivePlaceGroup(name: entry.key, memories: entry.value),
+      )
       .toList();
   places.sort((a, b) {
-    final countCompare = b.logs.length.compareTo(a.logs.length);
+    final countCompare = b.memories.length.compareTo(a.memories.length);
     if (countCompare != 0) return countCompare;
-    return b.latestLog.date.compareTo(a.latestLog.date);
+    return b.latestMemory.date.compareTo(a.latestMemory.date);
   });
   return places;
 }
@@ -786,16 +794,16 @@ Alignment _archivePinAlignment(String name, int index) {
 
 class _ArchiveStoriesView extends StatelessWidget {
   const _ArchiveStoriesView({
-    required this.logs,
-    required this.memoryLog,
+    required this.memories,
+    required this.featuredMemory,
     required this.isWhite,
-    required this.onLogTap,
+    required this.onMemoryTap,
   });
 
-  final List<DrinkLog> logs;
-  final DrinkLog? memoryLog;
+  final List<Memory> memories;
+  final Memory? featuredMemory;
   final bool isWhite;
-  final ValueChanged<DrinkLog> onLogTap;
+  final ValueChanged<Memory> onMemoryTap;
 
   @override
   Widget build(BuildContext context) {
@@ -813,18 +821,18 @@ class _ArchiveStoriesView extends StatelessWidget {
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) => _ArchiveStoryTile(
-                log: logs[index],
-                onTap: () => onLogTap(logs[index]),
+                memory: memories[index],
+                onTap: () => onMemoryTap(memories[index]),
               ),
-              childCount: logs.length,
+              childCount: memories.length,
             ),
           ),
         ),
         SliverToBoxAdapter(
           child: _ArchiveMemorySection(
-            log: memoryLog ?? logs.first,
+            memory: featuredMemory ?? memories.first,
             isWhite: isWhite,
-            onShare: () => onLogTap(memoryLog ?? logs.first),
+            onShare: () => onMemoryTap(featuredMemory ?? memories.first),
           ),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 130)),
@@ -834,22 +842,22 @@ class _ArchiveStoriesView extends StatelessWidget {
 }
 
 class _ArchiveStoryTile extends StatelessWidget {
-  const _ArchiveStoryTile({required this.log, required this.onTap});
+  const _ArchiveStoryTile({required this.memory, required this.onTap});
 
-  final DrinkLog log;
+  final Memory memory;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final dayLabel = log.date.day.toString().padLeft(2, '0');
-    final monthLabel = '${log.date.month}月';
+    final dayLabel = memory.date.day.toString().padLeft(2, '0');
+    final monthLabel = '${memory.date.month}月';
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          _ArchivePhotoFrame(log: log, borderRadius: BorderRadius.zero),
+          _ArchivePhotoFrame(memory: memory, borderRadius: BorderRadius.zero),
           Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -902,7 +910,7 @@ class _ArchiveStoryTile extends StatelessWidget {
             right: 7,
             bottom: 7,
             child: Text(
-              _archiveTitle(log),
+              _archiveTitle(memory),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -925,12 +933,12 @@ class _ArchiveStoryTile extends StatelessWidget {
 
 class _ArchiveMemorySection extends StatelessWidget {
   const _ArchiveMemorySection({
-    required this.log,
+    required this.memory,
     required this.isWhite,
     required this.onShare,
   });
 
-  final DrinkLog log;
+  final Memory memory;
   final bool isWhite;
   final VoidCallback onShare;
 
@@ -984,7 +992,7 @@ class _ArchiveMemorySection extends StatelessWidget {
                   ],
                 ),
                 child: _ArchivePhotoFrame(
-                  log: log,
+                  memory: memory,
                   borderRadius: BorderRadius.circular(22),
                 ),
               ),
@@ -1002,7 +1010,7 @@ class _ArchiveMemorySection extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${_memoryAgoLabel(log.date)}の今日。',
+                      '${_memoryAgoLabel(memory.date)}の今日。',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: subColor,
                         fontWeight: FontWeight.w800,

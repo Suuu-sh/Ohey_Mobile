@@ -83,27 +83,27 @@ class AdminRepository {
     await _client.delete('/v1/admin/users/$id');
   }
 
-  Future<List<AdminDrinkLog>> listDrinkLogs() async {
-    final rows = await _client.getRows('/v1/admin/drink-logs');
-    return rows.map(AdminDrinkLog.fromJson).toList(growable: false);
+  Future<List<AdminMemory>> listMemorys() async {
+    final rows = await _client.getRows('/v1/admin/memories');
+    return rows.map(AdminMemory.fromJson).toList(growable: false);
   }
 
-  Future<List<AdminDrinkLogReport>> listDrinkLogReports({
+  Future<List<AdminMemoryReport>> listMemoryReports({
     String status = 'pending',
   }) async {
     final rows = await _client.getRows(
-      '/v1/admin/drink-log-reports',
+      '/v1/admin/memory-reports',
       query: {'status': status},
     );
-    return rows.map(AdminDrinkLogReport.fromJson).toList(growable: false);
+    return rows.map(AdminMemoryReport.fromJson).toList(growable: false);
   }
 
-  Future<void> updateDrinkLogReport({
+  Future<void> updateMemoryReport({
     required String id,
     required String status,
     String? moderationNote,
   }) async {
-    await _client.patch('/v1/admin/drink-log-reports/$id', {
+    await _client.patch('/v1/admin/memory-reports/$id', {
       'status': status,
       'moderation_note': moderationNote?.trim() ?? '',
     });
@@ -124,7 +124,7 @@ class AdminRepository {
     return row['signed_url'] as String?;
   }
 
-  Future<void> createDrinkLog({
+  Future<void> createMemory({
     String? ownerUserId,
     required String placeName,
     required String memo,
@@ -137,7 +137,7 @@ class AdminRepository {
       isOfficial: isOfficial,
     );
     final body = <String, dynamic>{
-      'drank_at': DateTime.now().toUtc().toIso8601String(),
+      'happened_at': DateTime.now().toUtc().toIso8601String(),
       'place_name': placeName,
       'memo': memo,
       'link_url': linkUrl,
@@ -147,10 +147,10 @@ class AdminRepository {
     if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
       body['owner_user_id'] = ownerUserId.trim();
     }
-    await _client.post('/v1/admin/drink-logs', body);
+    await _client.post('/v1/admin/memories', body);
   }
 
-  Future<void> updateDrinkLog({
+  Future<void> updateMemory({
     required String id,
     String? ownerUserId,
     required String placeName,
@@ -173,7 +173,7 @@ class AdminRepository {
     if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
       body['owner_user_id'] = ownerUserId.trim();
     }
-    await _client.patch('/v1/admin/drink-logs/$id', body);
+    await _client.patch('/v1/admin/memories/$id', body);
   }
 
   Future<String?> _uploadLocalPhotoIfNeeded(
@@ -193,7 +193,7 @@ class AdminRepository {
     }
 
     final extension = _safeExtension(normalized);
-    final folder = isOfficial ? 'admin/official_posts' : 'admin/drink_logs';
+    final folder = isOfficial ? 'admin/official_posts' : 'admin/memories';
     final storagePath =
         '$folder/$userId/${DateTime.now().toUtc().microsecondsSinceEpoch}$extension';
 
@@ -231,8 +231,8 @@ class AdminRepository {
     };
   }
 
-  Future<void> deleteDrinkLog(String id) async {
-    await _client.delete('/v1/admin/drink-logs/$id');
+  Future<void> deleteMemory(String id) async {
+    await _client.delete('/v1/admin/memories/$id');
   }
 
   Future<AdminNotificationResult> createSystemNotification({
@@ -296,13 +296,13 @@ class AdminUserProfile {
   }
 }
 
-class AdminDrinkLog {
-  const AdminDrinkLog({
+class AdminMemory {
+  const AdminMemory({
     required this.id,
     required this.ownerUserId,
     required this.ownerDisplayName,
     required this.ownerHandle,
-    required this.drankAt,
+    required this.happenedAt,
     required this.placeName,
     required this.memo,
     required this.linkUrl,
@@ -314,24 +314,24 @@ class AdminDrinkLog {
   final String ownerUserId;
   final String ownerDisplayName;
   final String ownerHandle;
-  final DateTime drankAt;
+  final DateTime happenedAt;
   final String placeName;
   final String memo;
   final String linkUrl;
   final String photoPath;
   final bool isOfficial;
 
-  factory AdminDrinkLog.fromJson(Map<String, dynamic> json) {
+  factory AdminMemory.fromJson(Map<String, dynamic> json) {
     final owner = json['owner'] is Map
         ? Map<String, dynamic>.from(json['owner'] as Map)
         : const <String, dynamic>{};
-    return AdminDrinkLog(
+    return AdminMemory(
       id: json['id'] as String? ?? '',
       ownerUserId: json['owner_user_id'] as String? ?? '',
       ownerDisplayName: owner['display_name'] as String? ?? 'Nomo user',
       ownerHandle: owner['user_id'] as String? ?? '',
-      drankAt:
-          DateTime.tryParse(json['drank_at'] as String? ?? '') ??
+      happenedAt:
+          DateTime.tryParse(json['happened_at'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
       placeName: json['place_name'] as String? ?? '',
       memo: json['memo'] as String? ?? '',
@@ -359,10 +359,10 @@ class AdminNotificationResult {
   }
 }
 
-class AdminDrinkLogReport {
-  const AdminDrinkLogReport({
+class AdminMemoryReport {
+  const AdminMemoryReport({
     required this.id,
-    required this.drinkLogId,
+    required this.memoryId,
     required this.reason,
     required this.status,
     required this.reporterDisplayName,
@@ -378,7 +378,7 @@ class AdminDrinkLogReport {
   });
 
   final String id;
-  final String drinkLogId;
+  final String memoryId;
   final String reason;
   final String status;
   final String reporterDisplayName;
@@ -392,28 +392,28 @@ class AdminDrinkLogReport {
   final DateTime? reviewedAt;
   final String? moderationNote;
 
-  factory AdminDrinkLogReport.fromJson(Map<String, dynamic> json) {
-    final drinkLog = json['drink_log'] is Map
-        ? Map<String, dynamic>.from(json['drink_log'] as Map)
+  factory AdminMemoryReport.fromJson(Map<String, dynamic> json) {
+    final memory = json['memory'] is Map
+        ? Map<String, dynamic>.from(json['memory'] as Map)
         : const <String, dynamic>{};
-    final owner = drinkLog['owner'] is Map
-        ? Map<String, dynamic>.from(drinkLog['owner'] as Map)
+    final owner = memory['owner'] is Map
+        ? Map<String, dynamic>.from(memory['owner'] as Map)
         : const <String, dynamic>{};
     final reporter = json['reporter'] is Map
         ? Map<String, dynamic>.from(json['reporter'] as Map)
         : const <String, dynamic>{};
-    return AdminDrinkLogReport(
+    return AdminMemoryReport(
       id: json['id'] as String? ?? '',
-      drinkLogId: json['drink_log_id'] as String? ?? '',
+      memoryId: json['memory_id'] as String? ?? '',
       reason: json['reason'] as String? ?? 'other',
       status: json['status'] as String? ?? 'pending',
       reporterDisplayName: reporter['display_name'] as String? ?? 'Reporter',
       reporterHandle: reporter['user_id'] as String? ?? '',
       ownerDisplayName: owner['display_name'] as String? ?? 'Nomo user',
       ownerHandle: owner['user_id'] as String? ?? '',
-      memo: drinkLog['memo'] as String? ?? '',
-      photoPath: drinkLog['photo_path'] as String? ?? '',
-      isOfficial: drinkLog['is_official'] as bool? ?? false,
+      memo: memory['memo'] as String? ?? '',
+      photoPath: memory['photo_path'] as String? ?? '',
+      isOfficial: memory['is_official'] as bool? ?? false,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? ''),
       reviewedAt: DateTime.tryParse(json['reviewed_at'] as String? ?? ''),
       moderationNote: json['moderation_note'] as String?,

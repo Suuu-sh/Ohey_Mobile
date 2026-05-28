@@ -164,7 +164,7 @@ class NomoFriendRequestItem {
     final fromUserId = (row['from_user_id'] as String?)?.trim() ?? '';
     final toUserId = (row['to_user_id'] as String?)?.trim() ?? '';
     final isOutgoing = fromUserId == currentUserId;
-    final rawOther = isOutgoing ? row['to_user'] : row['from_user'];
+    final rawOther = isOutgoing ? row['invitee'] : row['inviter'];
     final fallbackOtherId = isOutgoing ? toUserId : fromUserId;
     final otherRow = rawOther is Map
         ? Map<String, dynamic>.from(rawOther)

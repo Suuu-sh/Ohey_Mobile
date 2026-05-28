@@ -2,9 +2,9 @@
 
 NomoのDBスキーマ変更は必ず `supabase/migrations/*.sql` に追加します。
 
-- PR時: migrationファイル名を検証します。
+- development push時: dev Supabase migration workflowで検証・適用します。
 - mainマージ時: GitHub Actionsがproduction Supabaseへ未適用migrationを順番に適用します。
-- 適用済みmigrationはproduction DBの `public.app_schema_migrations` で管理します。
+- 適用済みmigrationはproduction DBの migration history で管理します。
 
 ## Required GitHub secret
 
@@ -28,11 +28,11 @@ python3 scripts/verify_supabase_rls_contract.py
 
 - `friend_groups`
 - `friend_group_members`
-- `drink_log_reports`
+- `memory_reports`
 - `notification_outbox`
 - `user_blocks`
 - `user_mutes`
-- `feed_hidden_drink_logs`
+- `memory_hides`
 - `push_tokens`
 
 特に確認すること:

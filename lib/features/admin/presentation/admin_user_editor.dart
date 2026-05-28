@@ -219,18 +219,18 @@ class _AdminUserEditorScreenState
 Future<void> _showPostSheet(
   BuildContext context,
   WidgetRef ref, {
-  AdminDrinkLog? log,
+  AdminMemory? memory,
 }) async {
   final users =
       ref.read(adminUsersProvider).asData?.value ?? const <AdminUserProfile>[];
   final didSave = await showNomoBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
-    builder: (_) => _AdminPostEditorSheet(log: log, users: users),
+    builder: (_) => _AdminPostEditorSheet(memory: memory, users: users),
   );
 
   if (didSave == true && context.mounted) {
-    ref.invalidate(adminDrinkLogsProvider);
+    ref.invalidate(adminMemorysProvider);
     NomoToast.show(context, '思い出を保存しました。');
   }
 }

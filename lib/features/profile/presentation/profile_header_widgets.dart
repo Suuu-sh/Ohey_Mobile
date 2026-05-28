@@ -250,10 +250,10 @@ class _ProfileReservationStrip extends StatelessWidget {
   final bool isWhite;
   final NomoAvatar? userAvatar;
   final String? currentUserId;
-  final List<NomoDrinkInvite> reservations;
-  final List<NomoDrinkInvite> incomingInvites;
-  final ValueChanged<NomoDrinkInvite> onAccept;
-  final ValueChanged<NomoDrinkInvite> onReject;
+  final List<NomoInvite> reservations;
+  final List<NomoInvite> incomingInvites;
+  final ValueChanged<NomoInvite> onAccept;
+  final ValueChanged<NomoInvite> onReject;
 
   @override
   Widget build(BuildContext context) {
@@ -366,7 +366,7 @@ class _IncomingInviteCard extends StatelessWidget {
   });
 
   final bool isWhite;
-  final NomoDrinkInvite invite;
+  final NomoInvite invite;
   final String? currentUserId;
   final VoidCallback onAccept;
   final VoidCallback onReject;
@@ -374,7 +374,7 @@ class _IncomingInviteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final from = currentUserId == null
-        ? invite.fromUser
+        ? invite.inviter
         : invite.otherUser(currentUserId!);
     return Container(
       padding: const EdgeInsets.all(12),
@@ -528,24 +528,24 @@ class _InviteResponseButton extends StatelessWidget {
 
 class _ProfileActivityHome extends StatelessWidget {
   const _ProfileActivityHome({
-    required this.logs,
-    required this.photoLogs,
+    required this.memories,
+    required this.photoMemories,
     required this.friendsCount,
-    required this.onLogsTap,
+    required this.onMemoriesTap,
     required this.onArchiveTap,
     required this.onAddFriendsTap,
   });
 
-  final List<DrinkLog> logs;
-  final List<DrinkLog> photoLogs;
+  final List<Memory> memories;
+  final List<Memory> photoMemories;
   final int friendsCount;
-  final VoidCallback onLogsTap;
+  final VoidCallback onMemoriesTap;
   final VoidCallback onArchiveTap;
   final VoidCallback onAddFriendsTap;
 
   @override
   Widget build(BuildContext context) {
-    final recentLogs = logs.take(2).toList(growable: false);
+    final recentMemories = memories.take(2).toList(growable: false);
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -555,15 +555,15 @@ class _ProfileActivityHome extends StatelessWidget {
         children: [
           _ProfileSummaryStats(
             friendsCount: friendsCount,
-            logCount: logs.length,
+            memoryCount: memories.length,
           ),
           const SizedBox(height: 8),
           _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
           const SizedBox(height: 8),
           _ProfileRecentMemoriesCard(
-            logs: recentLogs,
-            photoLogCount: photoLogs.length,
-            onLogsTap: onLogsTap,
+            memories: recentMemories,
+            photoMemoryCount: photoMemories.length,
+            onMemoriesTap: onMemoriesTap,
             onArchiveTap: onArchiveTap,
             onAddFriendsTap: onAddFriendsTap,
           ),
@@ -576,11 +576,11 @@ class _ProfileActivityHome extends StatelessWidget {
 class _ProfileSummaryStats extends StatelessWidget {
   const _ProfileSummaryStats({
     required this.friendsCount,
-    required this.logCount,
+    required this.memoryCount,
   });
 
   final int friendsCount;
-  final int logCount;
+  final int memoryCount;
 
   @override
   Widget build(BuildContext context) {
@@ -612,7 +612,7 @@ class _ProfileSummaryStats extends StatelessWidget {
             child: _ProfileSummaryStat(
               icon: CupertinoIcons.star_fill,
               iconColor: const Color(0xFFFFD84E),
-              value: '$logCount',
+              value: '$memoryCount',
               label: '思い出',
             ),
           ),
@@ -747,24 +747,24 @@ class _ProfileFriendActionRow extends StatelessWidget {
 
 class _ProfileRecentMemoriesCard extends StatelessWidget {
   const _ProfileRecentMemoriesCard({
-    required this.logs,
-    required this.photoLogCount,
-    required this.onLogsTap,
+    required this.memories,
+    required this.photoMemoryCount,
+    required this.onMemoriesTap,
     required this.onArchiveTap,
     required this.onAddFriendsTap,
   });
 
-  final List<DrinkLog> logs;
-  final int photoLogCount;
-  final VoidCallback onLogsTap;
+  final List<Memory> memories;
+  final int photoMemoryCount;
+  final VoidCallback onMemoriesTap;
   final VoidCallback onArchiveTap;
   final VoidCallback onAddFriendsTap;
 
   @override
   Widget build(BuildContext context) {
-    final firstLog = logs.isNotEmpty ? logs[0] : null;
-    final secondLog = logs.length > 1 ? logs[1] : null;
-    final openAll = photoLogCount > 0 ? onArchiveTap : onLogsTap;
+    final firstMemory = memories.isNotEmpty ? memories[0] : null;
+    final secondMemory = memories.length > 1 ? memories[1] : null;
+    final openAll = photoMemoryCount > 0 ? onArchiveTap : onMemoriesTap;
 
     return NomoThemedPanel(
       accentColor: _ProfileColors.pink,
@@ -830,19 +830,19 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _ProfileMemoryPreviewTile(
-                  log: firstLog,
+                  memory: firstMemory,
                   fallbackTitle: 'はじめての思い出',
                   imageAlignment: Alignment.centerLeft,
-                  onTap: firstLog == null ? onLogsTap : openAll,
+                  onTap: firstMemory == null ? onMemoriesTap : openAll,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _ProfileMemoryPreviewTile(
-                  log: secondLog,
+                  memory: secondMemory,
                   fallbackTitle: 'また遊ぼう',
                   imageAlignment: Alignment.centerRight,
-                  onTap: secondLog == null ? onLogsTap : openAll,
+                  onTap: secondMemory == null ? onMemoriesTap : openAll,
                 ),
               ),
             ],
@@ -857,20 +857,20 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
 
 class _ProfileMemoryPreviewTile extends StatelessWidget {
   const _ProfileMemoryPreviewTile({
-    required this.log,
+    required this.memory,
     required this.fallbackTitle,
     required this.imageAlignment,
     required this.onTap,
   });
 
-  final DrinkLog? log;
+  final Memory? memory;
   final String fallbackTitle;
   final Alignment imageAlignment;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final title = log == null ? fallbackTitle : _profileMemoryTitle(log!);
+    final title = memory == null ? fallbackTitle : _profileMemoryTitle(memory!);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -1007,10 +1007,10 @@ class _ProfileMemoryHintCard extends StatelessWidget {
   }
 }
 
-String _profileMemoryTitle(DrinkLog log) {
-  final place = log.place.trim();
+String _profileMemoryTitle(Memory memory) {
+  final place = memory.place.trim();
   if (place.isNotEmpty) return place;
-  final memo = log.memo.trim();
+  final memo = memory.memo.trim();
   if (memo.isNotEmpty) return memo;
   return '思い出';
 }

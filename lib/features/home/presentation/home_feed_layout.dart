@@ -23,7 +23,7 @@ Widget _buildFeedPage({
   required bool showSwipeTutorial,
   required VoidCallback onSwipeTutorialDismissed,
   required ValueChanged<int> onPageChanged,
-  required VoidCallback onAddLogPressed,
+  required VoidCallback onAddMemoryPressed,
   required ValueChanged<_FeedItem> onLikePressed,
   required ValueChanged<_FeedItem> onSharePressed,
   required ValueChanged<_FeedItem> onMorePressed,
@@ -49,7 +49,7 @@ Widget _buildFeedPage({
       children: [
         _FeedSectionEmptyState(
           isWhite: isWhite,
-          onAddLogPressed: onAddLogPressed,
+          onAddMemoryPressed: onAddMemoryPressed,
         ),
       ],
     );
@@ -136,11 +136,11 @@ class _FeedPostPage extends StatelessWidget {
 class _FeedSectionEmptyState extends StatelessWidget {
   const _FeedSectionEmptyState({
     required this.isWhite,
-    required this.onAddLogPressed,
+    required this.onAddMemoryPressed,
   });
 
   final bool isWhite;
-  final VoidCallback onAddLogPressed;
+  final VoidCallback onAddMemoryPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +157,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
           child: Nomo3DButton(
             label: '写真を選んで投稿する',
             icon: CupertinoIcons.camera_fill,
-            onTap: onAddLogPressed,
+            onTap: onAddMemoryPressed,
             height: 50,
             radius: 22,
             color: _feedPrimaryActionColor,
@@ -194,7 +194,9 @@ Future<void> _showFeedPostActions(
       final confirmed = await _confirmDeleteFeedPost(context);
       if (!confirmed || !context.mounted) return;
       try {
-        await ref.read(homeFeedControllerProvider.notifier).deleteLog(item.id);
+        await ref
+            .read(homeFeedControllerProvider.notifier)
+            .deleteMemory(item.id);
         ref.invalidate(homeFeedControllerProvider);
         if (context.mounted) NomoToast.show(context, '思い出を削除しました');
       } catch (error) {
@@ -208,7 +210,7 @@ Future<void> _showFeedPostActions(
       try {
         await ref
             .read(homeFeedControllerProvider.notifier)
-            .reportLog(item.id, reason: reason.value);
+            .reportMemory(item.id, reason: reason.value);
         if (context.mounted) {
           NomoToast.show(context, '「${reason.label}」として報告しました');
         }
@@ -219,7 +221,7 @@ Future<void> _showFeedPostActions(
       }
     case _FeedPostAction.hide:
       try {
-        await ref.read(homeFeedControllerProvider.notifier).hideLog(item.id);
+        await ref.read(homeFeedControllerProvider.notifier).hideMemory(item.id);
         if (context.mounted) NomoToast.show(context, 'フィードから非表示にしました');
       } catch (_) {
         if (context.mounted) {

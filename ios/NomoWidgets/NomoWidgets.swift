@@ -42,7 +42,7 @@ struct NomoWidgetSnapshot: Equatable {
     let friends = friendNames.enumerated().map { index, name in
       NomoAvailableFriend(
         name: name,
-        statusLabel: friendStatusLabels.indices.contains(index) ? friendStatusLabels[index] : "今日飲める"
+        statusLabel: friendStatusLabels.indices.contains(index) ? friendStatusLabels[index] : "今日空いてる"
       )
     }
 
@@ -180,7 +180,7 @@ private struct MediumStatusContent: View {
 
   private var hasEmbeddedStatusTitle: Bool {
     switch snapshot.statusKey {
-    case "can_drink_today", "want_drink", "light_drink", "want_drink_hard", "non_alcohol", "liver_rest", "busy", "waiting_invite", "has_plans", "unselected":
+    case "available", "maybe_available", "depends_on_time", "has_plans", "unselected":
       return true
     default:
       return false
@@ -317,23 +317,14 @@ private struct NomoStatusWidgetStyle {
 
   init(statusKey: String) {
     switch statusKey {
-    case "can_drink_today", "want_drink":
+    case "available":
       symbolName = "checkmark.circle.fill"
       accent = .nomoLime
-    case "light_drink":
-      symbolName = "clock.fill"
-      accent = .nomoCyan
-    case "want_drink_hard":
-      symbolName = "flame.fill"
-      accent = .nomoAmber
-    case "non_alcohol":
+    case "maybe_available":
       symbolName = "drop.fill"
-      accent = .nomoMint
-    case "liver_rest", "busy":
-      symbolName = "moon.zzz.fill"
-      accent = .nomoPink
-    case "waiting_invite":
-      symbolName = "bell.fill"
+      accent = .nomoCyan
+    case "depends_on_time":
+      symbolName = "clock.fill"
       accent = .nomoPurple
     case "has_plans":
       symbolName = "calendar"
@@ -418,18 +409,12 @@ private enum NomoWidgetArtwork {
 
   private static func statusSlug(for statusKey: String) -> String {
     switch statusKey {
-    case "can_drink_today", "want_drink":
-      return "CanDrinkToday"
-    case "light_drink":
-      return "LightDrink"
-    case "want_drink_hard":
-      return "WantDrinkHard"
-    case "non_alcohol":
-      return "NonAlcohol"
-    case "liver_rest", "busy":
-      return "LiverRest"
-    case "waiting_invite":
-      return "WaitingInvite"
+    case "available":
+      return "Available"
+    case "maybe_available":
+      return "MaybeAvailable"
+    case "depends_on_time":
+      return "DependsOnTime"
     case "has_plans":
       return "HasPlans"
     default:

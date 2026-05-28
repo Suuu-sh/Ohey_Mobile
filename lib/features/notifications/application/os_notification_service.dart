@@ -4,7 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/models/nomo_drink_invite.dart';
+import '../../../core/models/nomo_invite.dart';
 import '../../../core/models/nomo_friend_request_status.dart';
 import '../data/notification_repository.dart';
 
@@ -19,8 +19,8 @@ class _NotificationDeliveryPolicy {
     // Actionable and social-graph changing notifications only.
     'friend_request_received',
     'friend_request_accepted',
-    'drink_invite_received',
-    'drink_invite_accepted',
+    'invite_received',
+    'invite_accepted',
     'today_reservation_reminder',
   };
 
@@ -31,10 +31,8 @@ class _NotificationDeliveryPolicy {
         notification.friendRequestStatus,
       ).isPending;
     }
-    if (notification.kind == 'drink_invite_received') {
-      return nomoDrinkInviteStatusFromKey(
-        notification.drinkInviteStatus,
-      ).isPending;
+    if (notification.kind == 'invite_received') {
+      return nomoInviteStatusFromKey(notification.inviteStatus).isPending;
     }
     return true;
   }
@@ -45,7 +43,7 @@ class _NotificationDeliveryPolicy {
         .where(
           (notification) =>
               notification.kind == 'friend_request_received' ||
-              notification.kind == 'drink_invite_received',
+              notification.kind == 'invite_received',
         )
         .take(2)
         .toList(growable: false);
@@ -130,16 +128,16 @@ class OsNotificationService {
     }
   }
 
-  Future<void> showDrinkInviteReceived(NomoDrinkInvite invite) async {
+  Future<void> showInviteReceived(NomoInvite invite) async {
     await _initialize();
 
     final prefs = await SharedPreferences.getInstance();
-    final notifiedKey = 'nomo_notified_drink_invite_${invite.id}';
+    final notifiedKey = 'nomo_notified_invite_${invite.id}';
     if (prefs.getBool(notifiedKey) ?? false) return;
 
     await _plugin.show(
       id: invite.id.hashCode,
-      title: '${invite.fromUser.name}からお誘い',
+      title: '${invite.inviter.name}からお誘い',
       body: '今日会わない？アプリで返事してね。',
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
@@ -155,7 +153,7 @@ class OsNotificationService {
           presentSound: true,
         ),
       ),
-      payload: 'drink_invite:${invite.id}',
+      payload: 'invite:${invite.id}',
     );
     await prefs.setBool(notifiedKey, true);
   }

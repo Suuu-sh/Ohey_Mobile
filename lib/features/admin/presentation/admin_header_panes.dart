@@ -113,14 +113,14 @@ class _AdminReportsPane extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final reportsAsync = ref.watch(adminDrinkLogReportsProvider);
+    final reportsAsync = ref.watch(adminMemoryReportsProvider);
     return Column(
       children: [
         _AdminPaneToolbar(
           title: '通報・モデレーション',
           actionLabel: '更新',
-          onAction: () => ref.invalidate(adminDrinkLogReportsProvider),
-          onRefresh: () => ref.invalidate(adminDrinkLogReportsProvider),
+          onAction: () => ref.invalidate(adminMemoryReportsProvider),
+          onRefresh: () => ref.invalidate(adminMemoryReportsProvider),
         ),
         const SizedBox(height: 12),
         Expanded(
@@ -152,7 +152,7 @@ class _AdminReportsPane extends StatelessWidget {
             ),
             error: (error, _) => _AdminErrorState(
               message: '$error',
-              onRetry: () => ref.invalidate(adminDrinkLogReportsProvider),
+              onRetry: () => ref.invalidate(adminMemoryReportsProvider),
             ),
           ),
         ),
@@ -170,7 +170,7 @@ class _AdminReportCard extends StatelessWidget {
   });
 
   final WidgetRef ref;
-  final AdminDrinkLogReport report;
+  final AdminMemoryReport report;
   final ValueChanged<String> onStatus;
   final VoidCallback onDeletePost;
 
@@ -472,31 +472,33 @@ class _AdminPostsPane extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logsAsync = ref.watch(adminDrinkLogsProvider);
+    final logsAsync = ref.watch(adminMemorysProvider);
     return Column(
       children: [
         _AdminPaneToolbar(
           title: '思い出管理',
           actionLabel: '作成',
           onAction: () => _showPostSheet(context, ref),
-          onRefresh: () => ref.invalidate(adminDrinkLogsProvider),
+          onRefresh: () => ref.invalidate(adminMemorysProvider),
         ),
         const SizedBox(height: 12),
         Expanded(
           child: logsAsync.when(
-            data: (logs) {
-              if (logs.isEmpty) {
+            data: (memories) {
+              if (memories.isEmpty) {
                 return const _AdminEmptyState(message: '思い出がまだありません。');
               }
               return ListView.separated(
                 padding: const EdgeInsets.only(bottom: 120),
                 itemBuilder: (context, index) => _AdminPostCard(
-                  log: logs[index],
-                  onEdit: () => _showPostSheet(context, ref, log: logs[index]),
-                  onDelete: () => _confirmDeletePost(context, ref, logs[index]),
+                  memory: memories[index],
+                  onEdit: () =>
+                      _showPostSheet(context, ref, memory: memories[index]),
+                  onDelete: () =>
+                      _confirmDeletePost(context, ref, memories[index]),
                 ),
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemCount: logs.length,
+                itemCount: memories.length,
               );
             },
             loading: () => const Center(
@@ -504,7 +506,7 @@ class _AdminPostsPane extends StatelessWidget {
             ),
             error: (error, _) => _AdminErrorState(
               message: '$error',
-              onRetry: () => ref.invalidate(adminDrinkLogsProvider),
+              onRetry: () => ref.invalidate(adminMemorysProvider),
             ),
           ),
         ),

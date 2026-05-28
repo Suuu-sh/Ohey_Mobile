@@ -42,15 +42,19 @@ Production/release builds should override `SUPABASE_URL` and `SUPABASE_PUBLISHAB
 
 ## Configured database/Auth/storage
 
-Both `nomo` and `dev-nomo` have the same initial schema:
+Both `nomo` and `dev-nomo` are kept on the same app schema:
 
 - Supabase Auth profile trigger
 - `profiles`
 - `friend_requests`
 - `friendships`
 - `daily_statuses`
-- `drink_logs`
-- `drink_log_friends`
+- `memories`
+- `memory_tagged_users`
+- `memory_likes`
+- `memory_reports`
+- `memory_hides`
+- `invites`
 - RLS policies for authenticated users
 - private Storage bucket: `nomo-photos`
 
@@ -77,6 +81,5 @@ Use these scripts to avoid mismatched JWTs:
 # Dev simulator run: dev-nomo Supabase + dev Render backend
 ./scripts/run_dev_render.sh -d <simulator-id>
 
-# Local development: dev-nomo Supabase + local backend
-./scripts/run_dev_local.sh -d <simulator-id>
+# Historical local-backend scripts may exist, but Nomo dev/Simulator checks should use dev Render backend.
 ```

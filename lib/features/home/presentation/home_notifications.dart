@@ -213,8 +213,8 @@ class _FeedNotificationsScreenState
       await _openFriendRequestNotification(notification);
       return;
     }
-    if (notification.kind == 'drink_invite_received') {
-      await _openDrinkInviteNotification(notification);
+    if (notification.kind == 'invite_received') {
+      await _openInviteNotification(notification);
     }
   }
 
@@ -238,7 +238,7 @@ class _FeedNotificationsScreenState
               .read(notificationControllerProvider.notifier)
               .acceptFriendRequest(friendRequestId);
           ref.invalidate(friendsProvider);
-          ref.invalidate(drinkLogControllerProvider);
+          ref.invalidate(memoryControllerProvider);
         },
         onReject: () async {
           await ref
@@ -250,11 +250,9 @@ class _FeedNotificationsScreenState
     );
   }
 
-  Future<void> _openDrinkInviteNotification(
-    _FeedNotification notification,
-  ) async {
-    final drinkInviteId = notification.drinkInviteId;
-    if (drinkInviteId == null || drinkInviteId.isEmpty) {
+  Future<void> _openInviteNotification(_FeedNotification notification) async {
+    final inviteId = notification.inviteId;
+    if (inviteId == null || inviteId.isEmpty) {
       NomoToast.show(context, 'この予定を開けなかったよ。あとでもう一度試してね。');
       return;
     }
@@ -263,20 +261,20 @@ class _FeedNotificationsScreenState
       context: context,
       useSafeArea: true,
       barrierColor: Colors.black.withValues(alpha: .62),
-      builder: (sheetContext) => _DrinkInviteNotificationSheet(
+      builder: (sheetContext) => _InviteNotificationSheet(
         notification: notification,
         onAccept: () async {
           await ref
               .read(notificationControllerProvider.notifier)
-              .acceptDrinkInvite(drinkInviteId);
+              .acceptInvite(inviteId);
           ref.invalidate(todayReservationsProvider);
-          ref.invalidate(incomingDrinkInvitesProvider);
+          ref.invalidate(incomingInvitesProvider);
         },
         onReject: () async {
           await ref
               .read(notificationControllerProvider.notifier)
-              .rejectDrinkInvite(drinkInviteId);
-          ref.invalidate(incomingDrinkInvitesProvider);
+              .rejectInvite(inviteId);
+          ref.invalidate(incomingInvitesProvider);
         },
       ),
     );
@@ -831,8 +829,8 @@ class _FriendRequestNotificationSheetState
   }
 }
 
-class _DrinkInviteNotificationSheet extends StatefulWidget {
-  const _DrinkInviteNotificationSheet({
+class _InviteNotificationSheet extends StatefulWidget {
+  const _InviteNotificationSheet({
     required this.notification,
     required this.onAccept,
     required this.onReject,
@@ -843,17 +841,15 @@ class _DrinkInviteNotificationSheet extends StatefulWidget {
   final Future<void> Function() onReject;
 
   @override
-  State<_DrinkInviteNotificationSheet> createState() =>
-      _DrinkInviteNotificationSheetState();
+  State<_InviteNotificationSheet> createState() =>
+      _InviteNotificationSheetState();
 }
 
-class _DrinkInviteNotificationSheetState
-    extends State<_DrinkInviteNotificationSheet> {
+class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
   String? _busyAction;
 
-  bool get _isPending => nomoDrinkInviteStatusFromKey(
-    widget.notification.drinkInviteStatus,
-  ).isPending;
+  bool get _isPending =>
+      nomoInviteStatusFromKey(widget.notification.inviteStatus).isPending;
 
   Future<void> _submit({required bool accept}) async {
     if (_busyAction != null || !_isPending) return;
@@ -880,8 +876,8 @@ class _DrinkInviteNotificationSheetState
 
   @override
   Widget build(BuildContext context) {
-    final statusLabel = nomoDrinkInviteStatusFromKey(
-      widget.notification.drinkInviteStatus,
+    final statusLabel = nomoInviteStatusFromKey(
+      widget.notification.inviteStatus,
     ).label;
 
     return SafeArea(

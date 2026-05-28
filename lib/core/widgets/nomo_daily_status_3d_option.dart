@@ -137,9 +137,9 @@ class NomoDailyStatus3DOption extends StatelessWidget {
 }
 
 Color nomoDailyStatusColor(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.canDrinkToday => nomoDailyStatusPink,
-  NomoDailyStatus.nonAlcohol => nomoDailyStatusBlue,
-  NomoDailyStatus.liverRest => nomoDailyStatusPurple,
+  NomoDailyStatus.available => nomoDailyStatusPink,
+  NomoDailyStatus.maybeAvailable => nomoDailyStatusBlue,
+  NomoDailyStatus.dependsOnTime => nomoDailyStatusPurple,
   NomoDailyStatus.hasPlans => nomoDailyStatusBlockedForeground,
   NomoDailyStatus.unselected => nomoDailyStatusGreen,
 };
@@ -245,9 +245,9 @@ List<BoxShadow> nomoDailyStatus3DInnerShadows(
 }
 
 IconData nomoDailyStatusIcon(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.canDrinkToday => CupertinoIcons.sparkles,
-  NomoDailyStatus.nonAlcohol => CupertinoIcons.drop_fill,
-  NomoDailyStatus.liverRest => CupertinoIcons.clock_fill,
+  NomoDailyStatus.available => CupertinoIcons.sparkles,
+  NomoDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
+  NomoDailyStatus.dependsOnTime => CupertinoIcons.clock_fill,
   NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
   NomoDailyStatus.unselected => CupertinoIcons.circle,
 };

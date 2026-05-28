@@ -16,7 +16,7 @@ import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_empty_state.dart';
 import '../../../core/widgets/nomo_state_view.dart';
-import '../../logs/application/drink_log_controller.dart';
+import '../../memories/application/memory_controller.dart';
 import '../application/admin_controller.dart';
 import '../data/admin_repository.dart';
 

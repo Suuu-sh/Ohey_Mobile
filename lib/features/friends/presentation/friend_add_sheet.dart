@@ -14,7 +14,7 @@ import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_toast.dart';
-import '../../logs/application/drink_log_controller.dart';
+import '../../memories/application/memory_controller.dart';
 import '../data/friend_repository.dart';
 
 String _friendQrPayload(String userId) {

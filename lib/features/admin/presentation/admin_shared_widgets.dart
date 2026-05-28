@@ -360,9 +360,9 @@ class _AdminStatusChip extends StatelessWidget {
 
 const _adminSelectableStatusKeys = <NomoDailyStatus>[
   NomoDailyStatus.unselected,
-  NomoDailyStatus.canDrinkToday,
-  NomoDailyStatus.nonAlcohol,
-  NomoDailyStatus.liverRest,
+  NomoDailyStatus.available,
+  NomoDailyStatus.maybeAvailable,
+  NomoDailyStatus.dependsOnTime,
   NomoDailyStatus.hasPlans,
 ];
 

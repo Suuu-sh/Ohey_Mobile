@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/models/drink_log.dart';
+import '../../../core/models/memory.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_bottom_sheet.dart';
@@ -19,20 +19,20 @@ part 'photo_archive_empty_widgets.dart';
 class PhotoArchivePreview extends StatelessWidget {
   const PhotoArchivePreview({
     super.key,
-    required this.logs,
+    required this.memories,
     required this.isWhite,
     required this.onTap,
   });
 
-  final List<DrinkLog> logs;
+  final List<Memory> memories;
   final bool isWhite;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final sorted = _sortedPhotoLogs(logs);
-    final memoryLog = _randomMemoryLog(sorted);
-    final previewLogs = _archivePreviewLogs(sorted);
+    final sorted = _sortedPhotoMemories(memories);
+    final featuredMemory = _randomFeaturedMemory(sorted);
+    final previewMemories = _archivePreviewMemories(sorted);
     final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
     final subColor = isWhite
         ? const Color(0xFF7A8490)
@@ -107,9 +107,9 @@ class PhotoArchivePreview extends StatelessWidget {
                             ),
                       ),
                       Text(
-                        memoryLog == null
+                        featuredMemory == null
                             ? '自分の投稿写真をおしゃれに見返す'
-                            : '${_memoryAgoLabel(memoryLog.date)}の思い出',
+                            : '${_memoryAgoLabel(featuredMemory.date)}の思い出',
                         style: Theme.of(context).textTheme.labelMedium
                             ?.copyWith(
                               color: subColor,
@@ -139,7 +139,7 @@ class PhotoArchivePreview extends StatelessWidget {
               _ArchiveEmptyPreview(isWhite: isWhite)
             else
               _ArchivePreviewCollage(
-                logs: previewLogs,
+                memories: previewMemories,
                 totalCount: sorted.length,
               ),
           ],
@@ -150,9 +150,9 @@ class PhotoArchivePreview extends StatelessWidget {
 }
 
 class PhotoArchiveScreen extends StatefulWidget {
-  const PhotoArchiveScreen({super.key, required this.logs});
+  const PhotoArchiveScreen({super.key, required this.memories});
 
-  final List<DrinkLog> logs;
+  final List<Memory> memories;
 
   @override
   State<PhotoArchiveScreen> createState() => _PhotoArchiveScreenState();
@@ -165,8 +165,8 @@ class _PhotoArchiveScreenState extends State<PhotoArchiveScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final sorted = _sortedPhotoLogs(widget.logs);
-    final memoryLog = _randomMemoryLog(sorted);
+    final sorted = _sortedPhotoMemories(widget.memories);
+    final featuredMemory = _randomFeaturedMemory(sorted);
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final background = isWhite
         ? const Color(0xFFF7F9FC)
@@ -180,9 +180,9 @@ class _PhotoArchiveScreenState extends State<PhotoArchiveScreen> {
         children: [
           if (isMapMode)
             _ArchiveMapPage(
-              logs: sorted,
+              memories: sorted,
               isWhite: isWhite,
-              onLogTap: (log) => _showArchiveDetail(context, log),
+              onMemoryTap: (memory) => _showArchiveDetail(context, memory),
             )
           else
             DecoratedBox(
@@ -205,11 +205,11 @@ class _PhotoArchiveScreenState extends State<PhotoArchiveScreen> {
                       child: sorted.isEmpty
                           ? _ArchiveEmptyState(isWhite: isWhite)
                           : _ArchiveStoriesView(
-                              logs: sorted,
-                              memoryLog: memoryLog,
+                              memories: sorted,
+                              featuredMemory: featuredMemory,
                               isWhite: isWhite,
-                              onLogTap: (log) =>
-                                  _showArchiveDetail(context, log),
+                              onMemoryTap: (memory) =>
+                                  _showArchiveDetail(context, memory),
                             ),
                     ),
                   ],
@@ -256,10 +256,10 @@ class _PhotoArchiveScreenState extends State<PhotoArchiveScreen> {
     );
   }
 
-  void _showArchiveDetail(BuildContext context, DrinkLog log) {
+  void _showArchiveDetail(BuildContext context, Memory memory) {
     showNomoBottomSheet<void>(
       context: context,
-      builder: (context) => _ArchiveDetailSheet(log: log),
+      builder: (context) => _ArchiveDetailSheet(memory: memory),
     );
   }
 }

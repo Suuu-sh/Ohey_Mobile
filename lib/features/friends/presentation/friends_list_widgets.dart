@@ -1115,9 +1115,9 @@ _GroupAvailabilityStats _groupAvailabilityStats(
 
 double _availabilityWeightForStatusKey(String? statusKey) {
   return switch (statusKey) {
-    'can_drink_today' => 1.0,
-    'non_alcohol' => .8,
-    'liver_rest' => .5,
+    'available' => 1.0,
+    'maybe_available' => .8,
+    'depends_on_time' => .5,
     'has_plans' => 0,
     'unselected' || 'unset' || null || '' => 0,
     _ => 0,
@@ -1153,16 +1153,16 @@ bool _isSameLocalDay(DateTime a, DateTime b) =>
 
 String _recommendationReasonFor(_DecoratedFriend item) {
   final friend = item.friend;
-  if (friend.totalDrinkCount == 0) {
+  if (friend.totalMemoryCount == 0) {
     return 'まだ一緒に行ったことない';
   }
-  if (friend.isFavorite && _daysSinceLastDrink(friend) >= 30) {
+  if (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) {
     return '30日以上行ってない';
   }
-  if (friend.statusKey == 'can_drink_today') {
+  if (friend.statusKey == 'available') {
     return '今日遊べそう';
   }
-  if (friend.statusKey == 'non_alcohol') {
+  if (friend.statusKey == 'maybe_available') {
     return 'たぶん空いてそう';
   }
   return '誘って大丈夫そう';
@@ -1172,26 +1172,26 @@ bool _isRecommendedFriend(_DecoratedFriend item) {
   final friend = item.friend;
   if (friend.statusKey == 'has_plans') return false;
 
-  return friend.totalDrinkCount == 0 ||
-      (friend.isFavorite && _daysSinceLastDrink(friend) >= 30) ||
-      friend.statusKey == 'can_drink_today' ||
-      friend.statusKey == 'non_alcohol';
+  return friend.totalMemoryCount == 0 ||
+      (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) ||
+      friend.statusKey == 'available' ||
+      friend.statusKey == 'maybe_available';
 }
 
 int _recommendationScoreFor(_DecoratedFriend item) {
   final friend = item.friend;
   var score = 0;
-  if (friend.totalDrinkCount == 0) score += 100;
-  if (friend.isFavorite && _daysSinceLastDrink(friend) >= 30) score += 80;
-  if (friend.statusKey == 'can_drink_today') score += 60;
-  if (friend.statusKey == 'non_alcohol') score += 50;
+  if (friend.totalMemoryCount == 0) score += 100;
+  if (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) score += 80;
+  if (friend.statusKey == 'available') score += 60;
+  if (friend.statusKey == 'maybe_available') score += 50;
   return score;
 }
 
-int _daysSinceLastDrink(NomoFriend friend) {
-  final lastDrinkAt = friend.lastDrinkAt;
-  if (lastDrinkAt == null) return 1 << 30;
-  return DateTime.now().difference(lastDrinkAt).inDays;
+int _daysSinceLastMemory(NomoFriend friend) {
+  final lastMemoryAt = friend.lastMemoryAt;
+  if (lastMemoryAt == null) return 1 << 30;
+  return DateTime.now().difference(lastMemoryAt).inDays;
 }
 
 class _AddFriendsPromoCard extends StatelessWidget {
@@ -1453,8 +1453,8 @@ NomoFriend _friendWithFavorite(NomoFriend friend, bool isFavorite) {
     gender: friend.gender,
     avatar: friend.avatar,
     monthlyCount: friend.monthlyCount,
-    totalDrinkCount: friend.totalDrinkCount,
-    lastDrinkAt: friend.lastDrinkAt,
+    totalMemoryCount: friend.totalMemoryCount,
+    lastMemoryAt: friend.lastMemoryAt,
     statusKey: friend.statusKey,
     isOnline: friend.isOnline,
     isFavorite: isFavorite,
