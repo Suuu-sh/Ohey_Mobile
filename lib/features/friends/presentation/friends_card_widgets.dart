@@ -170,7 +170,6 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.viewPaddingOf(context).top;
     final headerHeight = topPadding + 318;
-    const headerColor = Color(0xFF101820);
     return SizedBox(
       height: headerHeight,
       child: Stack(
@@ -186,10 +185,9 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
             ),
             child: Column(
               children: [
-                NomoPageHeader(
-                  title: 'プロフィール',
-                  titleColor: headerColor,
-                  trailing: _FriendProfileCloseButton(onTap: onClose),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: _FriendProfileCloseButton(onTap: onClose),
                 ),
                 const SizedBox(height: 6),
                 _FriendProfileHero(friend: friend, avatar: avatar),
