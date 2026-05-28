@@ -1507,7 +1507,7 @@ class _EmptyFriendsActions extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 118,
+          width: 126,
           child: Nomo3DButton(
             label: 'QRでつながる',
             icon: CupertinoIcons.qrcode_viewfinder,
@@ -1517,20 +1517,20 @@ class _EmptyFriendsActions extends StatelessWidget {
             color: _FriendsColors.lime,
             foregroundColor: _FriendsColors.limeForeground,
             shadowColor: _FriendsColors.limeShadow,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             fontSize: 12,
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
         SizedBox(
-          width: 118,
+          width: 112,
           child: Nomo3DButton.secondary(
             label: 'IDで探す',
             icon: CupertinoIcons.at,
             onTap: onAddFriend,
             height: 44,
             radius: 20,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             fontSize: 12,
           ),
         ),
