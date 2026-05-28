@@ -131,7 +131,10 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       color: _calendarAccentColor,
       child: CalendarScreen(onAddMemoryPressed: _openMemoryFlow),
     ),
-    const NomoToastAccent(color: _profileAccentColor, child: ProfileScreen()),
+    NomoToastAccent(
+      color: _profileAccentColor,
+      child: ProfileScreen(onAddMemoryPressed: _openMemoryFlow),
+    ),
   ];
 
   void _selectTab(int index) {

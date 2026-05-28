@@ -1,5 +1,7 @@
 // ignore_for_file: unused_element
 
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,7 +42,9 @@ part 'profile_settings_sheet.dart';
 part 'profile_form_helpers.dart';
 
 class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({super.key, this.onAddMemoryPressed});
+
+  final VoidCallback? onAddMemoryPressed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -172,6 +176,13 @@ class ProfileScreen extends ConsumerWidget {
                                 ),
                                 onAddFriendsTap: () =>
                                     showFriendAddSheet(context, ref),
+                                onAddMemoryTap:
+                                    onAddMemoryPressed ??
+                                    () => NomoToast.show(
+                                      context,
+                                      'フィードから思い出を投稿してね。',
+                                      icon: CupertinoIcons.camera_fill,
+                                    ),
                               ),
                             ),
                           ],
@@ -208,10 +219,12 @@ List<Memory> _myProfileMemories(
 List<Memory> _photoArchiveMemories(
   List<Memory> memories,
   String? currentAuthUserId,
-) => memories
-    .where((memory) => _isMyUserMemory(memory, currentAuthUserId))
-    .where((memory) => (memory.photoAssetPath ?? '').trim().isNotEmpty)
-    .toList(growable: false);
+) =>
+    memories
+        .where((memory) => _isMyUserMemory(memory, currentAuthUserId))
+        .where(_isProfileDisplayablePhoto)
+        .toList(growable: false)
+      ..sort((a, b) => b.date.compareTo(a.date));
 
 Future<void> _showProfileStatusSheet(
   BuildContext context,

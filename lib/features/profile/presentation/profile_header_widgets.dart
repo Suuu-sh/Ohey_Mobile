@@ -534,6 +534,7 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.onMemoriesTap,
     required this.onArchiveTap,
     required this.onAddFriendsTap,
+    required this.onAddMemoryTap,
   });
 
   final List<Memory> memories;
@@ -542,10 +543,11 @@ class _ProfileActivityHome extends StatelessWidget {
   final VoidCallback onMemoriesTap;
   final VoidCallback onArchiveTap;
   final VoidCallback onAddFriendsTap;
+  final VoidCallback onAddMemoryTap;
 
   @override
   Widget build(BuildContext context) {
-    final recentMemories = memories.take(2).toList(growable: false);
+    final recentPhotoMemories = photoMemories.take(2).toList(growable: false);
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -561,11 +563,11 @@ class _ProfileActivityHome extends StatelessWidget {
           _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
           const SizedBox(height: 8),
           _ProfileRecentMemoriesCard(
-            memories: recentMemories,
+            memories: recentPhotoMemories,
             photoMemoryCount: photoMemories.length,
             onMemoriesTap: onMemoriesTap,
             onArchiveTap: onArchiveTap,
-            onAddFriendsTap: onAddFriendsTap,
+            onAddMemoryTap: onAddMemoryTap,
           ),
         ],
       ),
@@ -751,19 +753,20 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
     required this.photoMemoryCount,
     required this.onMemoriesTap,
     required this.onArchiveTap,
-    required this.onAddFriendsTap,
+    required this.onAddMemoryTap,
   });
 
   final List<Memory> memories;
   final int photoMemoryCount;
   final VoidCallback onMemoriesTap;
   final VoidCallback onArchiveTap;
-  final VoidCallback onAddFriendsTap;
+  final VoidCallback onAddMemoryTap;
 
   @override
   Widget build(BuildContext context) {
     final firstMemory = memories.isNotEmpty ? memories[0] : null;
     final secondMemory = memories.length > 1 ? memories[1] : null;
+    final hasPhotoMemories = firstMemory != null;
     final openAll = photoMemoryCount > 0 ? onArchiveTap : onMemoriesTap;
 
     return NomoThemedPanel(
@@ -797,58 +800,62 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
                   ),
                 ),
               ),
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: openAll,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'すべて見る',
-                        style: TextStyle(
-                          color: Color(0xFFFF86C8),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
+              if (hasPhotoMemories)
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: openAll,
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'すべて見る',
+                          style: TextStyle(
+                            color: Color(0xFFFF86C8),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 4),
-                      NomoGeneratedIcon(
-                        CupertinoIcons.chevron_forward,
-                        color: Color(0xFFFF86C8),
-                        size: 16,
-                      ),
-                    ],
+                        SizedBox(width: 4),
+                        NomoGeneratedIcon(
+                          CupertinoIcons.chevron_forward,
+                          color: Color(0xFFFF86C8),
+                          size: 16,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 6),
-          Row(
-            children: [
-              Expanded(
-                child: _ProfileMemoryPreviewTile(
-                  memory: firstMemory,
-                  fallbackTitle: 'はじめての思い出',
-                  imageAlignment: Alignment.centerLeft,
-                  onTap: firstMemory == null ? onMemoriesTap : openAll,
+          if (hasPhotoMemories) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _ProfileMemoryPreviewTile(
+                    memory: firstMemory,
+                    onTap: openAll,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _ProfileMemoryPreviewTile(
-                  memory: secondMemory,
-                  fallbackTitle: 'また遊ぼう',
-                  imageAlignment: Alignment.centerRight,
-                  onTap: secondMemory == null ? onMemoriesTap : openAll,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: secondMemory == null
+                      ? _ProfileMemoryPromptTile(onTap: onAddMemoryTap)
+                      : _ProfileMemoryPreviewTile(
+                          memory: secondMemory,
+                          onTap: openAll,
+                        ),
                 ),
-              ),
-            ],
+              ],
+            ),
+            const SizedBox(height: 6),
+          ],
+          _ProfileMemoryHintCard(
+            onTap: onAddMemoryTap,
+            isEmpty: !hasPhotoMemories,
           ),
-          const SizedBox(height: 6),
-          _ProfileMemoryHintCard(onTap: onAddFriendsTap),
         ],
       ),
     );
@@ -856,21 +863,15 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
 }
 
 class _ProfileMemoryPreviewTile extends StatelessWidget {
-  const _ProfileMemoryPreviewTile({
-    required this.memory,
-    required this.fallbackTitle,
-    required this.imageAlignment,
-    required this.onTap,
-  });
+  const _ProfileMemoryPreviewTile({required this.memory, required this.onTap});
 
-  final Memory? memory;
-  final String fallbackTitle;
-  final Alignment imageAlignment;
+  final Memory memory;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final title = memory == null ? fallbackTitle : _profileMemoryTitle(memory!);
+    final title = _profileMemoryTitle(memory);
+    final imageProvider = _profileMemoryImageProvider(memory.photoAssetPath);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -889,11 +890,16 @@ class _ProfileMemoryPreviewTile extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Image.asset(
-                  'assets/images/profile_mascot_backdrop_scene.png',
-                  fit: BoxFit.cover,
-                  alignment: imageAlignment,
-                ),
+                if (imageProvider == null)
+                  const _ProfileMemoryImageFallback()
+                else
+                  Image(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                    gaplessPlayback: true,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const _ProfileMemoryImageFallback(),
+                  ),
                 DecoratedBox(
                   decoration: BoxDecoration(
                     color: AppColors.darkBackground.withValues(alpha: .08),
@@ -945,10 +951,104 @@ class _ProfileMemoryPreviewTile extends StatelessWidget {
   }
 }
 
-class _ProfileMemoryHintCard extends StatelessWidget {
-  const _ProfileMemoryHintCard({required this.onTap});
+class _ProfileMemoryImageFallback extends StatelessWidget {
+  const _ProfileMemoryImageFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF162338), Color(0xFF321C36)],
+        ),
+      ),
+      child: Center(
+        child: NomoGeneratedIcon(
+          CupertinoIcons.photo_fill,
+          color: Colors.white.withValues(alpha: .42),
+          size: 22,
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileMemoryPromptTile extends StatelessWidget {
+  const _ProfileMemoryPromptTile({required this.onTap});
 
   final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.darkBackground,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: const Color(0xFFFF86C8).withValues(alpha: .38),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF5EA8).withValues(alpha: .10),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                NomoGeneratedIcon(
+                  CupertinoIcons.camera_fill,
+                  color: Color(0xFFFF86C8),
+                  size: 17,
+                ),
+                SizedBox(width: 6),
+                Text(
+                  '投稿する',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            '写真を追加',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: .72),
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileMemoryHintCard extends StatelessWidget {
+  const _ProfileMemoryHintCard({required this.onTap, required this.isEmpty});
+
+  final VoidCallback onTap;
+  final bool isEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -965,7 +1065,7 @@ class _ProfileMemoryHintCard extends StatelessWidget {
       child: Row(
         children: [
           const NomoPopIcon(
-            icon: CupertinoIcons.sparkles,
+            icon: CupertinoIcons.camera_fill,
             color: Colors.white,
             size: 30,
             iconSize: 16,
@@ -977,7 +1077,7 @@ class _ProfileMemoryHintCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '思い出をふやそう',
+                  '思い出を投稿しよう',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 15,
@@ -986,7 +1086,7 @@ class _ProfileMemoryHintCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'フレンズと遊ぶとここに残るよ',
+                  isEmpty ? '写真を追加するとここに表示されるよ' : '写真つきの思い出を追加できるよ',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: .62),
                     fontSize: 10,
@@ -1005,6 +1105,25 @@ class _ProfileMemoryHintCard extends StatelessWidget {
       ),
     );
   }
+}
+
+bool _isProfileDisplayablePhoto(Memory memory) =>
+    _profileMemoryImageProvider(memory.photoAssetPath) != null;
+
+ImageProvider<Object>? _profileMemoryImageProvider(String? value) {
+  final normalized = value?.trim();
+  if (normalized == null || normalized.isEmpty) return null;
+  if (normalized.startsWith('nomo_memory_template_')) return null;
+  if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+    return NetworkImage(normalized);
+  }
+  if (normalized.startsWith('/')) {
+    final file = File(normalized);
+    if (!file.existsSync()) return null;
+    return FileImage(file);
+  }
+  if (normalized.startsWith('assets/')) return AssetImage(normalized);
+  return null;
 }
 
 String _profileMemoryTitle(Memory memory) {
