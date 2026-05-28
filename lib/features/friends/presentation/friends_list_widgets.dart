@@ -375,7 +375,17 @@ class _GroupScheduleSection extends StatelessWidget {
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .60);
     final suggestions = _groupScheduleSuggestions(friends);
-    final canInviteGroup = inviteTargets.isNotEmpty && !isSendingInvite;
+    final isGroupInvited = inviteTargets.isEmpty;
+    final canInviteGroup = !isGroupInvited && !isSendingInvite;
+    final inviteButtonColor = isGroupInvited
+        ? _FriendsColors.invitedButton
+        : _FriendsColors.lime;
+    final inviteButtonForeground = isGroupInvited
+        ? _FriendsColors.invitedButtonForeground
+        : const Color(0xFF101820);
+    final inviteButtonShadow = isGroupInvited
+        ? _FriendsColors.invitedButtonShadow
+        : Color.lerp(_FriendsColors.lime, Colors.black, .34);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -425,23 +435,20 @@ class _GroupScheduleSection extends StatelessWidget {
                 child: Nomo3DButton(
                   label: isSendingInvite
                       ? '送信中'
-                      : inviteTargets.isEmpty
+                      : isGroupInvited
                       ? '招待済み'
                       : '${inviteTargets.length}人誘う',
-                  icon: CupertinoIcons.paperplane_fill,
+                  icon: isGroupInvited ? null : CupertinoIcons.paperplane_fill,
                   onTap: canInviteGroup ? onInviteGroup : null,
                   enabled: canInviteGroup,
                   height: 38,
                   radius: 19,
-                  color: _FriendsColors.lime,
-                  foregroundColor: const Color(0xFF101820),
-                  shadowColor: Color.lerp(
-                    _FriendsColors.lime,
-                    Colors.black,
-                    .34,
-                  ),
+                  color: inviteButtonColor,
+                  foregroundColor: inviteButtonForeground,
+                  shadowColor: inviteButtonShadow,
                   disabledColor: _FriendsColors.invitedButton,
                   disabledOpacity: 1,
+                  forcePressed: isGroupInvited,
                   padding: const EdgeInsets.symmetric(horizontal: 9),
                   fontSize: 12,
                 ),
