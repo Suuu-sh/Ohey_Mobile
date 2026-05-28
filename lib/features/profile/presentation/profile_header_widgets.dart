@@ -591,13 +591,10 @@ class _ProfileSummaryStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NomoThemedPanel(
-      accentColor: _ProfileColors.pink,
-      backgroundColor: AppColors.darkBackground,
-      padding: const EdgeInsets.fromLTRB(18, 8, 18, 8),
-      borderRadius: 24,
-      borderAlpha: .16,
-      glowAlpha: 0,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 13, 18, 11),
+      decoration: const BoxDecoration(color: AppColors.darkBackground),
       child: Row(
         children: [
           const Expanded(
@@ -611,7 +608,7 @@ class _ProfileSummaryStats extends StatelessWidget {
           const _ProfileStatsDivider(),
           Expanded(
             child: _ProfileSummaryStat(
-              icon: CupertinoIcons.person_3_fill,
+              icon: CupertinoIcons.person_2_fill,
               iconColor: const Color(0xFFFF9BD5),
               value: '$friendsCount',
               label: 'フレンズ',
@@ -638,9 +635,37 @@ class _ProfileStatsDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     width: 1,
-    height: 40,
-    color: Colors.white.withValues(alpha: .13),
+    height: 48,
+    color: Colors.white.withValues(alpha: .18),
   );
+}
+
+class _ProfileStatGlyph extends StatelessWidget {
+  const _ProfileStatGlyph({required this.icon, required this.color});
+
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(
+      icon,
+      color: color,
+      size: 25,
+      shadows: [
+        Shadow(
+          color: Colors.black.withValues(alpha: .30),
+          blurRadius: 6,
+          offset: const Offset(0, 3),
+        ),
+        Shadow(
+          color: color.withValues(alpha: .52),
+          blurRadius: 10,
+          offset: const Offset(0, 0),
+        ),
+      ],
+    );
+  }
 }
 
 class _ProfileSummaryStat extends StatelessWidget {
@@ -665,7 +690,7 @@ class _ProfileSummaryStat extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            NomoGeneratedIcon(icon, color: iconColor, size: 22),
+            _ProfileStatGlyph(icon: icon, color: iconColor),
             const SizedBox(width: 7),
             Text(
               value,

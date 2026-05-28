@@ -112,66 +112,71 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 0),
                   Expanded(
-                    child: ColoredBox(
-                      color: bodyBackground,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (reservations.isNotEmpty ||
-                              incomingInvites.isNotEmpty)
-                            ColoredBox(
-                              color: bodyBackground,
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  24,
-                                  16,
-                                  24,
-                                  18,
-                                ),
-                                child: _ProfileReservationStrip(
-                                  isWhite: bodyIsWhite,
-                                  userAvatar: user?.avatar,
-                                  currentUserId: currentAuthUserId,
-                                  reservations: reservations,
-                                  incomingInvites: incomingInvites,
-                                  onAccept: (invite) => _respondDrinkInvite(
-                                    context,
-                                    ref,
-                                    invite,
-                                    accept: true,
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(34),
+                      ),
+                      child: ColoredBox(
+                        color: bodyBackground,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (reservations.isNotEmpty ||
+                                incomingInvites.isNotEmpty)
+                              ColoredBox(
+                                color: bodyBackground,
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    24,
+                                    16,
+                                    24,
+                                    18,
                                   ),
-                                  onReject: (invite) => _respondDrinkInvite(
-                                    context,
-                                    ref,
-                                    invite,
-                                    accept: false,
+                                  child: _ProfileReservationStrip(
+                                    isWhite: bodyIsWhite,
+                                    userAvatar: user?.avatar,
+                                    currentUserId: currentAuthUserId,
+                                    reservations: reservations,
+                                    incomingInvites: incomingInvites,
+                                    onAccept: (invite) => _respondDrinkInvite(
+                                      context,
+                                      ref,
+                                      invite,
+                                      accept: true,
+                                    ),
+                                    onReject: (invite) => _respondDrinkInvite(
+                                      context,
+                                      ref,
+                                      invite,
+                                      accept: false,
+                                    ),
                                   ),
                                 ),
+                              ),
+                            Expanded(
+                              child: _ProfileActivityHome(
+                                profileName: user?.name ?? 'ユーザー名',
+                                logs: myLogs,
+                                photoLogs: photoLogs,
+                                friendsCount: friends.length,
+                                onLogsTap: () => NomoToast.show(
+                                  context,
+                                  'カレンダーを見てみてね。',
+                                  icon: CupertinoIcons.calendar,
+                                ),
+                                onArchiveTap: () => Navigator.of(context).push(
+                                  CupertinoPageRoute<void>(
+                                    fullscreenDialog: true,
+                                    builder: (_) =>
+                                        PhotoArchiveScreen(logs: photoLogs),
+                                  ),
+                                ),
+                                onAddFriendsTap: () =>
+                                    showFriendAddSheet(context, ref),
                               ),
                             ),
-                          Expanded(
-                            child: _ProfileActivityHome(
-                              profileName: user?.name ?? 'ユーザー名',
-                              logs: myLogs,
-                              photoLogs: photoLogs,
-                              friendsCount: friends.length,
-                              onLogsTap: () => NomoToast.show(
-                                context,
-                                'カレンダーを見てみてね。',
-                                icon: CupertinoIcons.calendar,
-                              ),
-                              onArchiveTap: () => Navigator.of(context).push(
-                                CupertinoPageRoute<void>(
-                                  fullscreenDialog: true,
-                                  builder: (_) =>
-                                      PhotoArchiveScreen(logs: photoLogs),
-                                ),
-                              ),
-                              onAddFriendsTap: () =>
-                                  showFriendAddSheet(context, ref),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
