@@ -79,6 +79,10 @@ class UserRepository {
     );
   }
 
+  Future<void> deleteAccount() async {
+    await _client.delete('/v1/me/account');
+  }
+
   Future<NomoDailyStatus> fetchDailyStatus(DateTime date) async {
     final rows = await _client.getRows(
       '/v1/daily-status',
@@ -98,8 +102,9 @@ class UserRepository {
     return {
       for (final row in rows)
         if (row['status_date'] is String)
-          row['status_date'] as String:
-              nomoDailyStatusFromKey(row['status'] as String?),
+          row['status_date'] as String: nomoDailyStatusFromKey(
+            row['status'] as String?,
+          ),
     };
   }
 

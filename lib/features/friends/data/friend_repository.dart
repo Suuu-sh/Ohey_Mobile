@@ -53,8 +53,19 @@ class FriendRepository {
     await _client.post('/v1/friends', {'friend_id': friendId});
   }
 
+  Future<void> deleteFriend(String friendId) async {
+    await _client.delete('/v1/friends/${Uri.encodeComponent(friendId)}');
+  }
+
   Future<void> sendFriendRequest(String friendId) async {
     await _client.post('/v1/friend-requests', {'to_user_id': friendId});
+  }
+
+  Future<void> cancelFriendRequest(String requestId) async {
+    await _client.patch(
+      '/v1/friend-requests/${Uri.encodeComponent(requestId)}',
+      {'status': 'cancelled'},
+    );
   }
 }
 
@@ -91,6 +102,7 @@ class NomoFriendRelationshipStatus {
   const NomoFriendRelationshipStatus({
     required this.alreadyFriend,
     required this.requestState,
+    this.requestId,
   });
 
   factory NomoFriendRelationshipStatus.fromRow(Map<String, dynamic> row) {
@@ -102,9 +114,11 @@ class NomoFriendRelationshipStatus {
     return NomoFriendRelationshipStatus(
       alreadyFriend: (row['already_friend'] as bool?) ?? false,
       requestState: requestState,
+      requestId: (row['request_id'] as String?)?.trim(),
     );
   }
 
   final bool alreadyFriend;
   final NomoFriendRequestState requestState;
+  final String? requestId;
 }

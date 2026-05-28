@@ -453,6 +453,35 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               },
             ),
             _SettingsTile(
+              icon: CupertinoIcons.shield_lefthalf_fill,
+              label: 'ブロック・ミュート管理',
+              subtitle: '解除したい相手を確認',
+              accent: const Color(0xFF65D6FF),
+              onTap: () async {
+                if (sheetContext.mounted) {
+                  Navigator.of(sheetContext).pop();
+                }
+                await Future<void>.delayed(const Duration(milliseconds: 180));
+                if (!rootContext.mounted) return;
+                await _showSafetyCenterSheet(rootContext);
+              },
+            ),
+            _SettingsTile(
+              icon: CupertinoIcons.delete_solid,
+              label: 'アカウント削除',
+              subtitle: '退会してデータを削除します',
+              accent: const Color(0xFFFF5C7A),
+              destructive: true,
+              onTap: () async {
+                if (sheetContext.mounted) {
+                  Navigator.of(sheetContext).pop();
+                }
+                await Future<void>.delayed(const Duration(milliseconds: 180));
+                if (!rootContext.mounted) return;
+                await _confirmDeleteAccount(rootContext, ref);
+              },
+            ),
+            _SettingsTile(
               icon: CupertinoIcons.square_arrow_right,
               label: 'ログアウト',
               subtitle: 'この端末からログアウトします',
@@ -477,6 +506,353 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
       },
     ),
   );
+}
+
+Future<void> _showSafetyCenterSheet(BuildContext context) {
+  return showNomoBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (_) => const _SafetyCenterSheet(),
+  );
+}
+
+Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
+  final confirmed = await showCupertinoDialog<bool>(
+    context: context,
+    builder: (dialogContext) => CupertinoAlertDialog(
+      title: const Text('アカウントを削除しますか？'),
+      content: const Text('プロフィール、フレンズ、投稿などのデータが削除されます。この操作は取り消せません。'),
+      actions: [
+        CupertinoDialogAction(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('キャンセル'),
+        ),
+        CupertinoDialogAction(
+          isDestructiveAction: true,
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('削除する'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true) return;
+
+  try {
+    await ref.read(nomoUserProvider.notifier).deleteAccount();
+    if (!context.mounted) return;
+    NomoToast.show(
+      context,
+      'アカウントを削除しました',
+      icon: CupertinoIcons.checkmark_circle_fill,
+    );
+  } catch (_) {
+    if (!context.mounted) return;
+    _showSnack(context, 'アカウントを削除できませんでした。あとでもう一度試してね');
+  }
+}
+
+class _SafetyCenterSheet extends ConsumerStatefulWidget {
+  const _SafetyCenterSheet();
+
+  @override
+  ConsumerState<_SafetyCenterSheet> createState() => _SafetyCenterSheetState();
+}
+
+class _SafetyCenterSheetState extends ConsumerState<_SafetyCenterSheet> {
+  final Set<String> _releasingUserIds = <String>{};
+
+  Future<void> _releaseUser(NomoSafetyUser user, {required bool block}) async {
+    if (user.id.isEmpty || !_releasingUserIds.add(user.id)) return;
+    setState(() {});
+    try {
+      final repository = ref.read(userSafetyRepositoryProvider);
+      if (block) {
+        await repository.unblockUser(user.id);
+        ref.invalidate(blockedUsersProvider);
+      } else {
+        await repository.unmuteUser(user.id);
+        ref.invalidate(mutedUsersProvider);
+      }
+      ref.invalidate(homeFeedControllerProvider);
+      ref.invalidate(friendsProvider);
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        block ? 'ブロックを解除しました' : 'ミュートを解除しました',
+        icon: CupertinoIcons.checkmark_circle_fill,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        '解除できませんでした。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
+    } finally {
+      _releasingUserIds.remove(user.id);
+      if (mounted) setState(() {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final blocked = ref.watch(blockedUsersProvider);
+    final muted = ref.watch(mutedUsersProvider);
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final sub = isWhite
+        ? const Color(0xFF64717D)
+        : Colors.white.withValues(alpha: .64);
+
+    return NomoBottomSheetShell(
+      title: '安全センター',
+      topSafeArea: true,
+      margin: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      radius: 28,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * .72,
+        ),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'ブロック・ミュートした相手をここから解除できます。',
+                style: TextStyle(
+                  color: sub,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _SafetyUserSection(
+                title: 'ブロック中',
+                emptyMessage: 'ブロック中のユーザーはいません。',
+                usersAsync: blocked,
+                releasingUserIds: _releasingUserIds,
+                accent: const Color(0xFFFF7A9E),
+                actionLabel: '解除',
+                onRelease: (user) => _releaseUser(user, block: true),
+              ),
+              const SizedBox(height: 14),
+              _SafetyUserSection(
+                title: 'ミュート中',
+                emptyMessage: 'ミュート中のユーザーはいません。',
+                usersAsync: muted,
+                releasingUserIds: _releasingUserIds,
+                accent: const Color(0xFF65D6FF),
+                actionLabel: '解除',
+                onRelease: (user) => _releaseUser(user, block: false),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SafetyUserSection extends StatelessWidget {
+  const _SafetyUserSection({
+    required this.title,
+    required this.emptyMessage,
+    required this.usersAsync,
+    required this.releasingUserIds,
+    required this.accent,
+    required this.actionLabel,
+    required this.onRelease,
+  });
+
+  final String title;
+  final String emptyMessage;
+  final AsyncValue<List<NomoSafetyUser>> usersAsync;
+  final Set<String> releasingUserIds;
+  final Color accent;
+  final String actionLabel;
+  final ValueChanged<NomoSafetyUser> onRelease;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF6D7884)
+        : Colors.white.withValues(alpha: .64);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isWhite
+            ? const Color(0xFFF5F8FB)
+            : Colors.white.withValues(alpha: .055),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: accent.withValues(alpha: .28)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              NomoPopIcon(
+                icon: CupertinoIcons.shield_fill,
+                color: accent,
+                size: 34,
+                iconSize: 18,
+                showBubble: false,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: TextStyle(
+                  color: ink,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          usersAsync.when(
+            data: (users) {
+              if (users.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
+                  child: Text(
+                    emptyMessage,
+                    style: TextStyle(
+                      color: sub,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                );
+              }
+              return Column(
+                children: [
+                  for (var i = 0; i < users.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 10),
+                    _SafetyUserRow(
+                      user: users[i],
+                      accent: accent,
+                      actionLabel: actionLabel,
+                      isReleasing: releasingUserIds.contains(users[i].id),
+                      onRelease: () => onRelease(users[i]),
+                    ),
+                  ],
+                ],
+              );
+            },
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 18),
+              child: Center(child: CupertinoActivityIndicator()),
+            ),
+            error: (_, _) => Padding(
+              padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
+              child: Text(
+                '読み込めませんでした。時間をおいて再度お試しください。',
+                style: TextStyle(
+                  color: _ProfileColors.pink,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SafetyUserRow extends StatelessWidget {
+  const _SafetyUserRow({
+    required this.user,
+    required this.accent,
+    required this.actionLabel,
+    required this.isReleasing,
+    required this.onRelease,
+  });
+
+  final NomoSafetyUser user;
+  final Color accent;
+  final String actionLabel;
+  final bool isReleasing;
+  final VoidCallback onRelease;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF111820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF6D7884)
+        : Colors.white.withValues(alpha: .62);
+    final handle = user.userId.trim().isEmpty ? 'ID未設定' : '@${user.userId}';
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isWhite
+              ? const Color(0xFFE2E8EF)
+              : Colors.white.withValues(alpha: .08),
+        ),
+      ),
+      child: Row(
+        children: [
+          NomoAvatarView(avatar: user.avatar, size: 46),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  handle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: sub,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 82,
+            child: Nomo3DButton.secondary(
+              label: isReleasing ? '解除中' : actionLabel,
+              onTap: isReleasing ? null : onRelease,
+              height: 40,
+              radius: 18,
+              color: accent.withValues(alpha: .18),
+              foregroundColor: accent,
+              shadowColor: accent.withValues(alpha: .18),
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _SheetShell extends StatelessWidget {

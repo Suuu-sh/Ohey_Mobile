@@ -171,6 +171,33 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
     }
   }
 
+  Future<void> _cancelSearchRequest() async {
+    final profile = _searchProfile;
+    final requestId = _searchStatus?.requestId;
+    if (profile == null || requestId == null || requestId.isEmpty) return;
+    setState(() {
+      _isSending = true;
+      _searchError = null;
+    });
+    try {
+      final repository = ref.read(friendRepositoryProvider);
+      await repository.cancelFriendRequest(requestId);
+      final status = await repository.relationshipStatus(profile.id);
+      if (!mounted) return;
+      setState(() => _searchStatus = status);
+      NomoToast.show(
+        context,
+        '申請を取り消しました',
+        icon: CupertinoIcons.arrow_uturn_left_circle_fill,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _searchError = '申請を取り消せませんでした。あとでもう一度試してね');
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
+  }
+
   Future<void> _scanFriendQr(BuildContext context) async {
     final scanned = await showNomoBottomSheet<String>(
       context: context,
@@ -249,6 +276,7 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
                   onExpandSearch: _expandSearch,
                   onSubmitSearch: _searchById,
                   onSendSearchRequest: _sendSearchRequest,
+                  onCancelSearchRequest: _cancelSearchRequest,
                 ),
               ),
             ),
@@ -411,6 +439,33 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     }
   }
 
+  Future<void> _cancelRequest() async {
+    final profile = _profile;
+    final requestId = _status?.requestId;
+    if (profile == null || requestId == null || requestId.isEmpty) return;
+    setState(() {
+      _isSending = true;
+      _error = null;
+    });
+    try {
+      final repository = widget.ref.read(friendRepositoryProvider);
+      await repository.cancelFriendRequest(requestId);
+      final status = await repository.relationshipStatus(profile.id);
+      if (!mounted) return;
+      setState(() => _status = status);
+      NomoToast.show(
+        context,
+        '申請を取り消しました',
+        icon: CupertinoIcons.arrow_uturn_left_circle_fill,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _error = '申請を取り消せませんでした。あとでもう一度試してね');
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
@@ -539,6 +594,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
                 isSending: _isSending,
                 isWhite: isWhite,
                 onSend: _sendRequest,
+                onCancel: _cancelRequest,
               ),
             ],
           ],
@@ -570,6 +626,7 @@ class _CuteQrCard extends StatelessWidget {
     this.onExpandSearch,
     this.onSubmitSearch,
     this.onSendSearchRequest,
+    this.onCancelSearchRequest,
   });
 
   final String userId;
@@ -592,6 +649,7 @@ class _CuteQrCard extends StatelessWidget {
   final VoidCallback? onExpandSearch;
   final VoidCallback? onSubmitSearch;
   final VoidCallback? onSendSearchRequest;
+  final VoidCallback? onCancelSearchRequest;
 
   @override
   Widget build(BuildContext context) {
@@ -788,6 +846,7 @@ class _CuteQrCard extends StatelessWidget {
               isSending: isSendingSearchRequest,
               isWhite: true,
               onSend: onSendSearchRequest!,
+              onCancel: onCancelSearchRequest,
             ),
           ],
         ],
@@ -1287,6 +1346,7 @@ class _FriendSearchResultCard extends StatelessWidget {
     required this.isSending,
     required this.isWhite,
     required this.onSend,
+    this.onCancel,
   });
 
   final NomoFriendProfile profile;
@@ -1294,6 +1354,7 @@ class _FriendSearchResultCard extends StatelessWidget {
   final bool isSending;
   final bool isWhite;
   final VoidCallback onSend;
+  final VoidCallback? onCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -1302,6 +1363,26 @@ class _FriendSearchResultCard extends StatelessWidget {
     final alreadyFriend = status?.alreadyFriend == true;
     final alreadyRequested =
         status?.requestState == NomoFriendRequestState.outgoing;
+    final incomingRequested =
+        status?.requestState == NomoFriendRequestState.incoming;
+    final canCancel =
+        alreadyRequested && (status?.requestId?.isNotEmpty == true);
+    final buttonLabel = alreadyFriend
+        ? '追加済み'
+        : alreadyRequested
+        ? isSending
+              ? '取消中'
+              : '取消'
+        : incomingRequested
+        ? '申請あり'
+        : isSending
+        ? '送信中'
+        : '申請';
+    final buttonAction = alreadyFriend || incomingRequested || isSending
+        ? null
+        : alreadyRequested
+        ? (canCancel ? onCancel : null)
+        : onSend;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -1337,21 +1418,17 @@ class _FriendSearchResultCard extends StatelessWidget {
           SizedBox(
             width: 104,
             child: Nomo3DButton(
-              label: alreadyFriend
-                  ? '追加済み'
-                  : alreadyRequested
-                  ? '申請済み'
-                  : isSending
-                  ? '送信中'
-                  : '申請',
-              onTap: alreadyFriend || alreadyRequested || isSending
-                  ? null
-                  : onSend,
+              label: buttonLabel,
+              onTap: buttonAction,
               height: 42,
               radius: 20,
-              color: const Color(0xFF8A62FF),
+              color: alreadyRequested
+                  ? const Color(0xFF415066)
+                  : const Color(0xFF8A62FF),
               foregroundColor: Colors.white,
-              shadowColor: const Color(0xFF4A2BBF),
+              shadowColor: alreadyRequested
+                  ? const Color(0xFF253044)
+                  : const Color(0xFF4A2BBF),
               fontSize: 13,
             ),
           ),

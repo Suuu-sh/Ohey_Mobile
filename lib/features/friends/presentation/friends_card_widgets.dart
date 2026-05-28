@@ -61,18 +61,20 @@ Future<void> _showFriendProfileSheet(
   );
 }
 
-class _FriendProfileSheet extends StatefulWidget {
+class _FriendProfileSheet extends ConsumerStatefulWidget {
   const _FriendProfileSheet({required this.friend, required this.status});
 
   final NomoFriend friend;
   final _FriendStatus status;
 
   @override
-  State<_FriendProfileSheet> createState() => _FriendProfileSheetState();
+  ConsumerState<_FriendProfileSheet> createState() =>
+      _FriendProfileSheetState();
 }
 
-class _FriendProfileSheetState extends State<_FriendProfileSheet> {
+class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
   late _FriendStatus _selectedStatus = widget.status;
+  bool _isRemovingFriend = false;
 
   void _handleSelectedStatusChanged(NomoDailyStatus status) {
     final nextStatus = _friendStatusForDailyStatus(status);
@@ -83,6 +85,50 @@ class _FriendProfileSheetState extends State<_FriendProfileSheet> {
       return;
     }
     setState(() => _selectedStatus = nextStatus);
+  }
+
+  Future<void> _confirmRemoveFriend() async {
+    if (_isRemovingFriend) return;
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (dialogContext) => CupertinoAlertDialog(
+        title: const Text('フレンズ解除しますか？'),
+        content: Text('${widget.friend.name}さんとのフレンズ関係を解除します。あとでまた申請できます。'),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('キャンセル'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('解除する'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _isRemovingFriend = true);
+    try {
+      await ref.read(friendRepositoryProvider).deleteFriend(widget.friend.id);
+      ref.invalidate(friendsProvider);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      NomoToast.show(
+        context,
+        'フレンズを解除しました',
+        icon: CupertinoIcons.person_badge_minus_fill,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        '解除できませんでした。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
+    } finally {
+      if (mounted) setState(() => _isRemovingFriend = false);
+    }
   }
 
   @override
@@ -136,14 +182,34 @@ class _FriendProfileSheetState extends State<_FriendProfileSheet> {
               const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Nomo3DButton.secondary(
-                  label: '閉じる',
-                  onTap: () => Navigator.of(context).pop(),
-                  height: 48,
-                  radius: 22,
-                  color: const Color(0xFF252044),
-                  foregroundColor: const Color(0xFFC08BFF),
-                  shadowColor: const Color(0xFF15142C),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Nomo3DButton.secondary(
+                        label: _isRemovingFriend ? '解除中' : 'フレンズ解除',
+                        icon: CupertinoIcons.person_badge_minus,
+                        onTap: _isRemovingFriend ? null : _confirmRemoveFriend,
+                        height: 48,
+                        radius: 22,
+                        color: const Color(0xFF3A2231),
+                        foregroundColor: const Color(0xFFFF8AA8),
+                        shadowColor: const Color(0xFF1E121B),
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Nomo3DButton.secondary(
+                        label: '閉じる',
+                        onTap: () => Navigator.of(context).pop(),
+                        height: 48,
+                        radius: 22,
+                        color: const Color(0xFF252044),
+                        foregroundColor: const Color(0xFFC08BFF),
+                        shadowColor: const Color(0xFF15142C),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),

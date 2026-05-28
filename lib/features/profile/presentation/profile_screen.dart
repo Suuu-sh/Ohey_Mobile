@@ -26,6 +26,7 @@ import '../../friends/application/drink_invite_controller.dart';
 import '../../friends/presentation/friend_add_sheet.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../onboarding/presentation/create_user_dialog.dart';
+import '../data/user_safety_repository.dart';
 import 'avatar_builder_screen.dart';
 import 'photo_archive_screen.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';

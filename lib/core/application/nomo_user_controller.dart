@@ -160,6 +160,36 @@ class NomoUserController extends Notifier<NomoUser?> {
       state = null;
     }
   }
+
+  Future<void> deleteAccount() async {
+    final supabase = ref.read(supabaseClientProvider);
+    final currentAuthUser = supabase.auth.currentUser;
+    try {
+      try {
+        await ref
+            .read(nomoPushNotificationServiceProvider)
+            .unregisterCurrentToken();
+      } catch (_) {
+        // Push token cleanup should not block account deletion.
+      }
+      await ref.read(userRepositoryProvider).deleteAccount();
+      try {
+        final email = currentAuthUser?.email;
+        if (email != null && email.trim().isNotEmpty) {
+          await NomoLastAccountStore.remove(email);
+        }
+      } catch (_) {
+        // A stale quick-login cache is less important than finishing deletion.
+      }
+      try {
+        await supabase.auth.signOut(scope: SignOutScope.local);
+      } catch (_) {
+        // The auth user may already be deleted server-side.
+      }
+    } finally {
+      state = null;
+    }
+  }
 }
 
 bool _isSameLocalDate(DateTime a, DateTime b) =>
