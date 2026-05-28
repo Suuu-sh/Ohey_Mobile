@@ -168,38 +168,32 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final headerHeight = MediaQuery.paddingOf(context).top + 318;
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final headerColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final topPadding = MediaQuery.viewPaddingOf(context).top;
+    final headerHeight = topPadding + 318;
+    const headerColor = Color(0xFF101820);
     return SizedBox(
       height: headerHeight,
       child: Stack(
         fit: StackFit.expand,
         children: [
           _FriendProfileHeaderBackdrop(avatar: avatar),
-          SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                NomoPageHeader.horizontalPadding,
-                4,
-                NomoPageHeader.horizontalPadding,
-                6,
-              ),
-              child: Column(
-                children: [
-                  NomoPageHeader(
-                    title: 'プロフィール',
-                    titleColor: headerColor,
-                    trailing: _FriendProfileCloseButton(
-                      isWhite: isWhite,
-                      onTap: onClose,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  _FriendProfileHero(friend: friend, avatar: avatar),
-                ],
-              ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              NomoPageHeader.horizontalPadding,
+              topPadding + 4,
+              NomoPageHeader.horizontalPadding,
+              6,
+            ),
+            child: Column(
+              children: [
+                NomoPageHeader(
+                  title: 'プロフィール',
+                  titleColor: headerColor,
+                  trailing: _FriendProfileCloseButton(onTap: onClose),
+                ),
+                const SizedBox(height: 6),
+                _FriendProfileHero(friend: friend, avatar: avatar),
+              ],
             ),
           ),
         ],
@@ -270,9 +264,8 @@ class _FriendProfileHeaderBackdrop extends StatelessWidget {
 }
 
 class _FriendProfileCloseButton extends StatelessWidget {
-  const _FriendProfileCloseButton({required this.isWhite, required this.onTap});
+  const _FriendProfileCloseButton({required this.onTap});
 
-  final bool isWhite;
   final VoidCallback onTap;
 
   @override
@@ -291,7 +284,7 @@ class _FriendProfileCloseButton extends StatelessWidget {
           child: Center(
             child: NomoGeneratedIcon(
               CupertinoIcons.xmark,
-              color: isWhite ? const Color(0xFF101820) : Colors.white,
+              color: const Color(0xFF101820),
               size: 38,
             ),
           ),
