@@ -786,66 +786,65 @@ class _DrinkLogStartTile extends StatelessWidget {
     final sub = isWhite
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .58);
-    return Nomo3DButtonSurface(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        onTap();
-      },
-      height: 72,
-      radius: 22,
-      color: isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground,
-      bottomColor: isWhite ? const Color(0xFFD8E1EA) : const Color(0xFF09131D),
-      padding: const EdgeInsets.fromLTRB(14, 0, 12, 0),
-      borderColor: isWhite
-          ? const Color(0xFFE0E6ED)
-          : Colors.white.withValues(alpha: .12),
-      outerShadows: [
-        BoxShadow(
-          color: color.withValues(alpha: isWhite ? .10 : .18),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
-        ),
-      ],
-      innerShadows: [
-        BoxShadow(
-          color: Colors.white.withValues(alpha: isWhite ? .40 : .08),
-          blurRadius: 10,
-          offset: const Offset(-2, -2),
-        ),
-      ],
-      child: Row(
-        children: [
-          NomoPopIcon(icon: icon, color: color, size: 46, iconSize: 25),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: ink,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.2,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: sub,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    height: 1.25,
-                  ),
-                ),
-              ],
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Container(
+          height: 72,
+          padding: const EdgeInsets.fromLTRB(14, 0, 12, 0),
+          decoration: BoxDecoration(
+            color: isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isWhite
+                  ? const Color(0xFFE0E6ED)
+                  : Colors.white.withValues(alpha: .12),
             ),
           ),
-          NomoGeneratedIcon(CupertinoIcons.chevron_right, color: sub, size: 22),
-        ],
+          child: Row(
+            children: [
+              NomoPopIcon(icon: icon, color: color, size: 46, iconSize: 25),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.2,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              NomoGeneratedIcon(
+                CupertinoIcons.chevron_right,
+                color: sub,
+                size: 22,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
