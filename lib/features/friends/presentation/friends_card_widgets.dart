@@ -152,11 +152,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _FriendProfileTopBackdrop(
-                friend: widget.friend,
-                avatar: avatar,
-                onClose: () => Navigator.of(context).pop(),
-              ),
+              _FriendProfileTopBackdrop(friend: widget.friend, avatar: avatar),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
@@ -222,15 +218,10 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
 }
 
 class _FriendProfileTopBackdrop extends StatelessWidget {
-  const _FriendProfileTopBackdrop({
-    required this.friend,
-    required this.avatar,
-    required this.onClose,
-  });
+  const _FriendProfileTopBackdrop({required this.friend, required this.avatar});
 
   final NomoFriend friend;
   final NomoAvatar avatar;
-  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -251,10 +242,6 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: _FriendProfileCloseButton(onTap: onClose),
-                ),
                 const Spacer(),
                 _FriendProfileHero(friend: friend, avatar: avatar),
               ],
@@ -323,37 +310,6 @@ class _FriendProfileHeaderBackdrop extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _FriendProfileCloseButton extends StatelessWidget {
-  const _FriendProfileCloseButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: '閉じる',
-      child: CupertinoButton(
-        onPressed: onTap,
-        minimumSize: const Size(48, 48),
-        padding: EdgeInsets.zero,
-        borderRadius: BorderRadius.circular(18),
-        child: SizedBox(
-          width: 48,
-          height: 48,
-          child: Center(
-            child: NomoGeneratedIcon(
-              CupertinoIcons.xmark,
-              color: const Color(0xFF101820),
-              size: 38,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
