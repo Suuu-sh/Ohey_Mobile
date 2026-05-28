@@ -296,56 +296,57 @@ class _CustomFilterManageAddButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    return Nomo3DButtonSurface(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        Navigator.of(context).pop(const _CustomFilterManageResult.add());
-      },
-      height: 60,
-      radius: 20,
-      color: Color.lerp(
-        isWhite ? Colors.white : AppColors.darkBackground,
-        _FriendsColors.lime,
-        isWhite ? .20 : .15,
-      )!,
-      bottomColor: nomo3DShadowColorFor(
-        _FriendsColors.lime,
-        lightnessScale: .58,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      borderColor: _FriendsColors.lime.withValues(alpha: .46),
-      outerShadows: [
-        BoxShadow(
-          color: _FriendsColors.lime.withValues(alpha: isWhite ? .13 : .22),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
-        ),
-      ],
-      child: Row(
-        children: [
-          const NomoPopIcon(
-            icon: CupertinoIcons.plus,
-            color: _FriendsColors.lime,
-            size: 36,
-            iconSize: 20,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'グループを追加',
-              style: TextStyle(
-                color: ink,
-                fontSize: 15,
-                fontWeight: FontWeight.w900,
-              ),
+    final surfaceColor = Color.lerp(
+      isWhite ? Colors.white : AppColors.darkBackground,
+      _FriendsColors.lime,
+      isWhite ? .20 : .15,
+    )!;
+    return Semantics(
+      button: true,
+      label: 'グループを追加',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          Navigator.of(context).pop(const _CustomFilterManageResult.add());
+        },
+        child: Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: surfaceColor,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: _FriendsColors.lime.withValues(alpha: .46),
             ),
           ),
-          NomoGeneratedIcon(
-            CupertinoIcons.chevron_right,
-            color: _FriendsColors.lime,
-            size: 18,
+          child: Row(
+            children: [
+              const NomoPopIcon(
+                icon: CupertinoIcons.plus,
+                color: _FriendsColors.lime,
+                size: 36,
+                iconSize: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'グループを追加',
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              NomoGeneratedIcon(
+                CupertinoIcons.chevron_right,
+                color: _FriendsColors.lime,
+                size: 18,
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
