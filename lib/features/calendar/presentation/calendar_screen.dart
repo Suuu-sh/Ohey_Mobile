@@ -31,6 +31,7 @@ import '../../logs/application/drink_log_controller.dart';
 
 const _calendarPrimaryActionColor = Color(0xFF20B9FF);
 const _calendarPrimaryActionForegroundColor = Color(0xFF06111D);
+const _calendarPrimaryActionShadowColor = Color(0xFF0B78B7);
 
 String _calendarGroupStorageKey(String userId) =>
     'nomo_custom_friend_filters_v1_$userId';
@@ -1009,12 +1010,15 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
             const SizedBox(width: 9),
             SizedBox(
               width: compact ? 56 : 62,
-              child: _CalendarInlineActionButton(
+              child: Nomo3DButton(
                 label: '設定',
                 onTap: onTap,
                 height: compact ? 28 : 30,
+                radius: compact ? 14 : 15,
                 color: _calendarStatusPink,
-                isWhite: isWhite,
+                foregroundColor: _calendarPrimaryActionForegroundColor,
+                shadowColor: Color.lerp(_calendarStatusPink, Colors.black, .32),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 fontSize: compact ? 11 : 12,
               ),
             ),
@@ -1187,12 +1191,15 @@ class _CalendarFriendStatusList extends StatelessWidget {
                 const SizedBox(width: 9),
                 SizedBox(
                   width: compact ? 56 : 62,
-                  child: _CalendarInlineActionButton(
+                  child: Nomo3DButton(
                     label: '見る',
                     onTap: openStatusSheet,
                     height: compact ? 28 : 30,
+                    radius: compact ? 14 : 15,
                     color: _calendarPrimaryActionColor,
-                    isWhite: isWhite,
+                    foregroundColor: _calendarPrimaryActionForegroundColor,
+                    shadowColor: _calendarPrimaryActionShadowColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     fontSize: compact ? 11 : 12,
                   ),
                 ),
@@ -1302,64 +1309,6 @@ class _CalendarSectionSurface extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: handler,
       child: content,
-    );
-  }
-}
-
-class _CalendarInlineActionButton extends StatelessWidget {
-  const _CalendarInlineActionButton({
-    required this.label,
-    required this.height,
-    required this.color,
-    required this.isWhite,
-    required this.fontSize,
-    this.onTap,
-    this.enabled = true,
-  });
-
-  final String label;
-  final VoidCallback? onTap;
-  final double height;
-  final Color color;
-  final bool isWhite;
-  final double fontSize;
-  final bool enabled;
-
-  @override
-  Widget build(BuildContext context) {
-    final active = enabled && onTap != null;
-    final foreground = isWhite
-        ? Color.lerp(color, Colors.black, .22)!
-        : Colors.white;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: active ? onTap : null,
-      child: Opacity(
-        opacity: active ? 1 : .62,
-        child: Container(
-          height: height,
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: isWhite ? .14 : .20),
-            borderRadius: BorderRadius.circular(height / 2),
-            border: Border.all(
-              color: color.withValues(alpha: isWhite ? .30 : .42),
-            ),
-          ),
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: foreground,
-              fontSize: fontSize,
-              fontWeight: FontWeight.w900,
-              height: 1,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -1546,12 +1495,15 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
           const SizedBox(width: 9),
           SizedBox(
             width: compact ? 56 : 62,
-            child: _CalendarInlineActionButton(
+            child: Nomo3DButton(
               label: '投稿',
               onTap: onAddLogPressed ?? () {},
               height: compact ? 28 : 30,
+              radius: compact ? 14 : 15,
               color: _calendarPrimaryActionColor,
-              isWhite: isWhite,
+              foregroundColor: _calendarPrimaryActionForegroundColor,
+              shadowColor: _calendarPrimaryActionShadowColor,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               fontSize: compact ? 11 : 12,
             ),
           ),
@@ -1620,14 +1572,19 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
           const SizedBox(width: 10),
           SizedBox(
             width: compact ? 58 : 66,
-            child: _CalendarInlineActionButton(
+            child: Nomo3DButton(
               label: hasPhoto ? '見る' : '記録',
               onTap: hasPhoto
                   ? () => _showCalendarLogPhoto(context, log)
                   : null,
               height: compact ? 32 : 36,
+              radius: compact ? 16 : 18,
               color: accent,
-              isWhite: isWhite,
+              foregroundColor: isWhite
+                  ? Color.lerp(accent, Colors.black, .26)!
+                  : Colors.white,
+              shadowColor: Color.lerp(accent, Colors.black, .34)!,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               fontSize: compact ? 12 : 13,
               enabled: hasPhoto,
             ),
