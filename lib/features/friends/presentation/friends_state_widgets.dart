@@ -330,9 +330,9 @@ _FriendStatus _friendStatusForDailyStatus(NomoDailyStatus status) {
     enabled: status.isAvailable,
     reason: status.description,
     buttonColor: switch (status) {
-      NomoDailyStatus.canDrinkToday => _FriendsColors.statusPink,
-      NomoDailyStatus.nonAlcohol => _FriendsColors.statusBlue,
-      NomoDailyStatus.liverRest => _FriendsColors.statusPurple,
+      NomoDailyStatus.available => _FriendsColors.statusPink,
+      NomoDailyStatus.maybeAvailable => _FriendsColors.statusBlue,
+      NomoDailyStatus.dependsOnTime => _FriendsColors.statusPurple,
       NomoDailyStatus.hasPlans => _FriendsColors.statusBlocked,
       NomoDailyStatus.unselected => _FriendsColors.statusGreen,
     },

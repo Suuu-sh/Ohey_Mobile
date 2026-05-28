@@ -1,9 +1,9 @@
 part of 'photo_archive_screen.dart';
 
 class _ArchiveDetailSheet extends StatelessWidget {
-  const _ArchiveDetailSheet({required this.log});
+  const _ArchiveDetailSheet({required this.memory});
 
-  final DrinkLog log;
+  final Memory memory;
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +12,7 @@ class _ArchiveDetailSheet extends StatelessWidget {
     final subColor = isWhite
         ? const Color(0xFF7A8490)
         : Colors.white.withValues(alpha: .68);
-    final comment = log.memo.trim();
+    final comment = memory.memo.trim();
 
     return SafeArea(
       top: false,
@@ -45,13 +45,13 @@ class _ArchiveDetailSheet extends StatelessWidget {
             AspectRatio(
               aspectRatio: 16 / 9,
               child: _ArchivePhotoFrame(
-                log: log,
+                memory: memory,
                 borderRadius: BorderRadius.circular(26),
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              _archiveTitle(log),
+              _archiveTitle(memory),
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: titleColor,
                 fontWeight: FontWeight.w900,
@@ -60,17 +60,17 @@ class _ArchiveDetailSheet extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              _archiveDate(log.date),
+              _archiveDate(memory.date),
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 color: subColor,
                 fontWeight: FontWeight.w800,
               ),
             ),
-            if (log.friendNames.trim().isNotEmpty) ...[
+            if (memory.friendNames.trim().isNotEmpty) ...[
               const SizedBox(height: 10),
               _ArchiveInfoPill(
                 icon: CupertinoIcons.person_2_fill,
-                text: log.friendNames.trim(),
+                text: memory.friendNames.trim(),
               ),
             ],
             if (comment.isNotEmpty) ...[
@@ -132,18 +132,18 @@ class _ArchiveInfoPill extends StatelessWidget {
 
 class _ArchivePhotoFrame extends StatelessWidget {
   const _ArchivePhotoFrame({
-    required this.log,
+    required this.memory,
     required this.borderRadius,
     this.overlay,
   });
 
-  final DrinkLog log;
+  final Memory memory;
   final BorderRadius borderRadius;
   final Widget? overlay;
 
   @override
   Widget build(BuildContext context) {
-    final provider = _imageProviderFor(log.photoAssetPath);
+    final provider = _imageProviderFor(memory.photoAssetPath);
     return ClipRRect(
       borderRadius: borderRadius,
       child: Stack(

@@ -79,6 +79,10 @@ class UserRepository {
     );
   }
 
+  Future<void> deleteAccount() async {
+    await _client.delete('/v1/me/account');
+  }
+
   Future<NomoDailyStatus> fetchDailyStatus(DateTime date) async {
     final rows = await _client.getRows(
       '/v1/daily-status',
@@ -86,6 +90,22 @@ class UserRepository {
     );
     if (rows.isEmpty) return NomoDailyStatus.unselected;
     return nomoDailyStatusFromKey(rows.first['status'] as String?);
+  }
+
+  Future<Map<String, NomoDailyStatus>> fetchDailyStatusesForMonth(
+    DateTime month,
+  ) async {
+    final rows = await _client.getRows(
+      '/v1/daily-statuses/month',
+      query: {'month': _isoMonth(month)},
+    );
+    return {
+      for (final row in rows)
+        if (row['status_date'] is String)
+          row['status_date'] as String: nomoDailyStatusFromKey(
+            row['status'] as String?,
+          ),
+    };
   }
 
   Future<void> updateDailyStatus(
@@ -128,6 +148,11 @@ String _isoDate(DateTime date) {
   return '${date.year.toString().padLeft(4, '0')}-'
       '${date.month.toString().padLeft(2, '0')}-'
       '${date.day.toString().padLeft(2, '0')}';
+}
+
+String _isoMonth(DateTime date) {
+  return '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}';
 }
 
 Map<String, dynamic> createProfilePayload({

@@ -47,6 +47,8 @@ class NomoToast {
     Duration duration = const Duration(milliseconds: 2600),
     NomoToastPlacement placement = defaultPlacement,
     Color? accentColor,
+    String? actionLabel,
+    FutureOr<void> Function()? onAction,
   }) {
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
     if (overlay == null) return;
@@ -77,6 +79,8 @@ class NomoToast {
         bottomPadding: bottomPadding,
         placement: placement,
         accentColor: resolvedAccentColor,
+        actionLabel: actionLabel,
+        onAction: onAction,
       ),
     );
     _currentEntry = entry;
@@ -94,6 +98,12 @@ class NomoToast {
     _currentEntry = null;
     if (entry == null || !entry.mounted) return;
     entry.remove();
+  }
+
+  static void dismissCurrent() {
+    _timer?.cancel();
+    _timer = null;
+    _removeCurrentEntry();
   }
 
   static double topOffsetFor(double topPadding) {
@@ -133,6 +143,8 @@ class _NomoToastOverlay extends StatefulWidget {
     required this.bottomPadding,
     required this.placement,
     required this.accentColor,
+    this.actionLabel,
+    this.onAction,
   });
 
   final String message;
@@ -141,6 +153,8 @@ class _NomoToastOverlay extends StatefulWidget {
   final double bottomPadding;
   final NomoToastPlacement placement;
   final Color accentColor;
+  final String? actionLabel;
+  final FutureOr<void> Function()? onAction;
 
   @override
   State<_NomoToastOverlay> createState() => _NomoToastOverlayState();
@@ -151,6 +165,7 @@ class _NomoToastOverlayState extends State<_NomoToastOverlay>
   late final AnimationController _controller;
   late final Animation<Offset> _slide;
   late final Animation<double> _fade;
+  bool _isRunningAction = false;
 
   @override
   void initState() {
@@ -182,7 +197,11 @@ class _NomoToastOverlayState extends State<_NomoToastOverlay>
   @override
   Widget build(BuildContext context) {
     final accentColor = widget.accentColor;
+    final hasAction =
+        widget.actionLabel?.trim().isNotEmpty == true &&
+        widget.onAction != null;
     final toast = IgnorePointer(
+      ignoring: !hasAction,
       child: SlideTransition(
         position: _slide,
         child: FadeTransition(
@@ -244,6 +263,36 @@ class _NomoToastOverlayState extends State<_NomoToastOverlay>
                       ),
                     ),
                   ),
+                  if (hasAction) ...[
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _handleAction,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          color: accentColor.withValues(alpha: .16),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: accentColor.withValues(alpha: .34),
+                          ),
+                        ),
+                        child: Text(
+                          _isRunningAction ? '処理中' : widget.actionLabel!,
+                          style: TextStyle(
+                            color: accentColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                            height: 1,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -265,5 +314,13 @@ class _NomoToastOverlayState extends State<_NomoToastOverlay>
       right: 16,
       child: toast,
     );
+  }
+
+  Future<void> _handleAction() async {
+    final action = widget.onAction;
+    if (_isRunningAction || action == null) return;
+    setState(() => _isRunningAction = true);
+    NomoToast.dismissCurrent();
+    await action();
   }
 }

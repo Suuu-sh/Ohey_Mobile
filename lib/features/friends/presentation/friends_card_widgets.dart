@@ -1,5 +1,22 @@
 part of 'friends_screen.dart';
 
+enum _FriendProfileAction { remove, mute, block, report }
+
+enum _FriendProfileReportReason {
+  spam('spam', 'スパム・宣伝', '宣伝、詐欺、迷惑な勧誘'),
+  harassment('harassment', '不快・いやがらせ', '攻撃的、差別的、嫌がらせに感じる内容'),
+  inappropriate('inappropriate', '不適切な内容', '性的・過度に不快な表現'),
+  violence('violence', '暴力・危険行為', '暴力、危険行為、自傷を助長する内容'),
+  minorSafety('minor_safety', '未成年・危険', '未成年の安全に関わる懸念'),
+  other('other', 'その他', '上記に当てはまらない問題');
+
+  const _FriendProfileReportReason(this.value, this.label, this.description);
+
+  final String value;
+  final String label;
+  final String description;
+}
+
 class _FriendCard extends StatelessWidget {
   const _FriendCard({
     required this.friend,
@@ -55,24 +72,26 @@ Future<void> _showFriendProfileSheet(
 }) {
   return showNomoBottomSheet<void>(
     context: context,
-    useSafeArea: true,
+    useSafeArea: false,
     barrierColor: Colors.black.withValues(alpha: .58),
     builder: (_) => _FriendProfileSheet(friend: friend, status: status),
   );
 }
 
-class _FriendProfileSheet extends StatefulWidget {
+class _FriendProfileSheet extends ConsumerStatefulWidget {
   const _FriendProfileSheet({required this.friend, required this.status});
 
   final NomoFriend friend;
   final _FriendStatus status;
 
   @override
-  State<_FriendProfileSheet> createState() => _FriendProfileSheetState();
+  ConsumerState<_FriendProfileSheet> createState() =>
+      _FriendProfileSheetState();
 }
 
-class _FriendProfileSheetState extends State<_FriendProfileSheet> {
+class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
   late _FriendStatus _selectedStatus = widget.status;
+  _FriendProfileAction? _busyAction;
 
   void _handleSelectedStatusChanged(NomoDailyStatus status) {
     final nextStatus = _friendStatusForDailyStatus(status);
@@ -85,283 +104,671 @@ class _FriendProfileSheetState extends State<_FriendProfileSheet> {
     setState(() => _selectedStatus = nextStatus);
   }
 
+  Future<void> _confirmRemoveFriend() async {
+    if (_busyAction != null) return;
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (dialogContext) => CupertinoAlertDialog(
+        title: const Text('フレンズ解除しますか？'),
+        content: Text('${widget.friend.name}さんとのフレンズ関係を解除します。あとでまた申請できます。'),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('キャンセル'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('解除する'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _busyAction = _FriendProfileAction.remove);
+    try {
+      final toastContext = Navigator.of(context, rootNavigator: true).context;
+      await ref.read(friendRepositoryProvider).deleteFriend(widget.friend.id);
+      ref.invalidate(friendsProvider);
+      if (!mounted || !toastContext.mounted) return;
+      Navigator.of(context).pop();
+      NomoToast.show(
+        toastContext,
+        'フレンズを解除しました',
+        icon: CupertinoIcons.person_badge_minus_fill,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        '解除できませんでした。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
+    } finally {
+      if (mounted) setState(() => _busyAction = null);
+    }
+  }
+
+  Future<void> _openActionMenu() async {
+    if (_busyAction != null) return;
+    HapticFeedback.selectionClick();
+    final action = await showNomoBottomSheet<_FriendProfileAction>(
+      context: context,
+      useSafeArea: true,
+      barrierColor: Colors.black.withValues(alpha: .58),
+      builder: (_) => _FriendProfileActionSheet(friend: widget.friend),
+    );
+    if (!mounted || action == null) return;
+    switch (action) {
+      case _FriendProfileAction.remove:
+        await _confirmRemoveFriend();
+      case _FriendProfileAction.mute:
+        await _muteFriend();
+      case _FriendProfileAction.block:
+        await _confirmBlockFriend();
+      case _FriendProfileAction.report:
+        await _reportFriend();
+    }
+  }
+
+  Future<void> _muteFriend() async {
+    if (_busyAction != null) return;
+    setState(() => _busyAction = _FriendProfileAction.mute);
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      final toastContext = Navigator.of(context, rootNavigator: true).context;
+      await ref.read(userSafetyRepositoryProvider).muteUser(widget.friend.id);
+      ref.invalidate(mutedUsersProvider);
+      ref.invalidate(homeFeedControllerProvider);
+      if (!mounted || !toastContext.mounted) return;
+      Navigator.of(context).pop();
+      _showFriendSafetyUndoToast(
+        toastContext,
+        message: '${widget.friend.name}さんをミュートしました',
+        onUndo: () async {
+          await container
+              .read(userSafetyRepositoryProvider)
+              .unmuteUser(widget.friend.id);
+          container.invalidate(mutedUsersProvider);
+          container.invalidate(homeFeedControllerProvider);
+        },
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        'ミュートできませんでした。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
+    } finally {
+      if (mounted) setState(() => _busyAction = null);
+    }
+  }
+
+  Future<void> _confirmBlockFriend() async {
+    if (_busyAction != null) return;
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (dialogContext) => CupertinoAlertDialog(
+        title: const Text('ブロックしますか？'),
+        content: Text('${widget.friend.name}さんとのフレンズ関係を解除し、投稿・申請・お誘いを制限します。'),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('キャンセル'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('ブロックする'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await _blockFriend();
+    }
+  }
+
+  Future<void> _blockFriend() async {
+    if (_busyAction != null) return;
+    setState(() => _busyAction = _FriendProfileAction.block);
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      final toastContext = Navigator.of(context, rootNavigator: true).context;
+      await ref.read(userSafetyRepositoryProvider).blockUser(widget.friend.id);
+      ref.invalidate(blockedUsersProvider);
+      ref.invalidate(friendsProvider);
+      ref.invalidate(homeFeedControllerProvider);
+      if (!mounted || !toastContext.mounted) return;
+      Navigator.of(context).pop();
+      _showFriendSafetyUndoToast(
+        toastContext,
+        message: '${widget.friend.name}さんをブロックしました',
+        onUndo: () async {
+          await container
+              .read(userSafetyRepositoryProvider)
+              .unblockUser(widget.friend.id);
+          await container
+              .read(friendRepositoryProvider)
+              .addFriend(widget.friend.id);
+          container.invalidate(blockedUsersProvider);
+          container.invalidate(friendsProvider);
+          container.invalidate(homeFeedControllerProvider);
+        },
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        'ブロックできませんでした。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
+    } finally {
+      if (mounted) setState(() => _busyAction = null);
+    }
+  }
+
+  Future<void> _reportFriend() async {
+    if (_busyAction != null) return;
+    final reason = await _selectFriendReportReason(context);
+    if (!mounted || reason == null) return;
+    setState(() => _busyAction = _FriendProfileAction.report);
+    try {
+      await ref
+          .read(userSafetyRepositoryProvider)
+          .reportUser(widget.friend.id, reason: reason.value);
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        '「${reason.label}」として通報しました',
+        icon: CupertinoIcons.exclamationmark_bubble_fill,
+        accentColor: const Color(0xFFFFD166),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        '通報できませんでした。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
+    } finally {
+      if (mounted) setState(() => _busyAction = null);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
     final avatar =
         widget.friend.avatar ?? _fallbackAvatarForFriend(widget.friend);
     final statusColor = _friendInviteButtonColor(_selectedStatus);
-
-    final sheetContentHeight = (MediaQuery.sizeOf(context).height * .84)
-        .clamp(560.0, 720.0)
-        .toDouble();
+    final media = MediaQuery.of(context);
+    final sheetContentHeight = media.size.height - media.padding.bottom;
+    const bodyBackground = AppColors.darkBackgroundBottom;
 
     return NomoBottomSheetShell(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
-      radius: 32,
-      maxHeightFactor: .90,
+      padding: EdgeInsets.zero,
+      radius: 0,
+      maxHeightFactor: 1,
+      followKeyboard: false,
       child: SizedBox(
         height: sheetContentHeight,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _FriendProfileTopBackdrop(
-              friend: widget.friend,
-              avatar: avatar,
-              status: _selectedStatus,
-              statusColor: statusColor,
-              isWhite: isWhite,
-              onClose: () => Navigator.of(context).pop(),
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: _FriendProfileCalendar(
-                  friend: widget.friend,
-                  status: widget.status,
-                  onSelectedStatusChanged: _handleSelectedStatusChanged,
+        child: ColoredBox(
+          color: bodyBackground,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _FriendProfileTopBackdrop(friend: widget.friend, avatar: avatar),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _FriendProfileStatusPanel(
+                        status: _selectedStatus,
+                        statusColor: statusColor,
+                      ),
+                      const SizedBox(height: 14),
+                      Expanded(
+                        child: _FriendProfileCalendar(
+                          friend: widget.friend,
+                          status: widget.status,
+                          onSelectedStatusChanged: _handleSelectedStatusChanged,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: Nomo3DButton.secondary(
-                label: '閉じる',
-                onTap: () => Navigator.of(context).pop(),
-                height: 48,
-                radius: 22,
-                color: const Color(0xFF252044),
-                foregroundColor: const Color(0xFFC08BFF),
-                shadowColor: const Color(0xFF15142C),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Nomo3DButton.secondary(
+                        label: _busyAction == null ? '操作メニュー' : '処理中',
+                        icon: CupertinoIcons.ellipsis_circle,
+                        onTap: _busyAction == null ? _openActionMenu : null,
+                        height: 48,
+                        radius: 22,
+                        color: const Color(0xFF203247),
+                        foregroundColor: const Color(0xFF65D6FF),
+                        shadowColor: const Color(0xFF111C2B),
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Nomo3DButton.secondary(
+                        label: '閉じる',
+                        onTap: () => Navigator.of(context).pop(),
+                        height: 48,
+                        radius: 22,
+                        color: const Color(0xFF252044),
+                        foregroundColor: const Color(0xFFC08BFF),
+                        shadowColor: const Color(0xFF15142C),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _FriendProfileTopBackdrop extends StatelessWidget {
-  const _FriendProfileTopBackdrop({
-    required this.friend,
-    required this.avatar,
-    required this.status,
-    required this.statusColor,
-    required this.isWhite,
-    required this.onClose,
-  });
+void _showFriendSafetyUndoToast(
+  BuildContext context, {
+  required String message,
+  required Future<void> Function() onUndo,
+}) {
+  NomoToast.show(
+    context,
+    message,
+    icon: CupertinoIcons.checkmark_circle_fill,
+    duration: const Duration(milliseconds: 5200),
+    actionLabel: '元に戻す',
+    onAction: () async {
+      try {
+        await onUndo();
+        if (context.mounted) {
+          NomoToast.show(
+            context,
+            '元に戻しました',
+            icon: CupertinoIcons.arrow_uturn_left_circle_fill,
+          );
+        }
+      } catch (_) {
+        if (context.mounted) {
+          NomoToast.show(
+            context,
+            '元に戻せませんでした。あとでもう一度試してね',
+            icon: CupertinoIcons.exclamationmark_triangle_fill,
+          );
+        }
+      }
+    },
+  );
+}
+
+class _FriendProfileActionSheet extends StatelessWidget {
+  const _FriendProfileActionSheet({required this.friend});
 
   final NomoFriend friend;
-  final NomoAvatar avatar;
-  final _FriendStatus status;
-  final Color statusColor;
-  final bool isWhite;
-  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
-    final usesMascotBackdrop = NomoAvatar.usesMascotBackdrop(avatar.background);
-    final backgroundColors =
-        NomoAvatar.backgroundGradients[avatar.background %
-            NomoAvatar.backgroundGradients.length];
-    final nameColor = Colors.white;
-    final subColor = Colors.white.withValues(alpha: .70);
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final sub = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .58);
 
-    return Container(
-      height: 338,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        gradient: usesMascotBackdrop
-            ? null
-            : LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: backgroundColors,
-              ),
-        image: DecorationImage(
-          image: AssetImage(
-            usesMascotBackdrop
-                ? 'assets/images/profile_mascot_backdrop_scene.png'
-                : 'assets/images/profile_header_scene.png',
+    return NomoBottomSheetShell(
+      title: 'フレンズ管理',
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+      radius: 30,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '${friend.name}さんへの操作を選んでください。',
+            style: TextStyle(
+              color: sub,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
           ),
-          fit: BoxFit.cover,
-          opacity: usesMascotBackdrop ? 1 : .48,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: friend.accentColor.withValues(alpha: .24),
-            blurRadius: 28,
-            offset: const Offset(0, 14),
+          const SizedBox(height: 16),
+          NomoActionTile(
+            icon: CupertinoIcons.person_badge_minus,
+            title: 'フレンズ解除',
+            subtitle: '関係を解除して、あとで再申請できます',
+            accent: const Color(0xFFFF8AA8),
+            destructive: true,
+            onTap: () => Navigator.of(context).pop(_FriendProfileAction.remove),
+          ),
+          const SizedBox(height: 10),
+          NomoActionTile(
+            icon: CupertinoIcons.bell_slash_fill,
+            title: 'ミュート',
+            subtitle: '投稿をフィードに出しにくくします',
+            accent: const Color(0xFF88B8FF),
+            onTap: () => Navigator.of(context).pop(_FriendProfileAction.mute),
+          ),
+          const SizedBox(height: 10),
+          NomoActionTile(
+            icon: CupertinoIcons.hand_raised_fill,
+            title: 'ブロック',
+            subtitle: '投稿・申請・お誘いを制限します',
+            accent: const Color(0xFFFF5F8F),
+            destructive: true,
+            onTap: () => Navigator.of(context).pop(_FriendProfileAction.block),
+          ),
+          const SizedBox(height: 10),
+          NomoActionTile(
+            icon: CupertinoIcons.exclamationmark_bubble_fill,
+            title: '通報',
+            subtitle: '理由を選んで運営に送信します',
+            accent: const Color(0xFFFFD166),
+            onTap: () => Navigator.of(context).pop(_FriendProfileAction.report),
+          ),
+          const SizedBox(height: 12),
+          Nomo3DButton.secondary(
+            label: 'キャンセル',
+            onTap: () => Navigator.of(context).pop(),
+            height: 48,
+            radius: 20,
+            color: isWhite
+                ? const Color(0xFFF2F6FA)
+                : Colors.white.withValues(alpha: .06),
+            foregroundColor: isWhite
+                ? const Color(0xFF101820)
+                : Colors.white.withValues(alpha: .82),
+            shadowColor: const Color(0xFF243240).withValues(alpha: .46),
+            useGradient: false,
           ),
         ],
       ),
+    );
+  }
+}
+
+Future<_FriendProfileReportReason?> _selectFriendReportReason(
+  BuildContext context,
+) {
+  return showNomoBottomSheet<_FriendProfileReportReason>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (_) => const _FriendReportReasonSheet(),
+  );
+}
+
+class _FriendReportReasonSheet extends StatelessWidget {
+  const _FriendReportReasonSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final sub = isWhite
+        ? const Color(0xFF697684)
+        : Colors.white.withValues(alpha: .58);
+    return NomoBottomSheetShell(
+      title: '通報理由',
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+      radius: 30,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '近い理由を選ぶと、運営が確認しやすくなります。',
+            style: TextStyle(
+              color: sub,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 16),
+          for (final reason in _FriendProfileReportReason.values) ...[
+            NomoActionTile(
+              icon: CupertinoIcons.exclamationmark_triangle_fill,
+              title: reason.label,
+              subtitle: reason.description,
+              accent: const Color(0xFFFFD166),
+              onTap: () => Navigator.of(context).pop(reason),
+            ),
+            if (reason != _FriendProfileReportReason.values.last)
+              const SizedBox(height: 9),
+          ],
+          const SizedBox(height: 12),
+          Nomo3DButton.secondary(
+            label: 'キャンセル',
+            onTap: () => Navigator.of(context).pop(),
+            height: 48,
+            radius: 20,
+            color: isWhite
+                ? const Color(0xFFF2F6FA)
+                : Colors.white.withValues(alpha: .06),
+            foregroundColor: isWhite
+                ? const Color(0xFF101820)
+                : Colors.white.withValues(alpha: .82),
+            shadowColor: const Color(0xFF243240).withValues(alpha: .46),
+            useGradient: false,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendProfileTopBackdrop extends StatelessWidget {
+  const _FriendProfileTopBackdrop({required this.friend, required this.avatar});
+
+  final NomoFriend friend;
+  final NomoAvatar avatar;
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.viewPaddingOf(context).top;
+    final headerHeight = topPadding + 318;
+    return SizedBox(
+      height: headerHeight,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.darkBackgroundBottom.withValues(alpha: .06),
-                  AppColors.darkBackgroundBottom.withValues(alpha: .28),
-                  AppColors.darkBackgroundBottom.withValues(alpha: .82),
-                ],
-                stops: const [0, .42, 1],
+          _FriendProfileHeaderBackdrop(avatar: avatar),
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              NomoPageHeader.horizontalPadding,
+              topPadding + 4,
+              NomoPageHeader.horizontalPadding,
+              6,
+            ),
+            child: Column(
+              children: [
+                const Spacer(),
+                _FriendProfileHero(friend: friend, avatar: avatar),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendProfileHeaderBackdrop extends StatelessWidget {
+  const _FriendProfileHeaderBackdrop({required this.avatar});
+
+  final NomoAvatar avatar;
+
+  @override
+  Widget build(BuildContext context) {
+    if (NomoAvatar.usesMascotBackdrop(avatar.background)) {
+      return ExcludeSemantics(
+        child: Image.asset(
+          'assets/images/profile_mascot_backdrop_scene.png',
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
+        ),
+      );
+    }
+
+    final backgroundColors =
+        NomoAvatar.backgroundGradients[avatar.background %
+            NomoAvatar.backgroundGradients.length];
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: backgroundColors,
+            ),
+          ),
+        ),
+        Opacity(
+          opacity: avatar.background == NomoAvatar.dreamRoomBackground
+              ? .18
+              : .10,
+          child: ExcludeSemantics(
+            child: Image.asset(
+              'assets/images/profile_header_scene.png',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            ),
+          ),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.white.withValues(alpha: .18),
+                Colors.white.withValues(alpha: .36),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FriendProfileHero extends StatelessWidget {
+  const _FriendProfileHero({required this.friend, required this.avatar});
+
+  final NomoFriend friend;
+  final NomoAvatar avatar;
+
+  @override
+  Widget build(BuildContext context) {
+    final handle = friend.vibe.trim().isEmpty ? friend.id : '@${friend.vibe}';
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            height: 190,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: NomoAvatarView(avatar: avatar, size: 156),
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(18, 8, 18, 9),
+            color: AppColors.darkBackgroundBottom,
+            child: Center(
+              child: Text(
+                '${friend.name} ・ $handle',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: .72),
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.4,
+                ),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendProfileStatusPanel extends StatelessWidget {
+  const _FriendProfileStatusPanel({
+    required this.status,
+    required this.statusColor,
+  });
+
+  final _FriendStatus status;
+  final Color statusColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return NomoThemedPanel(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
+      accentColor: statusColor,
+      borderRadius: 22,
+      backgroundColor: Color.lerp(
+        AppColors.darkBackgroundBottom,
+        statusColor,
+        .34,
+      )!.withValues(alpha: .90),
+      borderAlpha: .56,
+      glowAlpha: .16,
+      glowBlur: 22,
+      glowOffset: const Offset(0, 8),
+      child: Row(
+        children: [
+          NomoPopIcon(
+            icon: CupertinoIcons.cloud_fill,
+            color: statusColor,
+            size: 38,
+            iconSize: 21,
+            showBubble: false,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 2),
-                const NomoBottomSheetHandle(),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    onPressed: onClose,
-                    icon: NomoGeneratedIcon(
-                      CupertinoIcons.xmark,
-                      color: Colors.white.withValues(alpha: .78),
-                      size: 30,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        width: 86,
-                        height: 86,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: .72),
-                          border: Border.all(color: Colors.white, width: 5),
-                        ),
-                      ),
-                      ClipOval(child: NomoAvatarView(avatar: avatar, size: 74)),
-                      const Positioned(
-                        right: 0,
-                        top: 4,
-                        child: NomoPopIcon(
-                          icon: CupertinoIcons.sparkles,
-                          color: Color(0xFFFFD166),
-                          size: 30,
-                          iconSize: 17,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
                 Text(
-                  friend.name,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: nameColor,
-                    fontSize: 26,
+                  status.label,
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: -.7,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: .28),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    fontSize: 15,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.darkBackgroundBottom.withValues(
-                        alpha: .62,
-                      ),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: .18),
-                      ),
-                    ),
-                    child: Text(
-                      friend.vibe.trim().isEmpty
-                          ? '@${friend.id}'
-                          : '@${friend.vibe}',
-                      style: TextStyle(
-                        color: subColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-                  child: NomoThemedPanel(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-                    accentColor: statusColor,
-                    borderRadius: 22,
-                    backgroundColor: Color.lerp(
-                      AppColors.darkBackgroundBottom,
-                      statusColor,
-                      isWhite ? .24 : .34,
-                    )!.withValues(alpha: .90),
-                    borderAlpha: isWhite ? .42 : .56,
-                    glowAlpha: .16,
-                    glowBlur: 22,
-                    glowOffset: const Offset(0, 8),
-                    child: Row(
-                      children: [
-                        NomoPopIcon(
-                          icon: CupertinoIcons.cloud_fill,
-                          color: statusColor,
-                          size: 38,
-                          iconSize: 21,
-                          showBubble: false,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                status.label,
-                                style: TextStyle(
-                                  color: nameColor,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 15,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                status.reason,
-                                style: TextStyle(
-                                  color: subColor,
-                                  fontWeight: FontWeight.w800,
-                                  height: 1.35,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                const SizedBox(height: 4),
+                Text(
+                  status.reason,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .70),
+                    fontWeight: FontWeight.w800,
+                    height: 1.35,
                   ),
                 ),
               ],
@@ -810,9 +1217,9 @@ bool _friendProfileIsSameDate(DateTime a, DateTime b) =>
 
 Color _friendProfileCalendarStatusTileAccent(NomoDailyStatus status) =>
     switch (status) {
-      NomoDailyStatus.canDrinkToday => const Color(0xFFFF5EA8),
-      NomoDailyStatus.nonAlcohol => const Color(0xFF20B9FF),
-      NomoDailyStatus.liverRest => const Color(0xFF8A62FF),
+      NomoDailyStatus.available => const Color(0xFFFF5EA8),
+      NomoDailyStatus.maybeAvailable => const Color(0xFF20B9FF),
+      NomoDailyStatus.dependsOnTime => const Color(0xFF8A62FF),
       NomoDailyStatus.hasPlans => const Color(0xFF738092),
       NomoDailyStatus.unselected => const Color(0xFF9AF21A),
     };

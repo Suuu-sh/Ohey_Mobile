@@ -1,9 +1,9 @@
 part of 'admin_screen.dart';
 
 class _AdminPostEditorSheet extends ConsumerStatefulWidget {
-  const _AdminPostEditorSheet({required this.log, required this.users});
+  const _AdminPostEditorSheet({required this.memory, required this.users});
 
-  final AdminDrinkLog? log;
+  final AdminMemory? memory;
   final List<AdminUserProfile> users;
 
   @override
@@ -22,21 +22,21 @@ class _AdminPostEditorSheetState extends ConsumerState<_AdminPostEditorSheet> {
   bool _saving = false;
   String? _error;
 
-  AdminDrinkLog? get _log => widget.log;
+  AdminMemory? get _log => widget.memory;
 
   @override
   void initState() {
     super.initState();
-    final log = _log;
-    _placeController = TextEditingController(text: log?.placeName ?? '');
-    _memoController = TextEditingController(text: log?.memo ?? '');
-    _linkController = TextEditingController(text: log?.linkUrl ?? '');
-    _photoController = TextEditingController(text: log?.photoPath ?? '');
-    _ownerController = TextEditingController(text: log?.ownerUserId ?? '');
-    _ownerUserId = log != null && !log.isOfficial
-        ? log.ownerUserId
+    final memory = _log;
+    _placeController = TextEditingController(text: memory?.placeName ?? '');
+    _memoController = TextEditingController(text: memory?.memo ?? '');
+    _linkController = TextEditingController(text: memory?.linkUrl ?? '');
+    _photoController = TextEditingController(text: memory?.photoPath ?? '');
+    _ownerController = TextEditingController(text: memory?.ownerUserId ?? '');
+    _ownerUserId = memory != null && !memory.isOfficial
+        ? memory.ownerUserId
         : (widget.users.isNotEmpty ? widget.users.first.id : '');
-    _isOfficial = log?.isOfficial ?? false;
+    _isOfficial = memory?.isOfficial ?? false;
   }
 
   @override
@@ -52,10 +52,10 @@ class _AdminPostEditorSheetState extends ConsumerState<_AdminPostEditorSheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-    final log = _log;
+    final memory = _log;
 
     return _AdminSheet(
-      title: log == null ? '思い出作成' : '思い出編集',
+      title: memory == null ? '思い出作成' : '思い出編集',
       child: Padding(
         padding: EdgeInsets.only(bottom: bottomInset),
         child: Column(
@@ -119,7 +119,7 @@ class _AdminPostEditorSheetState extends ConsumerState<_AdminPostEditorSheet> {
             ],
             const SizedBox(height: 16),
             _AdminPrimaryButton(
-              label: log == null ? '作成する' : '保存する',
+              label: memory == null ? '作成する' : '保存する',
               busy: _saving,
               onTap: _save,
             ),
@@ -159,11 +159,11 @@ class _AdminPostEditorSheetState extends ConsumerState<_AdminPostEditorSheet> {
       _error = null;
     });
     try {
-      final log = _log;
-      if (log == null) {
+      final memory = _log;
+      if (memory == null) {
         await ref
             .read(adminControllerProvider)
-            .createDrinkLog(
+            .createMemory(
               ownerUserId: _isOfficial ? null : _ownerUserId,
               placeName: _placeController.text.trim(),
               memo: _memoController.text.trim(),
@@ -174,8 +174,8 @@ class _AdminPostEditorSheetState extends ConsumerState<_AdminPostEditorSheet> {
       } else {
         await ref
             .read(adminControllerProvider)
-            .updateDrinkLog(
-              id: log.id,
+            .updateMemory(
+              id: memory.id,
               ownerUserId: _isOfficial ? null : _ownerUserId,
               placeName: _placeController.text.trim(),
               memo: _memoController.text.trim(),

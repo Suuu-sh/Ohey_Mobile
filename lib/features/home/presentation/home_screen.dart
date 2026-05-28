@@ -12,9 +12,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
-import '../../../core/models/drink_log.dart';
+import '../../../core/models/memory.dart';
 import '../../../core/models/nomo_avatar.dart';
-import '../../../core/models/nomo_drink_invite.dart';
+import '../../../core/models/nomo_invite.dart';
 import '../../../core/models/nomo_friend.dart';
 import '../../../core/models/nomo_friend_request_status.dart';
 import '../../../core/models/nomo_user.dart';
@@ -22,22 +22,22 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
-import '../../../core/widgets/nomo_invite_success_burst.dart';
 import '../../../core/widgets/nomo_empty_state.dart';
 import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_action_tile.dart';
 import '../../../core/widgets/nomo_page_header.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
+import '../../../core/widgets/nomo_post_action_pill.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
-import '../../friends/application/drink_invite_controller.dart';
+import '../../friends/application/invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
 import '../../friends/presentation/friends_screen.dart';
-import '../../logs/application/drink_log_controller.dart';
+import '../../memories/application/memory_controller.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../notifications/data/notification_repository.dart';
-import '../../profile/presentation/profile_screen.dart';
+import '../../profile/data/user_safety_repository.dart';
 
 part 'home_feed_layout.dart';
 part 'home_feed_invite_banner.dart';
@@ -50,9 +50,9 @@ part 'home_notifications.dart';
 part 'home_feed_shared.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key, this.onAddLogPressed});
+  const HomeScreen({super.key, this.onAddMemoryPressed});
 
-  final VoidCallback? onAddLogPressed;
+  final VoidCallback? onAddMemoryPressed;
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -87,24 +87,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final logsAsync = ref.watch(homeFeedControllerProvider);
+    final memoriesAsync = ref.watch(homeFeedControllerProvider);
     final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
     final user = ref.watch(nomoUserProvider);
     final incomingInvites =
-        ref.watch(incomingDrinkInvitesProvider).asData?.value ??
-        const <NomoDrinkInvite>[];
+        ref.watch(incomingInvitesProvider).asData?.value ??
+        const <NomoInvite>[];
     final todayReservations =
         ref.watch(todayReservationsProvider).asData?.value ??
-        const <NomoDrinkInvite>[];
+        const <NomoInvite>[];
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     final currentUserId = ref
         .watch(supabaseClientProvider)
         .auth
         .currentUser
         ?.id;
-    final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
+    final memories = memoriesAsync.asData?.value ?? const <Memory>[];
     final feedItems = _feedItems(
-      logs,
+      memories,
       user: user,
       currentUserId: currentUserId,
     );
@@ -118,9 +118,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               topPadding: _feedHeaderScrollInset(context),
               items: feedItems,
               isWhite: isWhite,
-              isLoading: logsAsync.isLoading,
+              isLoading: memoriesAsync.isLoading,
               onPageChanged: _handleFeedPageChanged,
-              onAddLogPressed: widget.onAddLogPressed ?? () {},
+              onAddMemoryPressed: widget.onAddMemoryPressed ?? () {},
               onLikePressed: (item) => ref
                   .read(homeFeedControllerProvider.notifier)
                   .toggleLike(item.id),
@@ -146,7 +146,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     icon: CupertinoIcons.camera_fill,
                     semanticLabel: '投稿する',
                     color: _FeedColors.teal,
-                    onTap: widget.onAddLogPressed ?? () {},
+                    onTap: widget.onAddMemoryPressed ?? () {},
                   ),
                   const SizedBox(width: 8),
                   NomoHeaderIconButton(
@@ -194,35 +194,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (index > 0) {
       _markFeedSwipeTutorialSeen();
     }
+    final loadedCount =
+        ref.read(homeFeedControllerProvider).asData?.value.length ?? 0;
+    if (loadedCount > 0 && index >= loadedCount - 3) {
+      ref.read(homeFeedControllerProvider.notifier).loadMore();
+    }
   }
 
   Future<void> _showFeedAuthorProfile(
     BuildContext context,
     _FeedItem item,
   ) async {
-    if (item.ownedByMe) {
-      HapticFeedback.selectionClick();
-      await Navigator.of(
-        context,
-      ).push(CupertinoPageRoute<void>(builder: (_) => const ProfileScreen()));
-      return;
-    }
-
     HapticFeedback.selectionClick();
+    final currentUser = ref.read(nomoUserProvider);
+    final author = item.ownedByMe
+        ? _Companion(
+            userId: item.ownerUserId,
+            name: currentUser?.name.trim().isNotEmpty == true
+                ? currentUser!.name.trim()
+                : item.userName,
+            handle: currentUser?.userId.trim().isNotEmpty == true
+                ? currentUser!.userId.trim()
+                : item.place,
+            avatar: currentUser?.avatar ?? item.avatar,
+            accent: item.accent,
+            statusKey: currentUser?.dailyStatus.key,
+          )
+        : _Companion(
+            userId: item.ownerUserId,
+            name: item.userName,
+            handle: item.isOfficial ? 'Nomo公式' : item.place,
+            avatar: item.avatar,
+            accent: item.accent,
+            statusKey: null,
+          );
     await showNomoBottomSheet<void>(
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
       barrierColor: Colors.black.withValues(alpha: .62),
       builder: (context) => _FeedCompanionProfileSheet(
-        friend: _Companion(
-          userId: item.ownerUserId,
-          name: item.userName,
-          handle: item.isOfficial ? 'Nomo公式' : item.place,
-          avatar: item.avatar,
-          accent: item.accent,
-          statusKey: null,
-        ),
+        friend: author,
+        initialRelationship: item.ownedByMe
+            ? const NomoFriendRelationshipStatus(
+                alreadyFriend: true,
+                requestState: NomoFriendRequestState.none,
+              )
+            : null,
       ),
     );
   }
@@ -255,7 +273,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ShareParams(
         files: [XFile(imagePath, mimeType: 'image/png')],
         fileNameOverrides: [
-          item.isOfficial ? 'nomo_official_post.png' : 'nomo_drink_log.png',
+          item.isOfficial ? 'nomo_official_post.png' : 'nomo_memory.png',
         ],
         title: item.isOfficial ? 'Nomo公式投稿を共有' : '思い出を共有',
         subject: item.isOfficial ? 'Nomo公式のお知らせ' : 'Nomoの思い出',

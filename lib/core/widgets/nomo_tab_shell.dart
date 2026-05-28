@@ -11,13 +11,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/camera/presentation/nomo_camera_screen.dart';
-import '../../features/friends/application/drink_invite_controller.dart';
+import '../../features/friends/application/invite_controller.dart';
+import '../../features/friends/data/friend_repository.dart';
 import '../../features/friends/presentation/friends_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
-import '../../features/logs/application/drink_log_controller.dart';
-import '../../features/logs/application/drink_log_daily_limit.dart';
-import '../../features/logs/presentation/add_log_screen.dart';
-import '../../features/logs/presentation/drink_log_daily_limit_dialog.dart';
+import '../../features/memories/application/memory_controller.dart';
+import '../../features/memories/presentation/add_memory_screen.dart';
 import '../../features/notifications/application/notification_controller.dart';
 import '../../features/notifications/application/os_notification_service.dart';
 import '../../features/profile/presentation/profile_screen.dart';
@@ -25,7 +24,7 @@ import '../../features/onboarding/presentation/create_user_dialog.dart';
 import '../application/nomo_user_controller.dart';
 import '../data/nomo_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
-import '../models/nomo_drink_invite.dart';
+import '../models/nomo_invite.dart';
 import '../models/nomo_user.dart';
 import '../theme/app_colors.dart';
 import '../theme/nomo_theme_mode.dart';
@@ -56,12 +55,12 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
   bool _didAttemptProfileRestore = false;
   bool _isOnboardingSeen = false;
   bool _onboardingPrefLoaded = false;
-  bool _isDrinkInviteModalOpen = false;
+  bool _isInviteModalOpen = false;
   bool _isDailyStatusPromptOpen = false;
   String? _lastDailyStatusPromptKey;
-  String? _lastPresentedDrinkInviteId;
+  String? _lastPresentedInviteId;
   Timer? _invitePollTimer;
-  final Set<String> _notifiedDrinkInviteIds = <String>{};
+  final Set<String> _notifiedInviteIds = <String>{};
 
   @override
   void initState() {
@@ -86,14 +85,14 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       _invitePollTimer = null;
     }
     if (state != AppLifecycleState.resumed) return;
-    _lastPresentedDrinkInviteId = null;
+    _lastPresentedInviteId = null;
     unawaited(
       ref
           .read(nomoUserProvider.notifier)
           .loadFromBackendProfile()
           .catchError((_) => false),
     );
-    ref.invalidate(incomingDrinkInvitesProvider);
+    ref.invalidate(incomingInvitesProvider);
     ref.invalidate(notificationControllerProvider);
   }
 
@@ -124,12 +123,12 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
   List<Widget> get _pages => [
     NomoToastAccent(
       color: _feedAccentColor,
-      child: HomeScreen(onAddLogPressed: _openDrinkLogFlow),
+      child: HomeScreen(onAddMemoryPressed: _openMemoryFlow),
     ),
     const NomoToastAccent(color: _friendsAccentColor, child: FriendsScreen()),
     NomoToastAccent(
       color: _calendarAccentColor,
-      child: CalendarScreen(onAddLogPressed: _openDrinkLogFlow),
+      child: CalendarScreen(onAddMemoryPressed: _openMemoryFlow),
     ),
     const NomoToastAccent(color: _profileAccentColor, child: ProfileScreen()),
   ];
@@ -143,70 +142,44 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
   }
 
   void _refreshFeedOnOpen() {
-    ref.invalidate(drinkLogControllerProvider);
+    ref.invalidate(memoryControllerProvider);
     ref.invalidate(friendsProvider);
     ref.invalidate(notificationControllerProvider);
   }
 
-  Future<void> _openDrinkLogFlow() async {
-    final action = await showNomoBottomSheet<_DrinkLogStartAction>(
+  Future<void> _openMemoryFlow() async {
+    final action = await showNomoBottomSheet<_MemoryStartAction>(
       context: context,
       useSafeArea: true,
       barrierColor: Colors.black.withValues(alpha: .58),
       builder: (_) => NomoToastAccent(
         color: _selectedToastAccentColor,
-        child: const _DrinkLogStartSheet(),
+        child: const _MemoryStartSheet(),
       ),
     );
     if (!mounted || action == null) return;
-    if (action.createsDrinkLog &&
-        await _hasExistingDrinkLogOn(DateTime.now())) {
-      if (!mounted) return;
-      await showDrinkLogDailyLimitDialog(context, DateTime.now());
-      return;
-    }
-    if (!mounted) return;
 
     switch (action) {
-      case _DrinkLogStartAction.camera:
-        await _openCameraDrinkLogFlow();
-      case _DrinkLogStartAction.noPhoto:
+      case _MemoryStartAction.camera:
+        await _openCameraMemoryFlow();
+      case _MemoryStartAction.noPhoto:
         final openCalendar = await Navigator.of(context).push<bool>(
           CupertinoPageRoute(
             builder: (_) => NomoToastAccent(
               color: _selectedToastAccentColor,
-              child: const AddLogScreen(),
+              child: const AddMemoryScreen(),
             ),
           ),
         );
         if (mounted && openCalendar == true) {
           setState(() => _selectedIndex = 2);
         }
-      case _DrinkLogStartAction.gallery:
-        await _openGalleryDrinkLogFlow();
+      case _MemoryStartAction.gallery:
+        await _openGalleryMemoryFlow();
     }
   }
 
-  Future<bool> _hasExistingDrinkLogOn(DateTime day) async {
-    final currentUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
-    final currentLogs = ref.read(drinkLogControllerProvider).asData?.value;
-    if (currentLogs != null) {
-      return hasOwnDrinkLogOnDay(
-        currentLogs,
-        day,
-        currentUserId: currentUserId,
-      );
-    }
-
-    try {
-      final logs = await ref.read(drinkLogControllerProvider.future);
-      return hasOwnDrinkLogOnDay(logs, day, currentUserId: currentUserId);
-    } catch (_) {
-      return false;
-    }
-  }
-
-  Future<void> _openCameraDrinkLogFlow() async {
+  Future<void> _openCameraMemoryFlow() async {
     final result = await Navigator.of(context).push<NomoCameraResult>(
       CupertinoPageRoute(
         fullscreenDialog: true,
@@ -222,13 +195,13 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       CupertinoPageRoute(
         builder: (_) => NomoToastAccent(
           color: _selectedToastAccentColor,
-          child: AddLogScreen(initialPhotoPath: result.path),
+          child: AddMemoryScreen(initialPhotoPath: result.path),
         ),
       ),
     );
   }
 
-  Future<void> _openGalleryDrinkLogFlow() async {
+  Future<void> _openGalleryMemoryFlow() async {
     final picked = await ImagePicker().pickImage(
       source: ImageSource.gallery,
       imageQuality: 92,
@@ -239,36 +212,36 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       CupertinoPageRoute(
         builder: (_) => NomoToastAccent(
           color: _selectedToastAccentColor,
-          child: AddLogScreen(initialPhotoPath: picked.path),
+          child: AddMemoryScreen(initialPhotoPath: picked.path),
         ),
       ),
     );
   }
 
-  void _handleIncomingDrinkInvites(List<NomoDrinkInvite> invites) {
+  void _handleIncomingInvites(List<NomoInvite> invites) {
     final currentUser = ref.read(nomoUserProvider);
     if (currentUser == null ||
         currentUser.dailyStatus == NomoDailyStatus.unselected) {
       return;
     }
     final pendingInvites = invites
-        .where((invite) => invite.status == NomoDrinkInviteStatus.pending)
+        .where((invite) => invite.status == NomoInviteStatus.pending)
         .toList(growable: false);
     if (pendingInvites.isEmpty) return;
 
     for (final invite in pendingInvites) {
-      if (!_notifiedDrinkInviteIds.add(invite.id)) continue;
-      ref.read(osNotificationServiceProvider).showDrinkInviteReceived(invite);
+      if (!_notifiedInviteIds.add(invite.id)) continue;
+      ref.read(osNotificationServiceProvider).showInviteReceived(invite);
     }
 
     final invite = pendingInvites.first;
-    if (_isDrinkInviteModalOpen || _lastPresentedDrinkInviteId == invite.id) {
+    if (_isInviteModalOpen || _lastPresentedInviteId == invite.id) {
       return;
     }
-    _lastPresentedDrinkInviteId = invite.id;
+    _lastPresentedInviteId = invite.id;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _isDrinkInviteModalOpen) return;
-      _showIncomingDrinkInviteModal(invite);
+      if (!mounted || _isInviteModalOpen) return;
+      _showIncomingInviteModal(invite);
     });
   }
 
@@ -281,13 +254,13 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
         _invitePollTimer = null;
         return;
       }
-      ref.invalidate(incomingDrinkInvitesProvider);
+      ref.invalidate(incomingInvitesProvider);
       ref.invalidate(notificationControllerProvider);
     });
   }
 
-  Future<void> _showIncomingDrinkInviteModal(NomoDrinkInvite invite) async {
-    _isDrinkInviteModalOpen = true;
+  Future<void> _showIncomingInviteModal(NomoInvite invite) async {
+    _isInviteModalOpen = true;
     try {
       await showNomoBottomSheet<void>(
         context: context,
@@ -296,21 +269,21 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
         barrierColor: Colors.black.withValues(alpha: .62),
         builder: (_) => NomoToastAccent(
           color: _selectedToastAccentColor,
-          child: _IncomingDrinkInviteSheet(
+          child: _IncomingInviteSheet(
             invite: invite,
             onAccept: () async {
-              await ref.read(drinkInviteControllerProvider).accept(invite.id);
+              await ref.read(inviteControllerProvider).accept(invite.id);
               ref.invalidate(notificationControllerProvider);
             },
             onReject: () async {
-              await ref.read(drinkInviteControllerProvider).reject(invite.id);
+              await ref.read(inviteControllerProvider).reject(invite.id);
               ref.invalidate(notificationControllerProvider);
             },
           ),
         ),
       );
     } finally {
-      _isDrinkInviteModalOpen = false;
+      _isInviteModalOpen = false;
     }
   }
 
@@ -351,7 +324,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
                   .read(nomoUserProvider.notifier)
                   .updateDailyStatus(status);
               ref.invalidate(friendsProvider);
-              ref.invalidate(incomingDrinkInvitesProvider);
+              ref.invalidate(incomingInvitesProvider);
               ref.invalidate(notificationControllerProvider);
             },
           ),
@@ -374,16 +347,26 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     ref.watch(supabaseAuthStateProvider);
     final hasSession =
         ref.watch(supabaseClientProvider).auth.currentSession != null;
-    final incomingDrinkInvitesAsync = ref.watch(incomingDrinkInvitesProvider);
-    ref.listen<AsyncValue<List<NomoDrinkInvite>>>(
-      incomingDrinkInvitesProvider,
-      (previous, next) => next.whenData(_handleIncomingDrinkInvites),
+    final incomingInvitesAsync = ref.watch(incomingInvitesProvider);
+    final pendingFriendRequestsAsync = user == null
+        ? const AsyncValue<List<NomoFriendRequestItem>>.data(
+            <NomoFriendRequestItem>[],
+          )
+        : ref.watch(pendingFriendRequestsProvider);
+    final incomingFriendRequestCount = pendingFriendRequestsAsync.maybeWhen(
+      data: (requests) =>
+          requests.where((request) => request.isIncoming).length,
+      orElse: () => 0,
+    );
+    ref.listen<AsyncValue<List<NomoInvite>>>(
+      incomingInvitesProvider,
+      (previous, next) => next.whenData(_handleIncomingInvites),
     );
 
     if (user != null) {
       _maybeShowDailyStatusPrompt(user);
       _startInvitePolling();
-      incomingDrinkInvitesAsync.whenData(_handleIncomingDrinkInvites);
+      incomingInvitesAsync.whenData(_handleIncomingInvites);
       _didAttemptProfileRestore = false;
       _didScheduleProfileRestore = false;
       if (_onboardingPrefLoaded && !_isOnboardingSeen) {
@@ -492,6 +475,7 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
                   label: 'フレンズ',
                   selected: _selectedIndex == 1,
                   activeColor: const Color(0xFF9AF21A),
+                  badgeCount: incomingFriendRequestCount,
                   onTap: () => _selectTab(1),
                 ),
                 _TabItem(
@@ -530,9 +514,9 @@ class _DailyStatusRequiredSheet extends ConsumerStatefulWidget {
 class _DailyStatusRequiredSheetState
     extends ConsumerState<_DailyStatusRequiredSheet> {
   static const _options = <NomoDailyStatus>[
-    NomoDailyStatus.canDrinkToday,
-    NomoDailyStatus.nonAlcohol,
-    NomoDailyStatus.liverRest,
+    NomoDailyStatus.available,
+    NomoDailyStatus.maybeAvailable,
+    NomoDailyStatus.dependsOnTime,
     NomoDailyStatus.hasPlans,
   ];
 
@@ -669,20 +653,10 @@ class _SheetInlineError extends StatelessWidget {
   }
 }
 
-enum _DrinkLogStartAction { camera, noPhoto, gallery }
+enum _MemoryStartAction { camera, noPhoto, gallery }
 
-extension _DrinkLogStartActionX on _DrinkLogStartAction {
-  bool get createsDrinkLog {
-    return switch (this) {
-      _DrinkLogStartAction.camera ||
-      _DrinkLogStartAction.noPhoto ||
-      _DrinkLogStartAction.gallery => true,
-    };
-  }
-}
-
-class _DrinkLogStartSheet extends StatelessWidget {
-  const _DrinkLogStartSheet();
+class _MemoryStartSheet extends StatelessWidget {
+  const _MemoryStartSheet();
 
   @override
   Widget build(BuildContext context) {
@@ -733,30 +707,28 @@ class _DrinkLogStartSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          _DrinkLogStartTile(
+          _MemoryStartTile(
             icon: CupertinoIcons.camera_fill,
             color: AppColors.primaryAction,
             title: '写真を撮って残す',
             subtitle: '今の一杯を撮影して投稿',
-            onTap: () => Navigator.of(context).pop(_DrinkLogStartAction.camera),
+            onTap: () => Navigator.of(context).pop(_MemoryStartAction.camera),
           ),
           const SizedBox(height: 10),
-          _DrinkLogStartTile(
+          _MemoryStartTile(
             icon: CupertinoIcons.text_badge_plus,
             color: AppColors.invite,
             title: '写真なしで残す',
             subtitle: '場所・フレンズ・コメントだけで記録',
-            onTap: () =>
-                Navigator.of(context).pop(_DrinkLogStartAction.noPhoto),
+            onTap: () => Navigator.of(context).pop(_MemoryStartAction.noPhoto),
           ),
           const SizedBox(height: 10),
-          _DrinkLogStartTile(
+          _MemoryStartTile(
             icon: CupertinoIcons.photo_on_rectangle,
             color: AppColors.info,
             title: '過去の写真から残す',
             subtitle: 'ライブラリの写真を使って投稿',
-            onTap: () =>
-                Navigator.of(context).pop(_DrinkLogStartAction.gallery),
+            onTap: () => Navigator.of(context).pop(_MemoryStartAction.gallery),
           ),
         ],
       ),
@@ -764,8 +736,8 @@ class _DrinkLogStartSheet extends StatelessWidget {
   }
 }
 
-class _DrinkLogStartTile extends StatelessWidget {
-  const _DrinkLogStartTile({
+class _MemoryStartTile extends StatelessWidget {
+  const _MemoryStartTile({
     required this.icon,
     required this.color,
     required this.title,
@@ -786,88 +758,86 @@ class _DrinkLogStartTile extends StatelessWidget {
     final sub = isWhite
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .58);
-    return Nomo3DButtonSurface(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        onTap();
-      },
-      height: 72,
-      radius: 22,
-      color: isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground,
-      bottomColor: isWhite ? const Color(0xFFD8E1EA) : const Color(0xFF09131D),
-      padding: const EdgeInsets.fromLTRB(14, 0, 12, 0),
-      borderColor: isWhite
-          ? const Color(0xFFE0E6ED)
-          : Colors.white.withValues(alpha: .12),
-      outerShadows: [
-        BoxShadow(
-          color: color.withValues(alpha: isWhite ? .10 : .18),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
-        ),
-      ],
-      innerShadows: [
-        BoxShadow(
-          color: Colors.white.withValues(alpha: isWhite ? .40 : .08),
-          blurRadius: 10,
-          offset: const Offset(-2, -2),
-        ),
-      ],
-      child: Row(
-        children: [
-          NomoPopIcon(icon: icon, color: color, size: 46, iconSize: 25),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: ink,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.2,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: sub,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    height: 1.25,
-                  ),
-                ),
-              ],
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Container(
+          height: 72,
+          padding: const EdgeInsets.fromLTRB(14, 0, 12, 0),
+          decoration: BoxDecoration(
+            color: isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isWhite
+                  ? const Color(0xFFE0E6ED)
+                  : Colors.white.withValues(alpha: .12),
             ),
           ),
-          NomoGeneratedIcon(CupertinoIcons.chevron_right, color: sub, size: 22),
-        ],
+          child: Row(
+            children: [
+              NomoPopIcon(icon: icon, color: color, size: 46, iconSize: 25),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.2,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              NomoGeneratedIcon(
+                CupertinoIcons.chevron_right,
+                color: sub,
+                size: 22,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class _IncomingDrinkInviteSheet extends StatefulWidget {
-  const _IncomingDrinkInviteSheet({
+class _IncomingInviteSheet extends StatefulWidget {
+  const _IncomingInviteSheet({
     required this.invite,
     required this.onAccept,
     required this.onReject,
   });
 
-  final NomoDrinkInvite invite;
+  final NomoInvite invite;
   final Future<void> Function() onAccept;
   final Future<void> Function() onReject;
 
   @override
-  State<_IncomingDrinkInviteSheet> createState() =>
-      _IncomingDrinkInviteSheetState();
+  State<_IncomingInviteSheet> createState() => _IncomingInviteSheetState();
 }
 
-class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
+class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
   String? _busyAction;
   String? _errorMessage;
 
@@ -905,7 +875,7 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final from = widget.invite.fromUser;
+    final from = widget.invite.inviter;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: const Duration(milliseconds: 620),
@@ -1203,6 +1173,7 @@ class _TabItem extends StatelessWidget {
     required this.selected,
     required this.activeColor,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   final Widget? customIcon;
@@ -1210,17 +1181,19 @@ class _TabItem extends StatelessWidget {
   final bool selected;
   final Color activeColor;
   final VoidCallback onTap;
+  final int badgeCount;
 
   @override
   Widget build(BuildContext context) {
     final labelColor = selected ? activeColor : const Color(0xFFA5ADBC);
+    final hasBadge = badgeCount > 0;
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Semantics(
           button: true,
-          label: label,
+          label: hasBadge ? '$label、未処理申請$badgeCount件' : label,
           selected: selected,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1228,13 +1201,24 @@ class _TabItem extends StatelessWidget {
               SizedBox(
                 height: 44,
                 child: Center(
-                  child: _TabIconGlow(
-                    selected: selected,
-                    color: activeColor,
-                    child: IconTheme(
-                      data: IconThemeData(color: labelColor),
-                      child: customIcon ?? const SizedBox.shrink(),
-                    ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      _TabIconGlow(
+                        selected: selected,
+                        color: activeColor,
+                        child: IconTheme(
+                          data: IconThemeData(color: labelColor),
+                          child: customIcon ?? const SizedBox.shrink(),
+                        ),
+                      ),
+                      if (hasBadge)
+                        Positioned(
+                          right: 6,
+                          top: 1,
+                          child: _TabBadge(count: badgeCount),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -1261,6 +1245,45 @@ class _TabItem extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TabBadge extends StatelessWidget {
+  const _TabBadge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = count > 99 ? '99+' : count.toString();
+    return Container(
+      constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFF5F8F), Color(0xFFFF335F)],
+        ),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.darkBackgroundBottom, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF4F7A).withValues(alpha: .42),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 9.5,
+          height: 1,
+          fontWeight: FontWeight.w900,
         ),
       ),
     );

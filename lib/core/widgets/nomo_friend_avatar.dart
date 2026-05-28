@@ -116,10 +116,10 @@ class _GlowBubble extends StatelessWidget {
 
   Color _moodColor(NomoFriendMood mood) => switch (mood) {
     NomoFriendMood.lonely => AppColors.sky,
-    NomoFriendMood.sober => AppColors.mint,
+    NomoFriendMood.calm => AppColors.mint,
     NomoFriendMood.smile => AppColors.blush,
     NomoFriendMood.fun => AppColors.peach,
-    NomoFriendMood.tipsy => AppColors.lavender,
+    NomoFriendMood.spark => AppColors.lavender,
     NomoFriendMood.hype => AppColors.lemon,
     NomoFriendMood.tired => AppColors.blue,
     NomoFriendMood.sleep => AppColors.lilac,

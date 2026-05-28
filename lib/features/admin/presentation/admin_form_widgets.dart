@@ -232,7 +232,7 @@ Future<void> _confirmDeleteUser(
   try {
     await ref.read(adminControllerProvider).deleteUser(user.id);
     ref.invalidate(adminUsersProvider);
-    ref.invalidate(adminDrinkLogsProvider);
+    ref.invalidate(adminMemorysProvider);
     if (context.mounted) NomoToast.show(context, 'ユーザーを削除しました。');
   } catch (e) {
     if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
@@ -242,18 +242,105 @@ Future<void> _confirmDeleteUser(
 Future<void> _confirmDeletePost(
   BuildContext context,
   WidgetRef ref,
-  AdminDrinkLog log,
+  AdminMemory memory,
 ) async {
   final ok = await _confirmDestructive(
     context,
     title: '思い出を削除しますか？',
-    message: log.placeName.isEmpty ? log.id : log.placeName,
+    message: memory.placeName.isEmpty ? memory.id : memory.placeName,
   );
   if (ok != true) return;
   try {
-    await ref.read(adminControllerProvider).deleteDrinkLog(log.id);
-    ref.invalidate(adminDrinkLogsProvider);
+    await ref.read(adminControllerProvider).deleteMemory(memory.id);
+    ref.invalidate(adminMemorysProvider);
     if (context.mounted) NomoToast.show(context, '思い出を削除しました。');
+  } catch (e) {
+    if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
+  }
+}
+
+Future<void> _showReportStatusSheet(
+  BuildContext context,
+  WidgetRef ref,
+  AdminMemoryReport report,
+  String status,
+) async {
+  final noteController = TextEditingController(text: report.moderationNote);
+  final note = await showNomoBottomSheet<String>(
+    context: context,
+    builder: (sheetContext) => _AdminSheet(
+      title: '通報を${_adminReportStatusLabel(status)}にする',
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _AdminInput(
+              controller: noteController,
+              label: 'モデレーションメモ',
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            _AdminPrimaryButton(
+              label: '更新する',
+              busy: false,
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(noteController.text.trim()),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  noteController.dispose();
+  if (note == null) return;
+
+  try {
+    final moderationNote = note.trim().isEmpty
+        ? 'Updated from admin app'
+        : note.trim();
+    await ref
+        .read(adminControllerProvider)
+        .updateMemoryReport(
+          id: report.id,
+          status: status,
+          moderationNote: moderationNote,
+        );
+    ref.invalidate(adminMemoryReportsProvider);
+    if (context.mounted) {
+      NomoToast.show(context, '通報を${_adminReportStatusLabel(status)}にしました。');
+    }
+  } catch (e) {
+    if (context.mounted) NomoToast.show(context, '更新できませんでした: $e');
+  }
+}
+
+Future<void> _confirmDeleteReportedPost(
+  BuildContext context,
+  WidgetRef ref,
+  AdminMemoryReport report,
+) async {
+  final ok = await _confirmDestructive(
+    context,
+    title: '通報された投稿を削除しますか？',
+    message: report.memo.isEmpty ? report.memoryId : report.memo,
+  );
+  if (ok != true) return;
+  try {
+    await ref.read(adminControllerProvider).deleteMemory(report.memoryId);
+    await ref
+        .read(adminControllerProvider)
+        .updateMemoryReport(
+          id: report.id,
+          status: 'resolved',
+          moderationNote: 'Deleted reported post from admin app',
+        );
+    ref.invalidate(adminMemoryReportsProvider);
+    ref.invalidate(adminMemorysProvider);
+    if (context.mounted) NomoToast.show(context, '投稿を削除し、通報を解決済みにしました。');
   } catch (e) {
     if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
   }

@@ -13,6 +13,7 @@ import '../../../core/models/nomo_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
+import '../../../core/widgets/nomo_action_tile.dart';
 import '../../../core/widgets/nomo_empty_state.dart';
 import '../../../core/widgets/nomo_friend_user_block.dart';
 import '../../../core/widgets/nomo_invite_success_burst.dart';
@@ -24,10 +25,11 @@ import '../../../core/widgets/nomo_primary_button.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
-import '../application/drink_invite_controller.dart';
+import '../application/invite_controller.dart';
 import '../data/friend_repository.dart';
 import 'friend_add_sheet.dart';
-import '../../logs/application/drink_log_controller.dart';
+import '../../memories/application/memory_controller.dart';
+import '../../profile/data/user_safety_repository.dart';
 
 part 'friends_header_filters.dart';
 part 'friends_custom_filter_sheet.dart';
@@ -48,6 +50,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   String? _customFilterUserId;
   List<_CustomFriendFilter> _customFilters = const [];
   bool _isRefreshingFriends = false;
+  bool _isSendingGroupInvite = false;
   final Map<String, bool> _favoriteOverrides = {};
   final Set<String> _invitedFriendIds = <String>{};
 
@@ -304,9 +307,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     await _showFriendProfileSheet(context, friend: friend, status: status);
   }
 
-  Future<void> _sendDrinkInvite(NomoFriend friend) async {
+  Future<void> _sendInvite(NomoFriend friend) async {
     try {
-      await ref.read(drinkInviteControllerProvider).sendTodayInvite(friend.id);
+      await ref.read(inviteControllerProvider).sendTodayInvite(friend.id);
       if (!mounted) return;
       HapticFeedback.lightImpact();
       NomoToast.show(
@@ -328,7 +331,41 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     }
   }
 
-  void _markDrinkInviteSent(NomoFriend friend) {
+  Future<void> _sendGroupInvites(List<NomoFriend> friends) async {
+    if (_isSendingGroupInvite || friends.isEmpty) return;
+    setState(() => _isSendingGroupInvite = true);
+    try {
+      await ref
+          .read(inviteControllerProvider)
+          .sendTodayInvites(friends.map((friend) => friend.id));
+      if (!mounted) return;
+      HapticFeedback.lightImpact();
+      setState(() {
+        for (final friend in friends) {
+          _invitedFriendIds.add(friend.id);
+        }
+      });
+      NomoToast.show(
+        context,
+        '${friends.length}人にまとめてお誘いを送りました。',
+        icon: CupertinoIcons.checkmark_circle_fill,
+        placement: NomoToastPlacement.bottom,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      HapticFeedback.mediumImpact();
+      NomoToast.show(
+        context,
+        'まとめて招待できなかったよ。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+        placement: NomoToastPlacement.bottom,
+      );
+    } finally {
+      if (mounted) setState(() => _isSendingGroupInvite = false);
+    }
+  }
+
+  void _markInviteSent(NomoFriend friend) {
     if (!mounted) return;
     setState(() => _invitedFriendIds.add(friend.id));
   }
@@ -338,10 +375,10 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     final friendsAsync = ref.watch(friendsProvider);
     final persistedInvitedFriendIds =
         ref
-            .watch(outgoingActiveDrinkInvitesProvider(null))
+            .watch(outgoingActiveInvitesProvider(null))
             .asData
             ?.value
-            .map((invite) => invite.toUserId)
+            .map((invite) => invite.inviteeUserId)
             .toSet() ??
         const <String>{};
     final invitedFriendIds = {
@@ -456,11 +493,13 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           selectedCustomFilter: selectedCustomFilter,
                           favoriteOverrides: _favoriteOverrides,
                           invitedFriendIds: invitedFriendIds,
+                          isSendingGroupInvite: _isSendingGroupInvite,
                           onFavoriteToggle: (friend, isFavorite) =>
                               _onToggleFavorite(context, friend, isFavorite),
                           onAddFriend: _openAddFriend,
-                          onInvite: (friend) => _sendDrinkInvite(friend),
-                          onInviteAnimationComplete: _markDrinkInviteSent,
+                          onInvite: (friend) => _sendInvite(friend),
+                          onGroupInvite: _sendGroupInvites,
+                          onInviteAnimationComplete: _markInviteSent,
                           onProfile: (friend, status) =>
                               _openFriendProfile(friend, status),
                         ),

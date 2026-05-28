@@ -25,11 +25,16 @@ final adminUsersProvider = FutureProvider.autoDispose<List<AdminUserProfile>>((
   return ref.watch(adminControllerProvider).listUsers();
 });
 
-final adminDrinkLogsProvider = FutureProvider.autoDispose<List<AdminDrinkLog>>((
+final adminMemorysProvider = FutureProvider.autoDispose<List<AdminMemory>>((
   ref,
 ) async {
-  return ref.watch(adminControllerProvider).listDrinkLogs();
+  return ref.watch(adminControllerProvider).listMemorys();
 });
+
+final adminMemoryReportsProvider =
+    FutureProvider.autoDispose<List<AdminMemoryReport>>((ref) async {
+      return ref.watch(adminControllerProvider).listMemoryReports();
+    });
 
 class AdminController {
   const AdminController(this._repository);
@@ -82,9 +87,28 @@ class AdminController {
 
   Future<void> deleteUser(String id) => _repository.deleteUser(id);
 
-  Future<List<AdminDrinkLog>> listDrinkLogs() => _repository.listDrinkLogs();
+  Future<List<AdminMemory>> listMemorys() => _repository.listMemorys();
 
-  Future<void> createDrinkLog({
+  Future<List<AdminMemoryReport>> listMemoryReports() {
+    return _repository.listMemoryReports();
+  }
+
+  Future<void> updateMemoryReport({
+    required String id,
+    required String status,
+    String? moderationNote,
+  }) {
+    return _repository.updateMemoryReport(
+      id: id,
+      status: status,
+      moderationNote: moderationNote,
+    );
+  }
+
+  Future<String?> displayPhotoUrl(String path) =>
+      _repository.displayPhotoUrl(path);
+
+  Future<void> createMemory({
     String? ownerUserId,
     required String placeName,
     required String memo,
@@ -92,7 +116,7 @@ class AdminController {
     required String photoPath,
     required bool isOfficial,
   }) {
-    return _repository.createDrinkLog(
+    return _repository.createMemory(
       ownerUserId: ownerUserId,
       placeName: placeName,
       memo: memo,
@@ -102,7 +126,7 @@ class AdminController {
     );
   }
 
-  Future<void> updateDrinkLog({
+  Future<void> updateMemory({
     required String id,
     String? ownerUserId,
     required String placeName,
@@ -111,7 +135,7 @@ class AdminController {
     required String photoPath,
     required bool isOfficial,
   }) {
-    return _repository.updateDrinkLog(
+    return _repository.updateMemory(
       id: id,
       ownerUserId: ownerUserId,
       placeName: placeName,
@@ -122,7 +146,7 @@ class AdminController {
     );
   }
 
-  Future<void> deleteDrinkLog(String id) => _repository.deleteDrinkLog(id);
+  Future<void> deleteMemory(String id) => _repository.deleteMemory(id);
 
   Future<AdminNotificationResult> createSystemNotification({
     required String title,

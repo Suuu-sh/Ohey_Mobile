@@ -83,12 +83,12 @@ class _AdminUserCard extends StatelessWidget {
 
 class _AdminPostCard extends StatelessWidget {
   const _AdminPostCard({
-    required this.log,
+    required this.memory,
     required this.onEdit,
     required this.onDelete,
   });
 
-  final AdminDrinkLog log;
+  final AdminMemory memory;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -101,7 +101,7 @@ class _AdminPostCard extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                log.placeName.isEmpty ? '場所未設定の思い出' : log.placeName,
+                memory.placeName.isEmpty ? '場所未設定の思い出' : memory.placeName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -111,7 +111,7 @@ class _AdminPostCard extends StatelessWidget {
                 ),
               ),
             ),
-            if (log.isOfficial) ...[
+            if (memory.isOfficial) ...[
               const _AdminBadge(label: '公式'),
               const SizedBox(width: 8),
             ],
@@ -126,16 +126,16 @@ class _AdminPostCard extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          '${log.ownerDisplayName} @${log.ownerHandle}',
+          '${memory.ownerDisplayName} @${memory.ownerHandle}',
           style: const TextStyle(
             color: _AdminColors.lime,
             fontWeight: FontWeight.w900,
           ),
         ),
-        if (log.memo.isNotEmpty) ...[
+        if (memory.memo.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
-            log.memo,
+            memory.memo,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -144,10 +144,10 @@ class _AdminPostCard extends StatelessWidget {
             ),
           ),
         ],
-        if (log.linkUrl.isNotEmpty) ...[
+        if (memory.linkUrl.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
-            log.linkUrl,
+            memory.linkUrl,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -158,7 +158,7 @@ class _AdminPostCard extends StatelessWidget {
         ],
         const SizedBox(height: 8),
         Text(
-          _dateLabel(log.drankAt),
+          _dateLabel(memory.happenedAt),
           style: const TextStyle(
             color: _AdminColors.sub,
             fontWeight: FontWeight.w700,

@@ -7,9 +7,9 @@ import 'package:flutter/services.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
-import '../../../core/models/drink_log.dart';
+import '../../../core/models/memory.dart';
 import '../../../core/models/nomo_avatar.dart';
-import '../../../core/models/nomo_drink_invite.dart';
+import '../../../core/models/nomo_invite.dart';
 import '../../../core/models/nomo_gender.dart';
 import '../../../core/models/nomo_friend.dart';
 import '../../../core/models/nomo_user.dart';
@@ -22,10 +22,13 @@ import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
 import '../../admin/application/admin_controller.dart';
 import '../../admin/presentation/admin_screen.dart';
-import '../../friends/application/drink_invite_controller.dart';
+import '../../friends/application/invite_controller.dart';
+import '../../friends/data/friend_repository.dart';
 import '../../friends/presentation/friend_add_sheet.dart';
-import '../../logs/application/drink_log_controller.dart';
+import '../../memories/application/memory_controller.dart';
+import '../../notifications/application/notification_controller.dart';
 import '../../onboarding/presentation/create_user_dialog.dart';
+import '../data/user_safety_repository.dart';
 import 'avatar_builder_screen.dart';
 import 'photo_archive_screen.dart';
 import '../../../core/widgets/nomo_pop_icon.dart';
@@ -45,16 +48,15 @@ class ProfileScreen extends ConsumerWidget {
     final currentAuthUser = ref.watch(supabaseClientProvider).auth.currentUser;
     final currentAuthUserId = currentAuthUser?.id;
     final reservationsAsync = ref.watch(todayReservationsProvider);
-    final incomingInvitesAsync = ref.watch(incomingDrinkInvitesProvider);
+    final incomingInvitesAsync = ref.watch(incomingInvitesProvider);
     final reservations =
-        reservationsAsync.asData?.value ?? const <NomoDrinkInvite>[];
+        reservationsAsync.asData?.value ?? const <NomoInvite>[];
     final incomingInvites =
-        incomingInvitesAsync.asData?.value ?? const <NomoDrinkInvite>[];
-    final logs =
-        ref.watch(drinkLogControllerProvider).asData?.value ??
-        const <DrinkLog>[];
-    final myLogs = _myProfileLogs(logs, currentAuthUserId);
-    final photoLogs = _photoArchiveLogs(logs, currentAuthUserId);
+        incomingInvitesAsync.asData?.value ?? const <NomoInvite>[];
+    final memories =
+        ref.watch(memoryControllerProvider).asData?.value ?? const <Memory>[];
+    final myMemories = _myProfileMemories(memories, currentAuthUserId);
+    final photoMemories = _photoArchiveMemories(memories, currentAuthUserId);
     final friends =
         ref.watch(friendsProvider).asData?.value ?? const <NomoFriend>[];
     const headerIsWhite = true;
@@ -109,66 +111,71 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 0),
                   Expanded(
-                    child: ColoredBox(
-                      color: bodyBackground,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (reservations.isNotEmpty ||
-                              incomingInvites.isNotEmpty)
-                            ColoredBox(
-                              color: bodyBackground,
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  24,
-                                  16,
-                                  24,
-                                  18,
-                                ),
-                                child: _ProfileReservationStrip(
-                                  isWhite: bodyIsWhite,
-                                  userAvatar: user?.avatar,
-                                  currentUserId: currentAuthUserId,
-                                  reservations: reservations,
-                                  incomingInvites: incomingInvites,
-                                  onAccept: (invite) => _respondDrinkInvite(
-                                    context,
-                                    ref,
-                                    invite,
-                                    accept: true,
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(34),
+                      ),
+                      child: ColoredBox(
+                        color: bodyBackground,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (reservations.isNotEmpty ||
+                                incomingInvites.isNotEmpty)
+                              ColoredBox(
+                                color: bodyBackground,
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    24,
+                                    16,
+                                    24,
+                                    18,
                                   ),
-                                  onReject: (invite) => _respondDrinkInvite(
-                                    context,
-                                    ref,
-                                    invite,
-                                    accept: false,
+                                  child: _ProfileReservationStrip(
+                                    isWhite: bodyIsWhite,
+                                    userAvatar: user?.avatar,
+                                    currentUserId: currentAuthUserId,
+                                    reservations: reservations,
+                                    incomingInvites: incomingInvites,
+                                    onAccept: (invite) => _respondInvite(
+                                      context,
+                                      ref,
+                                      invite,
+                                      accept: true,
+                                    ),
+                                    onReject: (invite) => _respondInvite(
+                                      context,
+                                      ref,
+                                      invite,
+                                      accept: false,
+                                    ),
                                   ),
                                 ),
+                              ),
+                            Expanded(
+                              child: _ProfileActivityHome(
+                                memories: myMemories,
+                                photoMemories: photoMemories,
+                                friendsCount: friends.length,
+                                onMemoriesTap: () => NomoToast.show(
+                                  context,
+                                  'カレンダーを見てみてね。',
+                                  icon: CupertinoIcons.calendar,
+                                ),
+                                onArchiveTap: () => Navigator.of(context).push(
+                                  CupertinoPageRoute<void>(
+                                    fullscreenDialog: true,
+                                    builder: (_) => PhotoArchiveScreen(
+                                      memories: photoMemories,
+                                    ),
+                                  ),
+                                ),
+                                onAddFriendsTap: () =>
+                                    showFriendAddSheet(context, ref),
                               ),
                             ),
-                          Expanded(
-                            child: _ProfileActivityHome(
-                              profileName: user?.name ?? 'ユーザー名',
-                              logs: myLogs,
-                              photoLogs: photoLogs,
-                              friendsCount: friends.length,
-                              onLogsTap: () => NomoToast.show(
-                                context,
-                                'カレンダーを見てみてね。',
-                                icon: CupertinoIcons.calendar,
-                              ),
-                              onArchiveTap: () => Navigator.of(context).push(
-                                CupertinoPageRoute<void>(
-                                  fullscreenDialog: true,
-                                  builder: (_) =>
-                                      PhotoArchiveScreen(logs: photoLogs),
-                                ),
-                              ),
-                              onAddFriendsTap: () =>
-                                  showFriendAddSheet(context, ref),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -182,25 +189,28 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-bool _isMyUserLog(DrinkLog log, String? currentUserId) {
-  if (log.isOfficial) return false;
+bool _isMyUserMemory(Memory memory, String? currentUserId) {
+  if (memory.isOfficial) return false;
   if (currentUserId == null || currentUserId.isEmpty) return true;
-  if (log.ownerUserId.isEmpty) return true;
-  return log.ownerUserId == currentUserId;
+  if (memory.ownerUserId.isEmpty) return true;
+  return memory.ownerUserId == currentUserId;
 }
 
-List<DrinkLog> _myProfileLogs(List<DrinkLog> logs, String? currentAuthUserId) =>
-    logs
-        .where((log) => _isMyUserLog(log, currentAuthUserId))
+List<Memory> _myProfileMemories(
+  List<Memory> memories,
+  String? currentAuthUserId,
+) =>
+    memories
+        .where((memory) => _isMyUserMemory(memory, currentAuthUserId))
         .toList(growable: false)
       ..sort((a, b) => b.date.compareTo(a.date));
 
-List<DrinkLog> _photoArchiveLogs(
-  List<DrinkLog> logs,
+List<Memory> _photoArchiveMemories(
+  List<Memory> memories,
   String? currentAuthUserId,
-) => logs
-    .where((log) => _isMyUserLog(log, currentAuthUserId))
-    .where((log) => (log.photoAssetPath ?? '').trim().isNotEmpty)
+) => memories
+    .where((memory) => _isMyUserMemory(memory, currentAuthUserId))
+    .where((memory) => (memory.photoAssetPath ?? '').trim().isNotEmpty)
     .toList(growable: false);
 
 Future<void> _showProfileStatusSheet(
@@ -228,29 +238,29 @@ class _ProfileColors {
 }
 
 Color _statusColor(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.canDrinkToday => _ProfileColors.lime,
-  NomoDailyStatus.nonAlcohol => const Color(0xFF5DEBD3),
-  NomoDailyStatus.liverRest => _ProfileColors.pink,
+  NomoDailyStatus.available => _ProfileColors.lime,
+  NomoDailyStatus.maybeAvailable => const Color(0xFF5DEBD3),
+  NomoDailyStatus.dependsOnTime => _ProfileColors.pink,
   NomoDailyStatus.hasPlans => const Color(0xFFB8C1CD),
   NomoDailyStatus.unselected => _ProfileColors.sub,
 };
 
 IconData _statusIcon(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.canDrinkToday => CupertinoIcons.checkmark_circle_fill,
-  NomoDailyStatus.nonAlcohol => CupertinoIcons.drop_fill,
-  NomoDailyStatus.liverRest => CupertinoIcons.clock_fill,
+  NomoDailyStatus.available => CupertinoIcons.checkmark_circle_fill,
+  NomoDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
+  NomoDailyStatus.dependsOnTime => CupertinoIcons.clock_fill,
   NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
   NomoDailyStatus.unselected => CupertinoIcons.circle,
 };
 
-Future<void> _respondDrinkInvite(
+Future<void> _respondInvite(
   BuildContext context,
   WidgetRef ref,
-  NomoDrinkInvite invite, {
+  NomoInvite invite, {
   required bool accept,
 }) async {
   try {
-    final controller = ref.read(drinkInviteControllerProvider);
+    final controller = ref.read(inviteControllerProvider);
     if (accept) {
       await controller.accept(invite.id);
     } else {
@@ -265,8 +275,8 @@ Future<void> _respondDrinkInvite(
 }
 
 const _selectableDailyStatuses = <NomoDailyStatus>[
-  NomoDailyStatus.canDrinkToday,
-  NomoDailyStatus.nonAlcohol,
-  NomoDailyStatus.liverRest,
+  NomoDailyStatus.available,
+  NomoDailyStatus.maybeAvailable,
+  NomoDailyStatus.dependsOnTime,
   NomoDailyStatus.hasPlans,
 ];

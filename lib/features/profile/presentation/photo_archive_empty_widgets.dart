@@ -71,28 +71,28 @@ class _ArchiveEmptyState extends StatelessWidget {
   );
 }
 
-List<DrinkLog> _archivePreviewLogs(List<DrinkLog> sorted) {
-  final memoryLog = _randomMemoryLog(sorted);
-  if (memoryLog == null) return const <DrinkLog>[];
-  final rest = sorted.where((log) => log.id != memoryLog.id).take(2);
-  return [memoryLog, ...rest];
+List<Memory> _archivePreviewMemories(List<Memory> sorted) {
+  final featuredMemory = _randomFeaturedMemory(sorted);
+  if (featuredMemory == null) return const <Memory>[];
+  final rest = sorted.where((memory) => memory.id != featuredMemory.id).take(2);
+  return [featuredMemory, ...rest];
 }
 
-DrinkLog? _randomMemoryLog(List<DrinkLog> sorted) {
+Memory? _randomFeaturedMemory(List<Memory> sorted) {
   if (sorted.isEmpty) return null;
   if (sorted.length == 1) return sorted.first;
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
-  final olderLogs = sorted
+  final olderMemories = sorted
       .where(
-        (log) => DateTime(
-          log.date.year,
-          log.date.month,
-          log.date.day,
+        (memory) => DateTime(
+          memory.date.year,
+          memory.date.month,
+          memory.date.day,
         ).isBefore(today),
       )
       .toList(growable: false);
-  final pool = olderLogs.isEmpty ? sorted : olderLogs;
+  final pool = olderMemories.isEmpty ? sorted : olderMemories;
   final seed = today.year * 10000 + today.month * 100 + today.day + pool.length;
   return pool[seed % pool.length];
 }
@@ -113,13 +113,13 @@ String _memoryAgoLabel(DateTime date) {
   return '$years年前';
 }
 
-List<DrinkLog> _sortedPhotoLogs(List<DrinkLog> logs) {
-  final sorted = logs.where(_hasDisplayablePhoto).toList(growable: false);
+List<Memory> _sortedPhotoMemories(List<Memory> memories) {
+  final sorted = memories.where(_hasDisplayablePhoto).toList(growable: false);
   return [...sorted]..sort((a, b) => b.date.compareTo(a.date));
 }
 
-bool _hasDisplayablePhoto(DrinkLog log) {
-  final path = log.photoAssetPath?.trim();
+bool _hasDisplayablePhoto(Memory memory) {
+  final path = memory.photoAssetPath?.trim();
   return path != null && path.isNotEmpty;
 }
 
@@ -138,10 +138,10 @@ ImageProvider? _imageProviderFor(String? value) {
   return null;
 }
 
-String _archiveTitle(DrinkLog log) {
-  final place = log.place.trim();
+String _archiveTitle(Memory memory) {
+  final place = memory.place.trim();
   if (place.isNotEmpty) return place;
-  final memo = log.memo.trim();
+  final memo = memory.memo.trim();
   if (memo.isNotEmpty) return memo;
   return '思い出';
 }

@@ -91,6 +91,11 @@ class _AdminSegmentedControl extends StatelessWidget {
             onTap: () => onChanged(_AdminSection.posts),
           ),
           _AdminSegmentButton(
+            label: '通報',
+            selected: section == _AdminSection.reports,
+            onTap: () => onChanged(_AdminSection.reports),
+          ),
+          _AdminSegmentButton(
             label: '通知',
             selected: section == _AdminSection.notifications,
             onTap: () => onChanged(_AdminSection.notifications),
@@ -99,6 +104,280 @@ class _AdminSegmentedControl extends StatelessWidget {
       ),
     );
   }
+}
+
+class _AdminReportsPane extends StatelessWidget {
+  const _AdminReportsPane({required this.ref});
+
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final reportsAsync = ref.watch(adminMemoryReportsProvider);
+    return Column(
+      children: [
+        _AdminPaneToolbar(
+          title: '通報・モデレーション',
+          actionLabel: '更新',
+          onAction: () => ref.invalidate(adminMemoryReportsProvider),
+          onRefresh: () => ref.invalidate(adminMemoryReportsProvider),
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: reportsAsync.when(
+            data: (reports) {
+              if (reports.isEmpty) {
+                return const _AdminEmptyState(message: '未対応の通報はありません。');
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.only(bottom: 120),
+                itemBuilder: (context, index) => _AdminReportCard(
+                  ref: ref,
+                  report: reports[index],
+                  onStatus: (status) => _showReportStatusSheet(
+                    context,
+                    ref,
+                    reports[index],
+                    status,
+                  ),
+                  onDeletePost: () =>
+                      _confirmDeleteReportedPost(context, ref, reports[index]),
+                ),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemCount: reports.length,
+              );
+            },
+            loading: () => const Center(
+              child: CupertinoActivityIndicator(color: _AdminColors.lime),
+            ),
+            error: (error, _) => _AdminErrorState(
+              message: '$error',
+              onRetry: () => ref.invalidate(adminMemoryReportsProvider),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AdminReportCard extends StatelessWidget {
+  const _AdminReportCard({
+    required this.ref,
+    required this.report,
+    required this.onStatus,
+    required this.onDeletePost,
+  });
+
+  final WidgetRef ref;
+  final AdminMemoryReport report;
+  final ValueChanged<String> onStatus;
+  final VoidCallback onDeletePost;
+
+  @override
+  Widget build(BuildContext context) => _AdminCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: _AdminColors.lime.withValues(alpha: .16),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                _adminReportReasonLabel(report.reason),
+                style: const TextStyle(
+                  color: _AdminColors.lime,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _adminReportStatusLabel(report.status),
+              style: const TextStyle(
+                color: _AdminColors.sub,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          report.memo.isEmpty ? 'メモなし' : report.memo,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            fontSize: 16,
+          ),
+        ),
+        if (report.photoPath.trim().isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _AdminReportPhotoPreview(ref: ref, path: report.photoPath),
+        ],
+        const SizedBox(height: 8),
+        Text(
+          '投稿者: ${report.ownerDisplayName} @${report.ownerHandle}',
+          style: const TextStyle(
+            color: _AdminColors.sub,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '通報者: ${report.reporterDisplayName} @${report.reporterHandle}',
+          style: const TextStyle(
+            color: _AdminColors.sub,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        if ((report.moderationNote ?? '').trim().isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            'メモ: ${report.moderationNote!.trim()}',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _AdminSmallActionButton(
+              label: '対応中',
+              onTap: () => onStatus('reviewing'),
+            ),
+            _AdminSmallActionButton(
+              label: '解決',
+              onTap: () => onStatus('resolved'),
+            ),
+            _AdminSmallActionButton(
+              label: '却下',
+              destructive: true,
+              onTap: () => onStatus('dismissed'),
+            ),
+            _AdminSmallActionButton(
+              label: '投稿削除',
+              destructive: true,
+              onTap: onDeletePost,
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+class _AdminReportPhotoPreview extends StatelessWidget {
+  const _AdminReportPhotoPreview({required this.ref, required this.path});
+
+  final WidgetRef ref;
+  final String path;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: ref.read(adminControllerProvider).displayPhotoUrl(path),
+      builder: (context, snapshot) {
+        final url = snapshot.data;
+        Widget child;
+        if (snapshot.connectionState != ConnectionState.done) {
+          child = const Center(
+            child: CupertinoActivityIndicator(color: _AdminColors.lime),
+          );
+        } else if (url == null || url.isEmpty) {
+          child = const Center(
+            child: Text(
+              '写真を表示できません',
+              style: TextStyle(
+                color: _AdminColors.sub,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          );
+        } else if (url.startsWith('assets/')) {
+          child = Image.asset(url, fit: BoxFit.cover);
+        } else if (url.startsWith('/')) {
+          child = Image.file(File(url), fit: BoxFit.cover);
+        } else {
+          child = Image.network(
+            url,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => const Center(
+              child: Text(
+                '写真を表示できません',
+                style: TextStyle(
+                  color: _AdminColors.sub,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          );
+        }
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: ColoredBox(
+              color: Colors.black.withValues(alpha: .24),
+              child: child,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AdminSmallActionButton extends StatelessWidget {
+  const _AdminSmallActionButton({
+    required this.label,
+    required this.onTap,
+    this.destructive = false,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: destructive
+            ? const Color(0xFFFF5A72).withValues(alpha: .16)
+            : _AdminColors.lime.withValues(alpha: .16),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: destructive
+              ? const Color(0xFFFF5A72).withValues(alpha: .35)
+              : _AdminColors.lime.withValues(alpha: .35),
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: destructive ? const Color(0xFFFF8EA0) : _AdminColors.lime,
+          fontWeight: FontWeight.w900,
+          fontSize: 12,
+        ),
+      ),
+    ),
+  );
 }
 
 class _AdminSegmentButton extends StatelessWidget {
@@ -193,31 +472,33 @@ class _AdminPostsPane extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logsAsync = ref.watch(adminDrinkLogsProvider);
+    final logsAsync = ref.watch(adminMemorysProvider);
     return Column(
       children: [
         _AdminPaneToolbar(
           title: '思い出管理',
           actionLabel: '作成',
           onAction: () => _showPostSheet(context, ref),
-          onRefresh: () => ref.invalidate(adminDrinkLogsProvider),
+          onRefresh: () => ref.invalidate(adminMemorysProvider),
         ),
         const SizedBox(height: 12),
         Expanded(
           child: logsAsync.when(
-            data: (logs) {
-              if (logs.isEmpty) {
+            data: (memories) {
+              if (memories.isEmpty) {
                 return const _AdminEmptyState(message: '思い出がまだありません。');
               }
               return ListView.separated(
                 padding: const EdgeInsets.only(bottom: 120),
                 itemBuilder: (context, index) => _AdminPostCard(
-                  log: logs[index],
-                  onEdit: () => _showPostSheet(context, ref, log: logs[index]),
-                  onDelete: () => _confirmDeletePost(context, ref, logs[index]),
+                  memory: memories[index],
+                  onEdit: () =>
+                      _showPostSheet(context, ref, memory: memories[index]),
+                  onDelete: () =>
+                      _confirmDeletePost(context, ref, memories[index]),
                 ),
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemCount: logs.length,
+                itemCount: memories.length,
               );
             },
             loading: () => const Center(
@@ -225,7 +506,7 @@ class _AdminPostsPane extends StatelessWidget {
             ),
             error: (error, _) => _AdminErrorState(
               message: '$error',
-              onRetry: () => ref.invalidate(adminDrinkLogsProvider),
+              onRetry: () => ref.invalidate(adminMemorysProvider),
             ),
           ),
         ),

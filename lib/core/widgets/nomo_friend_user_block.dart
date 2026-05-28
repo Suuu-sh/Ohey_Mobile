@@ -25,6 +25,7 @@ class NomoFriendUserBlock extends StatelessWidget {
     this.onTap,
     this.showFavorite = false,
     this.showInvite = false,
+    this.inviteAvailable = true,
     this.inviteSent = false,
     this.onInviteAnimationComplete,
     this.compact = false,
@@ -41,6 +42,7 @@ class NomoFriendUserBlock extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showFavorite;
   final bool showInvite;
+  final bool inviteAvailable;
   final bool inviteSent;
   final VoidCallback? onInviteAnimationComplete;
   final bool compact;
@@ -53,10 +55,15 @@ class NomoFriendUserBlock extends StatelessWidget {
         ? (isWhite ? const Color(0xFF101820) : Colors.white)
         : (isWhite ? const Color(0xFF667381) : const Color(0xFF8792A3));
     final avatarSize = compact ? 52.0 : 62.0;
-    final inviteEnabled = statusEnabled && !inviteSent;
-    final inviteButtonColor = inviteSent ? const Color(0xFF3C4652) : accent;
+    final inviteEnabled =
+        statusEnabled && inviteAvailable && !inviteSent && onInvite != null;
+    final inviteButtonColor = inviteSent || !inviteAvailable
+        ? const Color(0xFF3C4652)
+        : accent;
     final inviteForeground = inviteSent
         ? const Color(0xFFC3CAD3)
+        : !inviteAvailable
+        ? const Color(0xFF9AA4B2)
         : statusEnabled
         ? const Color(0xFF071320)
         : const Color(0xFF738092);
@@ -175,6 +182,8 @@ class NomoFriendUserBlock extends StatelessWidget {
                         color: inviteButtonColor,
                         foregroundColor: inviteForeground,
                         shadowColor: inviteSent
+                            ? const Color(0xFF1A222C)
+                            : !inviteAvailable
                             ? const Color(0xFF1A222C)
                             : statusEnabled
                             ? Color.lerp(accent, Colors.black, .32)

@@ -72,12 +72,16 @@ BoxDecoration _feedCardDecoration({required double radius}) => BoxDecoration(
 );
 
 List<_FeedItem> _feedItems(
-  List<DrinkLog> logs, {
+  List<Memory> memories, {
   NomoUser? user,
   String? currentUserId,
-}) => logs
+}) => memories
     .map(
-      (log) => _FeedItem.fromLog(log, user: user, currentUserId: currentUserId),
+      (memory) => _FeedItem.fromMemory(
+        memory,
+        user: user,
+        currentUserId: currentUserId,
+      ),
     )
     .where((item) => item.displayable)
     .toList(growable: false);
@@ -109,16 +113,17 @@ class _FeedItem {
     this.canDelete = false,
   });
 
-  factory _FeedItem.fromLog(
-    DrinkLog log, {
+  factory _FeedItem.fromMemory(
+    Memory memory, {
     NomoUser? user,
     String? currentUserId,
   }) {
-    final accent = _accentForId(log.id);
-    final ownerName = log.ownerDisplayName.trim();
+    final accent = _accentForId(memory.id);
+    final ownerName = memory.ownerDisplayName.trim();
     final isOwnedByCurrentUser =
-        currentUserId?.isNotEmpty == true && log.ownerUserId == currentUserId;
-    final backendAuthorName = log.feedAuthorName.trim();
+        currentUserId?.isNotEmpty == true &&
+        memory.ownerUserId == currentUserId;
+    final backendAuthorName = memory.feedAuthorName.trim();
     final authorName = backendAuthorName.isNotEmpty
         ? backendAuthorName
         : ownerName.isNotEmpty
@@ -126,31 +131,31 @@ class _FeedItem {
         : (isOwnedByCurrentUser && user?.name.trim().isNotEmpty == true)
         ? user!.name.trim()
         : user?.userId ?? 'nomo_user';
-    final avatar = log.isOfficial
+    final avatar = memory.isOfficial
         ? NomoAvatar.adminAvatar
-        : log.ownerAvatar ??
+        : memory.ownerAvatar ??
               (isOwnedByCurrentUser ? user?.avatar : null) ??
               NomoAvatar.defaultAvatar;
     return _FeedItem(
-      id: log.id,
-      userName: log.isOfficial ? 'Nomo' : authorName,
-      timeAgo: _relativeTime(log.date),
-      body: log.memo.trim(),
-      place: log.place.trim(),
+      id: memory.id,
+      userName: memory.isOfficial ? 'Nomo' : authorName,
+      timeAgo: _relativeTime(memory.date),
+      body: memory.memo.trim(),
+      place: memory.place.trim(),
       avatar: avatar,
       accent: accent,
-      photoAssetPath: log.photoAssetPath,
-      captionY: log.captionY,
-      linkUrl: log.linkUrl ?? '',
-      friends: log.friends.map(_Companion.fromFriend).toList(),
-      likes: log.likeCount,
-      saved: log.id.hashCode.isEven,
-      liked: log.likedByMe,
-      prop: _PostProp.beer,
-      tilt: log.feedTilt ?? (log.id.hashCode.isEven ? -.08 : .08),
-      ownerUserId: log.ownerUserId,
-      ownedByMe: log.feedPostKind == 'mine' || isOwnedByCurrentUser,
-      isOfficial: log.feedPostKind == 'official' || log.isOfficial,
+      photoAssetPath: memory.photoAssetPath,
+      captionY: memory.captionY,
+      linkUrl: memory.linkUrl ?? '',
+      friends: memory.friends.map(_Companion.fromFriend).toList(),
+      likes: memory.likeCount,
+      saved: memory.id.hashCode.isEven,
+      liked: memory.likedByMe,
+      prop: _PostProp.memory,
+      tilt: memory.feedTilt ?? (memory.id.hashCode.isEven ? -.08 : .08),
+      ownerUserId: memory.ownerUserId,
+      ownedByMe: memory.feedPostKind == 'mine' || isOwnedByCurrentUser,
+      isOfficial: memory.feedPostKind == 'official' || memory.isOfficial,
       sparkles: const [
         Offset(12, 18),
         Offset(54, 2),
@@ -158,12 +163,12 @@ class _FeedItem {
         Offset(28, 66),
       ],
       displayable:
-          log.feedDisplayable &&
-          (log.isOfficial ||
-              _isDisplayablePostPhoto(log.photoAssetPath) ||
-              log.feedPostKind == 'official'),
-      canReport: log.feedCanReport,
-      canDelete: log.feedCanDelete,
+          memory.feedDisplayable &&
+          (memory.isOfficial ||
+              _isDisplayablePostPhoto(memory.photoAssetPath) ||
+              memory.feedPostKind == 'official'),
+      canReport: memory.feedCanReport,
+      canDelete: memory.feedCanDelete,
     );
   }
 
@@ -206,7 +211,7 @@ class _FeedItem {
   final bool canDelete;
 }
 
-enum _PostProp { beer, ticket, spark }
+enum _PostProp { memory, ticket, spark }
 
 enum _FeedPostKind { mine, friend, official }
 
@@ -244,8 +249,8 @@ class _Companion {
     avatarEmoji: '👤',
     vibe: handle.replaceFirst('@', ''),
     characterAssetPath: '',
-    kind: NomiTomoKind.cloud,
-    palette: NomiTomoPalette.lavender,
+    kind: NomoFriendKind.cloud,
+    palette: NomoFriendPalette.lavender,
     avatar: avatar,
     statusKey: statusKey,
   );
@@ -262,9 +267,9 @@ String _companionStatusMessage(String? statusKey) {
 IconData _companionStatusIcon(String? statusKey) {
   final status = nomoDailyStatusFromKey(statusKey);
   return switch (status) {
-    NomoDailyStatus.canDrinkToday => CupertinoIcons.checkmark_circle_fill,
-    NomoDailyStatus.nonAlcohol => CupertinoIcons.drop_fill,
-    NomoDailyStatus.liverRest => CupertinoIcons.moon_fill,
+    NomoDailyStatus.available => CupertinoIcons.checkmark_circle_fill,
+    NomoDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
+    NomoDailyStatus.dependsOnTime => CupertinoIcons.moon_fill,
     NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
     NomoDailyStatus.unselected => CupertinoIcons.circle,
   };
@@ -273,9 +278,9 @@ IconData _companionStatusIcon(String? statusKey) {
 Color _companionStatusColor(String? statusKey) {
   final status = nomoDailyStatusFromKey(statusKey);
   return switch (status) {
-    NomoDailyStatus.canDrinkToday => const Color(0xFF9AF21A),
-    NomoDailyStatus.nonAlcohol => const Color(0xFF5DEBD3),
-    NomoDailyStatus.liverRest => const Color(0xFFFF5EA8),
+    NomoDailyStatus.available => const Color(0xFF9AF21A),
+    NomoDailyStatus.maybeAvailable => const Color(0xFF5DEBD3),
+    NomoDailyStatus.dependsOnTime => const Color(0xFFFF5EA8),
     NomoDailyStatus.hasPlans => const Color(0xFFB8C1CD),
     NomoDailyStatus.unselected => _FeedColors.sub,
   };
@@ -292,8 +297,8 @@ class _FeedNotification {
     required this.unread,
     this.friendRequestId,
     this.friendRequestStatus,
-    this.drinkInviteId,
-    this.drinkInviteStatus,
+    this.inviteId,
+    this.inviteStatus,
   });
 
   factory _FeedNotification.fromNotification(NomoNotification notification) {
@@ -303,32 +308,32 @@ class _FeedNotification {
       message: notification.displayMessage,
       timeAgo: _relativeTimeText(notification.createdAt),
       icon: switch (notification.kind) {
-        'drink_log_like' => CupertinoIcons.heart_fill,
+        'memory_like' => CupertinoIcons.heart_fill,
         'friend_request_received' => CupertinoIcons.person_badge_plus_fill,
         'friend_request_accepted' => CupertinoIcons.checkmark_seal_fill,
-        'drink_invite_received' => CupertinoIcons.calendar_badge_plus,
-        'drink_invite_accepted' => CupertinoIcons.checkmark_circle_fill,
+        'invite_received' => CupertinoIcons.calendar_badge_plus,
+        'invite_accepted' => CupertinoIcons.checkmark_circle_fill,
         'today_reservation_reminder' => CupertinoIcons.calendar_today,
-        'drink_log_tagged' => CupertinoIcons.person_2_fill,
+        'memory_tagged' => CupertinoIcons.person_2_fill,
         'system' => CupertinoIcons.bell_fill,
         _ => CupertinoIcons.bell_fill,
       },
       accent: switch (notification.kind) {
-        'drink_log_like' => const Color(0xFFFF75B5),
+        'memory_like' => const Color(0xFFFF75B5),
         'friend_request_received' => const Color(0xFF58D6FF),
         'friend_request_accepted' => const Color(0xFF9AF21A),
-        'drink_invite_received' => const Color(0xFFC08BFF),
-        'drink_invite_accepted' => _FeedColors.teal,
+        'invite_received' => const Color(0xFFC08BFF),
+        'invite_accepted' => _FeedColors.teal,
         'today_reservation_reminder' => const Color(0xFFFFD166),
-        'drink_log_tagged' => const Color(0xFF58D6FF),
+        'memory_tagged' => const Color(0xFF58D6FF),
         'system' => const Color(0xFFFFD166),
         _ => _FeedColors.teal,
       },
       unread: notification.isUnread,
       friendRequestId: notification.friendRequestId,
       friendRequestStatus: notification.friendRequestStatus,
-      drinkInviteId: notification.drinkInviteId,
-      drinkInviteStatus: notification.drinkInviteStatus,
+      inviteId: notification.inviteId,
+      inviteStatus: notification.inviteStatus,
     );
   }
 
@@ -341,15 +346,15 @@ class _FeedNotification {
   final bool unread;
   final String? friendRequestId;
   final String? friendRequestStatus;
-  final String? drinkInviteId;
-  final String? drinkInviteStatus;
+  final String? inviteId;
+  final String? inviteStatus;
 
   bool get canOpen {
     if (kind == 'friend_request_received') {
       return friendRequestId != null && friendRequestId!.isNotEmpty;
     }
-    if (kind == 'drink_invite_received') {
-      return drinkInviteId != null && drinkInviteId!.isNotEmpty;
+    if (kind == 'invite_received') {
+      return inviteId != null && inviteId!.isNotEmpty;
     }
     return false;
   }
@@ -358,8 +363,8 @@ class _FeedNotification {
     if (kind == 'friend_request_received') {
       return nomoFriendRequestStatusFromKey(friendRequestStatus).isPending;
     }
-    if (kind == 'drink_invite_received') {
-      return nomoDrinkInviteStatusFromKey(drinkInviteStatus).isPending;
+    if (kind == 'invite_received') {
+      return nomoInviteStatusFromKey(inviteStatus).isPending;
     }
     return false;
   }
@@ -368,8 +373,8 @@ class _FeedNotification {
     if (kind == 'friend_request_received') {
       return !nomoFriendRequestStatusFromKey(friendRequestStatus).isPending;
     }
-    if (kind == 'drink_invite_received') {
-      return !nomoDrinkInviteStatusFromKey(drinkInviteStatus).isPending;
+    if (kind == 'invite_received') {
+      return !nomoInviteStatusFromKey(inviteStatus).isPending;
     }
     return false;
   }
@@ -378,8 +383,8 @@ class _FeedNotification {
     if (kind == 'friend_request_received') {
       return nomoFriendRequestStatusFromKey(friendRequestStatus).actionLabel;
     }
-    if (kind == 'drink_invite_received') {
-      return nomoDrinkInviteStatusFromKey(drinkInviteStatus).actionLabel;
+    if (kind == 'invite_received') {
+      return nomoInviteStatusFromKey(inviteStatus).actionLabel;
     }
     return null;
   }

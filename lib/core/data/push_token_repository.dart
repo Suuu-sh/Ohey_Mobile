@@ -29,6 +29,12 @@ class PushTokenRepository {
     if (!hasSignedInUser || token.trim().isEmpty) return;
     await _client.put('/v1/me/push-token', pushTokenPayload(token));
   }
+
+  Future<void> unregisterToken(String? token) async {
+    final normalized = token?.trim();
+    if (!hasSignedInUser || normalized == null || normalized.isEmpty) return;
+    await _client.delete('/v1/me/push-token', body: {'token': normalized});
+  }
 }
 
 String currentPushPlatformKey() => Platform.isAndroid ? 'android' : 'ios';

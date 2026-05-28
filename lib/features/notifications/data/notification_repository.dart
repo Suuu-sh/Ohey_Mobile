@@ -15,11 +15,11 @@ class NomoNotification {
     required this.createdAt,
     required this.isUnread,
     this.actorUserId,
-    this.drinkLogId,
+    this.memoryId,
     this.friendRequestId,
     this.friendRequestStatus,
-    this.drinkInviteId,
-    this.drinkInviteStatus,
+    this.inviteId,
+    this.inviteStatus,
     this.notificationDate,
     this.systemKey,
   });
@@ -31,11 +31,11 @@ class NomoNotification {
   final DateTime createdAt;
   final bool isUnread;
   final String? actorUserId;
-  final String? drinkLogId;
+  final String? memoryId;
   final String? friendRequestId;
   final String? friendRequestStatus;
-  final String? drinkInviteId;
-  final String? drinkInviteStatus;
+  final String? inviteId;
+  final String? inviteStatus;
   final DateTime? notificationDate;
   final String? systemKey;
 
@@ -50,11 +50,11 @@ class NomoNotification {
     createdAt: createdAt,
     isUnread: false,
     actorUserId: actorUserId,
-    drinkLogId: drinkLogId,
+    memoryId: memoryId,
     friendRequestId: friendRequestId,
     friendRequestStatus: friendRequestStatus,
-    drinkInviteId: drinkInviteId,
-    drinkInviteStatus: drinkInviteStatus,
+    inviteId: inviteId,
+    inviteStatus: inviteStatus,
     notificationDate: notificationDate,
     systemKey: systemKey,
   );
@@ -65,13 +65,11 @@ class NomoNotification {
     final friendRequestMap = friendRequest is Map
         ? Map<String, dynamic>.from(friendRequest)
         : null;
-    final drinkInvite = json['drink_invite'];
-    final drinkInviteMap = drinkInvite is Map
-        ? Map<String, dynamic>.from(drinkInvite)
-        : null;
+    final invite = json['invite'];
+    final inviteMap = invite is Map ? Map<String, dynamic>.from(invite) : null;
     return NomoNotification(
       id: json['id'] as String,
-      kind: (json['kind'] as String?) ?? 'drink_log_like',
+      kind: (json['kind'] as String?) ?? 'memory_like',
       title: (json['title'] as String?) ?? 'お知らせ',
       message: (json['message'] as String?) ?? '',
       createdAt: createdAtText == null
@@ -79,11 +77,11 @@ class NomoNotification {
           : DateTime.parse(createdAtText).toLocal(),
       isUnread: json['read_at'] == null,
       actorUserId: json['actor_user_id'] as String?,
-      drinkLogId: json['drink_log_id'] as String?,
+      memoryId: json['memory_id'] as String?,
       friendRequestId: json['friend_request_id'] as String?,
       friendRequestStatus: friendRequestMap?['status'] as String?,
-      drinkInviteId: json['drink_invite_id'] as String?,
-      drinkInviteStatus: drinkInviteMap?['status'] as String?,
+      inviteId: json['invite_id'] as String?,
+      inviteStatus: inviteMap?['status'] as String?,
       notificationDate: _dateOnly(json['notification_date'] as String?),
       systemKey: json['system_key'] as String?,
     );
@@ -97,10 +95,7 @@ abstract interface class NotificationRepository {
     required String friendRequestId,
     required String status,
   });
-  Future<void> updateDrinkInvite({
-    required String drinkInviteId,
-    required String status,
-  });
+  Future<void> updateInvite({required String inviteId, required String status});
 }
 
 class BackendNotificationRepository implements NotificationRepository {
@@ -133,11 +128,11 @@ class BackendNotificationRepository implements NotificationRepository {
   }
 
   @override
-  Future<void> updateDrinkInvite({
-    required String drinkInviteId,
+  Future<void> updateInvite({
+    required String inviteId,
     required String status,
   }) async {
-    await _client.patch('/v1/drink-invites/$drinkInviteId', {'status': status});
+    await _client.patch('/v1/invites/$inviteId', {'status': status});
   }
 }
 

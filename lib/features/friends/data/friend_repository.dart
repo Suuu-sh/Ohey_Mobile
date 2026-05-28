@@ -7,6 +7,11 @@ final friendRepositoryProvider = Provider<FriendRepository>((ref) {
   return FriendRepository(ref.watch(backendApiClientProvider));
 });
 
+final pendingFriendRequestsProvider =
+    FutureProvider<List<NomoFriendRequestItem>>((ref) {
+      return ref.watch(friendRepositoryProvider).fetchPendingFriendRequests();
+    });
+
 class FriendRepository {
   const FriendRepository(this._client);
 
@@ -53,8 +58,36 @@ class FriendRepository {
     await _client.post('/v1/friends', {'friend_id': friendId});
   }
 
+  Future<void> deleteFriend(String friendId) async {
+    await _client.delete('/v1/friends/${Uri.encodeComponent(friendId)}');
+  }
+
   Future<void> sendFriendRequest(String friendId) async {
     await _client.post('/v1/friend-requests', {'to_user_id': friendId});
+  }
+
+  Future<List<NomoFriendRequestItem>> fetchPendingFriendRequests({
+    String direction = 'all',
+  }) async {
+    final rows = await _client.getRows(
+      '/v1/friend-requests',
+      query: {'direction': direction},
+    );
+    final currentUserId = _client.currentUserId ?? '';
+    return rows
+        .map((row) => NomoFriendRequestItem.fromRow(row, currentUserId))
+        .toList(growable: false);
+  }
+
+  Future<void> updateFriendRequest(String requestId, String status) async {
+    await _client.patch(
+      '/v1/friend-requests/${Uri.encodeComponent(requestId)}',
+      {'status': status},
+    );
+  }
+
+  Future<void> cancelFriendRequest(String requestId) async {
+    await updateFriendRequest(requestId, 'cancelled');
   }
 }
 
@@ -91,6 +124,7 @@ class NomoFriendRelationshipStatus {
   const NomoFriendRelationshipStatus({
     required this.alreadyFriend,
     required this.requestState,
+    this.requestId,
   });
 
   factory NomoFriendRelationshipStatus.fromRow(Map<String, dynamic> row) {
@@ -102,9 +136,60 @@ class NomoFriendRelationshipStatus {
     return NomoFriendRelationshipStatus(
       alreadyFriend: (row['already_friend'] as bool?) ?? false,
       requestState: requestState,
+      requestId: (row['request_id'] as String?)?.trim(),
     );
   }
 
   final bool alreadyFriend;
   final NomoFriendRequestState requestState;
+  final String? requestId;
+}
+
+enum NomoFriendRequestDirection { incoming, outgoing }
+
+class NomoFriendRequestItem {
+  const NomoFriendRequestItem({
+    required this.id,
+    required this.fromUserId,
+    required this.toUserId,
+    required this.direction,
+    required this.otherUser,
+    this.createdAt,
+  });
+
+  factory NomoFriendRequestItem.fromRow(
+    Map<String, dynamic> row,
+    String currentUserId,
+  ) {
+    final fromUserId = (row['from_user_id'] as String?)?.trim() ?? '';
+    final toUserId = (row['to_user_id'] as String?)?.trim() ?? '';
+    final isOutgoing = fromUserId == currentUserId;
+    final rawOther = isOutgoing ? row['invitee'] : row['inviter'];
+    final fallbackOtherId = isOutgoing ? toUserId : fromUserId;
+    final otherRow = rawOther is Map
+        ? Map<String, dynamic>.from(rawOther)
+        : <String, dynamic>{'id': fallbackOtherId};
+    otherRow.putIfAbsent('id', () => fallbackOtherId);
+
+    return NomoFriendRequestItem(
+      id: row['id'] as String,
+      fromUserId: fromUserId,
+      toUserId: toUserId,
+      direction: isOutgoing
+          ? NomoFriendRequestDirection.outgoing
+          : NomoFriendRequestDirection.incoming,
+      otherUser: NomoFriendProfile.fromRow(otherRow),
+      createdAt: DateTime.tryParse((row['created_at'] as String?) ?? ''),
+    );
+  }
+
+  final String id;
+  final String fromUserId;
+  final String toUserId;
+  final NomoFriendRequestDirection direction;
+  final NomoFriendProfile otherUser;
+  final DateTime? createdAt;
+
+  bool get isOutgoing => direction == NomoFriendRequestDirection.outgoing;
+  bool get isIncoming => direction == NomoFriendRequestDirection.incoming;
 }

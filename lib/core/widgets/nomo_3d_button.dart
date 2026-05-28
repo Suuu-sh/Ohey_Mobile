@@ -258,7 +258,6 @@ class _Nomo3DButtonSurfaceState extends State<Nomo3DButtonSurface> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final expandsWidth = constraints.hasBoundedWidth;
-
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapDown: canTap ? (_) => _setPressed(true) : null,

@@ -24,7 +24,7 @@ class AppColors {
   static const softBlue = Color(0xFFF1F6FF);
   static const softGray = Color(0xFFF8F9FD);
   static const line = Color(0xFFE9ECF5);
-  static const beer = Color(0xFFF5B84B);
+  static const amber = Color(0xFFF5B84B);
   static const darkBackground = Color(0xFF071320);
   static const darkBackgroundTop = darkBackground;
   static const darkBackgroundMiddle = darkBackground;
@@ -39,7 +39,7 @@ class AppColors {
   static const invite = Color(0xFF22D7C5);
   static const inviteShadow = Color(0xFF109F91);
   static const info = blue;
-  static const warning = beer;
+  static const warning = amber;
   static const danger = Color(0xFFFF5F8F);
   static const dangerShadow = Color(0xFFC9416D);
 

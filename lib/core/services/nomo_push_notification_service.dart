@@ -22,6 +22,7 @@ class NomoPushNotificationService {
   final Ref _ref;
   StreamSubscription<String>? _tokenRefreshSub;
   bool _started = false;
+  String? _lastRegisteredToken;
 
   Future<void> start() async {
     if (_started || kIsWeb || !(Platform.isIOS || Platform.isAndroid)) return;
@@ -47,8 +48,8 @@ class NomoPushNotificationService {
         sound: true,
       );
       await _registerCurrentToken();
-      _tokenRefreshSub ??= messaging.onTokenRefresh.listen((_) {
-        unawaited(_registerCurrentToken());
+      _tokenRefreshSub ??= messaging.onTokenRefresh.listen((token) {
+        unawaited(_registerToken(token, retirePrevious: true));
       });
     } on Object catch (error, stackTrace) {
       if (kDebugMode) {
@@ -61,7 +62,34 @@ class NomoPushNotificationService {
   Future<void> _registerCurrentToken() async {
     final token = await FirebaseMessaging.instance.getToken();
     if (token == null || token.isEmpty) return;
-    await _ref.read(pushTokenRepositoryProvider).registerToken(token);
+    await _registerToken(token, retirePrevious: false);
+  }
+
+  Future<void> _registerToken(
+    String token, {
+    required bool retirePrevious,
+  }) async {
+    final normalized = token.trim();
+    if (normalized.isEmpty) return;
+    final repository = _ref.read(pushTokenRepositoryProvider);
+    final previous = _lastRegisteredToken;
+    if (retirePrevious && previous != null && previous != normalized) {
+      await repository.unregisterToken(previous);
+    }
+    await repository.registerToken(normalized);
+    _lastRegisteredToken = normalized;
+  }
+
+  Future<void> unregisterCurrentToken() async {
+    if (kIsWeb || !(Platform.isIOS || Platform.isAndroid)) return;
+    try {
+      final token =
+          _lastRegisteredToken ?? await FirebaseMessaging.instance.getToken();
+      await _ref.read(pushTokenRepositoryProvider).unregisterToken(token);
+      _lastRegisteredToken = null;
+    } catch (_) {
+      // Push token cleanup should never block logout.
+    }
   }
 
   void dispose() {

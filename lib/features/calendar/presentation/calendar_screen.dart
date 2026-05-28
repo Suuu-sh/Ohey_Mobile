@@ -7,10 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/models/drink_log.dart';
+import '../../../core/models/memory.dart';
 import '../../../core/application/nomo_user_controller.dart';
 import '../../../core/data/user_repository.dart';
-import '../../../core/models/nomo_drink_invite.dart';
+import '../../../core/models/nomo_invite.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/models/nomo_friend.dart';
 import '../../../core/models/nomo_user.dart';
@@ -25,13 +25,13 @@ import '../../../core/widgets/nomo_pop_icon.dart';
 import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
 import '../../../core/widgets/nomo_toast.dart';
-import '../../friends/application/drink_invite_controller.dart';
+import '../../friends/application/invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
-import '../../logs/application/drink_log_controller.dart';
+import '../../memories/application/memory_controller.dart';
 
 const _calendarPrimaryActionColor = Color(0xFF20B9FF);
-const _calendarPrimaryActionShadowColor = Color(0xFF0B78B7);
 const _calendarPrimaryActionForegroundColor = Color(0xFF06111D);
+const _calendarPrimaryActionShadowColor = Color(0xFF0B78B7);
 
 String _calendarGroupStorageKey(String userId) =>
     'nomo_custom_friend_filters_v1_$userId';
@@ -93,9 +93,9 @@ _CalendarFriendGroup? _findCalendarFriendGroup(
 }
 
 class CalendarScreen extends ConsumerStatefulWidget {
-  const CalendarScreen({super.key, this.onAddLogPressed});
+  const CalendarScreen({super.key, this.onAddMemoryPressed});
 
-  final VoidCallback? onAddLogPressed;
+  final VoidCallback? onAddMemoryPressed;
 
   @override
   ConsumerState<CalendarScreen> createState() => _CalendarScreenState();
@@ -225,6 +225,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final targets = <DateTime>[];
     for (var index = 0; index < rows * 7; index++) {
       final dayNumber = index - leadingEmptyCells + 1;
+      if (dayNumber < 1 || dayNumber > daysInMonth) {
+        continue;
+      }
       final date = DateTime(month.year, month.month, dayNumber);
       final key = _dateKey(date);
       if (_statusByDate.containsKey(key) || !_loadingStatusKeys.add(key)) {
@@ -235,25 +238,20 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     if (targets.isEmpty) return;
 
     final repository = ref.read(userRepositoryProvider);
-    final entries = await Future.wait(
-      targets.map((date) async {
-        try {
-          return MapEntry(
-            _dateKey(date),
-            await repository.fetchDailyStatus(date),
-          );
-        } catch (_) {
-          return MapEntry(_dateKey(date), NomoDailyStatus.unselected);
-        }
-      }),
-    );
+    Map<String, NomoDailyStatus> statuses;
+    try {
+      statuses = await repository.fetchDailyStatusesForMonth(month);
+    } catch (_) {
+      statuses = const {};
+    }
     for (final date in targets) {
       _loadingStatusKeys.remove(_dateKey(date));
     }
     if (!mounted) return;
     setState(() {
-      for (final entry in entries) {
-        _statusByDate[entry.key] = entry.value;
+      for (final date in targets) {
+        final key = _dateKey(date);
+        _statusByDate[key] = statuses[key] ?? NomoDailyStatus.unselected;
       }
     });
   }
@@ -320,13 +318,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final logsAsync = ref.watch(drinkLogControllerProvider);
-    final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
+    final logsAsync = ref.watch(memoryControllerProvider);
+    final logs = logsAsync.asData?.value ?? const <Memory>[];
     final userLogs = logs.where((log) => !log.isOfficial);
     final monthlyLogs = userLogs.where((log) => log.isInMonth(_month)).toList();
     final todayReservations =
         ref.watch(todayReservationsProvider).asData?.value ??
-        const <NomoDrinkInvite>[];
+        const <NomoInvite>[];
     final selectedLogs = userLogs
         .where((log) => _isSameDate(log.date, _selectedDay))
         .toList(growable: false);
@@ -452,7 +450,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   isWhite: isWhite,
                                   status: selectedStatus,
                                   isStatusSaving: _isStatusSaving,
-                                  onAddLogPressed: widget.onAddLogPressed,
+                                  onAddMemoryPressed: widget.onAddMemoryPressed,
                                   onChangeStatus: () => _openStatusPicker(
                                     showLockedExplanation:
                                         selectedStatus ==
@@ -669,18 +667,18 @@ class _SelectedDayPanel extends StatelessWidget {
     required this.isWhite,
     required this.status,
     required this.isStatusSaving,
-    required this.onAddLogPressed,
+    required this.onAddMemoryPressed,
     required this.onChangeStatus,
   });
 
   final DateTime day;
-  final List<DrinkLog> logs;
+  final List<Memory> logs;
   final AsyncValue<List<NomoFriend>> friendsAsync;
   final List<_CalendarFriendGroup> groups;
   final bool isWhite;
   final NomoDailyStatus status;
   final bool isStatusSaving;
-  final VoidCallback? onAddLogPressed;
+  final VoidCallback? onAddMemoryPressed;
   final VoidCallback onChangeStatus;
 
   @override
@@ -785,7 +783,7 @@ class _SelectedDayPanel extends StatelessWidget {
                           logs: logs,
                           isWhite: isWhite,
                           compact: compact,
-                          onAddLogPressed: onAddLogPressed,
+                          onAddMemoryPressed: onAddMemoryPressed,
                         ),
                       ),
                     ],
@@ -887,7 +885,7 @@ class _CalendarStatusChangeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectiveStatus = status == NomoDailyStatus.unselected
-        ? NomoDailyStatus.canDrinkToday
+        ? NomoDailyStatus.available
         : status;
     final accent = _calendarStatusBlockAccent(effectiveStatus);
     final foreground = _calendarStatus3DForegroundColor(effectiveStatus);
@@ -1390,13 +1388,13 @@ class _CalendarMemoryPreview extends StatelessWidget {
     required this.logs,
     required this.isWhite,
     required this.compact,
-    required this.onAddLogPressed,
+    required this.onAddMemoryPressed,
   });
 
-  final List<DrinkLog> logs;
+  final List<Memory> logs;
   final bool isWhite;
   final bool compact;
-  final VoidCallback? onAddLogPressed;
+  final VoidCallback? onAddMemoryPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -1419,7 +1417,7 @@ class _CalendarMemoryPreview extends StatelessWidget {
           ? _CalendarMemoryEmptyState(
               isWhite: isWhite,
               compact: compact,
-              onAddLogPressed: onAddLogPressed,
+              onAddMemoryPressed: onAddMemoryPressed,
             )
           : Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1442,12 +1440,12 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
   const _CalendarMemoryEmptyState({
     required this.isWhite,
     required this.compact,
-    required this.onAddLogPressed,
+    required this.onAddMemoryPressed,
   });
 
   final bool isWhite;
   final bool compact;
-  final VoidCallback? onAddLogPressed;
+  final VoidCallback? onAddMemoryPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -1499,7 +1497,7 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
             width: compact ? 56 : 62,
             child: Nomo3DButton(
               label: '投稿',
-              onTap: onAddLogPressed ?? () {},
+              onTap: onAddMemoryPressed ?? () {},
               height: compact ? 28 : 30,
               radius: compact ? 14 : 15,
               color: _calendarPrimaryActionColor,
@@ -1522,7 +1520,7 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
     required this.compact,
   });
 
-  final DrinkLog log;
+  final Memory log;
   final bool isWhite;
   final bool compact;
 
@@ -1531,9 +1529,6 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
     final hasPhoto =
         log.photoAssetPath != null && log.photoAssetPath!.trim().isNotEmpty;
     final accent = hasPhoto ? const Color(0xFF54D7FF) : AppColors.success;
-    final foreground = isWhite
-        ? Color.lerp(accent, Colors.black, .26)!
-        : Colors.white;
     final content = Container(
       width: double.infinity,
       constraints: BoxConstraints(minHeight: compact ? 48 : 56),
@@ -1574,24 +1569,23 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: compact ? 58 : 66,
-            child: Nomo3DButton(
-              label: hasPhoto ? '見る' : '記録',
-              onTap: hasPhoto
-                  ? () => _showCalendarLogPhoto(context, log)
-                  : null,
-              height: compact ? 32 : 36,
-              radius: compact ? 16 : 18,
-              color: accent,
-              foregroundColor: foreground,
-              shadowColor: Color.lerp(accent, Colors.black, .34)!,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              fontSize: compact ? 12 : 13,
-              enabled: hasPhoto,
+          if (hasPhoto) ...[
+            const SizedBox(width: 10),
+            SizedBox(
+              width: compact ? 58 : 66,
+              child: Nomo3DButton(
+                label: '見る',
+                onTap: () => _showCalendarLogPhoto(context, log),
+                height: compact ? 32 : 36,
+                radius: compact ? 16 : 18,
+                color: _calendarPrimaryActionColor,
+                foregroundColor: _calendarPrimaryActionForegroundColor,
+                shadowColor: _calendarPrimaryActionShadowColor,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                fontSize: compact ? 12 : 13,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -1720,15 +1714,25 @@ class _CalendarFriendStatusSheetState
 
   Future<void> _sendInvite(NomoFriend friend) async {
     if (_sendingFriendId != null) return;
+    if (_isPastCalendarDate(widget.day)) {
+      HapticFeedback.mediumImpact();
+      NomoToast.show(
+        context,
+        '過去の日には招待できません',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+        placement: NomoToastPlacement.bottom,
+      );
+      return;
+    }
     HapticFeedback.selectionClick();
     setState(() => _sendingFriendId = friend.id);
     try {
       await ref
-          .read(drinkInviteControllerProvider)
+          .read(inviteControllerProvider)
           .sendInvite(friendId: friend.id, date: widget.day);
       ref.invalidate(todayReservationsProvider);
-      ref.invalidate(incomingDrinkInvitesProvider);
-      ref.invalidate(outgoingActiveDrinkInvitesProvider(widget.day));
+      ref.invalidate(incomingInvitesProvider);
+      ref.invalidate(outgoingActiveInvitesProvider(widget.day));
       if (!mounted) return;
       setState(() => _invitedFriendIds.add(friend.id));
       NomoToast.show(
@@ -1755,16 +1759,17 @@ class _CalendarFriendStatusSheetState
   Widget build(BuildContext context) {
     final persistedInvitedFriendIds =
         ref
-            .watch(outgoingActiveDrinkInvitesProvider(widget.day))
+            .watch(outgoingActiveInvitesProvider(widget.day))
             .asData
             ?.value
-            .map((invite) => invite.toUserId)
+            .map((invite) => invite.inviteeUserId)
             .toSet() ??
         const <String>{};
     final invitedFriendIds = <String>{
       ...persistedInvitedFriendIds,
       ..._invitedFriendIds,
     };
+    final inviteAvailable = !_isPastCalendarDate(widget.day);
     final selectedGroup = _findCalendarFriendGroup(
       _selectedGroupId,
       widget.groups,
@@ -1839,6 +1844,7 @@ class _CalendarFriendStatusSheetState
                 isWhite: isWhite,
                 sendingFriendId: _sendingFriendId,
                 invitedFriendIds: invitedFriendIds,
+                inviteAvailable: inviteAvailable,
                 onInvite: _sendInvite,
               ),
             ),
@@ -2044,6 +2050,7 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
     required this.isWhite,
     required this.sendingFriendId,
     required this.invitedFriendIds,
+    required this.inviteAvailable,
     required this.onInvite,
   });
 
@@ -2051,6 +2058,7 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
   final bool isWhite;
   final String? sendingFriendId;
   final Set<String> invitedFriendIds;
+  final bool inviteAvailable;
   final Future<void> Function(NomoFriend friend) onInvite;
 
   @override
@@ -2080,7 +2088,8 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
         return _CalendarFriendStatusBlock(
           friend: friend,
           isWhite: isWhite,
-          inviteEnabled: sendingFriendId == null,
+          inviteEnabled: sendingFriendId == null && inviteAvailable,
+          inviteAvailable: inviteAvailable,
           inviteSent: invitedFriendIds.contains(friend.id),
           onInvite: () => onInvite(friend),
         );
@@ -2094,6 +2103,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
     required this.friend,
     required this.isWhite,
     required this.inviteEnabled,
+    required this.inviteAvailable,
     required this.inviteSent,
     required this.onInvite,
   });
@@ -2101,6 +2111,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
   final NomoFriend friend;
   final bool isWhite;
   final bool inviteEnabled;
+  final bool inviteAvailable;
   final bool inviteSent;
   final Future<void> Function() onInvite;
 
@@ -2115,6 +2126,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
       statusEnabled: status.isAvailable,
       fallbackAvatar: _fallbackAvatarForCalendarFriend(friend),
       showInvite: true,
+      inviteAvailable: inviteAvailable,
       inviteSent: inviteSent,
       onInvite: inviteEnabled ? onInvite : null,
     );
@@ -2142,6 +2154,9 @@ Color _calendarFriendBlockStatusColor(NomoDailyStatus status) {
 bool _calendarFriendIsAvailable(String? statusKey) =>
     nomoDailyStatusFromKey(statusKey).canJoinPlan;
 
+bool _isPastCalendarDate(DateTime day) =>
+    _dateOnly(day).isBefore(_dateOnly(DateTime.now()));
+
 int _calendarFriendStatusRank(String? statusKey) =>
     nomoDailyStatusFromKey(statusKey).availabilityRank;
 
@@ -2161,9 +2176,9 @@ class _CalendarStatusSheet extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite ? const Color(0xFF657282) : Colors.white70;
     final options = const [
-      NomoDailyStatus.canDrinkToday,
-      NomoDailyStatus.nonAlcohol,
-      NomoDailyStatus.liverRest,
+      NomoDailyStatus.available,
+      NomoDailyStatus.maybeAvailable,
+      NomoDailyStatus.dependsOnTime,
       NomoDailyStatus.hasPlans,
     ];
     return NomoBottomSheetShell(
@@ -2197,7 +2212,7 @@ class _CalendarStatusSheet extends StatelessWidget {
   }
 }
 
-Future<void> _showCalendarLogPhoto(BuildContext context, DrinkLog log) {
+Future<void> _showCalendarLogPhoto(BuildContext context, Memory log) {
   return showNomoBottomSheet<void>(
     context: context,
     useSafeArea: true,
@@ -2209,7 +2224,7 @@ Future<void> _showCalendarLogPhoto(BuildContext context, DrinkLog log) {
 class _CalendarLogPhotoSheet extends StatelessWidget {
   const _CalendarLogPhotoSheet({required this.log});
 
-  final DrinkLog log;
+  final Memory log;
 
   @override
   Widget build(BuildContext context) {
@@ -2339,18 +2354,18 @@ class _PlayfulMonthGrid extends StatelessWidget {
 
   final DateTime month;
   final DateTime selectedDay;
-  final List<DrinkLog> logs;
+  final List<Memory> logs;
   final Map<String, NomoDailyStatus> statusByDate;
-  final List<NomoDrinkInvite> todayReservations;
+  final List<NomoInvite> todayReservations;
   final ValueChanged<DateTime> onSelectDay;
 
   static const _rarityColors = {
-    DrinkLogRarity.normal: Color(0xFF94A3B8),
-    DrinkLogRarity.uncommon: Color(0xFFFF75B5),
-    DrinkLogRarity.rare: Color(0xFFC08BFF),
-    DrinkLogRarity.superRare: Color(0xFFFFD166),
-    DrinkLogRarity.ultraRare: Color(0xFF54D7FF),
-    DrinkLogRarity.secret: Color(0xFFB7F51A),
+    MemoryRarity.normal: Color(0xFF94A3B8),
+    MemoryRarity.uncommon: Color(0xFFFF75B5),
+    MemoryRarity.rare: Color(0xFFC08BFF),
+    MemoryRarity.superRare: Color(0xFFFFD166),
+    MemoryRarity.ultraRare: Color(0xFF54D7FF),
+    MemoryRarity.secret: Color(0xFFB7F51A),
   };
 
   @override
@@ -2446,8 +2461,8 @@ class _PlayfulMonthGrid extends StatelessWidget {
     );
   }
 
-  Map<int, _Marker> _markersForLogs(List<DrinkLog> logs) {
-    final rarities = <int, DrinkLogRarity>{};
+  Map<int, _Marker> _markersForLogs(List<Memory> logs) {
+    final rarities = <int, MemoryRarity>{};
     for (final log in logs) {
       final current = rarities[log.date.day];
       if (current == null || _rarityRank(log.rarity) > _rarityRank(current)) {
@@ -2460,13 +2475,13 @@ class _PlayfulMonthGrid extends StatelessWidget {
     };
   }
 
-  int _rarityRank(DrinkLogRarity rarity) => switch (rarity) {
-    DrinkLogRarity.normal => 0,
-    DrinkLogRarity.uncommon => 1,
-    DrinkLogRarity.rare => 2,
-    DrinkLogRarity.superRare => 3,
-    DrinkLogRarity.ultraRare => 4,
-    DrinkLogRarity.secret => 5,
+  int _rarityRank(MemoryRarity rarity) => switch (rarity) {
+    MemoryRarity.normal => 0,
+    MemoryRarity.uncommon => 1,
+    MemoryRarity.rare => 2,
+    MemoryRarity.superRare => 3,
+    MemoryRarity.ultraRare => 4,
+    MemoryRarity.secret => 5,
   };
 }
 
@@ -2608,7 +2623,7 @@ class _Marker {
   const _Marker(this.accent, this.rarity);
 
   final Color accent;
-  final DrinkLogRarity rarity;
+  final MemoryRarity rarity;
 }
 
 bool _isSameDate(DateTime a, DateTime b) =>
@@ -2623,7 +2638,7 @@ String _dateKey(DateTime date) =>
 String _calendarWeekdayLabel(DateTime day) =>
     const ['月', '火', '水', '木', '金', '土', '日'][day.weekday - 1];
 
-String _calendarMemoryTitle(DrinkLog log) {
+String _calendarMemoryTitle(Memory log) {
   final memo = log.memo.trim();
   if (memo.isNotEmpty) return memo;
   final place = log.place.trim();
@@ -2674,9 +2689,9 @@ Color _calendarStatusTileForeground(
 }
 
 Color _calendarStatusColor(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.canDrinkToday => _calendarStatusPink,
-  NomoDailyStatus.nonAlcohol => _calendarStatusBlue,
-  NomoDailyStatus.liverRest => _calendarStatusPurple,
+  NomoDailyStatus.available => _calendarStatusPink,
+  NomoDailyStatus.maybeAvailable => _calendarStatusBlue,
+  NomoDailyStatus.dependsOnTime => _calendarStatusPurple,
   NomoDailyStatus.hasPlans => _calendarStatusBlockedForeground,
   NomoDailyStatus.unselected => _calendarStatusGreen,
 };
