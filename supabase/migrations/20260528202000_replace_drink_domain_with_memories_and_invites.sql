@@ -1,14 +1,13 @@
 -- Destructive pre-release domain cleanup.
 -- Nomo is no longer drink-specific, so the public app schema is reset from
 -- drink_logs/drink_invites naming to memories/invites naming.
--- Existing app rows and Storage object metadata are test data and are removed.
+-- Existing app rows are test data and are removed. Storage objects are cleaned via the Storage API/runbook, not by direct storage.objects deletes.
 
 begin;
 
 -- Remove test-only app data that references the old domain names.
 delete from public.notification_outbox where aggregate_type in ('drink_log', 'drink_invite', 'memory', 'invite');
 delete from public.notifications;
-delete from storage.objects where bucket_id = 'nomo-photos';
 
 -- Daily availability status values become generic.
 alter table public.daily_statuses

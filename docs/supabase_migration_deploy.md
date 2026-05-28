@@ -43,3 +43,8 @@ python3 scripts/verify_supabase_rls_contract.py
 - moderation columns は `reason` / `status` constraint を持つ
 
 Supabase CLI が使える環境では GitHub Actions と同じ workflow で dev DB に先に適用し、production は main merge / manual workflow で適用する。
+
+
+## Storage object cleanup
+
+Supabase blocks direct `storage.objects` deletes from SQL migrations. When dev/prod app data is reset, clean `nomo-photos` objects through the Supabase Storage API or dashboard after the DB migration succeeds. Do not add `delete from storage.objects` to migrations.
