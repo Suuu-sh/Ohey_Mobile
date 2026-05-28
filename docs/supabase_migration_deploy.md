@@ -1,50 +1,117 @@
 # Supabase migration deployment
 
-NomoのDBスキーマ変更は必ず `supabase/migrations/*.sql` に追加します。
+Last updated: 2026-05-28
 
-- development push時: dev Supabase migration workflowで検証・適用します。
-- mainマージ時: GitHub Actionsがproduction Supabaseへ未適用migrationを順番に適用します。
-- 適用済みmigrationはproduction DBの migration history で管理します。
+Nomo の Supabase schema は pre-release 中に破壊的に整理済み。現時点の正本は `supabase/migrations/20260528230000_nomo_clean_baseline.sql` の **single clean baseline** です。
 
-## Required GitHub secret
+## 方針
 
-Mobile repositoryのActions secretに以下を設定してください。
+- `drink_*` 時代の累積 migration は残さない。
+- dev / production ともテストデータ扱いなので、baseline は app-owned tables を drop/recreate する。
+- `public.app_schema_migrations` は Suuu-sh/Shared の GitHub Actions migration runner が使う独自履歴。baseline の最後で既存履歴を削除し、workflow が baseline 1件だけを記録する。
+- Storage object は SQL で削除しない。Supabase Storage API / dashboard / `scripts/nomo_storage_cleanup.py` を使う。
 
+メリット:
+
+- 将来の AI agent / 開発者が古い `drink_logs` / `drink_invites` の設計に引っ張られない。
+- migration history が 1ファイルになり、RLS / GRANT / Storage policy の最終形をレビューしやすい。
+- dev/prod が同じ schema baseline から始まるので、TestFlight だけ壊れる事故を減らせる。
+
+デメリット / 注意:
+
+- 既存 app data は消える。公開後はこの運用に戻さない。
+- baseline の適用に失敗すると途中 schema が壊れる可能性があるため、local dry-run / dev workflow / runtime check を通してから production に入れる。
+- Storage object は DB reset では消えないため、別途 cleanup が必要。
+
+## GitHub Actions 適用ルール
+
+- `development` push: dev Supabase migration workflow が dev-nomo に適用する。
+- `main` push: production Supabase migration workflow が nomo に適用する。
+- runner は `public.app_schema_migrations(version, name, applied_at)` を見て未適用 SQL を順番に実行する。
+
+## Required GitHub secrets
+
+Mobile repository の Actions secret:
+
+- `SUPABASE_DEV_DATABASE_URL`
 - `SUPABASE_PRODUCTION_DATABASE_URL`
-  - Supabase production project `nomo` のPostgreSQL connection string
-  - 例: `postgresql://postgres.<project-ref>:<password>@aws-...pooler.supabase.com:6543/postgres?sslmode=require`
 
-破壊的なmigration（DROP、型変更、巨大テーブルへのNOT NULL/UNIQUE追加、RLS大幅変更）は、PRで明示レビューしてからmainへマージしてください。
+値は `/Users/yota/Projects/Secrets/Nomo` に保存している。secret 値は repo / docs に書かない。
 
-## Local verification before applying production
-
-本番適用前に、少なくとも static contract check を通す。
+## Local static verification
 
 ```bash
+cd /Users/yota/Projects/Products/Nomo/Mobile
 python3 scripts/verify_supabase_rls_contract.py
 ```
 
-この check は migration を DB に適用しない。以下の RLS / grant contract を壊していないかを確認する。
+確認すること:
 
-- `friend_groups`
-- `friend_group_members`
-- `memory_reports`
-- `notification_outbox`
-- `user_blocks`
-- `user_mutes`
-- `memory_hides`
-- `push_tokens`
+- migration file は baseline 1件のみ。
+- user-facing table は RLS enabled。
+- owner / participant scope の policy がある。
+- `notification_outbox` は `anon` / `authenticated` に開けず、`service_role` only。
+- `drink_*` table/policy/grant を再作成していない。
+- `private.*` trigger/helper function を使い、RLS helper を exposed `public` function に戻していない。
 
-特に確認すること:
+## Runtime RLS / GRANT verification
 
-- exposed schema の user-facing table は RLS enabled
-- owner / participant scope の policy がある
-- `notification_outbox` は `anon` / `authenticated` に開けず、`service_role` only
-- moderation columns は `reason` / `status` constraint を持つ
+Supabase は 2026-04-28 以降、新規 project / 設定によって `public` tables が Data API / GraphQL API に自動公開されない挙動を opt-in できる。そのため RLS だけでなく **GRANT / Data API 到達性** も runtime で確認する。
 
-Supabase CLI が使える環境では GitHub Actions と同じ workflow で dev DB に先に適用し、production は main merge / manual workflow で適用する。
+```bash
+cd /Users/yota/Projects/Products/Nomo/Mobile
+SUPABASE_URL=... \
+SUPABASE_PUBLISHABLE_KEY=... \
+SUPABASE_SERVICE_ROLE_KEY=... \
+NOMO_SMOKE_EMAIL=dev-yuta@nomo.app \
+NOMO_SMOKE_PASSWORD=... \
+python3 scripts/nomo_supabase_runtime_check.py
+```
 
+期待値:
+
+- `anon` は `profiles` を読めない。
+- authenticated user は `profiles` / `memories` / `invites` / safety tables を Data API 経由で読める。
+- authenticated user は `notification_outbox` を読めない。
+- service role は required tables に到達できる。
+- removed legacy tables (`drink_logs`, `drink_invites`, `drink_log_reports`, `feed_hidden_drink_logs`) は Data API で missing になる。
+
+## Backend smoke scripts
+
+Dev Render backend:
+
+```bash
+cd /Users/yota/Projects/Products/Nomo/Mobile
+NOMO_BACKEND_URL=https://dev-nomo-backend.onrender.com \
+SUPABASE_URL=... \
+SUPABASE_PUBLISHABLE_KEY=... \
+NOMO_SMOKE_EMAIL=dev-yuta@nomo.app \
+NOMO_SMOKE_PASSWORD=... \
+python3 scripts/nomo_backend_smoke.py --mutating
+```
+
+Invite flow まで見る場合:
+
+```bash
+NOMO_SMOKE_OTHER_EMAIL=dev-ken@nomo.app \
+NOMO_SMOKE_OTHER_PASSWORD=... \
+python3 scripts/nomo_backend_smoke.py --mutating --invite
+```
+
+Production backend も同じ script を使う。ただし TestFlight / production user への影響を避けるため、production では専用 smoke account を用意してから `--mutating` を使う。
 
 ## Storage object cleanup
 
-Supabase blocks direct `storage.objects` deletes from SQL migrations. When dev/prod app data is reset, clean `nomo-photos` objects through the Supabase Storage API or dashboard after the DB migration succeeds. Do not add `delete from storage.objects` to migrations.
+Supabase 公式 docs は Storage object の削除を SQL ではなく Storage API 経由にするよう明記している。DB reset 後に object を消す場合:
+
+```bash
+cd /Users/yota/Projects/Products/Nomo/Mobile
+SUPABASE_URL=... \
+SUPABASE_SERVICE_ROLE_KEY=... \
+python3 scripts/nomo_storage_cleanup.py --bucket nomo-photos --prefix users
+
+# 確認後に実削除
+python3 scripts/nomo_storage_cleanup.py --bucket nomo-photos --prefix users --execute
+```
+
+`--execute` を付けない限り dry-run。

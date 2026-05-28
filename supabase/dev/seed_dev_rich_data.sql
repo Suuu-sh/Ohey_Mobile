@@ -5,118 +5,15 @@
 --   select set_config('app.seed_password', '<local-dev-password>', false);
 --   \i supabase/dev/seed_dev_rich_data.sql
 
-create or replace function public.raise_exception(message text)
-returns text
-language plpgsql
-as $$
-begin
-  raise exception '%', message;
-end;
-$$;
-
 create extension if not exists pgcrypto;
 
--- Some dev projects may not have the latest feed migrations yet. Create the
--- feed helper tables here so this seed can populate likes/reports safely.
-create table if not exists public.memory_likes (
-  memory_id uuid not null references public.memories(id) on delete cascade,
-  user_id uuid not null references public.profiles(id) on delete cascade,
-  created_at timestamptz not null default now(),
-  primary key (memory_id, user_id)
-);
-
-create index if not exists memory_likes_user_id_idx
-  on public.memory_likes(user_id);
-
-create table if not exists public.memory_reports (
-  id uuid primary key default gen_random_uuid(),
-  memory_id uuid not null references public.memories(id) on delete cascade,
-  reporter_user_id uuid not null references public.profiles(id) on delete cascade,
-  reason text not null default 'other',
-  created_at timestamptz not null default now(),
-  unique (memory_id, reporter_user_id)
-);
-
-create index if not exists memories_owner_happened_at_idx
-  on public.memories(owner_user_id, happened_at desc);
-
-alter table public.memory_likes enable row level security;
-
-drop policy if exists "memory_likes_select_authenticated" on public.memory_likes;
-create policy "memory_likes_select_authenticated"
-  on public.memory_likes
-  for select
-  to authenticated
-  using (true);
-
-drop policy if exists "memory_likes_insert_own" on public.memory_likes;
-create policy "memory_likes_insert_own"
-  on public.memory_likes
-  for insert
-  to authenticated
-  with check (auth.uid() = user_id);
-
-drop policy if exists "memory_likes_delete_own" on public.memory_likes;
-create policy "memory_likes_delete_own"
-  on public.memory_likes
-  for delete
-  to authenticated
-  using (auth.uid() = user_id);
-
-alter table public.memory_reports enable row level security;
-
-drop policy if exists "memory_reports_insert_own" on public.memory_reports;
-create policy "memory_reports_insert_own"
-  on public.memory_reports
-  for insert
-  to authenticated
-  with check (auth.uid() = reporter_user_id);
-
-drop policy if exists "memory_reports_select_own" on public.memory_reports;
-create policy "memory_reports_select_own"
-  on public.memory_reports
-  for select
-  to authenticated
-  using (auth.uid() = reporter_user_id);
-
-grant select, insert on public.memory_reports to authenticated;
-grant select, insert, delete on public.memory_likes to authenticated;
-
-drop policy if exists "memories_select_feed_visible" on public.memories;
-create policy "memories_select_feed_visible"
-  on public.memories
-  for select
-  to authenticated
-  using (
-    owner_user_id = auth.uid()
-    or exists (
-      select 1
-      from public.friendships f
-      where (f.user_a_id = auth.uid() and f.user_b_id = memories.owner_user_id)
-         or (f.user_b_id = auth.uid() and f.user_a_id = memories.owner_user_id)
-    )
-  );
-
-drop policy if exists "memories_delete_own" on public.memories;
-create policy "memories_delete_own"
-  on public.memories
-  for delete
-  to authenticated
-  using (owner_user_id = auth.uid());
-
-grant select, delete on public.memories to authenticated;
-grant select on public.memory_tagged_users to authenticated;
-
--- Some dev projects may still have the original 3-value status constraint.
-alter table public.daily_statuses drop constraint if exists daily_statuses_status_check;
-alter table public.daily_statuses add constraint daily_statuses_status_check
-  check (status in (
-    'unselected',
-    'available',
-    'maybe_available',
-    'depends_on_time',
-    'has_plans'
-  ));
+do $$
+begin
+  if nullif(current_setting('app.seed_password', true), '') is null then
+    raise exception 'Set app.seed_password before running dev rich seed';
+  end if;
+end;
+$$;
 
 -- Confirmed dev auth users. Fixed UUIDs make this seed idempotent.
 with seed_password(value) as (
@@ -146,10 +43,7 @@ select
   'authenticated',
   'authenticated',
   email,
-  case
-    when password is null then raise_exception('Set app.seed_password before running dev rich seed')
-    else crypt(password, gen_salt('bf'))
-  end,
+  crypt(password, gen_salt('bf')),
   now(),
   jsonb_build_object('provider', 'email', 'providers', array['email']),
   '{}'::jsonb,

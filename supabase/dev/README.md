@@ -2,9 +2,14 @@
 
 These files are for the `dev-nomo` Supabase project only. Do not apply them to production.
 
-- `seed_dev_auth_users.sql`: creates confirmed test auth users, profiles, and real `friendships` rows in the database.
-- `seed_dev_rich_data.sql`: creates a broader dev dataset with 10 confirmed users, varied friendship/request states, all daily status patterns, current/previous-month memories, memory tagged users, likes, and one report sample.
-- The Flutter app should not use JSON/hardcoded fallback friends. If a dev account has no friends, seed the dev database with `seed_dev_auth_users.sql` instead of adding app-side dummy data.
+## Files
+
+- `seed_dev_auth_users.sql`: creates 5 confirmed auth users, profiles, and baseline friendship rows.
+- `seed_dev_rich_data.sql`: creates 10 confirmed users plus richer memories/invites/friends/calendar/safety data for UI checks.
+
+Both seed files assume the clean baseline schema is already applied. They must not create tables, policies, grants, or compatibility schema.
+
+## Password handling
 
 Before running either seed SQL file, set a local-only seed password in the SQL session:
 
@@ -13,6 +18,24 @@ select set_config('app.seed_password', '<local-dev-password>', false);
 \i supabase/dev/seed_dev_auth_users.sql
 ```
 
-Do not commit real dev or production passwords. Use `seed_dev_rich_data.sql` when you want UI test data for feed/friends/calendar edge cases.
+Do not commit real dev or production passwords. Reusable seed credentials are documented only under `/Users/yota/Projects/Secrets/Nomo`.
 
-Current dev DB check: `dev-yuta@nomo.app` has 4 friendship rows, so no existing DB data was deleted or replaced.
+## Fixed dev users
+
+Primary smoke users:
+
+- `dev-yuta@nomo.app`
+- `dev-ken@nomo.app`
+- `dev-ryo@nomo.app`
+- `dev-haru@nomo.app`
+- `dev-takumi@nomo.app`
+
+Rich seed additionally creates `dev-mika`, `dev-ren`, `dev-saki`, `dev-ana`, and `dev-kai` accounts.
+
+## Admin account policy
+
+Admin access is not seeded through special DB roles. Backend admin endpoints authenticate a normal Supabase Auth user and authorize by `NOMO_ADMIN_EMAILS` configured in Render. Keep admin email configuration in Render/secrets, not in seed SQL.
+
+## No app-side fallback data
+
+The Flutter app should not use JSON/hardcoded fallback friends. If a dev account has no friends, seed the dev database instead of adding app-side dummy data.

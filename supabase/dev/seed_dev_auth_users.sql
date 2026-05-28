@@ -1,13 +1,12 @@
-create or replace function public.raise_exception(message text)
-returns text
-language plpgsql
-as $$
+create extension if not exists pgcrypto;
+
+do $$
 begin
-  raise exception '%', message;
+  if nullif(current_setting('app.seed_password', true), '') is null then
+    raise exception 'Set app.seed_password before running dev seed';
+  end if;
 end;
 $$;
-
-create extension if not exists pgcrypto;
 
 with seed_password(value) as (
   select nullif(current_setting('app.seed_password', true), '')
@@ -31,10 +30,7 @@ select
   'authenticated',
   'authenticated',
   email,
-  case
-    when password is null then raise_exception('Set app.seed_password before running dev seed')
-    else crypt(password, gen_salt('bf'))
-  end,
+  crypt(password, gen_salt('bf')),
   now(),
   jsonb_build_object('provider', 'email', 'providers', array['email']),
   '{}'::jsonb,
@@ -77,9 +73,6 @@ from seed
 on conflict (provider, provider_id) do update set
   identity_data = excluded.identity_data,
   updated_at = now();
-
-alter table public.profiles add column if not exists is_plus boolean not null default false;
-alter table public.profiles add column if not exists gender text not null default 'unspecified';
 
 insert into public.profiles (id, display_name, user_id, gender, character_key, avatar_url, is_plus)
 values
