@@ -161,6 +161,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
             height: 50,
             radius: 22,
             color: _feedPrimaryActionColor,
+            foregroundColor: const Color(0xFF101820),
             shadowColor: _feedPrimaryActionShadowColor,
             fontSize: 14,
           ),

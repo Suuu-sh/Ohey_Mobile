@@ -730,17 +730,18 @@ class _ProfileFriendActionRow extends StatelessWidget {
       height: 48,
       radius: 24,
       color: AppColors.primaryAction,
+      foregroundColor: const Color(0xFF101820),
       shadowColor: AppColors.primaryActionShadow,
       fontSize: 18,
       customIcon: const NomoPopIcon(
         icon: CupertinoIcons.person_2_fill,
-        color: Colors.white,
+        color: Color(0xFF101820),
         size: 32,
         iconSize: 18,
       ),
       trailing: const NomoGeneratedIcon(
         CupertinoIcons.chevron_forward,
-        color: Colors.white,
+        color: Color(0xFF101820),
         size: 22,
       ),
     );
