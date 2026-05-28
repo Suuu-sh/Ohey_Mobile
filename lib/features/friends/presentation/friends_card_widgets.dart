@@ -311,7 +311,13 @@ class _FriendProfileHero extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             height: 132,
-            child: Center(child: NomoAvatarView(avatar: avatar, size: 146)),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Transform.translate(
+                offset: const Offset(0, 20),
+                child: NomoAvatarView(avatar: avatar, size: 146),
+              ),
+            ),
           ),
           Container(
             width: double.infinity,
