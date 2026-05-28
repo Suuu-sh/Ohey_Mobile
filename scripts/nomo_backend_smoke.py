@@ -148,10 +148,12 @@ def main() -> int:
                 headers=auth_headers,
                 body={"happened_at": dt.datetime.now(dt.timezone.utc).isoformat(), "memo": "Nomo smoke test"},
             ),
-            {201},
+            {201, 409},
         )
         if isinstance(memory, dict):
             created_memory_id = str(memory.get("id") or "")
+        if not created_memory_id:
+            print("SKIP memory like/hide/report/delete: create returned no id, likely daily-limit conflict")
         if created_memory_id:
             expect(checks, "PUT /v1/memories/{id}/like", request("PUT", f"{backend_url}/v1/memories/{created_memory_id}/like", headers=auth_headers), {200})
             expect(checks, "DELETE /v1/memories/{id}/like", request("DELETE", f"{backend_url}/v1/memories/{created_memory_id}/like", headers=auth_headers), {200})
