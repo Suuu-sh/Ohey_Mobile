@@ -21,8 +21,12 @@ set status = case status
   when 'non_alcohol' then 'maybe_available'
   when 'want_drink_hard' then 'depends_on_time'
   when 'liver_rest' then 'depends_on_time'
+  when 'waiting_invite' then 'available'
   when 'busy' then 'has_plans'
-  else status
+  else case
+    when status in ('unselected', 'available', 'maybe_available', 'depends_on_time', 'has_plans') then status
+    else 'unselected'
+  end
 end;
 
 alter table public.daily_statuses
