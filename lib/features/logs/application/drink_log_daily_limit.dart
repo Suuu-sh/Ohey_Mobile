@@ -1,6 +1,6 @@
 import '../../../core/models/drink_log.dart';
 
-const drinkLogDailyLimitAlertMessage = '投稿は1日1回までです。別の日の思い出を残してね。';
+const drinkLogDailyLimitAlertMessage = '投稿は1日1つまでです。別の日の思い出を残してね。';
 
 bool hasOwnDrinkLogOnDay(
   Iterable<DrinkLog> logs,

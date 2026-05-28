@@ -149,7 +149,7 @@ class _DrinkLogDailyLimitDialog extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            '1日1回のNomoルール',
+                            '1日1投稿のNomoルール',
                             style: TextStyle(
                               color: isWhite
                                   ? AppColors.inviteShadow
@@ -247,7 +247,7 @@ class _DialogHint extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'カレンダーから別の日を選ぶと、その日の思い出として残せます。',
+              'カレンダーから未投稿の日を選ぶと、その日の思い出として残せます。',
               style: TextStyle(
                 color: color,
                 fontSize: 12,
