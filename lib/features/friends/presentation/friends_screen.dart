@@ -260,6 +260,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     setState(() => _isRefreshingFriends = true);
     try {
       final _ = await ref.refresh(friendsProvider.future);
+      ref.invalidate(pendingFriendRequestsProvider);
       if (!mounted) return;
       NomoToast.show(
         context,

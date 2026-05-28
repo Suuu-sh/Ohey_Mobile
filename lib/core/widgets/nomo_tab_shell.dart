@@ -136,20 +136,43 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
 
   void _selectTab(int index) {
     if (_selectedIndex == index) {
-      if (index == 0) {
-        HapticFeedback.selectionClick();
-        _refreshFeedOnOpen();
-        NomoToast.show(
-          context,
-          'フィードを更新しました',
-          icon: CupertinoIcons.arrow_clockwise,
-        );
-      }
+      _refreshCurrentTabByIndex(index, showToast: true);
       return;
     }
     setState(() => _selectedIndex = index);
     if (index == 0) {
       _refreshFeedOnOpen();
+    } else if (index == 1) {
+      _refreshFriendsOnOpen();
+    }
+  }
+
+  void _refreshCurrentTabByIndex(int index, {required bool showToast}) {
+    switch (index) {
+      case 0:
+        HapticFeedback.selectionClick();
+        _refreshFeedOnOpen();
+        if (showToast) {
+          NomoToast.show(
+            context,
+            'フィードを更新しました',
+            icon: CupertinoIcons.arrow_clockwise,
+          );
+        }
+        break;
+      case 1:
+        HapticFeedback.selectionClick();
+        _refreshFriendsOnOpen();
+        if (showToast) {
+          NomoToast.show(
+            context,
+            'フレンズを更新しました',
+            icon: CupertinoIcons.arrow_clockwise,
+          );
+        }
+        break;
+      default:
+        break;
     }
   }
 
@@ -157,6 +180,13 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     ref.invalidate(homeFeedControllerProvider);
     ref.invalidate(memoryControllerProvider);
     ref.invalidate(friendsProvider);
+    ref.invalidate(notificationControllerProvider);
+  }
+
+  void _refreshFriendsOnOpen() {
+    ref.invalidate(friendsProvider);
+    ref.invalidate(pendingFriendRequestsProvider);
+    ref.invalidate(incomingInvitesProvider);
     ref.invalidate(notificationControllerProvider);
   }
 
