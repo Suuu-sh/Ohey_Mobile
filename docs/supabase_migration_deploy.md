@@ -25,7 +25,7 @@ Ohey の Supabase schema は pre-release 中に破壊的に整理済み。現時
 
 ## GitHub Actions 適用ルール
 
-- `development` push: dev Supabase migration workflow が dev-nomo に適用する。
+- `development` push: dev Supabase migration workflow が dev-ohey に適用する。
 - `main` push: production Supabase migration workflow が ohey に適用する。
 - runner は `public.app_schema_migrations(version, name, applied_at)` を見て未適用 SQL を順番に実行する。
 

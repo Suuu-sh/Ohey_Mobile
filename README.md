@@ -52,7 +52,7 @@ Run Flutter against it:
 flutter run --dart-define=OHEY_BACKEND_URL=https://dev-nomo-backend.onrender.com
 ```
 
-For prod builds, set `OHEY_BACKEND_URL=https://nomo-backend-nezf.onrender.com`. For dev/Simulator use `https://dev-nomo-backend.onrender.com`.
+For prod builds, set `OHEY_BACKEND_URL=https://nomo-backend-nezf.onrender.com`. For dev/Simulator use `https://dev-nomo-backend.onrender.com`. Render service display names are `ohey-backend` / `dev-ohey-backend`; the generated hostnames are legacy immutable slugs.
 
 ## Run
 
@@ -70,7 +70,7 @@ flutter test
 ```
 ## Supabase
 
-The app initializes `supabase_flutter` on startup. Local debug runs default to the `dev-nomo` Supabase project through `/Users/yota/Projects/Products/Nomo/Mobile/lib/core/config/supabase_config.dart`.
+The app initializes `supabase_flutter` on startup. Local debug runs default to the `dev-ohey` Supabase project through `/Users/yota/Projects/Products/Nomo/Mobile/lib/core/config/supabase_config.dart`.
 
 Override environment values with `--dart-define` for production/release builds. See `/Users/yota/Projects/Products/Nomo/Mobile/docs/supabase_ohey.md`.
 

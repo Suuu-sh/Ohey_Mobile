@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 /// Supabase environment configuration for Ohey.
 ///
-/// Non-release builds (Simulator / `flutter run`) are forced to dev-nomo so
+/// Non-release builds (Simulator / `flutter run`) are forced to dev-ohey so
 /// local checks never touch production accidentally. Release builds
 /// (TestFlight/App Store) default to production even if dart-defines are
 /// missing, and may still override values explicitly via `--dart-define`.
@@ -38,7 +38,7 @@ class SupabaseConfig {
   /// Canonical Supabase URL used by the app.
   ///
   /// Local `flutter run` / Simulator checks are non-release builds, and must
-  /// always stay on dev-nomo even if a production dart-define file is passed by
+  /// always stay on dev-ohey even if a production dart-define file is passed by
   /// mistake. TestFlight/App Store builds are release builds, so they default
   /// to production and can be overridden by production dart-defines.
   ///

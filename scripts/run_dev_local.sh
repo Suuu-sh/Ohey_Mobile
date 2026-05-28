@@ -14,7 +14,7 @@ fi
 SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-app.ohey.ohey://login-callback/}"
 OHEY_ADMIN_EMAILS="${OHEY_ADMIN_EMAILS:-}"
 
-# Run Ohey locally against dev-nomo Supabase and a local Go backend on :8080.
+# Run Ohey locally against dev-ohey Supabase and a local Go backend on :8080.
 flutter run \
   --dart-define=OHEY_ENV=local \
   --dart-define=SUPABASE_URL="$SUPABASE_URL" \

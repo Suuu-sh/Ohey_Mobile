@@ -14,7 +14,7 @@ fi
 SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-app.ohey.ohey://login-callback/}"
 OHEY_ADMIN_EMAILS="${OHEY_ADMIN_EMAILS:-}"
 
-# Run Ohey against dev-nomo Supabase and the dev Render backend.
+# Run Ohey against dev-ohey Supabase and the dev Render backend.
 DEV_OHEY_BACKEND_URL="${DEV_OHEY_BACKEND_URL:-https://dev-nomo-backend.onrender.com}"
 
 flutter run \

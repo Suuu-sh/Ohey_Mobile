@@ -1,6 +1,6 @@
 # Ohey dev Supabase seeds
 
-These files are for the `dev-nomo` Supabase project only. Do not apply them to production.
+These files are for the `dev-ohey` Supabase project only. Do not apply them to production.
 
 ## Files
 

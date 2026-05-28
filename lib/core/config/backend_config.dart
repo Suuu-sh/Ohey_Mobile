@@ -9,6 +9,8 @@ import 'package:flutter/foundation.dart';
 class BackendConfig {
   const BackendConfig._();
 
+  // Render service display names are dev-ohey-backend / ohey-backend.
+  // The generated onrender.com hostnames are legacy immutable slugs.
   static const _devBaseUrl = 'https://dev-nomo-backend.onrender.com';
   static const _prodBaseUrl = 'https://nomo-backend-nezf.onrender.com';
 

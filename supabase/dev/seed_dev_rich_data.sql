@@ -1,4 +1,4 @@
--- Rich seed data for the dev-nomo Supabase project only.
+-- Rich seed data for the dev-ohey Supabase project only.
 -- Do not run this against production.
 --
 -- Usage in Supabase SQL editor or psql:
