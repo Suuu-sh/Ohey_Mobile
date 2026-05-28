@@ -1529,6 +1529,15 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
     final hasPhoto =
         log.photoAssetPath != null && log.photoAssetPath!.trim().isNotEmpty;
     final accent = hasPhoto ? const Color(0xFF54D7FF) : AppColors.success;
+    final actionColor = hasPhoto ? _calendarPrimaryActionColor : accent;
+    final actionForegroundColor = hasPhoto
+        ? _calendarPrimaryActionForegroundColor
+        : isWhite
+        ? Color.lerp(accent, Colors.black, .26)!
+        : Colors.white;
+    final actionShadowColor = hasPhoto
+        ? _calendarPrimaryActionShadowColor
+        : Color.lerp(accent, Colors.black, .34)!;
     final content = Container(
       width: double.infinity,
       constraints: BoxConstraints(minHeight: compact ? 48 : 56),
@@ -1579,11 +1588,9 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
                   : null,
               height: compact ? 32 : 36,
               radius: compact ? 16 : 18,
-              color: accent,
-              foregroundColor: isWhite
-                  ? Color.lerp(accent, Colors.black, .26)!
-                  : Colors.white,
-              shadowColor: Color.lerp(accent, Colors.black, .34)!,
+              color: actionColor,
+              foregroundColor: actionForegroundColor,
+              shadowColor: actionShadowColor,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               fontSize: compact ? 12 : 13,
               enabled: hasPhoto,
