@@ -80,11 +80,6 @@ extension _AddLogScreenLayout on _AddLogScreenState {
                   padding: const EdgeInsets.fromLTRB(0, 10, 0, 26),
                   children: [
                     if (_hasPhoto) ...[
-                      _QuickPostHintCard(
-                        hasCaption: _memoController.text.trim().isNotEmpty,
-                        hasFriends: selectedFriends.isNotEmpty,
-                      ),
-                      const SizedBox(height: 10),
                       _PostPreviewCard(
                         path: _photoPath!,
                         userName: _previewUserName(user?.name),
