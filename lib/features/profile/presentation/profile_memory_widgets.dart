@@ -453,6 +453,20 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               },
             ),
             _SettingsTile(
+              icon: CupertinoIcons.person_2_fill,
+              label: '申請管理',
+              subtitle: '送信中・受信中のフレンズ申請',
+              accent: const Color(0xFFB7F15B),
+              onTap: () async {
+                if (sheetContext.mounted) {
+                  Navigator.of(sheetContext).pop();
+                }
+                await Future<void>.delayed(const Duration(milliseconds: 180));
+                if (!rootContext.mounted) return;
+                await _showFriendRequestManagementSheet(rootContext);
+              },
+            ),
+            _SettingsTile(
               icon: CupertinoIcons.shield_lefthalf_fill,
               label: 'ブロック・ミュート管理',
               subtitle: '解除したい相手を確認',
@@ -506,6 +520,446 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
       },
     ),
   );
+}
+
+Future<void> _showFriendRequestManagementSheet(BuildContext context) {
+  return showNomoBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (_) => const _FriendRequestManagementSheet(),
+  );
+}
+
+class _FriendRequestManagementSheet extends ConsumerStatefulWidget {
+  const _FriendRequestManagementSheet();
+
+  @override
+  ConsumerState<_FriendRequestManagementSheet> createState() =>
+      _FriendRequestManagementSheetState();
+}
+
+class _FriendRequestManagementSheetState
+    extends ConsumerState<_FriendRequestManagementSheet> {
+  final Set<String> _busyRequestIds = <String>{};
+
+  Future<void> _respond(NomoFriendRequestItem request, String status) async {
+    if (!_busyRequestIds.add(request.id)) return;
+    setState(() {});
+    try {
+      await ref
+          .read(friendRepositoryProvider)
+          .updateFriendRequest(request.id, status);
+      ref.invalidate(pendingFriendRequestsProvider);
+      ref.invalidate(notificationControllerProvider);
+      if (status == 'accepted') {
+        ref.invalidate(friendsProvider);
+      }
+      if (!mounted) return;
+      NomoToast.show(context, switch (status) {
+        'accepted' => '申請を承認しました',
+        'rejected' => '申請を見送りました',
+        _ => '申請を取り消しました',
+      }, icon: CupertinoIcons.checkmark_circle_fill);
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        '操作できませんでした。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
+    } finally {
+      _busyRequestIds.remove(request.id);
+      if (mounted) setState(() {});
+    }
+  }
+
+  Future<void> _cancelAll(List<NomoFriendRequestItem> requests) async {
+    final targets = [
+      for (final request in requests)
+        if (!_busyRequestIds.contains(request.id)) request,
+    ];
+    if (targets.isEmpty) return;
+    setState(() {
+      for (final request in targets) {
+        _busyRequestIds.add(request.id);
+      }
+    });
+    try {
+      final repository = ref.read(friendRepositoryProvider);
+      for (final request in targets) {
+        await repository.cancelFriendRequest(request.id);
+      }
+      ref.invalidate(pendingFriendRequestsProvider);
+      ref.invalidate(notificationControllerProvider);
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        '${targets.length}件の申請を取り消しました',
+        icon: CupertinoIcons.arrow_uturn_left_circle_fill,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      NomoToast.show(
+        context,
+        '一括取消に失敗しました。残りはあとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
+    } finally {
+      for (final request in targets) {
+        _busyRequestIds.remove(request.id);
+      }
+      if (mounted) setState(() {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final requestsAsync = ref.watch(pendingFriendRequestsProvider);
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final sub = isWhite
+        ? const Color(0xFF64717D)
+        : Colors.white.withValues(alpha: .64);
+
+    return NomoBottomSheetShell(
+      title: '申請管理',
+      topSafeArea: true,
+      margin: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      radius: 28,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * .72,
+        ),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '送信中の申請を確認・取消し、受信中の申請を承認 / 見送りできます。',
+                style: TextStyle(
+                  color: sub,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 16),
+              requestsAsync.when(
+                data: (requests) {
+                  final outgoing = [
+                    for (final request in requests)
+                      if (request.isOutgoing) request,
+                  ];
+                  final incoming = [
+                    for (final request in requests)
+                      if (request.isIncoming) request,
+                  ];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _FriendRequestSection(
+                        title: '送信中',
+                        emptyMessage: '送信中の申請はありません。',
+                        requests: outgoing,
+                        accent: const Color(0xFFB7F15B),
+                        busyRequestIds: _busyRequestIds,
+                        onCancelAll: outgoing.isEmpty
+                            ? null
+                            : () => _cancelAll(outgoing),
+                        rowBuilder: (request) => _FriendRequestRow(
+                          request: request,
+                          accent: const Color(0xFFB7F15B),
+                          busy: _busyRequestIds.contains(request.id),
+                          onCancel: () => _respond(request, 'cancelled'),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      _FriendRequestSection(
+                        title: '受信中',
+                        emptyMessage: '受信中の申請はありません。',
+                        requests: incoming,
+                        accent: const Color(0xFF8A62FF),
+                        busyRequestIds: _busyRequestIds,
+                        rowBuilder: (request) => _FriendRequestRow(
+                          request: request,
+                          accent: const Color(0xFF8A62FF),
+                          busy: _busyRequestIds.contains(request.id),
+                          onAccept: () => _respond(request, 'accepted'),
+                          onReject: () => _respond(request, 'rejected'),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+                loading: () => const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 30),
+                  child: Center(child: CupertinoActivityIndicator()),
+                ),
+                error: (_, _) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    '申請を読み込めませんでした。時間をおいて再度お試しください。',
+                    style: TextStyle(
+                      color: _ProfileColors.pink,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendRequestSection extends StatelessWidget {
+  const _FriendRequestSection({
+    required this.title,
+    required this.emptyMessage,
+    required this.requests,
+    required this.accent,
+    required this.busyRequestIds,
+    required this.rowBuilder,
+    this.onCancelAll,
+  });
+
+  final String title;
+  final String emptyMessage;
+  final List<NomoFriendRequestItem> requests;
+  final Color accent;
+  final Set<String> busyRequestIds;
+  final Widget Function(NomoFriendRequestItem request) rowBuilder;
+  final VoidCallback? onCancelAll;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF6D7884)
+        : Colors.white.withValues(alpha: .64);
+    final allBusy =
+        requests.isNotEmpty &&
+        requests.every((request) => busyRequestIds.contains(request.id));
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isWhite
+            ? const Color(0xFFF5F8FB)
+            : Colors.white.withValues(alpha: .055),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: accent.withValues(alpha: .28)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              NomoPopIcon(
+                icon: CupertinoIcons.person_2_fill,
+                color: accent,
+                size: 34,
+                iconSize: 18,
+                showBubble: false,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '$title${requests.isEmpty ? '' : ' ${requests.length}件'}',
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              if (onCancelAll != null)
+                CupertinoButton(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  minimumSize: Size.zero,
+                  onPressed: allBusy ? null : onCancelAll,
+                  child: Text(
+                    allBusy ? '取消中' : 'すべて取消',
+                    style: TextStyle(
+                      color: accent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (requests.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
+              child: Text(
+                emptyMessage,
+                style: TextStyle(
+                  color: sub,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            )
+          else
+            Column(
+              children: [
+                for (var i = 0; i < requests.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 10),
+                  rowBuilder(requests[i]),
+                ],
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendRequestRow extends StatelessWidget {
+  const _FriendRequestRow({
+    required this.request,
+    required this.accent,
+    required this.busy,
+    this.onCancel,
+    this.onAccept,
+    this.onReject,
+  });
+
+  final NomoFriendRequestItem request;
+  final Color accent;
+  final bool busy;
+  final VoidCallback? onCancel;
+  final VoidCallback? onAccept;
+  final VoidCallback? onReject;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF111820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF6D7884)
+        : Colors.white.withValues(alpha: .62);
+    final profile = request.otherUser;
+    final handle = profile.userId.trim().isEmpty
+        ? 'ID未設定'
+        : '@${profile.userId}';
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isWhite
+              ? const Color(0xFFE2E8EF)
+              : Colors.white.withValues(alpha: .08),
+        ),
+      ),
+      child: Row(
+        children: [
+          NomoAvatarView(avatar: profile.avatar, size: 46),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  profile.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '$handle ・ ${_friendRequestDateLabel(request.createdAt)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: sub,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          if (onCancel != null)
+            SizedBox(
+              width: 82,
+              child: Nomo3DButton.secondary(
+                label: busy ? '取消中' : '取消',
+                onTap: busy ? null : onCancel,
+                height: 40,
+                radius: 18,
+                color: accent.withValues(alpha: .18),
+                foregroundColor: accent,
+                shadowColor: accent.withValues(alpha: .18),
+                fontSize: 13,
+              ),
+            )
+          else
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 68,
+                  child: Nomo3DButton.secondary(
+                    label: '見送り',
+                    onTap: busy ? null : onReject,
+                    height: 40,
+                    radius: 18,
+                    color: const Color(0xFF3A2231),
+                    foregroundColor: const Color(0xFFFF8AA8),
+                    shadowColor: const Color(0xFF1E121B),
+                    fontSize: 12,
+                    padding: EdgeInsets.zero,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 68,
+                  child: Nomo3DButton(
+                    label: busy ? '処理中' : '承認',
+                    onTap: busy ? null : onAccept,
+                    height: 40,
+                    radius: 18,
+                    color: accent,
+                    foregroundColor: Colors.white,
+                    shadowColor: const Color(0xFF4A2BBF),
+                    fontSize: 12,
+                    padding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+String _friendRequestDateLabel(DateTime? date) {
+  if (date == null) return '申請日不明';
+  final local = date.toLocal();
+  return '${local.month}/${local.day} '
+      '${local.hour.toString().padLeft(2, '0')}:'
+      '${local.minute.toString().padLeft(2, '0')}';
 }
 
 Future<void> _showSafetyCenterSheet(BuildContext context) {
