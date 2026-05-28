@@ -1529,15 +1529,6 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
     final hasPhoto =
         log.photoAssetPath != null && log.photoAssetPath!.trim().isNotEmpty;
     final accent = hasPhoto ? const Color(0xFF54D7FF) : AppColors.success;
-    final actionColor = hasPhoto ? _calendarPrimaryActionColor : accent;
-    final actionForegroundColor = hasPhoto
-        ? _calendarPrimaryActionForegroundColor
-        : isWhite
-        ? Color.lerp(accent, Colors.black, .26)!
-        : Colors.white;
-    final actionShadowColor = hasPhoto
-        ? _calendarPrimaryActionShadowColor
-        : Color.lerp(accent, Colors.black, .34)!;
     final content = Container(
       width: double.infinity,
       constraints: BoxConstraints(minHeight: compact ? 48 : 56),
@@ -1578,24 +1569,23 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: compact ? 58 : 66,
-            child: Nomo3DButton(
-              label: hasPhoto ? '見る' : '記録',
-              onTap: hasPhoto
-                  ? () => _showCalendarLogPhoto(context, log)
-                  : null,
-              height: compact ? 32 : 36,
-              radius: compact ? 16 : 18,
-              color: actionColor,
-              foregroundColor: actionForegroundColor,
-              shadowColor: actionShadowColor,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              fontSize: compact ? 12 : 13,
-              enabled: hasPhoto,
+          if (hasPhoto) ...[
+            const SizedBox(width: 10),
+            SizedBox(
+              width: compact ? 58 : 66,
+              child: Nomo3DButton(
+                label: '見る',
+                onTap: () => _showCalendarLogPhoto(context, log),
+                height: compact ? 32 : 36,
+                radius: compact ? 16 : 18,
+                color: _calendarPrimaryActionColor,
+                foregroundColor: _calendarPrimaryActionForegroundColor,
+                shadowColor: _calendarPrimaryActionShadowColor,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                fontSize: compact ? 12 : 13,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
