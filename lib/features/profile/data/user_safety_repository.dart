@@ -73,7 +73,7 @@ class NomoSafetyUser {
       id: id,
       userId: handle ?? '',
       displayName: displayName == null || displayName.isEmpty
-          ? 'Nomo friend'
+          ? 'Tomo friend'
           : displayName,
       avatar:
           NomoAvatar.decode(row['avatar_url'] as String?) ??

@@ -100,7 +100,7 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
   Future<void> _shareFriendLink(String userId, String payload) async {
     HapticFeedback.selectionClick();
     await SharePlus.instance.share(
-      ShareParams(title: 'Nomoでつながろ', text: 'Nomoで@$userId とつながろう：$payload'),
+      ShareParams(title: 'Tomoでつながろ', text: 'Tomoで@$userId とつながろう：$payload'),
     );
   }
 
@@ -343,7 +343,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
   Future<void> _shareFriendLink(String userId, String payload) async {
     HapticFeedback.selectionClick();
     await SharePlus.instance.share(
-      ShareParams(title: 'Nomoでつながろ', text: 'Nomoで@$userId とつながろう：$payload'),
+      ShareParams(title: 'Tomoでつながろ', text: 'Tomoで@$userId とつながろう：$payload'),
     );
   }
 
@@ -697,7 +697,7 @@ class _CuteQrCard extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      'Nomo',
+                      'Tomo',
                       style: TextStyle(
                         color: ink,
                         fontSize: 21,
@@ -980,7 +980,7 @@ class _QrIdSearchChip extends StatelessWidget {
                       child: CupertinoTextField(
                         controller: controller,
                         focusNode: focusNode,
-                        placeholder: 'Nomo ID',
+                        placeholder: 'Tomo ID',
                         textInputAction: TextInputAction.search,
                         onSubmitted: (_) => isLoading ? null : onSearch(),
                         padding: EdgeInsets.zero,
@@ -1079,7 +1079,7 @@ class _CuteIdSearchCard extends StatelessWidget {
         children: [
           CupertinoTextField(
             controller: controller,
-            placeholder: 'Nomo ID',
+            placeholder: 'Tomo ID',
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => onSearch(),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
@@ -1234,7 +1234,7 @@ class _FriendQrScannerSheetState extends State<_FriendQrScannerSheet> {
           ),
           const SizedBox(height: 4),
           Text(
-            '相手のNomo QRをカメラにかざしてね。',
+            '相手のTomo QRをカメラにかざしてね。',
             style: TextStyle(
               color: sub,
               fontSize: 13,

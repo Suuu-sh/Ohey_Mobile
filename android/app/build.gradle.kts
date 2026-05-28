@@ -33,11 +33,11 @@ android {
         create("dev") {
             dimension = "env"
             applicationIdSuffix = ".dev"
-            resValue("string", "app_name", "Tomola Dev")
+            resValue("string", "app_name", "Tomo Dev")
         }
         create("prod") {
             dimension = "env"
-            resValue("string", "app_name", "Tomola")
+            resValue("string", "app_name", "Tomo")
         }
     }
 

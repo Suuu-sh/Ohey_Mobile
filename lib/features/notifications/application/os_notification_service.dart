@@ -57,8 +57,8 @@ class OsNotificationService {
 
   static const _channel = AndroidNotificationChannel(
     'nomo_notifications',
-    'Nomo通知',
-    description: 'フレンズ申請、お誘い、今日の思い出など厳選したNomo通知',
+    'Tomo通知',
+    description: 'フレンズ申請、お誘い、今日の思い出など厳選したTomo通知',
     importance: Importance.high,
   );
   static const _lastNotifiedKey = 'nomo_last_os_notification_created_at';
@@ -108,8 +108,8 @@ class OsNotificationService {
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             'nomo_notifications',
-            'Nomo通知',
-            channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したNomo通知',
+            'Tomo通知',
+            channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したTomo通知',
             importance: Importance.high,
             priority: Priority.high,
           ),
@@ -142,8 +142,8 @@ class OsNotificationService {
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'nomo_notifications',
-          'Nomo通知',
-          channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したNomo通知',
+          'Tomo通知',
+          channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したTomo通知',
           importance: Importance.high,
           priority: Priority.high,
         ),

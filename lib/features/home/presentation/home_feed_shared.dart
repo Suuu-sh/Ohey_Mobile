@@ -138,7 +138,7 @@ class _FeedItem {
               NomoAvatar.defaultAvatar;
     return _FeedItem(
       id: memory.id,
-      userName: memory.isOfficial ? 'Nomo' : authorName,
+      userName: memory.isOfficial ? 'Tomo' : authorName,
       timeAgo: _relativeTime(memory.date),
       body: memory.memo.trim(),
       place: memory.place.trim(),
@@ -241,7 +241,7 @@ class _Companion {
   final Color accent;
   final String? statusKey;
 
-  String get handleLabel => handle.trim().isEmpty ? 'Nomoフレンズ' : '@$handle';
+  String get handleLabel => handle.trim().isEmpty ? 'Tomoフレンズ' : '@$handle';
 
   NomoFriend toNomoFriend() => NomoFriend(
     id: userId,

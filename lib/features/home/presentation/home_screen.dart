@@ -223,7 +223,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         : _Companion(
             userId: item.ownerUserId,
             name: item.userName,
-            handle: item.isOfficial ? 'Nomo公式' : item.place,
+            handle: item.isOfficial ? 'Tomo公式' : item.place,
             avatar: item.avatar,
             accent: item.accent,
             statusKey: null,
@@ -275,8 +275,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         fileNameOverrides: [
           item.isOfficial ? 'nomo_official_post.png' : 'nomo_memory.png',
         ],
-        title: item.isOfficial ? 'Nomo公式投稿を共有' : '思い出を共有',
-        subject: item.isOfficial ? 'Nomo公式のお知らせ' : 'Nomoの思い出',
+        title: item.isOfficial ? 'Tomo公式投稿を共有' : '思い出を共有',
+        subject: item.isOfficial ? 'Tomo公式のお知らせ' : 'Tomoの思い出',
         sharePositionOrigin: shareOrigin,
       ),
     );

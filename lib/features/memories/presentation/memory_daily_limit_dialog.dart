@@ -149,7 +149,7 @@ class _MemoryDailyLimitDialog extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            '1日1投稿のNomoルール',
+                            '1日1投稿のTomoルール',
                             style: TextStyle(
                               color: isWhite
                                   ? AppColors.inviteShadow

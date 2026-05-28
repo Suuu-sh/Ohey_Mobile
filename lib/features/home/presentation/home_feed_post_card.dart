@@ -370,7 +370,7 @@ class _FeedCardAuthorBar extends StatelessWidget {
         : Color.lerp(menuAccent, Colors.white, .18)!;
     final place = item.place.trim();
     final metadataLabel = item.isOfficial
-        ? (place.isEmpty ? 'Nomo公式からのお知らせ' : 'Nomo公式 ・ $place')
+        ? (place.isEmpty ? 'Tomo公式からのお知らせ' : 'Tomo公式 ・ $place')
         : place.isEmpty
         ? '思い出'
         : place;
@@ -674,7 +674,7 @@ String _feedShareActionLabel(_FeedItem item) {
 
 String _feedReactionSummary(_FeedItem item) {
   if (item.isOfficial) {
-    return item.likes > 0 ? '${item.likes}人がチェックしました' : 'Nomoからのお知らせです';
+    return item.likes > 0 ? '${item.likes}人がチェックしました' : 'Tomoからのお知らせです';
   }
   if (item.likes <= 0) {
     return item.ownedByMe ? '友達のリアクションを待とう' : 'いいねで気持ちを送ろう';

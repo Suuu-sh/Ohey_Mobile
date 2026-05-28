@@ -1,6 +1,6 @@
-# Tomola mascot characters
+# Tomo mascot characters
 
-Tomola の看板キャラクター名メモ。
+Tomo の看板キャラクター名メモ。
 
 | Color | Name | Notes |
 | --- | --- | --- |

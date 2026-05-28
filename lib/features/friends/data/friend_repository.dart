@@ -105,7 +105,7 @@ class NomoFriendProfile {
       userId: (row['user_id'] as String?) ?? '',
       displayName: (row['display_name'] as String?)?.trim().isNotEmpty == true
           ? (row['display_name'] as String).trim()
-          : 'Nomo friend',
+          : 'Tomo friend',
       avatar:
           NomoAvatar.decode(row['avatar_url'] as String?) ??
           NomoAvatar.defaultAvatar,

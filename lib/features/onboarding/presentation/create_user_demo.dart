@@ -4,7 +4,7 @@ const _demoSlides = [
   _DemoSlideData(
     step: '1 / 4',
     title: '写真1枚で、今日が\n友達との思い出になる',
-    subtitle: 'Nomoは、写真・場所・一緒にいたフレンズをかわいく残すアプリです。',
+    subtitle: 'Tomoは、写真・場所・一緒にいたフレンズをかわいく残すアプリです。',
     kind: _DemoKind.hero,
     chips: ['撮る', '残る', 'また誘える'],
   ),

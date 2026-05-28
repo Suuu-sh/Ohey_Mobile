@@ -107,7 +107,7 @@ class _SettingsSheetShell extends StatelessWidget {
     final avatar = user?.avatar ?? NomoAvatar.defaultAvatar;
     final name = user?.name.trim().isNotEmpty == true
         ? user!.name
-        : 'Nomo user';
+        : 'Tomo user';
     final handle = user?.userId.trim().isNotEmpty == true
         ? '@${user!.userId}'
         : 'プロフィール未設定';
@@ -155,7 +155,7 @@ class _SettingsSheetShell extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Nomoを自分好みに整えよう',
+                          'Tomoを自分好みに整えよう',
                           style: TextStyle(
                             color: sub,
                             fontSize: 13,

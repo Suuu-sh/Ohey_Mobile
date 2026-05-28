@@ -446,7 +446,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
             _SettingsTile(
               icon: CupertinoIcons.play_circle_fill,
               label: 'はじめてのデモ',
-              subtitle: 'Nomoの使い方をもう一度見る',
+              subtitle: 'Tomoの使い方をもう一度見る',
               accent: const Color(0xFF9AF21A),
               onTap: () async {
                 if (sheetContext.mounted) {

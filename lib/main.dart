@@ -17,7 +17,7 @@ import 'core/theme/nomo_theme_mode.dart';
 import 'core/widgets/nomo_tab_shell.dart';
 
 const _openingNomoAsset = 'assets/images/opening_nomo.png';
-const _startupMascotName = 'Tomo';
+const _appDisplayName = 'Tomo';
 const _minimumOpeningDuration = Duration(seconds: 1);
 const _openingExitDurationMs = 520;
 
@@ -329,7 +329,7 @@ class _StartupWaitingMessage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  '$_startupMascotNameを準備してるよ',
+                  '$_appDisplayNameを準備してるよ',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
@@ -398,12 +398,12 @@ class _StartupWordmark extends StatelessWidget {
     );
 
     return Semantics(
-      label: _startupMascotName,
+      label: _appDisplayName,
       child: ExcludeSemantics(
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Text(_startupMascotName, style: strokeStyle),
+            Text(_appDisplayName, style: strokeStyle),
             ShaderMask(
               blendMode: ui.BlendMode.srcIn,
               shaderCallback: (bounds) => const LinearGradient(
@@ -411,7 +411,7 @@ class _StartupWordmark extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [Colors.white, Color(0xFFFFF7B0), Color(0xFFFFA3D4)],
               ).createShader(bounds),
-              child: const Text(_startupMascotName, style: fillStyle),
+              child: const Text(_appDisplayName, style: fillStyle),
             ),
           ],
         ),
@@ -447,7 +447,7 @@ class NomoApp extends ConsumerWidget {
     final mode = ref.watch(nomoThemeModeProvider);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Nomo',
+      title: _appDisplayName,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: mode.isWhite ? ThemeMode.light : ThemeMode.dark,

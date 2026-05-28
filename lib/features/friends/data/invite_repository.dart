@@ -110,7 +110,7 @@ class InviteRepository {
   NomoFriend _profileToFriend(Map<String, dynamic> profile) {
     return NomoFriend(
       id: profile['id'] as String,
-      name: (profile['display_name'] as String?) ?? 'Nomo friend',
+      name: (profile['display_name'] as String?) ?? 'Tomo friend',
       avatarEmoji: '🍻',
       vibe: (profile['user_id'] as String?) ?? '',
       characterAssetPath: '',

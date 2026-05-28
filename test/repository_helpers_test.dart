@@ -76,7 +76,7 @@ void main() {
 
     expect(profile.id, 'friend-id');
     expect(profile.userId, 'friend_user');
-    expect(profile.displayName, 'Nomo friend');
+    expect(profile.displayName, 'Tomo friend');
     expect(profile.avatar, NomoAvatar.defaultAvatar);
   });
 
