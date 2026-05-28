@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/nomo_3d_button.dart';
-import '../../../core/widgets/nomo_pop_icon.dart';
+import '../../../core/widgets/tomo_3d_button.dart';
+import '../../../core/widgets/tomo_pop_icon.dart';
 import '../application/memory_daily_limit.dart';
 
 Future<void> showMemoryDailyLimitDialog(BuildContext context, DateTime day) {
@@ -125,7 +125,7 @@ class _MemoryDailyLimitDialog extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            NomoPopIcon(
+                            TomoPopIcon(
                               icon: CupertinoIcons.checkmark_seal_fill,
                               color: AppColors.primaryAction,
                               size: 62,
@@ -189,7 +189,7 @@ class _MemoryDailyLimitDialog extends StatelessWidget {
                       const SizedBox(height: 16),
                       _DialogHint(isWhite: isWhite),
                       const SizedBox(height: 18),
-                      Nomo3DButton(
+                      Tomo3DButton(
                         label: 'OK',
                         icon: CupertinoIcons.heart_fill,
                         onTap: onClose,
@@ -237,7 +237,7 @@ class _DialogHint extends StatelessWidget {
       ),
       child: Row(
         children: [
-          NomoPopIcon(
+          TomoPopIcon(
             icon: CupertinoIcons.calendar_badge_plus,
             color: AppColors.info,
             size: 36,

@@ -16,7 +16,7 @@ final adminRepositoryProvider = Provider<AdminRepository>((ref) {
 class AdminRepository {
   const AdminRepository(this._client, this._supabase);
 
-  static const _photoBucket = 'nomo-photos';
+  static const _photoBucket = 'tomo-photos';
 
   final BackendApiClient _client;
   final SupabaseClient _supabase;

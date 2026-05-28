@@ -25,8 +25,8 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _passwordController.clear();
       _userIdController.clear();
       _nameController.clear();
-      _avatar = NomoAvatar.defaultAvatar;
-      _gender = NomoGender.unspecified;
+      _avatar = TomoAvatar.defaultAvatar;
+      _gender = TomoGender.unspecified;
       _error = null;
       _notice = null;
     });
@@ -106,8 +106,8 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     setState(() {
       _userIdController.clear();
       _nameController.clear();
-      _avatar = NomoAvatar.defaultAvatar;
-      _gender = NomoGender.unspecified;
+      _avatar = TomoAvatar.defaultAvatar;
+      _gender = TomoGender.unspecified;
       _step = _OnboardingStep.profile;
       _error = null;
       _notice = null;
@@ -180,7 +180,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     });
     try {
       final loaded = await ref
-          .read(nomoUserProvider.notifier)
+          .read(tomoUserProvider.notifier)
           .loadFromBackendProfile();
       if (loaded) {
         await _saveLastAccount(session.user.email ?? '');
@@ -206,9 +206,9 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
   }
 
   Future<void> _showAccountManagementSheet() async {
-    final accounts = await NomoLastAccountStore.loadAccounts();
+    final accounts = await TomoLastAccountStore.loadAccounts();
     if (!mounted) return;
-    await showNomoBottomSheet<void>(
+    await showTomoBottomSheet<void>(
       context: context,
       builder: (context) => SafeArea(
         child: Padding(
@@ -258,14 +258,14 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
                         color: AppColors.coral,
                       ),
                       onPressed: () async {
-                        await NomoLastAccountStore.remove(account.email);
+                        await TomoLastAccountStore.remove(account.email);
                         if (context.mounted) Navigator.of(context).pop();
                         await _loadLastAccount();
                       },
                     ),
                   ),
               const SizedBox(height: 8),
-              Nomo3DButton.secondary(
+              Tomo3DButton.secondary(
                 label: '閉じる',
                 icon: CupertinoIcons.xmark_circle_fill,
                 onTap: () => Navigator.of(context).pop(),

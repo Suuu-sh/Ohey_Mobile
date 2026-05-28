@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nomo/core/data/nomo_last_account_store.dart';
-import 'package:nomo/main.dart';
+import 'package:tomo/core/data/tomo_last_account_store.dart';
+import 'package:tomo/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -22,7 +22,7 @@ void main() {
   testWidgets('first demo exits to account choice screen', (tester) async {
     SharedPreferences.setMockInitialValues({});
 
-    await tester.pumpWidget(const ProviderScope(child: NomoApp()));
+    await tester.pumpWidget(const ProviderScope(child: TomoApp()));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('スキップ'));
@@ -67,12 +67,12 @@ void main() {
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({
-      NomoLastAccountStore.onboardingSeenKey: true,
-      NomoLastAccountStore.nameKey: 'Suu',
-      NomoLastAccountStore.emailKey: 'yisshiki39@gmail.com',
+      TomoLastAccountStore.onboardingSeenKey: true,
+      TomoLastAccountStore.nameKey: 'Suu',
+      TomoLastAccountStore.emailKey: 'yisshiki39@gmail.com',
     });
 
-    await tester.pumpWidget(const ProviderScope(child: NomoApp()));
+    await tester.pumpWidget(const ProviderScope(child: TomoApp()));
     await tester.pumpAndSettle();
 
     expect(find.byType(Dialog), findsNothing);
@@ -118,41 +118,41 @@ void main() {
   test('last account store keeps the latest three unique accounts', () async {
     SharedPreferences.setMockInitialValues({});
 
-    await NomoLastAccountStore.save(
+    await TomoLastAccountStore.save(
       name: 'One',
       email: 'one@example.com',
       avatar: null,
     );
-    await NomoLastAccountStore.save(
+    await TomoLastAccountStore.save(
       name: 'Two',
       email: 'two@example.com',
       avatar: null,
     );
-    await NomoLastAccountStore.save(
+    await TomoLastAccountStore.save(
       name: 'Three',
       email: 'three@example.com',
       avatar: null,
     );
-    await NomoLastAccountStore.save(
+    await TomoLastAccountStore.save(
       name: 'Four',
       email: 'four@example.com',
       avatar: null,
     );
 
-    var accounts = await NomoLastAccountStore.loadAccounts();
+    var accounts = await TomoLastAccountStore.loadAccounts();
     expect(accounts.map((account) => account.email), [
       'four@example.com',
       'three@example.com',
       'two@example.com',
     ]);
 
-    await NomoLastAccountStore.save(
+    await TomoLastAccountStore.save(
       name: 'Two Updated',
       email: 'TWO@example.com',
       avatar: null,
     );
 
-    accounts = await NomoLastAccountStore.loadAccounts();
+    accounts = await TomoLastAccountStore.loadAccounts();
     expect(accounts.map((account) => account.email), [
       'TWO@example.com',
       'four@example.com',

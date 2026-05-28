@@ -7,45 +7,45 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/supabase_config.dart';
-import 'core/application/nomo_user_controller.dart';
+import 'core/application/tomo_user_controller.dart';
 import 'core/data/auth_session_guard.dart';
 import 'core/data/supabase_client_provider.dart';
-import 'core/services/nomo_push_notification_service.dart';
-import 'core/services/nomo_widget_sync.dart';
+import 'core/services/tomo_push_notification_service.dart';
+import 'core/services/tomo_widget_sync.dart';
 import 'core/theme/app_theme.dart';
-import 'core/theme/nomo_theme_mode.dart';
-import 'core/widgets/nomo_tab_shell.dart';
+import 'core/theme/tomo_theme_mode.dart';
+import 'core/widgets/tomo_tab_shell.dart';
 
-const _openingNomoAsset = 'assets/images/opening_nomo.png';
+const _openingTomoAsset = 'assets/images/opening_tomo.png';
 const _appDisplayName = 'Tomo';
 const _minimumOpeningDuration = Duration(seconds: 1);
 const _openingExitDurationMs = 520;
 
-ui.Image? _openingNomoImage;
+ui.Image? _openingTomoImage;
 
 Future<void> main() async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
   binding.deferFirstFrame();
 
   try {
-    await _loadOpeningNomoImage().timeout(const Duration(seconds: 3));
+    await _loadOpeningTomoImage().timeout(const Duration(seconds: 3));
   } on Object {
     // If decoding ever fails, fall back to the regular asset image below.
   }
 
-  runApp(const ProviderScope(child: NomoApp()));
+  runApp(const ProviderScope(child: TomoApp()));
   binding.allowFirstFrame();
 }
 
-Future<void> _loadOpeningNomoImage() async {
-  final data = await rootBundle.load(_openingNomoAsset);
+Future<void> _loadOpeningTomoImage() async {
+  final data = await rootBundle.load(_openingTomoAsset);
   final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
   final codec = await ui.instantiateImageCodec(bytes);
   final frame = await codec.getNextFrame();
-  _openingNomoImage = frame.image;
+  _openingTomoImage = frame.image;
 }
 
-final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
+final _tomoBootstrapProvider = FutureProvider<void>((ref) async {
   final alreadyInitialized = _isSupabaseInitialized();
   final minimumOpening = alreadyInitialized
       ? Future<void>.value()
@@ -69,7 +69,7 @@ final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
     await _preloadBackendProfileIfSessionExists(ref);
 
     await ref
-        .read(nomoPushNotificationServiceProvider)
+        .read(tomoPushNotificationServiceProvider)
         .start()
         .timeout(const Duration(seconds: 8), onTimeout: () {});
   } finally {
@@ -83,11 +83,11 @@ Future<void> _preloadBackendProfileIfSessionExists(Ref ref) async {
 
   try {
     await ref
-        .read(nomoUserProvider.notifier)
+        .read(tomoUserProvider.notifier)
         .loadFromBackendProfile()
         .timeout(const Duration(seconds: 3));
   } catch (_) {
-    // If the backend is cold-starting or unavailable, let NomoTabShell show the
+    // If the backend is cold-starting or unavailable, let TomoTabShell show the
     // friendly waiting screen and retry instead of blocking the opening screen.
   }
 }
@@ -155,14 +155,14 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<void>>(_nomoBootstrapProvider, (previous, next) {
+    ref.listen<AsyncValue<void>>(_tomoBootstrapProvider, (previous, next) {
       if (next.isLoading) {
         _openingExitCompleted = false;
         _openingExitController.reset();
       }
     });
 
-    final bootstrap = ref.watch(_nomoBootstrapProvider);
+    final bootstrap = ref.watch(_tomoBootstrapProvider);
     return bootstrap.when(
       data: (_) {
         ref.watch(supabaseAuthStateProvider);
@@ -172,8 +172,8 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
         return Stack(
           fit: StackFit.expand,
           children: [
-            const NomoTabShell(),
-            const NomoWidgetSnapshotSync(),
+            const TomoTabShell(),
+            const TomoWidgetSnapshotSync(),
             if (!_openingExitCompleted)
               FadeTransition(
                 opacity: _openingExitFade,
@@ -186,7 +186,7 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
       error: (error, stackTrace) => _StartupScreen(
         message: '起動に失敗しました',
         detail: '$error',
-        onRetry: () => ref.invalidate(_nomoBootstrapProvider),
+        onRetry: () => ref.invalidate(_tomoBootstrapProvider),
       ),
     );
   }
@@ -208,7 +208,7 @@ class _StartupScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          const _OpeningNomoArtwork(),
+          const _OpeningTomoArtwork(),
           if (!hasError)
             SafeArea(
               child: Align(
@@ -287,14 +287,14 @@ class _StartupScreen extends StatelessWidget {
   }
 }
 
-class _OpeningNomoArtwork extends StatelessWidget {
-  const _OpeningNomoArtwork();
+class _OpeningTomoArtwork extends StatelessWidget {
+  const _OpeningTomoArtwork();
 
   @override
   Widget build(BuildContext context) {
-    final image = _openingNomoImage;
+    final image = _openingTomoImage;
     if (image == null) {
-      return Image.asset(_openingNomoAsset, fit: BoxFit.cover);
+      return Image.asset(_openingTomoAsset, fit: BoxFit.cover);
     }
     return RawImage(image: image, fit: BoxFit.cover);
   }
@@ -439,12 +439,12 @@ class _StartupDot extends StatelessWidget {
   }
 }
 
-class NomoApp extends ConsumerWidget {
-  const NomoApp({super.key});
+class TomoApp extends ConsumerWidget {
+  const TomoApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mode = ref.watch(nomoThemeModeProvider);
+    final mode = ref.watch(tomoThemeModeProvider);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: _appDisplayName,

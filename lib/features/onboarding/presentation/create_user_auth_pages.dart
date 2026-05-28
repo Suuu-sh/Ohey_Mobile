@@ -287,12 +287,12 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
     );
   }
 
-  Widget _buildReLogin(BuildContext context, List<NomoLastAccount> accounts) {
+  Widget _buildReLogin(BuildContext context, List<TomoLastAccount> accounts) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact =
             constraints.maxHeight < 720 ||
-            accounts.length >= NomoLastAccountStore.maxAccounts;
+            accounts.length >= TomoLastAccountStore.maxAccounts;
         return _fixedAuthPage(
           constraints: constraints,
           padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),

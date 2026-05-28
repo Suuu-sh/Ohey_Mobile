@@ -6,17 +6,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../core/application/nomo_user_controller.dart';
-import '../../../core/data/nomo_last_account_store.dart';
+import '../../../core/application/tomo_user_controller.dart';
+import '../../../core/data/tomo_last_account_store.dart';
 import '../../../core/data/auth_repository.dart';
-import '../../../core/models/nomo_avatar.dart';
-import '../../../core/models/nomo_gender.dart';
+import '../../../core/models/tomo_avatar.dart';
+import '../../../core/models/tomo_gender.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/nomo_avatar.dart';
-import '../../../core/widgets/nomo_3d_button.dart';
-import '../../../core/widgets/nomo_bottom_sheet.dart';
-import '../../../core/widgets/nomo_pop_icon.dart';
-import '../../../core/widgets/nomo_themed_panel.dart';
+import '../../../core/widgets/tomo_avatar.dart';
+import '../../../core/widgets/tomo_3d_button.dart';
+import '../../../core/widgets/tomo_bottom_sheet.dart';
+import '../../../core/widgets/tomo_pop_icon.dart';
+import '../../../core/widgets/tomo_themed_panel.dart';
 import '../../profile/presentation/avatar_builder_screen.dart';
 
 part 'create_user_auth_helpers.dart';
@@ -65,8 +65,8 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   final _userIdController = TextEditingController();
   final _nameController = TextEditingController();
   final _demoController = PageController();
-  NomoAvatar _avatar = NomoAvatar.defaultAvatar;
-  NomoGender _gender = NomoGender.unspecified;
+  TomoAvatar _avatar = TomoAvatar.defaultAvatar;
+  TomoGender _gender = TomoGender.unspecified;
   _OnboardingStep _step = _OnboardingStep.intro;
   int _demoPage = 0;
   bool _isLogin = true;
@@ -77,7 +77,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _obscureSignupPassword = true;
   _RegistrationStep _loginStep = _RegistrationStep.email;
   _RegistrationStep _registrationStep = _RegistrationStep.email;
-  List<NomoLastAccount> _lastAccounts = const <NomoLastAccount>[];
+  List<TomoLastAccount> _lastAccounts = const <TomoLastAccount>[];
   String? _error;
   String? _notice;
   StreamSubscription<AuthState>? _authSubscription;
@@ -111,7 +111,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   }
 
   Future<void> _loadLastAccount() async {
-    final accounts = await NomoLastAccountStore.loadAccounts();
+    final accounts = await TomoLastAccountStore.loadAccounts();
     if (!mounted) return;
     setState(() {
       _lastAccounts = accounts;

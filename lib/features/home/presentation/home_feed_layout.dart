@@ -154,7 +154,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
         accent: _feedPrimaryActionColor,
         action: SizedBox(
           width: 240,
-          child: Nomo3DButton(
+          child: Tomo3DButton(
             label: '写真を選んで投稿する',
             icon: CupertinoIcons.camera_fill,
             onTap: onAddMemoryPressed,
@@ -178,7 +178,7 @@ Future<void> _showFeedPostActions(
 ) async {
   final body = item.body.trim();
   HapticFeedback.selectionClick();
-  final action = await showNomoBottomSheet<_FeedPostAction>(
+  final action = await showTomoBottomSheet<_FeedPostAction>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
@@ -190,7 +190,7 @@ Future<void> _showFeedPostActions(
   switch (action) {
     case _FeedPostAction.copy:
       await Clipboard.setData(ClipboardData(text: body));
-      if (context.mounted) NomoToast.show(context, 'コメントをコピーしました');
+      if (context.mounted) TomoToast.show(context, 'コメントをコピーしました');
     case _FeedPostAction.delete:
       final confirmed = await _confirmDeleteFeedPost(context);
       if (!confirmed || !context.mounted) return;
@@ -199,10 +199,10 @@ Future<void> _showFeedPostActions(
             .read(homeFeedControllerProvider.notifier)
             .deleteMemory(item.id);
         ref.invalidate(homeFeedControllerProvider);
-        if (context.mounted) NomoToast.show(context, '思い出を削除しました');
+        if (context.mounted) TomoToast.show(context, '思い出を削除しました');
       } catch (error) {
         if (context.mounted) {
-          NomoToast.show(context, '削除できなかったよ。あとでもう一度試してね');
+          TomoToast.show(context, '削除できなかったよ。あとでもう一度試してね');
         }
       }
     case _FeedPostAction.report:
@@ -213,20 +213,20 @@ Future<void> _showFeedPostActions(
             .read(homeFeedControllerProvider.notifier)
             .reportMemory(item.id, reason: reason.value);
         if (context.mounted) {
-          NomoToast.show(context, '「${reason.label}」として報告しました');
+          TomoToast.show(context, '「${reason.label}」として報告しました');
         }
       } catch (error) {
         if (context.mounted) {
-          NomoToast.show(context, '報告できなかったよ。あとでもう一度試してね');
+          TomoToast.show(context, '報告できなかったよ。あとでもう一度試してね');
         }
       }
     case _FeedPostAction.hide:
       try {
         await ref.read(homeFeedControllerProvider.notifier).hideMemory(item.id);
-        if (context.mounted) NomoToast.show(context, 'フィードから非表示にしました');
+        if (context.mounted) TomoToast.show(context, 'フィードから非表示にしました');
       } catch (_) {
         if (context.mounted) {
-          NomoToast.show(context, '非表示にできなかったよ。あとでもう一度試してね');
+          TomoToast.show(context, '非表示にできなかったよ。あとでもう一度試してね');
         }
       }
     case _FeedPostAction.muteUser:
@@ -251,7 +251,7 @@ Future<void> _showFeedPostActions(
         }
       } catch (_) {
         if (context.mounted) {
-          NomoToast.show(context, 'ミュートできなかったよ。あとでもう一度試してね');
+          TomoToast.show(context, 'ミュートできなかったよ。あとでもう一度試してね');
         }
       }
     case _FeedPostAction.blockUser:
@@ -285,7 +285,7 @@ Future<void> _showFeedPostActions(
         }
       } catch (_) {
         if (context.mounted) {
-          NomoToast.show(context, 'ブロックできなかったよ。あとでもう一度試してね');
+          TomoToast.show(context, 'ブロックできなかったよ。あとでもう一度試してね');
         }
       }
   }
@@ -297,7 +297,7 @@ void _showUserSafetyUndoToast(
   required String undoLabel,
   required Future<void> Function() onUndo,
 }) {
-  NomoToast.show(
+  TomoToast.show(
     context,
     message,
     icon: CupertinoIcons.checkmark_circle_fill,
@@ -307,7 +307,7 @@ void _showUserSafetyUndoToast(
       try {
         await onUndo();
         if (context.mounted) {
-          NomoToast.show(
+          TomoToast.show(
             context,
             '元に戻しました',
             icon: CupertinoIcons.arrow_uturn_left_circle_fill,
@@ -315,7 +315,7 @@ void _showUserSafetyUndoToast(
         }
       } catch (_) {
         if (context.mounted) {
-          NomoToast.show(
+          TomoToast.show(
             context,
             '元に戻せませんでした。あとでもう一度試してね',
             icon: CupertinoIcons.exclamationmark_triangle_fill,
@@ -327,7 +327,7 @@ void _showUserSafetyUndoToast(
 }
 
 Future<bool> _confirmDeleteFeedPost(BuildContext context) async {
-  final result = await showNomoBottomSheet<bool>(
+  final result = await showTomoBottomSheet<bool>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
@@ -338,7 +338,7 @@ Future<bool> _confirmDeleteFeedPost(BuildContext context) async {
 }
 
 Future<_FeedReportReason?> _selectReportReason(BuildContext context) async {
-  return showNomoBottomSheet<_FeedReportReason>(
+  return showTomoBottomSheet<_FeedReportReason>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
@@ -354,7 +354,7 @@ Future<bool> _confirmUserSafetyAction(
   required String actionLabel,
   required Color color,
 }) async {
-  final result = await showNomoBottomSheet<bool>(
+  final result = await showTomoBottomSheet<bool>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,

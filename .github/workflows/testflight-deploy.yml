@@ -42,7 +42,7 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Validate Nomo production environment
+      - name: Validate Tomo production environment
         env:
           DOTENV_PRODUCTION: ${{ secrets.DOTENV_PRODUCTION }}
         run: |
@@ -77,7 +77,7 @@ jobs:
             exit 1
           fi
 
-          printf '%s\n' "${dart_define_args[@]}" > "$RUNNER_TEMP/nomo_dart_defines.args"
+          printf '%s\n' "${dart_define_args[@]}" > "$RUNNER_TEMP/tomo_dart_defines.args"
 
       - name: Install Flutter dependencies
         run: flutter pub get
@@ -107,10 +107,10 @@ jobs:
           set -euo pipefail
           build_number="${{ steps.build-number.outputs.build-number }}"
 
-          args=(--release --config-only --dart-define=NOMO_ENV=production --build-number "$build_number")
+          args=(--release --config-only --dart-define=TOMO_ENV=production --build-number "$build_number")
           while IFS= read -r define_arg || [ -n "$define_arg" ]; do
             args+=("$define_arg")
-          done < "$RUNNER_TEMP/nomo_dart_defines.args"
+          done < "$RUNNER_TEMP/tomo_dart_defines.args"
 
           flutter build ios "${args[@]}"
 
@@ -219,8 +219,8 @@ jobs:
           end
 
           profiles = {
-            'APP_PROVISIONING_PROFILE_NAME' => 'Nomo App Store CI Push 20260524154459',
-            'WIDGET_PROVISIONING_PROFILE_NAME' => 'Nomo Widgets App Store CI 20260524154459',
+            'APP_PROVISIONING_PROFILE_NAME' => 'Tomo App Store CI Push 20260524154459',
+            'WIDGET_PROVISIONING_PROFILE_NAME' => 'Tomo Widgets App Store CI 20260524154459',
           }
 
           profile_dir = File.expand_path('~/Library/MobileDevice/Provisioning Profiles')
@@ -263,9 +263,9 @@ jobs:
             <string>app-store-connect</string>
             <key>provisioningProfiles</key>
             <dict>
-              <key>app.nomo.nomo</key>
+              <key>app.tomo.tomo</key>
               <string>$APP_PROVISIONING_PROFILE_NAME</string>
-              <key>app.nomo.nomo.widgets</key>
+              <key>app.tomo.tomo.widgets</key>
               <string>$WIDGET_PROVISIONING_PROFILE_NAME</string>
             </dict>
             <key>signingCertificate</key>
@@ -292,8 +292,8 @@ jobs:
           pbxproj = Path('ios/Runner.xcodeproj/project.pbxproj')
           text = pbxproj.read_text(encoding='utf-8')
           profiles = {
-              'app.nomo.nomo': os.environ['APP_PROVISIONING_PROFILE_NAME'],
-              'app.nomo.nomo.widgets': os.environ['WIDGET_PROVISIONING_PROFILE_NAME'],
+              'app.tomo.tomo': os.environ['APP_PROVISIONING_PROFILE_NAME'],
+              'app.tomo.tomo.widgets': os.environ['WIDGET_PROVISIONING_PROFILE_NAME'],
           }
 
           def set_setting(block: str, key: str, value: str) -> str:
@@ -350,7 +350,7 @@ jobs:
           # with those profiles so TestFlight archives do not fail signing.
           release_entitlements = [
               Path('ios/Runner/RunnerRelease.entitlements'),
-              Path('ios/NomoWidgets/NomoWidgetsRelease.entitlements'),
+              Path('ios/TomoWidgets/TomoWidgetsRelease.entitlements'),
           ]
           for path in release_entitlements:
               data = {}
@@ -365,7 +365,7 @@ jobs:
               print(f'Normalized {path}')
           PY
           plutil -p ios/Runner/RunnerRelease.entitlements
-          plutil -p ios/NomoWidgets/NomoWidgetsRelease.entitlements
+          plutil -p ios/TomoWidgets/TomoWidgetsRelease.entitlements
 
       - name: Archive release build
         run: |
@@ -400,7 +400,7 @@ jobs:
       - name: Assign TestFlight build to internal testers
         uses: Suuu-sh/Shared/actions/testflight-distribute-existing-build@main
         with:
-          app-bundle-id: app.nomo.nomo
+          app-bundle-id: app.tomo.tomo
           app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           app-store-connect-issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           app-store-connect-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}

@@ -11,17 +11,17 @@ fi
 
 : "${SUPABASE_URL:?SUPABASE_URL is required. Put it in .env.local or export it.}"
 : "${SUPABASE_PUBLISHABLE_KEY:?SUPABASE_PUBLISHABLE_KEY is required. Put it in .env.local or export it.}"
-SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-app.nomo.nomo://login-callback/}"
-NOMO_ADMIN_EMAILS="${NOMO_ADMIN_EMAILS:-}"
+SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-app.tomo.tomo://login-callback/}"
+TOMO_ADMIN_EMAILS="${TOMO_ADMIN_EMAILS:-}"
 
-# Run Nomo against dev-nomo Supabase and the dev Render backend.
-DEV_NOMO_BACKEND_URL="${DEV_NOMO_BACKEND_URL:-https://dev-nomo-backend.onrender.com}"
+# Run Tomo against dev-nomo Supabase and the dev Render backend.
+DEV_TOMO_BACKEND_URL="${DEV_TOMO_BACKEND_URL:-https://dev-nomo-backend.onrender.com}"
 
 flutter run \
-  --dart-define=NOMO_ENV=dev \
+  --dart-define=TOMO_ENV=dev \
   --dart-define=SUPABASE_URL="$SUPABASE_URL" \
   --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
   --dart-define=SUPABASE_AUTH_REDIRECT_URL="$SUPABASE_AUTH_REDIRECT_URL" \
-  --dart-define=NOMO_BACKEND_URL="$DEV_NOMO_BACKEND_URL" \
-  --dart-define=NOMO_ADMIN_EMAILS="$NOMO_ADMIN_EMAILS" \
+  --dart-define=TOMO_BACKEND_URL="$DEV_TOMO_BACKEND_URL" \
+  --dart-define=TOMO_ADMIN_EMAILS="$TOMO_ADMIN_EMAILS" \
   "$@"

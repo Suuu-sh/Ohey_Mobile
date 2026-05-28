@@ -6,25 +6,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/application/nomo_user_controller.dart';
-import '../../../core/models/nomo_avatar.dart';
-import '../../../core/models/nomo_friend.dart';
-import '../../../core/models/nomo_user.dart';
+import '../../../core/application/tomo_user_controller.dart';
+import '../../../core/models/tomo_avatar.dart';
+import '../../../core/models/tomo_friend.dart';
+import '../../../core/models/tomo_user.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/nomo_theme_mode.dart';
-import '../../../core/widgets/nomo_avatar.dart';
-import '../../../core/widgets/nomo_action_tile.dart';
-import '../../../core/widgets/nomo_empty_state.dart';
-import '../../../core/widgets/nomo_friend_user_block.dart';
-import '../../../core/widgets/nomo_invite_success_burst.dart';
-import '../../../core/widgets/nomo_3d_button.dart';
-import '../../../core/widgets/nomo_bottom_sheet.dart';
-import '../../../core/widgets/nomo_page_header.dart';
-import '../../../core/widgets/nomo_pop_icon.dart';
-import '../../../core/widgets/nomo_primary_button.dart';
-import '../../../core/widgets/nomo_scene_header_backdrop.dart';
-import '../../../core/widgets/nomo_toast.dart';
-import '../../../core/widgets/nomo_themed_panel.dart';
+import '../../../core/theme/tomo_theme_mode.dart';
+import '../../../core/widgets/tomo_avatar.dart';
+import '../../../core/widgets/tomo_action_tile.dart';
+import '../../../core/widgets/tomo_empty_state.dart';
+import '../../../core/widgets/tomo_friend_user_block.dart';
+import '../../../core/widgets/tomo_invite_success_burst.dart';
+import '../../../core/widgets/tomo_3d_button.dart';
+import '../../../core/widgets/tomo_bottom_sheet.dart';
+import '../../../core/widgets/tomo_page_header.dart';
+import '../../../core/widgets/tomo_pop_icon.dart';
+import '../../../core/widgets/tomo_primary_button.dart';
+import '../../../core/widgets/tomo_scene_header_backdrop.dart';
+import '../../../core/widgets/tomo_toast.dart';
+import '../../../core/widgets/tomo_themed_panel.dart';
 import '../application/invite_controller.dart';
 import '../data/friend_repository.dart';
 import 'friend_add_sheet.dart';
@@ -58,7 +58,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _syncCustomFiltersForUser(ref.read(nomoUserProvider)?.userId);
+        _syncCustomFiltersForUser(ref.read(tomoUserProvider)?.userId);
       }
     });
   }
@@ -153,12 +153,12 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       }
     });
     await _persistCustomFilters();
-    if (mounted) NomoToast.show(context, 'グループを削除したよ');
+    if (mounted) TomoToast.show(context, 'グループを削除したよ');
   }
 
   Future<void> _openCustomFilterManageSheet() async {
     HapticFeedback.selectionClick();
-    final result = await showNomoBottomSheet<_CustomFilterManageResult>(
+    final result = await showTomoBottomSheet<_CustomFilterManageResult>(
       context: context,
       useSafeArea: true,
       barrierColor: Colors.black.withValues(alpha: .58),
@@ -189,21 +189,21 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
         if (filters == null) return;
         setState(() => _customFilters = filters);
         await _persistCustomFilters();
-        if (mounted) NomoToast.show(context, 'グループの順番を保存したよ');
+        if (mounted) TomoToast.show(context, 'グループの順番を保存したよ');
         break;
     }
   }
 
   Future<void> _openCustomFilterSheet({_CustomFriendFilter? filter}) async {
     final friends =
-        ref.read(friendsProvider).asData?.value ?? const <NomoFriend>[];
+        ref.read(friendsProvider).asData?.value ?? const <TomoFriend>[];
     if (friends.isEmpty) {
-      NomoToast.show(context, 'フレンズを追加するとグループを作れるよ');
+      TomoToast.show(context, 'フレンズを追加するとグループを作れるよ');
       return;
     }
     HapticFeedback.selectionClick();
-    final isWhite = ref.read(nomoThemeModeProvider).isWhite;
-    final result = await showNomoBottomSheet<_CustomFilterSheetResult>(
+    final isWhite = ref.read(tomoThemeModeProvider).isWhite;
+    final result = await showTomoBottomSheet<_CustomFilterSheetResult>(
       context: context,
       useSafeArea: true,
       barrierColor: Colors.black.withValues(alpha: .58),
@@ -233,7 +233,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           _selectedCustomFilterId = saved.id;
         });
         await _persistCustomFilters();
-        if (mounted) NomoToast.show(context, 'グループを保存したよ');
+        if (mounted) TomoToast.show(context, 'グループを保存したよ');
         break;
       case _CustomFilterSheetAction.delete:
         final filterId = result.filterId!;
@@ -248,14 +248,14 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           }
         });
         await _persistCustomFilters();
-        if (mounted) NomoToast.show(context, 'グループを削除したよ');
+        if (mounted) TomoToast.show(context, 'グループを削除したよ');
         break;
     }
   }
 
   void _onToggleFavorite(
     BuildContext context,
-    NomoFriend friend,
+    TomoFriend friend,
     bool isFavorite,
   ) {
     final previous = _favoriteOverrides[friend.id] ?? friend.isFavorite;
@@ -270,43 +270,43 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             setState(() => _favoriteOverrides[friend.id] = previous);
           }
           if (!context.mounted) return;
-          NomoToast.show(context, '変更できなかったよ。あとでもう一度試してね');
+          TomoToast.show(context, '変更できなかったよ。あとでもう一度試してね');
         });
   }
 
   Future<void> _openFriendProfile(
-    NomoFriend friend,
+    TomoFriend friend,
     _FriendStatus status,
   ) async {
     HapticFeedback.selectionClick();
     await _showFriendProfileSheet(context, friend: friend, status: status);
   }
 
-  Future<void> _sendInvite(NomoFriend friend) async {
+  Future<void> _sendInvite(TomoFriend friend) async {
     try {
       await ref.read(inviteControllerProvider).sendTodayInvite(friend.id);
       if (!mounted) return;
       HapticFeedback.lightImpact();
-      NomoToast.show(
+      TomoToast.show(
         context,
         '${friend.name}にお誘いを送りました。',
         icon: CupertinoIcons.checkmark_circle_fill,
-        placement: NomoToastPlacement.bottom,
+        placement: TomoToastPlacement.bottom,
       );
     } catch (error) {
       if (!mounted) return;
       HapticFeedback.mediumImpact();
-      NomoToast.show(
+      TomoToast.show(
         context,
         '招待を送れなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
-        placement: NomoToastPlacement.bottom,
+        placement: TomoToastPlacement.bottom,
       );
       rethrow;
     }
   }
 
-  Future<void> _sendGroupInvites(List<NomoFriend> friends) async {
+  Future<void> _sendGroupInvites(List<TomoFriend> friends) async {
     if (_isSendingGroupInvite || friends.isEmpty) return;
     setState(() => _isSendingGroupInvite = true);
     try {
@@ -320,27 +320,27 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           _invitedFriendIds.add(friend.id);
         }
       });
-      NomoToast.show(
+      TomoToast.show(
         context,
         '${friends.length}人にまとめてお誘いを送りました。',
         icon: CupertinoIcons.checkmark_circle_fill,
-        placement: NomoToastPlacement.bottom,
+        placement: TomoToastPlacement.bottom,
       );
     } catch (_) {
       if (!mounted) return;
       HapticFeedback.mediumImpact();
-      NomoToast.show(
+      TomoToast.show(
         context,
         'まとめて招待できなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
-        placement: NomoToastPlacement.bottom,
+        placement: TomoToastPlacement.bottom,
       );
     } finally {
       if (mounted) setState(() => _isSendingGroupInvite = false);
     }
   }
 
-  void _markInviteSent(NomoFriend friend) {
+  void _markInviteSent(TomoFriend friend) {
     if (!mounted) return;
     setState(() => _invitedFriendIds.add(friend.id));
   }
@@ -360,8 +360,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       ...persistedInvitedFriendIds,
       ..._invitedFriendIds,
     };
-    final user = ref.watch(nomoUserProvider);
-    final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
+    final user = ref.watch(tomoUserProvider);
+    final isWhite = ref.watch(tomoThemeModeProvider).isWhite;
     if (_customFilterUserId != user?.userId) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _syncCustomFiltersForUser(user?.userId);
@@ -372,7 +372,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       _customFilters,
     );
     final headerBackgroundHeight =
-        NomoPageHeader.contentTopInset(context) + 100;
+        TomoPageHeader.contentTopInset(context) + 100;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -402,18 +402,18 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               bottom: false,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  NomoPageHeader.horizontalPadding,
-                  NomoPageHeader.topPadding,
-                  NomoPageHeader.horizontalPadding,
+                  TomoPageHeader.horizontalPadding,
+                  TomoPageHeader.topPadding,
+                  TomoPageHeader.horizontalPadding,
                   0,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    NomoPageHeader(
+                    TomoPageHeader(
                       title: 'フレンズ',
                       titleColor: _FriendsColors.lime,
-                      trailing: NomoHeaderIconButton(
+                      trailing: TomoHeaderIconButton(
                         icon: CupertinoIcons.plus,
                         semanticLabel: 'フレンズを追加',
                         color: _FriendsColors.lime,
@@ -447,7 +447,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                         ),
                         data: (friends) => _FriendsList(
                           friends: friends,
-                          userAvatar: user?.avatar ?? NomoAvatar.defaultAvatar,
+                          userAvatar: user?.avatar ?? TomoAvatar.defaultAvatar,
                           selectedFilter: _selectedFilter,
                           selectedCustomFilter: selectedCustomFilter,
                           favoriteOverrides: _favoriteOverrides,

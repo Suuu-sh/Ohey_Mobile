@@ -3,14 +3,14 @@ part of 'profile_screen.dart';
 class _AvatarEditCard extends StatelessWidget {
   const _AvatarEditCard({required this.avatar, required this.onTap});
 
-  final NomoAvatar avatar;
+  final TomoAvatar avatar;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    return Nomo3DButtonSurface(
+    return Tomo3DButtonSurface(
       onTap: onTap,
       height: 110,
       radius: 22,
@@ -45,7 +45,7 @@ class _AvatarEditCard extends StatelessWidget {
                 colors: [Color(0xFF223544), Color(0xFF101B28)],
               ),
             ),
-            child: NomoAvatarView(avatar: avatar, size: 82),
+            child: TomoAvatarView(avatar: avatar, size: 82),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -75,7 +75,7 @@ class _AvatarEditCard extends StatelessWidget {
               ],
             ),
           ),
-          const NomoGeneratedIcon(
+          const TomoGeneratedIcon(
             CupertinoIcons.chevron_forward,
             color: _ProfileColors.lime,
             size: 22,
@@ -93,7 +93,7 @@ class _SettingsSheetShell extends StatelessWidget {
     required this.onClose,
   });
 
-  final NomoUser? user;
+  final TomoUser? user;
   final List<Widget> children;
   final VoidCallback onClose;
 
@@ -104,7 +104,7 @@ class _SettingsSheetShell extends StatelessWidget {
     final sub = isWhite
         ? const Color(0xFF66727E)
         : Colors.white.withValues(alpha: .62);
-    final avatar = user?.avatar ?? NomoAvatar.defaultAvatar;
+    final avatar = user?.avatar ?? TomoAvatar.defaultAvatar;
     final name = user?.name.trim().isNotEmpty == true
         ? user!.name
         : 'Tomo user';
@@ -112,7 +112,7 @@ class _SettingsSheetShell extends StatelessWidget {
         ? '@${user!.userId}'
         : 'プロフィール未設定';
 
-    return NomoBottomSheetShell(
+    return TomoBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: EdgeInsets.zero,
       radius: 34,
@@ -184,7 +184,7 @@ class _SettingsSheetShell extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    NomoAvatarView(avatar: avatar, size: 52),
+                    TomoAvatarView(avatar: avatar, size: 52),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -249,7 +249,7 @@ class _SettingsCloseButton extends StatelessWidget {
           border: Border.all(color: color.withValues(alpha: .10)),
         ),
         child: Center(
-          child: NomoGeneratedIcon(
+          child: TomoGeneratedIcon(
             CupertinoIcons.xmark,
             color: color,
             size: 23,
@@ -300,7 +300,7 @@ class _SettingsTile extends StatelessWidget {
             height: 72,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: NomoThemedPanel.surfaceColor(isWhite: isWhite),
+              color: TomoThemedPanel.surfaceColor(isWhite: isWhite),
               borderRadius: BorderRadius.circular(22),
               border: Border.all(
                 color: isWhite
@@ -326,7 +326,7 @@ class _SettingsTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(17),
                   ),
                   child: Center(
-                    child: NomoPopIcon(
+                    child: TomoPopIcon(
                       icon: icon,
                       color: accent,
                       size: 28,
@@ -390,7 +390,7 @@ class _SettingsTile extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
-                    child: NomoGeneratedIcon(
+                    child: TomoGeneratedIcon(
                       CupertinoIcons.chevron_forward,
                       color: _ProfileColors.sub,
                       size: 18,
@@ -454,7 +454,7 @@ class _SheetPrimaryButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Nomo3DButton(
+  Widget build(BuildContext context) => Tomo3DButton(
     label: label,
     onTap: busy ? null : onTap,
     isLoading: busy,

@@ -219,7 +219,7 @@ class _ArchiveViewModeButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              NomoGeneratedIcon(
+              TomoGeneratedIcon(
                 icon,
                 size: 18,
                 color: selected
@@ -308,13 +308,13 @@ class _ArchiveAppleMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return UiKitView(
-      viewType: 'nomo/archive_map',
+      viewType: 'tomo/archive_map',
       creationParams: {'annotations': annotations},
       creationParamsCodec: const StandardMessageCodec(),
       onPlatformViewCreated: (id) {
         final handler = onAnnotationTap;
         if (handler == null) return;
-        MethodChannel('nomo/archive_map_$id').setMethodCallHandler((
+        MethodChannel('tomo/archive_map_$id').setMethodCallHandler((
           call,
         ) async {
           if (call.method != 'annotationSelected') return;
@@ -717,7 +717,7 @@ class _ArchivePlacesEmpty extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(28),
-        child: NomoEmptyState(
+        child: TomoEmptyState(
           visual: Container(
             width: 82,
             height: 82,
@@ -728,7 +728,7 @@ class _ArchivePlacesEmpty extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: const Center(
-              child: NomoGeneratedIcon(
+              child: TomoGeneratedIcon(
                 CupertinoIcons.map,
                 color: AppColors.primaryAction,
                 size: 36,
@@ -964,7 +964,7 @@ class _ArchiveMemorySection extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              NomoHeaderIconButton(
+              TomoHeaderIconButton(
                 icon: CupertinoIcons.xmark,
                 color: subColor,
                 semanticLabel: '思い出を閉じる',

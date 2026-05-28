@@ -1,5 +1,5 @@
-import 'nomo_avatar.dart';
-import 'nomo_friend.dart';
+import 'tomo_avatar.dart';
+import 'tomo_friend.dart';
 
 enum MemoryRarity {
   normal('normal'),
@@ -53,7 +53,7 @@ class Memory {
 
   final String id;
   final DateTime date;
-  final List<NomoFriend> friends;
+  final List<TomoFriend> friends;
   final String place;
   final String memo;
   final String? photoAssetPath;
@@ -65,7 +65,7 @@ class Memory {
   final bool likedByMe;
   final String ownerUserId;
   final String ownerDisplayName;
-  final NomoAvatar? ownerAvatar;
+  final TomoAvatar? ownerAvatar;
   final bool isOfficial;
   final MemoryRarity rarity;
   final String feedAuthorName;

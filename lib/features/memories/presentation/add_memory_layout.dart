@@ -5,12 +5,12 @@ part of 'add_memory_screen.dart';
 extension _AddMemoryScreenLayout on _AddMemoryScreenState {
   Widget _buildAddMemoryScreen(BuildContext context) {
     final friendsAsync = ref.watch(friendsProvider);
-    final user = ref.watch(nomoUserProvider);
+    final user = ref.watch(tomoUserProvider);
     final selectedFriends =
         friendsAsync.asData?.value
             .where((friend) => _selectedFriendIds.contains(friend.id))
             .toList(growable: false) ??
-        const <NomoFriend>[];
+        const <TomoFriend>[];
     final friendEditor = _FriendSelectCard(
       search: _InputBox(
         icon: CupertinoIcons.search,
@@ -28,7 +28,7 @@ extension _AddMemoryScreenLayout on _AddMemoryScreenState {
                   _friendSearchController.clear();
                   _friendSearchQuery = '';
                 }),
-                icon: const NomoGeneratedIcon(
+                icon: const TomoGeneratedIcon(
                   CupertinoIcons.xmark_circle_fill,
                   color: _AddMemoryColors.clearIcon,
                 ),
@@ -89,7 +89,7 @@ extension _AddMemoryScreenLayout on _AddMemoryScreenState {
                       _PostPreviewCard(
                         path: _photoPath!,
                         userName: _previewUserName(user?.name),
-                        avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
+                        avatar: user?.avatar ?? TomoAvatar.defaultAvatar,
                         memoController: _memoController,
                         captionY: _captionY,
                         place: _placeController.text,
@@ -102,13 +102,13 @@ extension _AddMemoryScreenLayout on _AddMemoryScreenState {
                         onMemoChanged: (_) => setState(() {}),
                         onCaptionYChanged: (value) =>
                             setState(() => _captionY = value),
-                        onRetake: _openNomoCamera,
+                        onRetake: _openTomoCamera,
                       ),
                       const SizedBox(height: 14),
                     ] else ...[
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 18),
-                        child: _PhotoCapturePrompt(onTap: _openNomoCamera),
+                        child: _PhotoCapturePrompt(onTap: _openTomoCamera),
                       ),
                       const SizedBox(height: 14),
                       Padding(
@@ -152,7 +152,7 @@ extension _AddMemoryScreenLayout on _AddMemoryScreenState {
                     label: _hasPhoto ? 'この1枚を投稿する' : '記録だけ保存する',
                     isSaving: _isSaving,
                     onPressed: () => _save(
-                      friendsAsync.asData?.value ?? const <NomoFriend>[],
+                      friendsAsync.asData?.value ?? const <TomoFriend>[],
                     ),
                   ),
                 ),

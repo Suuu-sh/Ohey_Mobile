@@ -1,12 +1,12 @@
-# Nomo
+# Tomo
 
-Nomo is a Flutter prototype for a cozy, overseas-app-inspired social memory app.
+Tomo is a Flutter prototype for a cozy, overseas-app-inspired social memory app.
 It focuses on cute memories, friend availability, invites, and lightweight photo sharing.
 
 ## Highlights
 
 - Pastel, iOS-native-feeling UI with soft cards, rounded corners, and gentle shadows
-- Original placeholder character assets: **Nomo Friends**
+- Original placeholder character assets: **Tomo Friends**
 - Character mood changes from the current month memory count
   - 0: さみしい
   - 1–2: にこにこ
@@ -49,10 +49,10 @@ go run ./cmd/api
 Run Flutter against it:
 
 ```sh
-flutter run --dart-define=NOMO_BACKEND_URL=https://dev-nomo-backend.onrender.com
+flutter run --dart-define=TOMO_BACKEND_URL=https://dev-nomo-backend.onrender.com
 ```
 
-For prod builds, set `NOMO_BACKEND_URL=https://nomo-backend-nezf.onrender.com`. For dev/Simulator use `https://dev-nomo-backend.onrender.com`.
+For prod builds, set `TOMO_BACKEND_URL=https://nomo-backend-nezf.onrender.com`. For dev/Simulator use `https://dev-nomo-backend.onrender.com`.
 
 ## Run
 
@@ -72,26 +72,26 @@ flutter test
 
 The app initializes `supabase_flutter` on startup. Local debug runs default to the `dev-nomo` Supabase project through `/Users/yota/Projects/Products/Nomo/Mobile/lib/core/config/supabase_config.dart`.
 
-Override environment values with `--dart-define` for production/release builds. See `/Users/yota/Projects/Products/Nomo/Mobile/docs/supabase_nomo.md`.
+Override environment values with `--dart-define` for production/release builds. See `/Users/yota/Projects/Products/Nomo/Mobile/docs/supabase_tomo.md`.
 
 
 ## Firebase/FCM dev and prod setup
 
-Nomo supports separate Firebase values for dev and prod. Keep filled config files out of git.
+Tomo supports separate Firebase values for dev and prod. Keep filled config files out of git.
 
 Recommended Firebase apps:
 
-- dev iOS bundle ID: `app.nomo.nomo.dev`
-- prod iOS bundle ID: `app.nomo.nomo`
-- dev Android application ID: `app.nomo.nomo.dev`
-- prod Android application ID: `app.nomo.nomo`
+- dev iOS bundle ID: `app.tomo.tomo.dev`
+- prod iOS bundle ID: `app.tomo.tomo`
+- dev Android application ID: `app.tomo.tomo.dev`
+- prod Android application ID: `app.tomo.tomo`
 
 Prepare local dart-define files:
 
 ```sh
 cp config/firebase/dev.json.example config/firebase/dev.json
 cp config/firebase/prod.json.example config/firebase/prod.json
-# Fill FIREBASE_* / SUPABASE_* / NOMO_* values from Firebase, Supabase, and secrets.
+# Fill FIREBASE_* / SUPABASE_* / TOMO_* values from Firebase, Supabase, and secrets.
 dart scripts/check_dart_define_keys.dart config/firebase/dev.json config/firebase/prod.json
 ```
 

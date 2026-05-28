@@ -3,7 +3,7 @@
 part of 'add_memory_screen.dart';
 
 extension _AddMemoryScreenActions on _AddMemoryScreenState {
-  List<NomoFriend> _filteredFriends(List<NomoFriend> friends) {
+  List<TomoFriend> _filteredFriends(List<TomoFriend> friends) {
     final query = _friendSearchQuery.trim().toLowerCase();
     if (query.isEmpty) return friends;
     return friends
@@ -26,11 +26,11 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
 
   bool get _hasPhoto => _photoPath != null && _photoPath!.trim().isNotEmpty;
 
-  Future<bool> _openNomoCamera() async {
-    final result = await Navigator.of(context).push<NomoCameraResult>(
+  Future<bool> _openTomoCamera() async {
+    final result = await Navigator.of(context).push<TomoCameraResult>(
       CupertinoPageRoute(
         fullscreenDialog: true,
-        builder: (_) => const NomoCameraScreen(),
+        builder: (_) => const TomoCameraScreen(),
       ),
     );
     if (result == null || !mounted) return false;
@@ -97,7 +97,7 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
   }
 
   Future<void> _openPlaceSearch() async {
-    final selected = await Navigator.of(context).push<NomoPlaceSearchResult>(
+    final selected = await Navigator.of(context).push<TomoPlaceSearchResult>(
       CupertinoPageRoute(
         fullscreenDialog: true,
         builder: (_) => _PlaceSearchScreen(initialQuery: _placeController.text),
@@ -112,7 +112,7 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
     });
   }
 
-  Future<void> _save(List<NomoFriend> friends) async {
+  Future<void> _save(List<TomoFriend> friends) async {
     if (_isSaving) return;
     if (await _hasExistingMemoryOn(_selectedDate)) {
       if (!mounted) return;
@@ -164,11 +164,11 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
         await showMemoryDailyLimitDialog(context, _selectedDate);
         return;
       }
-      NomoToast.show(context, '保存できなかったよ。あとでもう一度試してね');
+      TomoToast.show(context, '保存できなかったよ。あとでもう一度試してね');
     } catch (error) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      NomoToast.show(context, '保存できなかったよ。あとでもう一度試してね');
+      TomoToast.show(context, '保存できなかったよ。あとでもう一度試してね');
     }
   }
 
@@ -201,11 +201,11 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
   }
 
   Future<bool> _showMemorySuccessSheet({
-    required List<NomoFriend> friends,
+    required List<TomoFriend> friends,
     required int monthlyCount,
     required bool isPrivateRecord,
   }) async {
-    final openCalendar = await showNomoBottomSheet<bool>(
+    final openCalendar = await showTomoBottomSheet<bool>(
       context: context,
       useSafeArea: true,
       isDismissible: false,
@@ -223,7 +223,7 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
   Future<String?> _photoPathForSave() async {
     final path = _photoPath;
     if (path == null || path.isEmpty) return null;
-    if (!await nomoIsSquareOrLandscapePhoto(path)) {
+    if (!await tomoIsSquareOrLandscapePhoto(path)) {
       throw StateError('正方形または16:9の横長写真のみ投稿できます。');
     }
 
@@ -233,16 +233,16 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
   Future<String> _copyPhotoToPermanentStorage(String path) async {
     final source = File(path);
     if (!await source.exists()) return path;
-    final directory = await _nomoPhotoDirectory();
+    final directory = await _tomoPhotoDirectory();
     final extension = _fileExtension(path, fallback: '.jpg');
     final outputPath =
-        '${directory.path}/nomo_photo_${DateTime.now().microsecondsSinceEpoch}$extension';
+        '${directory.path}/tomo_photo_${DateTime.now().microsecondsSinceEpoch}$extension';
     return source.copy(outputPath).then((file) => file.path);
   }
 
-  Future<Directory> _nomoPhotoDirectory() async {
+  Future<Directory> _tomoPhotoDirectory() async {
     final documents = await getApplicationDocumentsDirectory();
-    final directory = Directory('${documents.path}/nomo_photos');
+    final directory = Directory('${documents.path}/tomo_photos');
     if (!await directory.exists()) {
       await directory.create(recursive: true);
     }

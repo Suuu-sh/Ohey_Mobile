@@ -244,12 +244,12 @@ class _AdminPhotoPickerField extends StatelessWidget {
               if (_hasPhoto)
                 SizedBox(
                   width: 62,
-                  child: Nomo3DButtonSurface(
+                  child: Tomo3DButtonSurface(
                     onTap: onClear,
                     height: 30,
                     radius: 14,
                     color: _AdminColors.pink.withValues(alpha: .16),
-                    bottomColor: nomo3DShadowColorFor(
+                    bottomColor: tomo3DShadowColorFor(
                       _AdminColors.pink,
                       lightnessScale: .56,
                     ),
@@ -278,7 +278,7 @@ class _AdminPhotoPickerField extends StatelessWidget {
             ),
             const SizedBox(height: 10),
           ],
-          Nomo3DButton(
+          Tomo3DButton(
             label: _hasPhoto ? '写真を変更する' : '写真を選択する',
             icon: CupertinoIcons.photo_on_rectangle,
             onTap: onPick,

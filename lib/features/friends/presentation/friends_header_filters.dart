@@ -7,7 +7,7 @@ class _FriendsHeaderBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NomoSceneHeaderBackdrop(
+    return TomoSceneHeaderBackdrop(
       assetPath: 'assets/images/friends_header_scene.png',
       fadeColor: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
       accentColor: _FriendsColors.lime,

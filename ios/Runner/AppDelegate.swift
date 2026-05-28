@@ -16,7 +16,7 @@ import WidgetKit
   private var placeSearchLocationCompletion: ((CLLocation?, FlutterError?) -> Void)?
   private var didRequestPlaceSearchLocation = false
   private var didRegisterArAvatarCameraViewFactory = false
-  private let widgetAppGroupIdentifier = "group.app.nomo.nomo"
+  private let widgetAppGroupIdentifier = "group.app.tomo.tomo"
 
   override func application(
     _ application: UIApplication,
@@ -35,31 +35,31 @@ import WidgetKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoQrSaver") {
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "TomoQrSaver") {
       registerQrSaverChannel(on: registrar.messenger())
     }
-    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoWidgetSync") {
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "TomoWidgetSync") {
       registerWidgetSyncChannel(on: registrar.messenger())
     }
-    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoPlaceSearch") {
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "TomoPlaceSearch") {
       registerPlaceSearchChannel(on: registrar.messenger())
     }
-    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoInstagramShare") {
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "TomoInstagramShare") {
       registerInstagramShareChannel(on: registrar.messenger())
     }
     if !didRegisterArAvatarCameraViewFactory,
-       let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoArAvatarCamera") {
+       let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "TomoArAvatarCamera") {
       registerArAvatarCameraViewFactory(with: registrar)
     }
     if !didRegisterArchiveMapViewFactory,
-       let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NomoArchiveMap") {
+       let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "TomoArchiveMap") {
       registerArchiveMapViewFactory(with: registrar)
     }
   }
 
   private func registerArAvatarCameraViewFactory() {
     guard !didRegisterArAvatarCameraViewFactory else { return }
-    guard let registrar = registrar(forPlugin: "NomoArAvatarCamera") else { return }
+    guard let registrar = registrar(forPlugin: "TomoArAvatarCamera") else { return }
     registerArAvatarCameraViewFactory(with: registrar)
   }
 
@@ -67,15 +67,15 @@ import WidgetKit
     guard !didRegisterArAvatarCameraViewFactory else { return }
     didRegisterArAvatarCameraViewFactory = true
     registrar.register(
-      NomoArAvatarCameraFactory(messenger: registrar.messenger()),
-      withId: "nomo/ar_avatar_camera"
+      TomoArAvatarCameraFactory(messenger: registrar.messenger()),
+      withId: "tomo/ar_avatar_camera"
     )
   }
 
 
   private func registerArchiveMapViewFactory() {
     guard !didRegisterArchiveMapViewFactory else { return }
-    guard let registrar = registrar(forPlugin: "NomoArchiveMap") else { return }
+    guard let registrar = registrar(forPlugin: "TomoArchiveMap") else { return }
     registerArchiveMapViewFactory(with: registrar)
   }
 
@@ -83,13 +83,13 @@ import WidgetKit
     guard !didRegisterArchiveMapViewFactory else { return }
     didRegisterArchiveMapViewFactory = true
     registrar.register(
-      NomoArchiveMapFactory(messenger: registrar.messenger()),
-      withId: "nomo/archive_map"
+      TomoArchiveMapFactory(messenger: registrar.messenger()),
+      withId: "tomo/archive_map"
     )
   }
 
   private func registerQrSaverChannel(on messenger: FlutterBinaryMessenger) {
-    qrSaverChannel = FlutterMethodChannel(name: "nomo/qr_saver", binaryMessenger: messenger)
+    qrSaverChannel = FlutterMethodChannel(name: "tomo/qr_saver", binaryMessenger: messenger)
     qrSaverChannel?.setMethodCallHandler { [weak self] call, result in
       guard call.method == "savePngToPhotos" else {
         result(FlutterMethodNotImplemented)
@@ -100,7 +100,7 @@ import WidgetKit
   }
 
   private func registerWidgetSyncChannel(on messenger: FlutterBinaryMessenger) {
-    widgetSyncChannel = FlutterMethodChannel(name: "nomo/widget_sync", binaryMessenger: messenger)
+    widgetSyncChannel = FlutterMethodChannel(name: "tomo/widget_sync", binaryMessenger: messenger)
     widgetSyncChannel?.setMethodCallHandler { [weak self] call, result in
       switch call.method {
       case "updateSnapshot":
@@ -117,7 +117,7 @@ import WidgetKit
   }
 
   private func registerPlaceSearchChannel(on messenger: FlutterBinaryMessenger) {
-    placeSearchChannel = FlutterMethodChannel(name: "nomo/place_search", binaryMessenger: messenger)
+    placeSearchChannel = FlutterMethodChannel(name: "tomo/place_search", binaryMessenger: messenger)
     placeSearchChannel?.setMethodCallHandler { [weak self] call, result in
       switch call.method {
       case "searchNearby":
@@ -129,7 +129,7 @@ import WidgetKit
   }
 
   private func registerInstagramShareChannel(on messenger: FlutterBinaryMessenger) {
-    instagramShareChannel = FlutterMethodChannel(name: "nomo/instagram_share", binaryMessenger: messenger)
+    instagramShareChannel = FlutterMethodChannel(name: "tomo/instagram_share", binaryMessenger: messenger)
     instagramShareChannel?.setMethodCallHandler { [weak self] call, result in
       switch call.method {
       case "shareStory":

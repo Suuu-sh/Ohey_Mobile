@@ -10,6 +10,6 @@
     <item>
         <bitmap
             android:gravity="fill"
-            android:src="@drawable/opening_nomo_launch" />
+            android:src="@drawable/opening_tomo_launch" />
     </item>
 </layer-list>

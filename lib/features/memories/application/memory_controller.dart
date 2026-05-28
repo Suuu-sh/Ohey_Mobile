@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/optimistic_update.dart';
 import '../../../core/models/memory.dart';
-import '../../../core/models/nomo_friend.dart';
+import '../../../core/models/tomo_friend.dart';
 import '../data/memory_repository.dart';
 
 final memoryControllerProvider =
@@ -17,12 +17,12 @@ final friendsControllerProvider = Provider<FriendsController>((ref) {
   return FriendsController(ref);
 });
 
-final friendsProvider = FutureProvider<List<NomoFriend>>((ref) async {
+final friendsProvider = FutureProvider<List<TomoFriend>>((ref) async {
   return ref.watch(memoryRepositoryProvider).fetchFriends();
 });
 
 final friendsForDateProvider =
-    FutureProvider.family<List<NomoFriend>, DateTime>((ref, date) async {
+    FutureProvider.family<List<TomoFriend>, DateTime>((ref, date) async {
       return ref.watch(memoryRepositoryProvider).fetchFriends(date: date);
     });
 
@@ -257,7 +257,7 @@ class MemoryController extends AsyncNotifier<List<Memory>> {
 
   Future<void> addMemory({
     required DateTime date,
-    required List<NomoFriend> friends,
+    required List<TomoFriend> friends,
     required String place,
     required String memo,
     String? photoAssetPath,

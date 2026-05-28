@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/data/backend_api_client.dart';
-import '../../../core/models/nomo_avatar.dart';
-import '../../../core/models/nomo_invite.dart';
-import '../../../core/models/nomo_friend.dart';
-import '../../../core/models/nomo_gender.dart';
+import '../../../core/models/tomo_avatar.dart';
+import '../../../core/models/tomo_invite.dart';
+import '../../../core/models/tomo_friend.dart';
+import '../../../core/models/tomo_gender.dart';
 
 final inviteRepositoryProvider = Provider<InviteRepository>((ref) {
   return InviteRepository(ref.watch(backendApiClientProvider));
@@ -50,18 +50,18 @@ class InviteRepository {
 
   Future<void> respond({
     required String inviteId,
-    required NomoInviteStatus status,
+    required TomoInviteStatus status,
   }) async {
     final userId = _userId;
     if (userId == null) throw StateError('返信するにはログインが必要です。');
-    if (status != NomoInviteStatus.accepted &&
-        status != NomoInviteStatus.rejected) {
+    if (status != TomoInviteStatus.accepted &&
+        status != TomoInviteStatus.rejected) {
       throw StateError('このステータスには変更できません。');
     }
     await _client.patch('/v1/invites/$inviteId', {'status': status.key});
   }
 
-  Future<List<NomoInvite>> fetchTodayReservations() async {
+  Future<List<TomoInvite>> fetchTodayReservations() async {
     final userId = _userId;
     if (userId == null) return const [];
     final rows = await _client.getRows(
@@ -71,7 +71,7 @@ class InviteRepository {
     return rows.map(_inviteFromRow).toList(growable: false);
   }
 
-  Future<List<NomoInvite>> fetchIncomingPendingInvites() async {
+  Future<List<TomoInvite>> fetchIncomingPendingInvites() async {
     final userId = _userId;
     if (userId == null) return const [];
     final rows = await _client.getRows(
@@ -81,7 +81,7 @@ class InviteRepository {
     return rows.map(_inviteFromRow).toList(growable: false);
   }
 
-  Future<List<NomoInvite>> fetchOutgoingActiveInvites({DateTime? date}) async {
+  Future<List<TomoInvite>> fetchOutgoingActiveInvites({DateTime? date}) async {
     final userId = _userId;
     if (userId == null) return const [];
     final rows = await _client.getRows(
@@ -91,13 +91,13 @@ class InviteRepository {
     return rows.map(_inviteFromRow).toList(growable: false);
   }
 
-  NomoInvite _inviteFromRow(Map<String, dynamic> row) {
-    return NomoInvite(
+  TomoInvite _inviteFromRow(Map<String, dynamic> row) {
+    return TomoInvite(
       id: row['id'] as String,
       inviterUserId: row['inviter_user_id'] as String,
       inviteeUserId: row['invitee_user_id'] as String,
       scheduledDate: DateTime.parse(row['scheduled_date'] as String),
-      status: nomoInviteStatusFromKey(row['status'] as String?),
+      status: tomoInviteStatusFromKey(row['status'] as String?),
       inviter: _profileToFriend(
         Map<String, dynamic>.from(row['inviter'] as Map),
       ),
@@ -107,17 +107,17 @@ class InviteRepository {
     );
   }
 
-  NomoFriend _profileToFriend(Map<String, dynamic> profile) {
-    return NomoFriend(
+  TomoFriend _profileToFriend(Map<String, dynamic> profile) {
+    return TomoFriend(
       id: profile['id'] as String,
       name: (profile['display_name'] as String?) ?? 'Tomo friend',
       avatarEmoji: '🍻',
       vibe: (profile['user_id'] as String?) ?? '',
       characterAssetPath: '',
-      kind: NomoFriendKind.cloud,
-      palette: NomoFriendPalette.mint,
-      gender: nomoGenderFromKey(profile['gender'] as String?),
-      avatar: NomoAvatar.decode(profile['avatar_url'] as String?),
+      kind: TomoFriendKind.cloud,
+      palette: TomoFriendPalette.mint,
+      gender: tomoGenderFromKey(profile['gender'] as String?),
+      avatar: TomoAvatar.decode(profile['avatar_url'] as String?),
     );
   }
 }

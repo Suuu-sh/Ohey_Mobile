@@ -150,12 +150,12 @@ class _HeroDemoVisual extends StatelessWidget {
         const Positioned(
           left: 30,
           bottom: 8,
-          child: NomoAvatarView(avatar: NomoAvatar.defaultAvatar, size: 132),
+          child: TomoAvatarView(avatar: TomoAvatar.defaultAvatar, size: 132),
         ),
         const Positioned(
           right: 20,
           top: 18,
-          child: NomoPopIcon(
+          child: TomoPopIcon(
             icon: CupertinoIcons.sparkles,
             color: Color(0xFFFFC857),
             size: 42,
@@ -164,7 +164,7 @@ class _HeroDemoVisual extends StatelessWidget {
         const Positioned(
           left: -14,
           top: 48,
-          child: NomoPopIcon(
+          child: TomoPopIcon(
             icon: CupertinoIcons.calendar,
             color: Color(0xFF16A8FF),
             size: 48,
@@ -188,7 +188,7 @@ class _ProfileDemoVisual extends StatelessWidget {
     ),
     child: Row(
       children: [
-        const NomoAvatarView(avatar: NomoAvatar.defaultAvatar, size: 86),
+        const TomoAvatarView(avatar: TomoAvatar.defaultAvatar, size: 86),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
@@ -214,11 +214,11 @@ class _ProfileDemoVisual extends StatelessWidget {
               const SizedBox(height: 18),
               const Row(
                 children: [
-                  NomoPopIcon(icon: CupertinoIcons.person_fill, size: 34),
+                  TomoPopIcon(icon: CupertinoIcons.person_fill, size: 34),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      '@nomo_friend',
+                      '@tomo_friend',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -273,7 +273,7 @@ class _FriendsDemoVisual extends StatelessWidget {
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const NomoAvatarView(avatar: NomoAvatar.defaultAvatar, size: 86),
+          const TomoAvatarView(avatar: TomoAvatar.defaultAvatar, size: 86),
           const SizedBox(width: 12),
           Container(
             width: 74,
@@ -283,7 +283,7 @@ class _FriendsDemoVisual extends StatelessWidget {
               borderRadius: BorderRadius.circular(22),
             ),
             child: const Center(
-              child: NomoPopIcon(
+              child: TomoPopIcon(
                 icon: CupertinoIcons.heart_fill,
                 color: Colors.white,
                 foregroundColor: Colors.white,
@@ -364,7 +364,7 @@ class _DemoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      NomoPopIcon(icon: icon, color: const Color(0xFF12C9A4), size: 42),
+      TomoPopIcon(icon: icon, color: const Color(0xFF12C9A4), size: 42),
       const SizedBox(width: 12),
       Expanded(
         child: Text(

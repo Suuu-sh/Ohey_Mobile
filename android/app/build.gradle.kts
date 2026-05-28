@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "app.nomo.nomo"
+    namespace = "app.tomo.tomo"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "app.nomo.nomo"
+        applicationId = "app.tomo.tomo"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

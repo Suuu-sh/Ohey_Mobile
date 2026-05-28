@@ -27,7 +27,7 @@ class _SignupProfileTextField extends StatelessWidget {
     child: Row(
       children: [
         const SizedBox(width: 20),
-        NomoGeneratedIcon(icon, color: Colors.white.withValues(alpha: .82)),
+        TomoGeneratedIcon(icon, color: Colors.white.withValues(alpha: .82)),
         const SizedBox(width: 14),
         Expanded(
           child: TextField(
@@ -72,25 +72,25 @@ class _SignupGenderSelector extends StatelessWidget {
     required this.onChanged,
   });
 
-  final NomoGender selectedGender;
+  final TomoGender selectedGender;
   final bool enabled;
   final bool compact;
-  final ValueChanged<NomoGender> onChanged;
+  final ValueChanged<TomoGender> onChanged;
 
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      for (var i = 0; i < selectableNomoGenders.length; i++) ...[
+      for (var i = 0; i < selectableTomoGenders.length; i++) ...[
         Expanded(
           child: _SignupGenderOption(
-            gender: selectableNomoGenders[i],
-            selected: selectedGender == selectableNomoGenders[i],
+            gender: selectableTomoGenders[i],
+            selected: selectedGender == selectableTomoGenders[i],
             enabled: enabled,
             compact: compact,
-            onTap: () => onChanged(selectableNomoGenders[i]),
+            onTap: () => onChanged(selectableTomoGenders[i]),
           ),
         ),
-        if (i != selectableNomoGenders.length - 1) const SizedBox(width: 10),
+        if (i != selectableTomoGenders.length - 1) const SizedBox(width: 10),
       ],
     ],
   );
@@ -105,7 +105,7 @@ class _SignupGenderOption extends StatelessWidget {
     required this.onTap,
   });
 
-  final NomoGender gender;
+  final TomoGender gender;
   final bool selected;
   final bool enabled;
   final bool compact;
@@ -113,7 +113,7 @@ class _SignupGenderOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = gender == NomoGender.male
+    final accent = gender == TomoGender.male
         ? const Color(0xFF18AFFF)
         : const Color(0xFFFF5AA6);
     return GestureDetector(
@@ -148,8 +148,8 @@ class _SignupGenderOption extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            NomoGeneratedIcon(
-              gender == NomoGender.male
+            TomoGeneratedIcon(
+              gender == TomoGender.male
                   ? CupertinoIcons.person_fill
                   : CupertinoIcons.person_crop_circle_fill,
               color: Colors.white,

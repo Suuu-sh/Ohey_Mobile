@@ -5,7 +5,7 @@
 class AdminConfig {
   const AdminConfig._();
 
-  static const _adminEmails = String.fromEnvironment('NOMO_ADMIN_EMAILS');
+  static const _adminEmails = String.fromEnvironment('TOMO_ADMIN_EMAILS');
 
   static bool isAdminEmail(String? email) {
     final normalized = (email ?? '').trim().toLowerCase();

@@ -7,7 +7,7 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
     final canSubmit =
         _isValidUserId(_userIdController.text.trim()) &&
         _nameController.text.trim().isNotEmpty &&
-        _gender != NomoGender.unspecified &&
+        _gender != TomoGender.unspecified &&
         !_isBusy;
 
     return LayoutBuilder(
@@ -85,13 +85,13 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                                     ),
                                   ],
                                 ),
-                                child: NomoAvatarView(avatar: _avatar),
+                                child: TomoAvatarView(avatar: _avatar),
                               ),
                             ),
                             SizedBox(height: compact ? 2 : 12),
                             TextButton.icon(
                               onPressed: _isBusy ? null : _openAvatarBuilder,
-                              icon: const NomoGeneratedIcon(
+                              icon: const TomoGeneratedIcon(
                                 CupertinoIcons.pencil,
                                 color: Color(0xFF12C9A4),
                                 size: 20,

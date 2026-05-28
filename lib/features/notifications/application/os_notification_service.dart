@@ -4,8 +4,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/models/nomo_invite.dart';
-import '../../../core/models/nomo_friend_request_status.dart';
+import '../../../core/models/tomo_invite.dart';
+import '../../../core/models/tomo_friend_request_status.dart';
 import '../data/notification_repository.dart';
 
 final osNotificationServiceProvider = Provider<OsNotificationService>((ref) {
@@ -24,20 +24,20 @@ class _NotificationDeliveryPolicy {
     'today_reservation_reminder',
   };
 
-  static bool shouldShowOsNotification(NomoNotification notification) {
+  static bool shouldShowOsNotification(TomoNotification notification) {
     if (!_osAllowedKinds.contains(notification.kind)) return false;
     if (notification.kind == 'friend_request_received') {
-      return nomoFriendRequestStatusFromKey(
+      return tomoFriendRequestStatusFromKey(
         notification.friendRequestStatus,
       ).isPending;
     }
     if (notification.kind == 'invite_received') {
-      return nomoInviteStatusFromKey(notification.inviteStatus).isPending;
+      return tomoInviteStatusFromKey(notification.inviteStatus).isPending;
     }
     return true;
   }
 
-  static List<NomoNotification> coalesce(List<NomoNotification> notifications) {
+  static List<TomoNotification> coalesce(List<TomoNotification> notifications) {
     if (notifications.length <= 2) return notifications;
     final actionable = notifications
         .where(
@@ -56,19 +56,19 @@ class OsNotificationService {
   OsNotificationService();
 
   static const _channel = AndroidNotificationChannel(
-    'nomo_notifications',
+    'tomo_notifications',
     'Tomo通知',
     description: 'フレンズ申請、お誘い、今日の思い出など厳選したTomo通知',
     importance: Importance.high,
   );
-  static const _lastNotifiedKey = 'nomo_last_os_notification_created_at';
+  static const _lastNotifiedKey = 'tomo_last_os_notification_created_at';
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
   Future<void> showNewNotifications(
-    List<NomoNotification> notifications,
+    List<TomoNotification> notifications,
   ) async {
     if (notifications.isEmpty) return;
     await _initialize();
@@ -107,7 +107,7 @@ class OsNotificationService {
         body: notification.displayMessage,
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
-            'nomo_notifications',
+            'tomo_notifications',
             'Tomo通知',
             channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したTomo通知',
             importance: Importance.high,
@@ -128,11 +128,11 @@ class OsNotificationService {
     }
   }
 
-  Future<void> showInviteReceived(NomoInvite invite) async {
+  Future<void> showInviteReceived(TomoInvite invite) async {
     await _initialize();
 
     final prefs = await SharedPreferences.getInstance();
-    final notifiedKey = 'nomo_notified_invite_${invite.id}';
+    final notifiedKey = 'tomo_notified_invite_${invite.id}';
     if (prefs.getBool(notifiedKey) ?? false) return;
 
     await _plugin.show(
@@ -141,7 +141,7 @@ class OsNotificationService {
       body: '今日会わない？アプリで返事してね。',
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
-          'nomo_notifications',
+          'tomo_notifications',
           'Tomo通知',
           channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したTomo通知',
           importance: Importance.high,

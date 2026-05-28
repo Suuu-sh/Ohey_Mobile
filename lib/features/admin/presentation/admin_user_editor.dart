@@ -35,9 +35,9 @@ class _AdminUserEditorScreenState
       text: user?.displayName ?? '',
     );
     _isPlus = user?.isPlus ?? false;
-    _gender = _adminNormalizeGender(user?.gender ?? NomoGender.unspecified.key);
+    _gender = _adminNormalizeGender(user?.gender ?? TomoGender.unspecified.key);
     _status = _adminNormalizeStatus(
-      user?.status ?? NomoDailyStatus.unselected.key,
+      user?.status ?? TomoDailyStatus.unselected.key,
     );
   }
 
@@ -140,7 +140,7 @@ class _AdminUserEditorScreenState
                     onPressed: _saving
                         ? null
                         : () => Navigator.of(context).pop(false),
-                    icon: const NomoGeneratedIcon(
+                    icon: const TomoGeneratedIcon(
                       CupertinoIcons.xmark,
                       color: Colors.white,
                       size: 26,
@@ -223,7 +223,7 @@ Future<void> _showPostSheet(
 }) async {
   final users =
       ref.read(adminUsersProvider).asData?.value ?? const <AdminUserProfile>[];
-  final didSave = await showNomoBottomSheet<bool>(
+  final didSave = await showTomoBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     builder: (_) => _AdminPostEditorSheet(memory: memory, users: users),
@@ -231,6 +231,6 @@ Future<void> _showPostSheet(
 
   if (didSave == true && context.mounted) {
     ref.invalidate(adminMemorysProvider);
-    NomoToast.show(context, '思い出を保存しました。');
+    TomoToast.show(context, '思い出を保存しました。');
   }
 }

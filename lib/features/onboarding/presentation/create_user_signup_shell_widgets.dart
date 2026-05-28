@@ -101,7 +101,7 @@ class _SignupStepButton extends StatelessWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context) => Nomo3DButton(
+  Widget build(BuildContext context) => Tomo3DButton(
     label: label,
     onTap: enabled ? onTap : null,
     isLoading: busy,

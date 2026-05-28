@@ -37,7 +37,7 @@ class _AdminSheet extends StatelessWidget {
                     FocusScope.of(context).unfocus();
                     Navigator.of(context).pop();
                   },
-                  icon: const NomoGeneratedIcon(
+                  icon: const TomoGeneratedIcon(
                     CupertinoIcons.xmark,
                     color: Colors.white,
                   ),
@@ -358,26 +358,26 @@ class _AdminStatusChip extends StatelessWidget {
   }
 }
 
-const _adminSelectableStatusKeys = <NomoDailyStatus>[
-  NomoDailyStatus.unselected,
-  NomoDailyStatus.available,
-  NomoDailyStatus.maybeAvailable,
-  NomoDailyStatus.dependsOnTime,
-  NomoDailyStatus.hasPlans,
+const _adminSelectableStatusKeys = <TomoDailyStatus>[
+  TomoDailyStatus.unselected,
+  TomoDailyStatus.available,
+  TomoDailyStatus.maybeAvailable,
+  TomoDailyStatus.dependsOnTime,
+  TomoDailyStatus.hasPlans,
 ];
 
-const _adminSelectableGenders = <NomoGender>[
-  NomoGender.unspecified,
-  NomoGender.male,
-  NomoGender.female,
+const _adminSelectableGenders = <TomoGender>[
+  TomoGender.unspecified,
+  TomoGender.male,
+  TomoGender.female,
 ];
 
 String _adminStatusLabel(String status) {
-  return nomoDailyStatusFromKey(status).label;
+  return tomoDailyStatusFromKey(status).label;
 }
 
 String _adminGenderLabel(String gender) {
-  return nomoGenderFromKey(gender).label;
+  return tomoGenderFromKey(gender).label;
 }
 
 String _adminReportReasonLabel(String reason) {
@@ -402,11 +402,11 @@ String _adminReportStatusLabel(String status) {
 }
 
 String _adminNormalizeStatus(String status) {
-  return nomoDailyStatusFromKey(status).key;
+  return tomoDailyStatusFromKey(status).key;
 }
 
 String _adminNormalizeGender(String gender) {
-  return nomoGenderFromKey(gender).key;
+  return tomoGenderFromKey(gender).key;
 }
 
 class _AdminSwitchRow extends StatelessWidget {
@@ -547,7 +547,7 @@ class _AdminSmallButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
     width: 96,
-    child: Nomo3DButtonSurface(
+    child: Tomo3DButtonSurface(
       onTap: onTap,
       height: 36,
       radius: 16,
@@ -582,12 +582,12 @@ class _AdminIconButton extends StatelessWidget {
     final color = destructive ? _AdminColors.pink : _AdminColors.lime;
     return SizedBox(
       width: 39,
-      child: Nomo3DButtonSurface(
+      child: Tomo3DButtonSurface(
         onTap: onTap,
         height: 32,
         radius: 14,
         color: color.withValues(alpha: .18),
-        bottomColor: nomo3DShadowColorFor(color, lightnessScale: .56),
+        bottomColor: tomo3DShadowColorFor(color, lightnessScale: .56),
         padding: EdgeInsets.zero,
         borderColor: color.withValues(alpha: .28),
         outerShadows: [
@@ -597,7 +597,7 @@ class _AdminIconButton extends StatelessWidget {
             offset: const Offset(0, 5),
           ),
         ],
-        child: NomoGeneratedIcon(icon, color: color, size: 22),
+        child: TomoGeneratedIcon(icon, color: color, size: 22),
       ),
     );
   }
@@ -615,7 +615,7 @@ class _AdminPrimaryButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Nomo3DButton(
+  Widget build(BuildContext context) => Tomo3DButton(
     label: label,
     onTap: busy ? null : onTap,
     isLoading: busy,
@@ -648,8 +648,8 @@ class _AdminEmptyState extends StatelessWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context) => NomoEmptyState(
-    visual: const NomoGeneratedIcon(
+  Widget build(BuildContext context) => TomoEmptyState(
+    visual: const TomoGeneratedIcon(
       CupertinoIcons.tray,
       color: _AdminColors.lime,
       size: 46,
@@ -669,7 +669,7 @@ class _AdminErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      NomoStateView.error(message: message, compact: false);
+      TomoStateView.error(message: message, compact: false);
 }
 
 String _dateLabel(DateTime date) {

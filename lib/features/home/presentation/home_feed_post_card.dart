@@ -22,14 +22,14 @@ class _FeedPostCard extends StatelessWidget {
     final photoPath = item.photoAssetPath;
     final hasPhoto = _isDisplayablePostPhoto(photoPath);
     final caption = _feedCardCaption(item);
-    final surfaceColor = NomoThemedPanel.surfaceColor(isWhite: isWhite);
+    final surfaceColor = TomoThemedPanel.surfaceColor(isWhite: isWhite);
     return Semantics(
       label: '${item.userName}の思い出',
-      child: NomoThemedPanel(
+      child: TomoThemedPanel(
         accentColor: _FeedColors.teal,
         backgroundColor: surfaceColor,
         borderRadius: 0,
-        border: NomoThemedPanelBorder.horizontal,
+        border: TomoThemedPanelBorder.horizontal,
         borderWidth: 0,
         borderAlpha: 0,
         glowAlpha: 0,
@@ -203,7 +203,7 @@ class _FeedPhotoDoubleTapLikeBurst extends StatelessWidget {
               ),
             ],
           ),
-          child: NomoPopIcon(
+          child: TomoPopIcon(
             icon: CupertinoIcons.heart_fill,
             color: color,
             size: 96,
@@ -454,7 +454,7 @@ class _FeedCardAuthorBar extends StatelessWidget {
               onTap: onMore,
               child: Padding(
                 padding: const EdgeInsets.all(6),
-                child: NomoPopIcon(
+                child: TomoPopIcon(
                   icon: CupertinoIcons.ellipsis,
                   color: iconColor,
                   size: 27,
@@ -507,7 +507,7 @@ class _FeedCardFooter extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              NomoPostActionPill(
+              TomoPostActionPill(
                 semanticLabel: item.liked ? 'いいねを取り消す' : 'いいねで反応',
                 icon: item.liked
                     ? CupertinoIcons.heart_fill
@@ -522,7 +522,7 @@ class _FeedCardFooter extends StatelessWidget {
                 onTap: onLike,
               ),
               const SizedBox(width: 8),
-              NomoPostActionPill(
+              TomoPostActionPill(
                 semanticLabel: item.isOfficial
                     ? '公式投稿を詳しく見る'
                     : item.ownedByMe
@@ -530,8 +530,8 @@ class _FeedCardFooter extends StatelessWidget {
                     : '投稿を共有',
                 customIcon: item.isOfficial
                     ? null
-                    : NomoPostShareIcon(
-                        color: nomoPostActionForeground(shareAccent),
+                    : TomoPostShareIcon(
+                        color: tomoPostActionForeground(shareAccent),
                         size: 19,
                       ),
                 icon: item.isOfficial ? CupertinoIcons.doc_text_fill : null,
@@ -543,7 +543,7 @@ class _FeedCardFooter extends StatelessWidget {
               const Spacer(),
               if (item.friends.isNotEmpty) ...[
                 const SizedBox(width: 8),
-                NomoPostCompanionPill(
+                TomoPostCompanionPill(
                   avatars: item.friends
                       .map((friend) => friend.avatar)
                       .toList(growable: false),
@@ -838,7 +838,7 @@ class _VerifiedBadgeSeal extends CustomPainter {
 bool _isDisplayablePostPhoto(String? path) {
   final normalized = path?.trim();
   if (normalized == null || normalized.isEmpty) return false;
-  if (normalized.startsWith('nomo_memory_template_')) return false;
+  if (normalized.startsWith('tomo_memory_template_')) return false;
   if (normalized.startsWith('/')) return File(normalized).existsSync();
   if (normalized.startsWith('http://') ||
       normalized.startsWith('https://') ||

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-/// Supabase environment configuration for Nomo.
+/// Supabase environment configuration for Tomo.
 ///
 /// Non-release builds (Simulator / `flutter run`) are forced to dev-nomo so
 /// local checks never touch production accidentally. Release builds
@@ -10,7 +10,7 @@ class SupabaseConfig {
   const SupabaseConfig._();
 
   static const environment = String.fromEnvironment(
-    'NOMO_ENV',
+    'TOMO_ENV',
     defaultValue: kReleaseMode ? 'production' : 'dev',
   );
 
@@ -30,8 +30,8 @@ class SupabaseConfig {
   static const _prodSupabaseUrl = 'https://pwifgddolctqghygwxwj.supabase.co';
   static const _prodPublishableKey =
       'sb_publishable_pezjPt7pYRECNFdydlon8A_RpSjNulk';
-  static const _prodAuthRedirectUrl = 'app.nomo.nomo://login-callback/';
-  static const _devAuthRedirectUrl = 'app.nomo.nomo.dev://login-callback/';
+  static const _prodAuthRedirectUrl = 'app.tomo.tomo://login-callback/';
+  static const _devAuthRedirectUrl = 'app.tomo.tomo.dev://login-callback/';
   static const _mistypedProdSupabaseUrl =
       'https://pwifgddolctqhygywxwj.supabase.co';
 
@@ -46,7 +46,7 @@ class SupabaseConfig {
   /// (`...qhygy...`) through dart-defines. That hostname does not exist and
   /// causes `SocketException: Failed host lookup`. Normalize that exact known
   /// typo for release builds so affected invocations still connect to the
-  /// intended `nomo` Supabase project.
+  /// intended `tomo` Supabase project.
   static String get url {
     if (!kReleaseMode) {
       return _devSupabaseUrl;

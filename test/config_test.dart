@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nomo/core/config/backend_config.dart';
-import 'package:nomo/core/config/supabase_config.dart';
+import 'package:tomo/core/config/backend_config.dart';
+import 'package:tomo/core/config/supabase_config.dart';
 
 void main() {
   test('debug/test builds use dev Supabase and dev Render backend', () {
     expect(SupabaseConfig.url, 'https://wwyaftonswgxnjcceyfb.supabase.co');
     expect(
       SupabaseConfig.authRedirectUrl,
-      'app.nomo.nomo.dev://login-callback/',
+      'app.tomo.tomo.dev://login-callback/',
     );
     expect(BackendConfig.baseUrl, 'https://dev-nomo-backend.onrender.com');
     expect(

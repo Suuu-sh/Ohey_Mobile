@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nomo/core/models/memory.dart';
-import 'package:nomo/features/memories/application/memory_daily_limit.dart';
+import 'package:tomo/core/models/memory.dart';
+import 'package:tomo/features/memories/application/memory_daily_limit.dart';
 
 void main() {
   test(

@@ -183,21 +183,21 @@ class _ReLoginAccountCard extends StatelessWidget {
     this.compact = false,
   });
 
-  final List<NomoLastAccount> accounts;
-  final ValueChanged<NomoLastAccount> onAccountTap;
+  final List<TomoLastAccount> accounts;
+  final ValueChanged<TomoLastAccount> onAccountTap;
   final VoidCallback onAddAccount;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final visibleAccounts = accounts
-        .take(NomoLastAccountStore.maxAccounts)
+        .take(TomoLastAccountStore.maxAccounts)
         .toList(growable: false);
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
-      child: NomoThemedPanel(
+      child: TomoThemedPanel(
         accentColor: Colors.white,
-        backgroundColor: NomoThemedPanel.surfaceColor(isWhite: false),
+        backgroundColor: TomoThemedPanel.surfaceColor(isWhite: false),
         borderRadius: 20,
         borderAlpha: .20,
         borderWidth: 2,
@@ -232,7 +232,7 @@ class _ReLoginAccountCard extends StatelessWidget {
                         ),
                       ),
                       child: Center(
-                        child: NomoGeneratedIcon(
+                        child: TomoGeneratedIcon(
                           CupertinoIcons.plus,
                           color: Colors.white.withValues(alpha: .44),
                           size: compact ? 24 : 26,
@@ -266,7 +266,7 @@ class _ReLoginAccountRow extends StatelessWidget {
     required this.compact,
   });
 
-  final NomoLastAccount account;
+  final TomoLastAccount account;
   final VoidCallback onTap;
   final bool compact;
 
@@ -289,8 +289,8 @@ class _ReLoginAccountRow extends StatelessWidget {
                 colors: [AppColors.peach, AppColors.lavender],
               ),
             ),
-            child: NomoAvatarView(
-              avatar: account.avatar ?? NomoAvatar.defaultAvatar,
+            child: TomoAvatarView(
+              avatar: account.avatar ?? TomoAvatar.defaultAvatar,
               size: compact ? 40 : 48,
             ),
           ),
@@ -324,7 +324,7 @@ class _ReLoginAccountRow extends StatelessWidget {
               ],
             ),
           ),
-          NomoGeneratedIcon(
+          TomoGeneratedIcon(
             CupertinoIcons.chevron_right,
             color: Colors.white.withValues(alpha: .68),
             size: compact ? 25 : 28,

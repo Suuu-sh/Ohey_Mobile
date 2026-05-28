@@ -8,23 +8,23 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/models/memory.dart';
-import '../../../core/application/nomo_user_controller.dart';
+import '../../../core/application/tomo_user_controller.dart';
 import '../../../core/data/user_repository.dart';
-import '../../../core/models/nomo_invite.dart';
-import '../../../core/models/nomo_avatar.dart';
-import '../../../core/models/nomo_friend.dart';
-import '../../../core/models/nomo_user.dart';
+import '../../../core/models/tomo_invite.dart';
+import '../../../core/models/tomo_avatar.dart';
+import '../../../core/models/tomo_friend.dart';
+import '../../../core/models/tomo_user.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/nomo_theme_mode.dart';
-import '../../../core/widgets/nomo_3d_button.dart';
-import '../../../core/widgets/nomo_bottom_sheet.dart';
-import '../../../core/widgets/nomo_daily_status_3d_option.dart';
-import '../../../core/widgets/nomo_friend_user_block.dart';
-import '../../../core/widgets/nomo_page_header.dart';
-import '../../../core/widgets/nomo_pop_icon.dart';
-import '../../../core/widgets/nomo_scene_header_backdrop.dart';
-import '../../../core/widgets/nomo_themed_panel.dart';
-import '../../../core/widgets/nomo_toast.dart';
+import '../../../core/theme/tomo_theme_mode.dart';
+import '../../../core/widgets/tomo_3d_button.dart';
+import '../../../core/widgets/tomo_bottom_sheet.dart';
+import '../../../core/widgets/tomo_daily_status_3d_option.dart';
+import '../../../core/widgets/tomo_friend_user_block.dart';
+import '../../../core/widgets/tomo_page_header.dart';
+import '../../../core/widgets/tomo_pop_icon.dart';
+import '../../../core/widgets/tomo_scene_header_backdrop.dart';
+import '../../../core/widgets/tomo_themed_panel.dart';
+import '../../../core/widgets/tomo_toast.dart';
 import '../../friends/application/invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
 import '../../memories/application/memory_controller.dart';
@@ -34,7 +34,7 @@ const _calendarPrimaryActionForegroundColor = Color(0xFF06111D);
 const _calendarPrimaryActionShadowColor = Color(0xFF0B78B7);
 
 String _calendarGroupStorageKey(String userId) =>
-    'nomo_custom_friend_filters_v1_$userId';
+    'tomo_custom_friend_filters_v1_$userId';
 
 class _CalendarFriendGroup {
   const _CalendarFriendGroup({
@@ -102,14 +102,14 @@ class CalendarScreen extends ConsumerStatefulWidget {
 }
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
-  static const _calendarIntroSeenKey = 'nomo_calendar_intro_seen';
+  static const _calendarIntroSeenKey = 'tomo_calendar_intro_seen';
 
   late DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
   late DateTime _selectedDay = _dateOnly(DateTime.now());
   double _monthDragOffset = 0;
   bool _isIntroSeen = true;
   bool _isStatusSaving = false;
-  final Map<String, NomoDailyStatus> _statusByDate = {};
+  final Map<String, TomoDailyStatus> _statusByDate = {};
   final Set<String> _loadingStatusKeys = {};
   String? _calendarGroupUserId;
   List<_CalendarFriendGroup> _calendarGroups = const [];
@@ -121,7 +121,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     _loadStatusesForMonth(_month);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _syncCalendarGroupsForUser(ref.read(nomoUserProvider)?.userId);
+        _syncCalendarGroupsForUser(ref.read(tomoUserProvider)?.userId);
       }
     });
   }
@@ -191,15 +191,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   Future<void> _selectDay(DateTime day) async {
     setState(() => _selectedDay = day);
     final status = await _loadStatusFor(day);
-    if (!mounted || status != NomoDailyStatus.unselected) return;
+    if (!mounted || status != TomoDailyStatus.unselected) return;
     await _openStatusPicker(showLockedExplanation: true);
   }
 
-  Future<NomoDailyStatus> _loadStatusFor(DateTime day) async {
+  Future<TomoDailyStatus> _loadStatusFor(DateTime day) async {
     final key = _dateKey(day);
     final cached = _statusByDate[key];
     if (cached != null) return cached;
-    if (!_loadingStatusKeys.add(key)) return NomoDailyStatus.unselected;
+    if (!_loadingStatusKeys.add(key)) return TomoDailyStatus.unselected;
     try {
       final status = await ref
           .read(userRepositoryProvider)
@@ -209,9 +209,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       return status;
     } catch (_) {
       if (mounted) {
-        setState(() => _statusByDate[key] = NomoDailyStatus.unselected);
+        setState(() => _statusByDate[key] = TomoDailyStatus.unselected);
       }
-      return NomoDailyStatus.unselected;
+      return TomoDailyStatus.unselected;
     } finally {
       _loadingStatusKeys.remove(key);
     }
@@ -238,7 +238,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     if (targets.isEmpty) return;
 
     final repository = ref.read(userRepositoryProvider);
-    Map<String, NomoDailyStatus> statuses;
+    Map<String, TomoDailyStatus> statuses;
     try {
       statuses = await repository.fetchDailyStatusesForMonth(month);
     } catch (_) {
@@ -251,18 +251,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     setState(() {
       for (final date in targets) {
         final key = _dateKey(date);
-        _statusByDate[key] = statuses[key] ?? NomoDailyStatus.unselected;
+        _statusByDate[key] = statuses[key] ?? TomoDailyStatus.unselected;
       }
     });
   }
 
-  Future<void> _setStatusForSelectedDay(NomoDailyStatus status) async {
+  Future<void> _setStatusForSelectedDay(TomoDailyStatus status) async {
     if (_isStatusSaving) return;
     final day = _selectedDay;
     setState(() => _isStatusSaving = true);
     try {
       await ref
-          .read(nomoUserProvider.notifier)
+          .read(tomoUserProvider.notifier)
           .updateDailyStatus(status, date: day);
       if (!mounted) return;
       setState(() {
@@ -276,14 +276,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   Future<void> _openStatusPicker({bool showLockedExplanation = false}) async {
-    final picked = await showNomoBottomSheet<NomoDailyStatus>(
+    final picked = await showTomoBottomSheet<TomoDailyStatus>(
       context: context,
       useSafeArea: true,
       barrierColor: Colors.black.withValues(alpha: .58),
       builder: (_) => _CalendarStatusSheet(
         day: _selectedDay,
         selected:
-            _statusByDate[_dateKey(_selectedDay)] ?? NomoDailyStatus.unselected,
+            _statusByDate[_dateKey(_selectedDay)] ?? TomoDailyStatus.unselected,
         showLockedExplanation: showLockedExplanation,
       ),
     );
@@ -324,7 +324,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final monthlyLogs = userLogs.where((log) => log.isInMonth(_month)).toList();
     final todayReservations =
         ref.watch(todayReservationsProvider).asData?.value ??
-        const <NomoInvite>[];
+        const <TomoInvite>[];
     final selectedLogs = userLogs
         .where((log) => _isSameDate(log.date, _selectedDay))
         .toList(growable: false);
@@ -332,16 +332,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       friendsForDateProvider(_dateOnly(_selectedDay)),
     );
     final selectedStatus =
-        _statusByDate[_dateKey(_selectedDay)] ?? NomoDailyStatus.unselected;
-    final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
-    final user = ref.watch(nomoUserProvider);
+        _statusByDate[_dateKey(_selectedDay)] ?? TomoDailyStatus.unselected;
+    final isWhite = ref.watch(tomoThemeModeProvider).isWhite;
+    final user = ref.watch(tomoUserProvider);
     if (_calendarGroupUserId != user?.userId) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _syncCalendarGroupsForUser(user?.userId);
       });
     }
     final headerBackgroundHeight =
-        NomoPageHeader.contentTopInset(context) + 100;
+        TomoPageHeader.contentTopInset(context) + 100;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -365,7 +365,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               right: 0,
               top: 0,
               height: headerBackgroundHeight,
-              child: NomoSceneHeaderBackdrop(
+              child: TomoSceneHeaderBackdrop(
                 assetPath: 'assets/images/calendar_header_scene.png',
                 fadeColor: isWhite
                     ? Colors.white
@@ -384,15 +384,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(
-                      NomoPageHeader.horizontalPadding,
-                      NomoPageHeader.topPadding,
-                      NomoPageHeader.horizontalPadding,
+                      TomoPageHeader.horizontalPadding,
+                      TomoPageHeader.topPadding,
+                      TomoPageHeader.horizontalPadding,
                       0,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const NomoPageHeader(
+                        const TomoPageHeader(
                           title: 'カレンダー',
                           titleColor: Color(0xFF54D7FF),
                         ),
@@ -413,7 +413,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           children: [
                             Padding(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: NomoPageHeader.horizontalPadding,
+                                horizontal: TomoPageHeader.horizontalPadding,
                               ),
                               child: _PlayfulMonthGrid(
                                 month: _month,
@@ -428,7 +428,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               const SizedBox(height: 10),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: NomoPageHeader.horizontalPadding,
+                                  horizontal: TomoPageHeader.horizontalPadding,
                                 ),
                                 child: _CalendarIntroCard(
                                   isWhite: isWhite,
@@ -454,7 +454,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   onChangeStatus: () => _openStatusPicker(
                                     showLockedExplanation:
                                         selectedStatus ==
-                                        NomoDailyStatus.unselected,
+                                        TomoDailyStatus.unselected,
                                   ),
                                 ),
                               ),
@@ -532,7 +532,7 @@ class _CalendarIntroCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          NomoPopIcon(
+          TomoPopIcon(
             icon: CupertinoIcons.sparkles,
             color: const Color(0xFFFFD166),
             size: 42,
@@ -673,10 +673,10 @@ class _SelectedDayPanel extends StatelessWidget {
 
   final DateTime day;
   final List<Memory> logs;
-  final AsyncValue<List<NomoFriend>> friendsAsync;
+  final AsyncValue<List<TomoFriend>> friendsAsync;
   final List<_CalendarFriendGroup> groups;
   final bool isWhite;
-  final NomoDailyStatus status;
+  final TomoDailyStatus status;
   final bool isStatusSaving;
   final VoidCallback? onAddMemoryPressed;
   final VoidCallback onChangeStatus;
@@ -687,7 +687,7 @@ class _SelectedDayPanel extends StatelessWidget {
     final subColor = isWhite
         ? const Color(0xFF657282)
         : Colors.white.withValues(alpha: .66);
-    return NomoThemedPanel(
+    return TomoThemedPanel(
       width: double.infinity,
       padding: EdgeInsets.zero,
       accentColor: _calendarPrimaryActionColor,
@@ -760,7 +760,7 @@ class _SelectedDayPanel extends StatelessWidget {
                     children: [
                       Expanded(
                         flex: compact ? 5 : 6,
-                        child: status == NomoDailyStatus.unselected
+                        child: status == TomoDailyStatus.unselected
                             ? _CalendarFriendStatusLocked(
                                 isWhite: isWhite,
                                 compact: compact,
@@ -813,21 +813,21 @@ class _CalendarStatusChangeButton extends StatelessWidget {
     required this.onTap,
   });
 
-  final NomoDailyStatus status;
+  final TomoDailyStatus status;
   final bool isSaving;
   final bool isWhite;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final effectiveStatus = status == NomoDailyStatus.unselected
-        ? NomoDailyStatus.available
+    final effectiveStatus = status == TomoDailyStatus.unselected
+        ? TomoDailyStatus.available
         : status;
     final accent = _calendarStatusBlockAccent(effectiveStatus);
     final foreground = _calendarStatus3DForegroundColor(effectiveStatus);
     return SizedBox(
       width: 56,
-      child: Nomo3DButtonSurface(
+      child: Tomo3DButtonSurface(
         onTap: isSaving ? null : onTap,
         enabled: !isSaving,
         height: 28,
@@ -863,7 +863,7 @@ class _CalendarStatusChangeButton extends StatelessWidget {
           child: Text(
             isSaving
                 ? '保存中'
-                : status == NomoDailyStatus.unselected
+                : status == TomoDailyStatus.unselected
                 ? '設定'
                 : '変更',
             maxLines: 1,
@@ -903,7 +903,7 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
       child: Center(
         child: Row(
           children: [
-            NomoPopIcon(
+            TomoPopIcon(
               icon: CupertinoIcons.lock_fill,
               color: const Color(0xFF94A3B8),
               size: compact ? 30 : 38,
@@ -946,7 +946,7 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
             const SizedBox(width: 9),
             SizedBox(
               width: compact ? 56 : 62,
-              child: Nomo3DButton(
+              child: Tomo3DButton(
                 label: '設定',
                 onTap: onTap,
                 height: compact ? 28 : 30,
@@ -975,7 +975,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
   });
 
   final DateTime day;
-  final AsyncValue<List<NomoFriend>> friendsAsync;
+  final AsyncValue<List<TomoFriend>> friendsAsync;
   final List<_CalendarFriendGroup> groups;
   final bool isWhite;
   final bool compact;
@@ -1072,7 +1072,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
           child: Center(
             child: Row(
               children: [
-                NomoPopIcon(
+                TomoPopIcon(
                   icon: CupertinoIcons.person_2_fill,
                   color: accent,
                   size: compact ? 30 : 38,
@@ -1127,7 +1127,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
                 const SizedBox(width: 9),
                 SizedBox(
                   width: compact ? 56 : 62,
-                  child: Nomo3DButton(
+                  child: Tomo3DButton(
                     label: '見る',
                     onTap: openStatusSheet,
                     height: compact ? 28 : 30,
@@ -1388,7 +1388,7 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
     return Center(
       child: Row(
         children: [
-          NomoPopIcon(
+          TomoPopIcon(
             icon: CupertinoIcons.sparkles,
             color: const Color(0xFF54D7FF),
             size: compact ? 28 : 36,
@@ -1431,7 +1431,7 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
           const SizedBox(width: 9),
           SizedBox(
             width: compact ? 56 : 62,
-            child: Nomo3DButton(
+            child: Tomo3DButton(
               label: '投稿',
               onTap: onAddMemoryPressed ?? () {},
               height: compact ? 28 : 30,
@@ -1482,7 +1482,7 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
               ),
             ),
             child: Center(
-              child: NomoGeneratedIcon(
+              child: TomoGeneratedIcon(
                 hasPhoto
                     ? CupertinoIcons.photo_fill_on_rectangle_fill
                     : CupertinoIcons.lock_fill,
@@ -1509,7 +1509,7 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
             const SizedBox(width: 10),
             SizedBox(
               width: compact ? 58 : 66,
-              child: Nomo3DButton(
+              child: Tomo3DButton(
                 label: '見る',
                 onTap: () => _showCalendarLogPhoto(context, log),
                 height: compact ? 32 : 36,
@@ -1540,19 +1540,19 @@ class _CalendarFriendStatusSummary extends StatelessWidget {
     required this.isWhite,
   });
 
-  final List<NomoFriend> friends;
+  final List<TomoFriend> friends;
   final bool isWhite;
 
   @override
   Widget build(BuildContext context) {
-    final counts = <NomoDailyStatus, int>{
-      for (final status in NomoDailyStatus.values) status: 0,
+    final counts = <TomoDailyStatus, int>{
+      for (final status in TomoDailyStatus.values) status: 0,
     };
     for (final friend in friends) {
-      final status = nomoDailyStatusFromKey(friend.statusKey);
+      final status = tomoDailyStatusFromKey(friend.statusKey);
       counts[status] = (counts[status] ?? 0) + 1;
     }
-    final statuses = NomoDailyStatus.values
+    final statuses = TomoDailyStatus.values
         .where((status) => (counts[status] ?? 0) > 0)
         .toList(growable: false);
 
@@ -1578,7 +1578,7 @@ class _CalendarFriendStatusCountChip extends StatelessWidget {
     required this.isWhite,
   });
 
-  final NomoDailyStatus status;
+  final TomoDailyStatus status;
   final int count;
   final bool isWhite;
 
@@ -1607,11 +1607,11 @@ class _CalendarFriendStatusCountChip extends StatelessWidget {
 Future<void> _showCalendarFriendStatusSheet(
   BuildContext context, {
   required DateTime day,
-  required List<NomoFriend> friends,
+  required List<TomoFriend> friends,
   required List<_CalendarFriendGroup> groups,
   required bool isWhite,
 }) {
-  return showNomoBottomSheet<void>(
+  return showTomoBottomSheet<void>(
     context: context,
     useSafeArea: true,
     barrierColor: Colors.black.withValues(alpha: .58),
@@ -1633,7 +1633,7 @@ class _CalendarFriendStatusSheet extends ConsumerStatefulWidget {
   });
 
   final DateTime day;
-  final List<NomoFriend> friends;
+  final List<TomoFriend> friends;
   final List<_CalendarFriendGroup> groups;
   final bool isWhite;
 
@@ -1648,15 +1648,15 @@ class _CalendarFriendStatusSheetState
   String? _sendingFriendId;
   final Set<String> _invitedFriendIds = <String>{};
 
-  Future<void> _sendInvite(NomoFriend friend) async {
+  Future<void> _sendInvite(TomoFriend friend) async {
     if (_sendingFriendId != null) return;
     if (_isPastCalendarDate(widget.day)) {
       HapticFeedback.mediumImpact();
-      NomoToast.show(
+      TomoToast.show(
         context,
         '過去の日には招待できません',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
-        placement: NomoToastPlacement.bottom,
+        placement: TomoToastPlacement.bottom,
       );
       return;
     }
@@ -1671,22 +1671,22 @@ class _CalendarFriendStatusSheetState
       ref.invalidate(outgoingActiveInvitesProvider(widget.day));
       if (!mounted) return;
       setState(() => _invitedFriendIds.add(friend.id));
-      NomoToast.show(
+      TomoToast.show(
         context,
         '${widget.day.month}/${widget.day.day}で${friend.name}にお誘いを送りました。',
         icon: CupertinoIcons.checkmark_circle_fill,
-        placement: NomoToastPlacement.bottom,
+        placement: TomoToastPlacement.bottom,
       );
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       setState(() => _sendingFriendId = null);
-      NomoToast.show(
+      TomoToast.show(
         context,
         '招待を送れなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
-        placement: NomoToastPlacement.bottom,
+        placement: TomoToastPlacement.bottom,
       );
     }
   }
@@ -1723,7 +1723,7 @@ class _CalendarFriendStatusSheetState
     final contentHeight = (media.size.height * .80 - media.padding.bottom - 24)
         .clamp(460.0, 680.0)
         .toDouble();
-    return NomoBottomSheetShell(
+    return TomoBottomSheetShell(
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
       radius: 32,
       maxHeightFactor: .82,
@@ -1732,7 +1732,7 @@ class _CalendarFriendStatusSheetState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const NomoBottomSheetHandle(),
+            const TomoBottomSheetHandle(),
             const SizedBox(height: 14),
             Text(
               'フレンズの空き状況',
@@ -1860,7 +1860,7 @@ class _CalendarFriendGroupChip extends StatelessWidget {
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .78);
 
-    return Nomo3DButtonSurface(
+    return Tomo3DButtonSurface(
       onTap: onTap,
       height: 29,
       radius: 999,
@@ -1938,7 +1938,7 @@ class _CalendarFriendStatusModalOverview extends StatelessWidget {
       ),
       child: Row(
         children: [
-          NomoPopIcon(
+          TomoPopIcon(
             icon: CupertinoIcons.person_2_fill,
             color: accent,
             size: 40,
@@ -1990,12 +1990,12 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
     required this.onInvite,
   });
 
-  final List<NomoFriend> friends;
+  final List<TomoFriend> friends;
   final bool isWhite;
   final String? sendingFriendId;
   final Set<String> invitedFriendIds;
   final bool inviteAvailable;
-  final Future<void> Function(NomoFriend friend) onInvite;
+  final Future<void> Function(TomoFriend friend) onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -2044,7 +2044,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
     required this.onInvite,
   });
 
-  final NomoFriend friend;
+  final TomoFriend friend;
   final bool isWhite;
   final bool inviteEnabled;
   final bool inviteAvailable;
@@ -2053,8 +2053,8 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = nomoDailyStatusFromKey(friend.statusKey);
-    return NomoFriendUserBlock(
+    final status = tomoDailyStatusFromKey(friend.statusKey);
+    return TomoFriendUserBlock(
       friend: friend,
       statusLabel: _calendarStatusLabel(status, day: DateTime.now()),
       statusReason: _calendarStatusCopy(status, day: DateTime.now()),
@@ -2069,32 +2069,32 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
   }
 }
 
-NomoAvatar _fallbackAvatarForCalendarFriend(NomoFriend friend) {
+TomoAvatar _fallbackAvatarForCalendarFriend(TomoFriend friend) {
   final hash = friend.id.hashCode.abs();
-  return NomoAvatar(
-    skin: hash % NomoAvatar.skinColors.length,
-    hair: (hash ~/ 3) % NomoAvatar.hairStyles.length,
-    shirt: (hash ~/ 5) % NomoAvatar.shirtColors.length,
-    eyes: (hash ~/ 7) % NomoAvatar.eyeStyles.length,
-    mouth: (hash ~/ 11) % NomoAvatar.mouthStyles.length,
-    accessory: (hash ~/ 13) % NomoAvatar.accessoryStyles.length,
+  return TomoAvatar(
+    skin: hash % TomoAvatar.skinColors.length,
+    hair: (hash ~/ 3) % TomoAvatar.hairStyles.length,
+    shirt: (hash ~/ 5) % TomoAvatar.shirtColors.length,
+    eyes: (hash ~/ 7) % TomoAvatar.eyeStyles.length,
+    mouth: (hash ~/ 11) % TomoAvatar.mouthStyles.length,
+    accessory: (hash ~/ 13) % TomoAvatar.accessoryStyles.length,
   );
 }
 
-Color _calendarFriendBlockStatusColor(NomoDailyStatus status) {
+Color _calendarFriendBlockStatusColor(TomoDailyStatus status) {
   final color = _calendarStatusColor(status);
-  if (status == NomoDailyStatus.unselected) return _calendarStatusGreen;
+  if (status == TomoDailyStatus.unselected) return _calendarStatusGreen;
   return color;
 }
 
 bool _calendarFriendIsAvailable(String? statusKey) =>
-    nomoDailyStatusFromKey(statusKey).canJoinPlan;
+    tomoDailyStatusFromKey(statusKey).canJoinPlan;
 
 bool _isPastCalendarDate(DateTime day) =>
     _dateOnly(day).isBefore(_dateOnly(DateTime.now()));
 
 int _calendarFriendStatusRank(String? statusKey) =>
-    nomoDailyStatusFromKey(statusKey).availabilityRank;
+    tomoDailyStatusFromKey(statusKey).availabilityRank;
 
 class _CalendarStatusSheet extends StatelessWidget {
   const _CalendarStatusSheet({
@@ -2104,7 +2104,7 @@ class _CalendarStatusSheet extends StatelessWidget {
   });
 
   final DateTime day;
-  final NomoDailyStatus selected;
+  final TomoDailyStatus selected;
   final bool showLockedExplanation;
 
   @override
@@ -2112,12 +2112,12 @@ class _CalendarStatusSheet extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite ? const Color(0xFF657282) : Colors.white70;
     final options = const [
-      NomoDailyStatus.available,
-      NomoDailyStatus.maybeAvailable,
-      NomoDailyStatus.dependsOnTime,
-      NomoDailyStatus.hasPlans,
+      TomoDailyStatus.available,
+      TomoDailyStatus.maybeAvailable,
+      TomoDailyStatus.dependsOnTime,
+      TomoDailyStatus.hasPlans,
     ];
-    return NomoBottomSheetShell(
+    return TomoBottomSheetShell(
       title: 'この日の気分',
       showHandle: true,
       radius: 32,
@@ -2133,7 +2133,7 @@ class _CalendarStatusSheet extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           for (final status in options) ...[
-            NomoDailyStatus3DOption(
+            TomoDailyStatus3DOption(
               status: status,
               title: _calendarStatusLabel(status, day: day),
               subtitle: _calendarStatusCopy(status, day: day),
@@ -2149,7 +2149,7 @@ class _CalendarStatusSheet extends StatelessWidget {
 }
 
 Future<void> _showCalendarLogPhoto(BuildContext context, Memory log) {
-  return showNomoBottomSheet<void>(
+  return showTomoBottomSheet<void>(
     context: context,
     useSafeArea: true,
     barrierColor: Colors.black.withValues(alpha: .62),
@@ -2175,7 +2175,7 @@ class _CalendarLogPhotoSheet extends StatelessWidget {
         ? log.memo.trim()
         : '思い出写真';
 
-    return NomoBottomSheetShell(
+    return TomoBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
       radius: 32,
@@ -2240,7 +2240,7 @@ class _CalendarLogPhotoFrame extends StatelessWidget {
       return Container(
         color: Colors.black.withValues(alpha: .20),
         alignment: Alignment.center,
-        child: const NomoGeneratedIcon(
+        child: const TomoGeneratedIcon(
           CupertinoIcons.photo,
           color: Colors.white54,
           size: 42,
@@ -2253,7 +2253,7 @@ class _CalendarLogPhotoFrame extends StatelessWidget {
       errorBuilder: (context, error, stackTrace) => Container(
         color: Colors.black.withValues(alpha: .20),
         alignment: Alignment.center,
-        child: const NomoGeneratedIcon(
+        child: const TomoGeneratedIcon(
           CupertinoIcons.exclamationmark_triangle,
           color: Colors.white54,
           size: 42,
@@ -2291,8 +2291,8 @@ class _PlayfulMonthGrid extends StatelessWidget {
   final DateTime month;
   final DateTime selectedDay;
   final List<Memory> logs;
-  final Map<String, NomoDailyStatus> statusByDate;
-  final List<NomoInvite> todayReservations;
+  final Map<String, TomoDailyStatus> statusByDate;
+  final List<TomoInvite> todayReservations;
   final ValueChanged<DateTime> onSelectDay;
 
   static const _rarityColors = {
@@ -2375,7 +2375,7 @@ class _PlayfulMonthGrid extends StatelessWidget {
                   final isToday = inMonth && _isSameDate(DateTime.now(), day);
                   final hasPlan = isToday && todayReservations.isNotEmpty;
                   final dailyStatus =
-                      statusByDate[_dateKey(day)] ?? NomoDailyStatus.unselected;
+                      statusByDate[_dateKey(day)] ?? TomoDailyStatus.unselected;
                   return _DayTile(
                     day: displayDay,
                     date: day,
@@ -2438,7 +2438,7 @@ class _DayTile extends StatelessWidget {
   final int day;
   final DateTime date;
   final bool inMonth;
-  final NomoDailyStatus dailyStatus;
+  final TomoDailyStatus dailyStatus;
   final _Marker? marker;
   final bool isToday;
   final bool isSelected;
@@ -2449,7 +2449,7 @@ class _DayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final hasStatus = dailyStatus != NomoDailyStatus.unselected;
+    final hasStatus = dailyStatus != TomoDailyStatus.unselected;
     final statusAccent = _calendarStatusTileAccent(dailyStatus);
     final dayColor = hasStatus
         ? _calendarStatusTileForeground(dailyStatus, isWhite: isWhite)
@@ -2528,7 +2528,7 @@ class _DayTile extends StatelessWidget {
                 left: 0,
                 right: 0,
                 bottom: marker == null ? 7 : 28,
-                child: NomoGeneratedIcon(
+                child: TomoGeneratedIcon(
                   CupertinoIcons.calendar_badge_plus,
                   color: _calendarPrimaryActionColor,
                   size: 22,
@@ -2540,7 +2540,7 @@ class _DayTile extends StatelessWidget {
                   alignment: Alignment.bottomCenter,
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 3),
-                    child: NomoGeneratedIcon(
+                    child: TomoGeneratedIcon(
                       CupertinoIcons.person_crop_circle_fill,
                       color: marker!.accent,
                       size: 42,
@@ -2591,19 +2591,19 @@ const _calendarStatusGreen = Color(0xFF9AF21A);
 const _calendarStatusBlocked = Color(0xFF2B3644);
 const _calendarStatusBlockedForeground = Color(0xFF738092);
 
-Color _calendarStatusTileAccent(NomoDailyStatus status) {
-  if (status == NomoDailyStatus.hasPlans) {
+Color _calendarStatusTileAccent(TomoDailyStatus status) {
+  if (status == TomoDailyStatus.hasPlans) {
     return _calendarStatusBlockedForeground;
   }
   return _calendarStatusColor(status);
 }
 
 Color _calendarStatusTileBackground(
-  NomoDailyStatus status, {
+  TomoDailyStatus status, {
   required bool isWhite,
   required bool selected,
 }) {
-  if (status == NomoDailyStatus.hasPlans) {
+  if (status == TomoDailyStatus.hasPlans) {
     return isWhite
         ? const Color(0xFFE2E8F0)
         : _calendarStatusBlocked.withValues(alpha: selected ? .92 : .76);
@@ -2615,45 +2615,45 @@ Color _calendarStatusTileBackground(
 }
 
 Color _calendarStatusTileForeground(
-  NomoDailyStatus status, {
+  TomoDailyStatus status, {
   required bool isWhite,
 }) {
-  if (status == NomoDailyStatus.hasPlans) {
+  if (status == TomoDailyStatus.hasPlans) {
     return isWhite ? const Color(0xFF111827) : Colors.white;
   }
   return _calendarPrimaryActionForegroundColor;
 }
 
-Color _calendarStatusColor(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.available => _calendarStatusPink,
-  NomoDailyStatus.maybeAvailable => _calendarStatusBlue,
-  NomoDailyStatus.dependsOnTime => _calendarStatusPurple,
-  NomoDailyStatus.hasPlans => _calendarStatusBlockedForeground,
-  NomoDailyStatus.unselected => _calendarStatusGreen,
+Color _calendarStatusColor(TomoDailyStatus status) => switch (status) {
+  TomoDailyStatus.available => _calendarStatusPink,
+  TomoDailyStatus.maybeAvailable => _calendarStatusBlue,
+  TomoDailyStatus.dependsOnTime => _calendarStatusPurple,
+  TomoDailyStatus.hasPlans => _calendarStatusBlockedForeground,
+  TomoDailyStatus.unselected => _calendarStatusGreen,
 };
 
-Color _calendarStatusBlockAccent(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.hasPlans => _calendarStatusBlocked,
+Color _calendarStatusBlockAccent(TomoDailyStatus status) => switch (status) {
+  TomoDailyStatus.hasPlans => _calendarStatusBlocked,
   _ => _calendarStatusColor(status),
 };
 
 Color _calendarStatus3DSurfaceColor(
-  NomoDailyStatus status, {
+  TomoDailyStatus status, {
   required bool isWhite,
   required bool selected,
 }) {
-  if (status == NomoDailyStatus.hasPlans) {
+  if (status == TomoDailyStatus.hasPlans) {
     return isWhite ? const Color(0xFFE8EEF5) : const Color(0xFF33404E);
   }
   return _calendarStatusColor(status);
 }
 
 Color _calendarStatus3DShadowColor(
-  NomoDailyStatus status, {
+  TomoDailyStatus status, {
   required bool isWhite,
   required bool selected,
 }) {
-  if (status == NomoDailyStatus.hasPlans) {
+  if (status == TomoDailyStatus.hasPlans) {
     return isWhite ? const Color(0xFFC2CCD8) : const Color(0xFF16202B);
   }
   return Color.lerp(
@@ -2663,26 +2663,26 @@ Color _calendarStatus3DShadowColor(
   )!;
 }
 
-Color _calendarStatus3DForegroundColor(NomoDailyStatus status) {
-  if (status == NomoDailyStatus.hasPlans) {
+Color _calendarStatus3DForegroundColor(TomoDailyStatus status) {
+  if (status == TomoDailyStatus.hasPlans) {
     return const Color(0xFF111827);
   }
   return _calendarPrimaryActionForegroundColor;
 }
 
 Color _calendarStatus3DBorderColor(
-  NomoDailyStatus status, {
+  TomoDailyStatus status, {
   required bool isWhite,
   required bool selected,
 }) {
-  if (status == NomoDailyStatus.hasPlans) {
+  if (status == TomoDailyStatus.hasPlans) {
     return Colors.white.withValues(alpha: selected ? .24 : .18);
   }
   return Colors.white.withValues(alpha: selected ? .30 : .20);
 }
 
-String _calendarStatusLabel(NomoDailyStatus status, {required DateTime day}) =>
+String _calendarStatusLabel(TomoDailyStatus status, {required DateTime day}) =>
     status.label;
 
-String _calendarStatusCopy(NomoDailyStatus status, {required DateTime day}) =>
+String _calendarStatusCopy(TomoDailyStatus status, {required DateTime day}) =>
     status.description;

@@ -6,8 +6,8 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   return BackendNotificationRepository(ref.watch(backendApiClientProvider));
 });
 
-class NomoNotification {
-  const NomoNotification({
+class TomoNotification {
+  const TomoNotification({
     required this.id,
     required this.kind,
     required this.title,
@@ -42,7 +42,7 @@ class NomoNotification {
   String get displayTitle => _tomolaNotificationText(title);
   String get displayMessage => _tomolaNotificationText(message);
 
-  NomoNotification markRead() => NomoNotification(
+  TomoNotification markRead() => TomoNotification(
     id: id,
     kind: kind,
     title: title,
@@ -59,7 +59,7 @@ class NomoNotification {
     systemKey: systemKey,
   );
 
-  factory NomoNotification.fromJson(Map<String, dynamic> json) {
+  factory TomoNotification.fromJson(Map<String, dynamic> json) {
     final createdAtText = json['created_at'] as String?;
     final friendRequest = json['friend_request'];
     final friendRequestMap = friendRequest is Map
@@ -67,7 +67,7 @@ class NomoNotification {
         : null;
     final invite = json['invite'];
     final inviteMap = invite is Map ? Map<String, dynamic>.from(invite) : null;
-    return NomoNotification(
+    return TomoNotification(
       id: json['id'] as String,
       kind: (json['kind'] as String?) ?? 'memory_like',
       title: (json['title'] as String?) ?? 'お知らせ',
@@ -89,7 +89,7 @@ class NomoNotification {
 }
 
 abstract interface class NotificationRepository {
-  Future<List<NomoNotification>> fetchNotifications();
+  Future<List<TomoNotification>> fetchNotifications();
   Future<void> markAllRead();
   Future<void> updateFriendRequest({
     required String friendRequestId,
@@ -104,12 +104,12 @@ class BackendNotificationRepository implements NotificationRepository {
   final BackendApiClient _client;
 
   @override
-  Future<List<NomoNotification>> fetchNotifications() async {
+  Future<List<TomoNotification>> fetchNotifications() async {
     final rows = await _client.getRows(
       '/v1/notifications',
       query: {'date': _todayIsoDate()},
     );
-    return rows.map(NomoNotification.fromJson).toList(growable: false);
+    return rows.map(TomoNotification.fromJson).toList(growable: false);
   }
 
   @override

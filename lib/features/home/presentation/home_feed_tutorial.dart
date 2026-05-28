@@ -41,7 +41,7 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
                 final loop = _controller.value;
                 final groupWidth = math.min(constraints.maxWidth, 188.0);
                 final travel = math.max(0.0, constraints.maxWidth - groupWidth);
-                final motion = _nomoSwipeHintMotion(loop, travel);
+                final motion = _tomoSwipeHintMotion(loop, travel);
                 final arrowPulse = .5 - .5 * math.cos(loop * math.pi * 4);
                 final arrowLift = -7 * arrowPulse;
                 final arrowOpacity = (.44 + .56 * (1 - arrowPulse)).clamp(
@@ -60,7 +60,7 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
                         Positioned(
                           left: 45,
                           bottom: 18,
-                          child: _NomoSpeechBubble(
+                          child: _TomoSpeechBubble(
                             isWhite: widget.isWhite,
                             arrowLift: arrowLift,
                             arrowOpacity: arrowOpacity,
@@ -71,7 +71,7 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
                           bottom: 0,
                           child: Transform.rotate(
                             angle: motion.tilt,
-                            child: _WalkingNomo(
+                            child: _WalkingTomo(
                               step: motion.step,
                               verticalOffset: motion.verticalOffset,
                               facingRight: motion.facingRight,
@@ -80,11 +80,11 @@ class _FeedSwipeHintState extends State<_FeedSwipeHint>
                             ),
                           ),
                         ),
-                        if (motion.mood == _WalkingNomoMood.sleep)
+                        if (motion.mood == _WalkingTomoMood.sleep)
                           Positioned(
                             left: 38,
                             bottom: 42,
-                            child: _NomoSleepMarks(
+                            child: _TomoSleepMarks(
                               progress: motion.moodProgress,
                             ),
                           ),
@@ -159,7 +159,7 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
             padding: EdgeInsets.only(
               left: 24,
               right: 24,
-              top: NomoPageHeader.contentTopInset(context) + 18,
+              top: TomoPageHeader.contentTopInset(context) + 18,
               bottom: _feedBottomPageInset + 88,
             ),
             child: Align(
@@ -193,7 +193,7 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
                             child: child,
                           );
                         },
-                        child: const NomoPopIcon(
+                        child: const TomoPopIcon(
                           icon: CupertinoIcons.arrow_up,
                           color: Color(0xFF22D7C5),
                           size: 54,
@@ -248,8 +248,8 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
   }
 }
 
-class _NomoSwipeHintMotion {
-  const _NomoSwipeHintMotion({
+class _TomoSwipeHintMotion {
+  const _TomoSwipeHintMotion({
     required this.left,
     required this.step,
     required this.verticalOffset,
@@ -264,11 +264,11 @@ class _NomoSwipeHintMotion {
   final double verticalOffset;
   final double tilt;
   final bool facingRight;
-  final _WalkingNomoMood mood;
+  final _WalkingTomoMood mood;
   final double moodProgress;
 }
 
-enum _WalkingNomoMood { walk, lookAround, hop, sleep }
+enum _WalkingTomoMood { walk, lookAround, hop, sleep }
 
 double _segmentProgress(double value, double start, double end) {
   return ((value - start) / (end - start)).clamp(0.0, 1.0);
@@ -278,31 +278,31 @@ double _easeInOut(double value) {
   return Curves.easeInOutCubic.transform(value.clamp(0.0, 1.0));
 }
 
-_NomoSwipeHintMotion _nomoSwipeHintMotion(double loop, double travel) {
+_TomoSwipeHintMotion _tomoSwipeHintMotion(double loop, double travel) {
   if (loop < .24) {
     final p = _segmentProgress(loop, 0, .24);
     final eased = _easeInOut(p);
     final step = math.sin(eased * math.pi * 8);
-    return _NomoSwipeHintMotion(
+    return _TomoSwipeHintMotion(
       left: travel * (.04 + .58 * eased),
       step: step,
       verticalOffset: -step.abs() * 1.15,
       tilt: math.sin(eased * math.pi * 2) * .025,
       facingRight: true,
-      mood: _WalkingNomoMood.walk,
+      mood: _WalkingTomoMood.walk,
       moodProgress: p,
     );
   }
 
   if (loop < .36) {
     final p = _segmentProgress(loop, .24, .36);
-    return _NomoSwipeHintMotion(
+    return _TomoSwipeHintMotion(
       left: travel * .62 + math.sin(p * math.pi * 2) * 3,
       step: math.sin(p * math.pi * 2) * .18,
       verticalOffset: -math.sin(p * math.pi).abs() * .55,
       tilt: math.sin(p * math.pi * 2) * .045,
       facingRight: p < .58,
-      mood: _WalkingNomoMood.lookAround,
+      mood: _WalkingTomoMood.lookAround,
       moodProgress: p,
     );
   }
@@ -311,13 +311,13 @@ _NomoSwipeHintMotion _nomoSwipeHintMotion(double loop, double travel) {
     final p = _segmentProgress(loop, .36, .47);
     final hop = math.sin(p * math.pi * 2).abs();
     final lean = math.sin(p * math.pi * 4);
-    return _NomoSwipeHintMotion(
+    return _TomoSwipeHintMotion(
       left: travel * .62 + math.sin(p * math.pi * 2) * 4,
       step: lean * .35,
       verticalOffset: -hop * 12,
       tilt: lean * .08,
       facingRight: true,
-      mood: _WalkingNomoMood.hop,
+      mood: _WalkingTomoMood.hop,
       moodProgress: p,
     );
   }
@@ -326,13 +326,13 @@ _NomoSwipeHintMotion _nomoSwipeHintMotion(double loop, double travel) {
     final p = _segmentProgress(loop, .47, .65);
     final eased = _easeInOut(p);
     final step = math.sin(eased * math.pi * 5);
-    return _NomoSwipeHintMotion(
+    return _TomoSwipeHintMotion(
       left: travel * (.62 + .25 * eased),
       step: step,
       verticalOffset: -step.abs() * 1.05,
       tilt: math.sin(eased * math.pi * 2) * .02,
       facingRight: true,
-      mood: _WalkingNomoMood.walk,
+      mood: _WalkingTomoMood.walk,
       moodProgress: p,
     );
   }
@@ -340,13 +340,13 @@ _NomoSwipeHintMotion _nomoSwipeHintMotion(double loop, double travel) {
   if (loop < .90) {
     final p = _segmentProgress(loop, .65, .90);
     final breathe = math.sin(p * math.pi * 6);
-    return _NomoSwipeHintMotion(
+    return _TomoSwipeHintMotion(
       left: travel * .87,
       step: 0,
       verticalOffset: breathe * .45,
       tilt: -.18 + breathe * .015,
       facingRight: true,
-      mood: _WalkingNomoMood.sleep,
+      mood: _WalkingTomoMood.sleep,
       moodProgress: p,
     );
   }
@@ -354,19 +354,19 @@ _NomoSwipeHintMotion _nomoSwipeHintMotion(double loop, double travel) {
   final p = _segmentProgress(loop, .90, 1);
   final eased = _easeInOut(p);
   final step = math.sin(eased * math.pi * 4);
-  return _NomoSwipeHintMotion(
+  return _TomoSwipeHintMotion(
     left: travel * (.87 - .83 * eased),
     step: step,
     verticalOffset: -step.abs() * 1.1,
     tilt: math.sin(eased * math.pi * 2) * .025,
     facingRight: false,
-    mood: _WalkingNomoMood.walk,
+    mood: _WalkingTomoMood.walk,
     moodProgress: p,
   );
 }
 
-class _NomoSleepMarks extends StatelessWidget {
-  const _NomoSleepMarks({required this.progress});
+class _TomoSleepMarks extends StatelessWidget {
+  const _TomoSleepMarks({required this.progress});
 
   final double progress;
 
@@ -400,8 +400,8 @@ class _NomoSleepMarks extends StatelessWidget {
   }
 }
 
-class _NomoSpeechBubble extends StatelessWidget {
-  const _NomoSpeechBubble({
+class _TomoSpeechBubble extends StatelessWidget {
+  const _TomoSpeechBubble({
     required this.isWhite,
     required this.arrowLift,
     required this.arrowOpacity,
@@ -492,8 +492,8 @@ class _NomoSpeechBubble extends StatelessWidget {
   }
 }
 
-class _WalkingNomo extends StatelessWidget {
-  const _WalkingNomo({
+class _WalkingTomo extends StatelessWidget {
+  const _WalkingTomo({
     required this.step,
     required this.verticalOffset,
     required this.facingRight,
@@ -504,7 +504,7 @@ class _WalkingNomo extends StatelessWidget {
   final double step;
   final double verticalOffset;
   final bool facingRight;
-  final _WalkingNomoMood mood;
+  final _WalkingTomoMood mood;
   final double moodProgress;
 
   @override
@@ -515,7 +515,7 @@ class _WalkingNomo extends StatelessWidget {
         width: 48,
         height: 56,
         child: CustomPaint(
-          painter: _WalkingNomoPainter(
+          painter: _WalkingTomoPainter(
             step: step,
             facingRight: facingRight,
             mood: mood,
@@ -527,8 +527,8 @@ class _WalkingNomo extends StatelessWidget {
   }
 }
 
-class _WalkingNomoPainter extends CustomPainter {
-  const _WalkingNomoPainter({
+class _WalkingTomoPainter extends CustomPainter {
+  const _WalkingTomoPainter({
     required this.step,
     required this.facingRight,
     required this.mood,
@@ -537,7 +537,7 @@ class _WalkingNomoPainter extends CustomPainter {
 
   final double step;
   final bool facingRight;
-  final _WalkingNomoMood mood;
+  final _WalkingTomoMood mood;
   final double moodProgress;
 
   @override
@@ -555,9 +555,9 @@ class _WalkingNomoPainter extends CustomPainter {
       canvas.scale(-1, 1);
     }
 
-    final isSleeping = mood == _WalkingNomoMood.sleep;
-    final isHopping = mood == _WalkingNomoMood.hop;
-    final isLookingAround = mood == _WalkingNomoMood.lookAround;
+    final isSleeping = mood == _WalkingTomoMood.sleep;
+    final isHopping = mood == _WalkingTomoMood.hop;
+    final isLookingAround = mood == _WalkingTomoMood.lookAround;
     if (isSleeping) {
       canvas.translate(2, 6);
       canvas.rotate(-.16);
@@ -746,7 +746,7 @@ class _WalkingNomoPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _WalkingNomoPainter oldDelegate) {
+  bool shouldRepaint(covariant _WalkingTomoPainter oldDelegate) {
     return oldDelegate.step != step ||
         oldDelegate.facingRight != facingRight ||
         oldDelegate.mood != mood ||

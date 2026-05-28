@@ -47,7 +47,7 @@ Future<void> _showNotificationSheet(BuildContext context, WidgetRef ref) async {
   String? error;
 
   try {
-    await showNomoBottomSheet<void>(
+    await showTomoBottomSheet<void>(
       context: context,
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setState) => _AdminSheet(
@@ -155,7 +155,7 @@ Future<void> _showNotificationSheet(BuildContext context, WidgetRef ref) async {
     keyController.dispose();
   }
   if (didSave && context.mounted) {
-    NomoToast.show(context, 'System通知を送信しました。');
+    TomoToast.show(context, 'System通知を送信しました。');
   }
 }
 
@@ -233,9 +233,9 @@ Future<void> _confirmDeleteUser(
     await ref.read(adminControllerProvider).deleteUser(user.id);
     ref.invalidate(adminUsersProvider);
     ref.invalidate(adminMemorysProvider);
-    if (context.mounted) NomoToast.show(context, 'ユーザーを削除しました。');
+    if (context.mounted) TomoToast.show(context, 'ユーザーを削除しました。');
   } catch (e) {
-    if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
+    if (context.mounted) TomoToast.show(context, '削除できませんでした: $e');
   }
 }
 
@@ -253,9 +253,9 @@ Future<void> _confirmDeletePost(
   try {
     await ref.read(adminControllerProvider).deleteMemory(memory.id);
     ref.invalidate(adminMemorysProvider);
-    if (context.mounted) NomoToast.show(context, '思い出を削除しました。');
+    if (context.mounted) TomoToast.show(context, '思い出を削除しました。');
   } catch (e) {
-    if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
+    if (context.mounted) TomoToast.show(context, '削除できませんでした: $e');
   }
 }
 
@@ -266,7 +266,7 @@ Future<void> _showReportStatusSheet(
   String status,
 ) async {
   final noteController = TextEditingController(text: report.moderationNote);
-  final note = await showNomoBottomSheet<String>(
+  final note = await showTomoBottomSheet<String>(
     context: context,
     builder: (sheetContext) => _AdminSheet(
       title: '通報を${_adminReportStatusLabel(status)}にする',
@@ -311,10 +311,10 @@ Future<void> _showReportStatusSheet(
         );
     ref.invalidate(adminMemoryReportsProvider);
     if (context.mounted) {
-      NomoToast.show(context, '通報を${_adminReportStatusLabel(status)}にしました。');
+      TomoToast.show(context, '通報を${_adminReportStatusLabel(status)}にしました。');
     }
   } catch (e) {
-    if (context.mounted) NomoToast.show(context, '更新できませんでした: $e');
+    if (context.mounted) TomoToast.show(context, '更新できませんでした: $e');
   }
 }
 
@@ -340,9 +340,9 @@ Future<void> _confirmDeleteReportedPost(
         );
     ref.invalidate(adminMemoryReportsProvider);
     ref.invalidate(adminMemorysProvider);
-    if (context.mounted) NomoToast.show(context, '投稿を削除し、通報を解決済みにしました。');
+    if (context.mounted) TomoToast.show(context, '投稿を削除し、通報を解決済みにしました。');
   } catch (e) {
-    if (context.mounted) NomoToast.show(context, '削除できませんでした: $e');
+    if (context.mounted) TomoToast.show(context, '削除できませんでした: $e');
   }
 }
 
@@ -363,7 +363,7 @@ Future<bool?> _confirmDestructive(
         children: [
           Text(message, style: const TextStyle(color: _AdminColors.sub)),
           const SizedBox(height: 18),
-          Nomo3DButton.secondary(
+          Tomo3DButton.secondary(
             label: 'キャンセル',
             icon: CupertinoIcons.xmark_circle_fill,
             onTap: () => Navigator.of(context).pop(false),
@@ -376,7 +376,7 @@ Future<bool?> _confirmDestructive(
             useGradient: false,
           ),
           const SizedBox(height: 10),
-          Nomo3DButton.destructive(
+          Tomo3DButton.destructive(
             label: '削除',
             icon: CupertinoIcons.trash_fill,
             onTap: () => Navigator.of(context).pop(true),

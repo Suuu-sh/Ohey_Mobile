@@ -34,7 +34,7 @@ class _AccountChoicePrimaryButton extends StatelessWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context) => Nomo3DButton(
+  Widget build(BuildContext context) => Tomo3DButton(
     label: label,
     onTap: onTap,
     height: height,

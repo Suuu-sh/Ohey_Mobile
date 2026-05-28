@@ -6,7 +6,7 @@ import 'os_notification_service.dart';
 import '../data/notification_repository.dart';
 
 final notificationControllerProvider =
-    AsyncNotifierProvider<NotificationController, List<NomoNotification>>(
+    AsyncNotifierProvider<NotificationController, List<TomoNotification>>(
       NotificationController.new,
     );
 
@@ -15,9 +15,9 @@ final hasUnreadNotificationsProvider = Provider<bool>((ref) {
   return notifications?.any((notification) => notification.isUnread) ?? false;
 });
 
-class NotificationController extends AsyncNotifier<List<NomoNotification>> {
+class NotificationController extends AsyncNotifier<List<TomoNotification>> {
   @override
-  Future<List<NomoNotification>> build() async {
+  Future<List<TomoNotification>> build() async {
     final notifications = await ref
         .watch(notificationRepositoryProvider)
         .fetchNotifications();
@@ -28,7 +28,7 @@ class NotificationController extends AsyncNotifier<List<NomoNotification>> {
   }
 
   Future<void> markAllRead() async {
-    final current = state.asData?.value ?? const <NomoNotification>[];
+    final current = state.asData?.value ?? const <TomoNotification>[];
     if (!current.any((notification) => notification.isUnread)) return;
     await runOptimistic<void>(
       apply: () => state = AsyncValue.data([
@@ -86,7 +86,7 @@ class NotificationController extends AsyncNotifier<List<NomoNotification>> {
     required String id,
     required Future<void> Function() update,
   }) async {
-    final previous = state.asData?.value ?? const <NomoNotification>[];
+    final previous = state.asData?.value ?? const <TomoNotification>[];
     await runOptimistic<void>(
       apply: () => state = AsyncValue.data([
         for (final notification in previous)

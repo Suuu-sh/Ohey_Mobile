@@ -17,19 +17,19 @@ class _FriendsList extends StatelessWidget {
     required this.onProfile,
   });
 
-  final List<NomoFriend> friends;
-  final NomoAvatar userAvatar;
+  final List<TomoFriend> friends;
+  final TomoAvatar userAvatar;
   final _FriendFilterType selectedFilter;
   final _CustomFriendFilter? selectedCustomFilter;
   final Map<String, bool> favoriteOverrides;
   final Set<String> invitedFriendIds;
   final bool isSendingGroupInvite;
-  final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
+  final void Function(TomoFriend friend, bool isFavorite) onFavoriteToggle;
   final VoidCallback onAddFriend;
-  final Future<void> Function(NomoFriend friend) onInvite;
-  final Future<void> Function(List<NomoFriend> friends) onGroupInvite;
-  final void Function(NomoFriend friend) onInviteAnimationComplete;
-  final void Function(NomoFriend friend, _FriendStatus status) onProfile;
+  final Future<void> Function(TomoFriend friend) onInvite;
+  final Future<void> Function(List<TomoFriend> friends) onGroupInvite;
+  final void Function(TomoFriend friend) onInviteAnimationComplete;
+  final void Function(TomoFriend friend, _FriendStatus status) onProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -161,8 +161,8 @@ class _TodayInviteSection extends StatelessWidget {
 
   final List<_DecoratedFriend> friends;
   final Set<String> invitedFriendIds;
-  final Future<void> Function(NomoFriend friend) onInvite;
-  final void Function(NomoFriend friend) onInviteAnimationComplete;
+  final Future<void> Function(TomoFriend friend) onInvite;
+  final void Function(TomoFriend friend) onInviteAnimationComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +184,7 @@ class _TodayInviteSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              const NomoPopIcon(
+              const TomoPopIcon(
                 icon: CupertinoIcons.sparkles,
                 color: _FriendsColors.lime,
                 size: 38,
@@ -278,8 +278,8 @@ class _TodayInviteCardsStrip extends StatelessWidget {
 
   final List<_DecoratedFriend> candidates;
   final Set<String> invitedFriendIds;
-  final Future<void> Function(NomoFriend friend) onInvite;
-  final void Function(NomoFriend friend) onInviteAnimationComplete;
+  final Future<void> Function(TomoFriend friend) onInvite;
+  final void Function(TomoFriend friend) onInviteAnimationComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -363,7 +363,7 @@ class _GroupScheduleSection extends StatelessWidget {
 
   final String groupName;
   final List<_DecoratedFriend> friends;
-  final List<NomoFriend> inviteTargets;
+  final List<TomoFriend> inviteTargets;
   final bool isSendingInvite;
   final Future<void> Function() onInviteGroup;
 
@@ -394,7 +394,7 @@ class _GroupScheduleSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              const NomoPopIcon(
+              const TomoPopIcon(
                 icon: CupertinoIcons.calendar_badge_plus,
                 color: Color(0xFF5DEBD3),
                 size: 38,
@@ -432,7 +432,7 @@ class _GroupScheduleSection extends StatelessWidget {
               const SizedBox(width: 10),
               SizedBox(
                 width: 104,
-                child: Nomo3DButton(
+                child: Tomo3DButton(
                   label: isSendingInvite
                       ? '送信中'
                       : isGroupInvited
@@ -570,10 +570,10 @@ class _GroupScheduleSuggestionCard extends StatelessWidget {
     final sub = isWhite
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .62);
-    return NomoThemedPanel(
+    return TomoThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
       accentColor: suggestion.accent,
-      backgroundColor: NomoThemedPanel.surfaceColor(isWhite: isWhite),
+      backgroundColor: TomoThemedPanel.surfaceColor(isWhite: isWhite),
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -594,7 +594,7 @@ class _GroupScheduleSuggestionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              NomoPopIcon(
+              TomoPopIcon(
                 icon: CupertinoIcons.calendar_badge_plus,
                 color: suggestion.accent,
                 size: 40,
@@ -677,7 +677,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
         ? (isWhite ? const Color(0xFF101820) : Colors.white)
         : (isWhite ? const Color(0xFF667381) : _FriendsColors.muted);
     final reason = _recommendationReasonFor(item);
-    return NomoThemedPanel(
+    return TomoThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
       accentColor: frameAccent,
       backgroundColor: _friendBlockSurfaceColor(isWhite: isWhite),
@@ -759,13 +759,13 @@ class _TodayInviteCandidateCard extends StatelessWidget {
           const Spacer(),
           SizedBox(
             width: double.infinity,
-            child: NomoInviteSuccessBurst(
-              builder: (context, runWithBurst, flightAnimation) => Nomo3DButton(
+            child: TomoInviteSuccessBurst(
+              builder: (context, runWithBurst, flightAnimation) => Tomo3DButton(
                 label: isInvited ? '招待済み' : '誘う',
                 icon: null,
                 customIcon: isInvited
                     ? null
-                    : NomoInviteFlyingIcon(
+                    : TomoInviteFlyingIcon(
                         animation: flightAnimation,
                         color: buttonForeground,
                         size: 19.5,
@@ -834,13 +834,13 @@ class _CompactStatusPill extends StatelessWidget {
 class _FriendAvatarBubbleBackground extends StatelessWidget {
   const _FriendAvatarBubbleBackground({required this.avatar});
 
-  final NomoAvatar avatar;
+  final TomoAvatar avatar;
 
   @override
   Widget build(BuildContext context) {
     final colors =
-        NomoAvatar.backgroundGradients[avatar.background %
-            NomoAvatar.backgroundGradients.length];
+        TomoAvatar.backgroundGradients[avatar.background %
+            TomoAvatar.backgroundGradients.length];
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -860,7 +860,7 @@ class _FriendMiniAvatarBubble extends StatelessWidget {
     this.size = 42,
   });
 
-  final NomoAvatar avatar;
+  final TomoAvatar avatar;
   final Color accent;
   final double size;
 
@@ -888,7 +888,7 @@ class _FriendMiniAvatarBubble extends StatelessWidget {
             Center(
               child: Transform.translate(
                 offset: Offset(0, size * .08),
-                child: NomoAvatarView(
+                child: TomoAvatarView(
                   avatar: avatar,
                   size: size * .88,
                   showBody: true,
@@ -1188,7 +1188,7 @@ int _recommendationScoreFor(_DecoratedFriend item) {
   return score;
 }
 
-int _daysSinceLastMemory(NomoFriend friend) {
+int _daysSinceLastMemory(TomoFriend friend) {
   final lastMemoryAt = friend.lastMemoryAt;
   if (lastMemoryAt == null) return 1 << 30;
   return DateTime.now().difference(lastMemoryAt).inDays;
@@ -1277,7 +1277,7 @@ class _AddFriendsPromoCard extends StatelessWidget {
                     child: Semantics(
                       button: true,
                       label: 'フレンズを追加',
-                      child: Nomo3DButton(
+                      child: Tomo3DButton(
                         label: '追加',
                         onTap: () {
                           HapticFeedback.selectionClick();
@@ -1319,7 +1319,7 @@ class _FriendPromoAvatarStack extends StatelessWidget {
             top: 8,
             child: _PromoAvatarBubble(
               color: const Color(0xFF7C5CFF),
-              avatar: const NomoAvatar(
+              avatar: const TomoAvatar(
                 skin: 0,
                 hair: 3,
                 shirt: 4,
@@ -1334,7 +1334,7 @@ class _FriendPromoAvatarStack extends StatelessWidget {
             top: 0,
             child: _PromoAvatarBubble(
               color: const Color(0xFF24D8B0),
-              avatar: const NomoAvatar(
+              avatar: const TomoAvatar(
                 skin: 5,
                 hair: 1,
                 shirt: 8,
@@ -1357,7 +1357,7 @@ class _FriendPromoAvatarStack extends StatelessWidget {
                 border: Border.all(color: const Color(0xFF0B3240), width: 3),
               ),
               child: const Center(
-                child: NomoGeneratedIcon(
+                child: TomoGeneratedIcon(
                   CupertinoIcons.plus,
                   color: Color(0xFF0B2A22),
                   size: 13,
@@ -1379,7 +1379,7 @@ class _PromoAvatarBubble extends StatelessWidget {
   });
 
   final Color color;
-  final NomoAvatar avatar;
+  final TomoAvatar avatar;
   final bool isPrimary;
 
   @override
@@ -1399,7 +1399,7 @@ class _PromoAvatarBubble extends StatelessWidget {
           alignment: Alignment.center,
           child: Transform.translate(
             offset: Offset(0, isPrimary ? 5 : 4),
-            child: NomoAvatarView(
+            child: TomoAvatarView(
               avatar: avatar,
               size: isPrimary ? 46 : 40,
               showBody: true,
@@ -1418,7 +1418,7 @@ class _DecoratedFriend {
     required this.originalIndex,
   });
 
-  final NomoFriend friend;
+  final TomoFriend friend;
   final _FriendStatus status;
   final int originalIndex;
 }
@@ -1428,9 +1428,9 @@ int _compareFriendsForList(_DecoratedFriend a, _DecoratedFriend b) {
     return a.friend.isFavorite ? -1 : 1;
   }
 
-  final statusRankCompare = nomoDailyStatusFromKey(a.friend.statusKey)
+  final statusRankCompare = tomoDailyStatusFromKey(a.friend.statusKey)
       .availabilityRank
-      .compareTo(nomoDailyStatusFromKey(b.friend.statusKey).availabilityRank);
+      .compareTo(tomoDailyStatusFromKey(b.friend.statusKey).availabilityRank);
   if (statusRankCompare != 0) return statusRankCompare;
 
   return a.originalIndex.compareTo(b.originalIndex);
@@ -1440,9 +1440,9 @@ bool _matchesCustomFilter(_DecoratedFriend item, _CustomFriendFilter filter) {
   return filter.friendIds.contains(item.friend.id);
 }
 
-NomoFriend _friendWithFavorite(NomoFriend friend, bool isFavorite) {
+TomoFriend _friendWithFavorite(TomoFriend friend, bool isFavorite) {
   if (friend.isFavorite == isFavorite) return friend;
-  return NomoFriend(
+  return TomoFriend(
     id: friend.id,
     name: friend.name,
     avatarEmoji: friend.avatarEmoji,
@@ -1469,7 +1469,7 @@ class _EmptyFriendsState extends StatelessWidget {
     required this.onAddFriend,
   });
 
-  final NomoAvatar avatar;
+  final TomoAvatar avatar;
   final String message;
   final String subtitle;
   final VoidCallback onAddFriend;
@@ -1477,7 +1477,7 @@ class _EmptyFriendsState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    return NomoEmptyState(
+    return TomoEmptyState(
       visual: _EmptyFriendsVisual(avatar: avatar),
       title: message == 'フレンズがいません' ? '一緒に残すフレンズを追加しよう' : message,
       message: message == 'フレンズがいません'
@@ -1508,7 +1508,7 @@ class _EmptyFriendsActions extends StatelessWidget {
       children: [
         SizedBox(
           width: 126,
-          child: Nomo3DButton(
+          child: Tomo3DButton(
             label: 'QRでつながる',
             icon: CupertinoIcons.qrcode_viewfinder,
             onTap: onAddFriend,
@@ -1524,7 +1524,7 @@ class _EmptyFriendsActions extends StatelessWidget {
         const SizedBox(width: 8),
         SizedBox(
           width: 112,
-          child: Nomo3DButton.secondary(
+          child: Tomo3DButton.secondary(
             label: 'IDで探す',
             icon: CupertinoIcons.at,
             onTap: onAddFriend,
@@ -1542,7 +1542,7 @@ class _EmptyFriendsActions extends StatelessWidget {
 class _EmptyFriendsVisual extends StatelessWidget {
   const _EmptyFriendsVisual({required this.avatar});
 
-  final NomoAvatar avatar;
+  final TomoAvatar avatar;
 
   @override
   Widget build(BuildContext context) {
@@ -1589,7 +1589,7 @@ class _EmptyFriendsVisual extends StatelessWidget {
                 ),
               ],
             ),
-            child: NomoAvatarView(avatar: avatar, size: 76),
+            child: TomoAvatarView(avatar: avatar, size: 76),
           ),
           Positioned(
             right: 22,
@@ -1606,7 +1606,7 @@ class _EmptyFriendsVisual extends StatelessWidget {
                 ),
               ),
               child: const Center(
-                child: NomoGeneratedIcon(
+                child: TomoGeneratedIcon(
                   CupertinoIcons.plus,
                   color: _FriendsColors.bg,
                   size: 20,

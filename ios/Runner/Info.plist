@@ -27,8 +27,8 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>app.nomo.nomo</string>
-				<string>app.nomo.nomo.dev</string>
+				<string>app.tomo.tomo</string>
+				<string>app.tomo.tomo.dev</string>
 			</array>
 		</dict>
 	</array>

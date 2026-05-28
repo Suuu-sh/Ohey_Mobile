@@ -1,15 +1,15 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
-/// Firebase/FCM environment configuration for Nomo.
+/// Firebase/FCM environment configuration for Tomo.
 ///
 /// If the Firebase dart-defines below are supplied, the app initializes Firebase
 /// from those values. Otherwise it falls back to the native Firebase files:
 ///
 /// - iOS: `GoogleService-Info.plist` in the Runner bundle
 /// - Android: `google-services.json` for the selected Android flavor/source set
-class NomoFirebaseConfig {
-  const NomoFirebaseConfig._();
+class TomoFirebaseConfig {
+  const TomoFirebaseConfig._();
 
   static const apiKey = String.fromEnvironment('FIREBASE_API_KEY');
   static const iosApiKey = String.fromEnvironment('FIREBASE_IOS_API_KEY');
