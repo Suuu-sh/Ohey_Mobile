@@ -1040,27 +1040,12 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                         ],
                       ),
                     ),
-                    SizedBox(
-                      width: 48,
-                      child: Nomo3DButtonSurface(
-                        onTap: _busyAction == null
-                            ? () => Navigator.of(context).pop()
-                            : null,
-                        height: 40,
-                        radius: 20,
-                        color: Colors.white.withValues(alpha: .08),
-                        bottomColor: const Color(
-                          0xFF75417F,
-                        ).withValues(alpha: .62),
-                        padding: EdgeInsets.zero,
-                        useGradient: true,
-                        borderColor: Colors.white.withValues(alpha: .10),
-                        child: const Icon(
-                          CupertinoIcons.xmark,
-                          color: Colors.white,
-                          size: 21,
-                        ),
-                      ),
+                    NomoCloseButton(
+                      enabled: _busyAction == null,
+                      onTap: () => Navigator.of(context).pop(),
+                      iconColor: Colors.white,
+                      backgroundColor: Colors.white.withValues(alpha: .08),
+                      borderColor: Colors.white.withValues(alpha: .10),
                     ),
                   ],
                 ),

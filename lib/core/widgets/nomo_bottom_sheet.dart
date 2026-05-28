@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
-import 'nomo_3d_button.dart';
 import 'nomo_pop_icon.dart';
 
 Future<T?> showNomoBottomSheet<T>({
@@ -132,41 +131,9 @@ class NomoBottomSheetShell extends StatelessWidget {
                                 ),
                           ),
                           const Spacer(),
-                          SizedBox(
-                            width: 48,
-                            child: Nomo3DButtonSurface(
-                              onTap:
-                                  onClose ?? () => Navigator.of(context).pop(),
-                              height: 40,
-                              radius: 20,
-                              color: isWhite
-                                  ? const Color(0xFFF3F7FA)
-                                  : Colors.white.withValues(alpha: .08),
-                              bottomColor: isWhite
-                                  ? const Color(0xFFD6DEE7)
-                                  : const Color(
-                                      0xFF314760,
-                                    ).withValues(alpha: .72),
-                              padding: EdgeInsets.zero,
-                              useGradient: true,
-                              borderColor: isWhite
-                                  ? const Color(0xFFE0E7EE)
-                                  : Colors.white.withValues(alpha: .10),
-                              outerShadows: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(
-                                    alpha: isWhite ? .08 : .16,
-                                  ),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                              child: NomoGeneratedIcon(
-                                CupertinoIcons.xmark,
-                                color: ink,
-                                size: 20,
-                              ),
-                            ),
+                          NomoCloseButton(
+                            onTap: onClose ?? () => Navigator.of(context).pop(),
+                            iconColor: ink,
                           ),
                         ],
                       ),
@@ -199,6 +166,75 @@ class NomoBottomSheetHandle extends StatelessWidget {
               ? const Color(0xFFD7E0EA)
               : Colors.white.withValues(alpha: .20),
           borderRadius: BorderRadius.circular(999),
+        ),
+      ),
+    );
+  }
+}
+
+class NomoCloseButton extends StatelessWidget {
+  const NomoCloseButton({
+    super.key,
+    required this.onTap,
+    this.enabled = true,
+    this.size = 40,
+    this.iconSize = 20,
+    this.iconColor,
+    this.backgroundColor,
+    this.borderColor,
+    this.semanticLabel = '閉じる',
+  });
+
+  final VoidCallback? onTap;
+  final bool enabled;
+  final double size;
+  final double iconSize;
+  final Color? iconColor;
+  final Color? backgroundColor;
+  final Color? borderColor;
+  final String semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final resolvedIconColor =
+        iconColor ?? (isWhite ? const Color(0xFF101820) : Colors.white);
+    final resolvedBackground =
+        backgroundColor ??
+        (isWhite
+            ? const Color(0xFFF3F7FA)
+            : Colors.white.withValues(alpha: .08));
+    final resolvedBorder =
+        borderColor ??
+        (isWhite
+            ? const Color(0xFFE0E7EE)
+            : Colors.white.withValues(alpha: .10));
+
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: semanticLabel,
+      child: Opacity(
+        opacity: enabled ? 1 : .45,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: enabled ? onTap : null,
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: resolvedBackground,
+              shape: BoxShape.circle,
+              border: Border.all(color: resolvedBorder),
+            ),
+            child: Center(
+              child: NomoGeneratedIcon(
+                CupertinoIcons.xmark,
+                color: resolvedIconColor,
+                size: iconSize,
+              ),
+            ),
+          ),
         ),
       ),
     );

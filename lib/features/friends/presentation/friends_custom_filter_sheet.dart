@@ -623,28 +623,9 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                   ],
                 ),
               ),
-              SizedBox(
-                width: 48,
-                child: Nomo3DButtonSurface(
-                  onTap: () => Navigator.of(context).pop(),
-                  height: 40,
-                  radius: 20,
-                  color: isWhite
-                      ? const Color(0xFFF3F7FA)
-                      : Colors.white.withValues(alpha: .08),
-                  bottomColor: isWhite
-                      ? const Color(0xFFD6DEE7)
-                      : const Color(0xFF30445C).withValues(alpha: .72),
-                  padding: EdgeInsets.zero,
-                  borderColor: isWhite
-                      ? const Color(0xFFE0E7EE)
-                      : Colors.white.withValues(alpha: .10),
-                  child: NomoGeneratedIcon(
-                    CupertinoIcons.xmark,
-                    color: sub,
-                    size: 22,
-                  ),
-                ),
+              NomoCloseButton(
+                onTap: () => Navigator.of(context).pop(),
+                iconColor: sub,
               ),
             ],
           ),
