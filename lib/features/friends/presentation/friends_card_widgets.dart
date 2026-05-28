@@ -374,7 +374,7 @@ class _FriendProfileHero extends StatelessWidget {
         children: [
           SizedBox(
             width: double.infinity,
-            height: 146,
+            height: 190,
             child: Align(
               alignment: Alignment.bottomCenter,
               child: Transform.translate(
