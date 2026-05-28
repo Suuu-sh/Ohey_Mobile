@@ -38,7 +38,6 @@ import '../../logs/application/drink_log_controller.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../notifications/data/notification_repository.dart';
 import '../../profile/data/user_safety_repository.dart';
-import '../../profile/presentation/profile_screen.dart';
 
 part 'home_feed_layout.dart';
 part 'home_feed_invite_banner.dart';
@@ -206,29 +205,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     BuildContext context,
     _FeedItem item,
   ) async {
-    if (item.ownedByMe) {
-      HapticFeedback.selectionClick();
-      await Navigator.of(
-        context,
-      ).push(CupertinoPageRoute<void>(builder: (_) => const ProfileScreen()));
-      return;
-    }
-
     HapticFeedback.selectionClick();
+    final currentUser = ref.read(nomoUserProvider);
+    final author = item.ownedByMe
+        ? _Companion(
+            userId: item.ownerUserId,
+            name: currentUser?.name.trim().isNotEmpty == true
+                ? currentUser!.name.trim()
+                : item.userName,
+            handle: currentUser?.userId.trim().isNotEmpty == true
+                ? currentUser!.userId.trim()
+                : item.place,
+            avatar: currentUser?.avatar ?? item.avatar,
+            accent: item.accent,
+            statusKey: currentUser?.dailyStatus.key,
+          )
+        : _Companion(
+            userId: item.ownerUserId,
+            name: item.userName,
+            handle: item.isOfficial ? 'Nomo公式' : item.place,
+            avatar: item.avatar,
+            accent: item.accent,
+            statusKey: null,
+          );
     await showNomoBottomSheet<void>(
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
       barrierColor: Colors.black.withValues(alpha: .62),
       builder: (context) => _FeedCompanionProfileSheet(
-        friend: _Companion(
-          userId: item.ownerUserId,
-          name: item.userName,
-          handle: item.isOfficial ? 'Nomo公式' : item.place,
-          avatar: item.avatar,
-          accent: item.accent,
-          statusKey: null,
-        ),
+        friend: author,
+        initialRelationship: item.ownedByMe
+            ? const NomoFriendRelationshipStatus(
+                alreadyFriend: true,
+                requestState: NomoFriendRequestState.none,
+              )
+            : null,
       ),
     );
   }
