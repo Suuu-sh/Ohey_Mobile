@@ -3,7 +3,9 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../models/nomo_avatar.dart';
 import 'nomo_3d_button.dart';
+import 'nomo_avatar.dart';
 import 'nomo_invite_success_burst.dart';
 import 'nomo_pop_icon.dart';
 
@@ -602,4 +604,108 @@ class NomoPostShareIconPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant NomoPostShareIconPainter oldDelegate) =>
       oldDelegate.color != color;
+}
+
+class NomoPostCompanionPill extends StatelessWidget {
+  const NomoPostCompanionPill({
+    super.key,
+    required this.avatars,
+    required this.isWhite,
+    this.onTap,
+    this.label = 'With',
+    this.semanticLabel = '一緒に遊んだフレンズを表示',
+    this.color = const Color(0xFFC08BFF),
+  });
+
+  final List<NomoAvatar> avatars;
+  final bool isWhite;
+  final VoidCallback? onTap;
+  final String label;
+  final String semanticLabel;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = nomoPostActionForeground(color);
+
+    return Semantics(
+      button: onTap != null,
+      label: semanticLabel,
+      child: Nomo3DButtonSurface(
+        onTap: onTap,
+        height: 38,
+        radius: 19,
+        color: color,
+        bottomColor: Color.lerp(color, Colors.black, .34),
+        padding: const EdgeInsets.fromLTRB(13, 0, 8, 0),
+        borderColor: Colors.white.withValues(alpha: .18),
+        outerShadows: [
+          BoxShadow(
+            color: color.withValues(alpha: isWhite ? .18 : .30),
+            blurRadius: 20,
+            offset: const Offset(0, 9),
+          ),
+        ],
+        innerShadows: [
+          BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
+        ],
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 182),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w900,
+                  height: 1.05,
+                ),
+              ),
+              const SizedBox(width: 7),
+              _NomoPostCompanionAvatarStack(avatars: avatars),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NomoPostCompanionAvatarStack extends StatelessWidget {
+  const _NomoPostCompanionAvatarStack({required this.avatars});
+
+  final List<NomoAvatar> avatars;
+
+  @override
+  Widget build(BuildContext context) {
+    if (avatars.isEmpty) return const SizedBox.shrink();
+    final visible = avatars.take(3).toList(growable: false);
+    return SizedBox(
+      width: 28.0 + (visible.length - 1) * 18.0,
+      height: 28,
+      child: Stack(
+        children: [
+          for (var index = 0; index < visible.length; index++)
+            Positioned(
+              left: index * 18.0,
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF112332),
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: ClipOval(
+                  child: NomoAvatarView(avatar: visible[index], size: 28),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }

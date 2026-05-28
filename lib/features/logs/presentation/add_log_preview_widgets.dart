@@ -514,7 +514,15 @@ class _PreviewFooter extends StatelessWidget {
               const Spacer(),
               if (friends.isNotEmpty) ...[
                 const SizedBox(width: 8),
-                _PreviewFriendsPill(friends: friends, isWhite: isWhite),
+                NomoPostCompanionPill(
+                  avatars: friends
+                      .map(
+                        (friend) => friend.avatar ?? NomoAvatar.defaultAvatar,
+                      )
+                      .toList(growable: false),
+                  isWhite: isWhite,
+                  semanticLabel: '一緒に遊んだフレンズ',
+                ),
               ],
             ],
           ),
@@ -599,94 +607,6 @@ class _PreviewInlineEditors extends StatelessWidget {
       ),
     ),
   );
-}
-
-class _PreviewFriendsPill extends StatelessWidget {
-  const _PreviewFriendsPill({required this.friends, required this.isWhite});
-
-  final List<NomoFriend> friends;
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    final textColor = isWhite ? const Color(0xFF344152) : Colors.white;
-    const color = _postPreviewActionPurple;
-    final borderColor = color.withValues(alpha: isWhite ? .40 : .50);
-    final backgroundColor = color.withValues(alpha: isWhite ? .16 : .26);
-    const label = 'と一緒';
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(8, 6, 10, 6),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: borderColor),
-      ),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 182),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _PreviewFriendAvatarStack(friends: friends),
-            const SizedBox(width: 7),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.w900,
-                  height: 1.05,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PreviewFriendAvatarStack extends StatelessWidget {
-  const _PreviewFriendAvatarStack({required this.friends});
-
-  final List<NomoFriend> friends;
-
-  @override
-  Widget build(BuildContext context) {
-    final visible = friends.take(3).toList(growable: false);
-    return SizedBox(
-      width: 24.0 + (visible.length - 1) * 15.0,
-      height: 24,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          for (var index = 0; index < visible.length; index++)
-            Positioned(
-              left: index * 15,
-              child: Container(
-                width: 24,
-                height: 24,
-                padding: const EdgeInsets.all(1.4),
-                decoration: BoxDecoration(
-                  color: visible[index].accentColor.withValues(alpha: .34),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _postPreviewActionPurple.withValues(alpha: .58),
-                    width: 1,
-                  ),
-                ),
-                child: NomoAvatarView(
-                  avatar: visible[index].avatar ?? NomoAvatar.defaultAvatar,
-                  size: 24,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 }
 
 String _previewMetadata({required DateTime date, required String place}) {

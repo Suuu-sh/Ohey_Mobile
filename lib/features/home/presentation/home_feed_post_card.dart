@@ -543,9 +543,12 @@ class _FeedCardFooter extends StatelessWidget {
               const Spacer(),
               if (item.friends.isNotEmpty) ...[
                 const SizedBox(width: 8),
-                _FeedCompanionInlineButton(
-                  friends: item.friends,
+                NomoPostCompanionPill(
+                  avatars: item.friends
+                      .map((friend) => friend.avatar)
+                      .toList(growable: false),
                   isWhite: isWhite,
+                  onTap: () => _showFeedCompanionList(context, item.friends),
                 ),
               ],
             ],
@@ -582,67 +585,6 @@ class _FeedCardFooter extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _FeedCompanionInlineButton extends StatelessWidget {
-  const _FeedCompanionInlineButton({
-    required this.friends,
-    required this.isWhite,
-  });
-
-  final List<_Companion> friends;
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    const withPurple = Color(0xFFC08BFF);
-    final textColor = nomoPostActionForeground(withPurple);
-    const label = 'With';
-
-    return Semantics(
-      button: true,
-      label: '一緒に遊んだフレンズを表示',
-      child: Nomo3DButtonSurface(
-        onTap: () => _showFeedCompanionList(context, friends),
-        height: 38,
-        radius: 19,
-        color: withPurple,
-        bottomColor: Color.lerp(withPurple, Colors.black, .34),
-        padding: const EdgeInsets.fromLTRB(13, 0, 8, 0),
-        borderColor: Colors.white.withValues(alpha: .18),
-        outerShadows: [
-          BoxShadow(
-            color: withPurple.withValues(alpha: isWhite ? .18 : .30),
-            blurRadius: 20,
-            offset: const Offset(0, 9),
-          ),
-        ],
-        innerShadows: [
-          BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
-        ],
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 182),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.w900,
-                  height: 1.05,
-                ),
-              ),
-              const SizedBox(width: 7),
-              _FriendAvatarStack(friends: friends),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -950,41 +892,5 @@ class _PostPhoto extends StatelessWidget {
     }
     if (normalized.startsWith('assets/')) return AssetImage(normalized);
     return null;
-  }
-}
-
-class _FriendAvatarStack extends StatelessWidget {
-  const _FriendAvatarStack({required this.friends});
-
-  final List<_Companion> friends;
-
-  @override
-  Widget build(BuildContext context) {
-    if (friends.isEmpty) return const SizedBox.shrink();
-    final visible = friends.take(3).toList();
-    return SizedBox(
-      width: 28.0 + (visible.length - 1) * 18.0,
-      height: 28,
-      child: Stack(
-        children: [
-          for (var i = 0; i < visible.length; i++)
-            Positioned(
-              left: i * 18.0,
-              child: Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _FeedColors.card,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: ClipOval(
-                  child: NomoAvatarView(avatar: visible[i].avatar, size: 28),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
   }
 }
