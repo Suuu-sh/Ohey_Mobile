@@ -170,9 +170,9 @@ class _ProfileTopSheet extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(
         NomoPageHeader.horizontalPadding,
-        NomoPageHeader.topPadding,
+        4,
         NomoPageHeader.horizontalPadding,
-        18,
+        6,
       ),
       decoration: BoxDecoration(
         color: Colors.transparent,
@@ -206,14 +206,14 @@ class _SimpleHero extends StatelessWidget {
         children: [
           SizedBox(
             width: double.infinity,
-            height: 196,
+            height: 132,
             child: Center(
-              child: NomoAvatarView(avatar: displayAvatar, size: 194),
+              child: NomoAvatarView(avatar: displayAvatar, size: 146),
             ),
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(18, 13, 18, 14),
+            padding: const EdgeInsets.fromLTRB(18, 8, 18, 9),
             color: AppColors.darkBackgroundBottom,
             child: Center(
               child: Text(
@@ -527,34 +527,31 @@ class _InviteResponseButton extends StatelessWidget {
 
 class _ProfileActivityHome extends StatelessWidget {
   const _ProfileActivityHome({
-    required this.isWhite,
+    required this.profileName,
     required this.logs,
     required this.photoLogs,
     required this.friendsCount,
-    required this.status,
-    required this.onStatusTap,
     required this.onLogsTap,
     required this.onArchiveTap,
     required this.onAddFriendsTap,
   });
 
-  final bool isWhite;
+  final String profileName;
   final List<DrinkLog> logs;
   final List<DrinkLog> photoLogs;
   final int friendsCount;
-  final NomoDailyStatus status;
-  final VoidCallback onStatusTap;
   final VoidCallback onLogsTap;
   final VoidCallback onArchiveTap;
   final VoidCallback onAddFriendsTap;
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final monthlyLogs = logs.where((log) => log.isInMonth(now)).toList();
+    final joinedMonth = _profileJoinedMonth(DateTime.now());
+    final recentLogs = logs.take(2).toList(growable: false);
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(26, 0, 26, 0),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 112),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -562,23 +559,26 @@ class _ProfileActivityHome extends StatelessWidget {
             friendsCount: friendsCount,
             logCount: logs.length,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
-          const SizedBox(height: 24),
-          _ProfileLearningStatus(
-            status: status,
-            monthlyLogCount: monthlyLogs.length,
+          const SizedBox(height: 8),
+          _ProfileInfoCard(profileName: profileName, joinedMonth: joinedMonth),
+          const SizedBox(height: 8),
+          _ProfileRecentMemoriesCard(
+            logs: recentLogs,
             photoLogCount: photoLogs.length,
-            onStatusTap: onStatusTap,
             onLogsTap: onLogsTap,
             onArchiveTap: onArchiveTap,
+            onAddFriendsTap: onAddFriendsTap,
           ),
-          const SizedBox(height: 6),
         ],
       ),
     );
   }
 }
+
+String _profileJoinedMonth(DateTime date) =>
+    '${date.year}/${date.month.toString().padLeft(2, '0')}';
 
 class _ProfileSummaryStats extends StatelessWidget {
   const _ProfileSummaryStats({
@@ -591,77 +591,105 @@ class _ProfileSummaryStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Expanded(
-          child: _ProfileSummaryStat(
-            icon: CupertinoIcons.house_fill,
-            value: '',
-            label: 'ルーム',
-            showIconOnly: true,
+    return NomoThemedPanel(
+      accentColor: _ProfileColors.pink,
+      backgroundColor: AppColors.darkBackground,
+      padding: const EdgeInsets.fromLTRB(18, 8, 18, 8),
+      borderRadius: 24,
+      borderAlpha: .16,
+      glowAlpha: 0,
+      child: Row(
+        children: [
+          const Expanded(
+            child: _ProfileSummaryStat(
+              icon: CupertinoIcons.house_fill,
+              iconColor: Color(0xFFC08BFF),
+              value: '1',
+              label: 'ルーム',
+            ),
           ),
-        ),
-        Expanded(
-          child: _ProfileSummaryStat(value: '$friendsCount', label: 'フレンズ'),
-        ),
-        Expanded(
-          child: _ProfileSummaryStat(value: '$logCount', label: '思い出'),
-        ),
-      ],
+          const _ProfileStatsDivider(),
+          Expanded(
+            child: _ProfileSummaryStat(
+              icon: CupertinoIcons.person_3_fill,
+              iconColor: const Color(0xFFFF9BD5),
+              value: '$friendsCount',
+              label: 'フレンズ',
+            ),
+          ),
+          const _ProfileStatsDivider(),
+          Expanded(
+            child: _ProfileSummaryStat(
+              icon: CupertinoIcons.star_fill,
+              iconColor: const Color(0xFFFFD84E),
+              value: '$logCount',
+              label: '思い出',
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
+class _ProfileStatsDivider extends StatelessWidget {
+  const _ProfileStatsDivider();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 1,
+    height: 40,
+    color: Colors.white.withValues(alpha: .13),
+  );
+}
+
 class _ProfileSummaryStat extends StatelessWidget {
   const _ProfileSummaryStat({
+    required this.icon,
+    required this.iconColor,
     required this.value,
     required this.label,
-    this.icon,
-    this.showIconOnly = false,
   });
 
+  final IconData icon;
+  final Color iconColor;
   final String value;
   final String label;
-  final IconData? icon;
-  final bool showIconOnly;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
-          height: 38,
-          child: Center(
-            child: showIconOnly
-                ? NomoPopIcon(
-                    icon: icon ?? Icons.local_bar_rounded,
-                    color: const Color(0xFFC08BFF),
-                    size: 38,
-                    iconSize: 21,
-                  )
-                : Text(
-                    value,
-                    maxLines: 1,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 31,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.8,
-                    ),
-                  ),
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            NomoGeneratedIcon(icon, color: iconColor, size: 22),
+            const SizedBox(width: 7),
+            Text(
+              value,
+              maxLines: 1,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.9,
+                height: .95,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 3),
         Text(
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: .48),
-            fontSize: 15,
+            color: Colors.white.withValues(alpha: .62),
+            fontSize: 12,
             fontWeight: FontWeight.w900,
-            letterSpacing: -.4,
+            letterSpacing: -.35,
           ),
         ),
       ],
@@ -676,215 +704,358 @@ class _ProfileFriendActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _ProfileOutlineButton(
-            onTap: onAddFriendsTap,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                NomoGeneratedIcon(
-                  CupertinoIcons.person_badge_plus_fill,
-                  color: Colors.white,
-                  size: 22,
-                ),
-                SizedBox(width: 10),
-                Text(
-                  'フレンズを追加',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ProfileOutlineButton extends StatelessWidget {
-  const _ProfileOutlineButton({required this.child, required this.onTap});
-
-  final Widget child;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        height: 58,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFFC08BFF).withValues(alpha: .22),
-              const Color(0xFF162336).withValues(alpha: .92),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: const Color(0xFFC08BFF).withValues(alpha: .48),
-            width: 1.6,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFC08BFF).withValues(alpha: .18),
-              blurRadius: 26,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
-        child: child,
+    return Nomo3DButton(
+      label: 'フレンズを追加',
+      onTap: onAddFriendsTap,
+      height: 48,
+      radius: 24,
+      color: AppColors.primaryAction,
+      shadowColor: AppColors.primaryActionShadow,
+      fontSize: 18,
+      customIcon: const NomoPopIcon(
+        icon: CupertinoIcons.person_2_fill,
+        color: Colors.white,
+        size: 32,
+        iconSize: 18,
+      ),
+      trailing: const NomoGeneratedIcon(
+        CupertinoIcons.chevron_forward,
+        color: Colors.white,
+        size: 22,
       ),
     );
   }
 }
 
-class _ProfileLearningStatus extends StatelessWidget {
-  const _ProfileLearningStatus({
-    required this.status,
-    required this.monthlyLogCount,
-    required this.photoLogCount,
-    required this.onStatusTap,
-    required this.onLogsTap,
-    required this.onArchiveTap,
+class _ProfileInfoCard extends StatelessWidget {
+  const _ProfileInfoCard({
+    required this.profileName,
+    required this.joinedMonth,
   });
 
-  final NomoDailyStatus status;
-  final int monthlyLogCount;
-  final int photoLogCount;
-  final VoidCallback onStatusTap;
-  final VoidCallback onLogsTap;
-  final VoidCallback onArchiveTap;
+  final String profileName;
+  final String joinedMonth;
 
   @override
   Widget build(BuildContext context) {
-    final unset = status == NomoDailyStatus.unselected;
-    final statusLabel = unset ? '未設定' : status.label;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFFC08BFF).withValues(alpha: .18),
-            const Color(0xFF102033).withValues(alpha: .88),
-            const Color(0xFFFF5EA8).withValues(alpha: .10),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: const Color(0xFFC08BFF).withValues(alpha: .28),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFC08BFF).withValues(alpha: .14),
-            blurRadius: 32,
-            offset: const Offset(0, 16),
+    return NomoThemedPanel(
+      accentColor: _ProfileColors.pink,
+      backgroundColor: AppColors.darkBackground,
+      padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
+      borderRadius: 24,
+      borderAlpha: .28,
+      glowAlpha: 0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              NomoPopIcon(
+                icon: CupertinoIcons.person_fill,
+                color: Color(0xFFFF8AD1),
+                size: 27,
+                iconSize: 16,
+              ),
+              SizedBox(width: 7),
+              Text(
+                'プロフィール',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.8,
+                  height: 1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          _ProfileInfoLine(
+            icon: CupertinoIcons.smiley_fill,
+            iconColor: const Color(0xFFFF8AD1),
+            label: 'なまえ',
+            value: profileName,
+          ),
+          const SizedBox(height: 5),
+          _ProfileInfoLine(
+            icon: CupertinoIcons.calendar,
+            iconColor: const Color(0xFFC08BFF),
+            label: '参加日',
+            value: '$joinedMonth 参加',
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ProfileInfoLine extends StatelessWidget {
+  const _ProfileInfoLine({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 40),
+      padding: const EdgeInsets.fromLTRB(12, 3, 10, 3),
+      decoration: BoxDecoration(
+        color: AppColors.darkBackground,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white.withValues(alpha: .12)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: .16),
+              shape: BoxShape.circle,
+              border: Border.all(color: iconColor.withValues(alpha: .20)),
+            ),
+            child: Center(
+              child: NomoGeneratedIcon(icon, color: iconColor, size: 18),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: .78),
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.35,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.35,
+              ),
+            ),
+          ),
+          const SizedBox(width: 7),
+          NomoGeneratedIcon(
+            CupertinoIcons.chevron_forward,
+            color: Colors.white.withValues(alpha: .65),
+            size: 17,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileRecentMemoriesCard extends StatelessWidget {
+  const _ProfileRecentMemoriesCard({
+    required this.logs,
+    required this.photoLogCount,
+    required this.onLogsTap,
+    required this.onArchiveTap,
+    required this.onAddFriendsTap,
+  });
+
+  final List<DrinkLog> logs;
+  final int photoLogCount;
+  final VoidCallback onLogsTap;
+  final VoidCallback onArchiveTap;
+  final VoidCallback onAddFriendsTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final firstLog = logs.isNotEmpty ? logs[0] : null;
+    final secondLog = logs.length > 1 ? logs[1] : null;
+    final openAll = photoLogCount > 0 ? onArchiveTap : onLogsTap;
+
+    return NomoThemedPanel(
+      accentColor: _ProfileColors.pink,
+      backgroundColor: AppColors.darkBackground,
+      padding: const EdgeInsets.fromLTRB(14, 9, 14, 9),
+      borderRadius: 24,
+      borderAlpha: .28,
+      glowAlpha: 0,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
               const NomoPopIcon(
                 icon: CupertinoIcons.sparkles,
-                color: Color(0xFFC08BFF),
-                size: 38,
-                iconSize: 20,
+                color: Color(0xFFFF75B5),
+                size: 27,
+                iconSize: 15,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'マイルームの成長',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: .94),
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.6,
-                        height: 1.05,
+              const SizedBox(width: 7),
+              const Expanded(
+                child: Text(
+                  '最近の思い出',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.8,
+                    height: 1,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: openAll,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'すべて見る',
+                        style: TextStyle(
+                          color: Color(0xFFFF86C8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '遊んだ日と思い出で、部屋が育つよ',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: .55),
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w800,
-                        height: 1.2,
+                      SizedBox(width: 4),
+                      NomoGeneratedIcon(
+                        CupertinoIcons.chevron_forward,
+                        color: Color(0xFFFF86C8),
+                        size: 16,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 6),
           Row(
             children: [
               Expanded(
-                child: _ProfileLearningItem(
-                  icon: CupertinoIcons.calendar_today,
-                  iconColor: const Color(0xFF5DEBD3),
-                  text: '$monthlyLogCount日',
-                  label: '遊んだ日',
-                  onTap: onLogsTap,
+                child: _ProfileMemoryPreviewTile(
+                  log: firstLog,
+                  fallbackTitle: 'はじめての思い出',
+                  imageAlignment: Alignment.centerLeft,
+                  onTap: firstLog == null ? onLogsTap : openAll,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
-                child: _ProfileLearningItem(
-                  icon: CupertinoIcons.bolt_fill,
-                  iconColor: const Color(0xFFFFD60A),
-                  text: '${monthlyLogCount * 120} XP',
-                  label: '経験値',
-                  onTap: onLogsTap,
+                child: _ProfileMemoryPreviewTile(
+                  log: secondLog,
+                  fallbackTitle: 'また遊ぼう',
+                  imageAlignment: Alignment.centerRight,
+                  onTap: secondLog == null ? onLogsTap : openAll,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _ProfileLearningItem(
-                  icon: unset ? CupertinoIcons.smiley : _statusIcon(status),
-                  iconColor: unset
-                      ? const Color(0xFF28B9FF)
-                      : _statusColor(status),
-                  text: statusLabel,
-                  label: '今日の気分',
-                  onTap: onStatusTap,
+          const SizedBox(height: 6),
+          _ProfileMemoryHintCard(onTap: onAddFriendsTap),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileMemoryPreviewTile extends StatelessWidget {
+  const _ProfileMemoryPreviewTile({
+    required this.log,
+    required this.fallbackTitle,
+    required this.imageAlignment,
+    required this.onTap,
+  });
+
+  final DrinkLog? log;
+  final String fallbackTitle;
+  final Alignment imageAlignment;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = log == null ? fallbackTitle : _profileMemoryTitle(log!);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 44,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: AppColors.darkBackground,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withValues(alpha: .16)),
+            ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  'assets/images/profile_mascot_backdrop_scene.png',
+                  fit: BoxFit.cover,
+                  alignment: imageAlignment,
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _ProfileLearningItem(
-                  icon: CupertinoIcons.photo_fill_on_rectangle_fill,
-                  iconColor: const Color(0xFFFF5EA8),
-                  text: '$photoLogCount枚',
-                  label: '写真の思い出',
-                  onTap: onArchiveTap,
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppColors.darkBackground.withValues(alpha: .08),
+                  ),
                 ),
-              ),
-            ],
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD84E),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD84E).withValues(alpha: .30),
+                          blurRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4),
+                      child: NomoGeneratedIcon(
+                        CupertinoIcons.star_fill,
+                        color: Colors.white,
+                        size: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.4,
+            ),
           ),
         ],
       ),
@@ -892,83 +1063,72 @@ class _ProfileLearningStatus extends StatelessWidget {
   }
 }
 
-class _ProfileLearningItem extends StatelessWidget {
-  const _ProfileLearningItem({
-    required this.icon,
-    required this.iconColor,
-    required this.text,
-    required this.label,
-    required this.onTap,
-  });
+class _ProfileMemoryHintCard extends StatelessWidget {
+  const _ProfileMemoryHintCard({required this.onTap});
 
-  final IconData icon;
-  final Color iconColor;
-  final String text;
-  final String label;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return Nomo3DButtonSurface(
       onTap: onTap,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 76),
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: .065),
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: Colors.white.withValues(alpha: .09)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: .16),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Center(
-                child: NomoGeneratedIcon(icon, color: iconColor, size: 21),
-              ),
-            ),
-            const SizedBox(width: 9),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    text,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.45,
-                      height: 1.05,
-                    ),
+      height: 48,
+      radius: 22,
+      color: AppColors.darkBackground,
+      bottomColor: const Color(0xFF09131D),
+      useGradient: false,
+      padding: const EdgeInsets.fromLTRB(14, 0, 12, 0),
+      borderColor: Colors.white.withValues(alpha: .12),
+      outerShadows: const [],
+      child: Row(
+        children: [
+          const NomoPopIcon(
+            icon: CupertinoIcons.sparkles,
+            color: Colors.white,
+            size: 30,
+            iconSize: 16,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '思い出をふやそう',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.5,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .50),
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w800,
-                      height: 1,
-                    ),
+                ),
+                Text(
+                  'フレンズと遊ぶとここに残るよ',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .62),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          NomoGeneratedIcon(
+            CupertinoIcons.chevron_forward,
+            color: Colors.white.withValues(alpha: .72),
+            size: 17,
+          ),
+        ],
       ),
     );
   }
+}
+
+String _profileMemoryTitle(DrinkLog log) {
+  final place = log.place.trim();
+  if (place.isNotEmpty) return place;
+  final memo = log.memo.trim();
+  if (memo.isNotEmpty) return memo;
+  return '思い出';
 }

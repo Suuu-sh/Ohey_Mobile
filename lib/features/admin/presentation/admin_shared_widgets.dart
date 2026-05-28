@@ -524,16 +524,16 @@ class _AdminSmallButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      height: 38,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: _AdminColors.lime,
-        borderRadius: BorderRadius.circular(16),
-      ),
+  Widget build(BuildContext context) => SizedBox(
+    width: 96,
+    child: Nomo3DButtonSurface(
+      onTap: onTap,
+      height: 36,
+      radius: 16,
+      color: _AdminColors.lime,
+      bottomColor: const Color(0xFF5D8B00),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      borderColor: Colors.white.withValues(alpha: .14),
       child: Text(
         label,
         style: const TextStyle(
@@ -557,24 +557,29 @@ class _AdminIconButton extends StatelessWidget {
   final bool destructive;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: (destructive ? _AdminColors.pink : _AdminColors.lime).withValues(
-          alpha: .14,
-        ),
-        borderRadius: BorderRadius.circular(14),
+  Widget build(BuildContext context) {
+    final color = destructive ? _AdminColors.pink : _AdminColors.lime;
+    return SizedBox(
+      width: 39,
+      child: Nomo3DButtonSurface(
+        onTap: onTap,
+        height: 32,
+        radius: 14,
+        color: color.withValues(alpha: .18),
+        bottomColor: nomo3DShadowColorFor(color, lightnessScale: .56),
+        padding: EdgeInsets.zero,
+        borderColor: color.withValues(alpha: .28),
+        outerShadows: [
+          BoxShadow(
+            color: color.withValues(alpha: .12),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+        child: NomoGeneratedIcon(icon, color: color, size: 22),
       ),
-      child: NomoGeneratedIcon(
-        icon,
-        color: destructive ? _AdminColors.pink : _AdminColors.lime,
-        size: 22,
-      ),
-    ),
-  );
+    );
+  }
 }
 
 class _AdminPrimaryButton extends StatelessWidget {
@@ -589,33 +594,17 @@ class _AdminPrimaryButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => Nomo3DButton(
+    label: label,
     onTap: busy ? null : onTap,
-    child: Container(
-      height: 54,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: _AdminColors.lime,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0xFF5D8B00),
-            offset: Offset(0, 7),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      child: busy
-          ? const CupertinoActivityIndicator(color: Color(0xFF101820))
-          : Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF101820),
-                fontWeight: FontWeight.w900,
-                fontSize: 16,
-              ),
-            ),
-    ),
+    isLoading: busy,
+    enabled: !busy,
+    height: 54,
+    radius: 22,
+    color: _AdminColors.lime,
+    foregroundColor: const Color(0xFF101820),
+    shadowColor: const Color(0xFF5D8B00),
+    fontSize: 16,
   );
 }
 

@@ -296,45 +296,56 @@ class _CustomFilterManageAddButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return Nomo3DButtonSurface(
       onTap: () {
         HapticFeedback.selectionClick();
         Navigator.of(context).pop(const _CustomFilterManageResult.add());
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: _FriendsColors.lime.withValues(alpha: isWhite ? .18 : .13),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _FriendsColors.lime.withValues(alpha: .46)),
+      height: 60,
+      radius: 20,
+      color: Color.lerp(
+        isWhite ? Colors.white : AppColors.darkBackground,
+        _FriendsColors.lime,
+        isWhite ? .20 : .15,
+      )!,
+      bottomColor: nomo3DShadowColorFor(
+        _FriendsColors.lime,
+        lightnessScale: .58,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      borderColor: _FriendsColors.lime.withValues(alpha: .46),
+      outerShadows: [
+        BoxShadow(
+          color: _FriendsColors.lime.withValues(alpha: isWhite ? .13 : .22),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
         ),
-        child: Row(
-          children: [
-            const NomoPopIcon(
-              icon: CupertinoIcons.plus,
-              color: _FriendsColors.lime,
-              size: 36,
-              iconSize: 20,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'グループを追加',
-                style: TextStyle(
-                  color: ink,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w900,
-                ),
+      ],
+      child: Row(
+        children: [
+          const NomoPopIcon(
+            icon: CupertinoIcons.plus,
+            color: _FriendsColors.lime,
+            size: 36,
+            iconSize: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'グループを追加',
+              style: TextStyle(
+                color: ink,
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
               ),
             ),
-            NomoGeneratedIcon(
-              CupertinoIcons.chevron_right,
-              color: _FriendsColors.lime,
-              size: 18,
-            ),
-          ],
-        ),
+          ),
+          NomoGeneratedIcon(
+            CupertinoIcons.chevron_right,
+            color: _FriendsColors.lime,
+            size: 18,
+          ),
+        ],
       ),
     );
   }
@@ -430,18 +441,23 @@ class _ManageIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        width: 38,
-        height: 38,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: .14),
-          shape: BoxShape.circle,
-          border: Border.all(color: color.withValues(alpha: .26)),
-        ),
+    return SizedBox(
+      width: 41,
+      child: Nomo3DButtonSurface(
+        onTap: onTap,
+        height: 34,
+        radius: 17,
+        color: color.withValues(alpha: .18),
+        bottomColor: nomo3DShadowColorFor(color, lightnessScale: .56),
+        padding: EdgeInsets.zero,
+        borderColor: color.withValues(alpha: .30),
+        outerShadows: [
+          BoxShadow(
+            color: color.withValues(alpha: .12),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
         child: NomoGeneratedIcon(icon, color: color, size: 17),
       ),
     );
@@ -606,15 +622,27 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                   ],
                 ),
               ),
-              CupertinoButton(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(42, 42),
-                borderRadius: BorderRadius.circular(18),
-                onPressed: () => Navigator.of(context).pop(),
-                child: NomoGeneratedIcon(
-                  CupertinoIcons.xmark,
-                  color: sub,
-                  size: 24,
+              SizedBox(
+                width: 48,
+                child: Nomo3DButtonSurface(
+                  onTap: () => Navigator.of(context).pop(),
+                  height: 40,
+                  radius: 20,
+                  color: isWhite
+                      ? const Color(0xFFF3F7FA)
+                      : Colors.white.withValues(alpha: .08),
+                  bottomColor: isWhite
+                      ? const Color(0xFFD6DEE7)
+                      : const Color(0xFF30445C).withValues(alpha: .72),
+                  padding: EdgeInsets.zero,
+                  borderColor: isWhite
+                      ? const Color(0xFFE0E7EE)
+                      : Colors.white.withValues(alpha: .10),
+                  child: NomoGeneratedIcon(
+                    CupertinoIcons.xmark,
+                    color: sub,
+                    size: 22,
+                  ),
                 ),
               ),
             ],
@@ -699,18 +727,15 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
           ),
           if (_isEditing) ...[
             const SizedBox(height: 8),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              minimumSize: const Size(0, 36),
-              onPressed: _delete,
-              child: const Text(
-                '削除する',
-                style: TextStyle(
-                  color: Color(0xFFFF6B8A),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
+            Nomo3DButton.destructive(
+              label: '削除する',
+              icon: CupertinoIcons.trash_fill,
+              onTap: _delete,
+              height: 46,
+              radius: 20,
+              color: const Color(0xFFFF6B8A),
+              shadowColor: const Color(0xFFB9365A),
+              fontSize: 13,
             ),
           ],
         ],
@@ -768,88 +793,98 @@ class _CustomFilterFriendRow extends StatelessWidget {
     final sub = isWhite
         ? const Color(0xFF687481)
         : Colors.white.withValues(alpha: .62);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    final surface = selected
+        ? _FriendsColors.lime.withValues(alpha: isWhite ? .24 : .18)
+        : isWhite
+        ? const Color(0xFFF7F9FB)
+        : AppColors.darkBackground;
+    final bottom = selected
+        ? nomo3DShadowColorFor(_FriendsColors.lime, lightnessScale: .60)
+        : isWhite
+        ? const Color(0xFFD9E2EB)
+        : const Color(0xFF09131D);
+    return Nomo3DButtonSurface(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected
-              ? _FriendsColors.lime.withValues(alpha: isWhite ? .18 : .14)
-              : isWhite
-              ? const Color(0xFFF7F9FB)
-              : AppColors.darkBackground,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: selected
-                ? _FriendsColors.lime.withValues(alpha: .62)
-                : isWhite
-                ? const Color(0xFFDCE4EC)
-                : Colors.white.withValues(alpha: .08),
+      height: 58,
+      radius: 18,
+      color: surface,
+      bottomColor: bottom,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      borderColor: selected
+          ? _FriendsColors.lime.withValues(alpha: .62)
+          : isWhite
+          ? const Color(0xFFDCE4EC)
+          : Colors.white.withValues(alpha: .10),
+      outerShadows: [
+        BoxShadow(
+          color: _FriendsColors.lime.withValues(
+            alpha: selected ? (isWhite ? .14 : .22) : .07,
           ),
+          blurRadius: selected ? 18 : 12,
+          offset: const Offset(0, 6),
         ),
-        child: Row(
-          children: [
-            NomoAvatarView(
-              avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
-              size: 42,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    friend.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: ink,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                    ),
+      ],
+      child: Row(
+        children: [
+          NomoAvatarView(
+            avatar: friend.avatar ?? _fallbackAvatarForFriend(friend),
+            size: 42,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  friend.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _statusForFriend(friend, 0).label,
-                    style: TextStyle(
-                      color: sub,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: selected ? _FriendsColors.lime : Colors.transparent,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: selected
-                      ? _FriendsColors.lime
-                      : isWhite
-                      ? const Color(0xFFB8C4D0)
-                      : Colors.white.withValues(alpha: .24),
-                  width: 1.5,
                 ),
-              ),
-              child: selected
-                  ? const Center(
-                      child: NomoGeneratedIcon(
-                        CupertinoIcons.checkmark,
-                        color: _FriendsColors.bg,
-                        size: 18,
-                      ),
-                    )
-                  : null,
+                const SizedBox(height: 2),
+                Text(
+                  _statusForFriend(friend, 0).label,
+                  style: TextStyle(
+                    color: sub,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: selected ? _FriendsColors.lime : Colors.transparent,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: selected
+                    ? _FriendsColors.lime
+                    : isWhite
+                    ? const Color(0xFFB8C4D0)
+                    : Colors.white.withValues(alpha: .24),
+                width: 1.5,
+              ),
+            ),
+            child: selected
+                ? const Center(
+                    child: NomoGeneratedIcon(
+                      CupertinoIcons.checkmark,
+                      color: _FriendsColors.bg,
+                      size: 18,
+                    ),
+                  )
+                : null,
+          ),
+        ],
       ),
     );
   }

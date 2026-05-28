@@ -23,17 +23,13 @@ import '../../features/notifications/application/os_notification_service.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/onboarding/presentation/create_user_dialog.dart';
 import '../application/nomo_user_controller.dart';
-import '../data/backend_api_client.dart';
 import '../data/nomo_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
-import '../models/nomo_avatar.dart';
 import '../models/nomo_drink_invite.dart';
-import '../models/nomo_friend.dart';
 import '../models/nomo_user.dart';
 import '../theme/app_colors.dart';
 import '../theme/nomo_theme_mode.dart';
 import 'nomo_3d_button.dart';
-import 'nomo_avatar.dart';
 import 'nomo_backend_busy_screen.dart';
 import 'nomo_bottom_sheet.dart';
 import 'nomo_daily_status_3d_option.dart';
@@ -131,7 +127,10 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
       child: HomeScreen(onAddLogPressed: _openDrinkLogFlow),
     ),
     const NomoToastAccent(color: _friendsAccentColor, child: FriendsScreen()),
-    NomoToastAccent(color: _calendarAccentColor, child: const CalendarScreen()),
+    NomoToastAccent(
+      color: _calendarAccentColor,
+      child: CalendarScreen(onAddLogPressed: _openDrinkLogFlow),
+    ),
     const NomoToastAccent(color: _profileAccentColor, child: ProfileScreen()),
   ];
 
@@ -183,8 +182,6 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
         if (mounted && openCalendar == true) {
           setState(() => _selectedIndex = 2);
         }
-      case _DrinkLogStartAction.plan:
-        await _openDrinkPlanFlow();
       case _DrinkLogStartAction.gallery:
         await _openGalleryDrinkLogFlow();
     }
@@ -207,18 +204,6 @@ class _NomoTabShellState extends ConsumerState<NomoTabShell>
     } catch (_) {
       return false;
     }
-  }
-
-  Future<void> _openDrinkPlanFlow() async {
-    await showNomoBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      barrierColor: Colors.black.withValues(alpha: .58),
-      builder: (_) => NomoToastAccent(
-        color: _selectedToastAccentColor,
-        child: const _DrinkPlanCreateSheet(),
-      ),
-    );
   }
 
   Future<void> _openCameraDrinkLogFlow() async {
@@ -648,173 +633,6 @@ String _localDateKey(DateTime date) =>
     '${date.month.toString().padLeft(2, '0')}-'
     '${date.day.toString().padLeft(2, '0')}';
 
-class _DrinkPlanCreateSheet extends ConsumerStatefulWidget {
-  const _DrinkPlanCreateSheet();
-
-  @override
-  ConsumerState<_DrinkPlanCreateSheet> createState() =>
-      _DrinkPlanCreateSheetState();
-}
-
-class _DrinkPlanCreateSheetState extends ConsumerState<_DrinkPlanCreateSheet> {
-  String? _sendingFriendId;
-  String? _errorMessage;
-
-  Future<void> _sendInvite(NomoFriend friend) async {
-    if (_sendingFriendId != null) return;
-    HapticFeedback.selectionClick();
-    setState(() {
-      _sendingFriendId = friend.id;
-      _errorMessage = null;
-    });
-    try {
-      await ref.read(drinkInviteControllerProvider).sendTodayInvite(friend.id);
-      ref.invalidate(todayReservationsProvider);
-      ref.invalidate(incomingDrinkInvitesProvider);
-      if (!mounted) return;
-      NomoToast.show(
-        context,
-        '${friend.name}に遊ぶ予定を送りました',
-        icon: CupertinoIcons.checkmark_circle_fill,
-        placement: NomoToastPlacement.bottom,
-      );
-      Navigator.of(context).pop();
-    } catch (error) {
-      if (!mounted) return;
-      HapticFeedback.mediumImpact();
-      setState(() {
-        _sendingFriendId = null;
-        _errorMessage = _drinkInviteFailureReason(error);
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final friendsAsync = ref.watch(friendsProvider);
-    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
-    final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .62);
-
-    return NomoBottomSheetShell(
-      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
-      radius: 32,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 44,
-              height: 5,
-              decoration: BoxDecoration(
-                color: sub.withValues(alpha: .34),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              NomoPopIcon(
-                icon: CupertinoIcons.calendar_badge_plus,
-                color: AppColors.primaryAction,
-                size: 48,
-                iconSize: 25,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '予定を作る',
-                      style: TextStyle(
-                        color: ink,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.6,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '今日誘うフレンズを選んで送ります。',
-                      style: TextStyle(
-                        color: sub,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        height: 1.35,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            child: _errorMessage == null
-                ? const SizedBox.shrink()
-                : Padding(
-                    key: ValueKey(_errorMessage),
-                    padding: const EdgeInsets.only(top: 14),
-                    child: _SheetInlineError(
-                      message: _errorMessage!,
-                      isWhite: isWhite,
-                    ),
-                  ),
-          ),
-          const SizedBox(height: 16),
-          friendsAsync.when(
-            loading: () => const Padding(
-              padding: EdgeInsets.symmetric(vertical: 34),
-              child: Center(child: CupertinoActivityIndicator()),
-            ),
-            error: (error, stackTrace) => _DrinkPlanEmptyMessage(
-              isWhite: isWhite,
-              message: 'フレンズを読み込めませんでした。あとでもう一度試してね。',
-            ),
-            data: (friends) {
-              if (friends.isEmpty) {
-                return _DrinkPlanEmptyMessage(
-                  isWhite: isWhite,
-                  message: '予定を送るには、まずフレンズを追加してください。',
-                );
-              }
-              final visibleFriends = friends.take(6).toList(growable: false);
-              return ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 390),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: visibleFriends.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final friend = visibleFriends[index];
-                    return _DrinkPlanFriendTile(
-                      friend: friend,
-                      isWhite: isWhite,
-                      isSending: _sendingFriendId == friend.id,
-                      disabled: _sendingFriendId != null,
-                      onTap: () => _sendInvite(friend),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _SheetInlineError extends StatelessWidget {
   const _SheetInlineError({required this.message, required this.isWhite});
 
@@ -851,167 +669,7 @@ class _SheetInlineError extends StatelessWidget {
   }
 }
 
-String _drinkInviteFailureReason(Object error) {
-  if (error is BackendApiException) {
-    return _cleanDrinkInviteFailureReason(error.message);
-  }
-  if (error is StateError) {
-    return _cleanDrinkInviteFailureReason(error.message);
-  }
-  return '通信に失敗しました。時間をおいて試してね。';
-}
-
-String _cleanDrinkInviteFailureReason(String raw) {
-  final message = raw.trim();
-  if (message.isEmpty || message == 'Backend request failed.') {
-    return '通信に失敗しました。時間をおいて試してね。';
-  }
-  return message;
-}
-
-class _DrinkPlanFriendTile extends StatelessWidget {
-  const _DrinkPlanFriendTile({
-    required this.friend,
-    required this.isWhite,
-    required this.isSending,
-    required this.disabled,
-    required this.onTap,
-  });
-
-  final NomoFriend friend;
-  final bool isWhite;
-  final bool isSending;
-  final bool disabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
-    final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .58);
-    return Opacity(
-      opacity: disabled && !isSending ? .52 : 1,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: disabled ? null : onTap,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
-          decoration: BoxDecoration(
-            color: isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: isWhite
-                  ? const Color(0xFFE0E6ED)
-                  : Colors.white.withValues(alpha: .10),
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  color: friend.accentColor.withValues(alpha: .20),
-                  shape: BoxShape.circle,
-                ),
-                child: ClipOval(
-                  child: NomoAvatarView(
-                    avatar: friend.avatar ?? NomoAvatar.defaultAvatar,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      friend.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: ink,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      friend.vibe.trim().isEmpty
-                          ? 'Nomoフレンズ'
-                          : '@${friend.vibe}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: sub,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              SizedBox(
-                width: 70,
-                child: Nomo3DButton(
-                  label: '誘う',
-                  onTap: disabled ? null : onTap,
-                  height: 34,
-                  radius: 17,
-                  color: AppColors.primaryAction,
-                  foregroundColor: const Color(0xFF06111D),
-                  shadowColor: AppColors.primaryActionShadow,
-                  isLoading: isSending,
-                  enabled: !disabled,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DrinkPlanEmptyMessage extends StatelessWidget {
-  const _DrinkPlanEmptyMessage({required this.isWhite, required this.message});
-
-  final bool isWhite;
-  final String message;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground,
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(
-        color: isWhite
-            ? const Color(0xFFE0E6ED)
-            : Colors.white.withValues(alpha: .10),
-      ),
-    ),
-    child: Text(
-      message,
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        color: isWhite
-            ? const Color(0xFF667381)
-            : Colors.white.withValues(alpha: .62),
-        fontSize: 13,
-        fontWeight: FontWeight.w800,
-        height: 1.35,
-      ),
-    ),
-  );
-}
-
-enum _DrinkLogStartAction { camera, noPhoto, gallery, plan }
+enum _DrinkLogStartAction { camera, noPhoto, gallery }
 
 extension _DrinkLogStartActionX on _DrinkLogStartAction {
   bool get createsDrinkLog {
@@ -1019,7 +677,6 @@ extension _DrinkLogStartActionX on _DrinkLogStartAction {
       _DrinkLogStartAction.camera ||
       _DrinkLogStartAction.noPhoto ||
       _DrinkLogStartAction.gallery => true,
-      _DrinkLogStartAction.plan => false,
     };
   }
 }
@@ -1101,14 +758,6 @@ class _DrinkLogStartSheet extends StatelessWidget {
             onTap: () =>
                 Navigator.of(context).pop(_DrinkLogStartAction.gallery),
           ),
-          const SizedBox(height: 10),
-          _DrinkLogStartTile(
-            icon: CupertinoIcons.calendar_badge_plus,
-            color: AppColors.warning,
-            title: '予定を作る',
-            subtitle: 'これからの予定を先にメモ',
-            onTap: () => Navigator.of(context).pop(_DrinkLogStartAction.plan),
-          ),
         ],
       ),
     );
@@ -1137,60 +786,66 @@ class _DrinkLogStartTile extends StatelessWidget {
     final sub = isWhite
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .58);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return Nomo3DButtonSurface(
       onTap: () {
         HapticFeedback.selectionClick();
         onTap();
       },
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-        decoration: BoxDecoration(
-          color: isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: isWhite
-                ? const Color(0xFFE0E6ED)
-                : Colors.white.withValues(alpha: .10),
+      height: 72,
+      radius: 22,
+      color: isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground,
+      bottomColor: isWhite ? const Color(0xFFD8E1EA) : const Color(0xFF09131D),
+      padding: const EdgeInsets.fromLTRB(14, 0, 12, 0),
+      borderColor: isWhite
+          ? const Color(0xFFE0E6ED)
+          : Colors.white.withValues(alpha: .12),
+      outerShadows: [
+        BoxShadow(
+          color: color.withValues(alpha: isWhite ? .10 : .18),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
+      innerShadows: [
+        BoxShadow(
+          color: Colors.white.withValues(alpha: isWhite ? .40 : .08),
+          blurRadius: 10,
+          offset: const Offset(-2, -2),
+        ),
+      ],
+      child: Row(
+        children: [
+          NomoPopIcon(icon: icon, color: color, size: 46, iconSize: 25),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.2,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: sub,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            NomoPopIcon(icon: icon, color: color, size: 46, iconSize: 25),
-            const SizedBox(width: 13),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: ink,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.2,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: sub,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      height: 1.25,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            NomoGeneratedIcon(
-              CupertinoIcons.chevron_right,
-              color: sub,
-              size: 22,
-            ),
-          ],
-        ),
+          NomoGeneratedIcon(CupertinoIcons.chevron_right, color: sub, size: 22),
+        ],
       ),
     );
   }
@@ -1351,19 +1006,21 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                         ],
                       ),
                     ),
-                    CupertinoButton(
-                      minimumSize: const Size(42, 42),
-                      padding: EdgeInsets.zero,
-                      onPressed: _busyAction == null
-                          ? () => Navigator.of(context).pop()
-                          : null,
-                      child: Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: .08),
-                          shape: BoxShape.circle,
-                        ),
+                    SizedBox(
+                      width: 48,
+                      child: Nomo3DButtonSurface(
+                        onTap: _busyAction == null
+                            ? () => Navigator.of(context).pop()
+                            : null,
+                        height: 40,
+                        radius: 20,
+                        color: Colors.white.withValues(alpha: .08),
+                        bottomColor: const Color(
+                          0xFF75417F,
+                        ).withValues(alpha: .62),
+                        padding: EdgeInsets.zero,
+                        useGradient: true,
+                        borderColor: Colors.white.withValues(alpha: .10),
                         child: const Icon(
                           CupertinoIcons.xmark,
                           color: Colors.white,
@@ -1422,19 +1079,21 @@ class _IncomingDrinkInviteSheetState extends State<_IncomingDrinkInviteSheet> {
                   fontSize: 15,
                 ),
                 const SizedBox(height: 10),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _busyAction == null
+                Nomo3DButton.secondary(
+                  label: _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
+                  icon: CupertinoIcons.xmark_circle_fill,
+                  onTap: _busyAction == null
                       ? () => _submit(accept: false)
                       : null,
-                  child: Text(
-                    _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .60),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
+                  isLoading: _busyAction == 'reject',
+                  enabled: _busyAction == null,
+                  height: 48,
+                  radius: 21,
+                  color: Colors.white.withValues(alpha: .07),
+                  foregroundColor: Colors.white.withValues(alpha: .72),
+                  shadowColor: const Color(0xFF5B3A7A).withValues(alpha: .72),
+                  fontSize: 14,
+                  useGradient: false,
                 ),
               ],
             ),

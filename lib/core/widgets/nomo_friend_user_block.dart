@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +8,7 @@ import '../models/nomo_friend.dart';
 import '../theme/app_colors.dart';
 import 'nomo_3d_button.dart';
 import 'nomo_avatar.dart';
+import 'nomo_invite_success_burst.dart';
 import 'nomo_themed_panel.dart';
 
 class NomoFriendUserBlock extends StatelessWidget {
@@ -19,8 +22,11 @@ class NomoFriendUserBlock extends StatelessWidget {
     required this.fallbackAvatar,
     this.onFavoriteToggle,
     this.onInvite,
+    this.onTap,
     this.showFavorite = false,
     this.showInvite = false,
+    this.inviteSent = false,
+    this.onInviteAnimationComplete,
     this.compact = false,
   });
 
@@ -31,9 +37,12 @@ class NomoFriendUserBlock extends StatelessWidget {
   final bool statusEnabled;
   final NomoAvatar fallbackAvatar;
   final VoidCallback? onFavoriteToggle;
-  final VoidCallback? onInvite;
+  final FutureOr<void> Function()? onInvite;
+  final VoidCallback? onTap;
   final bool showFavorite;
   final bool showInvite;
+  final bool inviteSent;
+  final VoidCallback? onInviteAnimationComplete;
   final bool compact;
 
   @override
@@ -44,8 +53,15 @@ class NomoFriendUserBlock extends StatelessWidget {
         ? (isWhite ? const Color(0xFF101820) : Colors.white)
         : (isWhite ? const Color(0xFF667381) : const Color(0xFF8792A3));
     final avatarSize = compact ? 52.0 : 62.0;
+    final inviteEnabled = statusEnabled && !inviteSent;
+    final inviteButtonColor = inviteSent ? const Color(0xFF3C4652) : accent;
+    final inviteForeground = inviteSent
+        ? const Color(0xFFC3CAD3)
+        : statusEnabled
+        ? const Color(0xFF071320)
+        : const Color(0xFF738092);
 
-    return ConstrainedBox(
+    final block = ConstrainedBox(
       constraints: BoxConstraints(minHeight: compact ? 88 : 98),
       child: NomoThemedPanel(
         padding: EdgeInsets.fromLTRB(
@@ -134,30 +150,55 @@ class NomoFriendUserBlock extends StatelessWidget {
               const SizedBox(width: 10),
               SizedBox(
                 width: 92,
-                child: Nomo3DButton(
-                  label: '誘う',
-                  icon: CupertinoIcons.paperplane_fill,
-                  onTap: statusEnabled ? onInvite : null,
-                  enabled: statusEnabled,
-                  height: 36,
-                  radius: 18,
-                  color: accent,
-                  foregroundColor: statusEnabled
-                      ? const Color(0xFF071320)
-                      : const Color(0xFF738092),
-                  shadowColor: statusEnabled
-                      ? Color.lerp(accent, Colors.black, .32)
-                      : const Color(0xFF111923),
-                  disabledColor: const Color(0xFF2B3441),
-                  disabledOpacity: 1,
-                  padding: const EdgeInsets.symmetric(horizontal: 13),
-                  fontSize: 12,
+                child: NomoInviteSuccessBurst(
+                  builder: (context, runWithBurst, flightAnimation) =>
+                      Nomo3DButton(
+                        label: inviteSent ? '招待済み' : '誘う',
+                        icon: null,
+                        customIcon: inviteSent
+                            ? null
+                            : NomoInviteFlyingIcon(
+                                animation: flightAnimation,
+                                color: inviteForeground,
+                                size: 19,
+                              ),
+                        onTap: inviteEnabled
+                            ? () => runWithBurst(
+                                onInvite,
+                                afterAnimation: onInviteAnimationComplete,
+                              )
+                            : null,
+                        enabled: inviteEnabled,
+                        forcePressed: inviteSent,
+                        height: 36,
+                        radius: 18,
+                        color: inviteButtonColor,
+                        foregroundColor: inviteForeground,
+                        shadowColor: inviteSent
+                            ? const Color(0xFF1A222C)
+                            : statusEnabled
+                            ? Color.lerp(accent, Colors.black, .32)
+                            : const Color(0xFF111923),
+                        disabledColor: inviteSent
+                            ? const Color(0xFF3C4652)
+                            : const Color(0xFF2B3441),
+                        disabledOpacity: 1,
+                        padding: const EdgeInsets.symmetric(horizontal: 13),
+                        fontSize: 12,
+                      ),
                 ),
               ),
             ],
           ],
         ),
       ),
+    );
+
+    if (onTap == null) return block;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: block,
     );
   }
 }

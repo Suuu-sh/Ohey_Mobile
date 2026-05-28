@@ -648,17 +648,17 @@ class _UnsavedAvatarSheet extends StatelessWidget {
                 Navigator.of(context).pop(_UnsavedAvatarAction.discard),
           ),
           const SizedBox(height: 10),
-          TextButton(
-            onPressed: () =>
-                Navigator.of(context).pop(_UnsavedAvatarAction.cancel),
-            child: const Text(
-              '編集を続ける',
-              style: TextStyle(
-                color: _AvatarColors.sub,
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
+          Nomo3DButton.secondary(
+            label: '編集を続ける',
+            icon: CupertinoIcons.pencil,
+            color: Colors.white.withValues(alpha: .055),
+            foregroundColor: _AvatarColors.sub,
+            shadowColor: _AvatarColors.panelShadow,
+            height: 46,
+            radius: 20,
+            fontSize: 14,
+            useGradient: false,
+            onTap: () => Navigator.of(context).pop(_UnsavedAvatarAction.cancel),
           ),
         ],
       ),

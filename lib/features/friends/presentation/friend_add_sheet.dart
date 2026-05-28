@@ -2,10 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/application/nomo_user_controller.dart';
+import '../../../core/config/supabase_config.dart';
 import '../../../core/models/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_avatar.dart';
@@ -15,6 +17,21 @@ import '../../../core/widgets/nomo_toast.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../data/friend_repository.dart';
 
+String _friendQrPayload(String userId) {
+  final scheme = SupabaseConfig.authRedirectUrl.split('://').first;
+  return '$scheme://friend/${Uri.encodeComponent(userId)}';
+}
+
+String _normalizedFriendInput(String value) {
+  var input = value.trim();
+  if (input.startsWith('@')) input = input.substring(1).trim();
+  final uri = Uri.tryParse(input);
+  if (uri != null && uri.pathSegments.isNotEmpty) {
+    input = uri.pathSegments.last.trim();
+  }
+  return Uri.decodeComponent(input);
+}
+
 Future<void> showFriendAddSheet(BuildContext context, WidgetRef ref) {
   return showGeneralDialog<void>(
     context: context,
@@ -23,7 +40,7 @@ Future<void> showFriendAddSheet(BuildContext context, WidgetRef ref) {
     barrierColor: Colors.black.withValues(alpha: .70),
     transitionDuration: const Duration(milliseconds: 180),
     pageBuilder: (context, animation, secondaryAnimation) =>
-        _FriendQrDialog(ref: ref),
+        const _FriendQrDialog(),
     transitionBuilder: (context, animation, secondaryAnimation, child) {
       final curved = CurvedAnimation(
         parent: animation,
@@ -40,10 +57,29 @@ Future<void> showFriendAddSheet(BuildContext context, WidgetRef ref) {
   );
 }
 
-class _FriendQrDialog extends StatelessWidget {
-  const _FriendQrDialog({required this.ref});
+class _FriendQrDialog extends ConsumerStatefulWidget {
+  const _FriendQrDialog();
 
-  final WidgetRef ref;
+  @override
+  ConsumerState<_FriendQrDialog> createState() => _FriendQrDialogState();
+}
+
+class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  NomoFriendProfile? _searchProfile;
+  NomoFriendRelationshipStatus? _searchStatus;
+  bool _isSearchExpanded = false;
+  bool _isSearching = false;
+  bool _isSending = false;
+  String? _searchError;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   Future<void> _copyMyId(BuildContext context, String userId) async {
     await Clipboard.setData(ClipboardData(text: userId));
@@ -68,32 +104,152 @@ class _FriendQrDialog extends StatelessWidget {
     );
   }
 
+  void _expandSearch() {
+    HapticFeedback.selectionClick();
+    setState(() => _isSearchExpanded = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _searchFocusNode.requestFocus();
+    });
+  }
+
+  Future<void> _searchById() async {
+    final friendId = _normalizedFriendInput(_searchController.text);
+    _searchController.text = friendId;
+    if (friendId.isEmpty) {
+      setState(() => _searchError = 'IDを入力してください');
+      return;
+    }
+    setState(() {
+      _isSearching = true;
+      _searchError = null;
+      _searchProfile = null;
+      _searchStatus = null;
+    });
+    try {
+      final repository = ref.read(friendRepositoryProvider);
+      final profile = await repository.findProfileByUserId(friendId);
+      final status = profile == null
+          ? null
+          : await repository.relationshipStatus(profile.id);
+      if (!mounted) return;
+      setState(() {
+        _searchProfile = profile;
+        _searchStatus = status;
+        _searchError = profile == null ? 'このIDのユーザーが見つかりませんでした' : null;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _searchError = '検索に失敗しました。あとでもう一度試してね');
+    } finally {
+      if (mounted) setState(() => _isSearching = false);
+    }
+  }
+
+  Future<void> _sendSearchRequest() async {
+    final profile = _searchProfile;
+    if (profile == null) return;
+    setState(() {
+      _isSending = true;
+      _searchError = null;
+    });
+    try {
+      final repository = ref.read(friendRepositoryProvider);
+      await repository.sendFriendRequest(profile.id);
+      ref.invalidate(friendsProvider);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      NomoToast.show(
+        context,
+        '${profile.displayName}さんに申請を送りました',
+        icon: CupertinoIcons.person_badge_plus_fill,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _searchError = '申請できませんでした。あとでもう一度試してね');
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
+  }
+
+  Future<void> _scanFriendQr(BuildContext context) async {
+    final scanned = await showNomoBottomSheet<String>(
+      context: context,
+      useSafeArea: true,
+      barrierColor: Colors.black.withValues(alpha: .70),
+      builder: (_) => const _FriendQrScannerSheet(),
+    );
+    final friendId = scanned == null ? '' : _normalizedFriendInput(scanned);
+    if (friendId.isEmpty || !context.mounted) return;
+    try {
+      final repository = ref.read(friendRepositoryProvider);
+      final profile = await repository.findProfileByUserId(friendId);
+      if (profile == null) {
+        if (context.mounted) {
+          NomoToast.show(context, 'このQRのユーザーが見つかりませんでした');
+        }
+        return;
+      }
+      await repository.sendFriendRequest(profile.id);
+      ref.invalidate(friendsProvider);
+      if (!context.mounted) return;
+      Navigator.of(context).pop();
+      NomoToast.show(
+        context,
+        '${profile.displayName}さんに申請を送りました',
+        icon: CupertinoIcons.person_badge_plus_fill,
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      NomoToast.show(context, 'QRから申請できませんでした。あとでもう一度試してね');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(nomoUserProvider);
     final myUserId = user?.userId.trim() ?? '';
-    final qrPayload = myUserId.isEmpty ? null : 'tomola://friend/$myUserId';
+    final qrPayload = myUserId.isEmpty ? null : _friendQrPayload(myUserId);
     return SafeArea(
-      child: Center(
-        child: Material(
-          color: Colors.transparent,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 430),
-              child: _CuteQrCard(
-                userId: myUserId,
-                payload: qrPayload,
-                avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
-                isWhite: false,
-                onClose: () => Navigator.of(context).pop(),
-                onCopyId: () => _copyMyId(context, myUserId),
-                onCopyLink: qrPayload == null
-                    ? null
-                    : () => _copyFriendLink(context, qrPayload),
-                onShare: qrPayload == null
-                    ? null
-                    : () => _shareFriendLink(myUserId, qrPayload),
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 18),
+            child: Material(
+              color: Colors.transparent,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 430),
+                child: _CuteQrCard(
+                  userId: myUserId,
+                  payload: qrPayload,
+                  avatar: user?.avatar ?? NomoAvatar.defaultAvatar,
+                  isWhite: false,
+                  onClose: () => Navigator.of(context).pop(),
+                  onCopyId: () => _copyMyId(context, myUserId),
+                  onCopyLink: qrPayload == null
+                      ? null
+                      : () => _copyFriendLink(context, qrPayload),
+                  onShare: qrPayload == null
+                      ? null
+                      : () => _shareFriendLink(myUserId, qrPayload),
+                  onScan: () => _scanFriendQr(context),
+                  searchController: _searchController,
+                  searchFocusNode: _searchFocusNode,
+                  isSearchExpanded: _isSearchExpanded,
+                  isSearching: _isSearching,
+                  searchError: _searchError,
+                  searchProfile: _searchProfile,
+                  searchStatus: _searchStatus,
+                  isSendingSearchRequest: _isSending,
+                  onExpandSearch: _expandSearch,
+                  onSubmitSearch: _searchById,
+                  onSendSearchRequest: _sendSearchRequest,
+                ),
               ),
             ),
           ),
@@ -126,15 +282,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     super.dispose();
   }
 
-  String _normalizedInput(String value) {
-    var input = value.trim();
-    if (input.startsWith('@')) input = input.substring(1).trim();
-    final uri = Uri.tryParse(input);
-    if (uri != null && uri.pathSegments.isNotEmpty) {
-      input = uri.pathSegments.last.trim();
-    }
-    return input;
-  }
+  String _normalizedInput(String value) => _normalizedFriendInput(value);
 
   Future<void> _pasteAndSearch() async {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
@@ -169,6 +317,39 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     await SharePlus.instance.share(
       ShareParams(title: 'Nomoでつながろ', text: 'Nomoで@$userId とつながろう：$payload'),
     );
+  }
+
+  Future<void> _scanFriendQr(BuildContext context) async {
+    final scanned = await showNomoBottomSheet<String>(
+      context: context,
+      useSafeArea: true,
+      barrierColor: Colors.black.withValues(alpha: .70),
+      builder: (_) => const _FriendQrScannerSheet(),
+    );
+    final friendId = scanned == null ? '' : _normalizedFriendInput(scanned);
+    if (friendId.isEmpty || !context.mounted) return;
+    try {
+      final repository = widget.ref.read(friendRepositoryProvider);
+      final profile = await repository.findProfileByUserId(friendId);
+      if (profile == null) {
+        if (context.mounted) {
+          NomoToast.show(context, 'このQRのユーザーが見つかりませんでした');
+        }
+        return;
+      }
+      await repository.sendFriendRequest(profile.id);
+      widget.ref.invalidate(friendsProvider);
+      if (!context.mounted) return;
+      Navigator.of(context).pop();
+      NomoToast.show(
+        context,
+        '${profile.displayName}さんに申請を送りました',
+        icon: CupertinoIcons.person_badge_plus_fill,
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      NomoToast.show(context, 'QRから申請できませんでした。あとでもう一度試してね');
+    }
   }
 
   Future<void> _search() async {
@@ -239,7 +420,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     final status = _status;
     final user = widget.ref.watch(nomoUserProvider);
     final myUserId = user?.userId.trim() ?? '';
-    final qrPayload = myUserId.isEmpty ? null : 'tomola://friend/$myUserId';
+    final qrPayload = myUserId.isEmpty ? null : _friendQrPayload(myUserId);
     return NomoBottomSheetShell(
       title: null,
       showHandle: true,
@@ -328,6 +509,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
                 onShare: qrPayload == null
                     ? null
                     : () => _shareFriendLink(myUserId, qrPayload),
+                onScan: () => _scanFriendQr(context),
               ),
             ],
             const SizedBox(height: 18),
@@ -376,6 +558,18 @@ class _CuteQrCard extends StatelessWidget {
     required this.onCopyLink,
     required this.onShare,
     this.onClose,
+    this.onScan,
+    this.searchController,
+    this.searchFocusNode,
+    this.isSearchExpanded = false,
+    this.isSearching = false,
+    this.searchError,
+    this.searchProfile,
+    this.searchStatus,
+    this.isSendingSearchRequest = false,
+    this.onExpandSearch,
+    this.onSubmitSearch,
+    this.onSendSearchRequest,
   });
 
   final String userId;
@@ -386,13 +580,25 @@ class _CuteQrCard extends StatelessWidget {
   final VoidCallback? onCopyLink;
   final VoidCallback? onShare;
   final VoidCallback? onClose;
+  final VoidCallback? onScan;
+  final TextEditingController? searchController;
+  final FocusNode? searchFocusNode;
+  final bool isSearchExpanded;
+  final bool isSearching;
+  final String? searchError;
+  final NomoFriendProfile? searchProfile;
+  final NomoFriendRelationshipStatus? searchStatus;
+  final bool isSendingSearchRequest;
+  final VoidCallback? onExpandSearch;
+  final VoidCallback? onSubmitSearch;
+  final VoidCallback? onSendSearchRequest;
 
   @override
   Widget build(BuildContext context) {
     const ink = Color(0xFF151515);
     const softInk = Color(0xFF6D6D6D);
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(34),
@@ -406,6 +612,7 @@ class _CuteQrCard extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
@@ -435,7 +642,7 @@ class _CuteQrCard extends StatelessWidget {
                       'Nomo',
                       style: TextStyle(
                         color: ink,
-                        fontSize: 24,
+                        fontSize: 21,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -.7,
                       ),
@@ -447,7 +654,7 @@ class _CuteQrCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: softInk,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -457,10 +664,10 @@ class _CuteQrCard extends StatelessWidget {
               const SizedBox(width: 30),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           Container(
-            width: 238,
-            height: 238,
+            width: 196,
+            height: 196,
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -485,9 +692,9 @@ class _CuteQrCard extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        width: 76,
-                        height: 76,
-                        padding: const EdgeInsets.all(7),
+                        width: 62,
+                        height: 62,
+                        padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF3F3F3),
                           borderRadius: BorderRadius.circular(18),
@@ -499,12 +706,12 @@ class _CuteQrCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: NomoAvatarView(avatar: avatar, size: 62),
+                        child: NomoAvatarView(avatar: avatar, size: 50),
                       ),
                     ],
                   ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           const Text(
             'nomo',
             style: TextStyle(
@@ -514,7 +721,7 @@ class _CuteQrCard extends StatelessWidget {
               letterSpacing: -.6,
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -534,19 +741,55 @@ class _CuteQrCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          GestureDetector(
-            onTap: onCopyId,
-            child: Text(
-              'IDだけコピー',
-              style: TextStyle(
-                color: softInk.withValues(alpha: .82),
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                decoration: TextDecoration.underline,
+          const SizedBox(height: 8),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 10,
+            runSpacing: 8,
+            children: [
+              _QrTextActionChip(
+                label: 'IDだけコピー',
+                icon: CupertinoIcons.doc_on_doc,
+                onTap: onCopyId,
               ),
-            ),
+              if (onScan != null)
+                _QrTextActionChip(
+                  label: 'QRを読み取る',
+                  icon: CupertinoIcons.qrcode_viewfinder,
+                  onTap: onScan!,
+                ),
+              if (searchController != null &&
+                  searchFocusNode != null &&
+                  onExpandSearch != null &&
+                  onSubmitSearch != null)
+                _QrIdSearchChip(
+                  controller: searchController!,
+                  focusNode: searchFocusNode!,
+                  isExpanded: isSearchExpanded,
+                  isLoading: isSearching,
+                  onExpand: onExpandSearch!,
+                  onSearch: onSubmitSearch!,
+                ),
+            ],
           ),
+          if (searchError != null) ...[
+            const SizedBox(height: 10),
+            _CuteMessageBox(
+              icon: CupertinoIcons.exclamationmark_bubble_fill,
+              message: searchError!,
+              color: const Color(0xFFFF7A9E),
+            ),
+          ],
+          if (searchProfile != null && onSendSearchRequest != null) ...[
+            const SizedBox(height: 10),
+            _FriendSearchResultCard(
+              profile: searchProfile!,
+              status: searchStatus,
+              isSending: isSendingSearchRequest,
+              isWhite: true,
+              onSend: onSendSearchRequest!,
+            ),
+          ],
         ],
       ),
     );
@@ -567,35 +810,38 @@ class _QrActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const ink = Color(0xFF222222);
-    return GestureDetector(
-      onTap: onTap,
+    return Semantics(
+      button: true,
+      label: label,
       child: Opacity(
         opacity: onTap == null ? .45 : 1,
         child: Column(
           children: [
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
+            SizedBox(
+              width: 62,
+              child: Nomo3DButtonSurface(
+                onTap: onTap,
+                height: 54,
+                radius: 16,
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.black.withValues(alpha: .09),
-                  width: 2,
-                ),
-                boxShadow: [
+                bottomColor: const Color(0xFFE1E1E1),
+                padding: EdgeInsets.zero,
+                useGradient: true,
+                borderColor: Colors.black.withValues(alpha: .09),
+                borderWidth: 2,
+                outerShadows: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: .04),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
+                    color: Colors.black.withValues(alpha: .07),
+                    blurRadius: 14,
+                    offset: const Offset(0, 7),
                   ),
                 ],
-              ),
-              child: Center(
-                child: NomoGeneratedIcon(icon, color: ink, size: 32),
+                child: Center(
+                  child: NomoGeneratedIcon(icon, color: ink, size: 25),
+                ),
               ),
             ),
-            const SizedBox(height: 9),
+            const SizedBox(height: 6),
             Text(
               label,
               textAlign: TextAlign.center,
@@ -606,6 +852,193 @@ class _QrActionButton extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QrTextActionChip extends StatelessWidget {
+  const _QrTextActionChip({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    const ink = Color(0xFF222222);
+    return SizedBox(
+      width: 130,
+      child: Nomo3DButtonSurface(
+        onTap: onTap,
+        height: 34,
+        radius: 17,
+        color: const Color(0xFFF7F7F7),
+        bottomColor: const Color(0xFFE1E1E1),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        useGradient: true,
+        borderColor: Colors.black.withValues(alpha: .08),
+        outerShadows: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .055),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            NomoGeneratedIcon(
+              icon,
+              color: ink.withValues(alpha: .68),
+              size: 15,
+            ),
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: ink.withValues(alpha: .62),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QrIdSearchChip extends StatelessWidget {
+  const _QrIdSearchChip({
+    required this.controller,
+    required this.focusNode,
+    required this.isExpanded,
+    required this.isLoading,
+    required this.onExpand,
+    required this.onSearch,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final bool isExpanded;
+  final bool isLoading;
+  final VoidCallback onExpand;
+  final VoidCallback onSearch;
+
+  @override
+  Widget build(BuildContext context) {
+    const ink = Color(0xFF222222);
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      width: isExpanded ? 270 : 130,
+      child: Nomo3DButtonSurface(
+        onTap: isExpanded ? null : onExpand,
+        height: 34,
+        radius: 17,
+        color: const Color(0xFFF7F7F7),
+        bottomColor: const Color(0xFFE1E1E1),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        useGradient: true,
+        borderColor: Colors.black.withValues(alpha: .08),
+        outerShadows: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .055),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 160),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          child: isExpanded
+              ? Row(
+                  key: const ValueKey('search-input'),
+                  children: [
+                    NomoGeneratedIcon(
+                      CupertinoIcons.search,
+                      color: ink.withValues(alpha: .68),
+                      size: 16,
+                    ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: CupertinoTextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        placeholder: 'Nomo ID',
+                        textInputAction: TextInputAction.search,
+                        onSubmitted: (_) => isLoading ? null : onSearch(),
+                        padding: EdgeInsets.zero,
+                        style: TextStyle(
+                          color: ink.withValues(alpha: .86),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                        ),
+                        placeholderStyle: TextStyle(
+                          color: ink.withValues(alpha: .36),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                        ),
+                        decoration: const BoxDecoration(),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: isLoading ? null : onSearch,
+                      child: SizedBox(
+                        width: 26,
+                        height: 26,
+                        child: Center(
+                          child: isLoading
+                              ? const CupertinoActivityIndicator(radius: 7)
+                              : NomoGeneratedIcon(
+                                  CupertinoIcons.arrow_right_circle_fill,
+                                  color: ink.withValues(alpha: .68),
+                                  size: 20,
+                                ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  key: const ValueKey('search-chip'),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    NomoGeneratedIcon(
+                      CupertinoIcons.search,
+                      color: ink.withValues(alpha: .68),
+                      size: 15,
+                    ),
+                    const SizedBox(width: 5),
+                    Flexible(
+                      child: Text(
+                        'ID検索',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: ink.withValues(alpha: .62),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
         ),
       ),
     );
@@ -733,6 +1166,113 @@ class _CuteMessageBox extends StatelessWidget {
                 fontSize: 12,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendQrScannerSheet extends StatefulWidget {
+  const _FriendQrScannerSheet();
+
+  @override
+  State<_FriendQrScannerSheet> createState() => _FriendQrScannerSheetState();
+}
+
+class _FriendQrScannerSheetState extends State<_FriendQrScannerSheet> {
+  final MobileScannerController _controller = MobileScannerController(
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
+  bool _didScan = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleDetect(BarcodeCapture capture) {
+    if (_didScan) return;
+    final value = capture.barcodes
+        .map((barcode) => barcode.rawValue?.trim())
+        .whereType<String>()
+        .where((value) => value.isNotEmpty)
+        .firstOrNull;
+    if (value == null) return;
+    _didScan = true;
+    HapticFeedback.selectionClick();
+    Navigator.of(context).pop(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF18222E) : Colors.white;
+    final sub = isWhite ? const Color(0xFF6C7480) : Colors.white70;
+    return NomoBottomSheetShell(
+      title: null,
+      showHandle: true,
+      radius: 34,
+      maxHeightFactor: .82,
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'QRを読み取る',
+            style: TextStyle(
+              color: ink,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '相手のNomo QRをカメラにかざしてね。',
+            style: TextStyle(
+              color: sub,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(26),
+            child: SizedBox(
+              height: 280,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  MobileScanner(
+                    controller: _controller,
+                    onDetect: _handleDetect,
+                  ),
+                  Center(
+                    child: Container(
+                      width: 210,
+                      height: 210,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(
+                          color: const Color(0xFFB7F15B),
+                          width: 3,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Nomo3DButton.secondary(
+            label: '閉じる',
+            onTap: () => Navigator.of(context).pop(),
+            height: 44,
+            radius: 20,
           ),
         ],
       ),

@@ -268,18 +268,39 @@ Future<bool?> _confirmDestructive(
     context: context,
     builder: (context) => AlertDialog(
       backgroundColor: const Color(0xFF101B28),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       title: Text(title, style: const TextStyle(color: Colors.white)),
-      content: Text(message, style: const TextStyle(color: _AdminColors.sub)),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('キャンセル'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('削除', style: TextStyle(color: _AdminColors.pink)),
-        ),
-      ],
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(message, style: const TextStyle(color: _AdminColors.sub)),
+          const SizedBox(height: 18),
+          Nomo3DButton.secondary(
+            label: 'キャンセル',
+            icon: CupertinoIcons.xmark_circle_fill,
+            onTap: () => Navigator.of(context).pop(false),
+            height: 46,
+            radius: 20,
+            color: Colors.white.withValues(alpha: .07),
+            foregroundColor: _AdminColors.sub,
+            shadowColor: const Color(0xFF324860).withValues(alpha: .78),
+            fontSize: 13,
+            useGradient: false,
+          ),
+          const SizedBox(height: 10),
+          Nomo3DButton.destructive(
+            label: '削除',
+            icon: CupertinoIcons.trash_fill,
+            onTap: () => Navigator.of(context).pop(true),
+            height: 48,
+            radius: 20,
+            color: _AdminColors.pink,
+            shadowColor: const Color(0xFF8E2F50),
+            fontSize: 14,
+          ),
+        ],
+      ),
     ),
   );
 }

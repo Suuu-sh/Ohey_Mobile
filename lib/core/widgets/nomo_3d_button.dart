@@ -4,12 +4,32 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'nomo_pop_icon.dart';
 
+Color nomo3DShadowColorFor(
+  Color color, {
+  double lightnessScale = .62,
+  double minLightness = .16,
+}) {
+  final hsl = HSLColor.fromColor(color);
+  if (hsl.saturation < .08) {
+    return Color.lerp(
+      color,
+      const Color(0xFF3F5266),
+      .58,
+    )!.withValues(alpha: color.a);
+  }
+  return hsl
+      .withSaturation((hsl.saturation * 1.08).clamp(.24, 1.0))
+      .withLightness((hsl.lightness * lightnessScale).clamp(minLightness, .42))
+      .toColor();
+}
+
 class Nomo3DButton extends StatelessWidget {
   const Nomo3DButton({
     super.key,
     required this.label,
     required this.onTap,
     this.icon,
+    this.customIcon,
     this.height = 58,
     this.radius = 24,
     this.color = AppColors.primaryAction,
@@ -20,6 +40,7 @@ class Nomo3DButton extends StatelessWidget {
     this.trailing,
     this.isLoading = false,
     this.enabled = true,
+    this.forcePressed = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
     this.useGradient = true,
@@ -30,6 +51,7 @@ class Nomo3DButton extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.icon,
+    this.customIcon,
     this.height = 58,
     this.radius = 24,
     this.color = const Color(0xFF52606B),
@@ -40,6 +62,7 @@ class Nomo3DButton extends StatelessWidget {
     this.trailing,
     this.isLoading = false,
     this.enabled = true,
+    this.forcePressed = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
     this.useGradient = false,
@@ -50,6 +73,7 @@ class Nomo3DButton extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.icon,
+    this.customIcon,
     this.height = 58,
     this.radius = 24,
     this.color = AppColors.danger,
@@ -60,6 +84,7 @@ class Nomo3DButton extends StatelessWidget {
     this.trailing,
     this.isLoading = false,
     this.enabled = true,
+    this.forcePressed = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
     this.useGradient = true,
@@ -68,6 +93,7 @@ class Nomo3DButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final IconData? icon;
+  final Widget? customIcon;
   final double height;
   final double radius;
   final Color color;
@@ -78,6 +104,7 @@ class Nomo3DButton extends StatelessWidget {
   final Widget? trailing;
   final bool isLoading;
   final bool enabled;
+  final bool forcePressed;
   final EdgeInsetsGeometry padding;
   final double fontSize;
   final bool useGradient;
@@ -94,6 +121,7 @@ class Nomo3DButton extends StatelessWidget {
       disabledOpacity: disabledOpacity,
       isLoading: isLoading,
       enabled: enabled,
+      forcePressed: forcePressed,
       padding: padding,
       useGradient: useGradient,
       child: Row(
@@ -103,12 +131,13 @@ class Nomo3DButton extends StatelessWidget {
           if (isLoading)
             CupertinoActivityIndicator(color: foregroundColor)
           else ...[
-            if (icon != null) ...[
-              NomoGeneratedIcon(
-                icon!,
-                color: foregroundColor,
-                size: fontSize + 7,
-              ),
+            if (customIcon != null || icon != null) ...[
+              customIcon ??
+                  NomoGeneratedIcon(
+                    icon!,
+                    color: foregroundColor,
+                    size: fontSize + 7,
+                  ),
               const SizedBox(width: 10),
             ],
             Text(
@@ -143,6 +172,7 @@ class Nomo3DButtonSurface extends StatefulWidget {
     this.disabledOpacity = 1,
     this.isLoading = false,
     this.enabled = true,
+    this.forcePressed = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.useGradient = true,
     this.borderColor,
@@ -162,6 +192,7 @@ class Nomo3DButtonSurface extends StatefulWidget {
   final double disabledOpacity;
   final bool isLoading;
   final bool enabled;
+  final bool forcePressed;
   final EdgeInsetsGeometry padding;
   final bool useGradient;
   final Color? borderColor;
@@ -215,11 +246,11 @@ class _Nomo3DButtonSurfaceState extends State<Nomo3DButtonSurface> {
   Widget build(BuildContext context) {
     final canTap = widget.enabled && widget.onTap != null && !widget.isLoading;
     final isUnavailable = !widget.enabled || widget.onTap == null;
-    final isPressed = canTap && _isPressed;
+    final isPressed = widget.forcePressed || (canTap && _isPressed);
     final base = isUnavailable && widget.disabledColor != null
         ? widget.disabledColor!
         : widget.color;
-    final bottom = widget.bottomColor ?? Color.lerp(base, Colors.black, .28)!;
+    final bottom = widget.bottomColor ?? nomo3DShadowColorFor(base);
     final opacity = isUnavailable && widget.disabledColor != null
         ? widget.disabledOpacity
         : 1.0;

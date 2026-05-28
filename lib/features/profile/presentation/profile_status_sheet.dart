@@ -137,31 +137,52 @@ class _ProfileStatusOption extends StatelessWidget {
     final color = _statusColor(status);
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    return GestureDetector(
-      onTap: disabled ? null : onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: selected
-              ? color.withValues(alpha: .16)
-              : (isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground),
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: selected
-                ? color
-                : (isWhite
-                      ? const Color(0xFFDDE4EA)
-                      : Colors.white.withValues(alpha: .10)),
-            width: selected ? 1.6 : 1,
+    final surface = selected
+        ? color.withValues(alpha: isWhite ? .24 : .20)
+        : (isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground);
+    final bottom = selected
+        ? nomo3DShadowColorFor(color, lightnessScale: isWhite ? .72 : .60)
+        : isWhite
+        ? const Color(0xFFD8E1EA)
+        : const Color(0xFF09131D);
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 160),
+      opacity: disabled && !saving ? .55 : 1,
+      child: Nomo3DButtonSurface(
+        onTap: disabled ? null : onTap,
+        enabled: !disabled || saving,
+        height: 82,
+        radius: 22,
+        color: surface,
+        bottomColor: bottom,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        borderColor: selected
+            ? color
+            : (isWhite
+                  ? const Color(0xFFDDE4EA)
+                  : Colors.white.withValues(alpha: .12)),
+        borderWidth: selected ? 1.6 : 1,
+        outerShadows: [
+          BoxShadow(
+            color: color.withValues(alpha: isWhite ? .10 : .18),
+            blurRadius: selected ? 22 : 16,
+            offset: const Offset(0, 8),
           ),
-        ),
+        ],
+        innerShadows: [
+          BoxShadow(
+            color: Colors.white.withValues(alpha: isWhite ? .42 : .08),
+            blurRadius: 10,
+            offset: const Offset(-2, -2),
+          ),
+        ],
         child: Row(
           children: [
             NomoPopIcon(icon: _statusIcon(status), color: color, size: 46),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(

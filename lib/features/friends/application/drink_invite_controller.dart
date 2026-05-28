@@ -14,17 +14,31 @@ final incomingDrinkInvitesProvider = FutureProvider<List<NomoDrinkInvite>>((
   return ref.watch(drinkInviteRepositoryProvider).fetchIncomingPendingInvites();
 });
 
+final outgoingActiveDrinkInvitesProvider =
+    FutureProvider.family<List<NomoDrinkInvite>, DateTime?>((ref, date) {
+      return ref
+          .watch(drinkInviteRepositoryProvider)
+          .fetchOutgoingActiveInvites(date: date);
+    });
+
 class DrinkInviteController {
   DrinkInviteController(this._ref);
 
   final Ref _ref;
 
-  Future<void> sendTodayInvite(String friendId) async {
+  Future<void> sendTodayInvite(String friendId) =>
+      sendInvite(friendId: friendId, date: DateTime.now());
+
+  Future<void> sendInvite({
+    required String friendId,
+    required DateTime date,
+  }) async {
     await runOptimistic<void>(
       apply: _invalidate,
       rollback: _invalidate,
-      commit: () =>
-          _ref.read(drinkInviteRepositoryProvider).sendTodayInvite(friendId),
+      commit: () => _ref
+          .read(drinkInviteRepositoryProvider)
+          .sendInvite(friendId: friendId, date: date),
       confirm: (_) => _invalidate(),
     );
   }
@@ -60,6 +74,7 @@ class DrinkInviteController {
   void _invalidate() {
     _ref.invalidate(todayReservationsProvider);
     _ref.invalidate(incomingDrinkInvitesProvider);
+    _ref.invalidate(outgoingActiveDrinkInvitesProvider);
   }
 }
 

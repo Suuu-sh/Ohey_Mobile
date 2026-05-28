@@ -42,6 +42,12 @@ class DrinkLog {
     this.ownerAvatar,
     this.isOfficial = false,
     this.rarity = DrinkLogRarity.normal,
+    this.feedAuthorName = '',
+    this.feedPostKind = '',
+    this.feedDisplayable = true,
+    this.feedCanReport = true,
+    this.feedCanDelete = false,
+    this.feedTilt,
   });
 
   final String id;
@@ -61,6 +67,12 @@ class DrinkLog {
   final NomoAvatar? ownerAvatar;
   final bool isOfficial;
   final DrinkLogRarity rarity;
+  final String feedAuthorName;
+  final String feedPostKind;
+  final bool feedDisplayable;
+  final bool feedCanReport;
+  final bool feedCanDelete;
+  final double? feedTilt;
 
   DrinkLog copyWith({int? likeCount, bool? likedByMe}) => DrinkLog(
     id: id,
@@ -80,6 +92,12 @@ class DrinkLog {
     ownerAvatar: ownerAvatar,
     isOfficial: isOfficial,
     rarity: rarity,
+    feedAuthorName: feedAuthorName,
+    feedPostKind: feedPostKind,
+    feedDisplayable: feedDisplayable,
+    feedCanReport: feedCanReport,
+    feedCanDelete: feedCanDelete,
+    feedTilt: feedTilt,
   );
 
   bool isInMonth(DateTime month) =>

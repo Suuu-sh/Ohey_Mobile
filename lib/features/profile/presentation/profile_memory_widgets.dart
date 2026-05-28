@@ -335,7 +335,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
             icon: CupertinoIcons.arrow_uturn_left,
             color: Colors.white.withValues(alpha: .07),
             foregroundColor: Colors.white,
-            shadowColor: Colors.black.withValues(alpha: .30),
+            shadowColor: const Color(0xFF315A62).withValues(alpha: .70),
             height: 48,
             radius: 21,
             fontSize: 14,
@@ -344,17 +344,18 @@ class _UnsavedProfileSheet extends StatelessWidget {
                 Navigator.of(context).pop(_UnsavedProfileAction.discard),
           ),
           const SizedBox(height: 10),
-          TextButton(
-            onPressed: () =>
+          Nomo3DButton.secondary(
+            label: '編集を続ける',
+            icon: CupertinoIcons.pencil,
+            color: Colors.white.withValues(alpha: .055),
+            foregroundColor: _ProfileColors.sub,
+            shadowColor: const Color(0xFF4A3D68).withValues(alpha: .66),
+            height: 46,
+            radius: 20,
+            fontSize: 14,
+            useGradient: false,
+            onTap: () =>
                 Navigator.of(context).pop(_UnsavedProfileAction.cancel),
-            child: const Text(
-              '編集を続ける',
-              style: TextStyle(
-                color: _ProfileColors.sub,
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
           ),
         ],
       ),

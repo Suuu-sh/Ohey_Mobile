@@ -15,6 +15,7 @@ import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_empty_state.dart';
 import '../../../core/widgets/nomo_friend_user_block.dart';
+import '../../../core/widgets/nomo_invite_success_burst.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
 import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_page_header.dart';
@@ -24,6 +25,7 @@ import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
 import '../application/drink_invite_controller.dart';
+import '../data/friend_repository.dart';
 import 'friend_add_sheet.dart';
 import '../../logs/application/drink_log_controller.dart';
 
@@ -47,6 +49,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   List<_CustomFriendFilter> _customFilters = const [];
   bool _isRefreshingFriends = false;
   final Map<String, bool> _favoriteOverrides = {};
+  final Set<String> _invitedFriendIds = <String>{};
 
   @override
   void initState() {
@@ -78,8 +81,24 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 
   Future<void> _loadCustomFilters(String userId) async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_customFilterStorageKey(userId));
-    final filters = _decodeCustomFilters(raw);
+    final cachedFilters = _decodeCustomFilters(
+      prefs.getString(_customFilterStorageKey(userId)),
+    );
+    var filters = cachedFilters;
+    try {
+      final rows = await ref.read(friendRepositoryProvider).fetchFriendGroups();
+      filters = rows
+          .map(_CustomFriendFilter.fromJson)
+          .whereType<_CustomFriendFilter>()
+          .toList(growable: false);
+      await prefs.setString(
+        _customFilterStorageKey(userId),
+        jsonEncode([for (final filter in filters) filter.toJson()]),
+      );
+    } catch (_) {
+      // Backend group sync is best-effort while the migration rolls out.
+      filters = cachedFilters;
+    }
     if (!mounted || _customFilterUserId != userId) return;
     setState(() {
       _customFilters = filters;
@@ -96,11 +115,27 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   Future<void> _persistCustomFilters() async {
     final userId = _customFilterUserId;
     if (userId == null || userId.trim().isEmpty) return;
+    final payload = [for (final filter in _customFilters) filter.toJson()];
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _customFilterStorageKey(userId),
-      jsonEncode([for (final filter in _customFilters) filter.toJson()]),
-    );
+    await prefs.setString(_customFilterStorageKey(userId), jsonEncode(payload));
+    try {
+      final rows = await ref
+          .read(friendRepositoryProvider)
+          .saveFriendGroups(payload);
+      final synced = rows
+          .map(_CustomFriendFilter.fromJson)
+          .whereType<_CustomFriendFilter>()
+          .toList(growable: false);
+      if (mounted && synced.isNotEmpty) {
+        setState(() => _customFilters = synced);
+        await prefs.setString(
+          _customFilterStorageKey(userId),
+          jsonEncode([for (final filter in synced) filter.toJson()]),
+        );
+      }
+    } catch (_) {
+      // Keep local cache when backend tables are not available yet.
+    }
   }
 
   Future<void> _deleteCustomFilter(_CustomFriendFilter filter) async {
@@ -261,6 +296,14 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
         });
   }
 
+  Future<void> _openFriendProfile(
+    NomoFriend friend,
+    _FriendStatus status,
+  ) async {
+    HapticFeedback.selectionClick();
+    await _showFriendProfileSheet(context, friend: friend, status: status);
+  }
+
   Future<void> _sendDrinkInvite(NomoFriend friend) async {
     try {
       await ref.read(drinkInviteControllerProvider).sendTodayInvite(friend.id);
@@ -281,12 +324,30 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
         icon: CupertinoIcons.exclamationmark_triangle_fill,
         placement: NomoToastPlacement.bottom,
       );
+      rethrow;
     }
+  }
+
+  void _markDrinkInviteSent(NomoFriend friend) {
+    if (!mounted) return;
+    setState(() => _invitedFriendIds.add(friend.id));
   }
 
   @override
   Widget build(BuildContext context) {
     final friendsAsync = ref.watch(friendsProvider);
+    final persistedInvitedFriendIds =
+        ref
+            .watch(outgoingActiveDrinkInvitesProvider(null))
+            .asData
+            ?.value
+            .map((invite) => invite.toUserId)
+            .toSet() ??
+        const <String>{};
+    final invitedFriendIds = {
+      ...persistedInvitedFriendIds,
+      ..._invitedFriendIds,
+    };
     final user = ref.watch(nomoUserProvider);
     final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
     if (_customFilterUserId != user?.userId) {
@@ -394,10 +455,14 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           selectedFilter: _selectedFilter,
                           selectedCustomFilter: selectedCustomFilter,
                           favoriteOverrides: _favoriteOverrides,
+                          invitedFriendIds: invitedFriendIds,
                           onFavoriteToggle: (friend, isFavorite) =>
                               _onToggleFavorite(context, friend, isFavorite),
                           onAddFriend: _openAddFriend,
                           onInvite: (friend) => _sendDrinkInvite(friend),
+                          onInviteAnimationComplete: _markDrinkInviteSent,
+                          onProfile: (friend, status) =>
+                              _openFriendProfile(friend, status),
                         ),
                       ),
                     ),

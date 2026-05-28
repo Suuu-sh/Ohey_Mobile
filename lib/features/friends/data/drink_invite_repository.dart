@@ -17,14 +17,20 @@ class DrinkInviteRepository {
 
   String? get _userId => _client.currentUserId;
 
-  Future<void> sendTodayInvite(String friendId) async {
+  Future<void> sendTodayInvite(String friendId) =>
+      sendInvite(friendId: friendId, date: DateTime.now());
+
+  Future<void> sendInvite({
+    required String friendId,
+    required DateTime date,
+  }) async {
     final userId = _userId;
     if (userId == null) throw StateError('誘うにはログインが必要です。');
     if (userId == friendId) throw StateError('自分には送れません。');
 
     await _client.post('/v1/drink-invites', {
       'to_user_id': friendId,
-      'invite_date': _todayIsoDate(),
+      'invite_date': _isoDate(date),
     });
   }
 
@@ -61,6 +67,18 @@ class DrinkInviteRepository {
     return rows.map(_inviteFromRow).toList(growable: false);
   }
 
+  Future<List<NomoDrinkInvite>> fetchOutgoingActiveInvites({
+    DateTime? date,
+  }) async {
+    final userId = _userId;
+    if (userId == null) return const [];
+    final rows = await _client.getRows(
+      '/v1/drink-invites/outgoing-active',
+      query: {'date': date == null ? _todayIsoDate() : _isoDate(date)},
+    );
+    return rows.map(_inviteFromRow).toList(growable: false);
+  }
+
   NomoDrinkInvite _inviteFromRow(Map<String, dynamic> row) {
     return NomoDrinkInvite(
       id: row['id'] as String,
@@ -92,9 +110,10 @@ class DrinkInviteRepository {
   }
 }
 
-String _todayIsoDate() {
-  final now = DateTime.now();
-  return '${now.year.toString().padLeft(4, '0')}-'
-      '${now.month.toString().padLeft(2, '0')}-'
-      '${now.day.toString().padLeft(2, '0')}';
+String _todayIsoDate() => _isoDate(DateTime.now());
+
+String _isoDate(DateTime date) {
+  return '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
 }

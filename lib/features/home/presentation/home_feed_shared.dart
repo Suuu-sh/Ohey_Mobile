@@ -75,18 +75,11 @@ List<_FeedItem> _feedItems(
   List<DrinkLog> logs, {
   NomoUser? user,
   String? currentUserId,
-  Set<String> friendUserIds = const <String>{},
 }) => logs
     .map(
       (log) => _FeedItem.fromLog(log, user: user, currentUserId: currentUserId),
     )
-    .where(
-      (item) =>
-          item.isOfficial ||
-          (_isDisplayablePostPhoto(item.photoAssetPath) &&
-              item.ownerUserId.isNotEmpty &&
-              (item.ownedByMe || friendUserIds.contains(item.ownerUserId))),
-    )
+    .where((item) => item.displayable)
     .toList(growable: false);
 
 class _FeedItem {
@@ -111,6 +104,9 @@ class _FeedItem {
     this.ownedByMe = false,
     this.isOfficial = false,
     required this.sparkles,
+    this.displayable = true,
+    this.canReport = true,
+    this.canDelete = false,
   });
 
   factory _FeedItem.fromLog(
@@ -122,7 +118,10 @@ class _FeedItem {
     final ownerName = log.ownerDisplayName.trim();
     final isOwnedByCurrentUser =
         currentUserId?.isNotEmpty == true && log.ownerUserId == currentUserId;
-    final authorName = ownerName.isNotEmpty
+    final backendAuthorName = log.feedAuthorName.trim();
+    final authorName = backendAuthorName.isNotEmpty
+        ? backendAuthorName
+        : ownerName.isNotEmpty
         ? ownerName
         : (isOwnedByCurrentUser && user?.name.trim().isNotEmpty == true)
         ? user!.name.trim()
@@ -148,16 +147,23 @@ class _FeedItem {
       saved: log.id.hashCode.isEven,
       liked: log.likedByMe,
       prop: _PostProp.beer,
-      tilt: (log.id.hashCode.isEven ? -.08 : .08),
+      tilt: log.feedTilt ?? (log.id.hashCode.isEven ? -.08 : .08),
       ownerUserId: log.ownerUserId,
-      ownedByMe: isOwnedByCurrentUser,
-      isOfficial: log.isOfficial,
+      ownedByMe: log.feedPostKind == 'mine' || isOwnedByCurrentUser,
+      isOfficial: log.feedPostKind == 'official' || log.isOfficial,
       sparkles: const [
         Offset(12, 18),
         Offset(54, 2),
         Offset(118, 26),
         Offset(28, 66),
       ],
+      displayable:
+          log.feedDisplayable &&
+          (log.isOfficial ||
+              _isDisplayablePostPhoto(log.photoAssetPath) ||
+              log.feedPostKind == 'official'),
+      canReport: log.feedCanReport,
+      canDelete: log.feedCanDelete,
     );
   }
 
@@ -195,6 +201,9 @@ class _FeedItem {
   final bool ownedByMe;
   final bool isOfficial;
   final List<Offset> sparkles;
+  final bool displayable;
+  final bool canReport;
+  final bool canDelete;
 }
 
 enum _PostProp { beer, ticket, spark }
@@ -203,6 +212,7 @@ enum _FeedPostKind { mine, friend, official }
 
 class _Companion {
   const _Companion({
+    required this.userId,
     required this.name,
     required this.handle,
     required this.avatar,
@@ -211,6 +221,7 @@ class _Companion {
   });
 
   factory _Companion.fromFriend(NomoFriend friend) => _Companion(
+    userId: friend.id,
     name: friend.name,
     handle: friend.vibe,
     avatar: friend.avatar ?? NomoAvatar.defaultAvatar,
@@ -218,6 +229,7 @@ class _Companion {
     statusKey: friend.statusKey,
   );
 
+  final String userId;
   final String name;
   final String handle;
   final NomoAvatar avatar;
@@ -225,6 +237,18 @@ class _Companion {
   final String? statusKey;
 
   String get handleLabel => handle.trim().isEmpty ? 'Nomoフレンズ' : '@$handle';
+
+  NomoFriend toNomoFriend() => NomoFriend(
+    id: userId,
+    name: name,
+    avatarEmoji: '👤',
+    vibe: handle.replaceFirst('@', ''),
+    characterAssetPath: '',
+    kind: NomiTomoKind.cloud,
+    palette: NomiTomoPalette.lavender,
+    avatar: avatar,
+    statusKey: statusKey,
+  );
 }
 
 String _companionStatusLabel(String? statusKey) {

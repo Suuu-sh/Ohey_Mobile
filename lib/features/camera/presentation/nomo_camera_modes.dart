@@ -2,39 +2,33 @@ part of 'nomo_camera_screen.dart';
 
 enum _CameraFilter {
   original,
-  avatar,
-  natural;
+  avatar;
 
   bool get usesArFaceTracking => this != original;
 
   String get modeName => switch (this) {
     original => 'original',
     avatar => 'avatar',
-    natural => 'natural',
   };
 
   String get label => switch (this) {
     original => 'Original',
     avatar => 'Tomo AR',
-    natural => 'Natural',
   };
 
   String get resultName => switch (this) {
     original => _NomoCameraScreenState._plainFilterName,
     avatar => _NomoCameraScreenState._avatarFilterName,
-    natural => _NomoCameraScreenState._naturalFilterName,
   };
 
   IconData get icon => switch (this) {
     original => CupertinoIcons.sparkles,
     avatar => CupertinoIcons.person_crop_circle_fill,
-    natural => CupertinoIcons.wand_stars,
   };
 
   Color get buttonColor => switch (this) {
     original => Colors.black.withValues(alpha: .42),
     avatar => const Color(0xFFFF4FA2).withValues(alpha: .92),
-    natural => const Color(0xFF47C9B6).withValues(alpha: .92),
   };
 }
 

@@ -83,7 +83,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
             ),
             const SizedBox(height: 10),
           ],
-          if (item.ownedByMe)
+          if (item.canDelete || item.ownedByMe)
             NomoActionTile(
               icon: CupertinoIcons.trash_fill,
               title: '思い出を削除',
@@ -92,7 +92,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               destructive: true,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.delete),
             )
-          else
+          else if (item.canReport)
             NomoActionTile(
               icon: CupertinoIcons.exclamationmark_bubble_fill,
               title: '思い出を報告',
@@ -198,25 +198,38 @@ class _FeedModalTextButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    final surfaceColor = Color.lerp(
+      isWhite ? Colors.white : AppColors.darkBackground,
+      color,
+      isWhite ? .16 : .22,
+    )!;
+    final bottomColor = nomo3DShadowColorFor(
+      color,
+      lightnessScale: isWhite ? .72 : .58,
+    );
+    return Nomo3DButtonSurface(
       onTap: onTap,
-      child: Container(
-        height: 54,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: isWhite ? .13 : .10),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withValues(alpha: .30)),
+      height: 52,
+      radius: 20,
+      color: surfaceColor,
+      bottomColor: bottomColor,
+      padding: EdgeInsets.zero,
+      useGradient: true,
+      borderColor: color.withValues(alpha: isWhite ? .34 : .38),
+      outerShadows: [
+        BoxShadow(
+          color: color.withValues(alpha: isWhite ? .12 : .20),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: 16,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.35,
-          ),
+      ],
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 16,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -.35,
         ),
       ),
     );
@@ -237,12 +250,35 @@ Future<void> _showFeedCompanionList(
     builder: (context) => _FeedCompanionListSheet(friends: friends),
   );
   if (!context.mounted || selected == null) return;
+
   HapticFeedback.selectionClick();
+  final repository = ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(friendRepositoryProvider);
+  NomoFriendRelationshipStatus? relationship;
+  if (selected.userId.trim().isNotEmpty) {
+    try {
+      relationship = await repository.relationshipStatus(selected.userId);
+    } catch (_) {
+      relationship = null;
+    }
+  }
+  if (!context.mounted) return;
+
+  if (relationship?.alreadyFriend == true) {
+    await showNomoFriendProfileSheet(context, friend: selected.toNomoFriend());
+    return;
+  }
+
   await showNomoBottomSheet<void>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
     barrierColor: Colors.black.withValues(alpha: .62),
-    builder: (context) => _FeedCompanionProfileSheet(friend: selected),
+    builder: (context) => _FeedCompanionProfileSheet(
+      friend: selected,
+      initialRelationship: relationship,
+    ),
   );
 }

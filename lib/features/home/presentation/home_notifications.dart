@@ -742,17 +742,17 @@ class _FriendRequestNotificationSheetState
                     ],
                   ),
                 ),
-                CupertinoButton(
-                  minimumSize: const Size(42, 42),
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .08),
-                      shape: BoxShape.circle,
-                    ),
+                SizedBox(
+                  width: 48,
+                  child: Nomo3DButtonSurface(
+                    onTap: () => Navigator.of(context).pop(),
+                    height: 40,
+                    radius: 20,
+                    color: Colors.white.withValues(alpha: .08),
+                    bottomColor: const Color(0xFF265E82).withValues(alpha: .72),
+                    padding: EdgeInsets.zero,
+                    useGradient: true,
+                    borderColor: Colors.white.withValues(alpha: .10),
                     child: const NomoGeneratedIcon(
                       CupertinoIcons.xmark,
                       color: Colors.white,
@@ -797,19 +797,21 @@ class _FriendRequestNotificationSheetState
                 fontSize: 15,
               ),
               const SizedBox(height: 10),
-              CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: _busyAction == null
+              Nomo3DButton.secondary(
+                label: _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
+                icon: CupertinoIcons.xmark_circle_fill,
+                onTap: _busyAction == null
                     ? () => _submit(accept: false)
                     : null,
-                child: Text(
-                  _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: .60),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+                isLoading: _busyAction == 'reject',
+                enabled: _busyAction == null,
+                height: 48,
+                radius: 21,
+                color: Colors.white.withValues(alpha: .07),
+                foregroundColor: Colors.white.withValues(alpha: .72),
+                shadowColor: const Color(0xFF2D5E69).withValues(alpha: .72),
+                fontSize: 14,
+                useGradient: false,
               ),
             ] else
               Nomo3DButton(
@@ -964,17 +966,17 @@ class _DrinkInviteNotificationSheetState
                     ],
                   ),
                 ),
-                CupertinoButton(
-                  minimumSize: const Size(42, 42),
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .08),
-                      shape: BoxShape.circle,
-                    ),
+                SizedBox(
+                  width: 48,
+                  child: Nomo3DButtonSurface(
+                    onTap: () => Navigator.of(context).pop(),
+                    height: 40,
+                    radius: 20,
+                    color: Colors.white.withValues(alpha: .08),
+                    bottomColor: const Color(0xFF61418A).withValues(alpha: .72),
+                    padding: EdgeInsets.zero,
+                    useGradient: true,
+                    borderColor: Colors.white.withValues(alpha: .10),
                     child: const NomoGeneratedIcon(
                       CupertinoIcons.xmark,
                       color: Colors.white,
@@ -1019,19 +1021,21 @@ class _DrinkInviteNotificationSheetState
                 fontSize: 15,
               ),
               const SizedBox(height: 10),
-              CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: _busyAction == null
+              Nomo3DButton.secondary(
+                label: _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
+                icon: CupertinoIcons.xmark_circle_fill,
+                onTap: _busyAction == null
                     ? () => _submit(accept: false)
                     : null,
-                child: Text(
-                  _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: .60),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+                isLoading: _busyAction == 'reject',
+                enabled: _busyAction == null,
+                height: 48,
+                radius: 21,
+                color: Colors.white.withValues(alpha: .07),
+                foregroundColor: Colors.white.withValues(alpha: .72),
+                shadowColor: const Color(0xFF573D7A).withValues(alpha: .72),
+                fontSize: 14,
+                useGradient: false,
               ),
             ] else
               Nomo3DButton(

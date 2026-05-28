@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../models/nomo_avatar.dart';
+import 'nomo_3d_button.dart';
 import 'nomo_avatar.dart';
 import 'nomo_pop_icon.dart';
 
@@ -338,45 +339,19 @@ class NomoProfileResultSheet extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 20),
-            GestureDetector(
+            Nomo3DButton(
+              label: actionLabel,
+              icon: actionIcon,
               onTap: onAction,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                decoration: BoxDecoration(
-                  color: accentColor,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: accentColor.withValues(alpha: .28),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    NomoPopIcon(
-                      icon: actionIcon,
-                      color: Colors.white,
-                      foregroundColor: Colors.white,
-                      showBubble: false,
-                      size: 24,
-                      iconSize: 22,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      actionLabel,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
+              height: 54,
+              radius: 22,
+              color: accentColor,
+              foregroundColor: Colors.white,
+              shadowColor: nomo3DShadowColorFor(
+                accentColor,
+                lightnessScale: .58,
               ),
+              fontSize: 16,
             ),
           ],
         ),

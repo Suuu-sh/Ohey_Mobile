@@ -19,6 +19,7 @@ final drinkLogRepositoryProvider = Provider<DrinkLogRepository>((ref) {
 
 abstract interface class DrinkLogRepository {
   Future<List<DrinkLog>> fetchLogs();
+  Future<List<DrinkLog>> fetchHomeFeed();
   Future<List<NomoFriend>> fetchFriends({DateTime? date});
   Future<DrinkLog> addLog(DrinkLog log);
   Future<void> deleteLog(String logId);
@@ -45,6 +46,12 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
   @override
   Future<List<DrinkLog>> fetchLogs() async {
     final rows = await _client.getRows('/v1/drink-logs');
+    return Future.wait(rows.map(_drinkLogFromRow));
+  }
+
+  @override
+  Future<List<DrinkLog>> fetchHomeFeed() async {
+    final rows = await _client.getRows('/v1/home/feed');
     return Future.wait(rows.map(_drinkLogFromRow));
   }
 
@@ -113,11 +120,12 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       'memo': log.memo,
       'caption_y': log.captionY.clamp(0.0, 1.0),
       'photo_path': uploadedPhotoPath ?? '',
-      'marker_rarity': log.rarity.key,
       'friend_ids': log.friends
           .map((friend) => friend.id)
           .toList(growable: false),
     });
+
+    final feed = _feedFromRow(row);
 
     return DrinkLog(
       id: row['id'] as String,
@@ -136,6 +144,23 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       ownerUserId:
           (row['owner_user_id'] as String?) ?? _client.currentUserId ?? '',
       isOfficial: (row['is_official'] as bool?) ?? false,
+      feedAuthorName: (feed['author_name'] as String?) ?? '',
+      feedPostKind: (feed['post_kind'] as String?) ?? '',
+      feedDisplayable:
+          (feed['displayable'] as bool?) ??
+          (row['feed_displayable'] as bool?) ??
+          true,
+      feedCanReport:
+          (feed['can_report'] as bool?) ??
+          (row['feed_can_report'] as bool?) ??
+          true,
+      feedCanDelete:
+          (feed['can_delete'] as bool?) ??
+          (row['feed_can_delete'] as bool?) ??
+          false,
+      feedTilt:
+          (feed['tilt'] as num?)?.toDouble() ??
+          (row['feed_tilt'] as num?)?.toDouble(),
     );
   }
 
@@ -152,23 +177,38 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
     final file = File(normalized);
     if (!await file.exists()) return normalized;
 
-    final userId = _client.currentUserId;
-    if (userId == null || userId.isEmpty) {
-      throw StateError('写真をアップロードするにはログインが必要です。');
+    final extension = _safeExtension(normalized);
+    final contentType = _contentTypeForExtension(extension);
+    final upload = await _client.postRow('/v1/media/upload-url', {
+      'kind': 'drink_log_photo',
+      'file_extension': extension,
+      'content_type': contentType,
+    });
+    final bucket = (upload['bucket'] as String?)?.trim();
+    final storagePath = (upload['path'] as String?)?.trim();
+    final token = (upload['token'] as String?)?.trim();
+    final uploadContentType =
+        (upload['content_type'] as String?)?.trim().isNotEmpty == true
+        ? (upload['content_type'] as String).trim()
+        : contentType;
+    if (bucket == null ||
+        bucket.isEmpty ||
+        storagePath == null ||
+        storagePath.isEmpty ||
+        token == null ||
+        token.isEmpty) {
+      throw const FormatException('写真アップロードURLの形式が不正です。');
     }
 
-    final extension = _safeExtension(normalized);
-    final storagePath =
-        'users/$userId/drink_logs/${DateTime.now().toUtc().microsecondsSinceEpoch}$extension';
-
     await _supabase.storage
-        .from(_photoBucket)
-        .upload(
+        .from(bucket)
+        .uploadToSignedUrl(
           storagePath,
+          token,
           file,
-          fileOptions: FileOptions(
+          FileOptions(
             cacheControl: '3600',
-            contentType: _contentTypeForExtension(extension),
+            contentType: uploadContentType,
             upsert: false,
           ),
         );
@@ -238,6 +278,8 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
         ? Map<String, dynamic>.from(row['owner'] as Map)
         : const <String, dynamic>{};
 
+    final feed = _feedFromRow(row);
+
     return DrinkLog(
       id: row['id'] as String,
       date: DateTime.parse(row['drank_at'] as String).toLocal(),
@@ -256,7 +298,30 @@ class BackendDrinkLogRepository implements DrinkLogRepository {
       ownerDisplayName: (owner['display_name'] as String?) ?? '',
       ownerAvatar: NomoAvatar.decode(owner['avatar_url'] as String?),
       isOfficial: (row['is_official'] as bool?) ?? false,
+      feedAuthorName: (feed['author_name'] as String?) ?? '',
+      feedPostKind: (feed['post_kind'] as String?) ?? '',
+      feedDisplayable:
+          (feed['displayable'] as bool?) ??
+          (row['feed_displayable'] as bool?) ??
+          true,
+      feedCanReport:
+          (feed['can_report'] as bool?) ??
+          (row['feed_can_report'] as bool?) ??
+          true,
+      feedCanDelete:
+          (feed['can_delete'] as bool?) ??
+          (row['feed_can_delete'] as bool?) ??
+          false,
+      feedTilt:
+          (feed['tilt'] as num?)?.toDouble() ??
+          (row['feed_tilt'] as num?)?.toDouble(),
     );
+  }
+
+  Map<String, dynamic> _feedFromRow(Map<String, dynamic> row) {
+    return row['feed_item'] is Map
+        ? Map<String, dynamic>.from(row['feed_item'] as Map)
+        : const <String, dynamic>{};
   }
 
   NomoFriend _friendFromProfile(

@@ -12,7 +12,7 @@ class _LoadingState extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(
         parent: BouncingScrollPhysics(),
       ),
-      padding: const EdgeInsets.only(bottom: 116),
+      padding: const EdgeInsets.only(bottom: 168),
       children: [
         SizedBox(
           height: 360,
@@ -48,7 +48,7 @@ class _ErrorState extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(
         parent: BouncingScrollPhysics(),
       ),
-      padding: const EdgeInsets.only(bottom: 116),
+      padding: const EdgeInsets.only(bottom: 168),
       children: [
         SizedBox(
           height: 360,
@@ -321,8 +321,10 @@ double _friendBlockBorderAlpha({
   return isWhite ? .34 : .42;
 }
 
-_FriendStatus _statusForFriend(NomoFriend friend, int _) {
-  final status = nomoDailyStatusFromKey(friend.statusKey);
+_FriendStatus _statusForFriend(NomoFriend friend, int _) =>
+    _friendStatusForDailyStatus(nomoDailyStatusFromKey(friend.statusKey));
+
+_FriendStatus _friendStatusForDailyStatus(NomoDailyStatus status) {
   return _FriendStatus(
     label: status.label,
     enabled: status.isAvailable,
@@ -365,4 +367,7 @@ class _FriendsColors {
   static const disabledButton = Color(0xFF2B3441);
   static const disabledButtonShadow = Color(0xFF111923);
   static const disabledButtonForeground = Color(0xFF738092);
+  static const invitedButton = Color(0xFF3C4652);
+  static const invitedButtonShadow = Color(0xFF1A222C);
+  static const invitedButtonForeground = Color(0xFFC3CAD3);
 }

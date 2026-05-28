@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'nomo_3d_button.dart';
 import 'nomo_pop_icon.dart';
 
 class NomoActionTile extends StatelessWidget {
@@ -35,61 +36,90 @@ class NomoActionTile extends StatelessWidget {
     final subtitleColor = isWhite
         ? const Color(0xFF697684)
         : Colors.white.withValues(alpha: .55);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    final surfaceColor = destructive
+        ? Color.lerp(
+            isWhite ? const Color(0xFFFFFFFF) : AppColors.darkBackground,
+            destructiveColor,
+            isWhite ? .10 : .16,
+          )!
+        : isWhite
+        ? const Color(0xFFF7FAFC)
+        : AppColors.darkBackground;
+    final bottomColor = destructive
+        ? nomo3DShadowColorFor(
+            destructiveColor,
+            lightnessScale: isWhite ? .72 : .58,
+          )
+        : isWhite
+        ? const Color(0xFFDCE4EC)
+        : const Color(0xFF09131D);
+    return Nomo3DButtonSurface(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isWhite ? const Color(0xFFF7FAFC) : AppColors.darkBackground,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: destructive
-                ? destructiveColor.withValues(alpha: .32)
-                : isWhite
-                ? const Color(0xFFE1E8F1)
-                : Colors.white.withValues(alpha: .10),
+      height: 68,
+      radius: 22,
+      color: surfaceColor,
+      bottomColor: bottomColor,
+      useGradient: true,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      borderColor: destructive
+          ? destructiveColor.withValues(alpha: .36)
+          : isWhite
+          ? const Color(0xFFE1E8F1)
+          : Colors.white.withValues(alpha: .12),
+      outerShadows: [
+        BoxShadow(
+          color: (destructive ? destructiveColor : accent).withValues(
+            alpha: isWhite ? .10 : .18,
           ),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
         ),
-        child: Row(
-          children: [
-            NomoPopIcon(icon: icon, color: accent, size: 44, iconSize: 23),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: titleColor,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.3,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: subtitleColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            NomoPopIcon(
-              icon: CupertinoIcons.chevron_forward,
-              color: subtitleColor,
-              size: 30,
-              iconSize: 16,
-              shadow: false,
-            ),
-          ],
+      ],
+      innerShadows: [
+        BoxShadow(
+          color: Colors.white.withValues(alpha: isWhite ? .40 : .08),
+          blurRadius: 10,
+          offset: const Offset(-2, -2),
         ),
+      ],
+      child: Row(
+        children: [
+          NomoPopIcon(icon: icon, color: accent, size: 44, iconSize: 23),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: titleColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.3,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: subtitleColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          NomoPopIcon(
+            icon: CupertinoIcons.chevron_forward,
+            color: destructive ? destructiveColor : subtitleColor,
+            size: 30,
+            iconSize: 16,
+            shadow: false,
+          ),
+        ],
       ),
     );
   }

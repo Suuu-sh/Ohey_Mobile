@@ -7,6 +7,7 @@ class _FeedPostCard extends StatelessWidget {
     this.onLike,
     this.onShare,
     this.onMore,
+    this.onAuthorTap,
   });
 
   final _FeedItem item;
@@ -14,6 +15,7 @@ class _FeedPostCard extends StatelessWidget {
   final VoidCallback? onLike;
   final VoidCallback? onShare;
   final VoidCallback? onMore;
+  final VoidCallback? onAuthorTap;
 
   @override
   Widget build(BuildContext context) {
@@ -37,23 +39,18 @@ class _FeedPostCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _FeedCardAuthorBar(item: item, isWhite: isWhite, onMore: onMore),
-            AspectRatio(
-              aspectRatio: 1,
-              child: ClipRect(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    hasPhoto
-                        ? _PostPhoto(path: photoPath!)
-                        : _FeedPhotoPlaceholder(accent: item.accent),
-                    _FeedPhotoCaptionOverlay(
-                      caption: caption,
-                      captionY: item.captionY,
-                    ),
-                  ],
-                ),
-              ),
+            _FeedCardAuthorBar(
+              item: item,
+              isWhite: isWhite,
+              onMore: onMore,
+              onAuthorTap: onAuthorTap,
+            ),
+            _FeedPhotoLikeSurface(
+              item: item,
+              hasPhoto: hasPhoto,
+              photoPath: photoPath,
+              caption: caption,
+              onLike: onLike,
             ),
             _FeedCardFooter(
               item: item,
@@ -66,6 +63,219 @@ class _FeedPostCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _FeedPhotoLikeSurface extends StatefulWidget {
+  const _FeedPhotoLikeSurface({
+    required this.item,
+    required this.hasPhoto,
+    required this.photoPath,
+    required this.caption,
+    this.onLike,
+  });
+
+  final _FeedItem item;
+  final bool hasPhoto;
+  final String? photoPath;
+  final String caption;
+  final VoidCallback? onLike;
+
+  @override
+  State<_FeedPhotoLikeSurface> createState() => _FeedPhotoLikeSurfaceState();
+}
+
+class _FeedPhotoLikeSurfaceState extends State<_FeedPhotoLikeSurface>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 720),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleDoubleTap() {
+    if (widget.onLike == null) return;
+    final wasLiked = widget.item.liked;
+    widget.onLike!();
+    if (wasLiked) {
+      _controller.stop();
+      _controller.value = 0;
+      return;
+    }
+    _controller.forward(from: 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onDoubleTap: widget.onLike == null ? null : _handleDoubleTap,
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: ClipRect(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              widget.hasPhoto
+                  ? _PostPhoto(path: widget.photoPath!)
+                  : _FeedPhotoPlaceholder(accent: widget.item.accent),
+              _FeedPhotoCaptionOverlay(
+                caption: widget.caption,
+                captionY: widget.item.captionY,
+              ),
+              _FeedPhotoDoubleTapLikeBurst(
+                animation: _controller,
+                color: Color.lerp(
+                  AppColors.danger,
+                  const Color(0xFFC08BFF),
+                  .42,
+                )!,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedPhotoDoubleTapLikeBurst extends StatelessWidget {
+  const _FeedPhotoDoubleTapLikeBurst({
+    required this.animation,
+    required this.color,
+  });
+
+  final Animation<double> animation;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (context, child) {
+          final raw = animation.value.clamp(0.0, 1.0);
+          if (raw <= 0 || raw >= 1) return const SizedBox.shrink();
+
+          final scaleIn = Curves.easeOutBack.transform((raw / .34).clamp(0, 1));
+          final fadeOut = raw < .58 ? 1.0 : ((1 - raw) / .42).clamp(0.0, 1.0);
+          final scale = .58 + scaleIn * .62 + raw * .16;
+
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              CustomPaint(
+                painter: _FeedPhotoLikeParticlePainter(
+                  progress: raw,
+                  color: color,
+                ),
+              ),
+              Center(
+                child: Opacity(
+                  opacity: fadeOut,
+                  child: Transform.rotate(
+                    angle: math.sin(raw * math.pi * 2) * .08 * (1 - raw),
+                    child: Transform.scale(scale: scale, child: child),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: .42),
+                blurRadius: 34,
+                spreadRadius: 8,
+              ),
+            ],
+          ),
+          child: NomoPopIcon(
+            icon: CupertinoIcons.heart_fill,
+            color: color,
+            size: 96,
+            iconSize: 78,
+            showBubble: false,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedPhotoLikeParticlePainter extends CustomPainter {
+  const _FeedPhotoLikeParticlePainter({
+    required this.progress,
+    required this.color,
+  });
+
+  final double progress;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0 || progress >= 1) return;
+    final center = Offset(size.width / 2, size.height / 2);
+    final ease = Curves.easeOutCubic.transform(progress);
+    final fade = progress < .68 ? 1.0 : ((1 - progress) / .32).clamp(0.0, 1.0);
+
+    for (var i = 0; i < 14; i++) {
+      final angle = -math.pi + (math.pi * 2 * (i / 14));
+      final distance = 40 + (34 + (i % 4) * 9) * ease;
+      final drift = math.sin(progress * math.pi * 2 + i) * 9;
+      final point =
+          center +
+          Offset(
+            math.cos(angle) * distance,
+            math.sin(angle) * distance + drift,
+          );
+      final paint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = Color.lerp(
+          color,
+          i.isEven ? Colors.white : const Color(0xFFFF75B5),
+          i.isEven ? .56 : .30,
+        )!.withValues(alpha: .86 * fade);
+      canvas.save();
+      canvas.translate(point.dx, point.dy);
+      canvas.rotate(angle + progress * math.pi);
+      _drawParticleHeart(canvas, paint, 5.2 + (i % 3) * 1.6);
+      canvas.restore();
+    }
+  }
+
+  void _drawParticleHeart(Canvas canvas, Paint paint, double size) {
+    final path = Path()
+      ..moveTo(0, size * .42)
+      ..cubicTo(
+        -size * .82,
+        -size * .18,
+        -size * .46,
+        -size * .78,
+        0,
+        -size * .28,
+      )
+      ..cubicTo(size * .46, -size * .78, size * .82, -size * .18, 0, size * .42)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _FeedPhotoLikeParticlePainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.color != color;
 }
 
 class _FeedPhotoCaptionOverlay extends StatelessWidget {
@@ -140,11 +350,13 @@ class _FeedCardAuthorBar extends StatelessWidget {
     required this.item,
     required this.isWhite,
     this.onMore,
+    this.onAuthorTap,
   });
 
   final _FeedItem item;
   final bool isWhite;
   final VoidCallback? onMore;
+  final VoidCallback? onAuthorTap;
 
   @override
   Widget build(BuildContext context) {
@@ -169,48 +381,69 @@ class _FeedCardAuthorBar extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _AvatarBubble(avatar: item.avatar, size: 40, glowColor: item.accent),
-          const SizedBox(width: 10),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+            child: Semantics(
+              button: true,
+              label: '${item.userName}のプロフィールを開く',
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onAuthorTap,
+                child: Row(
                   children: [
-                    Flexible(
-                      child: Text(
-                        item.userName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: primaryText,
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w900,
-                          height: 1.05,
-                          letterSpacing: -.25,
-                        ),
+                    _AvatarBubble(
+                      avatar: item.avatar,
+                      size: 40,
+                      glowColor: item.accent,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  item.userName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.titleSmall
+                                      ?.copyWith(
+                                        color: primaryText,
+                                        fontSize: 15.5,
+                                        fontWeight: FontWeight.w900,
+                                        height: 1.05,
+                                        letterSpacing: -.25,
+                                      ),
+                                ),
+                              ),
+                              const SizedBox(width: 7),
+                              _FeedPostKindBadge(kind: kind, isWhite: isWhite),
+                              if (item.isOfficial)
+                                const _OfficialVerifiedBadge(),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            metadataLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: secondaryText,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1,
+                                ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 7),
-                    _FeedPostKindBadge(kind: kind, isWhite: isWhite),
-                    if (item.isOfficial) const _OfficialVerifiedBadge(),
                   ],
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  metadataLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: secondaryText,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w900,
-                    height: 1,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
           Semantics(
@@ -282,6 +515,10 @@ class _FeedCardFooter extends StatelessWidget {
                 label: _feedLikeActionLabel(item),
                 color: likeAccent,
                 isWhite: isWhite,
+                burstOnTap: !item.liked,
+                burstIcon: CupertinoIcons.heart_fill,
+                burstColor: likeAccent,
+                animateIconOnBurst: true,
                 onTap: onLike,
               ),
               const SizedBox(width: 8),
@@ -293,7 +530,10 @@ class _FeedCardFooter extends StatelessWidget {
                     : '投稿を共有',
                 customIcon: item.isOfficial
                     ? null
-                    : _VectorShareIcon(color: shareAccent, size: 19),
+                    : _VectorShareIcon(
+                        color: _feedActionForeground(shareAccent),
+                        size: 19,
+                      ),
                 icon: item.isOfficial ? CupertinoIcons.doc_text_fill : null,
                 label: _feedShareActionLabel(item),
                 color: shareAccent,
@@ -355,6 +595,10 @@ class _FeedActionPill extends StatelessWidget {
     required this.isWhite,
     this.icon,
     this.customIcon,
+    this.burstOnTap = false,
+    this.burstIcon = CupertinoIcons.sparkles,
+    this.burstColor,
+    this.animateIconOnBurst = false,
     this.onTap,
   });
 
@@ -364,62 +608,480 @@ class _FeedActionPill extends StatelessWidget {
   final Widget? customIcon;
   final Color color;
   final bool isWhite;
+  final bool burstOnTap;
+  final IconData burstIcon;
+  final Color? burstColor;
+  final bool animateIconOnBurst;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isWhite
-        ? Color.lerp(color, Colors.black, .22)!
-        : Colors.white;
-    return Semantics(
-      button: true,
-      label: semanticLabel,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Container(
-          height: 44,
-          padding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: isWhite ? .16 : .26),
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: color.withValues(alpha: isWhite ? .40 : .50),
+    final textColor = _feedActionForeground(color);
+    final shadowColor = Color.lerp(color, Colors.black, .34)!;
+    Widget buildIcon(Animation<double>? iconAnimation) {
+      if (customIcon != null) return customIcon!;
+      final resolvedIcon = icon ?? CupertinoIcons.circle;
+      if (animateIconOnBurst) {
+        return _FeedLikeBurstIcon(
+          animation: iconAnimation ?? const AlwaysStoppedAnimation<double>(0),
+          icon: resolvedIcon,
+          color: textColor,
+          particleColor: burstColor ?? color,
+        );
+      }
+      return NomoPopIcon(
+        icon: resolvedIcon,
+        color: textColor,
+        size: 19,
+        iconSize: 16,
+        showBubble: false,
+      );
+    }
+
+    Widget buildButton(
+      VoidCallback? effectiveTap, {
+      Animation<double>? iconAnimation,
+    }) => Nomo3DButtonSurface(
+      onTap: effectiveTap,
+      height: 38,
+      radius: 19,
+      color: color,
+      bottomColor: shadowColor,
+      padding: const EdgeInsets.symmetric(horizontal: 13),
+      borderColor: Colors.white.withValues(alpha: .18),
+      outerShadows: [
+        BoxShadow(
+          color: color.withValues(alpha: isWhite ? .18 : .30),
+          blurRadius: 20,
+          offset: const Offset(0, 9),
+        ),
+      ],
+      innerShadows: [
+        BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
+      ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          buildIcon(iconAnimation),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w900,
+              height: 1,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: isWhite ? .18 : .28),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
-              ),
-            ],
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              customIcon ??
-                  NomoPopIcon(
-                    icon: icon ?? CupertinoIcons.circle,
-                    color: color,
-                    size: 19,
-                    iconSize: 16,
-                    showBubble: false,
-                  ),
-              const SizedBox(width: 5),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.w900,
-                  height: 1,
+        ],
+      ),
+    );
+
+    final child = animateIconOnBurst
+        ? _FeedInlineIconBurstHost(
+            particleColor: burstColor ?? color,
+            builder: (context, runWithBurst, iconAnimation) {
+              final effectiveTap = onTap == null
+                  ? null
+                  : burstOnTap
+                  ? () => runWithBurst(onTap)
+                  : onTap;
+              return buildButton(effectiveTap, iconAnimation: iconAnimation);
+            },
+          )
+        : burstOnTap
+        ? NomoInviteSuccessBurst(
+            burstIcon: burstIcon,
+            burstColor: burstColor ?? color,
+            confettiColors: [
+              color,
+              const Color(0xFFFF75B5),
+              const Color(0xFFC08BFF),
+              const Color(0xFFFFD166),
+              Colors.white,
+            ],
+            builder: (context, runWithBurst, flightAnimation) =>
+                buildButton(onTap == null ? null : () => runWithBurst(onTap)),
+          )
+        : buildButton(onTap);
+
+    return Semantics(button: true, label: semanticLabel, child: child);
+  }
+}
+
+typedef _FeedInlineIconBurstBuilder =
+    Widget Function(
+      BuildContext context,
+      void Function(VoidCallback? action) runWithBurst,
+      Animation<double> iconAnimation,
+    );
+
+class _FeedInlineIconBurstHost extends StatefulWidget {
+  const _FeedInlineIconBurstHost({
+    required this.builder,
+    required this.particleColor,
+  });
+
+  final _FeedInlineIconBurstBuilder builder;
+  final Color particleColor;
+
+  @override
+  State<_FeedInlineIconBurstHost> createState() =>
+      _FeedInlineIconBurstHostState();
+}
+
+class _FeedInlineIconBurstHostState extends State<_FeedInlineIconBurstHost>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  bool _running = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 620),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _run(VoidCallback? action) {
+    if (action == null || _running) return;
+    setState(() => _running = true);
+    action();
+    _controller.forward(from: 0).whenComplete(() {
+      if (!mounted) return;
+      setState(() => _running = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        widget.builder(context, _run, _controller),
+        Positioned.fill(
+          child: IgnorePointer(
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) => CustomPaint(
+                painter: _FeedFlyingHeartBurstPainter(
+                  progress: _controller.value,
+                  color: widget.particleColor,
                 ),
               ),
-            ],
+            ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _FeedLikeBurstIcon extends StatelessWidget {
+  const _FeedLikeBurstIcon({
+    required this.animation,
+    required this.icon,
+    required this.color,
+    required this.particleColor,
+  });
+
+  final Animation<double> animation;
+  final IconData icon;
+  final Color color;
+  final Color particleColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        final raw = animation.value.clamp(0.0, 1.0);
+        final active = raw > 0 && raw < 1;
+        final pop = !active
+            ? 0.0
+            : raw < .32
+            ? Curves.easeOutBack.transform(raw / .32)
+            : (1 - Curves.easeOutCubic.transform((raw - .32) / .68)).clamp(
+                0.0,
+                1.0,
+              );
+        final bounce = active && raw > .26 && raw < .58
+            ? math.sin(((raw - .26) / .32) * math.pi) * .07
+            : 0.0;
+        final scale = 1 + (.23 * pop) - bounce;
+        final angle = active
+            ? math.sin(raw * math.pi * 2.4) * .12 * (1 - raw)
+            : 0.0;
+
+        return SizedBox(
+          width: 19,
+          height: 19,
+          child: ClipRect(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CustomPaint(
+                  size: const Size.square(19),
+                  painter: _FeedLikeIconBurstPainter(
+                    progress: raw,
+                    color: particleColor,
+                  ),
+                ),
+                Transform.rotate(
+                  angle: angle,
+                  child: Transform.scale(scale: scale, child: child),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      child: NomoPopIcon(
+        icon: icon,
+        color: color,
+        size: 19,
+        iconSize: 16,
+        showBubble: false,
       ),
     );
   }
+}
+
+class _FeedLikeIconBurstPainter extends CustomPainter {
+  const _FeedLikeIconBurstPainter({
+    required this.progress,
+    required this.color,
+  });
+
+  final double progress;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0 || progress >= .96) return;
+
+    final t = Curves.easeOutCubic.transform(progress.clamp(0.0, 1.0));
+    final fade = progress < .68
+        ? 1.0
+        : ((.96 - progress) / .28).clamp(0.0, 1.0);
+    final shortest = math.min(size.width, size.height);
+    final center = Offset(size.width / 2, size.height / 2);
+
+    final ringPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.15 * (1 - t)
+      ..color = Color.lerp(
+        color,
+        Colors.white,
+        .44,
+      )!.withValues(alpha: .42 * fade);
+    canvas.drawCircle(center, shortest * (.16 + .28 * t), ringPaint);
+
+    for (var i = 0; i < 8; i++) {
+      final angle = (-math.pi / 2) + (math.pi * 2 * i / 8);
+      final distance = shortest * (.10 + .36 * t);
+      final twinkle = math.sin((progress * math.pi * 2.6) + i) * shortest * .03;
+      final offset =
+          center +
+          Offset(
+            math.cos(angle) * (distance + twinkle),
+            math.sin(angle) * (distance + twinkle),
+          );
+      final paint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = Color.lerp(
+          color,
+          i.isEven ? Colors.white : const Color(0xFFFF75B5),
+          i.isEven ? .62 : .46,
+        )!.withValues(alpha: .86 * fade);
+
+      canvas.drawCircle(offset, (1.35 - .42 * t).clamp(.7, 1.35), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _FeedLikeIconBurstPainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.color != color;
+}
+
+class _FeedFlyingHeartBurstPainter extends CustomPainter {
+  const _FeedFlyingHeartBurstPainter({
+    required this.progress,
+    required this.color,
+  });
+
+  final double progress;
+  final Color color;
+
+  static const _particles = [
+    _FlyingHeartParticle(angle: -2.70, distance: 48, size: 6.4, delay: .00),
+    _FlyingHeartParticle(angle: -2.25, distance: 66, size: 8.6, delay: .02),
+    _FlyingHeartParticle(angle: -1.82, distance: 58, size: 6.8, delay: .06),
+    _FlyingHeartParticle(angle: -1.36, distance: 74, size: 10.4, delay: .00),
+    _FlyingHeartParticle(angle: -0.94, distance: 68, size: 7.6, delay: .04),
+    _FlyingHeartParticle(angle: -0.42, distance: 60, size: 6.8, delay: .09),
+    _FlyingHeartParticle(angle: 0.20, distance: 48, size: 5.8, delay: .12),
+    _FlyingHeartParticle(angle: 0.78, distance: 42, size: 6.4, delay: .15),
+    _FlyingHeartParticle(angle: 2.62, distance: 34, size: 5.6, delay: .08),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0 || progress >= 1) return;
+
+    final origin = Offset(22, size.height * .42);
+    final flashProgress = (progress / .24).clamp(0.0, 1.0);
+    final flashFade = (1 - Curves.easeOutCubic.transform(flashProgress)).clamp(
+      0.0,
+      1.0,
+    );
+    if (flashFade > 0) {
+      final flashPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6 * flashFade
+        ..color = Color.lerp(
+          color,
+          Colors.white,
+          .72,
+        )!.withValues(alpha: .56 * flashFade);
+      canvas.drawCircle(origin, 6 + 17 * flashProgress, flashPaint);
+    }
+
+    for (var i = 0; i < _particles.length; i++) {
+      final particle = _particles[i];
+      final local = ((progress - particle.delay) / (1 - particle.delay)).clamp(
+        0.0,
+        1.0,
+      );
+      if (local <= 0 || local >= 1) continue;
+
+      final ease = Curves.easeOutBack.transform(local.clamp(0.0, .88) / .88);
+      final drift = math.sin((local * math.pi * 2.2) + i) * 7;
+      final floatUp = math.sin(local * math.pi) * -15;
+      final offset =
+          origin +
+          Offset(
+            math.cos(particle.angle) * particle.distance * ease,
+            math.sin(particle.angle) * particle.distance * ease +
+                drift +
+                floatUp,
+          );
+      final fade = local < .72 ? 1.0 : ((1 - local) / .28).clamp(0.0, 1.0);
+      final scale = .58 + math.sin(local * math.pi).clamp(0.0, 1.0) * .62;
+      final rotation =
+          particle.angle * .20 + math.sin((local + i) * math.pi * 2) * .36;
+      final particleColor = Color.lerp(
+        color,
+        i.isEven ? Colors.white : const Color(0xFFFF75B5),
+        i.isEven ? .34 : .22,
+      )!.withValues(alpha: .94 * fade);
+
+      _drawFlyingHeart(
+        canvas,
+        center: offset,
+        size: particle.size * scale,
+        rotation: rotation,
+        color: particleColor,
+      );
+    }
+
+    for (var i = 0; i < 8; i++) {
+      final local = ((progress - i * .035) / .82).clamp(0.0, 1.0);
+      if (local <= 0 || local >= 1) continue;
+      final angle = -math.pi + (math.pi * 1.6 * (i / 7));
+      final distance = 18 + 44 * Curves.easeOutCubic.transform(local);
+      final point =
+          origin +
+          Offset(math.cos(angle) * distance, math.sin(angle) * distance);
+      final fade = (1 - local).clamp(0.0, 1.0);
+      final paint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = Colors.white.withValues(alpha: .72 * fade);
+      canvas.drawCircle(point, (2.2 - local).clamp(.7, 2.2), paint);
+    }
+  }
+
+  void _drawFlyingHeart(
+    Canvas canvas, {
+    required Offset center,
+    required double size,
+    required double rotation,
+    required Color color,
+  }) {
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = color;
+    final highlightPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = math.max(.6, size * .10)
+      ..strokeCap = StrokeCap.round
+      ..color = Colors.white.withValues(alpha: .46);
+
+    final path = Path()
+      ..moveTo(0, size * .38)
+      ..cubicTo(
+        -size * .78,
+        -size * .24,
+        -size * .50,
+        -size * .82,
+        -size * .10,
+        -size * .56,
+      )
+      ..cubicTo(
+        size * .04,
+        -size * .46,
+        size * .08,
+        -size * .30,
+        0,
+        -size * .17,
+      )
+      ..cubicTo(
+        size * .08,
+        -size * .30,
+        size * .04,
+        -size * .46,
+        size * .10,
+        -size * .56,
+      )
+      ..cubicTo(size * .50, -size * .82, size * .78, -size * .24, 0, size * .38)
+      ..close();
+
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(rotation);
+    canvas.drawPath(path, paint);
+    canvas.drawLine(
+      Offset(-size * .20, -size * .30),
+      Offset(-size * .05, -size * .40),
+      highlightPaint,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _FeedFlyingHeartBurstPainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.color != color;
+}
+
+class _FlyingHeartParticle {
+  const _FlyingHeartParticle({
+    required this.angle,
+    required this.distance,
+    required this.size,
+    required this.delay,
+  });
+
+  final double angle;
+  final double distance;
+  final double size;
+  final double delay;
 }
 
 class _FeedCompanionInlineButton extends StatelessWidget {
@@ -434,64 +1096,58 @@ class _FeedCompanionInlineButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const withPurple = Color(0xFFC08BFF);
-    final textColor = isWhite ? const Color(0xFF2B2440) : Colors.white;
-    final borderColor = withPurple.withValues(alpha: isWhite ? .34 : .42);
-    final backgroundGradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: isWhite
-          ? [withPurple.withValues(alpha: .18), const Color(0xFFFFFFFF)]
-          : [
-              withPurple.withValues(alpha: .28),
-              const Color(0xFF101B2B).withValues(alpha: .88),
-            ],
-    );
+    final textColor = _feedActionForeground(withPurple);
     const label = 'With';
 
     return Semantics(
       button: true,
       label: '一緒に遊んだフレンズを表示',
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: Nomo3DButtonSurface(
         onTap: () => _showFeedCompanionList(context, friends),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
-          decoration: BoxDecoration(
-            gradient: backgroundGradient,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: borderColor),
-            boxShadow: [
-              BoxShadow(
-                color: withPurple.withValues(alpha: isWhite ? .10 : .22),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
-              ),
-            ],
+        height: 38,
+        radius: 19,
+        color: withPurple,
+        bottomColor: Color.lerp(withPurple, Colors.black, .34),
+        padding: const EdgeInsets.fromLTRB(13, 0, 8, 0),
+        borderColor: Colors.white.withValues(alpha: .18),
+        outerShadows: [
+          BoxShadow(
+            color: withPurple.withValues(alpha: isWhite ? .18 : .30),
+            blurRadius: 20,
+            offset: const Offset(0, 9),
           ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 182),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.w900,
-                    height: 1.05,
-                  ),
+        ],
+        innerShadows: [
+          BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
+        ],
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 182),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w900,
+                  height: 1.05,
                 ),
-                const SizedBox(width: 7),
-                _FriendAvatarStack(friends: friends),
-              ],
-            ),
+              ),
+              const SizedBox(width: 7),
+              _FriendAvatarStack(friends: friends),
+            ],
           ),
         ),
       ),
     );
   }
+}
+
+Color _feedActionForeground(Color color) {
+  final brightness = ThemeData.estimateBrightnessForColor(color);
+  return brightness == Brightness.dark ? Colors.white : const Color(0xFF06111D);
 }
 
 class _FeedPhotoPlaceholder extends StatelessWidget {

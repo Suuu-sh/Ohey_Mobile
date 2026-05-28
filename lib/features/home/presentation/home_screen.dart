@@ -22,6 +22,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/nomo_theme_mode.dart';
 import '../../../core/widgets/nomo_avatar.dart';
 import '../../../core/widgets/nomo_3d_button.dart';
+import '../../../core/widgets/nomo_invite_success_burst.dart';
 import '../../../core/widgets/nomo_empty_state.dart';
 import '../../../core/widgets/nomo_bottom_sheet.dart';
 import '../../../core/widgets/nomo_action_tile.dart';
@@ -31,9 +32,12 @@ import '../../../core/widgets/nomo_scene_header_backdrop.dart';
 import '../../../core/widgets/nomo_toast.dart';
 import '../../../core/widgets/nomo_themed_panel.dart';
 import '../../friends/application/drink_invite_controller.dart';
+import '../../friends/data/friend_repository.dart';
+import '../../friends/presentation/friends_screen.dart';
 import '../../logs/application/drink_log_controller.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../notifications/data/notification_repository.dart';
+import '../../profile/presentation/profile_screen.dart';
 
 part 'home_feed_layout.dart';
 part 'home_feed_invite_banner.dart';
@@ -83,8 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final logsAsync = ref.watch(drinkLogControllerProvider);
-    final friendsAsync = ref.watch(friendsProvider);
+    final logsAsync = ref.watch(homeFeedControllerProvider);
     final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
     final user = ref.watch(nomoUserProvider);
     final incomingInvites =
@@ -100,17 +103,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .currentUser
         ?.id;
     final logs = logsAsync.asData?.value ?? const <DrinkLog>[];
-    final friendUserIds =
-        friendsAsync.asData?.value
-            .map((friend) => friend.id)
-            .where((id) => id.isNotEmpty)
-            .toSet() ??
-        const <String>{};
     final feedItems = _feedItems(
       logs,
       user: user,
       currentUserId: currentUserId,
-      friendUserIds: friendUserIds,
     );
 
     return const _FeedBackground(child: SizedBox.expand()).copyWith(
@@ -122,17 +118,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               topPadding: _feedHeaderScrollInset(context),
               items: feedItems,
               isWhite: isWhite,
-              isLoading: logsAsync.isLoading || friendsAsync.isLoading,
+              isLoading: logsAsync.isLoading,
               onPageChanged: _handleFeedPageChanged,
               onAddLogPressed: widget.onAddLogPressed ?? () {},
               onLikePressed: (item) => ref
-                  .read(drinkLogControllerProvider.notifier)
+                  .read(homeFeedControllerProvider.notifier)
                   .toggleLike(item.id),
               onSharePressed: (item) => _shareFeedItem(context, item),
               showSwipeTutorial:
                   !_isFeedSwipeTutorialSeen && feedItems.length > 1,
               onSwipeTutorialDismissed: _markFeedSwipeTutorialSeen,
               onMorePressed: (item) => _showFeedPostActions(context, ref, item),
+              onAuthorPressed: (item) => _showFeedAuthorProfile(context, item),
             ),
           ),
           _FeedHeaderBackdropLayer(isWhite: isWhite),
@@ -197,6 +194,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (index > 0) {
       _markFeedSwipeTutorialSeen();
     }
+  }
+
+  Future<void> _showFeedAuthorProfile(
+    BuildContext context,
+    _FeedItem item,
+  ) async {
+    if (item.ownedByMe) {
+      HapticFeedback.selectionClick();
+      await Navigator.of(
+        context,
+      ).push(CupertinoPageRoute<void>(builder: (_) => const ProfileScreen()));
+      return;
+    }
+
+    HapticFeedback.selectionClick();
+    await showNomoBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      barrierColor: Colors.black.withValues(alpha: .62),
+      builder: (context) => _FeedCompanionProfileSheet(
+        friend: _Companion(
+          userId: item.ownerUserId,
+          name: item.userName,
+          handle: item.isOfficial ? 'Nomo公式' : item.place,
+          avatar: item.avatar,
+          accent: item.accent,
+          statusKey: null,
+        ),
+      ),
+    );
   }
 
   Future<void> _shareFeedItem(BuildContext context, _FeedItem item) async {
