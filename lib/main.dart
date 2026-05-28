@@ -17,6 +17,7 @@ import 'core/theme/nomo_theme_mode.dart';
 import 'core/widgets/nomo_tab_shell.dart';
 
 const _openingNomoAsset = 'assets/images/opening_nomo.png';
+const _startupMascotName = 'Tomo';
 const _minimumOpeningDuration = Duration(seconds: 1);
 const _openingExitDurationMs = 520;
 
@@ -328,7 +329,7 @@ class _StartupWaitingMessage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Nomoを準備してるよ',
+                  '$_startupMascotNameを準備してるよ',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
@@ -397,12 +398,12 @@ class _StartupWordmark extends StatelessWidget {
     );
 
     return Semantics(
-      label: 'Nomo',
+      label: _startupMascotName,
       child: ExcludeSemantics(
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Text('Nomo', style: strokeStyle),
+            Text(_startupMascotName, style: strokeStyle),
             ShaderMask(
               blendMode: ui.BlendMode.srcIn,
               shaderCallback: (bounds) => const LinearGradient(
@@ -410,7 +411,7 @@ class _StartupWordmark extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [Colors.white, Color(0xFFFFF7B0), Color(0xFFFFA3D4)],
               ).createShader(bounds),
-              child: const Text('Nomo', style: fillStyle),
+              child: const Text(_startupMascotName, style: fillStyle),
             ),
           ],
         ),
