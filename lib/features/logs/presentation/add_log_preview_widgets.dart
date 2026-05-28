@@ -563,7 +563,7 @@ class _PreviewFooter extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _PreviewActionPill(
+              NomoPostActionPill(
                 semanticLabel: 'いいねで反応',
                 icon: CupertinoIcons.heart,
                 label: 'いいね',
@@ -571,11 +571,11 @@ class _PreviewFooter extends StatelessWidget {
                 isWhite: isWhite,
               ),
               const SizedBox(width: 8),
-              _PreviewActionPill(
+              NomoPostActionPill(
                 semanticLabel: '思い出を共有',
-                customIcon: _PreviewShareIcon(
-                  color: _postPreviewActionPurple,
-                  size: 18,
+                customIcon: NomoPostShareIcon(
+                  color: nomoPostActionForeground(_postPreviewActionPurple),
+                  size: 19,
                 ),
                 label: 'また誘う',
                 color: _postPreviewActionPurple,
@@ -669,122 +669,6 @@ class _PreviewInlineEditors extends StatelessWidget {
       ),
     ),
   );
-}
-
-class _PreviewActionPill extends StatelessWidget {
-  const _PreviewActionPill({
-    required this.semanticLabel,
-    required this.label,
-    required this.color,
-    required this.isWhite,
-    this.icon,
-    this.customIcon,
-  });
-
-  final String semanticLabel;
-  final String label;
-  final IconData? icon;
-  final Widget? customIcon;
-  final Color color;
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    final textColor = isWhite
-        ? Color.lerp(color, Colors.black, .22)!
-        : Colors.white;
-    return Semantics(
-      button: true,
-      label: semanticLabel,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(10, 7, 12, 7),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: isWhite ? .16 : .26),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: color.withValues(alpha: isWhite ? .40 : .50),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: isWhite ? .18 : .28),
-              blurRadius: 18,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            customIcon ??
-                NomoPopIcon(
-                  icon: icon ?? CupertinoIcons.circle,
-                  color: color,
-                  size: 19,
-                  iconSize: 16,
-                  showBubble: false,
-                ),
-            const SizedBox(width: 5),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: textColor,
-                fontWeight: FontWeight.w900,
-                height: 1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PreviewShareIcon extends StatelessWidget {
-  const _PreviewShareIcon({required this.color, required this.size});
-
-  final Color color;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) => SizedBox.square(
-    dimension: size,
-    child: CustomPaint(painter: _PreviewShareIconPainter(color)),
-  );
-}
-
-class _PreviewShareIconPainter extends CustomPainter {
-  const _PreviewShareIconPainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final stroke = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = w * .105;
-
-    final tray = Path()
-      ..moveTo(w * .22, h * .62)
-      ..lineTo(w * .22, h * .76)
-      ..quadraticBezierTo(w * .22, h * .86, w * .32, h * .86)
-      ..lineTo(w * .68, h * .86)
-      ..quadraticBezierTo(w * .78, h * .86, w * .78, h * .76)
-      ..lineTo(w * .78, h * .62);
-    canvas.drawPath(tray, stroke);
-
-    canvas.drawLine(Offset(w * .50, h * .66), Offset(w * .50, h * .16), stroke);
-    canvas.drawLine(Offset(w * .34, h * .31), Offset(w * .50, h * .16), stroke);
-    canvas.drawLine(Offset(w * .66, h * .31), Offset(w * .50, h * .16), stroke);
-  }
-
-  @override
-  bool shouldRepaint(covariant _PreviewShareIconPainter oldDelegate) =>
-      oldDelegate.color != color;
 }
 
 class _PreviewFriendsPill extends StatelessWidget {
