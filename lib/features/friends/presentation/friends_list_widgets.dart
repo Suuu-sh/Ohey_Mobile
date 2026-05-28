@@ -8,9 +8,11 @@ class _FriendsList extends StatelessWidget {
     required this.selectedCustomFilter,
     required this.favoriteOverrides,
     required this.invitedFriendIds,
+    required this.isSendingGroupInvite,
     required this.onFavoriteToggle,
     required this.onAddFriend,
     required this.onInvite,
+    required this.onGroupInvite,
     required this.onInviteAnimationComplete,
     required this.onProfile,
   });
@@ -21,9 +23,11 @@ class _FriendsList extends StatelessWidget {
   final _CustomFriendFilter? selectedCustomFilter;
   final Map<String, bool> favoriteOverrides;
   final Set<String> invitedFriendIds;
+  final bool isSendingGroupInvite;
   final void Function(NomoFriend friend, bool isFavorite) onFavoriteToggle;
   final VoidCallback onAddFriend;
   final Future<void> Function(NomoFriend friend) onInvite;
+  final Future<void> Function(List<NomoFriend> friends) onGroupInvite;
   final void Function(NomoFriend friend) onInviteAnimationComplete;
   final void Function(NomoFriend friend, _FriendStatus status) onProfile;
 
@@ -56,6 +60,13 @@ class _FriendsList extends StatelessWidget {
     final isGroupView = selectedCustomFilter != null;
     final hasRecommendations = !isGroupView && recommendations.isNotEmpty;
     final hasGroupSchedule = isGroupView && filtered.length >= 2;
+    final groupInviteTargets = filtered
+        .where(
+          (item) =>
+              item.status.enabled && !invitedFriendIds.contains(item.friend.id),
+        )
+        .map((item) => item.friend)
+        .toList(growable: false);
 
     if (filtered.isEmpty) {
       return LayoutBuilder(
@@ -113,6 +124,9 @@ class _FriendsList extends StatelessWidget {
           return _GroupScheduleSection(
             groupName: selectedCustomFilter!.name,
             friends: filtered,
+            inviteTargets: groupInviteTargets,
+            isSendingInvite: isSendingGroupInvite,
+            onInviteGroup: () => onGroupInvite(groupInviteTargets),
           );
         }
         final friendIndex =
@@ -339,10 +353,19 @@ class _SlimeSplitTransition extends StatelessWidget {
 }
 
 class _GroupScheduleSection extends StatelessWidget {
-  const _GroupScheduleSection({required this.groupName, required this.friends});
+  const _GroupScheduleSection({
+    required this.groupName,
+    required this.friends,
+    required this.inviteTargets,
+    required this.isSendingInvite,
+    required this.onInviteGroup,
+  });
 
   final String groupName;
   final List<_DecoratedFriend> friends;
+  final List<NomoFriend> inviteTargets;
+  final bool isSendingInvite;
+  final Future<void> Function() onInviteGroup;
 
   @override
   Widget build(BuildContext context) {
@@ -352,6 +375,7 @@ class _GroupScheduleSection extends StatelessWidget {
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .60);
     final suggestions = _groupScheduleSuggestions(friends);
+    final canInviteGroup = inviteTargets.isNotEmpty && !isSendingInvite;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -384,7 +408,7 @@ class _GroupScheduleSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'みんなの今の予定から、集まりやすそうな日を出すね。',
+                      'グループからまとめて誘えるよ。',
                       style: TextStyle(
                         color: sub,
                         fontSize: 12,
@@ -393,6 +417,33 @@ class _GroupScheduleSection extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              SizedBox(
+                width: 104,
+                child: Nomo3DButton(
+                  label: isSendingInvite
+                      ? '送信中'
+                      : inviteTargets.isEmpty
+                      ? '招待済み'
+                      : '${inviteTargets.length}人誘う',
+                  icon: CupertinoIcons.paperplane_fill,
+                  onTap: canInviteGroup ? onInviteGroup : null,
+                  enabled: canInviteGroup,
+                  height: 38,
+                  radius: 19,
+                  color: _FriendsColors.lime,
+                  foregroundColor: const Color(0xFF101820),
+                  shadowColor: Color.lerp(
+                    _FriendsColors.lime,
+                    Colors.black,
+                    .34,
+                  ),
+                  disabledColor: _FriendsColors.invitedButton,
+                  disabledOpacity: 1,
+                  padding: const EdgeInsets.symmetric(horizontal: 9),
+                  fontSize: 12,
                 ),
               ),
             ],

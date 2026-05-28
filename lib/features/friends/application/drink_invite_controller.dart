@@ -29,6 +29,9 @@ class DrinkInviteController {
   Future<void> sendTodayInvite(String friendId) =>
       sendInvite(friendId: friendId, date: DateTime.now());
 
+  Future<void> sendTodayInvites(Iterable<String> friendIds) =>
+      sendInvites(friendIds: friendIds, date: DateTime.now());
+
   Future<void> sendInvite({
     required String friendId,
     required DateTime date,
@@ -39,6 +42,25 @@ class DrinkInviteController {
       commit: () => _ref
           .read(drinkInviteRepositoryProvider)
           .sendInvite(friendId: friendId, date: date),
+      confirm: (_) => _invalidate(),
+    );
+  }
+
+  Future<void> sendInvites({
+    required Iterable<String> friendIds,
+    required DateTime date,
+  }) async {
+    final ids = {
+      for (final friendId in friendIds)
+        if (friendId.trim().isNotEmpty) friendId.trim(),
+    }.toList(growable: false);
+    if (ids.isEmpty) return;
+    await runOptimistic<void>(
+      apply: _invalidate,
+      rollback: _invalidate,
+      commit: () => _ref
+          .read(drinkInviteRepositoryProvider)
+          .sendInvites(friendIds: ids, date: date),
       confirm: (_) => _invalidate(),
     );
   }

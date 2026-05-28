@@ -24,14 +24,28 @@ class DrinkInviteRepository {
     required String friendId,
     required DateTime date,
   }) async {
+    await sendInvites(friendIds: [friendId], date: date);
+  }
+
+  Future<void> sendInvites({
+    required Iterable<String> friendIds,
+    required DateTime date,
+  }) async {
     final userId = _userId;
     if (userId == null) throw StateError('誘うにはログインが必要です。');
-    if (userId == friendId) throw StateError('自分には送れません。');
+    final ids = {
+      for (final friendId in friendIds)
+        if (friendId.trim().isNotEmpty && friendId != userId) friendId.trim(),
+    }.toList(growable: false);
+    if (ids.isEmpty) throw StateError('誘えるフレンズがいません。');
 
-    await _client.post('/v1/drink-invites', {
-      'to_user_id': friendId,
-      'invite_date': _isoDate(date),
-    });
+    await Future.wait([
+      for (final friendId in ids)
+        _client.post('/v1/drink-invites', {
+          'to_user_id': friendId,
+          'invite_date': _isoDate(date),
+        }),
+    ]);
   }
 
   Future<void> respond({
