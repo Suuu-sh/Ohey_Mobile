@@ -766,14 +766,16 @@ class _ProfileArchiveTopGlowLine extends StatelessWidget {
         color: pink.withValues(alpha: .72),
         boxShadow: [
           BoxShadow(
-            color: pink.withValues(alpha: .28),
+            color: pink.withValues(alpha: .34),
             blurRadius: 18,
-            spreadRadius: .5,
+            spreadRadius: 2,
+            offset: const Offset(0, -3),
           ),
           BoxShadow(
-            color: pink.withValues(alpha: .16),
+            color: pink.withValues(alpha: .24),
             blurRadius: 34,
-            spreadRadius: 0,
+            spreadRadius: 4,
+            offset: const Offset(0, -7),
           ),
         ],
       ),
