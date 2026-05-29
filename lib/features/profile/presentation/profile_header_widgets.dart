@@ -767,25 +767,47 @@ class _ProfileFriendActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Ohey3DButton(
-      label: 'フレンズを追加',
+    return Ohey3DButtonSurface(
       onTap: onAddFriendsTap,
-      height: 48,
-      radius: 24,
+      height: 46,
+      radius: 20,
       color: const Color(0xFF9AF21A),
-      foregroundColor: const Color(0xFF101820),
-      shadowColor: const Color(0xFF5DC86C),
-      fontSize: 14,
-      customIcon: const OheyPopIcon(
-        icon: CupertinoIcons.person_2_fill,
-        color: Color(0xFF101820),
-        size: 32,
-        iconSize: 18,
-      ),
-      trailing: const OheyGeneratedIcon(
-        CupertinoIcons.chevron_forward,
-        color: Color(0xFF101820),
-        size: 22,
+      bottomColor: const Color(0xFF5DC86C),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      borderColor: Colors.white.withValues(alpha: .20),
+      outerShadows: [
+        BoxShadow(
+          color: const Color(0xFF9AF21A).withValues(alpha: .18),
+          blurRadius: 14,
+          offset: const Offset(0, 7),
+        ),
+      ],
+      child: Row(
+        children: [
+          const OheyPopIcon(
+            icon: CupertinoIcons.person_2_fill,
+            color: Color(0xFF101820),
+            size: 28,
+            iconSize: 15,
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'フレンズを追加',
+              style: TextStyle(
+                color: Color(0xFF101820),
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.3,
+              ),
+            ),
+          ),
+          OheyGeneratedIcon(
+            CupertinoIcons.plus,
+            color: Color(0xFF101820),
+            size: 18,
+          ),
+        ],
       ),
     );
   }
