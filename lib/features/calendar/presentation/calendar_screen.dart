@@ -436,29 +436,33 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                 ),
                               ),
                             ],
-                            const SizedBox(height: 8),
-                            const _CalendarGlowDivider(),
-                            const SizedBox(height: 7),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: _SelectedDayPanel(
-                                  day: _selectedDay,
-                                  logs: selectedLogs,
-                                  friendsAsync: selectedFriendsAsync,
-                                  groups: _calendarGroups,
-                                  isWhite: isWhite,
-                                  status: selectedStatus,
-                                  isStatusSaving: _isStatusSaving,
-                                  onAddMemoryPressed: widget.onAddMemoryPressed,
-                                  onChangeStatus: () => _openStatusPicker(
-                                    showLockedExplanation:
-                                        selectedStatus ==
-                                        OheyDailyStatus.unselected,
+                            if (_isIntroSeen) ...[
+                              const SizedBox(height: 8),
+                              const _CalendarGlowDivider(),
+                              const SizedBox(height: 7),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 20),
+                                  child: _SelectedDayPanel(
+                                    day: _selectedDay,
+                                    logs: selectedLogs,
+                                    friendsAsync: selectedFriendsAsync,
+                                    groups: _calendarGroups,
+                                    isWhite: isWhite,
+                                    status: selectedStatus,
+                                    isStatusSaving: _isStatusSaving,
+                                    onAddMemoryPressed:
+                                        widget.onAddMemoryPressed,
+                                    onChangeStatus: () => _openStatusPicker(
+                                      showLockedExplanation:
+                                          selectedStatus ==
+                                          OheyDailyStatus.unselected,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
+                            ] else
+                              const Spacer(),
                           ],
                         ),
                       ),
