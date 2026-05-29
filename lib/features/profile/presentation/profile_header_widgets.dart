@@ -750,8 +750,9 @@ class _ProfileArchiveTopGlowLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const pink = Color(0xFFFF75B5);
-    return Padding(
-      padding: EdgeInsets.zero,
+    return OverflowBox(
+      minWidth: MediaQuery.sizeOf(context).width,
+      maxWidth: MediaQuery.sizeOf(context).width,
       child: Container(
         height: 1,
         decoration: BoxDecoration(
