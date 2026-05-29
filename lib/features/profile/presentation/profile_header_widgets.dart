@@ -1072,11 +1072,10 @@ class _ProfileArchiveAddButton extends StatelessWidget {
       onTap: onTap,
       height: 46,
       radius: 20,
-      color: Colors.white.withValues(alpha: .06),
-      bottomColor: const Color(0xFF09131D),
-      useGradient: false,
+      color: const Color(0xFFFF86C8),
+      bottomColor: const Color(0xFFB93A83),
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      borderColor: const Color(0xFFFF86C8).withValues(alpha: .22),
+      borderColor: Colors.white.withValues(alpha: .20),
       outerShadows: [
         BoxShadow(
           color: const Color(0xFFFF86C8).withValues(alpha: .10),
@@ -1088,7 +1087,7 @@ class _ProfileArchiveAddButton extends StatelessWidget {
         children: [
           const OheyPopIcon(
             icon: CupertinoIcons.camera_fill,
-            color: Color(0xFFFF86C8),
+            color: Color(0xFF101820),
             size: 28,
             iconSize: 15,
           ),
@@ -1097,7 +1096,7 @@ class _ProfileArchiveAddButton extends StatelessWidget {
             child: Text(
               '思い出を追加',
               style: TextStyle(
-                color: Colors.white,
+                color: Color(0xFF101820),
                 fontSize: 14,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.3,
@@ -1106,7 +1105,7 @@ class _ProfileArchiveAddButton extends StatelessWidget {
           ),
           OheyGeneratedIcon(
             CupertinoIcons.plus,
-            color: Colors.white.withValues(alpha: .78),
+            color: Color(0xFF101820),
             size: 18,
           ),
         ],
