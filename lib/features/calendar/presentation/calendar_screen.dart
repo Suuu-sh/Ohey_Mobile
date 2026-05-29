@@ -688,9 +688,6 @@ class _SelectedDayPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
-    final subColor = isWhite
-        ? const Color(0xFF657282)
-        : Colors.white.withValues(alpha: .66);
     return OheyThemedPanel(
       width: double.infinity,
       padding: EdgeInsets.zero,
@@ -719,25 +716,12 @@ class _SelectedDayPanel extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '選んだ日のまとめ',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: subColor,
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w900,
-                              height: 1,
-                              letterSpacing: .3,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
                             _calendarSelectedDayTitle(day),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: titleColor,
-                              fontSize: compact ? 15 : 16,
+                              fontSize: compact ? 18 : 20,
                               fontWeight: FontWeight.w900,
                               height: 1,
                               letterSpacing: -.2,
