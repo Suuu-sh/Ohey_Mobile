@@ -865,7 +865,7 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
             children: [
               const Expanded(
                 child: Text(
-                  'フォトアーカイブ',
+                  '何する？',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
