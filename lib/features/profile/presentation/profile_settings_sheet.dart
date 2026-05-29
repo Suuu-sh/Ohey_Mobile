@@ -96,13 +96,6 @@ class _SettingsSheetShell extends StatelessWidget {
     final sub = isWhite
         ? const Color(0xFF66727E)
         : Colors.white.withValues(alpha: .62);
-    final avatar = user?.avatar ?? OheyAvatar.defaultAvatar;
-    final name = user?.name.trim().isNotEmpty == true
-        ? user!.name
-        : 'Ohey user';
-    final handle = user?.userId.trim().isNotEmpty == true
-        ? '@${user!.userId}'
-        : 'プロフィール未設定';
 
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -159,55 +152,6 @@ class _SettingsSheetShell extends StatelessWidget {
                   ),
                   _SettingsCloseButton(onTap: onClose, color: ink),
                 ],
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isWhite
-                      ? const Color(0xFFF3F7FA)
-                      : AppColors.darkBackground,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: isWhite
-                        ? const Color(0xFFE0E7EE)
-                        : Colors.white.withValues(alpha: .09),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    OheyAvatarView(avatar: avatar, size: 52),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: ink,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            handle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: sub,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 14),
               ...children,
