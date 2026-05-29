@@ -1068,44 +1068,48 @@ class _ProfileArchiveAddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return Ohey3DButtonSurface(
       onTap: onTap,
-      child: Container(
-        height: 46,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: .05),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: .10)),
+      height: 46,
+      radius: 20,
+      color: Colors.white.withValues(alpha: .06),
+      bottomColor: const Color(0xFF09131D),
+      useGradient: false,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      borderColor: const Color(0xFFFF86C8).withValues(alpha: .22),
+      outerShadows: [
+        BoxShadow(
+          color: const Color(0xFFFF86C8).withValues(alpha: .10),
+          blurRadius: 14,
+          offset: const Offset(0, 7),
         ),
-        child: Row(
-          children: [
-            const OheyPopIcon(
-              icon: CupertinoIcons.camera_fill,
-              color: Color(0xFFFF86C8),
-              size: 28,
-              iconSize: 15,
-            ),
-            const SizedBox(width: 10),
-            const Expanded(
-              child: Text(
-                '写真つきの思い出を追加',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.3,
-                ),
+      ],
+      child: Row(
+        children: [
+          const OheyPopIcon(
+            icon: CupertinoIcons.camera_fill,
+            color: Color(0xFFFF86C8),
+            size: 28,
+            iconSize: 15,
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              '思い出を追加',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.3,
               ),
             ),
-            OheyGeneratedIcon(
-              CupertinoIcons.plus,
-              color: Colors.white.withValues(alpha: .78),
-              size: 18,
-            ),
-          ],
-        ),
+          ),
+          OheyGeneratedIcon(
+            CupertinoIcons.plus,
+            color: Colors.white.withValues(alpha: .78),
+            size: 18,
+          ),
+        ],
       ),
     );
   }
