@@ -668,8 +668,7 @@ String _feedLikeActionLabel(_FeedItem item) {
 
 String _feedShareActionLabel(_FeedItem item) {
   if (item.isOfficial) return '詳しく';
-  if (!item.ownedByMe && item.friends.isNotEmpty) return 'また誘う';
-  return item.ownedByMe ? '共有' : '送る';
+  return '共有';
 }
 
 String _feedReactionSummary(_FeedItem item) {

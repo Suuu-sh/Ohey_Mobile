@@ -510,7 +510,7 @@ class _PreviewFooter extends StatelessWidget {
                   color: oheyPostActionForeground(_postPreviewActionPurple),
                   size: 19,
                 ),
-                label: 'また誘う',
+                label: '共有',
                 color: _postPreviewActionPurple,
                 isWhite: isWhite,
               ),
