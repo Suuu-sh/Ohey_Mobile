@@ -10,77 +10,69 @@ class _AvatarEditCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    return Ohey3DButtonSurface(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      height: 110,
-      radius: 22,
-      color: isWhite
-          ? const Color(0xFFF6F8FA)
-          : Colors.white.withValues(alpha: .06),
-      bottomColor: isWhite ? const Color(0xFFD8E1EA) : const Color(0xFF09131D),
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      borderColor: isWhite ? const Color(0xFFDDE4EA) : _ProfileColors.line,
-      outerShadows: [
-        BoxShadow(
-          color: _ProfileColors.lime.withValues(alpha: isWhite ? .10 : .16),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
+      child: Container(
+        height: 110,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? const Color(0xFFF6F8FA)
+              : Colors.white.withValues(alpha: .06),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isWhite ? const Color(0xFFDDE4EA) : _ProfileColors.line,
+          ),
         ),
-      ],
-      innerShadows: [
-        BoxShadow(
-          color: Colors.white.withValues(alpha: isWhite ? .42 : .08),
-          blurRadius: 10,
-          offset: const Offset(-2, -2),
-        ),
-      ],
-      child: Row(
-        children: [
-          Container(
-            width: 82,
-            height: 82,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [Color(0xFF223544), Color(0xFF101B28)],
+        child: Row(
+          children: [
+            Container(
+              width: 82,
+              height: 82,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [Color(0xFF223544), Color(0xFF101B28)],
+                ),
+              ),
+              child: OheyAvatarView(avatar: avatar, size: 82),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '自分のアバター',
+                    style: TextStyle(
+                      color: ink,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '肌・髪型・服・表情をカスタム',
+                    style: TextStyle(
+                      color: isWhite
+                          ? const Color(0xFF687481)
+                          : Colors.white.withValues(alpha: .58),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: OheyAvatarView(avatar: avatar, size: 82),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '自分のアバター',
-                  style: TextStyle(
-                    color: ink,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  '肌・髪型・服・表情をカスタム',
-                  style: TextStyle(
-                    color: isWhite
-                        ? const Color(0xFF687481)
-                        : Colors.white.withValues(alpha: .58),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+            const OheyGeneratedIcon(
+              CupertinoIcons.chevron_forward,
+              color: _ProfileColors.lime,
+              size: 22,
             ),
-          ),
-          const OheyGeneratedIcon(
-            CupertinoIcons.chevron_forward,
-            color: _ProfileColors.lime,
-            size: 22,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
