@@ -36,15 +36,6 @@ class OheyActionTile extends StatelessWidget {
     final subtitleColor = isWhite
         ? const Color(0xFF697684)
         : Colors.white.withValues(alpha: .55);
-    final surfaceColor = destructive
-        ? Color.lerp(
-            isWhite ? const Color(0xFFFFFFFF) : AppColors.darkBackground,
-            destructiveColor,
-            isWhite ? .18 : .32,
-          )!
-        : isWhite
-        ? Color.lerp(const Color(0xFFF7FAFC), accent, .10)!
-        : Color.lerp(AppColors.darkBackground, accent, .18)!;
     final bottomColor = destructive
         ? ohey3DShadowColorFor(
             destructiveColor,
@@ -53,13 +44,18 @@ class OheyActionTile extends StatelessWidget {
         : isWhite
         ? const Color(0xFFDCE4EC)
         : const Color(0xFF09131D);
+    final surfaceColor = destructive
+        ? bottomColor
+        : isWhite
+        ? Color.lerp(const Color(0xFFF7FAFC), accent, .10)!
+        : Color.lerp(AppColors.darkBackground, accent, .18)!;
     return Ohey3DButtonSurface(
       onTap: onTap,
       height: 68,
       radius: 22,
       color: surfaceColor,
       bottomColor: bottomColor,
-      useGradient: true,
+      useGradient: !destructive,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       borderColor: destructive
           ? destructiveColor.withValues(alpha: .36)
