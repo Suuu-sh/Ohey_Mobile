@@ -547,23 +547,32 @@ class _ProfileActivityHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 112),
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 112),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _ProfileSummaryStats(
-            friendsCount: friendsCount,
-            memoryCount: memories.length,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _ProfileSummaryStats(
+              friendsCount: friendsCount,
+              memoryCount: memories.length,
+            ),
           ),
           const SizedBox(height: 8),
-          _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
+          ),
           const SizedBox(height: 12),
           const _ProfileArchiveTopGlowLine(),
           const SizedBox(height: 14),
-          _ProfileRecentMemoriesCard(
-            photoMemoryCount: photoMemories.length,
-            onArchiveTap: onArchiveTap,
-            onAddMemoryTap: onAddMemoryTap,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _ProfileRecentMemoriesCard(
+              photoMemoryCount: photoMemories.length,
+              onArchiveTap: onArchiveTap,
+              onAddMemoryTap: onAddMemoryTap,
+            ),
           ),
         ],
       ),
@@ -750,35 +759,31 @@ class _ProfileArchiveTopGlowLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const pink = Color(0xFFFF75B5);
-    return OverflowBox(
-      minWidth: MediaQuery.sizeOf(context).width,
-      maxWidth: MediaQuery.sizeOf(context).width,
-      child: Container(
-        height: 1,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(999),
-          gradient: LinearGradient(
-            colors: [
-              pink.withValues(alpha: 0),
-              pink.withValues(alpha: .72),
-              pink,
-              pink.withValues(alpha: .72),
-              pink.withValues(alpha: 0),
-            ],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: pink.withValues(alpha: .28),
-              blurRadius: 18,
-              spreadRadius: .5,
-            ),
-            BoxShadow(
-              color: pink.withValues(alpha: .16),
-              blurRadius: 34,
-              spreadRadius: 0,
-            ),
+    return Container(
+      height: 1,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        gradient: LinearGradient(
+          colors: [
+            pink.withValues(alpha: 0),
+            pink.withValues(alpha: .72),
+            pink,
+            pink.withValues(alpha: .72),
+            pink.withValues(alpha: 0),
           ],
         ),
+        boxShadow: [
+          BoxShadow(
+            color: pink.withValues(alpha: .28),
+            blurRadius: 18,
+            spreadRadius: .5,
+          ),
+          BoxShadow(
+            color: pink.withValues(alpha: .16),
+            blurRadius: 34,
+            spreadRadius: 0,
+          ),
+        ],
       ),
     );
   }
