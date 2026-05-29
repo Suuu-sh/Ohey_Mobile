@@ -532,6 +532,7 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.photoMemories,
     required this.friendsCount,
     required this.onArchiveTap,
+    required this.onEditProfileTap,
     required this.onAddFriendsTap,
     required this.onAddMemoryTap,
   });
@@ -540,6 +541,7 @@ class _ProfileActivityHome extends StatelessWidget {
   final List<Memory> photoMemories;
   final int friendsCount;
   final VoidCallback onArchiveTap;
+  final VoidCallback onEditProfileTap;
   final VoidCallback onAddFriendsTap;
   final VoidCallback onAddMemoryTap;
 
@@ -561,7 +563,7 @@ class _ProfileActivityHome extends StatelessWidget {
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
+            child: _ProfileEditActionRow(onTap: onEditProfileTap),
           ),
           const SizedBox(height: 12),
           const _ProfileArchiveTopGlowLine(),
@@ -573,6 +575,11 @@ class _ProfileActivityHome extends StatelessWidget {
               onArchiveTap: onArchiveTap,
               onAddMemoryTap: onAddMemoryTap,
             ),
+          ),
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
           ),
         ],
       ),
@@ -718,6 +725,37 @@ class _ProfileSummaryStat extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ProfileEditActionRow extends StatelessWidget {
+  const _ProfileEditActionRow({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Ohey3DButton(
+      label: 'プロフィールを編集',
+      onTap: onTap,
+      height: 48,
+      radius: 24,
+      color: AppColors.primaryAction,
+      foregroundColor: const Color(0xFF101820),
+      shadowColor: AppColors.primaryActionShadow,
+      fontSize: 18,
+      customIcon: const OheyPopIcon(
+        icon: CupertinoIcons.pencil,
+        color: Color(0xFF101820),
+        size: 32,
+        iconSize: 18,
+      ),
+      trailing: const OheyGeneratedIcon(
+        CupertinoIcons.chevron_forward,
+        color: Color(0xFF101820),
+        size: 22,
+      ),
     );
   }
 }

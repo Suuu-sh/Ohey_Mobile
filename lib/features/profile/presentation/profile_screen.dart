@@ -169,6 +169,8 @@ class ProfileScreen extends ConsumerWidget {
                                     ),
                                   ),
                                 ),
+                                onEditProfileTap: () =>
+                                    _showEditProfileSheet(context, ref, user),
                                 onAddFriendsTap: () =>
                                     showFriendAddSheet(context, ref),
                                 onAddMemoryTap:
