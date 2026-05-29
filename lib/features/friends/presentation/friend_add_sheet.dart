@@ -698,31 +698,17 @@ class _CuteQrCard extends StatelessWidget {
                       ),
               ),
               Expanded(
-                child: Column(
-                  children: [
-                    const Text(
-                      'Ohey',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: ink,
-                        fontSize: 21,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.7,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${name.isEmpty ? 'ユーザー名未設定' : name}  @$userId',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: softInk,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
+                child: const Text(
+                  'Ohey',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.7,
+                  ),
                 ),
               ),
               const SizedBox(width: 30),
@@ -776,17 +762,35 @@ class _CuteQrCard extends StatelessWidget {
                   ),
           ),
           const SizedBox(height: 8),
-          Text(
-            name.isEmpty ? '@$userId' : '$name  @$userId',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: ink,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.4,
-            ),
+          Column(
+            children: [
+              Text(
+                name.isEmpty ? 'ユーザー名未設定' : name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: ink,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.4,
+                  height: 1.1,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '@$userId',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: softInk,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  height: 1.1,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           Wrap(
