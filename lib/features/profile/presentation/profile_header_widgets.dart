@@ -763,15 +763,7 @@ class _ProfileArchiveTopGlowLine extends StatelessWidget {
       height: 1,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(999),
-        gradient: LinearGradient(
-          colors: [
-            pink.withValues(alpha: 0),
-            pink.withValues(alpha: .72),
-            pink,
-            pink.withValues(alpha: .72),
-            pink.withValues(alpha: 0),
-          ],
-        ),
+        color: pink.withValues(alpha: .72),
         boxShadow: [
           BoxShadow(
             color: pink.withValues(alpha: .28),
