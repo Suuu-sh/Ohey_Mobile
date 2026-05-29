@@ -725,9 +725,9 @@ class _ProfileFriendActionRow extends StatelessWidget {
       onTap: onAddFriendsTap,
       height: 48,
       radius: 24,
-      color: AppColors.primaryAction,
+      color: const Color(0xFF9AF21A),
       foregroundColor: const Color(0xFF101820),
-      shadowColor: AppColors.primaryActionShadow,
+      shadowColor: const Color(0xFF5DC86C),
       fontSize: 18,
       customIcon: const OheyPopIcon(
         icon: CupertinoIcons.person_2_fill,
