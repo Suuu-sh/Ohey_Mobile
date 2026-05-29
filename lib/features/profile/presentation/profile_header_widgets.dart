@@ -766,14 +766,13 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final firstMemory = memories.isNotEmpty ? memories[0] : null;
-    final secondMemory = memories.length > 1 ? memories[1] : null;
     final hasPhotoMemories = firstMemory != null;
     final openAll = photoMemoryCount > 0 ? onArchiveTap : onMemoriesTap;
 
     return OheyThemedPanel(
       accentColor: _ProfileColors.pink,
       backgroundColor: AppColors.darkBackground,
-      padding: const EdgeInsets.fromLTRB(14, 9, 14, 9),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
       borderRadius: 24,
       borderAlpha: .28,
       glowAlpha: 0,
@@ -830,63 +829,55 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 6),
-          if (hasPhotoMemories) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: _ProfileMemoryPreviewTile(
-                    memory: firstMemory,
-                    onTap: openAll,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: secondMemory == null
-                      ? _ProfileMemoryPromptTile(onTap: onAddMemoryTap)
-                      : _ProfileMemoryPreviewTile(
-                          memory: secondMemory,
-                          onTap: openAll,
-                        ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-          ],
-          _ProfileMemoryHintCard(
-            onTap: onAddMemoryTap,
-            isEmpty: !hasPhotoMemories,
-          ),
+          const SizedBox(height: 12),
+          if (hasPhotoMemories)
+            _ProfilePhotoArchiveBlock(
+              memory: firstMemory,
+              count: photoMemoryCount,
+              onTap: openAll,
+              onAddMemoryTap: onAddMemoryTap,
+            )
+          else
+            _ProfilePhotoArchiveEmptyBlock(onTap: onAddMemoryTap),
         ],
       ),
     );
   }
 }
 
-class _ProfileMemoryPreviewTile extends StatelessWidget {
-  const _ProfileMemoryPreviewTile({required this.memory, required this.onTap});
+class _ProfilePhotoArchiveBlock extends StatelessWidget {
+  const _ProfilePhotoArchiveBlock({
+    required this.memory,
+    required this.count,
+    required this.onTap,
+    required this.onAddMemoryTap,
+  });
 
   final Memory memory;
+  final int count;
   final VoidCallback onTap;
+  final VoidCallback onAddMemoryTap;
 
   @override
   Widget build(BuildContext context) {
-    final title = _profileMemoryTitle(memory);
     final imageProvider = _profileMemoryImageProvider(memory.photoAssetPath);
+    final title = _profileMemoryTitle(memory);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            height: 44,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Container(
+            height: 116,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              color: AppColors.darkBackground,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withValues(alpha: .16)),
+              color: const Color(0xFF101B28),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: const Color(0xFFFF86C8).withValues(alpha: .24),
+              ),
             ),
             child: Stack(
               fit: StackFit.expand,
@@ -903,50 +894,218 @@ class _ProfileMemoryPreviewTile extends StatelessWidget {
                   ),
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    color: AppColors.darkBackground.withValues(alpha: .08),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: .08),
+                        Colors.black.withValues(alpha: .62),
+                      ],
+                    ),
                   ),
                 ),
                 Positioned(
-                  right: 6,
-                  top: 6,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFD84E),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFFD84E).withValues(alpha: .30),
-                          blurRadius: 10,
+                  left: 14,
+                  right: 14,
+                  bottom: 12,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -.5,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              '$count件の写真つき思い出',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: .76),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(4),
-                      child: OheyGeneratedIcon(
-                        CupertinoIcons.star_fill,
-                        color: Colors.white,
-                        size: 13,
                       ),
-                    ),
+                      const SizedBox(width: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: .92),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '開く',
+                              style: TextStyle(
+                                color: Color(0xFF101820),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            OheyGeneratedIcon(
+                              CupertinoIcons.chevron_forward,
+                              color: Color(0xFF101820),
+                              size: 14,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 3),
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.4,
-            ),
+        ),
+        const SizedBox(height: 10),
+        _ProfileArchiveAddButton(onTap: onAddMemoryTap),
+      ],
+    );
+  }
+}
+
+class _ProfilePhotoArchiveEmptyBlock extends StatelessWidget {
+  const _ProfilePhotoArchiveEmptyBlock({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 116,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: .04),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: const Color(0xFFFF86C8).withValues(alpha: .24),
           ),
-        ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF86C8).withValues(alpha: .13),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Center(
+                child: OheyGeneratedIcon(
+                  CupertinoIcons.photo_fill_on_rectangle_fill,
+                  color: Color(0xFFFF86C8),
+                  size: 28,
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'フォトアーカイブを作ろう',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.5,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '写真つきの思い出がここに並びます',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: .62),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const OheyGeneratedIcon(
+              CupertinoIcons.chevron_forward,
+              color: Color(0xFFFF86C8),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileArchiveAddButton extends StatelessWidget {
+  const _ProfileArchiveAddButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 46,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: .05),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withValues(alpha: .10)),
+        ),
+        child: Row(
+          children: [
+            const OheyPopIcon(
+              icon: CupertinoIcons.camera_fill,
+              color: Color(0xFFFF86C8),
+              size: 28,
+              iconSize: 15,
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                '写真つきの思い出を追加',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.3,
+                ),
+              ),
+            ),
+            OheyGeneratedIcon(
+              CupertinoIcons.plus,
+              color: Colors.white.withValues(alpha: .78),
+              size: 18,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -971,138 +1130,6 @@ class _ProfileMemoryImageFallback extends StatelessWidget {
           color: Colors.white.withValues(alpha: .42),
           size: 22,
         ),
-      ),
-    );
-  }
-}
-
-class _ProfileMemoryPromptTile extends StatelessWidget {
-  const _ProfileMemoryPromptTile({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.darkBackground,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: const Color(0xFFFF86C8).withValues(alpha: .38),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFF5EA8).withValues(alpha: .10),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                OheyGeneratedIcon(
-                  CupertinoIcons.camera_fill,
-                  color: Color(0xFFFF86C8),
-                  size: 17,
-                ),
-                SizedBox(width: 6),
-                Text(
-                  '投稿する',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            '写真を追加',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: .72),
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.4,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileMemoryHintCard extends StatelessWidget {
-  const _ProfileMemoryHintCard({required this.onTap, required this.isEmpty});
-
-  final VoidCallback onTap;
-  final bool isEmpty;
-
-  @override
-  Widget build(BuildContext context) {
-    return Ohey3DButtonSurface(
-      onTap: onTap,
-      height: 48,
-      radius: 22,
-      color: AppColors.darkBackground,
-      bottomColor: const Color(0xFF09131D),
-      useGradient: false,
-      padding: const EdgeInsets.fromLTRB(14, 0, 12, 0),
-      borderColor: Colors.white.withValues(alpha: .12),
-      outerShadows: const [],
-      child: Row(
-        children: [
-          const OheyPopIcon(
-            icon: CupertinoIcons.camera_fill,
-            color: Colors.white,
-            size: 30,
-            iconSize: 16,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '思い出を投稿しよう',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.5,
-                  ),
-                ),
-                Text(
-                  isEmpty ? '写真を追加するとここに表示されるよ' : '写真つきの思い出を追加できるよ',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: .62),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          OheyGeneratedIcon(
-            CupertinoIcons.chevron_forward,
-            color: Colors.white.withValues(alpha: .72),
-            size: 17,
-          ),
-        ],
       ),
     );
   }
