@@ -781,13 +781,6 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const OheyPopIcon(
-                icon: CupertinoIcons.sparkles,
-                color: Color(0xFFFF75B5),
-                size: 27,
-                iconSize: 15,
-              ),
-              const SizedBox(width: 7),
               const Expanded(
                 child: Text(
                   '最近の思い出',
