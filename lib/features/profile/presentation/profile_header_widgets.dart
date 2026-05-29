@@ -963,11 +963,11 @@ class _ProfileArchiveStatusRow extends StatelessWidget {
         color: AppColors.darkBackground,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFFFF75B5).withValues(alpha: .72),
+          color: const Color(0xFF20B9FF).withValues(alpha: .72),
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF75B5).withValues(alpha: .28),
+            color: const Color(0xFF20B9FF).withValues(alpha: .28),
             blurRadius: 18,
             spreadRadius: .5,
             offset: const Offset(0, 0),
