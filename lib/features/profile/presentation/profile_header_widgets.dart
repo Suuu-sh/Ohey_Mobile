@@ -793,43 +793,11 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (hasPhotoMemories)
-                Ohey3DButtonSurface(
-                  onTap: openAll,
-                  height: 28,
-                  radius: 14,
-                  color: Colors.white.withValues(alpha: .08),
-                  bottomColor: const Color(0xFF1A0D1D),
-                  useGradient: false,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  borderColor: const Color(0xFFFF86C8).withValues(alpha: .24),
-                  outerShadows: const [],
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'すべて見る',
-                        style: TextStyle(
-                          color: Color(0xFFFF86C8),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      SizedBox(width: 4),
-                      OheyGeneratedIcon(
-                        CupertinoIcons.chevron_forward,
-                        color: Color(0xFFFF86C8),
-                        size: 15,
-                      ),
-                    ],
-                  ),
-                ),
             ],
           ),
           const SizedBox(height: 12),
           if (hasPhotoMemories)
             _ProfilePhotoArchiveBlock(
-              memory: firstMemory,
               count: photoMemoryCount,
               onTap: openAll,
               onAddMemoryTap: onAddMemoryTap,
@@ -844,143 +812,24 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
 
 class _ProfilePhotoArchiveBlock extends StatelessWidget {
   const _ProfilePhotoArchiveBlock({
-    required this.memory,
     required this.count,
     required this.onTap,
     required this.onAddMemoryTap,
   });
 
-  final Memory memory;
   final int count;
   final VoidCallback onTap;
   final VoidCallback onAddMemoryTap;
 
   @override
   Widget build(BuildContext context) {
-    final imageProvider = _profileMemoryImageProvider(memory.photoAssetPath);
-    final title = _profileMemoryTitle(memory);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
+        _ProfileArchiveStatusRow(
+          title: '思い出を残しました',
+          subtitle: '$count件の写真つき思い出',
           onTap: onTap,
-          child: Container(
-            height: 116,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: const Color(0xFF101B28),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: const Color(0xFFFF86C8).withValues(alpha: .24),
-              ),
-            ),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (imageProvider == null)
-                  const _ProfileMemoryImageFallback()
-                else
-                  Image(
-                    image: imageProvider,
-                    fit: BoxFit.cover,
-                    gaplessPlayback: true,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const _ProfileMemoryImageFallback(),
-                  ),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: .08),
-                        Colors.black.withValues(alpha: .62),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 14,
-                  right: 14,
-                  bottom: 12,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -.5,
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              '$count件の写真つき思い出',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: .76),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Ohey3DButtonSurface(
-                        onTap: onTap,
-                        height: 38,
-                        radius: 19,
-                        color: Colors.white.withValues(alpha: .94),
-                        bottomColor: const Color(0xFFC8D0DA),
-                        useGradient: false,
-                        padding: const EdgeInsets.symmetric(horizontal: 13),
-                        borderColor: Colors.white.withValues(alpha: .36),
-                        outerShadows: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: .18),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '開く',
-                              style: TextStyle(
-                                color: Color(0xFF101820),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            OheyGeneratedIcon(
-                              CupertinoIcons.chevron_forward,
-                              color: Color(0xFF101820),
-                              size: 14,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
         const SizedBox(height: 10),
         _ProfileArchiveAddButton(onTap: onAddMemoryTap),
@@ -996,70 +845,120 @@ class _ProfilePhotoArchiveEmptyBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return _ProfileArchiveStatusRow(
+      title: '思い出はまだありません',
+      subtitle: '写真つきの思い出を追加できます',
+      buttonLabel: '追加',
+      icon: CupertinoIcons.photo_fill_on_rectangle_fill,
       onTap: onTap,
-      child: Container(
-        height: 116,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: .04),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: const Color(0xFFFF86C8).withValues(alpha: .24),
+    );
+  }
+}
+
+class _ProfileArchiveStatusRow extends StatelessWidget {
+  const _ProfileArchiveStatusRow({
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.buttonLabel = '見る',
+    this.icon = CupertinoIcons.photo_fill,
+  });
+
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final String buttonLabel;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 84,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.darkBackground,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFF20B9FF).withValues(alpha: .26),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: const Color(0xFF20B9FF).withValues(alpha: .16),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF20B9FF).withValues(alpha: .24),
+              ),
+            ),
+            child: Center(
+              child: OheyGeneratedIcon(
+                icon,
+                color: const Color(0xFF54D7FF),
+                size: 22,
+              ),
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 58,
-              height: 58,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF86C8).withValues(alpha: .13),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Center(
-                child: OheyGeneratedIcon(
-                  CupertinoIcons.photo_fill_on_rectangle_fill,
-                  color: Color(0xFFFF86C8),
-                  size: 28,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.3,
+                  ),
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .62),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Ohey3DButtonSurface(
+            onTap: onTap,
+            height: 42,
+            radius: 21,
+            color: const Color(0xFF54D7FF),
+            bottomColor: const Color(0xFF168CC8),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            borderColor: Colors.white.withValues(alpha: .18),
+            outerShadows: [
+              BoxShadow(
+                color: const Color(0xFF20B9FF).withValues(alpha: .22),
+                blurRadius: 14,
+                offset: const Offset(0, 7),
+              ),
+            ],
+            child: Text(
+              buttonLabel,
+              style: const TextStyle(
+                color: Color(0xFF06111D),
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
               ),
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'フォトアーカイブを作ろう',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.5,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    '写真つきの思い出がここに並びます',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .62),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const OheyGeneratedIcon(
-              CupertinoIcons.chevron_forward,
-              color: Color(0xFFFF86C8),
-              size: 20,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -1118,30 +1017,6 @@ class _ProfileArchiveAddButton extends StatelessWidget {
   }
 }
 
-class _ProfileMemoryImageFallback extends StatelessWidget {
-  const _ProfileMemoryImageFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF162338), Color(0xFF321C36)],
-        ),
-      ),
-      child: Center(
-        child: OheyGeneratedIcon(
-          CupertinoIcons.photo_fill,
-          color: Colors.white.withValues(alpha: .42),
-          size: 22,
-        ),
-      ),
-    );
-  }
-}
-
 bool _isProfileDisplayablePhoto(Memory memory) =>
     _profileMemoryImageProvider(memory.photoAssetPath) != null;
 
@@ -1159,12 +1034,4 @@ ImageProvider<Object>? _profileMemoryImageProvider(String? value) {
   }
   if (normalized.startsWith('assets/')) return AssetImage(normalized);
   return null;
-}
-
-String _profileMemoryTitle(Memory memory) {
-  final place = memory.place.trim();
-  if (place.isNotEmpty) return place;
-  final memo = memory.memo.trim();
-  if (memo.isNotEmpty) return memo;
-  return '思い出';
 }
