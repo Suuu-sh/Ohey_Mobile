@@ -531,7 +531,6 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.memories,
     required this.photoMemories,
     required this.friendsCount,
-    required this.onMemoriesTap,
     required this.onArchiveTap,
     required this.onAddFriendsTap,
     required this.onAddMemoryTap,
@@ -540,15 +539,12 @@ class _ProfileActivityHome extends StatelessWidget {
   final List<Memory> memories;
   final List<Memory> photoMemories;
   final int friendsCount;
-  final VoidCallback onMemoriesTap;
   final VoidCallback onArchiveTap;
   final VoidCallback onAddFriendsTap;
   final VoidCallback onAddMemoryTap;
 
   @override
   Widget build(BuildContext context) {
-    final recentPhotoMemories = photoMemories.take(2).toList(growable: false);
-
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 112),
@@ -563,9 +559,7 @@ class _ProfileActivityHome extends StatelessWidget {
           _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
           const SizedBox(height: 8),
           _ProfileRecentMemoriesCard(
-            memories: recentPhotoMemories,
             photoMemoryCount: photoMemories.length,
-            onMemoriesTap: onMemoriesTap,
             onArchiveTap: onArchiveTap,
             onAddMemoryTap: onAddMemoryTap,
           ),
@@ -750,24 +744,18 @@ class _ProfileFriendActionRow extends StatelessWidget {
 
 class _ProfileRecentMemoriesCard extends StatelessWidget {
   const _ProfileRecentMemoriesCard({
-    required this.memories,
     required this.photoMemoryCount,
-    required this.onMemoriesTap,
     required this.onArchiveTap,
     required this.onAddMemoryTap,
   });
 
-  final List<Memory> memories;
   final int photoMemoryCount;
-  final VoidCallback onMemoriesTap;
   final VoidCallback onArchiveTap;
   final VoidCallback onAddMemoryTap;
 
   @override
   Widget build(BuildContext context) {
-    final firstMemory = memories.isNotEmpty ? memories[0] : null;
-    final hasPhotoMemories = firstMemory != null;
-    final openAll = photoMemoryCount > 0 ? onArchiveTap : onMemoriesTap;
+    final hasPhotoMemories = photoMemoryCount > 0;
 
     return Padding(
       padding: EdgeInsets.zero,
@@ -778,7 +766,7 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
             children: [
               const Expanded(
                 child: Text(
-                  '最近の思い出',
+                  'フォトアーカイブ',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -794,11 +782,11 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
           if (hasPhotoMemories)
             _ProfilePhotoArchiveBlock(
               count: photoMemoryCount,
-              onTap: openAll,
+              onTap: onArchiveTap,
               onAddMemoryTap: onAddMemoryTap,
             )
           else
-            _ProfilePhotoArchiveEmptyBlock(onTap: onAddMemoryTap),
+            _ProfilePhotoArchiveEmptyBlock(onTap: onArchiveTap),
         ],
       ),
     );
@@ -822,7 +810,7 @@ class _ProfilePhotoArchiveBlock extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _ProfileArchiveStatusRow(
-          title: '思い出を残しました',
+          title: 'アーカイブを見る',
           subtitle: '$count件の写真つき思い出',
           onTap: onTap,
         ),
@@ -841,10 +829,10 @@ class _ProfilePhotoArchiveEmptyBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _ProfileArchiveStatusRow(
-      title: '思い出はまだありません',
-      subtitle: '写真つきの思い出を追加できます',
-      buttonLabel: '追加',
-      icon: CupertinoIcons.photo_fill_on_rectangle_fill,
+      title: 'アーカイブを見る',
+      subtitle: '写真つきの思い出をここにまとめます',
+      buttonLabel: '開く',
+      icon: CupertinoIcons.archivebox_fill,
       onTap: onTap,
     );
   }
@@ -855,8 +843,8 @@ class _ProfileArchiveStatusRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
-    this.buttonLabel = '見る',
-    this.icon = CupertinoIcons.photo_fill,
+    this.buttonLabel = '開く',
+    this.icon = CupertinoIcons.archivebox_fill,
   });
 
   final String title;

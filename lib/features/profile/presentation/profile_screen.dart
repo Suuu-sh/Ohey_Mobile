@@ -161,11 +161,6 @@ class ProfileScreen extends ConsumerWidget {
                                 memories: myMemories,
                                 photoMemories: photoMemories,
                                 friendsCount: friends.length,
-                                onMemoriesTap: () => OheyToast.show(
-                                  context,
-                                  'カレンダーを見てみてね。',
-                                  icon: CupertinoIcons.calendar,
-                                ),
                                 onArchiveTap: () => Navigator.of(context).push(
                                   CupertinoPageRoute<void>(
                                     fullscreenDialog: true,
