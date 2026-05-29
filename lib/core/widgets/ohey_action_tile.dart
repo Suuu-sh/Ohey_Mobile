@@ -40,11 +40,11 @@ class OheyActionTile extends StatelessWidget {
         ? Color.lerp(
             isWhite ? const Color(0xFFFFFFFF) : AppColors.darkBackground,
             destructiveColor,
-            isWhite ? .10 : .16,
+            isWhite ? .18 : .32,
           )!
         : isWhite
-        ? const Color(0xFFF7FAFC)
-        : AppColors.darkBackground;
+        ? Color.lerp(const Color(0xFFF7FAFC), accent, .10)!
+        : Color.lerp(AppColors.darkBackground, accent, .18)!;
     final bottomColor = destructive
         ? ohey3DShadowColorFor(
             destructiveColor,

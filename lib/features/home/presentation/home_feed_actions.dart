@@ -475,7 +475,7 @@ class _FeedModalTextButton extends StatelessWidget {
     final surfaceColor = Color.lerp(
       isWhite ? Colors.white : AppColors.darkBackground,
       color,
-      isWhite ? .16 : .22,
+      isWhite ? .24 : .38,
     )!;
     final bottomColor = ohey3DShadowColorFor(
       color,
