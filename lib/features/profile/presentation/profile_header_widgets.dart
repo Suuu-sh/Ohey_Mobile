@@ -916,7 +916,7 @@ class _ProfilePhotoArchiveBlock extends StatelessWidget {
           subtitle: '$count件の写真つき思い出',
           onTap: onTap,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         Row(
           children: [
             Expanded(child: _ProfileArchiveAddButton(onTap: onAddMemoryTap)),
