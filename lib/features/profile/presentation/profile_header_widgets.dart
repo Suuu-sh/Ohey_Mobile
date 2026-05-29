@@ -1010,13 +1010,13 @@ class _ProfileArchiveAddButton extends StatelessWidget {
       onTap: onTap,
       height: 46,
       radius: 20,
-      color: const Color(0xFFFF86C8),
-      bottomColor: const Color(0xFFB93A83),
+      color: const Color(0xFFC08BFF),
+      bottomColor: const Color(0xFF6D4DFF),
       padding: const EdgeInsets.symmetric(horizontal: 14),
       borderColor: Colors.white.withValues(alpha: .20),
       outerShadows: [
         BoxShadow(
-          color: const Color(0xFFFF86C8).withValues(alpha: .10),
+          color: const Color(0xFFC08BFF).withValues(alpha: .18),
           blurRadius: 14,
           offset: const Offset(0, 7),
         ),
