@@ -567,7 +567,7 @@ class _ProfileActivityHome extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           const _ProfileArchiveTopGlowLine(),
-          const SizedBox(height: 14),
+          const SizedBox(height: 22),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _ProfileRecentMemoriesCard(
@@ -865,7 +865,7 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
             children: [
               const Expanded(
                 child: Text(
-                  '何する？',
+                  '今日はなにする？',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
