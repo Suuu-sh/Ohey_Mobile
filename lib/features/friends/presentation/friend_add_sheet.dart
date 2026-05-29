@@ -252,6 +252,7 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 430),
                 child: _CuteQrCard(
+                  name: user?.name.trim() ?? '',
                   userId: myUserId,
                   payload: qrPayload,
                   avatar: user?.avatar ?? OheyAvatar.defaultAvatar,
@@ -553,6 +554,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
             if (myUserId.isNotEmpty) ...[
               const SizedBox(height: 18),
               _CuteQrCard(
+                name: user?.name.trim() ?? '',
                 userId: myUserId,
                 payload: qrPayload,
                 avatar: user?.avatar ?? OheyAvatar.defaultAvatar,
@@ -606,6 +608,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
 
 class _CuteQrCard extends StatelessWidget {
   const _CuteQrCard({
+    required this.name,
     required this.userId,
     required this.payload,
     required this.avatar,
@@ -629,6 +632,7 @@ class _CuteQrCard extends StatelessWidget {
     this.onCancelSearchRequest,
   });
 
+  final String name;
   final String userId;
   final String? payload;
   final OheyAvatar avatar;
@@ -696,8 +700,10 @@ class _CuteQrCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    Text(
+                    const Text(
                       'Ohey',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: ink,
                         fontSize: 21,
@@ -707,7 +713,7 @@ class _CuteQrCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '@$userId',
+                      '${name.isEmpty ? 'ユーザー名未設定' : name}  @$userId',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
