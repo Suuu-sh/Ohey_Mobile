@@ -574,12 +574,8 @@ class _ProfileActivityHome extends StatelessWidget {
               photoMemoryCount: photoMemories.length,
               onArchiveTap: onArchiveTap,
               onAddMemoryTap: onAddMemoryTap,
+              onAddFriendsTap: onAddFriendsTap,
             ),
-          ),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
           ),
         ],
       ),
@@ -848,11 +844,13 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
     required this.photoMemoryCount,
     required this.onArchiveTap,
     required this.onAddMemoryTap,
+    required this.onAddFriendsTap,
   });
 
   final int photoMemoryCount;
   final VoidCallback onArchiveTap;
   final VoidCallback onAddMemoryTap;
+  final VoidCallback onAddFriendsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -885,6 +883,7 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
               count: photoMemoryCount,
               onTap: onArchiveTap,
               onAddMemoryTap: onAddMemoryTap,
+              onAddFriendsTap: onAddFriendsTap,
             )
           else
             _ProfilePhotoArchiveEmptyBlock(onTap: onArchiveTap),
@@ -899,11 +898,13 @@ class _ProfilePhotoArchiveBlock extends StatelessWidget {
     required this.count,
     required this.onTap,
     required this.onAddMemoryTap,
+    required this.onAddFriendsTap,
   });
 
   final int count;
   final VoidCallback onTap;
   final VoidCallback onAddMemoryTap;
+  final VoidCallback onAddFriendsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -916,7 +917,15 @@ class _ProfilePhotoArchiveBlock extends StatelessWidget {
           onTap: onTap,
         ),
         const SizedBox(height: 10),
-        _ProfileArchiveAddButton(onTap: onAddMemoryTap),
+        Row(
+          children: [
+            Expanded(child: _ProfileArchiveAddButton(onTap: onAddMemoryTap)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
+            ),
+          ],
+        ),
       ],
     );
   }
