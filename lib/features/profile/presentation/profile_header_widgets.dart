@@ -769,13 +769,8 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
     final hasPhotoMemories = firstMemory != null;
     final openAll = photoMemoryCount > 0 ? onArchiveTap : onMemoriesTap;
 
-    return OheyThemedPanel(
-      accentColor: _ProfileColors.pink,
-      backgroundColor: AppColors.darkBackground,
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-      borderRadius: 24,
-      borderAlpha: .28,
-      glowAlpha: 0,
+    return Padding(
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -874,7 +869,7 @@ class _ProfileArchiveStatusRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 84,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
         color: AppColors.darkBackground,
         borderRadius: BorderRadius.circular(24),
@@ -934,27 +929,30 @@ class _ProfileArchiveStatusRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Ohey3DButtonSurface(
-            onTap: onTap,
-            height: 42,
-            radius: 21,
-            color: const Color(0xFF54D7FF),
-            bottomColor: const Color(0xFF168CC8),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            borderColor: Colors.white.withValues(alpha: .18),
-            outerShadows: [
-              BoxShadow(
-                color: const Color(0xFF20B9FF).withValues(alpha: .22),
-                blurRadius: 14,
-                offset: const Offset(0, 7),
-              ),
-            ],
-            child: Text(
-              buttonLabel,
-              style: const TextStyle(
-                color: Color(0xFF06111D),
-                fontSize: 13,
-                fontWeight: FontWeight.w900,
+          SizedBox(
+            width: 72,
+            child: Ohey3DButtonSurface(
+              onTap: onTap,
+              height: 42,
+              radius: 21,
+              color: const Color(0xFF54D7FF),
+              bottomColor: const Color(0xFF168CC8),
+              padding: EdgeInsets.zero,
+              borderColor: Colors.white.withValues(alpha: .18),
+              outerShadows: [
+                BoxShadow(
+                  color: const Color(0xFF20B9FF).withValues(alpha: .22),
+                  blurRadius: 14,
+                  offset: const Offset(0, 7),
+                ),
+              ],
+              child: Text(
+                buttonLabel,
+                style: const TextStyle(
+                  color: Color(0xFF06111D),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           ),
