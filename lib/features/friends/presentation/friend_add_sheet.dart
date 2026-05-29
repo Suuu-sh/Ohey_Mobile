@@ -789,39 +789,31 @@ class _CuteQrCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Row(
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 10,
+            runSpacing: 10,
             children: [
-              Expanded(
-                child: _QrActionButton(
-                  icon: CupertinoIcons.square_arrow_up,
-                  label: 'リンクをシェア',
-                  onTap: onShare,
-                ),
+              _QrActionButton(
+                icon: CupertinoIcons.square_arrow_up,
+                label: 'シェア',
+                onTap: onShare,
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _QrActionButton(
-                  icon: CupertinoIcons.link,
-                  label: 'リンクをコピー',
-                  onTap: onCopyLink,
-                ),
+              _QrActionButton(
+                icon: CupertinoIcons.link,
+                label: 'リンクコピー',
+                onTap: onCopyLink,
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _QrActionButton(
-                  icon: CupertinoIcons.doc_on_doc,
-                  label: 'IDだけコピー',
-                  onTap: onCopyId,
-                ),
+              _QrActionButton(
+                icon: CupertinoIcons.doc_on_doc,
+                label: 'IDコピー',
+                onTap: onCopyId,
               ),
               if (onScan != null) ...[
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _QrActionButton(
-                    icon: CupertinoIcons.qrcode_viewfinder,
-                    label: 'QRを読み取る',
-                    onTap: onScan!,
-                  ),
+                _QrActionButton(
+                  icon: CupertinoIcons.qrcode_viewfinder,
+                  label: 'QR読取',
+                  onTap: onScan!,
                 ),
               ],
             ],
@@ -888,40 +880,40 @@ class _QrActionButton extends StatelessWidget {
         opacity: onTap == null ? .45 : 1,
         child: Column(
           children: [
-            SizedBox(
-              width: 62,
-              child: Ohey3DButtonSurface(
-                onTap: onTap,
-                height: 54,
-                radius: 16,
-                color: Colors.white,
-                bottomColor: const Color(0xFFE1E1E1),
-                padding: EdgeInsets.zero,
-                useGradient: true,
-                borderColor: Colors.black.withValues(alpha: .09),
-                borderWidth: 2,
-                outerShadows: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: .07),
-                    blurRadius: 14,
-                    offset: const Offset(0, 7),
-                  ),
-                ],
-                child: Center(
-                  child: OheyGeneratedIcon(icon, color: ink, size: 25),
+            Ohey3DButtonSurface(
+              onTap: onTap,
+              height: 54,
+              radius: 16,
+              color: Colors.white,
+              bottomColor: const Color(0xFFE1E1E1),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              useGradient: true,
+              borderColor: Colors.black.withValues(alpha: .09),
+              borderWidth: 2,
+              outerShadows: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .07),
+                  blurRadius: 14,
+                  offset: const Offset(0, 7),
                 ),
+              ],
+              child: Center(
+                child: OheyGeneratedIcon(icon, color: ink, size: 25),
               ),
             ),
             const SizedBox(height: 6),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: ink.withValues(alpha: .50),
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
+            SizedBox(
+              width: 74,
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.visible,
+                style: TextStyle(
+                  color: ink.withValues(alpha: .50),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           ],
