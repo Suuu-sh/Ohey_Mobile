@@ -912,7 +912,7 @@ class _ProfilePhotoArchiveBlock extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _ProfileArchiveStatusRow(
-          title: 'アーカイブを見る',
+          title: '思い出を見る',
           subtitle: '$count件の写真つき思い出',
           onTap: onTap,
         ),
@@ -939,7 +939,7 @@ class _ProfilePhotoArchiveEmptyBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _ProfileArchiveStatusRow(
-      title: 'アーカイブを見る',
+      title: '思い出を見る',
       subtitle: '写真つきの思い出をここにまとめます',
       buttonLabel: '開く',
       icon: CupertinoIcons.archivebox_fill,
