@@ -463,9 +463,9 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
             ),
             _SettingsTile(
               icon: CupertinoIcons.person_2_fill,
-              label: '申請管理',
-              subtitle: _friendRequestSettingsSubtitle(pendingRequestsAsync),
-              accent: const Color(0xFFB7F15B),
+              label: '管理',
+              subtitle: '申請・ブロック・ミュートを確認',
+              accent: const Color(0xFF65D6FF),
               badgeCount: pendingRequestBadgeCount,
               onTap: () async {
                 if (sheetContext.mounted) {
@@ -473,21 +473,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 }
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
-                await _showFriendRequestManagementSheet(rootContext);
-              },
-            ),
-            _SettingsTile(
-              icon: CupertinoIcons.shield_lefthalf_fill,
-              label: 'ブロック・ミュート管理',
-              subtitle: '解除したい相手を確認',
-              accent: const Color(0xFF65D6FF),
-              onTap: () async {
-                if (sheetContext.mounted) {
-                  Navigator.of(sheetContext).pop();
-                }
-                await Future<void>.delayed(const Duration(milliseconds: 180));
-                if (!rootContext.mounted) return;
-                await _showSafetyCenterSheet(rootContext);
+                await _showProfileManagementSheet(rootContext);
               },
             ),
             _SettingsTile(
@@ -774,6 +760,68 @@ Future<void> _showFriendRequestManagementSheet(BuildContext context) {
     useSafeArea: true,
     barrierColor: Colors.black.withValues(alpha: .58),
     builder: (_) => const _FriendRequestManagementSheet(),
+  );
+}
+
+Future<void> _showProfileManagementSheet(BuildContext context) {
+  final rootContext = context;
+  return showOheyBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (sheetContext) => Consumer(
+      builder: (context, ref, _) {
+        final pendingRequestsAsync = ref.watch(pendingFriendRequestsProvider);
+        final pendingRequestBadgeCount = pendingRequestsAsync.maybeWhen(
+          data: (requests) =>
+              requests.where((request) => request.isIncoming).length,
+          orElse: () => 0,
+        );
+
+        return OheyBottomSheetShell(
+          title: '管理',
+          topSafeArea: true,
+          margin: const EdgeInsets.all(14),
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+          radius: 28,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _SettingsTile(
+                icon: CupertinoIcons.person_2_fill,
+                label: '申請管理',
+                subtitle: _friendRequestSettingsSubtitle(pendingRequestsAsync),
+                accent: const Color(0xFFB7F15B),
+                badgeCount: pendingRequestBadgeCount,
+                onTap: () async {
+                  if (sheetContext.mounted) {
+                    Navigator.of(sheetContext).pop();
+                  }
+                  await Future<void>.delayed(const Duration(milliseconds: 180));
+                  if (!rootContext.mounted) return;
+                  await _showFriendRequestManagementSheet(rootContext);
+                },
+              ),
+              _SettingsTile(
+                icon: CupertinoIcons.shield_lefthalf_fill,
+                label: 'ブロック・ミュート管理',
+                subtitle: '解除したい相手を確認',
+                accent: const Color(0xFF65D6FF),
+                onTap: () async {
+                  if (sheetContext.mounted) {
+                    Navigator.of(sheetContext).pop();
+                  }
+                  await Future<void>.delayed(const Duration(milliseconds: 180));
+                  if (!rootContext.mounted) return;
+                  await _showSafetyCenterSheet(rootContext);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    ),
   );
 }
 
