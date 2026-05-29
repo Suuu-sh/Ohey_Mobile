@@ -27,8 +27,8 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>app.ohey.ohey</string>
-				<string>app.ohey.ohey.dev</string>
+				<string>app.ohey.com</string>
+				<string>app.ohey.com.dev</string>
 			</array>
 		</dict>
 	</array>

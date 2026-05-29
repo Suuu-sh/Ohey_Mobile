@@ -1,7 +1,7 @@
 import SwiftUI
 import WidgetKit
 
-private let appGroupIdentifier = "group.app.ohey.ohey"
+private let appGroupIdentifier = "group.app.ohey.com"
 
 struct OheyAvailableFriend: Equatable, Identifiable {
   let name: String
@@ -121,10 +121,10 @@ struct OheyTodayStatusWidgetView: View {
     switch family {
     case .systemMedium:
       MediumStatusContent(snapshot: entry.snapshot)
-        .widgetURL(URL(string: "app.ohey.ohey://widget/status"))
+        .widgetURL(URL(string: "app.ohey.com://widget/status"))
     default:
       SmallStatusContent(snapshot: entry.snapshot)
-        .widgetURL(URL(string: "app.ohey.ohey://widget/status"))
+        .widgetURL(URL(string: "app.ohey.com://widget/status"))
     }
   }
 }
@@ -137,10 +137,10 @@ struct OheyFriendsAvailabilityWidgetView: View {
     switch family {
     case .systemMedium:
       MediumFriendsContent(snapshot: entry.snapshot)
-        .widgetURL(URL(string: "app.ohey.ohey://widget/friends"))
+        .widgetURL(URL(string: "app.ohey.com://widget/friends"))
     default:
       SmallFriendsContent(snapshot: entry.snapshot)
-        .widgetURL(URL(string: "app.ohey.ohey://widget/friends"))
+        .widgetURL(URL(string: "app.ohey.com://widget/friends"))
     }
   }
 }

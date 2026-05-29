@@ -263,9 +263,9 @@ jobs:
             <string>app-store-connect</string>
             <key>provisioningProfiles</key>
             <dict>
-              <key>app.ohey.ohey</key>
+              <key>app.ohey.com</key>
               <string>$APP_PROVISIONING_PROFILE_NAME</string>
-              <key>app.ohey.ohey.widgets</key>
+              <key>app.ohey.com.widgets</key>
               <string>$WIDGET_PROVISIONING_PROFILE_NAME</string>
             </dict>
             <key>signingCertificate</key>
@@ -292,8 +292,8 @@ jobs:
           pbxproj = Path('ios/Runner.xcodeproj/project.pbxproj')
           text = pbxproj.read_text(encoding='utf-8')
           profiles = {
-              'app.ohey.ohey': os.environ['APP_PROVISIONING_PROFILE_NAME'],
-              'app.ohey.ohey.widgets': os.environ['WIDGET_PROVISIONING_PROFILE_NAME'],
+              'app.ohey.com': os.environ['APP_PROVISIONING_PROFILE_NAME'],
+              'app.ohey.com.widgets': os.environ['WIDGET_PROVISIONING_PROFILE_NAME'],
           }
 
           def set_setting(block: str, key: str, value: str) -> str:
@@ -400,7 +400,7 @@ jobs:
       - name: Assign TestFlight build to internal testers
         uses: Suuu-sh/Shared/actions/testflight-distribute-existing-build@main
         with:
-          app-bundle-id: app.ohey.ohey
+          app-bundle-id: app.ohey.com
           app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           app-store-connect-issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           app-store-connect-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}

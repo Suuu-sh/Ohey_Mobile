@@ -30,8 +30,8 @@ class SupabaseConfig {
   static const _prodSupabaseUrl = 'https://pwifgddolctqghygwxwj.supabase.co';
   static const _prodPublishableKey =
       'sb_publishable_pezjPt7pYRECNFdydlon8A_RpSjNulk';
-  static const _prodAuthRedirectUrl = 'app.ohey.ohey://login-callback/';
-  static const _devAuthRedirectUrl = 'app.ohey.ohey.dev://login-callback/';
+  static const _prodAuthRedirectUrl = 'app.ohey.com://login-callback/';
+  static const _devAuthRedirectUrl = 'app.ohey.com.dev://login-callback/';
   static const _mistypedProdSupabaseUrl =
       'https://pwifgddolctqhygywxwj.supabase.co';
 

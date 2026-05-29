@@ -35,7 +35,7 @@ flutter run \
   --dart-define=OHEY_ENV=local \
   --dart-define=SUPABASE_URL=https://wwyaftonswgxnjcceyfb.supabase.co \
   --dart-define=SUPABASE_PUBLISHABLE_KEY=<dev-ohey publishable key> \
-  --dart-define=SUPABASE_AUTH_REDIRECT_URL=app.ohey.ohey://login-callback/
+  --dart-define=SUPABASE_AUTH_REDIRECT_URL=app.ohey.com://login-callback/
 ```
 
 Production/release builds should override `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` with the `ohey` project values.
@@ -61,7 +61,7 @@ Both `ohey` and `dev-ohey` are kept on the same app schema:
 Auth callback URL:
 
 ```text
-app.ohey.ohey://login-callback/
+app.ohey.com://login-callback/
 ```
 
 ## Important: dev and production must stay separate

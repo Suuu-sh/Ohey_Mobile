@@ -7,7 +7,7 @@ void main() {
     expect(SupabaseConfig.url, 'https://wwyaftonswgxnjcceyfb.supabase.co');
     expect(
       SupabaseConfig.authRedirectUrl,
-      'app.ohey.ohey.dev://login-callback/',
+      'app.ohey.com.dev://login-callback/',
     );
     expect(BackendConfig.baseUrl, 'https://dev-ohey-backend.onrender.com');
     expect(

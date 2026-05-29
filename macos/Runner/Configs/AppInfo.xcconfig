@@ -8,7 +8,7 @@
 PRODUCT_NAME = Ohey
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = app.ohey.ohey
+PRODUCT_BUNDLE_IDENTIFIER = app.ohey.com
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 app.ohey. All rights reserved.

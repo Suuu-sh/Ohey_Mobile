@@ -16,7 +16,7 @@ import WidgetKit
   private var placeSearchLocationCompletion: ((CLLocation?, FlutterError?) -> Void)?
   private var didRequestPlaceSearchLocation = false
   private var didRegisterArAvatarCameraViewFactory = false
-  private let widgetAppGroupIdentifier = "group.app.ohey.ohey"
+  private let widgetAppGroupIdentifier = "group.app.ohey.com"
 
   override func application(
     _ application: UIApplication,

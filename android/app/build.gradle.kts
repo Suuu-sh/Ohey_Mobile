@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "app.ohey.ohey"
+    namespace = "app.ohey.com"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "app.ohey.ohey"
+        applicationId = "app.ohey.com"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

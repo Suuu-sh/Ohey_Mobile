@@ -81,10 +81,10 @@ Ohey supports separate Firebase values for dev and prod. Keep filled config file
 
 Recommended Firebase apps:
 
-- dev iOS bundle ID: `app.ohey.ohey.dev`
-- prod iOS bundle ID: `app.ohey.ohey`
-- dev Android application ID: `app.ohey.ohey.dev`
-- prod Android application ID: `app.ohey.ohey`
+- dev iOS bundle ID: `app.ohey.com.dev`
+- prod iOS bundle ID: `app.ohey.com`
+- dev Android application ID: `app.ohey.com.dev`
+- prod Android application ID: `app.ohey.com`
 
 Prepare local dart-define files:
 
