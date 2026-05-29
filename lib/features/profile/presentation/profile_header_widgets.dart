@@ -749,7 +749,7 @@ class _ProfileArchiveTopGlowLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const pink = Color(0xFFFF5DAE);
+    const pink = Color(0xFFFF75B5);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Container(
@@ -759,22 +759,22 @@ class _ProfileArchiveTopGlowLine extends StatelessWidget {
           gradient: LinearGradient(
             colors: [
               pink.withValues(alpha: 0),
-              pink.withValues(alpha: .78),
-              const Color(0xFFFF9BD5),
-              pink.withValues(alpha: .78),
+              pink.withValues(alpha: .72),
+              pink,
+              pink.withValues(alpha: .72),
               pink.withValues(alpha: 0),
             ],
           ),
           boxShadow: [
             BoxShadow(
-              color: pink.withValues(alpha: .62),
-              blurRadius: 14,
-              spreadRadius: 1,
+              color: pink.withValues(alpha: .28),
+              blurRadius: 18,
+              spreadRadius: .5,
             ),
             BoxShadow(
-              color: const Color(0xFFFF9BD5).withValues(alpha: .32),
-              blurRadius: 28,
-              spreadRadius: 2,
+              color: pink.withValues(alpha: .16),
+              blurRadius: 34,
+              spreadRadius: 0,
             ),
           ],
         ),
@@ -903,12 +903,13 @@ class _ProfileArchiveStatusRow extends StatelessWidget {
         color: AppColors.darkBackground,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFFFF5DAE).withValues(alpha: .62),
+          color: const Color(0xFFFF75B5).withValues(alpha: .72),
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF5DAE).withValues(alpha: .18),
+            color: const Color(0xFFFF75B5).withValues(alpha: .28),
             blurRadius: 18,
+            spreadRadius: .5,
             offset: const Offset(0, 0),
           ),
         ],
