@@ -558,7 +558,7 @@ class _ProfileActivityHome extends StatelessWidget {
           const SizedBox(height: 8),
           _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
           const SizedBox(height: 12),
-          const _ProfileArchiveTopGlowLine(color: Color(0xFF9AF21A)),
+          const _ProfileArchiveTopGlowLine(),
           const SizedBox(height: 14),
           _ProfileRecentMemoriesCard(
             photoMemoryCount: photoMemories.length,
@@ -745,17 +745,15 @@ class _ProfileFriendActionRow extends StatelessWidget {
 }
 
 class _ProfileArchiveTopGlowLine extends StatelessWidget {
-  const _ProfileArchiveTopGlowLine({this.color = const Color(0xFFFF75B5)});
-
-  final Color color;
+  const _ProfileArchiveTopGlowLine();
 
   @override
   Widget build(BuildContext context) {
-    final pink = color;
+    const pink = Color(0xFFFF75B5);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
+      padding: EdgeInsets.zero,
       child: Container(
-        height: 3,
+        height: 1,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(999),
           gradient: LinearGradient(
