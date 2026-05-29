@@ -557,7 +557,9 @@ class _ProfileActivityHome extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          const _ProfileArchiveTopGlowLine(),
+          const SizedBox(height: 14),
           _ProfileRecentMemoriesCard(
             photoMemoryCount: photoMemories.length,
             onArchiveTap: onArchiveTap,
@@ -737,6 +739,45 @@ class _ProfileFriendActionRow extends StatelessWidget {
         CupertinoIcons.chevron_forward,
         color: Color(0xFF101820),
         size: 22,
+      ),
+    );
+  }
+}
+
+class _ProfileArchiveTopGlowLine extends StatelessWidget {
+  const _ProfileArchiveTopGlowLine();
+
+  @override
+  Widget build(BuildContext context) {
+    const pink = Color(0xFFFF5DAE);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Container(
+        height: 3,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(999),
+          gradient: LinearGradient(
+            colors: [
+              pink.withValues(alpha: 0),
+              pink.withValues(alpha: .78),
+              const Color(0xFFFF9BD5),
+              pink.withValues(alpha: .78),
+              pink.withValues(alpha: 0),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: pink.withValues(alpha: .62),
+              blurRadius: 14,
+              spreadRadius: 1,
+            ),
+            BoxShadow(
+              color: const Color(0xFFFF9BD5).withValues(alpha: .32),
+              blurRadius: 28,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
       ),
     );
   }
