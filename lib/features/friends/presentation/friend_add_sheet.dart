@@ -776,13 +776,16 @@ class _CuteQrCard extends StatelessWidget {
                   ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'ohey',
-            style: TextStyle(
+          Text(
+            name.isEmpty ? '@$userId' : '$name  @$userId',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
               color: ink,
-              fontSize: 24,
+              fontSize: 18,
               fontWeight: FontWeight.w900,
-              letterSpacing: -.6,
+              letterSpacing: -.4,
             ),
           ),
           const SizedBox(height: 12),
