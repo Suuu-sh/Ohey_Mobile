@@ -379,18 +379,6 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
     context: context,
     builder: (sheetContext) => Consumer(
       builder: (context, ref, _) {
-        final currentAuthUserId = ref
-            .watch(supabaseClientProvider)
-            .auth
-            .currentUser
-            ?.id;
-        final memories =
-            ref.watch(memoryControllerProvider).asData?.value ??
-            const <Memory>[];
-        final photoMemories = _photoArchiveMemories(
-          memories,
-          currentAuthUserId,
-        );
         final pendingRequestsAsync = ref.watch(pendingFriendRequestsProvider);
         final pendingRequestBadgeCount = pendingRequestsAsync.maybeWhen(
           data: (requests) =>
@@ -419,27 +407,6 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                   context,
                   ref,
                   ref.read(oheyUserProvider),
-                );
-              },
-            ),
-            _SettingsTile(
-              icon: CupertinoIcons.photo_fill_on_rectangle_fill,
-              label: 'フォトアーカイブ',
-              subtitle: photoMemories.isEmpty
-                  ? '写真付きの思い出を見返す'
-                  : '${photoMemories.length}件の思い出を見返す',
-              accent: const Color(0xFFFF7AB8),
-              onTap: () async {
-                if (sheetContext.mounted) {
-                  Navigator.of(sheetContext).pop();
-                }
-                await Future<void>.delayed(const Duration(milliseconds: 180));
-                if (!rootContext.mounted) return;
-                await Navigator.of(rootContext).push<void>(
-                  CupertinoPageRoute(
-                    fullscreenDialog: true,
-                    builder: (_) => PhotoArchiveScreen(memories: photoMemories),
-                  ),
                 );
               },
             ),
