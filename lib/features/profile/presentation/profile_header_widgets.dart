@@ -775,7 +775,7 @@ class _ProfileFriendActionRow extends StatelessWidget {
       color: const Color(0xFF9AF21A),
       foregroundColor: const Color(0xFF101820),
       shadowColor: const Color(0xFF5DC86C),
-      fontSize: 18,
+      fontSize: 14,
       customIcon: const OheyPopIcon(
         icon: CupertinoIcons.person_2_fill,
         color: Color(0xFF101820),
