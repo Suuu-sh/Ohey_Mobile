@@ -801,30 +801,34 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
                 ),
               ),
               if (hasPhotoMemories)
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
+                Ohey3DButtonSurface(
                   onTap: openAll,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'すべて見る',
-                          style: TextStyle(
-                            color: Color(0xFFFF86C8),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        OheyGeneratedIcon(
-                          CupertinoIcons.chevron_forward,
+                  height: 28,
+                  radius: 14,
+                  color: Colors.white.withValues(alpha: .08),
+                  bottomColor: const Color(0xFF1A0D1D),
+                  useGradient: false,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  borderColor: const Color(0xFFFF86C8).withValues(alpha: .24),
+                  outerShadows: const [],
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'すべて見る',
+                        style: TextStyle(
                           color: Color(0xFFFF86C8),
-                          size: 16,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
                         ),
-                      ],
-                    ),
+                      ),
+                      SizedBox(width: 4),
+                      OheyGeneratedIcon(
+                        CupertinoIcons.chevron_forward,
+                        color: Color(0xFFFF86C8),
+                        size: 15,
+                      ),
+                    ],
                   ),
                 ),
             ],
@@ -942,15 +946,22 @@ class _ProfilePhotoArchiveBlock extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: .92),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
+                      Ohey3DButtonSurface(
+                        onTap: onTap,
+                        height: 38,
+                        radius: 19,
+                        color: Colors.white.withValues(alpha: .94),
+                        bottomColor: const Color(0xFFC8D0DA),
+                        useGradient: false,
+                        padding: const EdgeInsets.symmetric(horizontal: 13),
+                        borderColor: Colors.white.withValues(alpha: .36),
+                        outerShadows: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: .18),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
