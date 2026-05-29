@@ -795,28 +795,28 @@ class _CuteQrCard extends StatelessWidget {
           const SizedBox(height: 12),
           Wrap(
             alignment: WrapAlignment.center,
-            spacing: 10,
-            runSpacing: 10,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               _QrActionButton(
                 icon: CupertinoIcons.square_arrow_up,
-                label: 'シェア',
+                label: 'リンクをシェア',
                 onTap: onShare,
               ),
               _QrActionButton(
                 icon: CupertinoIcons.link,
-                label: 'リンクコピー',
+                label: 'リンクをコピー',
                 onTap: onCopyLink,
               ),
               _QrActionButton(
                 icon: CupertinoIcons.doc_on_doc,
-                label: 'IDコピー',
+                label: 'IDをコピー',
                 onTap: onCopyId,
               ),
               if (onScan != null) ...[
                 _QrActionButton(
                   icon: CupertinoIcons.qrcode_viewfinder,
-                  label: 'QR読取',
+                  label: 'QRを読み取る',
                   onTap: onScan!,
                 ),
               ],
@@ -882,45 +882,46 @@ class _QrActionButton extends StatelessWidget {
       label: label,
       child: Opacity(
         opacity: onTap == null ? .45 : 1,
-        child: Column(
-          children: [
-            Ohey3DButtonSurface(
-              onTap: onTap,
-              height: 54,
-              radius: 16,
-              color: Colors.white,
-              bottomColor: const Color(0xFFE1E1E1),
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              useGradient: true,
-              borderColor: Colors.black.withValues(alpha: .09),
-              borderWidth: 2,
-              outerShadows: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: .07),
-                  blurRadius: 14,
-                  offset: const Offset(0, 7),
+        child: SizedBox(
+          width: 138,
+          child: Ohey3DButtonSurface(
+            onTap: onTap,
+            height: 48,
+            radius: 18,
+            color: Colors.white,
+            bottomColor: const Color(0xFFE1E1E1),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            useGradient: true,
+            borderColor: Colors.black.withValues(alpha: .09),
+            borderWidth: 2,
+            outerShadows: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: .06),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                OheyGeneratedIcon(icon, color: ink, size: 20),
+                const SizedBox(width: 7),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.visible,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: ink.withValues(alpha: .72),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ),
               ],
-              child: Center(
-                child: OheyGeneratedIcon(icon, color: ink, size: 25),
-              ),
             ),
-            const SizedBox(height: 6),
-            SizedBox(
-              width: 74,
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.visible,
-                style: TextStyle(
-                  color: ink.withValues(alpha: .50),
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
