@@ -1503,38 +1503,20 @@ class _EmptyFriendsActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          width: 126,
-          child: Ohey3DButton(
-            label: 'QRでつながる',
-            icon: CupertinoIcons.qrcode_viewfinder,
-            onTap: onAddFriend,
-            height: 44,
-            radius: 20,
-            color: _FriendsColors.lime,
-            foregroundColor: _FriendsColors.limeForeground,
-            shadowColor: _FriendsColors.limeShadow,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            fontSize: 12,
-          ),
-        ),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 112,
-          child: Ohey3DButton.secondary(
-            label: 'IDで探す',
-            icon: CupertinoIcons.at,
-            onTap: onAddFriend,
-            height: 44,
-            radius: 20,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            fontSize: 12,
-          ),
-        ),
-      ],
+    return SizedBox(
+      width: 190,
+      child: Ohey3DButton(
+        label: 'QR・IDで探す',
+        icon: CupertinoIcons.qrcode_viewfinder,
+        onTap: onAddFriend,
+        height: 44,
+        radius: 20,
+        color: _FriendsColors.lime,
+        foregroundColor: _FriendsColors.limeForeground,
+        shadowColor: _FriendsColors.limeShadow,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        fontSize: 13,
+      ),
     );
   }
 }
