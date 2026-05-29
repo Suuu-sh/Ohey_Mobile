@@ -219,8 +219,8 @@ jobs:
           end
 
           profiles = {
-            'APP_PROVISIONING_PROFILE_NAME' => 'Ohey App Store CI Push 20260529092451',
-            'WIDGET_PROVISIONING_PROFILE_NAME' => 'Ohey Widgets App Store CI 20260529092451',
+            'APP_PROVISIONING_PROFILE_NAME' => 'Ohey App Store CI Push 20260529094752',
+            'WIDGET_PROVISIONING_PROFILE_NAME' => 'Ohey Widgets App Store CI 20260529094752',
           }
 
           profile_dir = File.expand_path('~/Library/MobileDevice/Provisioning Profiles')
