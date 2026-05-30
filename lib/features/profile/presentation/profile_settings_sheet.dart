@@ -93,9 +93,6 @@ class _SettingsSheetShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF111820) : Colors.white;
-    final sub = isWhite
-        ? const Color(0xFF66727E)
-        : Colors.white.withValues(alpha: .62);
 
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -137,15 +134,6 @@ class _SettingsSheetShell extends StatelessWidget {
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: -1.0,
                               ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Oheyを自分好みに整えよう',
-                          style: TextStyle(
-                            color: sub,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                          ),
                         ),
                       ],
                     ),
