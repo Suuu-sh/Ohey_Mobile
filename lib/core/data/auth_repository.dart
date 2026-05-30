@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../config/backend_config.dart';
 import '../config/supabase_config.dart';
 import '../models/ohey_avatar.dart';
 import '../models/ohey_gender.dart';
@@ -50,6 +54,65 @@ class AuthRepository {
     required String displayName,
     required OheyGender gender,
     required OheyAvatar avatar,
+  }) async {
+    final metadata = authProfileMetadata(
+      userId: userId,
+      displayName: displayName,
+      gender: gender,
+      avatar: avatar,
+    );
+    await _createConfirmedAuthUser(
+      email: email,
+      password: password,
+      metadata: metadata,
+    );
+    return _supabase.auth.signInWithPassword(email: email, password: password);
+  }
+
+  Future<void> _createConfirmedAuthUser({
+    required String email,
+    required String password,
+    required Map<String, dynamic> metadata,
+  }) async {
+    final client = HttpClient();
+    try {
+      final baseUri = Uri.parse(BackendConfig.baseUrl);
+      final uri = baseUri.replace(
+        path: _joinPath(baseUri.path, '/v1/auth/signup'),
+      );
+      final request = await client
+          .postUrl(uri)
+          .timeout(const Duration(seconds: 12));
+      request.headers.contentType = ContentType.json;
+      request.write(
+        jsonEncode({
+          'email': email,
+          'password': password,
+          'user_id': metadata['user_id'],
+          'display_name': metadata['display_name'],
+          'gender': metadata['gender'],
+          'avatar_url': metadata['avatar_url'],
+        }),
+      );
+      final response = await request.close().timeout(
+        const Duration(seconds: 20),
+      );
+      if (response.statusCode >= 200 && response.statusCode < 300) return;
+      final text = await utf8.decoder.bind(response).join();
+      throw AuthException(_authSignupErrorMessage(text));
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  @Deprecated('Use signUpWithProfileMetadata for confirmed signup.')
+  Future<AuthResponse> signUpWithProfileMetadataDirect({
+    required String email,
+    required String password,
+    required String userId,
+    required String displayName,
+    required OheyGender gender,
+    required OheyAvatar avatar,
   }) {
     return _supabase.auth.signUp(
       email: email,
@@ -63,6 +126,26 @@ class AuthRepository {
       ),
     );
   }
+}
+
+String _joinPath(String basePath, String path) {
+  final left = basePath.endsWith('/')
+      ? basePath.substring(0, basePath.length - 1)
+      : basePath;
+  final right = path.startsWith('/') ? path : '/$path';
+  return '$left$right';
+}
+
+String _authSignupErrorMessage(String text) {
+  try {
+    final decoded = jsonDecode(text);
+    if (decoded is Map && decoded['error'] is String) {
+      return decoded['error'] as String;
+    }
+  } catch (_) {
+    // Use fallback below.
+  }
+  return '登録できなかったよ。あとでもう一度試してね。';
 }
 
 String authOAuthScopes(OAuthProvider provider) {
