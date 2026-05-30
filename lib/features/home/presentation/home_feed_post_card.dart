@@ -678,13 +678,6 @@ String _feedReactionSummary(_FeedItem item) {
   if (item.likes <= 0) {
     return item.ownedByMe ? '友達のリアクションを待とう' : 'いいねで気持ちを送ろう';
   }
-  final companion = item.friends.isNotEmpty
-      ? item.friends.first.name.trim()
-      : '';
-  if (companion.isNotEmpty && item.likes > 1) {
-    return '$companionほか${item.likes - 1}人がいいね';
-  }
-  if (companion.isNotEmpty) return '$companionがいいね';
   return '${item.likes}件のいいね';
 }
 
