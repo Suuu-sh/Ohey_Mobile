@@ -15,6 +15,7 @@ Future<void> _showEditProfileSheet(
   final gender = user?.gender ?? OheyGender.unspecified;
   var saving = false;
   var closing = false;
+  var didUpdateProfile = false;
   String? error;
 
   await showOheyBottomSheet<void>(
@@ -52,11 +53,9 @@ Future<void> _showEditProfileSheet(
               userId: userId,
               avatar: avatar,
             );
+            didUpdateProfile = true;
             if (sheetContext.mounted) {
               Navigator.of(sheetContext).pop();
-            }
-            if (context.mounted) {
-              _showSnack(context, 'プロフィールを更新しました。');
             }
           } catch (e) {
             if (!sheetContext.mounted) return;
@@ -207,6 +206,11 @@ Future<void> _showEditProfileSheet(
       },
     ),
   );
+
+  if (didUpdateProfile && context.mounted) {
+    _showSnack(context, 'プロフィールを更新しました。');
+  }
+
   WidgetsBinding.instance.addPostFrameCallback((_) {
     controller.dispose();
     userIdController.dispose();
