@@ -243,10 +243,10 @@ class _UnsavedProfileSheet extends StatelessWidget {
                 iconSize: 25,
               ),
               const SizedBox(width: 12),
-              Expanded(
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       '変更を保存しますか？',
                       style: TextStyle(
@@ -258,86 +258,45 @@ class _UnsavedProfileSheet extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      '閉じる前に、変更を残しておけるよ。',
+                      'プロフィール編集',
                       style: TextStyle(
                         color: _ProfileColors.sub,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w800,
-                        height: 1.35,
                       ),
                     ),
                   ],
                 ),
               ),
+              OheyCloseButton(
+                onTap: () =>
+                    Navigator.of(context).pop(_UnsavedProfileAction.cancel),
+                iconColor: _ProfileColors.sub,
+                size: 44,
+                iconSize: 22,
+              ),
             ],
           ),
           const SizedBox(height: 18),
-          Container(
-            padding: const EdgeInsets.all(13),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .06),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: .10)),
-            ),
-            child: const Row(
-              children: [
-                OheyGeneratedIcon(
-                  CupertinoIcons.info_circle_fill,
-                  color: Color(0xFF20D0B4),
-                  size: 20,
-                ),
-                SizedBox(width: 9),
-                Expanded(
-                  child: Text(
-                    '保存しない場合は、変更前のプロフィールに戻ります。',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      height: 1.35,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
-          Ohey3DButton(
-            label: '保存して閉じる',
+          OheyActionTile(
             icon: CupertinoIcons.check_mark_circled_solid,
-            color: const Color(0xFF20D0B4),
-            foregroundColor: Colors.white,
-            shadowColor: const Color(0xFF0C8B7A),
-            height: 52,
-            radius: 22,
-            fontSize: 15,
+            title: '保存して閉じる',
+            subtitle: '変更をプロフィールに残す',
+            accent: const Color(0xFF20D0B4),
             onTap: () => Navigator.of(context).pop(_UnsavedProfileAction.save),
           ),
           const SizedBox(height: 10),
-          Ohey3DButton.secondary(
-            label: '変更を戻す',
+          OheyActionTile(
             icon: CupertinoIcons.arrow_uturn_left,
-            color: Colors.white.withValues(alpha: .07),
-            foregroundColor: Colors.white,
-            shadowColor: const Color(0xFF315A62).withValues(alpha: .70),
-            height: 48,
-            radius: 21,
-            fontSize: 14,
-            useGradient: false,
+            title: '変更を戻す',
+            subtitle: '変更前のプロフィールに戻す',
+            accent: const Color(0xFFB78CFF),
             onTap: () =>
                 Navigator.of(context).pop(_UnsavedProfileAction.discard),
           ),
-          const SizedBox(height: 10),
-          Ohey3DButton.secondary(
+          const SizedBox(height: 12),
+          _UnsavedProfileCancelButton(
             label: '編集を続ける',
-            icon: CupertinoIcons.pencil,
-            color: Colors.white.withValues(alpha: .055),
-            foregroundColor: _ProfileColors.sub,
-            shadowColor: const Color(0xFF4A3D68).withValues(alpha: .66),
-            height: 46,
-            radius: 20,
-            fontSize: 14,
-            useGradient: false,
             onTap: () =>
                 Navigator.of(context).pop(_UnsavedProfileAction.cancel),
           ),
@@ -345,6 +304,48 @@ class _UnsavedProfileSheet extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _UnsavedProfileCancelButton extends StatelessWidget {
+  const _UnsavedProfileCancelButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      onPressed: onTap,
+      minimumSize: Size.zero,
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        height: 68,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.darkBackground,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: Colors.white.withValues(alpha: .12)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFB78CFF).withValues(alpha: .12),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFFCF9BFF),
+            fontSize: 17,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.3,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 Future<void> _openAdminScreen(BuildContext context) async {
