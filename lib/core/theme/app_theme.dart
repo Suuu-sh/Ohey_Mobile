@@ -116,7 +116,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(22),
           side: BorderSide(color: AppColors.lemon.withValues(alpha: .22)),
         ),
-        insetPadding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+        insetPadding: const EdgeInsets.fromLTRB(18, 0, 18, 34),
         actionTextColor: AppColors.lemon,
         closeIconColor: Colors.white,
       ),
