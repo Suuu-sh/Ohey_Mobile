@@ -113,8 +113,11 @@ class OheyToast {
   }
 
   static double bottomOffsetFor(double bottomPadding) {
-    const tabBarTopClearance = 72.0;
-    return bottomPadding + tabBarTopClearance;
+    // Keep bottom POPs close to the boundary line between content and the
+    // floating bottom tab bar. The toast overlaps that seam instead of
+    // covering friend cards far above it.
+    const tabBarSeamClearance = 48.0;
+    return bottomPadding + tabBarSeamClearance;
   }
 
   static Color accentColorForIcon(
