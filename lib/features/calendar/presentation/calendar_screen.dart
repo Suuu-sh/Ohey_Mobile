@@ -2009,12 +2009,14 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
       separatorBuilder: (_, _) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
         final friend = friends[index];
+        final inviteSent = invitedFriendIds.contains(friend.id);
         return _CalendarFriendStatusBlock(
           friend: friend,
           isWhite: isWhite,
-          inviteEnabled: sendingFriendId == null && inviteAvailable,
+          inviteEnabled: inviteAvailable && !inviteSent,
           inviteAvailable: inviteAvailable,
-          inviteSent: invitedFriendIds.contains(friend.id),
+          inviteSent: inviteSent,
+          invitePressed: sendingFriendId == friend.id,
           onInvite: () => onInvite(friend),
         );
       },
@@ -2029,6 +2031,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
     required this.inviteEnabled,
     required this.inviteAvailable,
     required this.inviteSent,
+    required this.invitePressed,
     required this.onInvite,
   });
 
@@ -2037,6 +2040,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
   final bool inviteEnabled;
   final bool inviteAvailable;
   final bool inviteSent;
+  final bool invitePressed;
   final Future<void> Function() onInvite;
 
   @override
@@ -2052,6 +2056,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
       showInvite: true,
       inviteAvailable: inviteAvailable,
       inviteSent: inviteSent,
+      invitePressed: invitePressed,
       onInvite: inviteEnabled ? onInvite : null,
     );
   }
