@@ -886,7 +886,11 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
               onAddFriendsTap: onAddFriendsTap,
             )
           else
-            _ProfilePhotoArchiveEmptyBlock(onTap: onArchiveTap),
+            _ProfilePhotoArchiveEmptyBlock(
+              onTap: onArchiveTap,
+              onAddMemoryTap: onAddMemoryTap,
+              onAddFriendsTap: onAddFriendsTap,
+            ),
         ],
       ),
     );
@@ -932,18 +936,39 @@ class _ProfilePhotoArchiveBlock extends StatelessWidget {
 }
 
 class _ProfilePhotoArchiveEmptyBlock extends StatelessWidget {
-  const _ProfilePhotoArchiveEmptyBlock({required this.onTap});
+  const _ProfilePhotoArchiveEmptyBlock({
+    required this.onTap,
+    required this.onAddMemoryTap,
+    required this.onAddFriendsTap,
+  });
 
   final VoidCallback onTap;
+  final VoidCallback onAddMemoryTap;
+  final VoidCallback onAddFriendsTap;
 
   @override
   Widget build(BuildContext context) {
-    return _ProfileArchiveStatusRow(
-      title: '思い出を見る',
-      subtitle: '写真つきの思い出をここにまとめます',
-      buttonLabel: '開く',
-      icon: CupertinoIcons.archivebox_fill,
-      onTap: onTap,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _ProfileArchiveStatusRow(
+          title: '思い出を見る',
+          subtitle: '写真つきの思い出をここにまとめます',
+          buttonLabel: '開く',
+          icon: CupertinoIcons.archivebox_fill,
+          onTap: onTap,
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(child: _ProfileArchiveAddButton(onTap: onAddMemoryTap)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
