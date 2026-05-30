@@ -1,4 +1,4 @@
--- Rich seed data for the dev-nomo Supabase project only.
+-- Rich seed data for the dev-ohey Supabase project only.
 -- Do not run this against production.
 --
 -- Usage in Supabase SQL editor or psql:
@@ -20,16 +20,16 @@ with seed_password(value) as (
   select nullif(current_setting('app.seed_password', true), '')
 ), seed(id, email, password, display_name, user_id, character_key, avatar_url, is_plus) as (
   values
-    ('00000000-0000-4000-8000-000000000101'::uuid, 'dev-yuta@nomo.app',   (select value from seed_password), 'ユウタ', 'dev_yuta',   'avatar', 'nomo_avatar:v1:0:1:2:0:0:3', true),
-    ('00000000-0000-4000-8000-000000000102'::uuid, 'dev-ken@nomo.app',    (select value from seed_password), 'ケン',   'dev_ken',    'avatar', 'nomo_avatar:v1:5:2:5:2:1:0', false),
-    ('00000000-0000-4000-8000-000000000103'::uuid, 'dev-ryo@nomo.app',    (select value from seed_password), 'リョウ', 'dev_ryo',    'avatar', 'nomo_avatar:v1:2:6:0:3:0:1', false),
-    ('00000000-0000-4000-8000-000000000104'::uuid, 'dev-haru@nomo.app',   (select value from seed_password), 'ハル',   'dev_haru',   'avatar', 'nomo_avatar:v1:1:4:3:1:2:3', false),
-    ('00000000-0000-4000-8000-000000000105'::uuid, 'dev-takumi@nomo.app', (select value from seed_password), 'タクミ', 'dev_takumi', 'avatar', 'nomo_avatar:v1:3:5:6:0:1:0', false),
-    ('00000000-0000-4000-8000-000000000106'::uuid, 'dev-mika@nomo.app',   (select value from seed_password), 'ミカ',   'dev_mika',   'avatar', 'nomo_avatar:v1:4:3:1:4:2:2', false),
-    ('00000000-0000-4000-8000-000000000107'::uuid, 'dev-ren@nomo.app',    (select value from seed_password), 'レン',   'dev_ren',    'avatar', 'nomo_avatar:v1:6:0:4:5:3:1', false),
-    ('00000000-0000-4000-8000-000000000108'::uuid, 'dev-saki@nomo.app',   (select value from seed_password), 'サキ',   'dev_saki',   'avatar', 'nomo_avatar:v1:7:7:3:6:4:0', false),
-    ('00000000-0000-4000-8000-000000000109'::uuid, 'dev-ana@nomo.app',    (select value from seed_password), 'Ana',    'dev_ana',    'avatar', 'nomo_avatar:v1:8:8:7:1:1:3', false),
-    ('00000000-0000-4000-8000-000000000110'::uuid, 'dev-kai@nomo.app',    (select value from seed_password), 'Kai',    'dev_kai',    'avatar', 'nomo_avatar:v1:9:9:8:2:2:2', false)
+    ('00000000-0000-4000-8000-000000000101'::uuid, 'dev-yuta@ohey.app',   (select value from seed_password), 'ユウタ', 'dev_yuta',   'avatar', 'ohey_avatar:v1:0:1:2:0:0:3', true),
+    ('00000000-0000-4000-8000-000000000102'::uuid, 'dev-ken@ohey.app',    (select value from seed_password), 'ケン',   'dev_ken',    'avatar', 'ohey_avatar:v1:5:2:5:2:1:0', false),
+    ('00000000-0000-4000-8000-000000000103'::uuid, 'dev-ryo@ohey.app',    (select value from seed_password), 'リョウ', 'dev_ryo',    'avatar', 'ohey_avatar:v1:2:6:0:3:0:1', false),
+    ('00000000-0000-4000-8000-000000000104'::uuid, 'dev-haru@ohey.app',   (select value from seed_password), 'ハル',   'dev_haru',   'avatar', 'ohey_avatar:v1:1:4:3:1:2:3', false),
+    ('00000000-0000-4000-8000-000000000105'::uuid, 'dev-takumi@ohey.app', (select value from seed_password), 'タクミ', 'dev_takumi', 'avatar', 'ohey_avatar:v1:3:5:6:0:1:0', false),
+    ('00000000-0000-4000-8000-000000000106'::uuid, 'dev-mika@ohey.app',   (select value from seed_password), 'ミカ',   'dev_mika',   'avatar', 'ohey_avatar:v1:4:3:1:4:2:2', false),
+    ('00000000-0000-4000-8000-000000000107'::uuid, 'dev-ren@ohey.app',    (select value from seed_password), 'レン',   'dev_ren',    'avatar', 'ohey_avatar:v1:6:0:4:5:3:1', false),
+    ('00000000-0000-4000-8000-000000000108'::uuid, 'dev-saki@ohey.app',   (select value from seed_password), 'サキ',   'dev_saki',   'avatar', 'ohey_avatar:v1:7:7:3:6:4:0', false),
+    ('00000000-0000-4000-8000-000000000109'::uuid, 'dev-ana@ohey.app',    (select value from seed_password), 'Ana',    'dev_ana',    'avatar', 'ohey_avatar:v1:8:8:7:1:1:3', false),
+    ('00000000-0000-4000-8000-000000000110'::uuid, 'dev-kai@ohey.app',    (select value from seed_password), 'Kai',    'dev_kai',    'avatar', 'ohey_avatar:v1:9:9:8:2:2:2', false)
 )
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -64,16 +64,16 @@ on conflict (id) do update set
 
 with seed(id, email) as (
   values
-    ('00000000-0000-4000-8000-000000000101'::uuid, 'dev-yuta@nomo.app'),
-    ('00000000-0000-4000-8000-000000000102'::uuid, 'dev-ken@nomo.app'),
-    ('00000000-0000-4000-8000-000000000103'::uuid, 'dev-ryo@nomo.app'),
-    ('00000000-0000-4000-8000-000000000104'::uuid, 'dev-haru@nomo.app'),
-    ('00000000-0000-4000-8000-000000000105'::uuid, 'dev-takumi@nomo.app'),
-    ('00000000-0000-4000-8000-000000000106'::uuid, 'dev-mika@nomo.app'),
-    ('00000000-0000-4000-8000-000000000107'::uuid, 'dev-ren@nomo.app'),
-    ('00000000-0000-4000-8000-000000000108'::uuid, 'dev-saki@nomo.app'),
-    ('00000000-0000-4000-8000-000000000109'::uuid, 'dev-ana@nomo.app'),
-    ('00000000-0000-4000-8000-000000000110'::uuid, 'dev-kai@nomo.app')
+    ('00000000-0000-4000-8000-000000000101'::uuid, 'dev-yuta@ohey.app'),
+    ('00000000-0000-4000-8000-000000000102'::uuid, 'dev-ken@ohey.app'),
+    ('00000000-0000-4000-8000-000000000103'::uuid, 'dev-ryo@ohey.app'),
+    ('00000000-0000-4000-8000-000000000104'::uuid, 'dev-haru@ohey.app'),
+    ('00000000-0000-4000-8000-000000000105'::uuid, 'dev-takumi@ohey.app'),
+    ('00000000-0000-4000-8000-000000000106'::uuid, 'dev-mika@ohey.app'),
+    ('00000000-0000-4000-8000-000000000107'::uuid, 'dev-ren@ohey.app'),
+    ('00000000-0000-4000-8000-000000000108'::uuid, 'dev-saki@ohey.app'),
+    ('00000000-0000-4000-8000-000000000109'::uuid, 'dev-ana@ohey.app'),
+    ('00000000-0000-4000-8000-000000000110'::uuid, 'dev-kai@ohey.app')
 )
 insert into auth.identities (
   id, provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at
@@ -94,16 +94,16 @@ on conflict (provider, provider_id) do update set
 
 insert into public.profiles (id, display_name, user_id, gender, character_key, avatar_url, is_plus)
 values
-  ('00000000-0000-4000-8000-000000000101', 'ユウタ', 'dev_yuta',   'male', 'avatar', 'nomo_avatar:v1:0:1:2:0:0:3', true),
-  ('00000000-0000-4000-8000-000000000102', 'ケン',   'dev_ken',    'male', 'avatar', 'nomo_avatar:v1:5:2:5:2:1:0', false),
-  ('00000000-0000-4000-8000-000000000103', 'リョウ', 'dev_ryo',    'male', 'avatar', 'nomo_avatar:v1:2:6:0:3:0:1', false),
-  ('00000000-0000-4000-8000-000000000104', 'ハル',   'dev_haru',   'female', 'avatar', 'nomo_avatar:v1:1:4:3:1:2:3', false),
-  ('00000000-0000-4000-8000-000000000105', 'タクミ', 'dev_takumi', 'male', 'avatar', 'nomo_avatar:v1:3:5:6:0:1:0', false),
-  ('00000000-0000-4000-8000-000000000106', 'ミカ',   'dev_mika',   'female', 'avatar', 'nomo_avatar:v1:4:3:1:4:2:2', false),
-  ('00000000-0000-4000-8000-000000000107', 'レン',   'dev_ren',    'male', 'avatar', 'nomo_avatar:v1:6:0:4:5:3:1', false),
-  ('00000000-0000-4000-8000-000000000108', 'サキ',   'dev_saki',   'female', 'avatar', 'nomo_avatar:v1:7:7:3:6:4:0', false),
-  ('00000000-0000-4000-8000-000000000109', 'Ana',    'dev_ana',    'female', 'avatar', 'nomo_avatar:v1:8:8:7:1:1:3', false),
-  ('00000000-0000-4000-8000-000000000110', 'Kai',    'dev_kai',    'male', 'avatar', 'nomo_avatar:v1:9:9:8:2:2:2', false)
+  ('00000000-0000-4000-8000-000000000101', 'ユウタ', 'dev_yuta',   'male', 'avatar', 'ohey_avatar:v1:0:1:2:0:0:3', true),
+  ('00000000-0000-4000-8000-000000000102', 'ケン',   'dev_ken',    'male', 'avatar', 'ohey_avatar:v1:5:2:5:2:1:0', false),
+  ('00000000-0000-4000-8000-000000000103', 'リョウ', 'dev_ryo',    'male', 'avatar', 'ohey_avatar:v1:2:6:0:3:0:1', false),
+  ('00000000-0000-4000-8000-000000000104', 'ハル',   'dev_haru',   'female', 'avatar', 'ohey_avatar:v1:1:4:3:1:2:3', false),
+  ('00000000-0000-4000-8000-000000000105', 'タクミ', 'dev_takumi', 'male', 'avatar', 'ohey_avatar:v1:3:5:6:0:1:0', false),
+  ('00000000-0000-4000-8000-000000000106', 'ミカ',   'dev_mika',   'female', 'avatar', 'ohey_avatar:v1:4:3:1:4:2:2', false),
+  ('00000000-0000-4000-8000-000000000107', 'レン',   'dev_ren',    'male', 'avatar', 'ohey_avatar:v1:6:0:4:5:3:1', false),
+  ('00000000-0000-4000-8000-000000000108', 'サキ',   'dev_saki',   'female', 'avatar', 'ohey_avatar:v1:7:7:3:6:4:0', false),
+  ('00000000-0000-4000-8000-000000000109', 'Ana',    'dev_ana',    'female', 'avatar', 'ohey_avatar:v1:8:8:7:1:1:3', false),
+  ('00000000-0000-4000-8000-000000000110', 'Kai',    'dev_kai',    'male', 'avatar', 'ohey_avatar:v1:9:9:8:2:2:2', false)
 on conflict (id) do update set
   display_name = excluded.display_name,
   user_id = excluded.user_id,

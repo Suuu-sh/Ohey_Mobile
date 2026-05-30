@@ -2,31 +2,31 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/models/nomo_avatar.dart';
-import '../../../core/models/nomo_gender.dart';
+import '../../../core/models/ohey_avatar.dart';
+import '../../../core/models/ohey_gender.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/nomo_3d_button.dart';
-import '../../../core/widgets/nomo_avatar.dart';
-import '../../../core/widgets/nomo_bottom_sheet.dart';
-import '../../../core/widgets/nomo_pop_icon.dart';
+import '../../../core/widgets/ohey_3d_button.dart';
+import '../../../core/widgets/ohey_avatar.dart';
+import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_pop_icon.dart';
 
 class AvatarBuilderScreen extends StatefulWidget {
   const AvatarBuilderScreen({
     super.key,
     required this.initialAvatar,
-    this.gender = NomoGender.unspecified,
+    this.gender = OheyGender.unspecified,
   });
 
-  final NomoAvatar initialAvatar;
-  final NomoGender gender;
+  final OheyAvatar initialAvatar;
+  final OheyGender gender;
 
   @override
   State<AvatarBuilderScreen> createState() => _AvatarBuilderScreenState();
 }
 
 class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
-  late NomoAvatar _avatar = widget.initialAvatar.normalizedForGender(
+  late OheyAvatar _avatar = widget.initialAvatar.normalizedForGender(
     widget.gender,
   );
   _AvatarTab _tab = _AvatarTab.face;
@@ -34,7 +34,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
   bool get _hasChanges => _avatar.encode() != widget.initialAvatar.encode();
 
   Future<void> _handleDone() async {
-    final result = await Navigator.of(context).push<NomoAvatar>(
+    final result = await Navigator.of(context).push<OheyAvatar>(
       CupertinoPageRoute(
         fullscreenDialog: true,
         builder: (_) => AvatarBackgroundPickerScreen(initialAvatar: _avatar),
@@ -50,7 +50,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
       return;
     }
 
-    final action = await showNomoBottomSheet<_UnsavedAvatarAction>(
+    final action = await showOheyBottomSheet<_UnsavedAvatarAction>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: .62),
       builder: (context) => const _UnsavedAvatarSheet(),
@@ -93,7 +93,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
                         child: _AvatarPreviewStage(
                           avatar: _avatar,
                           onRandom: () => setState(
-                            () => _avatar = NomoAvatar.random(
+                            () => _avatar = OheyAvatar.random(
                               gender: widget.gender,
                             ),
                           ),
@@ -138,7 +138,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
 class AvatarBackgroundPickerScreen extends StatefulWidget {
   const AvatarBackgroundPickerScreen({super.key, required this.initialAvatar});
 
-  final NomoAvatar initialAvatar;
+  final OheyAvatar initialAvatar;
 
   @override
   State<AvatarBackgroundPickerScreen> createState() =>
@@ -169,7 +169,7 @@ class _AvatarBackgroundPickerScreenState
                   children: [
                     IconButton(
                       onPressed: () => Navigator.of(context).maybePop(),
-                      icon: const NomoGeneratedIcon(
+                      icon: const OheyGeneratedIcon(
                         CupertinoIcons.chevron_left,
                         color: _AvatarColors.ink,
                         size: 34,
@@ -236,10 +236,10 @@ class _AvatarBackgroundPickerScreenState
                     mainAxisSpacing: 12,
                     childAspectRatio: 1.12,
                   ),
-                  itemCount: NomoAvatar.backgroundStyles.length,
+                  itemCount: OheyAvatar.backgroundStyles.length,
                   itemBuilder: (context, index) => _AvatarBackgroundOption(
                     avatar: widget.initialAvatar.copyWith(background: index),
-                    label: NomoAvatar.backgroundStyles[index],
+                    label: OheyAvatar.backgroundStyles[index],
                     selected: _selected == index,
                     onTap: () => setState(() => _selected = index),
                   ),
@@ -261,7 +261,7 @@ class _AvatarBackgroundOption extends StatelessWidget {
     required this.onTap,
   });
 
-  final NomoAvatar avatar;
+  final OheyAvatar avatar;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -320,7 +320,7 @@ class _AvatarBackgroundOption extends StatelessWidget {
               const Positioned(
                 right: 8,
                 top: 8,
-                child: NomoPopIcon(
+                child: OheyPopIcon(
                   icon: CupertinoIcons.checkmark_alt,
                   color: _AvatarColors.accent,
                   size: 32,
@@ -337,12 +337,12 @@ class _AvatarBackgroundOption extends StatelessWidget {
 class _AvatarBackgroundPreview extends StatelessWidget {
   const _AvatarBackgroundPreview({required this.avatar, this.large = false});
 
-  final NomoAvatar avatar;
+  final OheyAvatar avatar;
   final bool large;
 
   @override
   Widget build(BuildContext context) {
-    if (NomoAvatar.usesMascotBackdrop(avatar.background)) {
+    if (OheyAvatar.usesMascotBackdrop(avatar.background)) {
       return Stack(
         fit: StackFit.expand,
         children: [
@@ -354,15 +354,15 @@ class _AvatarBackgroundPreview extends StatelessWidget {
             ),
           ),
           Center(
-            child: NomoAvatarView(avatar: avatar, size: large ? 190 : 96),
+            child: OheyAvatarView(avatar: avatar, size: large ? 190 : 96),
           ),
         ],
       );
     }
 
     final colors =
-        NomoAvatar.backgroundGradients[avatar.background %
-            NomoAvatar.backgroundGradients.length];
+        OheyAvatar.backgroundGradients[avatar.background %
+            OheyAvatar.backgroundGradients.length];
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -376,7 +376,7 @@ class _AvatarBackgroundPreview extends StatelessWidget {
           ),
         ),
         Opacity(
-          opacity: avatar.background == NomoAvatar.dreamRoomBackground
+          opacity: avatar.background == OheyAvatar.dreamRoomBackground
               ? .18
               : .10,
           child: ExcludeSemantics(
@@ -400,7 +400,7 @@ class _AvatarBackgroundPreview extends StatelessWidget {
           ),
         ),
         Center(
-          child: NomoAvatarView(avatar: avatar, size: large ? 190 : 96),
+          child: OheyAvatarView(avatar: avatar, size: large ? 190 : 96),
         ),
       ],
     );
@@ -412,7 +412,7 @@ enum _UnsavedAvatarAction { save, discard, cancel }
 class _AvatarPreviewStage extends StatelessWidget {
   const _AvatarPreviewStage({required this.avatar, required this.onRandom});
 
-  final NomoAvatar avatar;
+  final OheyAvatar avatar;
   final VoidCallback onRandom;
 
   @override
@@ -476,7 +476,7 @@ class _AvatarPreviewStage extends StatelessWidget {
                 stops: const [0, .54, 1],
               ),
             ),
-            child: Center(child: NomoAvatarView(avatar: avatar, size: 250)),
+            child: Center(child: OheyAvatarView(avatar: avatar, size: 250)),
           ),
         ),
         Positioned(
@@ -524,7 +524,7 @@ class _StageChip extends StatelessWidget {
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        NomoGeneratedIcon(icon, color: _AvatarColors.accent, size: 16),
+        OheyGeneratedIcon(icon, color: _AvatarColors.accent, size: 16),
         const SizedBox(width: 6),
         Text(
           label,
@@ -546,7 +546,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Theme(
     data: AppTheme.dark,
-    child: NomoBottomSheetShell(
+    child: OheyBottomSheetShell(
       showHandle: true,
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
@@ -557,7 +557,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
         children: [
           Row(
             children: [
-              const NomoPopIcon(
+              const OheyPopIcon(
                 icon: CupertinoIcons.person_crop_circle_fill,
                 color: AppColors.primaryAction,
                 size: 48,
@@ -602,7 +602,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
             ),
             child: const Row(
               children: [
-                NomoGeneratedIcon(
+                OheyGeneratedIcon(
                   CupertinoIcons.info_circle_fill,
                   color: AppColors.primaryAction,
                   size: 20,
@@ -623,7 +623,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          Nomo3DButton(
+          Ohey3DButton(
             label: '保存して閉じる',
             icon: CupertinoIcons.check_mark_circled_solid,
             color: AppColors.primaryAction,
@@ -635,7 +635,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
             onTap: () => Navigator.of(context).pop(_UnsavedAvatarAction.save),
           ),
           const SizedBox(height: 10),
-          Nomo3DButton.secondary(
+          Ohey3DButton.secondary(
             label: '変更を戻す',
             icon: CupertinoIcons.arrow_uturn_left,
             color: _AvatarColors.card,
@@ -648,7 +648,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
                 Navigator.of(context).pop(_UnsavedAvatarAction.discard),
           ),
           const SizedBox(height: 10),
-          Nomo3DButton.secondary(
+          Ohey3DButton.secondary(
             label: '編集を続ける',
             icon: CupertinoIcons.pencil,
             color: Colors.white.withValues(alpha: .055),
@@ -679,7 +679,7 @@ class _Header extends StatelessWidget {
       children: [
         IconButton(
           onPressed: onClose,
-          icon: const NomoGeneratedIcon(
+          icon: const OheyGeneratedIcon(
             CupertinoIcons.xmark,
             color: _AvatarColors.ink,
             size: 34,
@@ -709,7 +709,7 @@ class _SaveAvatarButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Nomo3DButtonSurface(
+  Widget build(BuildContext context) => Ohey3DButtonSurface(
     onTap: onTap,
     height: 42,
     radius: 21,
@@ -727,7 +727,7 @@ class _SaveAvatarButton extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           child: const Center(
-            child: NomoGeneratedIcon(
+            child: OheyGeneratedIcon(
               CupertinoIcons.checkmark,
               color: Colors.white,
               size: 16,
@@ -781,7 +781,7 @@ class _RoundTool extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          NomoGeneratedIcon(icon, color: _AvatarColors.accent, size: 26),
+          OheyGeneratedIcon(icon, color: _AvatarColors.accent, size: 26),
           const SizedBox(height: 4),
           Text(
             label,
@@ -883,7 +883,7 @@ class _TabIcon extends StatelessWidget {
             ),
           ),
         ),
-        child: NomoGeneratedIcon(
+        child: OheyGeneratedIcon(
           icon,
           color: active ? _AvatarColors.accent : _AvatarColors.sub,
           size: 34,
@@ -902,9 +902,9 @@ class _OptionsPanel extends StatelessWidget {
   });
 
   final _AvatarTab tab;
-  final NomoAvatar avatar;
-  final NomoGender gender;
-  final ValueChanged<NomoAvatar> onChanged;
+  final OheyAvatar avatar;
+  final OheyGender gender;
+  final ValueChanged<OheyAvatar> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -914,17 +914,17 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('肌の色'),
           _ColorRow(
-            colors: NomoAvatar.skinColors,
+            colors: OheyAvatar.skinColors,
             selected: avatar.skin,
             onTap: (i) => onChanged(avatar.copyWith(skin: i)),
           ),
           const SizedBox(height: 24),
           _Title('口'),
           _ChoiceGrid(
-            count: NomoAvatar.mouthStyles.length,
+            count: OheyAvatar.mouthStyles.length,
             selected: avatar.mouth,
-            label: (i) => NomoAvatar.mouthStyles[i],
-            builder: (i) => NomoAvatarView(
+            label: (i) => OheyAvatar.mouthStyles[i],
+            builder: (i) => OheyAvatarView(
               avatar: avatar.copyWith(mouth: i),
               showBody: false,
             ),
@@ -937,10 +937,10 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('目'),
           _ChoiceGrid(
-            count: NomoAvatar.eyeStyles.length,
+            count: OheyAvatar.eyeStyles.length,
             selected: avatar.eyes,
-            label: (i) => NomoAvatar.eyeStyles[i],
-            builder: (i) => NomoAvatarView(
+            label: (i) => OheyAvatar.eyeStyles[i],
+            builder: (i) => OheyAvatarView(
               avatar: avatar.copyWith(eyes: i),
               showBody: false,
             ),
@@ -953,10 +953,10 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('髪型'),
           _ChoiceGrid(
-            indices: NomoAvatar.selectableHairIndicesForGender(gender),
+            indices: OheyAvatar.selectableHairIndicesForGender(gender),
             selected: avatar.hair,
-            label: (i) => NomoAvatar.hairStyles[i],
-            builder: (i) => NomoAvatarView(
+            label: (i) => OheyAvatar.hairStyles[i],
+            builder: (i) => OheyAvatarView(
               avatar: avatar.copyWith(hair: i),
               showBody: false,
             ),
@@ -969,10 +969,10 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('アクセサリー'),
           _ChoiceGrid(
-            count: NomoAvatar.accessoryStyles.length,
+            count: OheyAvatar.accessoryStyles.length,
             selected: avatar.accessory,
-            label: (i) => NomoAvatar.accessoryStyles[i],
-            builder: (i) => NomoAvatarView(
+            label: (i) => OheyAvatar.accessoryStyles[i],
+            builder: (i) => OheyAvatarView(
               avatar: avatar.copyWith(accessory: i),
               showBody: false,
             ),
@@ -985,7 +985,7 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('服の色'),
           _ColorRow(
-            colors: NomoAvatar.shirtColors,
+            colors: OheyAvatar.shirtColors,
             selected: avatar.shirt,
             onTap: (i) => onChanged(avatar.copyWith(shirt: i)),
           ),
@@ -1195,7 +1195,7 @@ class _ChoiceTile extends StatelessWidget {
                 color: _AvatarColors.accent,
                 shape: BoxShape.circle,
               ),
-              child: const NomoGeneratedIcon(
+              child: const OheyGeneratedIcon(
                 CupertinoIcons.checkmark,
                 color: Colors.white,
                 size: 14,

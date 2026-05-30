@@ -49,7 +49,7 @@ extension _CreateUserIntroPage on _CreateUserDialogState {
                     ],
                   ),
                   child: Center(
-                    child: NomoPopIcon(
+                    child: OheyPopIcon(
                       icon: _demoPage == slides.length - 1
                           ? CupertinoIcons.camera_fill
                           : CupertinoIcons.arrow_right,

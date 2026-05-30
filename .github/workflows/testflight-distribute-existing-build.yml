@@ -24,7 +24,7 @@ jobs:
       - name: Assign build and notify testers via Shared action
         uses: Suuu-sh/Shared/actions/testflight-distribute-existing-build@main
         with:
-          app-bundle-id: app.nomo.nomo
+          app-bundle-id: app.ohey.com
           app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           app-store-connect-issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           app-store-connect-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}

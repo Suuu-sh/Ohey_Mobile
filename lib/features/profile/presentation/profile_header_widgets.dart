@@ -16,7 +16,7 @@ class _PageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final headerColor = isWhite ? const Color(0xFF101820) : Colors.white;
-    return NomoPageHeader(
+    return OheyPageHeader(
       title: 'マイページ',
       titleColor: headerColor,
       trailing: Row(
@@ -53,7 +53,7 @@ class _ProfileAdminButton extends StatelessWidget {
           width: 48,
           height: 48,
           child: Center(
-            child: NomoGeneratedIcon(
+            child: OheyGeneratedIcon(
               CupertinoIcons.lock_shield_fill,
               color: isWhite ? const Color(0xFF101820) : Colors.white,
               size: 36,
@@ -85,7 +85,7 @@ class _ProfileSettingsButton extends StatelessWidget {
           width: 48,
           height: 48,
           child: Center(
-            child: NomoGeneratedIcon(
+            child: OheyGeneratedIcon(
               CupertinoIcons.gear_alt,
               color: isWhite ? const Color(0xFF101820) : Colors.white,
               size: 38,
@@ -100,12 +100,12 @@ class _ProfileSettingsButton extends StatelessWidget {
 class _ProfileHeaderBackdrop extends StatelessWidget {
   const _ProfileHeaderBackdrop({required this.avatar});
 
-  final NomoAvatar? avatar;
+  final OheyAvatar? avatar;
 
   @override
   Widget build(BuildContext context) {
-    final displayAvatar = avatar ?? NomoAvatar.defaultAvatar;
-    if (NomoAvatar.usesMascotBackdrop(displayAvatar.background)) {
+    final displayAvatar = avatar ?? OheyAvatar.defaultAvatar;
+    if (OheyAvatar.usesMascotBackdrop(displayAvatar.background)) {
       return ExcludeSemantics(
         child: Image.asset(
           'assets/images/profile_mascot_backdrop_scene.png',
@@ -116,8 +116,8 @@ class _ProfileHeaderBackdrop extends StatelessWidget {
     }
 
     final backgroundColors =
-        NomoAvatar.backgroundGradients[displayAvatar.background %
-            NomoAvatar.backgroundGradients.length];
+        OheyAvatar.backgroundGradients[displayAvatar.background %
+            OheyAvatar.backgroundGradients.length];
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -131,7 +131,7 @@ class _ProfileHeaderBackdrop extends StatelessWidget {
           ),
         ),
         Opacity(
-          opacity: displayAvatar.background == NomoAvatar.dreamRoomBackground
+          opacity: displayAvatar.background == OheyAvatar.dreamRoomBackground
               ? .18
               : .10,
           child: ExcludeSemantics(
@@ -169,9 +169,9 @@ class _ProfileTopSheet extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(
-        NomoPageHeader.horizontalPadding,
+        OheyPageHeader.horizontalPadding,
         4,
-        NomoPageHeader.horizontalPadding,
+        OheyPageHeader.horizontalPadding,
         6,
       ),
       decoration: BoxDecoration(
@@ -192,13 +192,13 @@ class _SimpleHero extends StatelessWidget {
 
   final bool isWhite;
   final String name;
-  final NomoAvatar? avatar;
+  final OheyAvatar? avatar;
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final joinedMonth = '${now.year}/${now.month.toString().padLeft(2, '0')}';
-    final displayAvatar = avatar ?? NomoAvatar.defaultAvatar;
+    final displayAvatar = avatar ?? OheyAvatar.defaultAvatar;
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
@@ -209,7 +209,7 @@ class _SimpleHero extends StatelessWidget {
             height: 166,
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: NomoAvatarView(avatar: displayAvatar, size: 156),
+              child: OheyAvatarView(avatar: displayAvatar, size: 156),
             ),
           ),
           Container(
@@ -248,12 +248,12 @@ class _ProfileReservationStrip extends StatelessWidget {
   });
 
   final bool isWhite;
-  final NomoAvatar? userAvatar;
+  final OheyAvatar? userAvatar;
   final String? currentUserId;
-  final List<NomoInvite> reservations;
-  final List<NomoInvite> incomingInvites;
-  final ValueChanged<NomoInvite> onAccept;
-  final ValueChanged<NomoInvite> onReject;
+  final List<OheyInvite> reservations;
+  final List<OheyInvite> incomingInvites;
+  final ValueChanged<OheyInvite> onAccept;
+  final ValueChanged<OheyInvite> onReject;
 
   @override
   Widget build(BuildContext context) {
@@ -294,7 +294,7 @@ class _ProfileReservationStrip extends StatelessWidget {
       ),
       child: Row(
         children: [
-          NomoPopIcon(
+          OheyPopIcon(
             icon: CupertinoIcons.checkmark_seal_fill,
             color: AppColors.success,
             size: 44,
@@ -366,7 +366,7 @@ class _IncomingInviteCard extends StatelessWidget {
   });
 
   final bool isWhite;
-  final NomoInvite invite;
+  final OheyInvite invite;
   final String? currentUserId;
   final VoidCallback onAccept;
   final VoidCallback onReject;
@@ -396,7 +396,7 @@ class _IncomingInviteCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          NomoPopIcon(
+          OheyPopIcon(
             icon: CupertinoIcons.bell_fill,
             color: AppColors.primaryAction,
             size: 44,
@@ -470,7 +470,7 @@ class _IncomingInviteCard extends StatelessWidget {
 class _ReservedAvatar extends StatelessWidget {
   const _ReservedAvatar({required this.avatar, required this.label});
 
-  final NomoAvatar? avatar;
+  final OheyAvatar? avatar;
   final String label;
 
   @override
@@ -486,7 +486,7 @@ class _ReservedAvatar extends StatelessWidget {
         border: Border.all(color: Colors.white, width: 2),
       ),
       child: ClipOval(
-        child: NomoAvatarView(avatar: avatar ?? NomoAvatar.defaultAvatar),
+        child: OheyAvatarView(avatar: avatar ?? OheyAvatar.defaultAvatar),
       ),
     ),
   );
@@ -531,41 +531,51 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.memories,
     required this.photoMemories,
     required this.friendsCount,
-    required this.onMemoriesTap,
     required this.onArchiveTap,
+    required this.onEditProfileTap,
     required this.onAddFriendsTap,
+    required this.onAddMemoryTap,
   });
 
   final List<Memory> memories;
   final List<Memory> photoMemories;
   final int friendsCount;
-  final VoidCallback onMemoriesTap;
   final VoidCallback onArchiveTap;
+  final VoidCallback onEditProfileTap;
   final VoidCallback onAddFriendsTap;
+  final VoidCallback onAddMemoryTap;
 
   @override
   Widget build(BuildContext context) {
-    final recentMemories = memories.take(2).toList(growable: false);
-
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 112),
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 112),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _ProfileSummaryStats(
-            friendsCount: friendsCount,
-            memoryCount: memories.length,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _ProfileSummaryStats(
+              friendsCount: friendsCount,
+              memoryCount: memories.length,
+            ),
           ),
           const SizedBox(height: 8),
-          _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
-          const SizedBox(height: 8),
-          _ProfileRecentMemoriesCard(
-            memories: recentMemories,
-            photoMemoryCount: photoMemories.length,
-            onMemoriesTap: onMemoriesTap,
-            onArchiveTap: onArchiveTap,
-            onAddFriendsTap: onAddFriendsTap,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _ProfileEditActionRow(onTap: onEditProfileTap),
+          ),
+          const SizedBox(height: 12),
+          const _ProfileArchiveTopGlowLine(),
+          const SizedBox(height: 22),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _ProfileRecentMemoriesCard(
+              photoMemoryCount: photoMemories.length,
+              onArchiveTap: onArchiveTap,
+              onAddMemoryTap: onAddMemoryTap,
+              onAddFriendsTap: onAddFriendsTap,
+            ),
           ),
         ],
       ),
@@ -715,6 +725,37 @@ class _ProfileSummaryStat extends StatelessWidget {
   }
 }
 
+class _ProfileEditActionRow extends StatelessWidget {
+  const _ProfileEditActionRow({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Ohey3DButton(
+      label: 'プロフィールを編集',
+      onTap: onTap,
+      height: 48,
+      radius: 24,
+      color: AppColors.primaryAction,
+      foregroundColor: const Color(0xFF101820),
+      shadowColor: AppColors.primaryActionShadow,
+      fontSize: 18,
+      customIcon: const OheyPopIcon(
+        icon: CupertinoIcons.pencil,
+        color: Color(0xFF101820),
+        size: 32,
+        iconSize: 18,
+      ),
+      trailing: const OheyGeneratedIcon(
+        CupertinoIcons.chevron_forward,
+        color: Color(0xFF101820),
+        size: 22,
+      ),
+    );
+  }
+}
+
 class _ProfileFriendActionRow extends StatelessWidget {
   const _ProfileFriendActionRow({required this.onAddFriendsTap});
 
@@ -722,24 +763,77 @@ class _ProfileFriendActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Nomo3DButton(
-      label: 'フレンズを追加',
+    return Ohey3DButtonSurface(
       onTap: onAddFriendsTap,
-      height: 48,
-      radius: 24,
-      color: AppColors.primaryAction,
-      shadowColor: AppColors.primaryActionShadow,
-      fontSize: 18,
-      customIcon: const NomoPopIcon(
-        icon: CupertinoIcons.person_2_fill,
-        color: Colors.white,
-        size: 32,
-        iconSize: 18,
+      height: 46,
+      radius: 20,
+      color: const Color(0xFF9AF21A),
+      bottomColor: const Color(0xFF5DC86C),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      borderColor: Colors.white.withValues(alpha: .20),
+      outerShadows: [
+        BoxShadow(
+          color: const Color(0xFF9AF21A).withValues(alpha: .18),
+          blurRadius: 14,
+          offset: const Offset(0, 7),
+        ),
+      ],
+      child: Row(
+        children: [
+          const OheyPopIcon(
+            icon: CupertinoIcons.person_2_fill,
+            color: Color(0xFF101820),
+            size: 28,
+            iconSize: 15,
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'フレンズを追加',
+              style: TextStyle(
+                color: Color(0xFF101820),
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.3,
+              ),
+            ),
+          ),
+          OheyGeneratedIcon(
+            CupertinoIcons.plus,
+            color: Color(0xFF101820),
+            size: 18,
+          ),
+        ],
       ),
-      trailing: const NomoGeneratedIcon(
-        CupertinoIcons.chevron_forward,
-        color: Colors.white,
-        size: 22,
+    );
+  }
+}
+
+class _ProfileArchiveTopGlowLine extends StatelessWidget {
+  const _ProfileArchiveTopGlowLine();
+
+  @override
+  Widget build(BuildContext context) {
+    const pink = Color(0xFFFF75B5);
+    return Container(
+      height: 1,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        color: pink.withValues(alpha: .72),
+        boxShadow: [
+          BoxShadow(
+            color: pink.withValues(alpha: .34),
+            blurRadius: 18,
+            spreadRadius: 2,
+            offset: const Offset(0, -3),
+          ),
+          BoxShadow(
+            color: pink.withValues(alpha: .24),
+            blurRadius: 34,
+            spreadRadius: 4,
+            offset: const Offset(0, -7),
+          ),
+        ],
       ),
     );
   }
@@ -747,47 +841,31 @@ class _ProfileFriendActionRow extends StatelessWidget {
 
 class _ProfileRecentMemoriesCard extends StatelessWidget {
   const _ProfileRecentMemoriesCard({
-    required this.memories,
     required this.photoMemoryCount,
-    required this.onMemoriesTap,
     required this.onArchiveTap,
+    required this.onAddMemoryTap,
     required this.onAddFriendsTap,
   });
 
-  final List<Memory> memories;
   final int photoMemoryCount;
-  final VoidCallback onMemoriesTap;
   final VoidCallback onArchiveTap;
+  final VoidCallback onAddMemoryTap;
   final VoidCallback onAddFriendsTap;
 
   @override
   Widget build(BuildContext context) {
-    final firstMemory = memories.isNotEmpty ? memories[0] : null;
-    final secondMemory = memories.length > 1 ? memories[1] : null;
-    final openAll = photoMemoryCount > 0 ? onArchiveTap : onMemoriesTap;
+    final hasPhotoMemories = photoMemoryCount > 0;
 
-    return NomoThemedPanel(
-      accentColor: _ProfileColors.pink,
-      backgroundColor: AppColors.darkBackground,
-      padding: const EdgeInsets.fromLTRB(14, 9, 14, 9),
-      borderRadius: 24,
-      borderAlpha: .28,
-      glowAlpha: 0,
+    return Padding(
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              const NomoPopIcon(
-                icon: CupertinoIcons.sparkles,
-                color: Color(0xFFFF75B5),
-                size: 27,
-                iconSize: 15,
-              ),
-              const SizedBox(width: 7),
               const Expanded(
                 child: Text(
-                  '最近の思い出',
+                  '今日はなにする？',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -797,209 +875,192 @@ class _ProfileRecentMemoriesCard extends StatelessWidget {
                   ),
                 ),
               ),
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: openAll,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'すべて見る',
-                        style: TextStyle(
-                          color: Color(0xFFFF86C8),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      SizedBox(width: 4),
-                      NomoGeneratedIcon(
-                        CupertinoIcons.chevron_forward,
-                        color: Color(0xFFFF86C8),
-                        size: 16,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Expanded(
-                child: _ProfileMemoryPreviewTile(
-                  memory: firstMemory,
-                  fallbackTitle: 'はじめての思い出',
-                  imageAlignment: Alignment.centerLeft,
-                  onTap: firstMemory == null ? onMemoriesTap : openAll,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _ProfileMemoryPreviewTile(
-                  memory: secondMemory,
-                  fallbackTitle: 'また遊ぼう',
-                  imageAlignment: Alignment.centerRight,
-                  onTap: secondMemory == null ? onMemoriesTap : openAll,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          _ProfileMemoryHintCard(onTap: onAddFriendsTap),
+          const SizedBox(height: 12),
+          if (hasPhotoMemories)
+            _ProfilePhotoArchiveBlock(
+              count: photoMemoryCount,
+              onTap: onArchiveTap,
+              onAddMemoryTap: onAddMemoryTap,
+              onAddFriendsTap: onAddFriendsTap,
+            )
+          else
+            _ProfilePhotoArchiveEmptyBlock(onTap: onArchiveTap),
         ],
       ),
     );
   }
 }
 
-class _ProfileMemoryPreviewTile extends StatelessWidget {
-  const _ProfileMemoryPreviewTile({
-    required this.memory,
-    required this.fallbackTitle,
-    required this.imageAlignment,
+class _ProfilePhotoArchiveBlock extends StatelessWidget {
+  const _ProfilePhotoArchiveBlock({
+    required this.count,
     required this.onTap,
+    required this.onAddMemoryTap,
+    required this.onAddFriendsTap,
   });
 
-  final Memory? memory;
-  final String fallbackTitle;
-  final Alignment imageAlignment;
+  final int count;
   final VoidCallback onTap;
+  final VoidCallback onAddMemoryTap;
+  final VoidCallback onAddFriendsTap;
 
   @override
   Widget build(BuildContext context) {
-    final title = memory == null ? fallbackTitle : _profileMemoryTitle(memory!);
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            height: 44,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: AppColors.darkBackground,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withValues(alpha: .16)),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _ProfileArchiveStatusRow(
+          title: '思い出を見る',
+          subtitle: '$count件の写真つき思い出',
+          onTap: onTap,
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(child: _ProfileArchiveAddButton(onTap: onAddMemoryTap)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
             ),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Image.asset(
-                  'assets/images/profile_mascot_backdrop_scene.png',
-                  fit: BoxFit.cover,
-                  alignment: imageAlignment,
-                ),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.darkBackground.withValues(alpha: .08),
-                  ),
-                ),
-                Positioned(
-                  right: 6,
-                  top: 6,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFD84E),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFFD84E).withValues(alpha: .30),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(4),
-                      child: NomoGeneratedIcon(
-                        CupertinoIcons.star_fill,
-                        color: Colors.white,
-                        size: 13,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.4,
-            ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 }
 
-class _ProfileMemoryHintCard extends StatelessWidget {
-  const _ProfileMemoryHintCard({required this.onTap});
+class _ProfilePhotoArchiveEmptyBlock extends StatelessWidget {
+  const _ProfilePhotoArchiveEmptyBlock({required this.onTap});
 
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Nomo3DButtonSurface(
+    return _ProfileArchiveStatusRow(
+      title: '思い出を見る',
+      subtitle: '写真つきの思い出をここにまとめます',
+      buttonLabel: '開く',
+      icon: CupertinoIcons.archivebox_fill,
       onTap: onTap,
-      height: 48,
-      radius: 22,
-      color: AppColors.darkBackground,
-      bottomColor: const Color(0xFF09131D),
-      useGradient: false,
-      padding: const EdgeInsets.fromLTRB(14, 0, 12, 0),
-      borderColor: Colors.white.withValues(alpha: .12),
-      outerShadows: const [],
+    );
+  }
+}
+
+class _ProfileArchiveStatusRow extends StatelessWidget {
+  const _ProfileArchiveStatusRow({
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.buttonLabel = '開く',
+    this.icon = CupertinoIcons.archivebox_fill,
+  });
+
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final String buttonLabel;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 84,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: AppColors.darkBackground,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFF20B9FF).withValues(alpha: .72),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF20B9FF).withValues(alpha: .28),
+            blurRadius: 18,
+            spreadRadius: .5,
+            offset: const Offset(0, 0),
+          ),
+        ],
+      ),
       child: Row(
         children: [
-          const NomoPopIcon(
-            icon: CupertinoIcons.sparkles,
-            color: Colors.white,
-            size: 30,
-            iconSize: 16,
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: const Color(0xFF20B9FF).withValues(alpha: .16),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF20B9FF).withValues(alpha: .24),
+              ),
+            ),
+            child: Center(
+              child: OheyGeneratedIcon(
+                icon,
+                color: const Color(0xFF54D7FF),
+                size: 22,
+              ),
+            ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '思い出をふやそう',
-                  style: TextStyle(
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 15.5,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: -.5,
+                    letterSpacing: -.3,
                   ),
                 ),
+                const SizedBox(height: 4),
                 Text(
-                  'フレンズと遊ぶとここに残るよ',
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: .62),
-                    fontSize: 10,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
             ),
           ),
-          NomoGeneratedIcon(
-            CupertinoIcons.chevron_forward,
-            color: Colors.white.withValues(alpha: .72),
-            size: 17,
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 72,
+            child: Ohey3DButtonSurface(
+              onTap: onTap,
+              height: 42,
+              radius: 21,
+              color: const Color(0xFF54D7FF),
+              bottomColor: const Color(0xFF168CC8),
+              padding: EdgeInsets.zero,
+              borderColor: Colors.white.withValues(alpha: .18),
+              outerShadows: [
+                BoxShadow(
+                  color: const Color(0xFF20B9FF).withValues(alpha: .22),
+                  blurRadius: 14,
+                  offset: const Offset(0, 7),
+                ),
+              ],
+              child: Text(
+                buttonLabel,
+                style: const TextStyle(
+                  color: Color(0xFF06111D),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -1007,10 +1068,74 @@ class _ProfileMemoryHintCard extends StatelessWidget {
   }
 }
 
-String _profileMemoryTitle(Memory memory) {
-  final place = memory.place.trim();
-  if (place.isNotEmpty) return place;
-  final memo = memory.memo.trim();
-  if (memo.isNotEmpty) return memo;
-  return '思い出';
+class _ProfileArchiveAddButton extends StatelessWidget {
+  const _ProfileArchiveAddButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Ohey3DButtonSurface(
+      onTap: onTap,
+      height: 46,
+      radius: 20,
+      color: const Color(0xFFC08BFF),
+      bottomColor: const Color(0xFF6D4DFF),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      borderColor: Colors.white.withValues(alpha: .20),
+      outerShadows: [
+        BoxShadow(
+          color: const Color(0xFFC08BFF).withValues(alpha: .18),
+          blurRadius: 14,
+          offset: const Offset(0, 7),
+        ),
+      ],
+      child: Row(
+        children: [
+          const OheyPopIcon(
+            icon: CupertinoIcons.camera_fill,
+            color: Color(0xFF101820),
+            size: 28,
+            iconSize: 15,
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              '思い出を追加',
+              style: TextStyle(
+                color: Color(0xFF101820),
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.3,
+              ),
+            ),
+          ),
+          OheyGeneratedIcon(
+            CupertinoIcons.plus,
+            color: Color(0xFF101820),
+            size: 18,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+bool _isProfileDisplayablePhoto(Memory memory) =>
+    _profileMemoryImageProvider(memory.photoAssetPath) != null;
+
+ImageProvider<Object>? _profileMemoryImageProvider(String? value) {
+  final normalized = value?.trim();
+  if (normalized == null || normalized.isEmpty) return null;
+  if (normalized.startsWith('ohey_memory_template_')) return null;
+  if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+    return NetworkImage(normalized);
+  }
+  if (normalized.startsWith('/')) {
+    final file = File(normalized);
+    if (!file.existsSync()) return null;
+    return FileImage(file);
+  }
+  if (normalized.startsWith('assets/')) return AssetImage(normalized);
+  return null;
 }

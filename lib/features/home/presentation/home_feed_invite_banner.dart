@@ -10,8 +10,8 @@ class _FeedInviteBanner extends StatelessWidget {
   });
 
   final bool isWhite;
-  final NomoInvite? invite;
-  final NomoInvite? reservation;
+  final OheyInvite? invite;
+  final OheyInvite? reservation;
   final String? currentUserId;
   final VoidCallback onOpenNotifications;
 
@@ -30,7 +30,7 @@ class _FeedInviteBanner extends StatelessWidget {
     if (target == null) return const SizedBox.shrink();
 
     final accent = hasInvite ? AppColors.primaryAction : AppColors.success;
-    final top = NomoPageHeader.contentTopInset(context) - 8;
+    final top = OheyPageHeader.contentTopInset(context) - 8;
     return Positioned(
       left: 18,
       right: 18,
@@ -56,7 +56,7 @@ class _FeedInviteBanner extends StatelessWidget {
           ),
           child: Row(
             children: [
-              NomoPopIcon(
+              OheyPopIcon(
                 icon: hasInvite
                     ? CupertinoIcons.bell_fill
                     : CupertinoIcons.checkmark_seal_fill,
@@ -102,7 +102,7 @@ class _FeedInviteBanner extends StatelessWidget {
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              NomoGeneratedIcon(
+              OheyGeneratedIcon(
                 CupertinoIcons.chevron_right,
                 color: isWhite
                     ? const Color(0xFF98A3AF)

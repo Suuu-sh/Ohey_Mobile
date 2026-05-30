@@ -3,84 +3,76 @@ part of 'profile_screen.dart';
 class _AvatarEditCard extends StatelessWidget {
   const _AvatarEditCard({required this.avatar, required this.onTap});
 
-  final NomoAvatar avatar;
+  final OheyAvatar avatar;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF101820) : Colors.white;
-    return Nomo3DButtonSurface(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      height: 110,
-      radius: 22,
-      color: isWhite
-          ? const Color(0xFFF6F8FA)
-          : Colors.white.withValues(alpha: .06),
-      bottomColor: isWhite ? const Color(0xFFD8E1EA) : const Color(0xFF09131D),
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      borderColor: isWhite ? const Color(0xFFDDE4EA) : _ProfileColors.line,
-      outerShadows: [
-        BoxShadow(
-          color: _ProfileColors.lime.withValues(alpha: isWhite ? .10 : .16),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
+      child: Container(
+        height: 110,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? const Color(0xFFF6F8FA)
+              : Colors.white.withValues(alpha: .06),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isWhite ? const Color(0xFFDDE4EA) : _ProfileColors.line,
+          ),
         ),
-      ],
-      innerShadows: [
-        BoxShadow(
-          color: Colors.white.withValues(alpha: isWhite ? .42 : .08),
-          blurRadius: 10,
-          offset: const Offset(-2, -2),
-        ),
-      ],
-      child: Row(
-        children: [
-          Container(
-            width: 82,
-            height: 82,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [Color(0xFF223544), Color(0xFF101B28)],
+        child: Row(
+          children: [
+            Container(
+              width: 82,
+              height: 82,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [Color(0xFF223544), Color(0xFF101B28)],
+                ),
+              ),
+              child: OheyAvatarView(avatar: avatar, size: 82),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '自分のアバター',
+                    style: TextStyle(
+                      color: ink,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '肌・髪型・服・表情をカスタム',
+                    style: TextStyle(
+                      color: isWhite
+                          ? const Color(0xFF687481)
+                          : Colors.white.withValues(alpha: .58),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: NomoAvatarView(avatar: avatar, size: 82),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '自分のアバター',
-                  style: TextStyle(
-                    color: ink,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  '肌・髪型・服・表情をカスタム',
-                  style: TextStyle(
-                    color: isWhite
-                        ? const Color(0xFF687481)
-                        : Colors.white.withValues(alpha: .58),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+            const OheyGeneratedIcon(
+              CupertinoIcons.chevron_forward,
+              color: _ProfileColors.lime,
+              size: 22,
             ),
-          ),
-          const NomoGeneratedIcon(
-            CupertinoIcons.chevron_forward,
-            color: _ProfileColors.lime,
-            size: 22,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -93,7 +85,7 @@ class _SettingsSheetShell extends StatelessWidget {
     required this.onClose,
   });
 
-  final NomoUser? user;
+  final OheyUser? user;
   final List<Widget> children;
   final VoidCallback onClose;
 
@@ -101,18 +93,8 @@ class _SettingsSheetShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? const Color(0xFF111820) : Colors.white;
-    final sub = isWhite
-        ? const Color(0xFF66727E)
-        : Colors.white.withValues(alpha: .62);
-    final avatar = user?.avatar ?? NomoAvatar.defaultAvatar;
-    final name = user?.name.trim().isNotEmpty == true
-        ? user!.name
-        : 'Nomo user';
-    final handle = user?.userId.trim().isNotEmpty == true
-        ? '@${user!.userId}'
-        : 'プロフィール未設定';
 
-    return NomoBottomSheetShell(
+    return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: EdgeInsets.zero,
       radius: 34,
@@ -153,69 +135,11 @@ class _SettingsSheetShell extends StatelessWidget {
                                 letterSpacing: -1.0,
                               ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Nomoを自分好みに整えよう',
-                          style: TextStyle(
-                            color: sub,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
                       ],
                     ),
                   ),
                   _SettingsCloseButton(onTap: onClose, color: ink),
                 ],
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isWhite
-                      ? const Color(0xFFF3F7FA)
-                      : AppColors.darkBackground,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: isWhite
-                        ? const Color(0xFFE0E7EE)
-                        : Colors.white.withValues(alpha: .09),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    NomoAvatarView(avatar: avatar, size: 52),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: ink,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            handle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: sub,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 14),
               ...children,
@@ -249,7 +173,7 @@ class _SettingsCloseButton extends StatelessWidget {
           border: Border.all(color: color.withValues(alpha: .10)),
         ),
         child: Center(
-          child: NomoGeneratedIcon(
+          child: OheyGeneratedIcon(
             CupertinoIcons.xmark,
             color: color,
             size: 23,
@@ -300,7 +224,7 @@ class _SettingsTile extends StatelessWidget {
             height: 72,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: NomoThemedPanel.surfaceColor(isWhite: isWhite),
+              color: OheyThemedPanel.surfaceColor(isWhite: isWhite),
               borderRadius: BorderRadius.circular(22),
               border: Border.all(
                 color: isWhite
@@ -326,7 +250,7 @@ class _SettingsTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(17),
                   ),
                   child: Center(
-                    child: NomoPopIcon(
+                    child: OheyPopIcon(
                       icon: icon,
                       color: accent,
                       size: 28,
@@ -390,7 +314,7 @@ class _SettingsTile extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
-                    child: NomoGeneratedIcon(
+                    child: OheyGeneratedIcon(
                       CupertinoIcons.chevron_forward,
                       color: _ProfileColors.sub,
                       size: 18,
@@ -454,7 +378,7 @@ class _SheetPrimaryButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Nomo3DButton(
+  Widget build(BuildContext context) => Ohey3DButton(
     label: label,
     onTap: busy ? null : onTap,
     isLoading: busy,

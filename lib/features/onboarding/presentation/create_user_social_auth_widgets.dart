@@ -100,7 +100,7 @@ class _Auth3DPanelButton extends StatelessWidget {
   final Color glowColor;
 
   @override
-  Widget build(BuildContext context) => Nomo3DButtonSurface(
+  Widget build(BuildContext context) => Ohey3DButtonSurface(
     onTap: onTap,
     height: height,
     radius: radius,

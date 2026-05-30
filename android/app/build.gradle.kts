@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "app.nomo.nomo"
+    namespace = "app.ohey.com"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "app.nomo.nomo"
+        applicationId = "app.ohey.com"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -33,11 +33,11 @@ android {
         create("dev") {
             dimension = "env"
             applicationIdSuffix = ".dev"
-            resValue("string", "app_name", "Tomola Dev")
+            resValue("string", "app_name", "Ohey Dev")
         }
         create("prod") {
             dimension = "env"
-            resValue("string", "app_name", "Tomola")
+            resValue("string", "app_name", "Ohey")
         }
     }
 

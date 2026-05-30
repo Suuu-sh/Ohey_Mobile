@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:nomo/core/data/auth_repository.dart';
-import 'package:nomo/core/data/push_token_repository.dart';
-import 'package:nomo/core/data/user_repository.dart';
-import 'package:nomo/core/models/nomo_avatar.dart';
-import 'package:nomo/core/models/nomo_gender.dart';
-import 'package:nomo/features/friends/data/friend_repository.dart';
+import 'package:ohey/core/data/auth_repository.dart';
+import 'package:ohey/core/data/push_token_repository.dart';
+import 'package:ohey/core/data/user_repository.dart';
+import 'package:ohey/core/models/ohey_avatar.dart';
+import 'package:ohey/core/models/ohey_gender.dart';
+import 'package:ohey/features/friends/data/friend_repository.dart';
 
 void main() {
   test('authOAuthScopes returns provider-specific safe scopes', () {
@@ -15,40 +15,40 @@ void main() {
 
   test('authProfileMetadata uses only profile fields accepted by backend', () {
     final payload = authProfileMetadata(
-      userId: 'nomo_user',
-      displayName: 'Nomo User',
-      gender: NomoGender.female,
-      avatar: NomoAvatar.defaultAvatar,
+      userId: 'ohey_user',
+      displayName: 'Ohey User',
+      gender: OheyGender.female,
+      avatar: OheyAvatar.defaultAvatar,
     );
 
-    expect(payload['user_id'], 'nomo_user');
-    expect(payload['display_name'], 'Nomo User');
+    expect(payload['user_id'], 'ohey_user');
+    expect(payload['display_name'], 'Ohey User');
     expect(payload['gender'], 'female');
     expect(payload['character_key'], 'avatar');
     expect(payload['avatar_url'], isA<String>());
     expect(payload.keys, hasLength(5));
   });
 
-  test('Nomo user id helpers validate and derive stable defaults', () {
-    expect(isValidNomoUserId('nomo_user_2026'), isTrue);
-    expect(isValidNomoUserId('ab'), isFalse);
-    expect(isValidNomoUserId('bad user'), isFalse);
+  test('Ohey user id helpers validate and derive stable defaults', () {
+    expect(isValidOheyUserId('ohey_user_2026'), isTrue);
+    expect(isValidOheyUserId('ab'), isFalse);
+    expect(isValidOheyUserId('bad user'), isFalse);
     expect(
-      defaultNomoUserId('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'),
-      'nomo_aaaaaaaabbbb',
+      defaultOheyUserId('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'),
+      'ohey_aaaaaaaabbbb',
     );
   });
 
   test('profile payload helpers keep create and update scopes explicit', () {
     expect(
       createProfilePayload(
-        name: 'Nomo User',
-        userId: 'nomo_user',
-        gender: NomoGender.male,
+        name: 'Ohey User',
+        userId: 'ohey_user',
+        gender: OheyGender.male,
       ),
       <String, dynamic>{
-        'user_id': 'nomo_user',
-        'display_name': 'Nomo User',
+        'user_id': 'ohey_user',
+        'display_name': 'Ohey User',
         'gender': 'male',
         'character_key': 'avatar',
         'avatar_url': '',
@@ -67,7 +67,7 @@ void main() {
   });
 
   test('friend profile parser trims fallback fields safely', () {
-    final profile = NomoFriendProfile.fromRow(<String, dynamic>{
+    final profile = OheyFriendProfile.fromRow(<String, dynamic>{
       'id': 'friend-id',
       'user_id': 'friend_user',
       'display_name': '  ',
@@ -76,21 +76,21 @@ void main() {
 
     expect(profile.id, 'friend-id');
     expect(profile.userId, 'friend_user');
-    expect(profile.displayName, 'Nomo friend');
-    expect(profile.avatar, NomoAvatar.defaultAvatar);
+    expect(profile.displayName, 'Ohey friend');
+    expect(profile.avatar, OheyAvatar.defaultAvatar);
   });
 
   test('friend relationship parser defaults unknown states to none', () {
-    final outgoing = NomoFriendRelationshipStatus.fromRow(<String, dynamic>{
+    final outgoing = OheyFriendRelationshipStatus.fromRow(<String, dynamic>{
       'already_friend': false,
       'request_state': 'outgoing',
     });
-    final unknown = NomoFriendRelationshipStatus.fromRow(<String, dynamic>{});
+    final unknown = OheyFriendRelationshipStatus.fromRow(<String, dynamic>{});
 
     expect(outgoing.alreadyFriend, isFalse);
-    expect(outgoing.requestState, NomoFriendRequestState.outgoing);
+    expect(outgoing.requestState, OheyFriendRequestState.outgoing);
     expect(unknown.alreadyFriend, isFalse);
-    expect(unknown.requestState, NomoFriendRequestState.none);
+    expect(unknown.requestState, OheyFriendRequestState.none);
   });
 
   test('push platform and payload helpers emit supported API platform key', () {

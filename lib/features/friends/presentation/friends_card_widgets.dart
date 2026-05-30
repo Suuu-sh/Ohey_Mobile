@@ -28,7 +28,7 @@ class _FriendCard extends StatelessWidget {
     required this.onProfile,
   });
 
-  final NomoFriend friend;
+  final OheyFriend friend;
   final _FriendStatus status;
   final VoidCallback onFavoriteToggle;
   final bool isInvited;
@@ -37,7 +37,7 @@ class _FriendCard extends StatelessWidget {
   final VoidCallback onProfile;
 
   @override
-  Widget build(BuildContext context) => NomoFriendUserBlock(
+  Widget build(BuildContext context) => OheyFriendUserBlock(
     friend: friend,
     statusLabel: status.label,
     statusReason: status.reason,
@@ -54,9 +54,9 @@ class _FriendCard extends StatelessWidget {
   );
 }
 
-Future<void> showNomoFriendProfileSheet(
+Future<void> showOheyFriendProfileSheet(
   BuildContext context, {
-  required NomoFriend friend,
+  required OheyFriend friend,
 }) {
   return _showFriendProfileSheet(
     context,
@@ -67,10 +67,10 @@ Future<void> showNomoFriendProfileSheet(
 
 Future<void> _showFriendProfileSheet(
   BuildContext context, {
-  required NomoFriend friend,
+  required OheyFriend friend,
   required _FriendStatus status,
 }) {
-  return showNomoBottomSheet<void>(
+  return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: false,
     barrierColor: Colors.black.withValues(alpha: .58),
@@ -81,7 +81,7 @@ Future<void> _showFriendProfileSheet(
 class _FriendProfileSheet extends ConsumerStatefulWidget {
   const _FriendProfileSheet({required this.friend, required this.status});
 
-  final NomoFriend friend;
+  final OheyFriend friend;
   final _FriendStatus status;
 
   @override
@@ -93,7 +93,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
   late _FriendStatus _selectedStatus = widget.status;
   _FriendProfileAction? _busyAction;
 
-  void _handleSelectedStatusChanged(NomoDailyStatus status) {
+  void _handleSelectedStatusChanged(OheyDailyStatus status) {
     final nextStatus = _friendStatusForDailyStatus(status);
     if (_selectedStatus.label == nextStatus.label &&
         _selectedStatus.reason == nextStatus.reason &&
@@ -132,14 +132,14 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
       ref.invalidate(friendsProvider);
       if (!mounted || !toastContext.mounted) return;
       Navigator.of(context).pop();
-      NomoToast.show(
+      OheyToast.show(
         toastContext,
         'フレンズを解除しました',
         icon: CupertinoIcons.person_badge_minus_fill,
       );
     } catch (_) {
       if (!mounted) return;
-      NomoToast.show(
+      OheyToast.show(
         context,
         '解除できませんでした。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
@@ -152,7 +152,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
   Future<void> _openActionMenu() async {
     if (_busyAction != null) return;
     HapticFeedback.selectionClick();
-    final action = await showNomoBottomSheet<_FriendProfileAction>(
+    final action = await showOheyBottomSheet<_FriendProfileAction>(
       context: context,
       useSafeArea: true,
       barrierColor: Colors.black.withValues(alpha: .58),
@@ -195,7 +195,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
       );
     } catch (_) {
       if (!mounted) return;
-      NomoToast.show(
+      OheyToast.show(
         context,
         'ミュートできませんでした。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
@@ -259,7 +259,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
       );
     } catch (_) {
       if (!mounted) return;
-      NomoToast.show(
+      OheyToast.show(
         context,
         'ブロックできませんでした。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
@@ -279,7 +279,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
           .read(userSafetyRepositoryProvider)
           .reportUser(widget.friend.id, reason: reason.value);
       if (!mounted) return;
-      NomoToast.show(
+      OheyToast.show(
         context,
         '「${reason.label}」として通報しました',
         icon: CupertinoIcons.exclamationmark_bubble_fill,
@@ -287,7 +287,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
       );
     } catch (_) {
       if (!mounted) return;
-      NomoToast.show(
+      OheyToast.show(
         context,
         '通報できませんでした。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
@@ -306,7 +306,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
     final sheetContentHeight = media.size.height - media.padding.bottom;
     const bodyBackground = AppColors.darkBackgroundBottom;
 
-    return NomoBottomSheetShell(
+    return OheyBottomSheetShell(
       padding: EdgeInsets.zero,
       radius: 0,
       maxHeightFactor: 1,
@@ -347,7 +347,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Nomo3DButton.secondary(
+                      child: Ohey3DButton.secondary(
                         label: _busyAction == null ? '操作メニュー' : '処理中',
                         icon: CupertinoIcons.ellipsis_circle,
                         onTap: _busyAction == null ? _openActionMenu : null,
@@ -361,7 +361,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Nomo3DButton.secondary(
+                      child: Ohey3DButton.secondary(
                         label: '閉じる',
                         onTap: () => Navigator.of(context).pop(),
                         height: 48,
@@ -388,7 +388,7 @@ void _showFriendSafetyUndoToast(
   required String message,
   required Future<void> Function() onUndo,
 }) {
-  NomoToast.show(
+  OheyToast.show(
     context,
     message,
     icon: CupertinoIcons.checkmark_circle_fill,
@@ -398,7 +398,7 @@ void _showFriendSafetyUndoToast(
       try {
         await onUndo();
         if (context.mounted) {
-          NomoToast.show(
+          OheyToast.show(
             context,
             '元に戻しました',
             icon: CupertinoIcons.arrow_uturn_left_circle_fill,
@@ -406,7 +406,7 @@ void _showFriendSafetyUndoToast(
         }
       } catch (_) {
         if (context.mounted) {
-          NomoToast.show(
+          OheyToast.show(
             context,
             '元に戻せませんでした。あとでもう一度試してね',
             icon: CupertinoIcons.exclamationmark_triangle_fill,
@@ -420,7 +420,7 @@ void _showFriendSafetyUndoToast(
 class _FriendProfileActionSheet extends StatelessWidget {
   const _FriendProfileActionSheet({required this.friend});
 
-  final NomoFriend friend;
+  final OheyFriend friend;
 
   @override
   Widget build(BuildContext context) {
@@ -429,7 +429,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
         ? const Color(0xFF697684)
         : Colors.white.withValues(alpha: .58);
 
-    return NomoBottomSheetShell(
+    return OheyBottomSheetShell(
       title: 'フレンズ管理',
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
@@ -448,7 +448,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          NomoActionTile(
+          OheyActionTile(
             icon: CupertinoIcons.person_badge_minus,
             title: 'フレンズ解除',
             subtitle: '関係を解除して、あとで再申請できます',
@@ -457,7 +457,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.remove),
           ),
           const SizedBox(height: 10),
-          NomoActionTile(
+          OheyActionTile(
             icon: CupertinoIcons.bell_slash_fill,
             title: 'ミュート',
             subtitle: '投稿をフィードに出しにくくします',
@@ -465,7 +465,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.mute),
           ),
           const SizedBox(height: 10),
-          NomoActionTile(
+          OheyActionTile(
             icon: CupertinoIcons.hand_raised_fill,
             title: 'ブロック',
             subtitle: '投稿・申請・お誘いを制限します',
@@ -474,7 +474,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.block),
           ),
           const SizedBox(height: 10),
-          NomoActionTile(
+          OheyActionTile(
             icon: CupertinoIcons.exclamationmark_bubble_fill,
             title: '通報',
             subtitle: '理由を選んで運営に送信します',
@@ -482,7 +482,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.report),
           ),
           const SizedBox(height: 12),
-          Nomo3DButton.secondary(
+          Ohey3DButton.secondary(
             label: 'キャンセル',
             onTap: () => Navigator.of(context).pop(),
             height: 48,
@@ -505,7 +505,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
 Future<_FriendProfileReportReason?> _selectFriendReportReason(
   BuildContext context,
 ) {
-  return showNomoBottomSheet<_FriendProfileReportReason>(
+  return showOheyBottomSheet<_FriendProfileReportReason>(
     context: context,
     useSafeArea: true,
     barrierColor: Colors.black.withValues(alpha: .58),
@@ -522,7 +522,7 @@ class _FriendReportReasonSheet extends StatelessWidget {
     final sub = isWhite
         ? const Color(0xFF697684)
         : Colors.white.withValues(alpha: .58);
-    return NomoBottomSheetShell(
+    return OheyBottomSheetShell(
       title: '通報理由',
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
@@ -542,7 +542,7 @@ class _FriendReportReasonSheet extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           for (final reason in _FriendProfileReportReason.values) ...[
-            NomoActionTile(
+            OheyActionTile(
               icon: CupertinoIcons.exclamationmark_triangle_fill,
               title: reason.label,
               subtitle: reason.description,
@@ -553,7 +553,7 @@ class _FriendReportReasonSheet extends StatelessWidget {
               const SizedBox(height: 9),
           ],
           const SizedBox(height: 12),
-          Nomo3DButton.secondary(
+          Ohey3DButton.secondary(
             label: 'キャンセル',
             onTap: () => Navigator.of(context).pop(),
             height: 48,
@@ -576,8 +576,8 @@ class _FriendReportReasonSheet extends StatelessWidget {
 class _FriendProfileTopBackdrop extends StatelessWidget {
   const _FriendProfileTopBackdrop({required this.friend, required this.avatar});
 
-  final NomoFriend friend;
-  final NomoAvatar avatar;
+  final OheyFriend friend;
+  final OheyAvatar avatar;
 
   @override
   Widget build(BuildContext context) {
@@ -591,9 +591,9 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
           _FriendProfileHeaderBackdrop(avatar: avatar),
           Padding(
             padding: EdgeInsets.fromLTRB(
-              NomoPageHeader.horizontalPadding,
+              OheyPageHeader.horizontalPadding,
               topPadding + 4,
-              NomoPageHeader.horizontalPadding,
+              OheyPageHeader.horizontalPadding,
               6,
             ),
             child: Column(
@@ -612,11 +612,11 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
 class _FriendProfileHeaderBackdrop extends StatelessWidget {
   const _FriendProfileHeaderBackdrop({required this.avatar});
 
-  final NomoAvatar avatar;
+  final OheyAvatar avatar;
 
   @override
   Widget build(BuildContext context) {
-    if (NomoAvatar.usesMascotBackdrop(avatar.background)) {
+    if (OheyAvatar.usesMascotBackdrop(avatar.background)) {
       return ExcludeSemantics(
         child: Image.asset(
           'assets/images/profile_mascot_backdrop_scene.png',
@@ -627,8 +627,8 @@ class _FriendProfileHeaderBackdrop extends StatelessWidget {
     }
 
     final backgroundColors =
-        NomoAvatar.backgroundGradients[avatar.background %
-            NomoAvatar.backgroundGradients.length];
+        OheyAvatar.backgroundGradients[avatar.background %
+            OheyAvatar.backgroundGradients.length];
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -642,7 +642,7 @@ class _FriendProfileHeaderBackdrop extends StatelessWidget {
           ),
         ),
         Opacity(
-          opacity: avatar.background == NomoAvatar.dreamRoomBackground
+          opacity: avatar.background == OheyAvatar.dreamRoomBackground
               ? .18
               : .10,
           child: ExcludeSemantics(
@@ -673,8 +673,8 @@ class _FriendProfileHeaderBackdrop extends StatelessWidget {
 class _FriendProfileHero extends StatelessWidget {
   const _FriendProfileHero({required this.friend, required this.avatar});
 
-  final NomoFriend friend;
-  final NomoAvatar avatar;
+  final OheyFriend friend;
+  final OheyAvatar avatar;
 
   @override
   Widget build(BuildContext context) {
@@ -689,7 +689,7 @@ class _FriendProfileHero extends StatelessWidget {
             height: 190,
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: NomoAvatarView(avatar: avatar, size: 156),
+              child: OheyAvatarView(avatar: avatar, size: 156),
             ),
           ),
           Container(
@@ -727,7 +727,7 @@ class _FriendProfileStatusPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NomoThemedPanel(
+    return OheyThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
       accentColor: statusColor,
       borderRadius: 22,
@@ -742,7 +742,7 @@ class _FriendProfileStatusPanel extends StatelessWidget {
       glowOffset: const Offset(0, 8),
       child: Row(
         children: [
-          NomoPopIcon(
+          OheyPopIcon(
             icon: CupertinoIcons.cloud_fill,
             color: statusColor,
             size: 38,
@@ -787,9 +787,9 @@ class _FriendProfileCalendar extends ConsumerStatefulWidget {
     required this.onSelectedStatusChanged,
   });
 
-  final NomoFriend friend;
+  final OheyFriend friend;
   final _FriendStatus status;
-  final ValueChanged<NomoDailyStatus> onSelectedStatusChanged;
+  final ValueChanged<OheyDailyStatus> onSelectedStatusChanged;
 
   @override
   ConsumerState<_FriendProfileCalendar> createState() =>
@@ -800,7 +800,7 @@ class _FriendProfileCalendarState
     extends ConsumerState<_FriendProfileCalendar> {
   late DateTime _month;
   late DateTime _selectedDay;
-  final Map<String, NomoDailyStatus> _statusByDate = {};
+  final Map<String, OheyDailyStatus> _statusByDate = {};
   final Set<String> _loadingStatusKeys = {};
 
   @override
@@ -852,12 +852,12 @@ class _FriendProfileCalendarState
               .firstOrNull;
           return MapEntry(
             _friendProfileDateKey(date),
-            nomoDailyStatusFromKey(friend?.statusKey),
+            oheyDailyStatusFromKey(friend?.statusKey),
           );
         } catch (_) {
           return MapEntry(
             _friendProfileDateKey(date),
-            NomoDailyStatus.unselected,
+            OheyDailyStatus.unselected,
           );
         }
       }),
@@ -909,7 +909,7 @@ class _FriendProfileCalendarState
                 setState(() => _selectedDay = day);
                 widget.onSelectedStatusChanged(
                   _statusByDate[_friendProfileDateKey(day)] ??
-                      NomoDailyStatus.unselected,
+                      OheyDailyStatus.unselected,
                 );
               },
             ),
@@ -1001,7 +1001,7 @@ class _FriendProfileMonthGrid extends StatelessWidget {
 
   final DateTime month;
   final DateTime selectedDay;
-  final Map<String, NomoDailyStatus> statusByDate;
+  final Map<String, OheyDailyStatus> statusByDate;
   final ValueChanged<DateTime> onSelectDay;
 
   @override
@@ -1084,7 +1084,7 @@ class _FriendProfileMonthGrid extends StatelessWidget {
                       final day = DateTime(month.year, month.month, dayNumber);
                       final dailyStatus =
                           statusByDate[_friendProfileDateKey(day)] ??
-                          NomoDailyStatus.unselected;
+                          OheyDailyStatus.unselected;
                       return _FriendProfileDayTile(
                         day: displayDay,
                         inMonth: inMonth,
@@ -1123,7 +1123,7 @@ class _FriendProfileDayTile extends StatelessWidget {
 
   final int day;
   final bool inMonth;
-  final NomoDailyStatus dailyStatus;
+  final OheyDailyStatus dailyStatus;
   final bool isToday;
   final bool isSelected;
   final int column;
@@ -1133,7 +1133,7 @@ class _FriendProfileDayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final hasStatus = dailyStatus != NomoDailyStatus.unselected;
+    final hasStatus = dailyStatus != OheyDailyStatus.unselected;
     final statusAccent = _friendProfileCalendarStatusTileAccent(dailyStatus);
     final dayColor = hasStatus
         ? _friendProfileCalendarStatusTileForeground(
@@ -1215,21 +1215,21 @@ bool _friendProfileIsSameMonth(DateTime a, DateTime b) =>
 bool _friendProfileIsSameDate(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
 
-Color _friendProfileCalendarStatusTileAccent(NomoDailyStatus status) =>
+Color _friendProfileCalendarStatusTileAccent(OheyDailyStatus status) =>
     switch (status) {
-      NomoDailyStatus.available => const Color(0xFFFF5EA8),
-      NomoDailyStatus.maybeAvailable => const Color(0xFF20B9FF),
-      NomoDailyStatus.dependsOnTime => const Color(0xFF8A62FF),
-      NomoDailyStatus.hasPlans => const Color(0xFF738092),
-      NomoDailyStatus.unselected => const Color(0xFF9AF21A),
+      OheyDailyStatus.available => const Color(0xFFFF5EA8),
+      OheyDailyStatus.maybeAvailable => const Color(0xFF20B9FF),
+      OheyDailyStatus.dependsOnTime => const Color(0xFF8A62FF),
+      OheyDailyStatus.hasPlans => const Color(0xFF738092),
+      OheyDailyStatus.unselected => const Color(0xFF9AF21A),
     };
 
 Color _friendProfileCalendarStatusTileBackground(
-  NomoDailyStatus status, {
+  OheyDailyStatus status, {
   required bool isWhite,
   required bool selected,
 }) {
-  if (status == NomoDailyStatus.hasPlans) {
+  if (status == OheyDailyStatus.hasPlans) {
     return isWhite
         ? const Color(0xFFE2E8F0)
         : const Color(0xFF2B3644).withValues(alpha: selected ? .92 : .76);
@@ -1241,10 +1241,10 @@ Color _friendProfileCalendarStatusTileBackground(
 }
 
 Color _friendProfileCalendarStatusTileForeground(
-  NomoDailyStatus status, {
+  OheyDailyStatus status, {
   required bool isWhite,
 }) {
-  if (status == NomoDailyStatus.hasPlans) {
+  if (status == OheyDailyStatus.hasPlans) {
     return isWhite ? const Color(0xFF111827) : Colors.white;
   }
   return const Color(0xFF06111D);

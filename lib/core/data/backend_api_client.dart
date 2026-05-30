@@ -116,7 +116,7 @@ class BackendApiClient {
         .timeout(const Duration(seconds: 12));
     request.headers.contentType = ContentType.json;
     request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
-    request.headers.set('X-Nomo-User-ID', userId);
+    request.headers.set('X-Ohey-User-ID', userId);
 
     if (body != null) {
       request.write(jsonEncode(body));

@@ -8,23 +8,23 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/models/memory.dart';
-import '../../../core/application/nomo_user_controller.dart';
+import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/data/user_repository.dart';
-import '../../../core/models/nomo_invite.dart';
-import '../../../core/models/nomo_avatar.dart';
-import '../../../core/models/nomo_friend.dart';
-import '../../../core/models/nomo_user.dart';
+import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/ohey_avatar.dart';
+import '../../../core/models/ohey_friend.dart';
+import '../../../core/models/ohey_user.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/nomo_theme_mode.dart';
-import '../../../core/widgets/nomo_3d_button.dart';
-import '../../../core/widgets/nomo_bottom_sheet.dart';
-import '../../../core/widgets/nomo_daily_status_3d_option.dart';
-import '../../../core/widgets/nomo_friend_user_block.dart';
-import '../../../core/widgets/nomo_page_header.dart';
-import '../../../core/widgets/nomo_pop_icon.dart';
-import '../../../core/widgets/nomo_scene_header_backdrop.dart';
-import '../../../core/widgets/nomo_themed_panel.dart';
-import '../../../core/widgets/nomo_toast.dart';
+import '../../../core/theme/ohey_theme_mode.dart';
+import '../../../core/widgets/ohey_3d_button.dart';
+import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_daily_status_3d_option.dart';
+import '../../../core/widgets/ohey_friend_user_block.dart';
+import '../../../core/widgets/ohey_page_header.dart';
+import '../../../core/widgets/ohey_pop_icon.dart';
+import '../../../core/widgets/ohey_scene_header_backdrop.dart';
+import '../../../core/widgets/ohey_themed_panel.dart';
+import '../../../core/widgets/ohey_toast.dart';
 import '../../friends/application/invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
 import '../../memories/application/memory_controller.dart';
@@ -34,7 +34,7 @@ const _calendarPrimaryActionForegroundColor = Color(0xFF06111D);
 const _calendarPrimaryActionShadowColor = Color(0xFF0B78B7);
 
 String _calendarGroupStorageKey(String userId) =>
-    'nomo_custom_friend_filters_v1_$userId';
+    'ohey_custom_friend_filters_v1_$userId';
 
 class _CalendarFriendGroup {
   const _CalendarFriendGroup({
@@ -102,14 +102,14 @@ class CalendarScreen extends ConsumerStatefulWidget {
 }
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
-  static const _calendarIntroSeenKey = 'nomo_calendar_intro_seen';
+  static const _calendarIntroSeenKey = 'ohey_calendar_intro_seen';
 
   late DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
   late DateTime _selectedDay = _dateOnly(DateTime.now());
   double _monthDragOffset = 0;
   bool _isIntroSeen = true;
   bool _isStatusSaving = false;
-  final Map<String, NomoDailyStatus> _statusByDate = {};
+  final Map<String, OheyDailyStatus> _statusByDate = {};
   final Set<String> _loadingStatusKeys = {};
   String? _calendarGroupUserId;
   List<_CalendarFriendGroup> _calendarGroups = const [];
@@ -121,7 +121,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     _loadStatusesForMonth(_month);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _syncCalendarGroupsForUser(ref.read(nomoUserProvider)?.userId);
+        _syncCalendarGroupsForUser(ref.read(oheyUserProvider)?.userId);
       }
     });
   }
@@ -191,15 +191,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   Future<void> _selectDay(DateTime day) async {
     setState(() => _selectedDay = day);
     final status = await _loadStatusFor(day);
-    if (!mounted || status != NomoDailyStatus.unselected) return;
+    if (!mounted || status != OheyDailyStatus.unselected) return;
     await _openStatusPicker(showLockedExplanation: true);
   }
 
-  Future<NomoDailyStatus> _loadStatusFor(DateTime day) async {
+  Future<OheyDailyStatus> _loadStatusFor(DateTime day) async {
     final key = _dateKey(day);
     final cached = _statusByDate[key];
     if (cached != null) return cached;
-    if (!_loadingStatusKeys.add(key)) return NomoDailyStatus.unselected;
+    if (!_loadingStatusKeys.add(key)) return OheyDailyStatus.unselected;
     try {
       final status = await ref
           .read(userRepositoryProvider)
@@ -209,9 +209,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       return status;
     } catch (_) {
       if (mounted) {
-        setState(() => _statusByDate[key] = NomoDailyStatus.unselected);
+        setState(() => _statusByDate[key] = OheyDailyStatus.unselected);
       }
-      return NomoDailyStatus.unselected;
+      return OheyDailyStatus.unselected;
     } finally {
       _loadingStatusKeys.remove(key);
     }
@@ -238,7 +238,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     if (targets.isEmpty) return;
 
     final repository = ref.read(userRepositoryProvider);
-    Map<String, NomoDailyStatus> statuses;
+    Map<String, OheyDailyStatus> statuses;
     try {
       statuses = await repository.fetchDailyStatusesForMonth(month);
     } catch (_) {
@@ -251,18 +251,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     setState(() {
       for (final date in targets) {
         final key = _dateKey(date);
-        _statusByDate[key] = statuses[key] ?? NomoDailyStatus.unselected;
+        _statusByDate[key] = statuses[key] ?? OheyDailyStatus.unselected;
       }
     });
   }
 
-  Future<void> _setStatusForSelectedDay(NomoDailyStatus status) async {
+  Future<void> _setStatusForSelectedDay(OheyDailyStatus status) async {
     if (_isStatusSaving) return;
     final day = _selectedDay;
     setState(() => _isStatusSaving = true);
     try {
       await ref
-          .read(nomoUserProvider.notifier)
+          .read(oheyUserProvider.notifier)
           .updateDailyStatus(status, date: day);
       if (!mounted) return;
       setState(() {
@@ -276,14 +276,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   Future<void> _openStatusPicker({bool showLockedExplanation = false}) async {
-    final picked = await showNomoBottomSheet<NomoDailyStatus>(
+    final picked = await showOheyBottomSheet<OheyDailyStatus>(
       context: context,
       useSafeArea: true,
       barrierColor: Colors.black.withValues(alpha: .58),
       builder: (_) => _CalendarStatusSheet(
         day: _selectedDay,
         selected:
-            _statusByDate[_dateKey(_selectedDay)] ?? NomoDailyStatus.unselected,
+            _statusByDate[_dateKey(_selectedDay)] ?? OheyDailyStatus.unselected,
         showLockedExplanation: showLockedExplanation,
       ),
     );
@@ -324,7 +324,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final monthlyLogs = userLogs.where((log) => log.isInMonth(_month)).toList();
     final todayReservations =
         ref.watch(todayReservationsProvider).asData?.value ??
-        const <NomoInvite>[];
+        const <OheyInvite>[];
     final selectedLogs = userLogs
         .where((log) => _isSameDate(log.date, _selectedDay))
         .toList(growable: false);
@@ -332,16 +332,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       friendsForDateProvider(_dateOnly(_selectedDay)),
     );
     final selectedStatus =
-        _statusByDate[_dateKey(_selectedDay)] ?? NomoDailyStatus.unselected;
-    final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
-    final user = ref.watch(nomoUserProvider);
+        _statusByDate[_dateKey(_selectedDay)] ?? OheyDailyStatus.unselected;
+    final isWhite = ref.watch(oheyThemeModeProvider).isWhite;
+    final user = ref.watch(oheyUserProvider);
     if (_calendarGroupUserId != user?.userId) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _syncCalendarGroupsForUser(user?.userId);
       });
     }
     final headerBackgroundHeight =
-        NomoPageHeader.contentTopInset(context) + 100;
+        OheyPageHeader.contentTopInset(context) + 100;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -365,7 +365,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               right: 0,
               top: 0,
               height: headerBackgroundHeight,
-              child: NomoSceneHeaderBackdrop(
+              child: OheySceneHeaderBackdrop(
                 assetPath: 'assets/images/calendar_header_scene.png',
                 fadeColor: isWhite
                     ? Colors.white
@@ -384,15 +384,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(
-                      NomoPageHeader.horizontalPadding,
-                      NomoPageHeader.topPadding,
-                      NomoPageHeader.horizontalPadding,
+                      OheyPageHeader.horizontalPadding,
+                      OheyPageHeader.topPadding,
+                      OheyPageHeader.horizontalPadding,
                       0,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const NomoPageHeader(
+                        const OheyPageHeader(
                           title: 'カレンダー',
                           titleColor: Color(0xFF54D7FF),
                         ),
@@ -413,7 +413,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           children: [
                             Padding(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: NomoPageHeader.horizontalPadding,
+                                horizontal: OheyPageHeader.horizontalPadding,
                               ),
                               child: _PlayfulMonthGrid(
                                 month: _month,
@@ -428,7 +428,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               const SizedBox(height: 10),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: NomoPageHeader.horizontalPadding,
+                                  horizontal: OheyPageHeader.horizontalPadding,
                                 ),
                                 child: _CalendarIntroCard(
                                   isWhite: isWhite,
@@ -436,29 +436,33 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                 ),
                               ),
                             ],
-                            const SizedBox(height: 8),
-                            const _CalendarGlowDivider(),
-                            const SizedBox(height: 7),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: _SelectedDayPanel(
-                                  day: _selectedDay,
-                                  logs: selectedLogs,
-                                  friendsAsync: selectedFriendsAsync,
-                                  groups: _calendarGroups,
-                                  isWhite: isWhite,
-                                  status: selectedStatus,
-                                  isStatusSaving: _isStatusSaving,
-                                  onAddMemoryPressed: widget.onAddMemoryPressed,
-                                  onChangeStatus: () => _openStatusPicker(
-                                    showLockedExplanation:
-                                        selectedStatus ==
-                                        NomoDailyStatus.unselected,
+                            if (_isIntroSeen) ...[
+                              const SizedBox(height: 8),
+                              const _CalendarGlowDivider(),
+                              const SizedBox(height: 7),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 20),
+                                  child: _SelectedDayPanel(
+                                    day: _selectedDay,
+                                    logs: selectedLogs,
+                                    friendsAsync: selectedFriendsAsync,
+                                    groups: _calendarGroups,
+                                    isWhite: isWhite,
+                                    status: selectedStatus,
+                                    isStatusSaving: _isStatusSaving,
+                                    onAddMemoryPressed:
+                                        widget.onAddMemoryPressed,
+                                    onChangeStatus: () => _openStatusPicker(
+                                      showLockedExplanation:
+                                          selectedStatus ==
+                                          OheyDailyStatus.unselected,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
+                            ] else
+                              const Spacer(),
                           ],
                         ),
                       ),
@@ -532,7 +536,7 @@ class _CalendarIntroCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          NomoPopIcon(
+          OheyPopIcon(
             icon: CupertinoIcons.sparkles,
             color: const Color(0xFFFFD166),
             size: 42,
@@ -673,10 +677,10 @@ class _SelectedDayPanel extends StatelessWidget {
 
   final DateTime day;
   final List<Memory> logs;
-  final AsyncValue<List<NomoFriend>> friendsAsync;
+  final AsyncValue<List<OheyFriend>> friendsAsync;
   final List<_CalendarFriendGroup> groups;
   final bool isWhite;
-  final NomoDailyStatus status;
+  final OheyDailyStatus status;
   final bool isStatusSaving;
   final VoidCallback? onAddMemoryPressed;
   final VoidCallback onChangeStatus;
@@ -684,10 +688,7 @@ class _SelectedDayPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
-    final subColor = isWhite
-        ? const Color(0xFF657282)
-        : Colors.white.withValues(alpha: .66);
-    return NomoThemedPanel(
+    return OheyThemedPanel(
       width: double.infinity,
       padding: EdgeInsets.zero,
       accentColor: _calendarPrimaryActionColor,
@@ -710,32 +711,17 @@ class _SelectedDayPanel extends StatelessWidget {
                 padding: EdgeInsets.fromLTRB(14, compact ? 10 : 12, 24, 0),
                 child: Row(
                   children: [
-                    _CalendarDateBadge(day: day, isWhite: isWhite),
-                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '選んだ日のまとめ',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: subColor,
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w900,
-                              height: 1,
-                              letterSpacing: .3,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '空き状況と思い出',
+                            _calendarSelectedDayTitle(day),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: titleColor,
-                              fontSize: compact ? 15 : 16,
+                              fontSize: compact ? 18 : 20,
                               fontWeight: FontWeight.w900,
                               height: 1,
                               letterSpacing: -.2,
@@ -762,7 +748,7 @@ class _SelectedDayPanel extends StatelessWidget {
                     children: [
                       Expanded(
                         flex: compact ? 5 : 6,
-                        child: status == NomoDailyStatus.unselected
+                        child: status == OheyDailyStatus.unselected
                             ? _CalendarFriendStatusLocked(
                                 isWhite: isWhite,
                                 compact: compact,
@@ -804,70 +790,8 @@ bool _useCompactCalendarDetailLayout(double availableHeight) {
   return true;
 }
 
-class _CalendarDateBadge extends StatelessWidget {
-  const _CalendarDateBadge({required this.day, required this.isWhite});
-
-  final DateTime day;
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = day.weekday == DateTime.sunday
-        ? const Color(0xFFFF6FA6)
-        : day.weekday == DateTime.saturday
-        ? const Color(0xFF46C8FF)
-        : _calendarPrimaryActionColor;
-    return Container(
-      width: 54,
-      height: 42,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            accent.withValues(alpha: isWhite ? .22 : .30),
-            accent.withValues(alpha: isWhite ? .10 : .16),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: accent.withValues(alpha: .42)),
-        boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: isWhite ? .10 : .22),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            '${day.month}/${day.day}',
-            style: TextStyle(
-              color: isWhite ? const Color(0xFF101820) : Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              height: 1,
-              letterSpacing: -.3,
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            _calendarWeekdayLabel(day),
-            style: TextStyle(
-              color: accent,
-              fontSize: 9.5,
-              fontWeight: FontWeight.w900,
-              height: 1,
-              letterSpacing: .5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+String _calendarSelectedDayTitle(DateTime day) =>
+    '${day.month}/${day.day}(${_calendarWeekdayLabel(day)}) の空き状況と思い出';
 
 class _CalendarStatusChangeButton extends StatelessWidget {
   const _CalendarStatusChangeButton({
@@ -877,21 +801,21 @@ class _CalendarStatusChangeButton extends StatelessWidget {
     required this.onTap,
   });
 
-  final NomoDailyStatus status;
+  final OheyDailyStatus status;
   final bool isSaving;
   final bool isWhite;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final effectiveStatus = status == NomoDailyStatus.unselected
-        ? NomoDailyStatus.available
+    final effectiveStatus = status == OheyDailyStatus.unselected
+        ? OheyDailyStatus.available
         : status;
     final accent = _calendarStatusBlockAccent(effectiveStatus);
     final foreground = _calendarStatus3DForegroundColor(effectiveStatus);
     return SizedBox(
       width: 56,
-      child: Nomo3DButtonSurface(
+      child: Ohey3DButtonSurface(
         onTap: isSaving ? null : onTap,
         enabled: !isSaving,
         height: 28,
@@ -927,7 +851,7 @@ class _CalendarStatusChangeButton extends StatelessWidget {
           child: Text(
             isSaving
                 ? '保存中'
-                : status == NomoDailyStatus.unselected
+                : status == OheyDailyStatus.unselected
                 ? '設定'
                 : '変更',
             maxLines: 1,
@@ -967,7 +891,7 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
       child: Center(
         child: Row(
           children: [
-            NomoPopIcon(
+            OheyPopIcon(
               icon: CupertinoIcons.lock_fill,
               color: const Color(0xFF94A3B8),
               size: compact ? 30 : 38,
@@ -1010,7 +934,7 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
             const SizedBox(width: 9),
             SizedBox(
               width: compact ? 56 : 62,
-              child: Nomo3DButton(
+              child: Ohey3DButton(
                 label: '設定',
                 onTap: onTap,
                 height: compact ? 28 : 30,
@@ -1039,7 +963,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
   });
 
   final DateTime day;
-  final AsyncValue<List<NomoFriend>> friendsAsync;
+  final AsyncValue<List<OheyFriend>> friendsAsync;
   final List<_CalendarFriendGroup> groups;
   final bool isWhite;
   final bool compact;
@@ -1136,7 +1060,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
           child: Center(
             child: Row(
               children: [
-                NomoPopIcon(
+                OheyPopIcon(
                   icon: CupertinoIcons.person_2_fill,
                   color: accent,
                   size: compact ? 30 : 38,
@@ -1191,7 +1115,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
                 const SizedBox(width: 9),
                 SizedBox(
                   width: compact ? 56 : 62,
-                  child: Nomo3DButton(
+                  child: Ohey3DButton(
                     label: '見る',
                     onTap: openStatusSheet,
                     height: compact ? 28 : 30,
@@ -1452,7 +1376,7 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
     return Center(
       child: Row(
         children: [
-          NomoPopIcon(
+          OheyPopIcon(
             icon: CupertinoIcons.sparkles,
             color: const Color(0xFF54D7FF),
             size: compact ? 28 : 36,
@@ -1495,7 +1419,7 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
           const SizedBox(width: 9),
           SizedBox(
             width: compact ? 56 : 62,
-            child: Nomo3DButton(
+            child: Ohey3DButton(
               label: '投稿',
               onTap: onAddMemoryPressed ?? () {},
               height: compact ? 28 : 30,
@@ -1546,7 +1470,7 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
               ),
             ),
             child: Center(
-              child: NomoGeneratedIcon(
+              child: OheyGeneratedIcon(
                 hasPhoto
                     ? CupertinoIcons.photo_fill_on_rectangle_fill
                     : CupertinoIcons.lock_fill,
@@ -1573,7 +1497,7 @@ class _CalendarMemoryPreviewRow extends StatelessWidget {
             const SizedBox(width: 10),
             SizedBox(
               width: compact ? 58 : 66,
-              child: Nomo3DButton(
+              child: Ohey3DButton(
                 label: '見る',
                 onTap: () => _showCalendarLogPhoto(context, log),
                 height: compact ? 32 : 36,
@@ -1604,19 +1528,19 @@ class _CalendarFriendStatusSummary extends StatelessWidget {
     required this.isWhite,
   });
 
-  final List<NomoFriend> friends;
+  final List<OheyFriend> friends;
   final bool isWhite;
 
   @override
   Widget build(BuildContext context) {
-    final counts = <NomoDailyStatus, int>{
-      for (final status in NomoDailyStatus.values) status: 0,
+    final counts = <OheyDailyStatus, int>{
+      for (final status in OheyDailyStatus.values) status: 0,
     };
     for (final friend in friends) {
-      final status = nomoDailyStatusFromKey(friend.statusKey);
+      final status = oheyDailyStatusFromKey(friend.statusKey);
       counts[status] = (counts[status] ?? 0) + 1;
     }
-    final statuses = NomoDailyStatus.values
+    final statuses = OheyDailyStatus.values
         .where((status) => (counts[status] ?? 0) > 0)
         .toList(growable: false);
 
@@ -1642,7 +1566,7 @@ class _CalendarFriendStatusCountChip extends StatelessWidget {
     required this.isWhite,
   });
 
-  final NomoDailyStatus status;
+  final OheyDailyStatus status;
   final int count;
   final bool isWhite;
 
@@ -1671,11 +1595,11 @@ class _CalendarFriendStatusCountChip extends StatelessWidget {
 Future<void> _showCalendarFriendStatusSheet(
   BuildContext context, {
   required DateTime day,
-  required List<NomoFriend> friends,
+  required List<OheyFriend> friends,
   required List<_CalendarFriendGroup> groups,
   required bool isWhite,
 }) {
-  return showNomoBottomSheet<void>(
+  return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
     barrierColor: Colors.black.withValues(alpha: .58),
@@ -1697,7 +1621,7 @@ class _CalendarFriendStatusSheet extends ConsumerStatefulWidget {
   });
 
   final DateTime day;
-  final List<NomoFriend> friends;
+  final List<OheyFriend> friends;
   final List<_CalendarFriendGroup> groups;
   final bool isWhite;
 
@@ -1712,15 +1636,15 @@ class _CalendarFriendStatusSheetState
   String? _sendingFriendId;
   final Set<String> _invitedFriendIds = <String>{};
 
-  Future<void> _sendInvite(NomoFriend friend) async {
+  Future<void> _sendInvite(OheyFriend friend) async {
     if (_sendingFriendId != null) return;
     if (_isPastCalendarDate(widget.day)) {
       HapticFeedback.mediumImpact();
-      NomoToast.show(
+      OheyToast.show(
         context,
         '過去の日には招待できません',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
-        placement: NomoToastPlacement.bottom,
+        placement: OheyToastPlacement.bottom,
       );
       return;
     }
@@ -1735,22 +1659,22 @@ class _CalendarFriendStatusSheetState
       ref.invalidate(outgoingActiveInvitesProvider(widget.day));
       if (!mounted) return;
       setState(() => _invitedFriendIds.add(friend.id));
-      NomoToast.show(
+      OheyToast.show(
         context,
         '${widget.day.month}/${widget.day.day}で${friend.name}にお誘いを送りました。',
         icon: CupertinoIcons.checkmark_circle_fill,
-        placement: NomoToastPlacement.bottom,
+        placement: OheyToastPlacement.bottom,
       );
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       setState(() => _sendingFriendId = null);
-      NomoToast.show(
+      OheyToast.show(
         context,
         '招待を送れなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
-        placement: NomoToastPlacement.bottom,
+        placement: OheyToastPlacement.bottom,
       );
     }
   }
@@ -1787,7 +1711,7 @@ class _CalendarFriendStatusSheetState
     final contentHeight = (media.size.height * .80 - media.padding.bottom - 24)
         .clamp(460.0, 680.0)
         .toDouble();
-    return NomoBottomSheetShell(
+    return OheyBottomSheetShell(
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
       radius: 32,
       maxHeightFactor: .82,
@@ -1796,7 +1720,7 @@ class _CalendarFriendStatusSheetState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const NomoBottomSheetHandle(),
+            const OheyBottomSheetHandle(),
             const SizedBox(height: 14),
             Text(
               'フレンズの空き状況',
@@ -1924,7 +1848,7 @@ class _CalendarFriendGroupChip extends StatelessWidget {
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .78);
 
-    return Nomo3DButtonSurface(
+    return Ohey3DButtonSurface(
       onTap: onTap,
       height: 29,
       radius: 999,
@@ -2002,7 +1926,7 @@ class _CalendarFriendStatusModalOverview extends StatelessWidget {
       ),
       child: Row(
         children: [
-          NomoPopIcon(
+          OheyPopIcon(
             icon: CupertinoIcons.person_2_fill,
             color: accent,
             size: 40,
@@ -2054,12 +1978,12 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
     required this.onInvite,
   });
 
-  final List<NomoFriend> friends;
+  final List<OheyFriend> friends;
   final bool isWhite;
   final String? sendingFriendId;
   final Set<String> invitedFriendIds;
   final bool inviteAvailable;
-  final Future<void> Function(NomoFriend friend) onInvite;
+  final Future<void> Function(OheyFriend friend) onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -2108,7 +2032,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
     required this.onInvite,
   });
 
-  final NomoFriend friend;
+  final OheyFriend friend;
   final bool isWhite;
   final bool inviteEnabled;
   final bool inviteAvailable;
@@ -2117,8 +2041,8 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = nomoDailyStatusFromKey(friend.statusKey);
-    return NomoFriendUserBlock(
+    final status = oheyDailyStatusFromKey(friend.statusKey);
+    return OheyFriendUserBlock(
       friend: friend,
       statusLabel: _calendarStatusLabel(status, day: DateTime.now()),
       statusReason: _calendarStatusCopy(status, day: DateTime.now()),
@@ -2133,32 +2057,32 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
   }
 }
 
-NomoAvatar _fallbackAvatarForCalendarFriend(NomoFriend friend) {
+OheyAvatar _fallbackAvatarForCalendarFriend(OheyFriend friend) {
   final hash = friend.id.hashCode.abs();
-  return NomoAvatar(
-    skin: hash % NomoAvatar.skinColors.length,
-    hair: (hash ~/ 3) % NomoAvatar.hairStyles.length,
-    shirt: (hash ~/ 5) % NomoAvatar.shirtColors.length,
-    eyes: (hash ~/ 7) % NomoAvatar.eyeStyles.length,
-    mouth: (hash ~/ 11) % NomoAvatar.mouthStyles.length,
-    accessory: (hash ~/ 13) % NomoAvatar.accessoryStyles.length,
+  return OheyAvatar(
+    skin: hash % OheyAvatar.skinColors.length,
+    hair: (hash ~/ 3) % OheyAvatar.hairStyles.length,
+    shirt: (hash ~/ 5) % OheyAvatar.shirtColors.length,
+    eyes: (hash ~/ 7) % OheyAvatar.eyeStyles.length,
+    mouth: (hash ~/ 11) % OheyAvatar.mouthStyles.length,
+    accessory: (hash ~/ 13) % OheyAvatar.accessoryStyles.length,
   );
 }
 
-Color _calendarFriendBlockStatusColor(NomoDailyStatus status) {
+Color _calendarFriendBlockStatusColor(OheyDailyStatus status) {
   final color = _calendarStatusColor(status);
-  if (status == NomoDailyStatus.unselected) return _calendarStatusGreen;
+  if (status == OheyDailyStatus.unselected) return _calendarStatusGreen;
   return color;
 }
 
 bool _calendarFriendIsAvailable(String? statusKey) =>
-    nomoDailyStatusFromKey(statusKey).canJoinPlan;
+    oheyDailyStatusFromKey(statusKey).canJoinPlan;
 
 bool _isPastCalendarDate(DateTime day) =>
     _dateOnly(day).isBefore(_dateOnly(DateTime.now()));
 
 int _calendarFriendStatusRank(String? statusKey) =>
-    nomoDailyStatusFromKey(statusKey).availabilityRank;
+    oheyDailyStatusFromKey(statusKey).availabilityRank;
 
 class _CalendarStatusSheet extends StatelessWidget {
   const _CalendarStatusSheet({
@@ -2168,7 +2092,7 @@ class _CalendarStatusSheet extends StatelessWidget {
   });
 
   final DateTime day;
-  final NomoDailyStatus selected;
+  final OheyDailyStatus selected;
   final bool showLockedExplanation;
 
   @override
@@ -2176,12 +2100,12 @@ class _CalendarStatusSheet extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite ? const Color(0xFF657282) : Colors.white70;
     final options = const [
-      NomoDailyStatus.available,
-      NomoDailyStatus.maybeAvailable,
-      NomoDailyStatus.dependsOnTime,
-      NomoDailyStatus.hasPlans,
+      OheyDailyStatus.available,
+      OheyDailyStatus.maybeAvailable,
+      OheyDailyStatus.dependsOnTime,
+      OheyDailyStatus.hasPlans,
     ];
-    return NomoBottomSheetShell(
+    return OheyBottomSheetShell(
       title: 'この日の気分',
       showHandle: true,
       radius: 32,
@@ -2197,7 +2121,7 @@ class _CalendarStatusSheet extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           for (final status in options) ...[
-            NomoDailyStatus3DOption(
+            OheyDailyStatus3DOption(
               status: status,
               title: _calendarStatusLabel(status, day: day),
               subtitle: _calendarStatusCopy(status, day: day),
@@ -2213,7 +2137,7 @@ class _CalendarStatusSheet extends StatelessWidget {
 }
 
 Future<void> _showCalendarLogPhoto(BuildContext context, Memory log) {
-  return showNomoBottomSheet<void>(
+  return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
     barrierColor: Colors.black.withValues(alpha: .62),
@@ -2239,7 +2163,7 @@ class _CalendarLogPhotoSheet extends StatelessWidget {
         ? log.memo.trim()
         : '思い出写真';
 
-    return NomoBottomSheetShell(
+    return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
       radius: 32,
@@ -2304,7 +2228,7 @@ class _CalendarLogPhotoFrame extends StatelessWidget {
       return Container(
         color: Colors.black.withValues(alpha: .20),
         alignment: Alignment.center,
-        child: const NomoGeneratedIcon(
+        child: const OheyGeneratedIcon(
           CupertinoIcons.photo,
           color: Colors.white54,
           size: 42,
@@ -2317,7 +2241,7 @@ class _CalendarLogPhotoFrame extends StatelessWidget {
       errorBuilder: (context, error, stackTrace) => Container(
         color: Colors.black.withValues(alpha: .20),
         alignment: Alignment.center,
-        child: const NomoGeneratedIcon(
+        child: const OheyGeneratedIcon(
           CupertinoIcons.exclamationmark_triangle,
           color: Colors.white54,
           size: 42,
@@ -2355,8 +2279,8 @@ class _PlayfulMonthGrid extends StatelessWidget {
   final DateTime month;
   final DateTime selectedDay;
   final List<Memory> logs;
-  final Map<String, NomoDailyStatus> statusByDate;
-  final List<NomoInvite> todayReservations;
+  final Map<String, OheyDailyStatus> statusByDate;
+  final List<OheyInvite> todayReservations;
   final ValueChanged<DateTime> onSelectDay;
 
   static const _rarityColors = {
@@ -2439,7 +2363,7 @@ class _PlayfulMonthGrid extends StatelessWidget {
                   final isToday = inMonth && _isSameDate(DateTime.now(), day);
                   final hasPlan = isToday && todayReservations.isNotEmpty;
                   final dailyStatus =
-                      statusByDate[_dateKey(day)] ?? NomoDailyStatus.unselected;
+                      statusByDate[_dateKey(day)] ?? OheyDailyStatus.unselected;
                   return _DayTile(
                     day: displayDay,
                     date: day,
@@ -2502,7 +2426,7 @@ class _DayTile extends StatelessWidget {
   final int day;
   final DateTime date;
   final bool inMonth;
-  final NomoDailyStatus dailyStatus;
+  final OheyDailyStatus dailyStatus;
   final _Marker? marker;
   final bool isToday;
   final bool isSelected;
@@ -2513,7 +2437,7 @@ class _DayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final hasStatus = dailyStatus != NomoDailyStatus.unselected;
+    final hasStatus = dailyStatus != OheyDailyStatus.unselected;
     final statusAccent = _calendarStatusTileAccent(dailyStatus);
     final dayColor = hasStatus
         ? _calendarStatusTileForeground(dailyStatus, isWhite: isWhite)
@@ -2592,7 +2516,7 @@ class _DayTile extends StatelessWidget {
                 left: 0,
                 right: 0,
                 bottom: marker == null ? 7 : 28,
-                child: NomoGeneratedIcon(
+                child: OheyGeneratedIcon(
                   CupertinoIcons.calendar_badge_plus,
                   color: _calendarPrimaryActionColor,
                   size: 22,
@@ -2604,7 +2528,7 @@ class _DayTile extends StatelessWidget {
                   alignment: Alignment.bottomCenter,
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 3),
-                    child: NomoGeneratedIcon(
+                    child: OheyGeneratedIcon(
                       CupertinoIcons.person_crop_circle_fill,
                       color: marker!.accent,
                       size: 42,
@@ -2655,19 +2579,19 @@ const _calendarStatusGreen = Color(0xFF9AF21A);
 const _calendarStatusBlocked = Color(0xFF2B3644);
 const _calendarStatusBlockedForeground = Color(0xFF738092);
 
-Color _calendarStatusTileAccent(NomoDailyStatus status) {
-  if (status == NomoDailyStatus.hasPlans) {
+Color _calendarStatusTileAccent(OheyDailyStatus status) {
+  if (status == OheyDailyStatus.hasPlans) {
     return _calendarStatusBlockedForeground;
   }
   return _calendarStatusColor(status);
 }
 
 Color _calendarStatusTileBackground(
-  NomoDailyStatus status, {
+  OheyDailyStatus status, {
   required bool isWhite,
   required bool selected,
 }) {
-  if (status == NomoDailyStatus.hasPlans) {
+  if (status == OheyDailyStatus.hasPlans) {
     return isWhite
         ? const Color(0xFFE2E8F0)
         : _calendarStatusBlocked.withValues(alpha: selected ? .92 : .76);
@@ -2679,45 +2603,45 @@ Color _calendarStatusTileBackground(
 }
 
 Color _calendarStatusTileForeground(
-  NomoDailyStatus status, {
+  OheyDailyStatus status, {
   required bool isWhite,
 }) {
-  if (status == NomoDailyStatus.hasPlans) {
+  if (status == OheyDailyStatus.hasPlans) {
     return isWhite ? const Color(0xFF111827) : Colors.white;
   }
   return _calendarPrimaryActionForegroundColor;
 }
 
-Color _calendarStatusColor(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.available => _calendarStatusPink,
-  NomoDailyStatus.maybeAvailable => _calendarStatusBlue,
-  NomoDailyStatus.dependsOnTime => _calendarStatusPurple,
-  NomoDailyStatus.hasPlans => _calendarStatusBlockedForeground,
-  NomoDailyStatus.unselected => _calendarStatusGreen,
+Color _calendarStatusColor(OheyDailyStatus status) => switch (status) {
+  OheyDailyStatus.available => _calendarStatusPink,
+  OheyDailyStatus.maybeAvailable => _calendarStatusBlue,
+  OheyDailyStatus.dependsOnTime => _calendarStatusPurple,
+  OheyDailyStatus.hasPlans => _calendarStatusBlockedForeground,
+  OheyDailyStatus.unselected => _calendarStatusGreen,
 };
 
-Color _calendarStatusBlockAccent(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.hasPlans => _calendarStatusBlocked,
+Color _calendarStatusBlockAccent(OheyDailyStatus status) => switch (status) {
+  OheyDailyStatus.hasPlans => _calendarStatusBlocked,
   _ => _calendarStatusColor(status),
 };
 
 Color _calendarStatus3DSurfaceColor(
-  NomoDailyStatus status, {
+  OheyDailyStatus status, {
   required bool isWhite,
   required bool selected,
 }) {
-  if (status == NomoDailyStatus.hasPlans) {
+  if (status == OheyDailyStatus.hasPlans) {
     return isWhite ? const Color(0xFFE8EEF5) : const Color(0xFF33404E);
   }
   return _calendarStatusColor(status);
 }
 
 Color _calendarStatus3DShadowColor(
-  NomoDailyStatus status, {
+  OheyDailyStatus status, {
   required bool isWhite,
   required bool selected,
 }) {
-  if (status == NomoDailyStatus.hasPlans) {
+  if (status == OheyDailyStatus.hasPlans) {
     return isWhite ? const Color(0xFFC2CCD8) : const Color(0xFF16202B);
   }
   return Color.lerp(
@@ -2727,26 +2651,26 @@ Color _calendarStatus3DShadowColor(
   )!;
 }
 
-Color _calendarStatus3DForegroundColor(NomoDailyStatus status) {
-  if (status == NomoDailyStatus.hasPlans) {
+Color _calendarStatus3DForegroundColor(OheyDailyStatus status) {
+  if (status == OheyDailyStatus.hasPlans) {
     return const Color(0xFF111827);
   }
   return _calendarPrimaryActionForegroundColor;
 }
 
 Color _calendarStatus3DBorderColor(
-  NomoDailyStatus status, {
+  OheyDailyStatus status, {
   required bool isWhite,
   required bool selected,
 }) {
-  if (status == NomoDailyStatus.hasPlans) {
+  if (status == OheyDailyStatus.hasPlans) {
     return Colors.white.withValues(alpha: selected ? .24 : .18);
   }
   return Colors.white.withValues(alpha: selected ? .30 : .20);
 }
 
-String _calendarStatusLabel(NomoDailyStatus status, {required DateTime day}) =>
+String _calendarStatusLabel(OheyDailyStatus status, {required DateTime day}) =>
     status.label;
 
-String _calendarStatusCopy(NomoDailyStatus status, {required DateTime day}) =>
+String _calendarStatusCopy(OheyDailyStatus status, {required DateTime day}) =>
     status.description;

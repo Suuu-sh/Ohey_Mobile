@@ -10,27 +10,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/application/nomo_user_controller.dart';
+import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/memory.dart';
-import '../../../core/models/nomo_avatar.dart';
-import '../../../core/models/nomo_invite.dart';
-import '../../../core/models/nomo_friend.dart';
-import '../../../core/models/nomo_friend_request_status.dart';
-import '../../../core/models/nomo_user.dart';
+import '../../../core/models/ohey_avatar.dart';
+import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/ohey_friend.dart';
+import '../../../core/models/ohey_friend_request_status.dart';
+import '../../../core/models/ohey_user.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/nomo_theme_mode.dart';
-import '../../../core/widgets/nomo_avatar.dart';
-import '../../../core/widgets/nomo_3d_button.dart';
-import '../../../core/widgets/nomo_empty_state.dart';
-import '../../../core/widgets/nomo_bottom_sheet.dart';
-import '../../../core/widgets/nomo_action_tile.dart';
-import '../../../core/widgets/nomo_page_header.dart';
-import '../../../core/widgets/nomo_pop_icon.dart';
-import '../../../core/widgets/nomo_post_action_pill.dart';
-import '../../../core/widgets/nomo_scene_header_backdrop.dart';
-import '../../../core/widgets/nomo_toast.dart';
-import '../../../core/widgets/nomo_themed_panel.dart';
+import '../../../core/theme/ohey_theme_mode.dart';
+import '../../../core/widgets/ohey_avatar.dart';
+import '../../../core/widgets/ohey_3d_button.dart';
+import '../../../core/widgets/ohey_empty_state.dart';
+import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_action_tile.dart';
+import '../../../core/widgets/ohey_page_header.dart';
+import '../../../core/widgets/ohey_pop_icon.dart';
+import '../../../core/widgets/ohey_post_action_pill.dart';
+import '../../../core/widgets/ohey_scene_header_backdrop.dart';
+import '../../../core/widgets/ohey_toast.dart';
+import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../friends/application/invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
 import '../../friends/presentation/friends_screen.dart';
@@ -59,7 +59,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  static const _feedSwipeTutorialSeenKey = 'nomo_feed_swipe_tutorial_seen';
+  static const _feedSwipeTutorialSeenKey = 'ohey_feed_swipe_tutorial_seen';
   int _currentFeedPageIndex = 0;
   bool _isFeedSwipeTutorialSeen = true;
 
@@ -89,14 +89,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final memoriesAsync = ref.watch(homeFeedControllerProvider);
     final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
-    final user = ref.watch(nomoUserProvider);
+    final user = ref.watch(oheyUserProvider);
     final incomingInvites =
         ref.watch(incomingInvitesProvider).asData?.value ??
-        const <NomoInvite>[];
+        const <OheyInvite>[];
     final todayReservations =
         ref.watch(todayReservationsProvider).asData?.value ??
-        const <NomoInvite>[];
-    final isWhite = ref.watch(nomoThemeModeProvider).isWhite;
+        const <OheyInvite>[];
+    final isWhite = ref.watch(oheyThemeModeProvider).isWhite;
     final currentUserId = ref
         .watch(supabaseClientProvider)
         .auth
@@ -134,7 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           _FeedHeaderBackdropLayer(isWhite: isWhite),
           _FeedHeaderControlsLayer(
-            child: NomoPageHeader(
+            child: OheyPageHeader(
               title: 'フィード',
               titleColor: _FeedColors.teal,
               titleOffset: const Offset(0, -54),
@@ -142,14 +142,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  NomoHeaderIconButton(
+                  OheyHeaderIconButton(
                     icon: CupertinoIcons.camera_fill,
                     semanticLabel: '投稿する',
                     color: _FeedColors.teal,
                     onTap: widget.onAddMemoryPressed ?? () {},
                   ),
                   const SizedBox(width: 8),
-                  NomoHeaderIconButton(
+                  OheyHeaderIconButton(
                     icon: CupertinoIcons.bell,
                     semanticLabel: 'お知らせを開く',
                     hasDot: hasUnreadNotifications,
@@ -206,7 +206,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _FeedItem item,
   ) async {
     HapticFeedback.selectionClick();
-    final currentUser = ref.read(nomoUserProvider);
+    final currentUser = ref.read(oheyUserProvider);
     final author = item.ownedByMe
         ? _Companion(
             userId: item.ownerUserId,
@@ -223,12 +223,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         : _Companion(
             userId: item.ownerUserId,
             name: item.userName,
-            handle: item.isOfficial ? 'Nomo公式' : item.place,
+            handle: item.isOfficial ? 'Ohey公式' : item.place,
             avatar: item.avatar,
             accent: item.accent,
             statusKey: null,
           );
-    await showNomoBottomSheet<void>(
+    await showOheyBottomSheet<void>(
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
@@ -236,9 +236,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       builder: (context) => _FeedCompanionProfileSheet(
         friend: author,
         initialRelationship: item.ownedByMe
-            ? const NomoFriendRelationshipStatus(
+            ? const OheyFriendRelationshipStatus(
                 alreadyFriend: true,
-                requestState: NomoFriendRequestState.none,
+                requestState: OheyFriendRequestState.none,
               )
             : null,
       ),
@@ -252,7 +252,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       await _shareFeedImageWithSystemSheet(this.context, item, imagePath);
     } catch (_) {
       if (!context.mounted) return;
-      NomoToast.show(
+      OheyToast.show(
         context,
         '共有を始められなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.square_arrow_up,
@@ -273,16 +273,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ShareParams(
         files: [XFile(imagePath, mimeType: 'image/png')],
         fileNameOverrides: [
-          item.isOfficial ? 'nomo_official_post.png' : 'nomo_memory.png',
+          item.isOfficial ? 'ohey_official_post.png' : 'ohey_memory.png',
         ],
-        title: item.isOfficial ? 'Nomo公式投稿を共有' : '思い出を共有',
-        subject: item.isOfficial ? 'Nomo公式のお知らせ' : 'Nomoの思い出',
+        title: item.isOfficial ? 'Ohey公式投稿を共有' : '思い出を共有',
+        subject: item.isOfficial ? 'Ohey公式のお知らせ' : 'Oheyの思い出',
         sharePositionOrigin: shareOrigin,
       ),
     );
     if (!context.mounted) return;
     if (result.status == ShareResultStatus.unavailable) {
-      NomoToast.show(
+      OheyToast.show(
         context,
         '共有できるアプリが見つかりませんでした。',
         icon: CupertinoIcons.square_arrow_up,

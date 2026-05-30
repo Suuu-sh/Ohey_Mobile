@@ -25,8 +25,8 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _passwordController.clear();
       _userIdController.clear();
       _nameController.clear();
-      _avatar = NomoAvatar.defaultAvatar;
-      _gender = NomoGender.unspecified;
+      _avatar = OheyAvatar.defaultAvatar;
+      _gender = OheyGender.unspecified;
       _error = null;
       _notice = null;
     });
@@ -106,8 +106,8 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     setState(() {
       _userIdController.clear();
       _nameController.clear();
-      _avatar = NomoAvatar.defaultAvatar;
-      _gender = NomoGender.unspecified;
+      _avatar = OheyAvatar.defaultAvatar;
+      _gender = OheyGender.unspecified;
       _step = _OnboardingStep.profile;
       _error = null;
       _notice = null;
@@ -160,7 +160,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       await ref.read(authRepositoryProvider).signInWithOAuth(provider);
       if (!mounted) return;
       setState(() {
-        _notice = '$providerLabel認証を完了するとNomoに戻ります。';
+        _notice = '$providerLabel認証を完了するとOheyに戻ります。';
       });
     } on AuthException catch (e) {
       if (mounted) setState(() => _error = _friendlyAuthError(e.message));
@@ -180,7 +180,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     });
     try {
       final loaded = await ref
-          .read(nomoUserProvider.notifier)
+          .read(oheyUserProvider.notifier)
           .loadFromBackendProfile();
       if (loaded) {
         await _saveLastAccount(session.user.email ?? '');
@@ -206,9 +206,9 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
   }
 
   Future<void> _showAccountManagementSheet() async {
-    final accounts = await NomoLastAccountStore.loadAccounts();
+    final accounts = await OheyLastAccountStore.loadAccounts();
     if (!mounted) return;
-    await showNomoBottomSheet<void>(
+    await showOheyBottomSheet<void>(
       context: context,
       builder: (context) => SafeArea(
         child: Padding(
@@ -258,14 +258,14 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
                         color: AppColors.coral,
                       ),
                       onPressed: () async {
-                        await NomoLastAccountStore.remove(account.email);
+                        await OheyLastAccountStore.remove(account.email);
                         if (context.mounted) Navigator.of(context).pop();
                         await _loadLastAccount();
                       },
                     ),
                   ),
               const SizedBox(height: 8),
-              Nomo3DButton.secondary(
+              Ohey3DButton.secondary(
                 label: '閉じる',
                 icon: CupertinoIcons.xmark_circle_fill,
                 onTap: () => Navigator.of(context).pop(),

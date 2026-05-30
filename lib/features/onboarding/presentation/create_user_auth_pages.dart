@@ -117,7 +117,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
               if (!isEmailStep) ...[
                 const SizedBox(height: 20),
                 Text(
-                  '登録するとNomoの利用規約とプライバシー\nポリシーに同意したことになります。',
+                  '登録するとOheyの利用規約とプライバシー\nポリシーに同意したことになります。',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: .82),
@@ -271,7 +271,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
               ),
               SizedBox(height: termsGap),
               Text(
-                'ログインするとNomoの利用規約とプライバシー\nポリシーに同意したことになります。',
+                'ログインするとOheyの利用規約とプライバシー\nポリシーに同意したことになります。',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: .82),
@@ -287,12 +287,12 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
     );
   }
 
-  Widget _buildReLogin(BuildContext context, List<NomoLastAccount> accounts) {
+  Widget _buildReLogin(BuildContext context, List<OheyLastAccount> accounts) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact =
             constraints.maxHeight < 720 ||
-            accounts.length >= NomoLastAccountStore.maxAccounts;
+            accounts.length >= OheyLastAccountStore.maxAccounts;
         return _fixedAuthPage(
           constraints: constraints,
           padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),

@@ -1,13 +1,13 @@
 part of 'create_user_dialog.dart';
 
-class NomoDemoScreen extends StatefulWidget {
-  const NomoDemoScreen({super.key});
+class OheyDemoScreen extends StatefulWidget {
+  const OheyDemoScreen({super.key});
 
   @override
-  State<NomoDemoScreen> createState() => _NomoDemoScreenState();
+  State<OheyDemoScreen> createState() => _OheyDemoScreenState();
 }
 
-class _NomoDemoScreenState extends State<NomoDemoScreen> {
+class _OheyDemoScreenState extends State<OheyDemoScreen> {
   final _controller = PageController();
   int _page = 0;
 
@@ -33,7 +33,7 @@ class _NomoDemoScreenState extends State<NomoDemoScreen> {
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const NomoGeneratedIcon(
+                    icon: const OheyGeneratedIcon(
                       CupertinoIcons.xmark,
                       color: Colors.white,
                       size: 28,
@@ -86,7 +86,7 @@ class _NomoDemoScreenState extends State<NomoDemoScreen> {
                         ],
                       ),
                       child: Center(
-                        child: NomoPopIcon(
+                        child: OheyPopIcon(
                           icon: _page == slides.length - 1
                               ? CupertinoIcons.checkmark
                               : CupertinoIcons.arrow_right,

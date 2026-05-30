@@ -17,7 +17,7 @@ class _LoadingState extends StatelessWidget {
         SizedBox(
           height: 360,
           child: Center(
-            child: NomoEmptyState(
+            child: OheyEmptyState(
               visual: const _FriendsLoadingVisual(),
               title: 'フレンズを読み込み中...',
               message: 'かわいいフレンズたちを呼んでいます',
@@ -53,7 +53,7 @@ class _ErrorState extends StatelessWidget {
         SizedBox(
           height: 360,
           child: Center(
-            child: NomoEmptyState(
+            child: OheyEmptyState(
               visual: const _FriendsErrorVisual(),
               title: title,
               message: message,
@@ -105,7 +105,7 @@ class _FriendsLoadingVisual extends StatelessWidget {
               size: 82,
               color: const Color(0xFF34E1C3),
               borderColor: isWhite ? Colors.white : _FriendsColors.bg,
-              avatar: const NomoAvatar(
+              avatar: const OheyAvatar(
                 skin: 5,
                 hair: 1,
                 shirt: 8,
@@ -122,7 +122,7 @@ class _FriendsLoadingVisual extends StatelessWidget {
               size: 66,
               color: const Color(0xFF7C5CFF),
               borderColor: isWhite ? Colors.white : _FriendsColors.bg,
-              avatar: const NomoAvatar(
+              avatar: const OheyAvatar(
                 skin: 0,
                 hair: 3,
                 shirt: 4,
@@ -157,7 +157,7 @@ class _LoadingMascotBubble extends StatelessWidget {
   final double size;
   final Color color;
   final Color borderColor;
-  final NomoAvatar avatar;
+  final OheyAvatar avatar;
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +182,7 @@ class _LoadingMascotBubble extends StatelessWidget {
           alignment: Alignment.center,
           child: Transform.translate(
             offset: Offset(0, size * .08),
-            child: NomoAvatarView(
+            child: OheyAvatarView(
               avatar: avatar,
               size: size * .9,
               showBody: true,
@@ -225,7 +225,7 @@ class _FriendsErrorVisual extends StatelessWidget {
             size: 88,
             color: const Color(0xFFFF8AB1),
             borderColor: isWhite ? Colors.white : _FriendsColors.bg,
-            avatar: const NomoAvatar(
+            avatar: const OheyAvatar(
               skin: 1,
               hair: 4,
               shirt: 6,
@@ -249,7 +249,7 @@ class _FriendsErrorVisual extends StatelessWidget {
                 ),
               ),
               child: const Center(
-                child: NomoGeneratedIcon(
+                child: OheyGeneratedIcon(
                   CupertinoIcons.exclamationmark,
                   color: Colors.white,
                   size: 20,
@@ -321,33 +321,33 @@ double _friendBlockBorderAlpha({
   return isWhite ? .34 : .42;
 }
 
-_FriendStatus _statusForFriend(NomoFriend friend, int _) =>
-    _friendStatusForDailyStatus(nomoDailyStatusFromKey(friend.statusKey));
+_FriendStatus _statusForFriend(OheyFriend friend, int _) =>
+    _friendStatusForDailyStatus(oheyDailyStatusFromKey(friend.statusKey));
 
-_FriendStatus _friendStatusForDailyStatus(NomoDailyStatus status) {
+_FriendStatus _friendStatusForDailyStatus(OheyDailyStatus status) {
   return _FriendStatus(
     label: status.label,
     enabled: status.isAvailable,
     reason: status.description,
     buttonColor: switch (status) {
-      NomoDailyStatus.available => _FriendsColors.statusPink,
-      NomoDailyStatus.maybeAvailable => _FriendsColors.statusBlue,
-      NomoDailyStatus.dependsOnTime => _FriendsColors.statusPurple,
-      NomoDailyStatus.hasPlans => _FriendsColors.statusBlocked,
-      NomoDailyStatus.unselected => _FriendsColors.statusGreen,
+      OheyDailyStatus.available => _FriendsColors.statusPink,
+      OheyDailyStatus.maybeAvailable => _FriendsColors.statusBlue,
+      OheyDailyStatus.dependsOnTime => _FriendsColors.statusPurple,
+      OheyDailyStatus.hasPlans => _FriendsColors.statusBlocked,
+      OheyDailyStatus.unselected => _FriendsColors.statusGreen,
     },
   );
 }
 
-NomoAvatar _fallbackAvatarForFriend(NomoFriend friend) {
+OheyAvatar _fallbackAvatarForFriend(OheyFriend friend) {
   final hash = friend.id.hashCode.abs();
-  return NomoAvatar(
-    skin: hash % NomoAvatar.skinColors.length,
-    hair: (hash ~/ 3) % NomoAvatar.hairStyles.length,
-    shirt: (hash ~/ 5) % NomoAvatar.shirtColors.length,
-    eyes: (hash ~/ 7) % NomoAvatar.eyeStyles.length,
-    mouth: (hash ~/ 11) % NomoAvatar.mouthStyles.length,
-    accessory: (hash ~/ 13) % NomoAvatar.accessoryStyles.length,
+  return OheyAvatar(
+    skin: hash % OheyAvatar.skinColors.length,
+    hair: (hash ~/ 3) % OheyAvatar.hairStyles.length,
+    shirt: (hash ~/ 5) % OheyAvatar.shirtColors.length,
+    eyes: (hash ~/ 7) % OheyAvatar.eyeStyles.length,
+    mouth: (hash ~/ 11) % OheyAvatar.mouthStyles.length,
+    accessory: (hash ~/ 13) % OheyAvatar.accessoryStyles.length,
   );
 }
 

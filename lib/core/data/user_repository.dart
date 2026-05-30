@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/nomo_avatar.dart';
-import '../models/nomo_gender.dart';
-import '../models/nomo_user.dart';
+import '../models/ohey_avatar.dart';
+import '../models/ohey_gender.dart';
+import '../models/ohey_user.dart';
 import 'backend_api_client.dart';
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
@@ -16,7 +16,7 @@ class UserRepository {
 
   String? get currentUserId => _client.currentUserId;
 
-  Future<NomoUser?> fetchCurrentUserProfile() async {
+  Future<OheyUser?> fetchCurrentUserProfile() async {
     final authUserId = currentUserId;
     if (authUserId == null || authUserId.isEmpty) return null;
 
@@ -54,8 +54,8 @@ class UserRepository {
   Future<void> createProfile({
     required String name,
     required String userId,
-    required NomoGender gender,
-    NomoAvatar? avatar,
+    required OheyGender gender,
+    OheyAvatar? avatar,
   }) async {
     await _client.put(
       '/v1/me/profile',
@@ -71,7 +71,7 @@ class UserRepository {
   Future<void> updateProfile({
     required String name,
     required String userId,
-    NomoAvatar? avatar,
+    OheyAvatar? avatar,
   }) async {
     await _client.patch(
       '/v1/me/profile',
@@ -83,16 +83,16 @@ class UserRepository {
     await _client.delete('/v1/me/account');
   }
 
-  Future<NomoDailyStatus> fetchDailyStatus(DateTime date) async {
+  Future<OheyDailyStatus> fetchDailyStatus(DateTime date) async {
     final rows = await _client.getRows(
       '/v1/daily-status',
       query: {'date': _isoDate(date)},
     );
-    if (rows.isEmpty) return NomoDailyStatus.unselected;
-    return nomoDailyStatusFromKey(rows.first['status'] as String?);
+    if (rows.isEmpty) return OheyDailyStatus.unselected;
+    return oheyDailyStatusFromKey(rows.first['status'] as String?);
   }
 
-  Future<Map<String, NomoDailyStatus>> fetchDailyStatusesForMonth(
+  Future<Map<String, OheyDailyStatus>> fetchDailyStatusesForMonth(
     DateTime month,
   ) async {
     final rows = await _client.getRows(
@@ -102,14 +102,14 @@ class UserRepository {
     return {
       for (final row in rows)
         if (row['status_date'] is String)
-          row['status_date'] as String: nomoDailyStatusFromKey(
+          row['status_date'] as String: oheyDailyStatusFromKey(
             row['status'] as String?,
           ),
     };
   }
 
   Future<void> updateDailyStatus(
-    NomoDailyStatus status, {
+    OheyDailyStatus status, {
     DateTime? date,
   }) async {
     await _client.put('/v1/daily-status', {
@@ -118,30 +118,30 @@ class UserRepository {
     });
   }
 
-  NomoUser _userFromProfileRow(
+  OheyUser _userFromProfileRow(
     Map<String, dynamic> row,
     String authUserId, {
     Map<String, dynamic>? statusRow,
   }) {
-    return NomoUser(
+    return OheyUser(
       name: (row['display_name'] as String?)?.trim().isNotEmpty == true
           ? row['display_name'] as String
           : 'mi-mu',
-      userId: (row['user_id'] as String?) ?? defaultNomoUserId(authUserId),
-      gender: nomoGenderFromKey(row['gender'] as String?),
-      avatar: NomoAvatar.decode(row['avatar_url'] as String?),
-      dailyStatus: nomoDailyStatusFromKey(statusRow?['status'] as String?),
+      userId: (row['user_id'] as String?) ?? defaultOheyUserId(authUserId),
+      gender: oheyGenderFromKey(row['gender'] as String?),
+      avatar: OheyAvatar.decode(row['avatar_url'] as String?),
+      dailyStatus: oheyDailyStatusFromKey(statusRow?['status'] as String?),
       isPlus: (row['is_plus'] as bool?) ?? false,
     );
   }
 }
 
-bool isValidNomoUserId(String userId) =>
+bool isValidOheyUserId(String userId) =>
     RegExp(r'^[a-zA-Z0-9_]{3,24}$').hasMatch(userId);
 
-String defaultNomoUserId(String authUserId) {
+String defaultOheyUserId(String authUserId) {
   final compact = authUserId.replaceAll('-', '');
-  return 'nomo_${compact.substring(0, compact.length < 12 ? compact.length : 12)}';
+  return 'ohey_${compact.substring(0, compact.length < 12 ? compact.length : 12)}';
 }
 
 String _isoDate(DateTime date) {
@@ -158,8 +158,8 @@ String _isoMonth(DateTime date) {
 Map<String, dynamic> createProfilePayload({
   required String name,
   required String userId,
-  required NomoGender gender,
-  NomoAvatar? avatar,
+  required OheyGender gender,
+  OheyAvatar? avatar,
 }) {
   return {
     'user_id': userId,
@@ -173,7 +173,7 @@ Map<String, dynamic> createProfilePayload({
 Map<String, dynamic> updateProfilePayload({
   required String name,
   required String userId,
-  NomoAvatar? avatar,
+  OheyAvatar? avatar,
 }) {
   return {
     'user_id': userId,

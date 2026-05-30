@@ -6,17 +6,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../core/application/nomo_user_controller.dart';
-import '../../../core/data/nomo_last_account_store.dart';
+import '../../../core/application/ohey_user_controller.dart';
+import '../../../core/data/ohey_last_account_store.dart';
 import '../../../core/data/auth_repository.dart';
-import '../../../core/models/nomo_avatar.dart';
-import '../../../core/models/nomo_gender.dart';
+import '../../../core/models/ohey_avatar.dart';
+import '../../../core/models/ohey_gender.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/nomo_avatar.dart';
-import '../../../core/widgets/nomo_3d_button.dart';
-import '../../../core/widgets/nomo_bottom_sheet.dart';
-import '../../../core/widgets/nomo_pop_icon.dart';
-import '../../../core/widgets/nomo_themed_panel.dart';
+import '../../../core/widgets/ohey_avatar.dart';
+import '../../../core/widgets/ohey_3d_button.dart';
+import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_pop_icon.dart';
+import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../profile/presentation/avatar_builder_screen.dart';
 
 part 'create_user_auth_helpers.dart';
@@ -65,8 +65,8 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   final _userIdController = TextEditingController();
   final _nameController = TextEditingController();
   final _demoController = PageController();
-  NomoAvatar _avatar = NomoAvatar.defaultAvatar;
-  NomoGender _gender = NomoGender.unspecified;
+  OheyAvatar _avatar = OheyAvatar.defaultAvatar;
+  OheyGender _gender = OheyGender.unspecified;
   _OnboardingStep _step = _OnboardingStep.intro;
   int _demoPage = 0;
   bool _isLogin = true;
@@ -77,7 +77,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _obscureSignupPassword = true;
   _RegistrationStep _loginStep = _RegistrationStep.email;
   _RegistrationStep _registrationStep = _RegistrationStep.email;
-  List<NomoLastAccount> _lastAccounts = const <NomoLastAccount>[];
+  List<OheyLastAccount> _lastAccounts = const <OheyLastAccount>[];
   String? _error;
   String? _notice;
   StreamSubscription<AuthState>? _authSubscription;
@@ -111,7 +111,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   }
 
   Future<void> _loadLastAccount() async {
-    final accounts = await NomoLastAccountStore.loadAccounts();
+    final accounts = await OheyLastAccountStore.loadAccounts();
     if (!mounted) return;
     setState(() {
       _lastAccounts = accounts;

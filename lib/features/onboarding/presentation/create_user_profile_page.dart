@@ -5,9 +5,9 @@ part of 'create_user_dialog.dart';
 extension _CreateUserProfilePage on _CreateUserDialogState {
   Widget _buildProfile(BuildContext context) {
     final canSubmit =
-        _isValidUserId(_userIdController.text.trim()) &&
+        _userIdController.text.trim().isNotEmpty &&
         _nameController.text.trim().isNotEmpty &&
-        _gender != NomoGender.unspecified &&
+        _gender != OheyGender.unspecified &&
         !_isBusy;
 
     return LayoutBuilder(
@@ -85,13 +85,13 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                                     ),
                                   ],
                                 ),
-                                child: NomoAvatarView(avatar: _avatar),
+                                child: OheyAvatarView(avatar: _avatar),
                               ),
                             ),
                             SizedBox(height: compact ? 2 : 12),
                             TextButton.icon(
                               onPressed: _isBusy ? null : _openAvatarBuilder,
-                              icon: const NomoGeneratedIcon(
+                              icon: const OheyGeneratedIcon(
                                 CupertinoIcons.pencil,
                                 color: Color(0xFF12C9A4),
                                 size: 20,
@@ -111,10 +111,10 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                       SizedBox(height: compact ? 4 : 22),
                       _SignupInputBox(
                         child: _SignupProfileTextField(
-                          controller: _userIdController,
+                          controller: _nameController,
                           enabled: !_isBusy,
-                          icon: CupertinoIcons.at_circle_fill,
-                          hintText: 'ユーザーID（必須・完全一致検索用）',
+                          icon: CupertinoIcons.person_crop_circle_fill,
+                          hintText: '名前（必須・日本語OK）',
                           height: fieldHeight,
                           textInputAction: TextInputAction.next,
                           onChanged: (_) => setState(() {}),
@@ -123,10 +123,10 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                       const SizedBox(height: 12),
                       _SignupInputBox(
                         child: _SignupProfileTextField(
-                          controller: _nameController,
+                          controller: _userIdController,
                           enabled: !_isBusy,
-                          icon: CupertinoIcons.person_crop_circle_fill,
-                          hintText: 'ユーザー名（必須）',
+                          icon: CupertinoIcons.at_circle_fill,
+                          hintText: 'ユーザーID（半角英数字と_・3文字以上）',
                           height: fieldHeight,
                           textInputAction: TextInputAction.done,
                           onChanged: (_) => setState(() {}),

@@ -40,7 +40,7 @@ class _ArchiveEmptyState extends StatelessWidget {
   final bool isWhite;
 
   @override
-  Widget build(BuildContext context) => NomoEmptyState(
+  Widget build(BuildContext context) => OheyEmptyState(
     visual: Container(
       width: 96,
       height: 96,
@@ -57,7 +57,7 @@ class _ArchiveEmptyState extends StatelessWidget {
           ),
         ],
       ),
-      child: const NomoGeneratedIcon(
+      child: const OheyGeneratedIcon(
         CupertinoIcons.photo_on_rectangle,
         color: Colors.white,
         size: 42,

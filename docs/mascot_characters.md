@@ -1,10 +1,10 @@
-# Tomola mascot characters
+# Ohey mascot characters
 
-Tomola の看板キャラクター名メモ。
+Ohey の看板キャラクター名メモ。
 
 | Color | Name | Notes |
 | --- | --- | --- |
-| Pink | Tomo | メインキャラクター |
+| Pink | Ohey | メインキャラクター |
 | Purple | カッシー | カシス系のイメージ |
 | Green | モヒト | モヒート系のイメージ |
 | Blue | キュラ | キュラソー系のイメージ |

@@ -37,7 +37,7 @@ class _AdminSheet extends StatelessWidget {
                     FocusScope.of(context).unfocus();
                     Navigator.of(context).pop();
                   },
-                  icon: const NomoGeneratedIcon(
+                  icon: const OheyGeneratedIcon(
                     CupertinoIcons.xmark,
                     color: Colors.white,
                   ),
@@ -358,26 +358,26 @@ class _AdminStatusChip extends StatelessWidget {
   }
 }
 
-const _adminSelectableStatusKeys = <NomoDailyStatus>[
-  NomoDailyStatus.unselected,
-  NomoDailyStatus.available,
-  NomoDailyStatus.maybeAvailable,
-  NomoDailyStatus.dependsOnTime,
-  NomoDailyStatus.hasPlans,
+const _adminSelectableStatusKeys = <OheyDailyStatus>[
+  OheyDailyStatus.unselected,
+  OheyDailyStatus.available,
+  OheyDailyStatus.maybeAvailable,
+  OheyDailyStatus.dependsOnTime,
+  OheyDailyStatus.hasPlans,
 ];
 
-const _adminSelectableGenders = <NomoGender>[
-  NomoGender.unspecified,
-  NomoGender.male,
-  NomoGender.female,
+const _adminSelectableGenders = <OheyGender>[
+  OheyGender.unspecified,
+  OheyGender.male,
+  OheyGender.female,
 ];
 
 String _adminStatusLabel(String status) {
-  return nomoDailyStatusFromKey(status).label;
+  return oheyDailyStatusFromKey(status).label;
 }
 
 String _adminGenderLabel(String gender) {
-  return nomoGenderFromKey(gender).label;
+  return oheyGenderFromKey(gender).label;
 }
 
 String _adminReportReasonLabel(String reason) {
@@ -402,11 +402,11 @@ String _adminReportStatusLabel(String status) {
 }
 
 String _adminNormalizeStatus(String status) {
-  return nomoDailyStatusFromKey(status).key;
+  return oheyDailyStatusFromKey(status).key;
 }
 
 String _adminNormalizeGender(String gender) {
-  return nomoGenderFromKey(gender).key;
+  return oheyGenderFromKey(gender).key;
 }
 
 class _AdminSwitchRow extends StatelessWidget {
@@ -547,7 +547,7 @@ class _AdminSmallButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
     width: 96,
-    child: Nomo3DButtonSurface(
+    child: Ohey3DButtonSurface(
       onTap: onTap,
       height: 36,
       radius: 16,
@@ -582,12 +582,12 @@ class _AdminIconButton extends StatelessWidget {
     final color = destructive ? _AdminColors.pink : _AdminColors.lime;
     return SizedBox(
       width: 39,
-      child: Nomo3DButtonSurface(
+      child: Ohey3DButtonSurface(
         onTap: onTap,
         height: 32,
         radius: 14,
         color: color.withValues(alpha: .18),
-        bottomColor: nomo3DShadowColorFor(color, lightnessScale: .56),
+        bottomColor: ohey3DShadowColorFor(color, lightnessScale: .56),
         padding: EdgeInsets.zero,
         borderColor: color.withValues(alpha: .28),
         outerShadows: [
@@ -597,7 +597,7 @@ class _AdminIconButton extends StatelessWidget {
             offset: const Offset(0, 5),
           ),
         ],
-        child: NomoGeneratedIcon(icon, color: color, size: 22),
+        child: OheyGeneratedIcon(icon, color: color, size: 22),
       ),
     );
   }
@@ -615,7 +615,7 @@ class _AdminPrimaryButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Nomo3DButton(
+  Widget build(BuildContext context) => Ohey3DButton(
     label: label,
     onTap: busy ? null : onTap,
     isLoading: busy,
@@ -648,8 +648,8 @@ class _AdminEmptyState extends StatelessWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context) => NomoEmptyState(
-    visual: const NomoGeneratedIcon(
+  Widget build(BuildContext context) => OheyEmptyState(
+    visual: const OheyGeneratedIcon(
       CupertinoIcons.tray,
       color: _AdminColors.lime,
       size: 46,
@@ -669,7 +669,7 @@ class _AdminErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      NomoStateView.error(message: message, compact: false);
+      OheyStateView.error(message: message, compact: false);
 }
 
 String _dateLabel(DateTime date) {

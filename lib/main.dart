@@ -7,44 +7,45 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/supabase_config.dart';
-import 'core/application/nomo_user_controller.dart';
+import 'core/application/ohey_user_controller.dart';
 import 'core/data/auth_session_guard.dart';
 import 'core/data/supabase_client_provider.dart';
-import 'core/services/nomo_push_notification_service.dart';
-import 'core/services/nomo_widget_sync.dart';
+import 'core/services/ohey_push_notification_service.dart';
+import 'core/services/ohey_widget_sync.dart';
 import 'core/theme/app_theme.dart';
-import 'core/theme/nomo_theme_mode.dart';
-import 'core/widgets/nomo_tab_shell.dart';
+import 'core/theme/ohey_theme_mode.dart';
+import 'core/widgets/ohey_tab_shell.dart';
 
-const _openingNomoAsset = 'assets/images/opening_nomo.png';
+const _openingOheyAsset = 'assets/images/opening_ohey.png';
+const _appDisplayName = 'Ohey';
 const _minimumOpeningDuration = Duration(seconds: 1);
 const _openingExitDurationMs = 520;
 
-ui.Image? _openingNomoImage;
+ui.Image? _openingOheyImage;
 
 Future<void> main() async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
   binding.deferFirstFrame();
 
   try {
-    await _loadOpeningNomoImage().timeout(const Duration(seconds: 3));
+    await _loadOpeningOheyImage().timeout(const Duration(seconds: 3));
   } on Object {
     // If decoding ever fails, fall back to the regular asset image below.
   }
 
-  runApp(const ProviderScope(child: NomoApp()));
+  runApp(const ProviderScope(child: OheyApp()));
   binding.allowFirstFrame();
 }
 
-Future<void> _loadOpeningNomoImage() async {
-  final data = await rootBundle.load(_openingNomoAsset);
+Future<void> _loadOpeningOheyImage() async {
+  final data = await rootBundle.load(_openingOheyAsset);
   final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
   final codec = await ui.instantiateImageCodec(bytes);
   final frame = await codec.getNextFrame();
-  _openingNomoImage = frame.image;
+  _openingOheyImage = frame.image;
 }
 
-final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
+final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
   final alreadyInitialized = _isSupabaseInitialized();
   final minimumOpening = alreadyInitialized
       ? Future<void>.value()
@@ -68,7 +69,7 @@ final _nomoBootstrapProvider = FutureProvider<void>((ref) async {
     await _preloadBackendProfileIfSessionExists(ref);
 
     await ref
-        .read(nomoPushNotificationServiceProvider)
+        .read(oheyPushNotificationServiceProvider)
         .start()
         .timeout(const Duration(seconds: 8), onTimeout: () {});
   } finally {
@@ -82,11 +83,11 @@ Future<void> _preloadBackendProfileIfSessionExists(Ref ref) async {
 
   try {
     await ref
-        .read(nomoUserProvider.notifier)
+        .read(oheyUserProvider.notifier)
         .loadFromBackendProfile()
         .timeout(const Duration(seconds: 3));
   } catch (_) {
-    // If the backend is cold-starting or unavailable, let NomoTabShell show the
+    // If the backend is cold-starting or unavailable, let OheyTabShell show the
     // friendly waiting screen and retry instead of blocking the opening screen.
   }
 }
@@ -154,14 +155,14 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<void>>(_nomoBootstrapProvider, (previous, next) {
+    ref.listen<AsyncValue<void>>(_oheyBootstrapProvider, (previous, next) {
       if (next.isLoading) {
         _openingExitCompleted = false;
         _openingExitController.reset();
       }
     });
 
-    final bootstrap = ref.watch(_nomoBootstrapProvider);
+    final bootstrap = ref.watch(_oheyBootstrapProvider);
     return bootstrap.when(
       data: (_) {
         ref.watch(supabaseAuthStateProvider);
@@ -171,8 +172,8 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
         return Stack(
           fit: StackFit.expand,
           children: [
-            const NomoTabShell(),
-            const NomoWidgetSnapshotSync(),
+            const OheyTabShell(),
+            const OheyWidgetSnapshotSync(),
             if (!_openingExitCompleted)
               FadeTransition(
                 opacity: _openingExitFade,
@@ -185,7 +186,7 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
       error: (error, stackTrace) => _StartupScreen(
         message: '起動に失敗しました',
         detail: '$error',
-        onRetry: () => ref.invalidate(_nomoBootstrapProvider),
+        onRetry: () => ref.invalidate(_oheyBootstrapProvider),
       ),
     );
   }
@@ -207,7 +208,7 @@ class _StartupScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          const _OpeningNomoArtwork(),
+          const _OpeningOheyArtwork(),
           if (!hasError)
             SafeArea(
               child: Align(
@@ -286,14 +287,14 @@ class _StartupScreen extends StatelessWidget {
   }
 }
 
-class _OpeningNomoArtwork extends StatelessWidget {
-  const _OpeningNomoArtwork();
+class _OpeningOheyArtwork extends StatelessWidget {
+  const _OpeningOheyArtwork();
 
   @override
   Widget build(BuildContext context) {
-    final image = _openingNomoImage;
+    final image = _openingOheyImage;
     if (image == null) {
-      return Image.asset(_openingNomoAsset, fit: BoxFit.cover);
+      return Image.asset(_openingOheyAsset, fit: BoxFit.cover);
     }
     return RawImage(image: image, fit: BoxFit.cover);
   }
@@ -328,7 +329,7 @@ class _StartupWaitingMessage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Nomoを準備してるよ',
+                  '$_appDisplayNameを準備してるよ',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
@@ -397,12 +398,12 @@ class _StartupWordmark extends StatelessWidget {
     );
 
     return Semantics(
-      label: 'Nomo',
+      label: _appDisplayName,
       child: ExcludeSemantics(
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Text('Nomo', style: strokeStyle),
+            Text(_appDisplayName, style: strokeStyle),
             ShaderMask(
               blendMode: ui.BlendMode.srcIn,
               shaderCallback: (bounds) => const LinearGradient(
@@ -410,7 +411,7 @@ class _StartupWordmark extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [Colors.white, Color(0xFFFFF7B0), Color(0xFFFFA3D4)],
               ).createShader(bounds),
-              child: const Text('Nomo', style: fillStyle),
+              child: const Text(_appDisplayName, style: fillStyle),
             ),
           ],
         ),
@@ -438,15 +439,15 @@ class _StartupDot extends StatelessWidget {
   }
 }
 
-class NomoApp extends ConsumerWidget {
-  const NomoApp({super.key});
+class OheyApp extends ConsumerWidget {
+  const OheyApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mode = ref.watch(nomoThemeModeProvider);
+    final mode = ref.watch(oheyThemeModeProvider);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Nomo',
+      title: _appDisplayName,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: mode.isWhite ? ThemeMode.light : ThemeMode.dark,

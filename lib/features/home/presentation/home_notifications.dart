@@ -223,11 +223,11 @@ class _FeedNotificationsScreenState
   ) async {
     final friendRequestId = notification.friendRequestId;
     if (friendRequestId == null || friendRequestId.isEmpty) {
-      NomoToast.show(context, 'この申請を開けませんでした。もう一度お試しください。');
+      OheyToast.show(context, 'この申請を開けませんでした。もう一度お試しください。');
       return;
     }
 
-    await showNomoBottomSheet<void>(
+    await showOheyBottomSheet<void>(
       context: context,
       useSafeArea: true,
       barrierColor: Colors.black.withValues(alpha: .62),
@@ -253,11 +253,11 @@ class _FeedNotificationsScreenState
   Future<void> _openInviteNotification(_FeedNotification notification) async {
     final inviteId = notification.inviteId;
     if (inviteId == null || inviteId.isEmpty) {
-      NomoToast.show(context, 'この予定を開けなかったよ。あとでもう一度試してね。');
+      OheyToast.show(context, 'この予定を開けなかったよ。あとでもう一度試してね。');
       return;
     }
 
-    await showNomoBottomSheet<void>(
+    await showOheyBottomSheet<void>(
       context: context,
       useSafeArea: true,
       barrierColor: Colors.black.withValues(alpha: .62),
@@ -485,7 +485,7 @@ class _NotificationTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            NomoPopIcon(
+            OheyPopIcon(
               icon: notification.icon,
               color: notification.accent,
               size: 38,
@@ -625,7 +625,7 @@ class _FriendRequestNotificationSheetState
     extends State<_FriendRequestNotificationSheet> {
   String? _busyAction;
 
-  bool get _isPending => nomoFriendRequestStatusFromKey(
+  bool get _isPending => oheyFriendRequestStatusFromKey(
     widget.notification.friendRequestStatus,
   ).isPending;
 
@@ -640,11 +640,11 @@ class _FriendRequestNotificationSheetState
         await widget.onReject();
       }
       if (!mounted) return;
-      NomoToast.show(context, accept ? 'フレンズ申請を承認しました' : '申請を見送りました');
+      OheyToast.show(context, accept ? 'フレンズ申請を承認しました' : '申請を見送りました');
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
-      NomoToast.show(
+      OheyToast.show(
         context,
         accept ? '承認できなかったよ。あとでもう一度試してね。' : '見送りできなかったよ。あとでもう一度試してね。',
       );
@@ -654,7 +654,7 @@ class _FriendRequestNotificationSheetState
 
   @override
   Widget build(BuildContext context) {
-    final statusLabel = nomoFriendRequestStatusFromKey(
+    final statusLabel = oheyFriendRequestStatusFromKey(
       widget.notification.friendRequestStatus,
     ).label;
 
@@ -691,7 +691,7 @@ class _FriendRequestNotificationSheetState
             const SizedBox(height: 16),
             Row(
               children: [
-                NomoPopIcon(
+                OheyPopIcon(
                   icon: CupertinoIcons.person_badge_plus_fill,
                   color: const Color(0xFF58D6FF),
                   size: 54,
@@ -740,23 +740,11 @@ class _FriendRequestNotificationSheetState
                     ],
                   ),
                 ),
-                SizedBox(
-                  width: 48,
-                  child: Nomo3DButtonSurface(
-                    onTap: () => Navigator.of(context).pop(),
-                    height: 40,
-                    radius: 20,
-                    color: Colors.white.withValues(alpha: .08),
-                    bottomColor: const Color(0xFF265E82).withValues(alpha: .72),
-                    padding: EdgeInsets.zero,
-                    useGradient: true,
-                    borderColor: Colors.white.withValues(alpha: .10),
-                    child: const NomoGeneratedIcon(
-                      CupertinoIcons.xmark,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
+                OheyCloseButton(
+                  onTap: () => Navigator.of(context).pop(),
+                  iconColor: Colors.white,
+                  backgroundColor: Colors.white.withValues(alpha: .08),
+                  borderColor: Colors.white.withValues(alpha: .10),
                 ),
               ],
             ),
@@ -782,7 +770,7 @@ class _FriendRequestNotificationSheetState
             ),
             const SizedBox(height: 18),
             if (_isPending) ...[
-              Nomo3DButton(
+              Ohey3DButton(
                 label: '承認してフレンズになる',
                 icon: CupertinoIcons.checkmark_seal_fill,
                 onTap: () => _submit(accept: true),
@@ -795,7 +783,7 @@ class _FriendRequestNotificationSheetState
                 fontSize: 15,
               ),
               const SizedBox(height: 10),
-              Nomo3DButton.secondary(
+              Ohey3DButton.secondary(
                 label: _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
                 icon: CupertinoIcons.xmark_circle_fill,
                 onTap: _busyAction == null
@@ -812,7 +800,7 @@ class _FriendRequestNotificationSheetState
                 useGradient: false,
               ),
             ] else
-              Nomo3DButton(
+              Ohey3DButton(
                 label: '閉じる',
                 icon: CupertinoIcons.checkmark_circle_fill,
                 onTap: () => Navigator.of(context).pop(),
@@ -849,7 +837,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
   String? _busyAction;
 
   bool get _isPending =>
-      nomoInviteStatusFromKey(widget.notification.inviteStatus).isPending;
+      oheyInviteStatusFromKey(widget.notification.inviteStatus).isPending;
 
   Future<void> _submit({required bool accept}) async {
     if (_busyAction != null || !_isPending) return;
@@ -862,11 +850,11 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
         await widget.onReject();
       }
       if (!mounted) return;
-      NomoToast.show(context, accept ? '予定を受け取りました' : 'お誘いを見送りました');
+      OheyToast.show(context, accept ? '予定を受け取りました' : 'お誘いを見送りました');
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
-      NomoToast.show(
+      OheyToast.show(
         context,
         accept ? '承認できなかったよ。あとでもう一度試してね。' : '見送りできなかったよ。あとでもう一度試してね。',
       );
@@ -876,7 +864,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final statusLabel = nomoInviteStatusFromKey(
+    final statusLabel = oheyInviteStatusFromKey(
       widget.notification.inviteStatus,
     ).label;
 
@@ -913,7 +901,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
             const SizedBox(height: 16),
             Row(
               children: [
-                NomoPopIcon(
+                OheyPopIcon(
                   icon: CupertinoIcons.calendar_badge_plus,
                   color: const Color(0xFFC08BFF),
                   size: 54,
@@ -962,23 +950,11 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
                     ],
                   ),
                 ),
-                SizedBox(
-                  width: 48,
-                  child: Nomo3DButtonSurface(
-                    onTap: () => Navigator.of(context).pop(),
-                    height: 40,
-                    radius: 20,
-                    color: Colors.white.withValues(alpha: .08),
-                    bottomColor: const Color(0xFF61418A).withValues(alpha: .72),
-                    padding: EdgeInsets.zero,
-                    useGradient: true,
-                    borderColor: Colors.white.withValues(alpha: .10),
-                    child: const NomoGeneratedIcon(
-                      CupertinoIcons.xmark,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
+                OheyCloseButton(
+                  onTap: () => Navigator.of(context).pop(),
+                  iconColor: Colors.white,
+                  backgroundColor: Colors.white.withValues(alpha: .08),
+                  borderColor: Colors.white.withValues(alpha: .10),
                 ),
               ],
             ),
@@ -1004,7 +980,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
             ),
             const SizedBox(height: 18),
             if (_isPending) ...[
-              Nomo3DButton(
+              Ohey3DButton(
                 label: '承認して遊びに行く',
                 icon: CupertinoIcons.checkmark_circle_fill,
                 onTap: () => _submit(accept: true),
@@ -1017,7 +993,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
                 fontSize: 15,
               ),
               const SizedBox(height: 10),
-              Nomo3DButton.secondary(
+              Ohey3DButton.secondary(
                 label: _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
                 icon: CupertinoIcons.xmark_circle_fill,
                 onTap: _busyAction == null
@@ -1034,7 +1010,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
                 useGradient: false,
               ),
             ] else
-              Nomo3DButton(
+              Ohey3DButton(
                 label: '閉じる',
                 icon: CupertinoIcons.checkmark_circle_fill,
                 onTap: () => Navigator.of(context).pop(),

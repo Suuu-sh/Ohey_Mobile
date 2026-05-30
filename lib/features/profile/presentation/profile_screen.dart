@@ -1,25 +1,27 @@
 // ignore_for_file: unused_element
 
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/application/nomo_user_controller.dart';
+import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/memory.dart';
-import '../../../core/models/nomo_avatar.dart';
-import '../../../core/models/nomo_invite.dart';
-import '../../../core/models/nomo_gender.dart';
-import '../../../core/models/nomo_friend.dart';
-import '../../../core/models/nomo_user.dart';
+import '../../../core/models/ohey_avatar.dart';
+import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/ohey_gender.dart';
+import '../../../core/models/ohey_friend.dart';
+import '../../../core/models/ohey_user.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/nomo_avatar.dart';
-import '../../../core/widgets/nomo_bottom_sheet.dart';
-import '../../../core/widgets/nomo_3d_button.dart';
-import '../../../core/widgets/nomo_page_header.dart';
-import '../../../core/widgets/nomo_toast.dart';
-import '../../../core/widgets/nomo_themed_panel.dart';
+import '../../../core/widgets/ohey_avatar.dart';
+import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_3d_button.dart';
+import '../../../core/widgets/ohey_page_header.dart';
+import '../../../core/widgets/ohey_toast.dart';
+import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../admin/application/admin_controller.dart';
 import '../../admin/presentation/admin_screen.dart';
 import '../../friends/application/invite_controller.dart';
@@ -31,7 +33,7 @@ import '../../onboarding/presentation/create_user_dialog.dart';
 import '../data/user_safety_repository.dart';
 import 'avatar_builder_screen.dart';
 import 'photo_archive_screen.dart';
-import '../../../core/widgets/nomo_pop_icon.dart';
+import '../../../core/widgets/ohey_pop_icon.dart';
 
 part 'profile_header_widgets.dart';
 part 'profile_memory_widgets.dart';
@@ -40,28 +42,30 @@ part 'profile_settings_sheet.dart';
 part 'profile_form_helpers.dart';
 
 class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({super.key, this.onAddMemoryPressed});
+
+  final VoidCallback? onAddMemoryPressed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(nomoUserProvider);
+    final user = ref.watch(oheyUserProvider);
     final currentAuthUser = ref.watch(supabaseClientProvider).auth.currentUser;
     final currentAuthUserId = currentAuthUser?.id;
     final reservationsAsync = ref.watch(todayReservationsProvider);
     final incomingInvitesAsync = ref.watch(incomingInvitesProvider);
     final reservations =
-        reservationsAsync.asData?.value ?? const <NomoInvite>[];
+        reservationsAsync.asData?.value ?? const <OheyInvite>[];
     final incomingInvites =
-        incomingInvitesAsync.asData?.value ?? const <NomoInvite>[];
+        incomingInvitesAsync.asData?.value ?? const <OheyInvite>[];
     final memories =
         ref.watch(memoryControllerProvider).asData?.value ?? const <Memory>[];
     final myMemories = _myProfileMemories(memories, currentAuthUserId);
     final photoMemories = _photoArchiveMemories(memories, currentAuthUserId);
     final friends =
-        ref.watch(friendsProvider).asData?.value ?? const <NomoFriend>[];
+        ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
     const headerIsWhite = true;
     const bodyIsWhite = false;
-    final hasAdminEmail = NomoAvatar.isAdminEmail(currentAuthUser?.email);
+    final hasAdminEmail = OheyAvatar.isAdminEmail(currentAuthUser?.email);
     final hasAdminAccess = ref
         .watch(adminAccessProvider)
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
@@ -157,11 +161,6 @@ class ProfileScreen extends ConsumerWidget {
                                 memories: myMemories,
                                 photoMemories: photoMemories,
                                 friendsCount: friends.length,
-                                onMemoriesTap: () => NomoToast.show(
-                                  context,
-                                  'カレンダーを見てみてね。',
-                                  icon: CupertinoIcons.calendar,
-                                ),
                                 onArchiveTap: () => Navigator.of(context).push(
                                   CupertinoPageRoute<void>(
                                     fullscreenDialog: true,
@@ -170,8 +169,17 @@ class ProfileScreen extends ConsumerWidget {
                                     ),
                                   ),
                                 ),
+                                onEditProfileTap: () =>
+                                    _showEditProfileSheet(context, ref, user),
                                 onAddFriendsTap: () =>
                                     showFriendAddSheet(context, ref),
+                                onAddMemoryTap:
+                                    onAddMemoryPressed ??
+                                    () => OheyToast.show(
+                                      context,
+                                      'フィードから思い出を投稿してね。',
+                                      icon: CupertinoIcons.camera_fill,
+                                    ),
                               ),
                             ),
                           ],
@@ -208,18 +216,20 @@ List<Memory> _myProfileMemories(
 List<Memory> _photoArchiveMemories(
   List<Memory> memories,
   String? currentAuthUserId,
-) => memories
-    .where((memory) => _isMyUserMemory(memory, currentAuthUserId))
-    .where((memory) => (memory.photoAssetPath ?? '').trim().isNotEmpty)
-    .toList(growable: false);
+) =>
+    memories
+        .where((memory) => _isMyUserMemory(memory, currentAuthUserId))
+        .where(_isProfileDisplayablePhoto)
+        .toList(growable: false)
+      ..sort((a, b) => b.date.compareTo(a.date));
 
 Future<void> _showProfileStatusSheet(
   BuildContext context,
   WidgetRef ref,
 ) async {
   final selected =
-      ref.read(nomoUserProvider)?.dailyStatus ?? NomoDailyStatus.unselected;
-  await showNomoBottomSheet<void>(
+      ref.read(oheyUserProvider)?.dailyStatus ?? OheyDailyStatus.unselected;
+  await showOheyBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     builder: (_) => _SheetShell(
@@ -237,26 +247,26 @@ class _ProfileColors {
   static const pink = Color(0xFFFF5EA8);
 }
 
-Color _statusColor(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.available => _ProfileColors.lime,
-  NomoDailyStatus.maybeAvailable => const Color(0xFF5DEBD3),
-  NomoDailyStatus.dependsOnTime => _ProfileColors.pink,
-  NomoDailyStatus.hasPlans => const Color(0xFFB8C1CD),
-  NomoDailyStatus.unselected => _ProfileColors.sub,
+Color _statusColor(OheyDailyStatus status) => switch (status) {
+  OheyDailyStatus.available => _ProfileColors.lime,
+  OheyDailyStatus.maybeAvailable => const Color(0xFF5DEBD3),
+  OheyDailyStatus.dependsOnTime => _ProfileColors.pink,
+  OheyDailyStatus.hasPlans => const Color(0xFFB8C1CD),
+  OheyDailyStatus.unselected => _ProfileColors.sub,
 };
 
-IconData _statusIcon(NomoDailyStatus status) => switch (status) {
-  NomoDailyStatus.available => CupertinoIcons.checkmark_circle_fill,
-  NomoDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
-  NomoDailyStatus.dependsOnTime => CupertinoIcons.clock_fill,
-  NomoDailyStatus.hasPlans => CupertinoIcons.calendar_today,
-  NomoDailyStatus.unselected => CupertinoIcons.circle,
+IconData _statusIcon(OheyDailyStatus status) => switch (status) {
+  OheyDailyStatus.available => CupertinoIcons.checkmark_circle_fill,
+  OheyDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
+  OheyDailyStatus.dependsOnTime => CupertinoIcons.clock_fill,
+  OheyDailyStatus.hasPlans => CupertinoIcons.calendar_today,
+  OheyDailyStatus.unselected => CupertinoIcons.circle,
 };
 
 Future<void> _respondInvite(
   BuildContext context,
   WidgetRef ref,
-  NomoInvite invite, {
+  OheyInvite invite, {
   required bool accept,
 }) async {
   try {
@@ -267,16 +277,16 @@ Future<void> _respondInvite(
       await controller.reject(invite.id);
     }
     if (!context.mounted) return;
-    NomoToast.show(context, accept ? '予定が成立しました。' : '招待を見送りました。');
+    OheyToast.show(context, accept ? '予定が成立しました。' : '招待を見送りました。');
   } catch (error) {
     if (!context.mounted) return;
-    NomoToast.show(context, '返信できなかったよ。あとでもう一度試してね');
+    OheyToast.show(context, '返信できなかったよ。あとでもう一度試してね');
   }
 }
 
-const _selectableDailyStatuses = <NomoDailyStatus>[
-  NomoDailyStatus.available,
-  NomoDailyStatus.maybeAvailable,
-  NomoDailyStatus.dependsOnTime,
-  NomoDailyStatus.hasPlans,
+const _selectableDailyStatuses = <OheyDailyStatus>[
+  OheyDailyStatus.available,
+  OheyDailyStatus.maybeAvailable,
+  OheyDailyStatus.dependsOnTime,
+  OheyDailyStatus.hasPlans,
 ];

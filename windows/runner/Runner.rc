@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "app.nomo" "\0"
-            VALUE "FileDescription", "nomo" "\0"
+            VALUE "CompanyName", "app.ohey" "\0"
+            VALUE "FileDescription", "Ohey" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "nomo" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 app.nomo. All rights reserved." "\0"
-            VALUE "OriginalFilename", "nomo.exe" "\0"
-            VALUE "ProductName", "nomo" "\0"
+            VALUE "InternalName", "Ohey" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 app.ohey. All rights reserved." "\0"
+            VALUE "OriginalFilename", "ohey.exe" "\0"
+            VALUE "ProductName", "Ohey" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -2,8 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/supabase_config.dart';
-import '../models/nomo_avatar.dart';
-import '../models/nomo_gender.dart';
+import '../models/ohey_avatar.dart';
+import '../models/ohey_gender.dart';
 import 'supabase_client_provider.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -48,8 +48,8 @@ class AuthRepository {
     required String password,
     required String userId,
     required String displayName,
-    required NomoGender gender,
-    required NomoAvatar avatar,
+    required OheyGender gender,
+    required OheyAvatar avatar,
   }) {
     return _supabase.auth.signUp(
       email: email,
@@ -76,8 +76,8 @@ String authOAuthScopes(OAuthProvider provider) {
 Map<String, dynamic> authProfileMetadata({
   required String userId,
   required String displayName,
-  required NomoGender gender,
-  required NomoAvatar avatar,
+  required OheyGender gender,
+  required OheyAvatar avatar,
 }) {
   return {
     'user_id': userId,

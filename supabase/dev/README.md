@@ -1,6 +1,6 @@
-# Nomo dev Supabase seeds
+# Ohey dev Supabase seeds
 
-These files are for the `dev-nomo` Supabase project only. Do not apply them to production.
+These files are for the `dev-ohey` Supabase project only. Do not apply them to production.
 
 ## Files
 
@@ -24,17 +24,17 @@ Do not commit real dev or production passwords. Reusable seed credentials are do
 
 Primary smoke users:
 
-- `dev-yuta@nomo.app`
-- `dev-ken@nomo.app`
-- `dev-ryo@nomo.app`
-- `dev-haru@nomo.app`
-- `dev-takumi@nomo.app`
+- `dev-yuta@ohey.app`
+- `dev-ken@ohey.app`
+- `dev-ryo@ohey.app`
+- `dev-haru@ohey.app`
+- `dev-takumi@ohey.app`
 
 Rich seed additionally creates `dev-mika`, `dev-ren`, `dev-saki`, `dev-ana`, and `dev-kai` accounts.
 
 ## Admin account policy
 
-Admin access is not seeded through special DB roles. Backend admin endpoints authenticate a normal Supabase Auth user and authorize by `NOMO_ADMIN_EMAILS` configured in Render. Keep admin email configuration in Render/secrets, not in seed SQL.
+Admin access is not seeded through special DB roles. Backend admin endpoints authenticate a normal Supabase Auth user and authorize by `OHEY_ADMIN_EMAILS` configured in Render. Keep admin email configuration in Render/secrets, not in seed SQL.
 
 ## No app-side fallback data
 

@@ -32,5 +32,5 @@ InputDecoration _profileInputDecoration(String hint, {required bool isWhite}) =>
     );
 
 void _showSnack(BuildContext context, String message) {
-  NomoToast.show(context, message);
+  OheyToast.show(context, message);
 }

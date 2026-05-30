@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static contract checks for Nomo Supabase migrations.
+"""Static contract checks for Ohey Supabase migrations.
 
 This does not apply migrations. It verifies that the migration files contain the
 RLS/grant/index contract for tables that are easy to accidentally expose while

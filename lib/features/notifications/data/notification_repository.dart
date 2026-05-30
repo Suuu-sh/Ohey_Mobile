@@ -6,8 +6,8 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   return BackendNotificationRepository(ref.watch(backendApiClientProvider));
 });
 
-class NomoNotification {
-  const NomoNotification({
+class OheyNotification {
+  const OheyNotification({
     required this.id,
     required this.kind,
     required this.title,
@@ -39,10 +39,10 @@ class NomoNotification {
   final DateTime? notificationDate;
   final String? systemKey;
 
-  String get displayTitle => _tomolaNotificationText(title);
-  String get displayMessage => _tomolaNotificationText(message);
+  String get displayTitle => _oheylaNotificationText(title);
+  String get displayMessage => _oheylaNotificationText(message);
 
-  NomoNotification markRead() => NomoNotification(
+  OheyNotification markRead() => OheyNotification(
     id: id,
     kind: kind,
     title: title,
@@ -59,7 +59,7 @@ class NomoNotification {
     systemKey: systemKey,
   );
 
-  factory NomoNotification.fromJson(Map<String, dynamic> json) {
+  factory OheyNotification.fromJson(Map<String, dynamic> json) {
     final createdAtText = json['created_at'] as String?;
     final friendRequest = json['friend_request'];
     final friendRequestMap = friendRequest is Map
@@ -67,7 +67,7 @@ class NomoNotification {
         : null;
     final invite = json['invite'];
     final inviteMap = invite is Map ? Map<String, dynamic>.from(invite) : null;
-    return NomoNotification(
+    return OheyNotification(
       id: json['id'] as String,
       kind: (json['kind'] as String?) ?? 'memory_like',
       title: (json['title'] as String?) ?? 'お知らせ',
@@ -89,7 +89,7 @@ class NomoNotification {
 }
 
 abstract interface class NotificationRepository {
-  Future<List<NomoNotification>> fetchNotifications();
+  Future<List<OheyNotification>> fetchNotifications();
   Future<void> markAllRead();
   Future<void> updateFriendRequest({
     required String friendRequestId,
@@ -104,12 +104,12 @@ class BackendNotificationRepository implements NotificationRepository {
   final BackendApiClient _client;
 
   @override
-  Future<List<NomoNotification>> fetchNotifications() async {
+  Future<List<OheyNotification>> fetchNotifications() async {
     final rows = await _client.getRows(
       '/v1/notifications',
       query: {'date': _todayIsoDate()},
     );
-    return rows.map(NomoNotification.fromJson).toList(growable: false);
+    return rows.map(OheyNotification.fromJson).toList(growable: false);
   }
 
   @override
@@ -148,7 +148,7 @@ String _todayIsoDate() {
       '${now.day.toString().padLeft(2, '0')}';
 }
 
-String _tomolaNotificationText(String value) {
+String _oheylaNotificationText(String value) {
   return value
       .replaceAll('飲みログ', '思い出')
       .replaceAll('飲みとも', 'フレンズ')
