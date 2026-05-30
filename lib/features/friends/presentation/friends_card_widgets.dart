@@ -460,7 +460,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
           OheyActionTile(
             icon: CupertinoIcons.bell_slash_fill,
             title: 'ミュート',
-            subtitle: '投稿をフィードに出しにくくします',
+            subtitle: '投稿をフィードに出しません',
             accent: const Color(0xFF88B8FF),
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.mute),
           ),

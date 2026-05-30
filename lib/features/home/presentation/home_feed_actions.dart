@@ -119,7 +119,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
             OheyActionTile(
               icon: CupertinoIcons.bell_slash_fill,
               title: '${item.userName}さんをミュート',
-              subtitle: '投稿をフィードに出しにくくする',
+              subtitle: '投稿をフィードに出さない',
               accent: const Color(0xFF88B8FF),
               onTap: () => Navigator.of(context).pop(_FeedPostAction.muteUser),
             ),
