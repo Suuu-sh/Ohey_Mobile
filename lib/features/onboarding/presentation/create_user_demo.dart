@@ -55,15 +55,12 @@ class _DemoSlide extends StatelessWidget {
   final _DemoSlideData slide;
 
   @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(30),
-    child: Image.asset(
-      slide.assetName,
-      width: double.infinity,
-      height: double.infinity,
-      fit: BoxFit.cover,
-      alignment: Alignment.center,
-    ),
+  Widget build(BuildContext context) => Image.asset(
+    slide.assetName,
+    width: double.infinity,
+    height: double.infinity,
+    fit: BoxFit.cover,
+    alignment: Alignment.center,
   );
 }
 
