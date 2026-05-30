@@ -472,11 +472,9 @@ class _FeedModalTextButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final surfaceColor = Color.lerp(
-      isWhite ? Colors.white : AppColors.darkBackground,
-      color,
-      isWhite ? .24 : .38,
-    )!;
+    final surfaceColor = isWhite
+        ? Color.lerp(Colors.white, color, .24)!
+        : AppColors.darkBackground;
     return CupertinoButton(
       onPressed: onTap,
       minimumSize: Size.zero,
@@ -489,7 +487,9 @@ class _FeedModalTextButton extends StatelessWidget {
           color: surfaceColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: color.withValues(alpha: isWhite ? .34 : .38),
+            color: isWhite
+                ? color.withValues(alpha: .34)
+                : Colors.white.withValues(alpha: .12),
           ),
           boxShadow: [
             BoxShadow(
