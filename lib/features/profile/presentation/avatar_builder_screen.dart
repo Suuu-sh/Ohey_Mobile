@@ -422,11 +422,7 @@ class _AvatarPreviewStage extends StatelessWidget {
     clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(34),
-      gradient: const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [_AvatarColors.panel, _AvatarColors.background],
-      ),
+      color: _AvatarColors.panel,
       border: Border.all(color: _AvatarColors.line),
       boxShadow: [
         BoxShadow(
@@ -441,44 +437,11 @@ class _AvatarPreviewStage extends StatelessWidget {
       alignment: Alignment.center,
       children: [
         Positioned(
-          left: -56,
-          top: 46,
-          child: _GlowOrb(
-            size: 170,
-            color: AppColors.invite.withValues(alpha: .22),
-          ),
-        ),
-        Positioned(
-          right: -50,
-          bottom: -40,
-          child: _GlowOrb(
-            size: 190,
-            color: AppColors.primaryAction.withValues(alpha: .20),
-          ),
-        ),
-        Positioned(
           left: 28,
           top: 24,
           child: _StageChip(icon: CupertinoIcons.sparkles, label: 'Preview'),
         ),
-        Center(
-          child: Container(
-            width: 268,
-            height: 268,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  Colors.white.withValues(alpha: .14),
-                  Colors.white.withValues(alpha: .04),
-                  Colors.transparent,
-                ],
-                stops: const [0, .54, 1],
-              ),
-            ),
-            child: Center(child: OheyAvatarView(avatar: avatar, size: 250)),
-          ),
-        ),
+        Center(child: OheyAvatarView(avatar: avatar, size: 250)),
         Positioned(
           right: 18,
           top: 20,
@@ -490,20 +453,6 @@ class _AvatarPreviewStage extends StatelessWidget {
         ),
       ],
     ),
-  );
-}
-
-class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({required this.size, required this.color});
-
-  final double size;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(shape: BoxShape.circle, color: color),
   );
 }
 
