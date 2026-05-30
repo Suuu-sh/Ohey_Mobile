@@ -477,33 +477,36 @@ class _FeedModalTextButton extends StatelessWidget {
       color,
       isWhite ? .24 : .38,
     )!;
-    final bottomColor = ohey3DShadowColorFor(
-      color,
-      lightnessScale: isWhite ? .72 : .58,
-    );
-    return Ohey3DButtonSurface(
-      onTap: onTap,
-      height: 52,
-      radius: 20,
-      color: surfaceColor,
-      bottomColor: bottomColor,
+    return CupertinoButton(
+      onPressed: onTap,
+      minimumSize: Size.zero,
       padding: EdgeInsets.zero,
-      useGradient: true,
-      borderColor: color.withValues(alpha: isWhite ? .34 : .38),
-      outerShadows: [
-        BoxShadow(
-          color: color.withValues(alpha: isWhite ? .12 : .20),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        height: 52,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: surfaceColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: color.withValues(alpha: isWhite ? .34 : .38),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: isWhite ? .10 : .16),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-      ],
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 16,
-          fontWeight: FontWeight.w900,
-          letterSpacing: -.35,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.35,
+          ),
         ),
       ),
     );
