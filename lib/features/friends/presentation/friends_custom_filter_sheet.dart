@@ -487,8 +487,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
 
   bool get _isEditing => widget.initialFilter != null;
 
-  bool get _canSave =>
-      _nameController.text.trim().isNotEmpty && _selectedFriendIds.isNotEmpty;
+  bool get _canSave => true;
 
   @override
   void initState() {
@@ -521,6 +520,11 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       setState(() => _errorText = 'グループ名を入れてね');
+      OheyToast.show(
+        context,
+        'グループ名を入れてね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
       return;
     }
     if (_selectedFriendIds.isEmpty) {
