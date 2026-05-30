@@ -135,42 +135,43 @@ class _HeroDemoVisual extends StatelessWidget {
   const _HeroDemoVisual();
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: 190,
-          height: 150,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: .06),
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-        const Positioned(
-          left: 30,
-          bottom: 8,
-          child: OheyAvatarView(avatar: OheyAvatar.defaultAvatar, size: 132),
-        ),
-        const Positioned(
-          right: 20,
-          top: 18,
-          child: OheyPopIcon(
-            icon: CupertinoIcons.sparkles,
-            color: Color(0xFFFFC857),
-            size: 42,
-          ),
-        ),
-        const Positioned(
-          left: -14,
-          top: 48,
-          child: OheyPopIcon(
-            icon: CupertinoIcons.calendar,
-            color: Color(0xFF16A8FF),
-            size: 48,
-          ),
+  Widget build(BuildContext context) => Container(
+    height: 210,
+    width: double.infinity,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(32),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFF12C9A4).withValues(alpha: .16),
+          blurRadius: 34,
+          offset: const Offset(0, 16),
         ),
       ],
+    ),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(32),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/images/onboarding_memory_hero.png',
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  const Color(0xFF07131F).withValues(alpha: .12),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }
