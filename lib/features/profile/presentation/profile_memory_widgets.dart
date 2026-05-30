@@ -236,13 +236,6 @@ class _UnsavedProfileSheet extends StatelessWidget {
         children: [
           Row(
             children: [
-              const OheyPopIcon(
-                icon: CupertinoIcons.person_crop_circle_fill,
-                color: Color(0xFF20D0B4),
-                size: 48,
-                iconSize: 25,
-              ),
-              const SizedBox(width: 12),
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,6 +247,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -.4,
+                        decoration: TextDecoration.none,
                       ),
                     ),
                     SizedBox(height: 4),
@@ -263,6 +257,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
                         color: _ProfileColors.sub,
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
+                        decoration: TextDecoration.none,
                       ),
                     ),
                   ],
