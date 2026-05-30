@@ -115,7 +115,7 @@ class OheyToast {
   static double bottomOffsetFor(double bottomPadding) {
     // Keep every bottom POP anchored around the top border of the floating
     // bottom tab bar, regardless of which screen triggers it.
-    const tabBarTopLineOffset = 72.0;
+    const tabBarTopLineOffset = 48.0;
     return bottomPadding + tabBarTopLineOffset;
   }
 
