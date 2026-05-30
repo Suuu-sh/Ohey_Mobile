@@ -124,19 +124,29 @@ class _DemoVisual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => switch (kind) {
-    _DemoKind.hero => const _HeroDemoVisual(),
-    _DemoKind.profile => const _ProfileDemoVisual(),
-    _DemoKind.log => const _LogDemoVisual(),
-    _DemoKind.friends => const _FriendsDemoVisual(),
+    _DemoKind.hero => const _GeneratedDemoVisual(
+      assetName: 'assets/images/onboarding_demo_hero.png',
+    ),
+    _DemoKind.profile => const _GeneratedDemoVisual(
+      assetName: 'assets/images/onboarding_demo_profile.png',
+    ),
+    _DemoKind.log => const _GeneratedDemoVisual(
+      assetName: 'assets/images/onboarding_demo_log.png',
+    ),
+    _DemoKind.friends => const _GeneratedDemoVisual(
+      assetName: 'assets/images/onboarding_demo_friends.png',
+    ),
   };
 }
 
-class _HeroDemoVisual extends StatelessWidget {
-  const _HeroDemoVisual();
+class _GeneratedDemoVisual extends StatelessWidget {
+  const _GeneratedDemoVisual({required this.assetName});
+
+  final String assetName;
 
   @override
   Widget build(BuildContext context) => Container(
-    height: 210,
+    height: 230,
     width: double.infinity,
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(32),
@@ -150,180 +160,12 @@ class _HeroDemoVisual extends StatelessWidget {
     ),
     child: ClipRRect(
       borderRadius: BorderRadius.circular(32),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            'assets/images/onboarding_memory_hero.png',
-            fit: BoxFit.cover,
-            alignment: Alignment.center,
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  const Color(0xFF07131F).withValues(alpha: .12),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _ProfileDemoVisual extends StatelessWidget {
-  const _ProfileDemoVisual();
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .07),
-      borderRadius: BorderRadius.circular(24),
-      border: Border.all(color: Colors.white.withValues(alpha: .08)),
-    ),
-    child: Row(
-      children: [
-        const OheyAvatarView(avatar: OheyAvatar.defaultAvatar, size: 86),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 120,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .24),
-                  borderRadius: BorderRadius.circular(99),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                width: 80,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .14),
-                  borderRadius: BorderRadius.circular(99),
-                ),
-              ),
-              const SizedBox(height: 18),
-              const Row(
-                children: [
-                  OheyPopIcon(icon: CupertinoIcons.person_fill, size: 34),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      '@ohey_friend',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _LogDemoVisual extends StatelessWidget {
-  const _LogDemoVisual();
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .07),
-      borderRadius: BorderRadius.circular(24),
-      border: Border.all(color: Colors.white.withValues(alpha: .08)),
-    ),
-    child: const Column(
-      children: [
-        _DemoRow(icon: CupertinoIcons.camera_fill, label: '最初の投稿', value: '1枚'),
-        SizedBox(height: 14),
-        _DemoRow(
-          icon: CupertinoIcons.person_2_fill,
-          label: '一緒にいたフレンズ',
-          value: 'タグ',
-        ),
-        SizedBox(height: 14),
-        _DemoRow(icon: CupertinoIcons.calendar, label: 'ホームに表示', value: 'すぐ'),
-      ],
-    ),
-  );
-}
-
-class _FriendsDemoVisual extends StatelessWidget {
-  const _FriendsDemoVisual();
-
-  @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const OheyAvatarView(avatar: OheyAvatar.defaultAvatar, size: 86),
-          const SizedBox(width: 12),
-          Container(
-            width: 74,
-            height: 74,
-            decoration: BoxDecoration(
-              color: const Color(0xFFC08BFF),
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: const Center(
-              child: OheyPopIcon(
-                icon: CupertinoIcons.heart_fill,
-                color: Colors.white,
-                foregroundColor: Colors.white,
-                showBubble: false,
-                size: 42,
-              ),
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 18),
-      Container(
-        width: double.infinity,
-        height: 54,
+      child: Image.asset(
+        assetName,
+        fit: BoxFit.cover,
         alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: const Color(0xFF12C9A4),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: const Text(
-          'フレンズを追加する',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
-        ),
       ),
-      const SizedBox(height: 10),
-      Container(
-        width: double.infinity,
-        height: 50,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.white.withValues(alpha: .22)),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: const Text(
-          'QRコードで交換',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
-        ),
-      ),
-    ],
+    ),
   );
 }
 
@@ -348,43 +190,6 @@ class _DemoValueChip extends StatelessWidget {
         fontWeight: FontWeight.w900,
       ),
     ),
-  );
-}
-
-class _DemoRow extends StatelessWidget {
-  const _DemoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      OheyPopIcon(icon: icon, color: const Color(0xFF12C9A4), size: 42),
-      const SizedBox(width: 12),
-      Expanded(
-        child: Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: .72),
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
-      Text(
-        value,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-    ],
   );
 }
 
