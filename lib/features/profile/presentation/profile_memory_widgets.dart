@@ -223,50 +223,30 @@ class _UnsavedProfileSheet extends StatelessWidget {
   const _UnsavedProfileSheet();
 
   @override
-  Widget build(BuildContext context) => SafeArea(
-    child: Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
-      decoration: BoxDecoration(
-        color: AppColors.darkBackground,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .34),
-            blurRadius: 32,
-            offset: const Offset(0, 16),
-          ),
-        ],
-      ),
+  Widget build(BuildContext context) => Theme(
+    data: Theme.of(context).copyWith(brightness: Brightness.dark),
+    child: OheyBottomSheetShell(
+      showHandle: true,
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
+      radius: 34,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 44,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .18),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          const Row(
+          Row(
             children: [
-              OheyPopIcon(
+              const OheyPopIcon(
                 icon: CupertinoIcons.person_crop_circle_fill,
                 color: Color(0xFF20D0B4),
                 size: 48,
                 iconSize: 25,
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  children: const [
                     Text(
                       '変更を保存しますか？',
                       style: TextStyle(
@@ -295,23 +275,23 @@ class _UnsavedProfileSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(13),
             decoration: BoxDecoration(
-              color: AppColors.darkBackground,
+              color: Colors.white.withValues(alpha: .06),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: .08)),
+              border: Border.all(color: Colors.white.withValues(alpha: .10)),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                const OheyGeneratedIcon(
+                OheyGeneratedIcon(
                   CupertinoIcons.info_circle_fill,
                   color: Color(0xFF20D0B4),
                   size: 20,
                 ),
-                const SizedBox(width: 9),
+                SizedBox(width: 9),
                 Expanded(
                   child: Text(
                     '保存しない場合は、変更前のプロフィールに戻ります。',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: .72),
+                      color: Colors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                       height: 1.35,
@@ -334,7 +314,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
             onTap: () => Navigator.of(context).pop(_UnsavedProfileAction.save),
           ),
           const SizedBox(height: 10),
-          Ohey3DButton(
+          Ohey3DButton.secondary(
             label: '変更を戻す',
             icon: CupertinoIcons.arrow_uturn_left,
             color: Colors.white.withValues(alpha: .07),
