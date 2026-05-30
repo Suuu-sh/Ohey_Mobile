@@ -250,16 +250,6 @@ class _UnsavedProfileSheet extends StatelessWidget {
                         decoration: TextDecoration.none,
                       ),
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      'プロフィール編集',
-                      style: TextStyle(
-                        color: _ProfileColors.sub,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        decoration: TextDecoration.none,
-                      ),
-                    ),
                   ],
                 ),
               ),
