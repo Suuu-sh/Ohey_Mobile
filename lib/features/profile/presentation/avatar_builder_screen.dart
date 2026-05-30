@@ -342,13 +342,14 @@ class _AvatarBackgroundPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (OheyAvatar.usesMascotBackdrop(avatar.background)) {
+    final imageBackdropAsset = OheyAvatar.imageBackdropAsset(avatar.background);
+    if (imageBackdropAsset != null) {
       return Stack(
         fit: StackFit.expand,
         children: [
           ExcludeSemantics(
             child: Image.asset(
-              'assets/images/profile_mascot_backdrop_scene.png',
+              imageBackdropAsset,
               fit: BoxFit.cover,
               alignment: Alignment.center,
             ),

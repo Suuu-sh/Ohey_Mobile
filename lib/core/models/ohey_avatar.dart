@@ -27,8 +27,9 @@ class OheyAvatar {
   final bool isAdmin;
 
   static const mascotBackdropBackground = 0;
-  static const dreamRoomBackground = 1;
-  static const nightFriendsBackground = 2;
+  static const ohetomoMomoBackdropBackground = 1;
+  static const dreamRoomBackground = 2;
+  static const nightFriendsBackground = 3;
 
   static const defaultAvatar = OheyAvatar(
     skin: 2,
@@ -127,14 +128,23 @@ class OheyAvatar {
     return copyWith(hair: hairOptions.first);
   }
 
-  static const backgroundStyles = ['Ohey pink'];
+  static const backgroundStyles = ['Ohey pink', 'おへとも・もも'];
 
   static const backgroundGradients = [
     [Color(0xFFFF7BBC), Color(0xFFFFD2E3)],
+    [Color(0xFFFF8FC8), Color(0xFFFFDDEB)],
   ];
 
   static bool usesMascotBackdrop(int background) =>
-      background == mascotBackdropBackground;
+      imageBackdropAsset(background) != null;
+
+  static String? imageBackdropAsset(int background) => switch (background) {
+    mascotBackdropBackground =>
+      'assets/images/profile_mascot_backdrop_scene.png',
+    ohetomoMomoBackdropBackground =>
+      'assets/images/profile_ohetomo_momo_backdrop_scene.png',
+    _ => null,
+  };
 
   static const skinColors = [
     Color(0xFFFFD8C2),

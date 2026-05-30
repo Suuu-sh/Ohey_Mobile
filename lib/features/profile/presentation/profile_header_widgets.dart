@@ -105,10 +105,13 @@ class _ProfileHeaderBackdrop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final displayAvatar = avatar ?? OheyAvatar.defaultAvatar;
-    if (OheyAvatar.usesMascotBackdrop(displayAvatar.background)) {
+    final imageBackdropAsset = OheyAvatar.imageBackdropAsset(
+      displayAvatar.background,
+    );
+    if (imageBackdropAsset != null) {
       return ExcludeSemantics(
         child: Image.asset(
-          'assets/images/profile_mascot_backdrop_scene.png',
+          imageBackdropAsset,
           fit: BoxFit.cover,
           alignment: Alignment.center,
         ),
