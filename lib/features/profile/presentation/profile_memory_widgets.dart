@@ -390,27 +390,6 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
           onClose: () => Navigator.of(sheetContext).pop(),
           children: [
             _SettingsTile(
-              icon: CupertinoIcons.person_crop_circle,
-              label: 'プロフィール編集',
-              subtitle: '名前・ID・アバターを変更',
-              accent: const Color(0xFF21D6C4),
-              onTap: () async {
-                if (sheetContext.mounted) {
-                  Navigator.of(sheetContext).pop();
-                }
-                // Wait until the settings sheet has finished popping. Opening
-                // another bottom sheet in the same tap while the first route is
-                // still closing can drop the tap on iOS.
-                await Future<void>.delayed(const Duration(milliseconds: 180));
-                if (!context.mounted) return;
-                await _showEditProfileSheet(
-                  context,
-                  ref,
-                  ref.read(oheyUserProvider),
-                );
-              },
-            ),
-            _SettingsTile(
               icon: CupertinoIcons.play_circle_fill,
               label: 'はじめてのデモ',
               subtitle: 'Oheyの使い方をもう一度見る',
