@@ -36,12 +36,12 @@ Mobile repository の Actions secret:
 - `SUPABASE_DEV_DATABASE_URL`
 - `SUPABASE_PRODUCTION_DATABASE_URL`
 
-値は `/Users/yota/Projects/Secrets/Nomo` に保存している。secret 値は repo / docs に書かない。
+値は `/Users/yota/Projects/Secrets/Ohey` に保存している。secret 値は repo / docs に書かない。
 
 ## Local static verification
 
 ```bash
-cd /Users/yota/Projects/Products/Nomo/Mobile
+cd /Users/yota/Projects/Products/Ohey/Mobile
 python3 scripts/verify_supabase_rls_contract.py
 ```
 
@@ -59,7 +59,7 @@ python3 scripts/verify_supabase_rls_contract.py
 Supabase は 2026-04-28 以降、新規 project / 設定によって `public` tables が Data API / GraphQL API に自動公開されない挙動を opt-in できる。そのため RLS だけでなく **GRANT / Data API 到達性** も runtime で確認する。
 
 ```bash
-cd /Users/yota/Projects/Products/Nomo/Mobile
+cd /Users/yota/Projects/Products/Ohey/Mobile
 SUPABASE_URL=... \
 SUPABASE_PUBLISHABLE_KEY=... \
 SUPABASE_SERVICE_ROLE_KEY=... \
@@ -81,7 +81,7 @@ python3 scripts/ohey_supabase_runtime_check.py
 Dev Render backend:
 
 ```bash
-cd /Users/yota/Projects/Products/Nomo/Mobile
+cd /Users/yota/Projects/Products/Ohey/Mobile
 OHEY_BACKEND_URL=https://dev-ohey-backend.onrender.com \
 SUPABASE_URL=... \
 SUPABASE_PUBLISHABLE_KEY=... \
@@ -105,7 +105,7 @@ Production backend も同じ script を使う。ただし TestFlight / productio
 Supabase 公式 docs は Storage object の削除を SQL ではなく Storage API 経由にするよう明記している。DB reset 後に object を消す場合:
 
 ```bash
-cd /Users/yota/Projects/Products/Nomo/Mobile
+cd /Users/yota/Projects/Products/Ohey/Mobile
 SUPABASE_URL=... \
 SUPABASE_SERVICE_ROLE_KEY=... \
 python3 scripts/ohey_storage_cleanup.py --bucket ohey-photos --prefix users

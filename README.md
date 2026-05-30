@@ -41,8 +41,8 @@ Auth stays in Flutter via Supabase Auth. Memories, invites, and friend reads go 
 Local backend:
 
 ```sh
-cd /Users/yota/Projects/Products/Nomo/Backend
-set -a; source /Users/yota/Projects/Secrets/Nomo/backend_dev.env; set +a
+cd /Users/yota/Projects/Products/Ohey/Backend
+set -a; source /Users/yota/Projects/Secrets/Ohey/backend_dev.env; set +a
 go run ./cmd/api
 ```
 
@@ -70,9 +70,9 @@ flutter test
 ```
 ## Supabase
 
-The app initializes `supabase_flutter` on startup. Local debug runs default to the `dev-ohey` Supabase project through `/Users/yota/Projects/Products/Nomo/Mobile/lib/core/config/supabase_config.dart`.
+The app initializes `supabase_flutter` on startup. Local debug runs default to the `dev-ohey` Supabase project through `/Users/yota/Projects/Products/Ohey/Mobile/lib/core/config/supabase_config.dart`.
 
-Override environment values with `--dart-define` for production/release builds. See `/Users/yota/Projects/Products/Nomo/Mobile/docs/supabase_ohey.md`.
+Override environment values with `--dart-define` for production/release builds. See `/Users/yota/Projects/Products/Ohey/Mobile/docs/supabase_ohey.md`.
 
 
 ## Firebase/FCM dev and prod setup
@@ -115,4 +115,4 @@ If you prefer native Firebase config files instead of dart-defines, place them a
 - `android/app/src/dev/google-services.json`
 - `android/app/src/prod/google-services.json`
 
-The backend also needs matching environment-specific `FCM_SERVICE_ACCOUNT_JSON` values. Store operational copies under `/Users/yota/Projects/Secrets/Nomo` and set them in the dev/prod backend environments.
+The backend also needs matching environment-specific `FCM_SERVICE_ACCOUNT_JSON` values. Store operational copies under `/Users/yota/Projects/Secrets/Ohey` and set them in the dev/prod backend environments.

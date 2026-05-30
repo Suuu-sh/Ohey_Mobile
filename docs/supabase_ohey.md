@@ -18,9 +18,9 @@ Local Flutter runs default to this project.
 
 Local config is in:
 
-- `/Users/yota/Projects/Products/Nomo/Mobile/lib/core/config/supabase_config.dart`
-- `/Users/yota/Projects/Products/Nomo/Mobile/.env.local` (gitignored)
-- secrets backup: `/Users/yota/Projects/Secrets/Nomo/supabase_dev-ohey.md`
+- `/Users/yota/Projects/Products/Ohey/Mobile/lib/core/config/supabase_config.dart`
+- `/Users/yota/Projects/Products/Ohey/Mobile/.env.local` (gitignored)
+- secrets backup: `/Users/yota/Projects/Secrets/Ohey/supabase_dev-ohey.md`
 
 Run locally with the default dev-ohey values:
 

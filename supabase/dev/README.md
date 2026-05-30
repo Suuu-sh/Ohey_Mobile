@@ -18,7 +18,7 @@ select set_config('app.seed_password', '<local-dev-password>', false);
 \i supabase/dev/seed_dev_auth_users.sql
 ```
 
-Do not commit real dev or production passwords. Reusable seed credentials are documented only under `/Users/yota/Projects/Secrets/Nomo`.
+Do not commit real dev or production passwords. Reusable seed credentials are documented only under `/Users/yota/Projects/Secrets/Ohey`.
 
 ## Fixed dev users
 
