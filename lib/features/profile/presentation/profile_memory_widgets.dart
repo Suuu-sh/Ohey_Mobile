@@ -404,6 +404,8 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
                 await _showProfileManagementSheet(rootContext);
+                if (!rootContext.mounted) return;
+                await _showSettingsSheet(rootContext, ref);
               },
             ),
             _SettingsTile(
@@ -418,6 +420,8 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
                 await _showSupportLegalSheet(rootContext);
+                if (!rootContext.mounted) return;
+                await _showSettingsSheet(rootContext, ref);
               },
             ),
             _SettingsTile(
@@ -731,6 +735,8 @@ Future<void> _showProfileManagementSheet(BuildContext context) {
                   await Future<void>.delayed(const Duration(milliseconds: 180));
                   if (!rootContext.mounted) return;
                   await _showFriendRequestManagementSheet(rootContext);
+                  if (!rootContext.mounted) return;
+                  await _showSettingsSheet(rootContext, ref);
                 },
               ),
               _SettingsTile(
@@ -745,6 +751,8 @@ Future<void> _showProfileManagementSheet(BuildContext context) {
                   await Future<void>.delayed(const Duration(milliseconds: 180));
                   if (!rootContext.mounted) return;
                   await _showSafetyCenterSheet(rootContext);
+                  if (!rootContext.mounted) return;
+                  await _showSettingsSheet(rootContext, ref);
                 },
               ),
             ],
