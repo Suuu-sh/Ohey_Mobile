@@ -118,7 +118,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               isWhite: isWhite,
               isLoading: yurubosAsync.isLoading,
               onPageChanged: _handleFeedPageChanged,
-              onCreateYuruboPressed: () {},
+              onCreateYuruboPressed: () => _showCreateYuruboSheet(context, ref),
               onLikePressed: (item) => ref
                   .read(yuruboControllerProvider.notifier)
                   .toggleInterested(item.id),
