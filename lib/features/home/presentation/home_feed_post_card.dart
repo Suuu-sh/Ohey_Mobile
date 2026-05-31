@@ -125,32 +125,36 @@ class _YuruboCardBody extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          Row(
             children: [
-              _YuruboMetaChip(
-                icon: item.targetLabel == '全フレンズ'
-                    ? CupertinoIcons.person_2_fill
-                    : CupertinoIcons.person_3_fill,
-                label: item.targetLabel,
-                color: _feedPrimaryActionColor,
-                isWhite: isWhite,
+              Expanded(
+                child: _YuruboMetaChip(
+                  icon: item.targetLabel == '全フレンズ'
+                      ? CupertinoIcons.person_2_fill
+                      : CupertinoIcons.person_3_fill,
+                  label: item.targetLabel,
+                  color: _feedPrimaryActionColor,
+                  isWhite: isWhite,
+                ),
               ),
-              if (place.isNotEmpty)
-                _YuruboMetaChip(
+              const SizedBox(width: 6),
+              Expanded(
+                child: _YuruboMetaChip(
                   icon: CupertinoIcons.location_fill,
-                  label: place,
+                  label: place.isEmpty ? 'どこでも' : place,
                   color: _FeedColors.teal,
                   isWhite: isWhite,
                 ),
-              if (timeLabel.isNotEmpty)
-                _YuruboMetaChip(
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _YuruboMetaChip(
                   icon: CupertinoIcons.clock_fill,
-                  label: timeLabel,
+                  label: timeLabel.isEmpty ? 'いつでも' : timeLabel,
                   color: _FeedColors.teal,
                   isWhite: isWhite,
                 ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -191,18 +195,19 @@ class _YuruboMetaChip extends StatelessWidget {
         ? Color.lerp(color, Colors.black, .20)!
         : Colors.white;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      constraints: const BoxConstraints(minWidth: 0),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: isWhite ? .13 : .22),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: color.withValues(alpha: isWhite ? .32 : .42)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         children: [
           Icon(icon, size: 13, color: foreground),
           const SizedBox(width: 5),
-          Flexible(
+          Expanded(
             child: Text(
               label,
               maxLines: 1,
@@ -211,6 +216,7 @@ class _YuruboMetaChip extends StatelessWidget {
                 color: foreground,
                 fontWeight: FontWeight.w900,
                 height: 1,
+                fontSize: 11,
               ),
             ),
           ),
@@ -692,21 +698,22 @@ class _FeedCardFooter extends StatelessWidget {
                     : item.ownedByMe
                     ? 'ゆるぼを共有'
                     : 'ゆるぼを共有',
-                customIcon: item.isOfficial || compactYurubo
+                customIcon: item.isOfficial
                     ? null
+                    : compactYurubo
+                    ? Icon(
+                        CupertinoIcons.link,
+                        color: oheyPostActionForeground(shareAccent),
+                        size: 18,
+                      )
                     : OheyPostShareIcon(
                         color: oheyPostActionForeground(shareAccent),
                         size: 19,
                       ),
-                icon: item.isOfficial
-                    ? CupertinoIcons.doc_text_fill
-                    : compactYurubo
-                    ? CupertinoIcons.link
-                    : null,
+                icon: item.isOfficial ? CupertinoIcons.doc_text_fill : null,
                 label: compactYurubo ? '共有' : _feedShareActionLabel(item),
                 color: shareAccent,
                 isWhite: isWhite,
-                showIcon: !compactYurubo,
                 onTap: onShare,
               ),
               const Spacer(),
