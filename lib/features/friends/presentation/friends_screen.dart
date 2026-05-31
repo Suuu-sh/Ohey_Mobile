@@ -582,10 +582,13 @@ class _InviteOptionsSheet extends ConsumerStatefulWidget {
       _InviteOptionsSheetState();
 }
 
+enum _InviteWishListSource { mine, friend }
+
 class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
   late DateTime _selectedDate;
   bool _isCustomDate = false;
   String? _activityLabel;
+  _InviteWishListSource _wishListSource = _InviteWishListSource.mine;
 
   DateTime get _today {
     final now = DateTime.now();
@@ -621,6 +624,13 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
 
   void _selectActivity(String label) {
     setState(() => _activityLabel = _activityLabel == label ? null : label);
+  }
+
+  void _selectWishListSource(_InviteWishListSource source) {
+    setState(() {
+      _wishListSource = source;
+      _activityLabel = null;
+    });
   }
 
   void _submit() {
@@ -707,7 +717,9 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
             const SizedBox(height: 10),
             _InviteWishListOptions(
               friendIds: widget.friendIds,
+              source: _wishListSource,
               selectedLabel: _activityLabel,
+              onSourceSelected: _selectWishListSource,
               onSelected: _selectActivity,
               emptyColor: sub,
             ),
@@ -846,13 +858,17 @@ String _inviteDateLabel(DateTime date, {required DateTime today}) {
 class _InviteWishListOptions extends ConsumerWidget {
   const _InviteWishListOptions({
     required this.friendIds,
+    required this.source,
     required this.selectedLabel,
+    required this.onSourceSelected,
     required this.onSelected,
     required this.emptyColor,
   });
 
   final List<String> friendIds;
+  final _InviteWishListSource source;
   final String? selectedLabel;
+  final ValueChanged<_InviteWishListSource> onSourceSelected;
   final ValueChanged<String> onSelected;
   final Color emptyColor;
 
@@ -861,40 +877,65 @@ class _InviteWishListOptions extends ConsumerWidget {
     final ownItems =
         ref.watch(wishItemControllerProvider).asData?.value ??
         const <WishItem>[];
-    final friendItems = <WishItem>[
+    final friendStatusValues = [
       for (final friendId in friendIds)
-        ...?ref.watch(profileWishItemsProvider(friendId)).asData?.value,
+        ref.watch(profileWishItemsProvider(friendId)),
     ];
-    final options = _uniqueWishTitles([...friendItems, ...ownItems]);
+    final friendItems = <WishItem>[
+      for (final status in friendStatusValues) ...?status.asData?.value,
+    ];
+    final options = _uniqueWishTitles(
+      source == _InviteWishListSource.mine ? ownItems : friendItems,
+    );
+    final isLoading =
+        ref.watch(wishItemControllerProvider).isLoading ||
+        friendStatusValues.any((status) => status.isLoading);
 
-    if (options.isEmpty) {
-      final isLoading =
-          ref.watch(wishItemControllerProvider).isLoading ||
-          friendIds.any(
-            (friendId) =>
-                ref.watch(profileWishItemsProvider(friendId)).isLoading,
-          );
-      return Text(
-        isLoading ? 'リストを読み込み中…' : '選べるリストがまだないよ。',
-        style: TextStyle(
-          color: emptyColor,
-          fontSize: 13,
-          fontWeight: FontWeight.w800,
-          height: 1.35,
-        ),
-      );
-    }
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final option in options)
-          _InviteOptionPill(
-            label: option,
-            compact: true,
-            selected: selectedLabel == option,
-            onTap: () => onSelected(option),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _InviteOptionPill(
+              label: '私のリスト',
+              compact: true,
+              selected: source == _InviteWishListSource.mine,
+              onTap: () => onSourceSelected(_InviteWishListSource.mine),
+            ),
+            _InviteOptionPill(
+              label: '相手のリスト',
+              compact: true,
+              selected: source == _InviteWishListSource.friend,
+              onTap: () => onSourceSelected(_InviteWishListSource.friend),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (options.isEmpty)
+          Text(
+            isLoading ? 'リストを読み込み中…' : 'このリストはまだ空だよ。',
+            style: TextStyle(
+              color: emptyColor,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final option in options)
+                _InviteOptionPill(
+                  label: option,
+                  compact: true,
+                  selected: selectedLabel == option,
+                  onTap: () => onSelected(option),
+                ),
+            ],
           ),
       ],
     );
