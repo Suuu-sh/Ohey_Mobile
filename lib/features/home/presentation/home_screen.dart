@@ -53,6 +53,48 @@ part 'home_feed_post_card.dart';
 part 'home_notifications.dart';
 part 'home_feed_shared.dart';
 
+class _FeedCreateYuruboFab extends StatelessWidget {
+  const _FeedCreateYuruboFab({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      right: 18,
+      bottom: MediaQuery.paddingOf(context).bottom + 22,
+      child: Semantics(
+        button: true,
+        label: 'ゆるぼする',
+        child: Ohey3DButtonSurface(
+          onTap: onTap,
+          height: 58,
+          radius: 29,
+          color: _FeedColors.teal,
+          bottomColor: _feedPrimaryActionShadowColor,
+          padding: EdgeInsets.zero,
+          outerShadows: [
+            BoxShadow(
+              color: _FeedColors.teal.withValues(alpha: .36),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
+          ],
+          child: const SizedBox(
+            width: 58,
+            height: 58,
+            child: Icon(
+              CupertinoIcons.plus,
+              color: Color(0xFF101820),
+              size: 30,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -139,30 +181,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               titleColor: _FeedColors.teal,
               titleOffset: const Offset(0, -54),
               trailingOffset: const Offset(0, -54),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  OheyHeaderIconButton(
-                    icon: CupertinoIcons.plus_bubble_fill,
-                    semanticLabel: 'ゆるぼする',
-                    color: _FeedColors.teal,
-                    onTap: () => _showCreateYuruboSheet(context, ref),
+              trailing: OheyHeaderIconButton(
+                icon: CupertinoIcons.bell,
+                semanticLabel: 'お知らせを開く',
+                hasDot: hasUnreadNotifications,
+                color: _FeedColors.teal,
+                onTap: () => Navigator.of(context).push(
+                  CupertinoPageRoute<void>(
+                    builder: (_) => const _FeedNotificationsScreen(),
                   ),
-                  const SizedBox(width: 8),
-                  OheyHeaderIconButton(
-                    icon: CupertinoIcons.bell,
-                    semanticLabel: 'お知らせを開く',
-                    hasDot: hasUnreadNotifications,
-                    color: _FeedColors.teal,
-                    onTap: () => Navigator.of(context).push(
-                      CupertinoPageRoute<void>(
-                        builder: (_) => const _FeedNotificationsScreen(),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
+          ),
+          _FeedCreateYuruboFab(
+            onTap: () => _showCreateYuruboSheet(context, ref),
           ),
           if (incomingInvites.isNotEmpty || todayReservations.isNotEmpty)
             _FeedInviteBanner(
