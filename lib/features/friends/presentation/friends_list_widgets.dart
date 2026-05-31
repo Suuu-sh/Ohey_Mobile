@@ -1,5 +1,90 @@
 part of 'friends_screen.dart';
 
+class _FriendsRefreshIndicator extends StatelessWidget {
+  const _FriendsRefreshIndicator({
+    required this.state,
+    required this.pulledExtent,
+    required this.triggerDistance,
+  });
+
+  final RefreshIndicatorMode state;
+  final double pulledExtent;
+  final double triggerDistance;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = (pulledExtent / triggerDistance).clamp(0.0, 1.0);
+    final isRefreshing =
+        state == RefreshIndicatorMode.refresh ||
+        state == RefreshIndicatorMode.armed;
+    final label = switch (state) {
+      RefreshIndicatorMode.inactive => '',
+      RefreshIndicatorMode.drag => progress >= 1 ? '離して更新' : '下に引っ張って更新',
+      RefreshIndicatorMode.armed || RefreshIndicatorMode.refresh => '更新中...',
+      RefreshIndicatorMode.done => '更新しました',
+    };
+
+    return SizedBox(
+      height: pulledExtent,
+      child: OverflowBox(
+        alignment: Alignment.bottomCenter,
+        minHeight: 0,
+        maxHeight: 60,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 120),
+            opacity: state == RefreshIndicatorMode.inactive ? 0 : 1,
+            child: Container(
+              height: 34,
+              padding: const EdgeInsets.symmetric(horizontal: 13),
+              decoration: BoxDecoration(
+                color: const Color(0xFF101C2B).withValues(alpha: .82),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: _FriendsColors.lime.withValues(alpha: .24),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: _FriendsColors.lime.withValues(alpha: .18),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isRefreshing)
+                    const CupertinoActivityIndicator(radius: 8)
+                  else
+                    Transform.rotate(
+                      angle: progress * 3.14159,
+                      child: Icon(
+                        CupertinoIcons.arrow_down,
+                        color: _FriendsColors.lime,
+                        size: 16,
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _FriendsList extends StatelessWidget {
   const _FriendsList({
     required this.friends,
@@ -8,6 +93,7 @@ class _FriendsList extends StatelessWidget {
     required this.selectedCustomFilter,
     required this.favoriteOverrides,
     required this.invitedFriendIds,
+    required this.onRefresh,
     required this.isSendingGroupInvite,
     required this.onFavoriteToggle,
     required this.onAddFriend,
@@ -23,6 +109,7 @@ class _FriendsList extends StatelessWidget {
   final _CustomFriendFilter? selectedCustomFilter;
   final Map<String, bool> favoriteOverrides;
   final Set<String> invitedFriendIds;
+  final Future<void> Function() onRefresh;
   final bool isSendingGroupInvite;
   final void Function(OheyFriend friend, bool isFavorite) onFavoriteToggle;
   final VoidCallback onAddFriend;
@@ -68,86 +155,118 @@ class _FriendsList extends StatelessWidget {
         .map((item) => item.friend)
         .toList(growable: false);
 
+    Widget withRefresh(Widget child) => CustomScrollView(
+      clipBehavior: Clip.none,
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
+      slivers: [
+        CupertinoSliverRefreshControl(
+          refreshTriggerPullDistance: 34,
+          refreshIndicatorExtent: 24,
+          onRefresh: onRefresh,
+          builder:
+              (
+                context,
+                refreshState,
+                pulledExtent,
+                refreshTriggerPullDistance,
+                refreshIndicatorExtent,
+              ) => _FriendsRefreshIndicator(
+                state: refreshState,
+                pulledExtent: pulledExtent,
+                triggerDistance: refreshTriggerPullDistance,
+              ),
+        ),
+        child,
+      ],
+    );
+
     if (filtered.isEmpty) {
       return LayoutBuilder(
         builder: (context, constraints) {
           const bottomInset = 168.0;
           final contentHeight = constraints.maxHeight - bottomInset;
-          return ListView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            padding: const EdgeInsets.only(bottom: bottomInset),
-            children: [
-              SizedBox(
-                height: contentHeight > 0 ? contentHeight : 0,
-                child: Center(
-                  child: _EmptyFriendsState(
-                    avatar: userAvatar,
-                    message: friends.isEmpty ? 'フレンズがいません' : 'この条件のフレンズはいません',
-                    subtitle: friends.isEmpty
-                        ? 'QRコードかIDでフレンズを追加しよう'
-                        : selectedCustomFilter == null
-                        ? '別の条件を選ぶと見つかるかも'
-                        : '長押しでグループ編集',
-                    onAddFriend: onAddFriend,
+          return withRefresh(
+            SliverPadding(
+              padding: const EdgeInsets.only(bottom: bottomInset),
+              sliver: SliverList.list(
+                children: [
+                  SizedBox(
+                    height: contentHeight > 0 ? contentHeight : 0,
+                    child: Center(
+                      child: _EmptyFriendsState(
+                        avatar: userAvatar,
+                        message: friends.isEmpty
+                            ? 'フレンズがいません'
+                            : 'この条件のフレンズはいません',
+                        subtitle: friends.isEmpty
+                            ? 'QRコードかIDでフレンズを追加しよう'
+                            : selectedCustomFilter == null
+                            ? '別の条件を選ぶと見つかるかも'
+                            : '長押しでグループ編集',
+                        onAddFriend: onAddFriend,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           );
         },
       );
     }
 
-    return ListView.separated(
-      clipBehavior: Clip.none,
-      physics: const AlwaysScrollableScrollPhysics(
-        parent: BouncingScrollPhysics(),
+    return withRefresh(
+      SliverPadding(
+        padding: const EdgeInsets.fromLTRB(4, 0, 4, 168),
+        sliver: SliverList.separated(
+          itemCount:
+              filtered.length +
+              1 +
+              (hasRecommendations ? 1 : 0) +
+              (hasGroupSchedule ? 1 : 0),
+          separatorBuilder: (_, _) => const SizedBox(height: 14),
+          itemBuilder: (context, index) {
+            if (hasRecommendations && index == 0) {
+              return _TodayInviteSection(
+                friends: recommendations,
+                invitedFriendIds: invitedFriendIds,
+                onInvite: onInvite,
+                onInviteAnimationComplete: onInviteAnimationComplete,
+              );
+            }
+            if (hasGroupSchedule && index == 0) {
+              return _GroupScheduleSection(
+                groupName: selectedCustomFilter!.name,
+                friends: filtered,
+                inviteTargets: groupInviteTargets,
+                isSendingInvite: isSendingGroupInvite,
+                onInviteGroup: () => onGroupInvite(groupInviteTargets),
+              );
+            }
+            final friendIndex =
+                index -
+                (hasRecommendations ? 1 : 0) -
+                (hasGroupSchedule ? 1 : 0);
+            if (friendIndex == filtered.length) {
+              return _AddFriendsPromoCard(onTap: onAddFriend);
+            }
+            final item = filtered[friendIndex];
+            return _FriendCard(
+              friend: item.friend,
+              status: item.status,
+              onFavoriteToggle: () =>
+                  onFavoriteToggle(item.friend, !item.friend.isFavorite),
+              isInvited: invitedFriendIds.contains(item.friend.id),
+              onInvite: () => onInvite(item.friend),
+              onInviteAnimationComplete: () =>
+                  onInviteAnimationComplete(item.friend),
+              onProfile: () => onProfile(item.friend, item.status),
+            );
+          },
+        ),
       ),
-      padding: const EdgeInsets.fromLTRB(4, 0, 4, 168),
-      itemCount:
-          filtered.length +
-          1 +
-          (hasRecommendations ? 1 : 0) +
-          (hasGroupSchedule ? 1 : 0),
-      separatorBuilder: (_, _) => const SizedBox(height: 14),
-      itemBuilder: (context, index) {
-        if (hasRecommendations && index == 0) {
-          return _TodayInviteSection(
-            friends: recommendations,
-            invitedFriendIds: invitedFriendIds,
-            onInvite: onInvite,
-            onInviteAnimationComplete: onInviteAnimationComplete,
-          );
-        }
-        if (hasGroupSchedule && index == 0) {
-          return _GroupScheduleSection(
-            groupName: selectedCustomFilter!.name,
-            friends: filtered,
-            inviteTargets: groupInviteTargets,
-            isSendingInvite: isSendingGroupInvite,
-            onInviteGroup: () => onGroupInvite(groupInviteTargets),
-          );
-        }
-        final friendIndex =
-            index - (hasRecommendations ? 1 : 0) - (hasGroupSchedule ? 1 : 0);
-        if (friendIndex == filtered.length) {
-          return _AddFriendsPromoCard(onTap: onAddFriend);
-        }
-        final item = filtered[friendIndex];
-        return _FriendCard(
-          friend: item.friend,
-          status: item.status,
-          onFavoriteToggle: () =>
-              onFavoriteToggle(item.friend, !item.friend.isFavorite),
-          isInvited: invitedFriendIds.contains(item.friend.id),
-          onInvite: () => onInvite(item.friend),
-          onInviteAnimationComplete: () =>
-              onInviteAnimationComplete(item.friend),
-          onProfile: () => onProfile(item.friend, item.status),
-        );
-      },
     );
   }
 }
@@ -1001,9 +1120,7 @@ List<_GroupScheduleSuggestion> _groupScheduleSuggestions(
       for (var i = 0; i < 2; i++)
         _GroupScheduleSuggestion(
           title: _groupScheduleDayLabel(now.add(Duration(days: i))),
-          subtitle: i == 0
-              ? '誰も予定は入ってない日。予定を入れてもらってね。'
-              : 'ここも候補にできそう。みんなに予定を入れてもらおう。',
+          subtitle: i == 0 ? '予定を入れてもらってね。' : '予定を入れてもらってね。',
           badge: '${stats.okCount}/${stats.total}人OK',
           accent: const Color(0xFFB8FF00),
         ),

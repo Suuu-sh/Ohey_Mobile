@@ -449,6 +449,12 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                         ),
                         data: (friends) => _FriendsList(
                           friends: friends,
+                          onRefresh: () async {
+                            HapticFeedback.lightImpact();
+                            ref.invalidate(friendsProvider);
+                            ref.invalidate(outgoingActiveInvitesProvider(null));
+                            await ref.read(friendsProvider.future);
+                          },
                           userAvatar: user?.avatar ?? OheyAvatar.defaultAvatar,
                           selectedFilter: _selectedFilter,
                           selectedCustomFilter: selectedCustomFilter,
