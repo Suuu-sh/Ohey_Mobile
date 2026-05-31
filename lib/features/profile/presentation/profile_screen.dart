@@ -256,9 +256,15 @@ Future<void> _showProfileStatusSheet(
     useSafeArea: true,
     isScrollControlled: true,
     barrierColor: AppColors.black.withValues(alpha: .58),
-    builder: (_) => _ProfileStatusSheetContent(
-      selected: user?.dailyStatus ?? OheyDailyStatus.unselected,
-      ref: ref,
+    builder: (_) => OheyBottomSheetShell(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+      radius: 32,
+      maxHeightFactor: .86,
+      child: _ProfileStatusSheetContent(
+        selected: user?.dailyStatus ?? OheyDailyStatus.unselected,
+        ref: ref,
+      ),
     ),
   );
 }
