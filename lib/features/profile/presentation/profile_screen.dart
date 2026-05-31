@@ -12,6 +12,7 @@ import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/memory.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/wish_item.dart';
 import '../../../core/models/ohey_gender.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_user.dart';
@@ -32,6 +33,8 @@ import '../../memories/application/memory_controller.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../yurubos/application/yurubo_controller.dart';
 import '../../yurubos/data/yurubo_repository.dart';
+import '../../wish_items/application/wish_item_controller.dart';
+import '../../wish_items/data/wish_item_repository.dart';
 import '../../onboarding/presentation/create_user_dialog.dart';
 import '../data/user_safety_repository.dart';
 import 'avatar_builder_screen.dart';
@@ -57,6 +60,8 @@ class ProfileScreen extends ConsumerWidget {
         reservationsAsync.asData?.value ?? const <OheyInvite>[];
     final incomingInvites =
         incomingInvitesAsync.asData?.value ?? const <OheyInvite>[];
+    final wishItemsAsync = ref.watch(wishItemControllerProvider);
+    final wishItems = wishItemsAsync.asData?.value ?? const <WishItem>[];
     final friends =
         ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
     const headerIsWhite = true;
@@ -155,10 +160,23 @@ class ProfileScreen extends ConsumerWidget {
                             Expanded(
                               child: _ProfileActivityHome(
                                 friendsCount: friends.length,
+                                wishItems: wishItems,
+                                isWishLoading: wishItemsAsync.isLoading,
                                 onEditProfileTap: () =>
                                     _showEditProfileSheet(context, ref, user),
                                 onCreateYuruboTap: () =>
                                     _showProfileCreateYuruboSheet(context, ref),
+                                onCreateWishTap: () =>
+                                    _showProfileCreateWishItemSheet(
+                                      context,
+                                      ref,
+                                    ),
+                                onWishToYuruboTap: (wish) =>
+                                    _showProfileCreateYuruboSheet(
+                                      context,
+                                      ref,
+                                      wish: wish,
+                                    ),
                                 onAddFriendsTap: () =>
                                     showFriendAddSheet(context, ref),
                               ),
@@ -272,7 +290,7 @@ const _selectableDailyStatuses = <OheyDailyStatus>[
   OheyDailyStatus.hasPlans,
 ];
 
-Future<void> _showProfileCreateYuruboSheet(
+Future<void> _showProfileCreateWishItemSheet(
   BuildContext context,
   WidgetRef ref,
 ) async {
@@ -281,14 +299,147 @@ Future<void> _showProfileCreateYuruboSheet(
     useSafeArea: true,
     isScrollControlled: true,
     barrierColor: Colors.black.withValues(alpha: .58),
-    builder: (_) => _ProfileCreateYuruboSheet(ref: ref),
+    builder: (_) => _ProfileCreateWishItemSheet(ref: ref),
+  );
+}
+
+class _ProfileCreateWishItemSheet extends StatefulWidget {
+  const _ProfileCreateWishItemSheet({required this.ref});
+
+  final WidgetRef ref;
+
+  @override
+  State<_ProfileCreateWishItemSheet> createState() =>
+      _ProfileCreateWishItemSheetState();
+}
+
+class _ProfileCreateWishItemSheetState
+    extends State<_ProfileCreateWishItemSheet> {
+  final _titleController = TextEditingController();
+  final _placeController = TextEditingController();
+  String _visibility = 'private';
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _placeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final title = _titleController.text.trim();
+    if (title.isEmpty || _saving) return;
+    setState(() => _saving = true);
+    try {
+      await widget.ref
+          .read(wishItemControllerProvider.notifier)
+          .createWishItem(
+            WishItemCreateDraft(
+              title: title,
+              placeText: _placeController.text.trim(),
+              visibility: _visibility,
+            ),
+          );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      OheyToast.show(context, 'やりたいことを追加しました', icon: CupertinoIcons.sparkles);
+    } catch (_) {
+      if (mounted) OheyToast.show(context, '追加できなかったよ。あとでもう一度試してね');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFF17212B)
+        : Colors.white;
+    return OheyBottomSheetShell(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+      radius: 32,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'やりたいことリストに追加',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: ink,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.6,
+            ),
+          ),
+          const SizedBox(height: 14),
+          _ProfileYuruboInput(
+            controller: _titleController,
+            placeholder: '焼肉行きたい / サウナ開拓したい',
+          ),
+          const SizedBox(height: 10),
+          _ProfileYuruboInput(
+            controller: _placeController,
+            placeholder: '場所・店名（任意）',
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _ProfileYuruboChoice(
+                  label: '自分だけ',
+                  selected: _visibility == 'private',
+                  onTap: () => setState(() => _visibility = 'private'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ProfileYuruboChoice(
+                  label: '友達に公開',
+                  selected: _visibility == 'friends',
+                  onTap: () => setState(() => _visibility = 'friends'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Ohey3DButton(
+            label: _saving ? '追加中...' : '追加する',
+            icon: CupertinoIcons.sparkles,
+            onTap: _saving ? null : _submit,
+            height: 50,
+            radius: 22,
+            color: const Color(0xFFC08BFF),
+            foregroundColor: const Color(0xFF101820),
+            shadowColor: const Color(0xFF7F51C9),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> _showProfileCreateYuruboSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  WishItem? wish,
+}) async {
+  await showOheyBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (_) => _ProfileCreateYuruboSheet(ref: ref, initialWish: wish),
   );
 }
 
 class _ProfileCreateYuruboSheet extends StatefulWidget {
-  const _ProfileCreateYuruboSheet({required this.ref});
+  const _ProfileCreateYuruboSheet({required this.ref, this.initialWish});
 
   final WidgetRef ref;
+  final WishItem? initialWish;
 
   @override
   State<_ProfileCreateYuruboSheet> createState() =>
@@ -302,11 +453,18 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
   late Future<List<Map<String, dynamic>>> _groupsFuture;
   String _visibility = 'friends';
   String? _groupId;
+  String? _wishItemId;
   bool _saving = false;
 
   @override
   void initState() {
     super.initState();
+    final initialWish = widget.initialWish;
+    if (initialWish != null) {
+      _titleController.text = initialWish.title;
+      _placeController.text = initialWish.placeText;
+      _wishItemId = initialWish.id;
+    }
     _groupsFuture = widget.ref
         .read(friendRepositoryProvider)
         .fetchFriendGroups();
@@ -338,6 +496,7 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
               timeLabel: _timeController.text.trim(),
               visibility: _visibility,
               groupId: _visibility == 'group' ? _groupId : null,
+              wishItemId: _wishItemId,
             ),
           );
       if (!mounted) return;
@@ -357,6 +516,9 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
     final sub = isWhite
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .62);
+    final wishItems =
+        widget.ref.watch(wishItemControllerProvider).asData?.value ??
+        const <WishItem>[];
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
@@ -441,6 +603,44 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
                   ),
               ],
               const SizedBox(height: 14),
+              if (wishItems.isNotEmpty) ...[
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'やりたいことリストから選ぶ',
+                    style: TextStyle(
+                      color: sub,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 42,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: wishItems.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final wish = wishItems[index];
+                      final selected = _wishItemId == wish.id;
+                      return _ProfileYuruboGroupChip(
+                        label: wish.title,
+                        selected: selected,
+                        onTap: () => setState(() {
+                          _wishItemId = wish.id;
+                          _titleController.text = wish.title;
+                          _placeController.text = wish.placeText;
+                        }),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
               _ProfileYuruboInput(
                 controller: _titleController,
                 placeholder: '今日夜、ご飯いける人いる？',
