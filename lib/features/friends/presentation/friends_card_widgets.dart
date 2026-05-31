@@ -581,14 +581,11 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
         children: [
           _FriendProfileHeaderBackdrop(avatar: avatar),
           Positioned(
-            right: 16,
-            top: topPadding + 8,
+            right: 20,
+            top: topPadding + 30,
             child: Opacity(
               opacity: onActionMenu == null ? .42 : 1,
-              child: OheyHeaderIconButton(
-                icon: CupertinoIcons.gear_solid,
-                semanticLabel: '操作メニュー',
-                color: const Color(0xFF65D6FF),
+              child: _FriendProfileActionIconButton(
                 onTap: onActionMenu ?? () {},
               ),
             ),
@@ -608,6 +605,37 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FriendProfileActionIconButton extends StatelessWidget {
+  const _FriendProfileActionIconButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '操作メニュー',
+      child: CupertinoButton(
+        onPressed: onTap,
+        minimumSize: const Size(48, 48),
+        padding: EdgeInsets.zero,
+        borderRadius: BorderRadius.circular(18),
+        child: const SizedBox(
+          width: 48,
+          height: 48,
+          child: Center(
+            child: OheyGeneratedIcon(
+              CupertinoIcons.gear_alt,
+              color: Colors.white,
+              size: 38,
+            ),
+          ),
+        ),
       ),
     );
   }
