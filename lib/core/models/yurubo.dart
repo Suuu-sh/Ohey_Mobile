@@ -17,6 +17,7 @@ class Yurubo {
     required this.createdAt,
     required this.reactionCount,
     required this.reactedByMe,
+    this.participants = const <YuruboParticipant>[],
   });
 
   final String id;
@@ -34,8 +35,13 @@ class Yurubo {
   final DateTime createdAt;
   final int reactionCount;
   final bool reactedByMe;
+  final List<YuruboParticipant> participants;
 
-  Yurubo copyWith({int? reactionCount, bool? reactedByMe}) => Yurubo(
+  Yurubo copyWith({
+    int? reactionCount,
+    bool? reactedByMe,
+    List<YuruboParticipant>? participants,
+  }) => Yurubo(
     id: id,
     ownerUserId: ownerUserId,
     userName: userName,
@@ -51,5 +57,20 @@ class Yurubo {
     createdAt: createdAt,
     reactionCount: reactionCount ?? this.reactionCount,
     reactedByMe: reactedByMe ?? this.reactedByMe,
+    participants: participants ?? this.participants,
   );
+}
+
+class YuruboParticipant {
+  const YuruboParticipant({
+    required this.userId,
+    required this.name,
+    required this.handle,
+    required this.avatar,
+  });
+
+  final String userId;
+  final String name;
+  final String handle;
+  final OheyAvatar avatar;
 }

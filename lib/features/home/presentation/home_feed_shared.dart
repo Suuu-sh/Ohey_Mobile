@@ -85,6 +85,7 @@ class _FeedItem {
     required this.timeAgo,
     required this.body,
     this.place = '',
+    this.timeLabel = '',
     required this.avatar,
     required this.accent,
     this.photoAssetPath,
@@ -119,6 +120,7 @@ class _FeedItem {
       timeAgo: _relativeTime(yurubo.createdAt),
       body: body,
       place: yurubo.placeText,
+      timeLabel: yurubo.timeLabel,
       avatar: yurubo.avatar,
       accent: _accentForId(yurubo.id),
       photoAssetPath: null,
@@ -127,7 +129,17 @@ class _FeedItem {
       targetLabel: yurubo.visibilityLabel.isEmpty
           ? '全フレンズ'
           : yurubo.visibilityLabel,
-      friends: const <_Companion>[],
+      friends: [
+        for (final participant in yurubo.participants)
+          _Companion(
+            userId: participant.userId,
+            name: participant.name,
+            handle: participant.handle,
+            avatar: participant.avatar,
+            accent: _accentForId(participant.userId),
+            statusKey: null,
+          ),
+      ],
       likes: yurubo.reactionCount,
       saved: false,
       liked: yurubo.reactedByMe,
@@ -146,7 +158,13 @@ class _FeedItem {
   bool matches(String query) {
     final normalized = query.trim().toLowerCase();
     if (normalized.isEmpty) return true;
-    final searchable = [userName, timeAgo, body, place].join(' ').toLowerCase();
+    final searchable = [
+      userName,
+      timeAgo,
+      body,
+      place,
+      timeLabel,
+    ].join(' ').toLowerCase();
     return searchable.contains(normalized);
   }
 
@@ -162,6 +180,7 @@ class _FeedItem {
   final String timeAgo;
   final String body;
   final String place;
+  final String timeLabel;
   final OheyAvatar avatar;
   final Color accent;
   final String? photoAssetPath;

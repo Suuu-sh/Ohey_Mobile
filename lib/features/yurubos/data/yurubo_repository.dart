@@ -62,7 +62,7 @@ class BackendYuruboRepository implements YuruboRepository {
   Future<void> setReaction(String yuruboId, {required bool reacted}) async {
     if (reacted) {
       await _client.put('/v1/yurubos/$yuruboId/reaction', const {
-        'reaction_type': 'interested',
+        'reaction_type': 'available',
       });
     } else {
       await _client.delete('/v1/yurubos/$yuruboId/reaction');
@@ -99,5 +99,30 @@ Yurubo _yuruboFromRow(Map<String, dynamic> row) {
     createdAt: createdAt,
     reactionCount: (row['reaction_count'] as num?)?.toInt() ?? 0,
     reactedByMe: (row['reacted_by_me'] as bool?) ?? false,
+    participants: _participantsFromRow(row),
   );
+}
+
+List<YuruboParticipant> _participantsFromRow(Map<String, dynamic> row) {
+  final raw = row['participants'];
+  if (raw is! List) return const <YuruboParticipant>[];
+  return raw
+      .whereType<Map>()
+      .map((entry) {
+        final participant = Map<String, dynamic>.from(entry);
+        final displayName = (participant['display_name'] as String?)?.trim();
+        final handle = (participant['user_id'] as String?)?.trim();
+        final id = ((participant['id'] as String?) ?? handle ?? '').trim();
+        return YuruboParticipant(
+          userId: id,
+          name: displayName?.isNotEmpty == true
+              ? displayName!
+              : (handle?.isNotEmpty == true ? handle! : 'Oheyフレンズ'),
+          handle: handle ?? '',
+          avatar:
+              OheyAvatar.decode(participant['avatar_url'] as String?) ??
+              OheyAvatar.defaultAvatar,
+        );
+      })
+      .toList(growable: false);
 }

@@ -17,7 +17,7 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
     ref.invalidateSelf();
   }
 
-  Future<void> toggleInterested(String yuruboId) async {
+  Future<void> toggleParticipation(String yuruboId) async {
     final current = state.asData?.value ?? const <Yurubo>[];
     final index = current.indexWhere((item) => item.id == yuruboId);
     if (index < 0) return;
@@ -37,6 +37,7 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
       await ref
           .read(yuruboRepositoryProvider)
           .setReaction(yuruboId, reacted: nextReacted);
+      ref.invalidateSelf();
     } catch (_) {
       state = AsyncData(current);
       rethrow;

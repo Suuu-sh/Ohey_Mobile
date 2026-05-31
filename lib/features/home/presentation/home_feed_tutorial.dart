@@ -214,7 +214,7 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
                       ),
                       const SizedBox(height: 7),
                       Text(
-                        '1枚ずつめくって、気になるゆるぼに反応しよう。',
+                        '1枚ずつめくって、参加したいゆるぼに反応しよう。',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: subColor,

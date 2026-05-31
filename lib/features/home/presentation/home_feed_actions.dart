@@ -137,7 +137,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               OheyActionTile(
                 icon: CupertinoIcons.exclamationmark_bubble_fill,
                 title: 'ゆるぼを報告',
-                subtitle: '気になるゆるぼを運営に送る',
+                subtitle: '問題のあるゆるぼを運営に送る',
                 accent: const Color(0xFFFFD166),
                 onTap: () => Navigator.of(context).pop(_FeedPostAction.report),
               ),

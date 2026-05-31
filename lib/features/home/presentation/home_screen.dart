@@ -121,7 +121,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onCreateYuruboPressed: () => _showCreateYuruboSheet(context, ref),
               onLikePressed: (item) => ref
                   .read(yuruboControllerProvider.notifier)
-                  .toggleInterested(item.id),
+                  .toggleParticipation(item.id),
               onSharePressed: (item) => _shareFeedItem(context, item),
               showSwipeTutorial:
                   !_isFeedSwipeTutorialSeen && feedItems.length > 1,

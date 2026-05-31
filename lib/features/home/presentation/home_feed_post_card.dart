@@ -86,6 +86,7 @@ class _YuruboCardBody extends StatelessWidget {
         : Colors.white.withValues(alpha: .66);
     final body = _yuruboBody(item);
     final place = item.place.trim();
+    final timeLabel = item.timeLabel.trim();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
@@ -93,7 +94,9 @@ class _YuruboCardBody extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               _YuruboMetaChip(
                 icon: item.targetLabel == '全フレンズ'
@@ -103,15 +106,19 @@ class _YuruboCardBody extends StatelessWidget {
                 color: _feedPrimaryActionColor,
                 isWhite: isWhite,
               ),
-              const SizedBox(width: 8),
               if (place.isNotEmpty)
-                Expanded(
-                  child: _YuruboMetaChip(
-                    icon: CupertinoIcons.location_fill,
-                    label: place,
-                    color: _FeedColors.teal,
-                    isWhite: isWhite,
-                  ),
+                _YuruboMetaChip(
+                  icon: CupertinoIcons.location_fill,
+                  label: place,
+                  color: _FeedColors.teal,
+                  isWhite: isWhite,
+                ),
+              if (timeLabel.isNotEmpty)
+                _YuruboMetaChip(
+                  icon: CupertinoIcons.clock_fill,
+                  label: timeLabel,
+                  color: _FeedColors.teal,
+                  isWhite: isWhite,
                 ),
             ],
           ),
@@ -1041,12 +1048,12 @@ String _yuruboSubcopy(_FeedItem item) {
 }
 
 String _yuruboInterestedActionLabel(_FeedItem item) {
-  return item.liked ? '気になる済み' : '気になる';
+  return item.liked ? '参加済み' : '参加する';
 }
 
 String _yuruboReactionSummary(_FeedItem item) {
   if (item.likes <= 0) {
-    return item.ownedByMe ? '友達の「気になる」を待とう' : '最初の「気になる」を送ろう';
+    return item.ownedByMe ? '友達の参加を待とう' : '最初に参加しよう';
   }
-  return '${item.likes}人が気になっています';
+  return '${item.likes}人が参加しています';
 }

@@ -188,7 +188,7 @@ class _FeedNotificationsScreenState
       ],
       _NotificationSectionHeader(
         title: '最近のお知らせ',
-        message: actionItems.isEmpty ? '気になる・ゆるぼ・予定が静かにまとまります' : '先にお返事しよっか',
+        message: actionItems.isEmpty ? '参加・ゆるぼ・予定が静かにまとまります' : '先にお返事しよっか',
         count: recentItems.length,
         accent: AppColors.invite,
         isWhite: isWhite,
