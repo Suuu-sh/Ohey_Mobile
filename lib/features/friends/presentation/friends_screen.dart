@@ -588,7 +588,7 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
   late DateTime _selectedDate;
   bool _isCustomDate = false;
   String? _activityLabel;
-  _InviteWishListSource _wishListSource = _InviteWishListSource.mine;
+  _InviteWishListSource? _wishListSource;
 
   DateTime get _today {
     final now = DateTime.now();
@@ -866,7 +866,7 @@ class _InviteWishListOptions extends ConsumerWidget {
   });
 
   final List<String> friendIds;
-  final _InviteWishListSource source;
+  final _InviteWishListSource? source;
   final String? selectedLabel;
   final ValueChanged<_InviteWishListSource> onSourceSelected;
   final ValueChanged<String> onSelected;
@@ -884,9 +884,11 @@ class _InviteWishListOptions extends ConsumerWidget {
     final friendItems = <WishItem>[
       for (final status in friendStatusValues) ...?status.asData?.value,
     ];
-    final options = _uniqueWishTitles(
-      source == _InviteWishListSource.mine ? ownItems : friendItems,
-    );
+    final options = source == null
+        ? const <String>[]
+        : _uniqueWishTitles(
+            source == _InviteWishListSource.mine ? ownItems : friendItems,
+          );
     final isLoading =
         ref.watch(wishItemControllerProvider).isLoading ||
         friendStatusValues.any((status) => status.isLoading);
@@ -913,7 +915,17 @@ class _InviteWishListOptions extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 10),
-        if (options.isEmpty)
+        if (source == null)
+          Text(
+            'まずはどちらのリストから選ぶか選択してね。',
+            style: TextStyle(
+              color: emptyColor,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          )
+        else if (options.isEmpty)
           Text(
             isLoading ? 'リストを読み込み中…' : 'このリストはまだ空だよ。',
             style: TextStyle(
