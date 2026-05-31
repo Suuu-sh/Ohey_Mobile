@@ -723,29 +723,23 @@ class _SelectedDayPanel extends StatelessWidget {
                 ),
               ),
               SizedBox(height: compact ? 6 : 10),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(12, 0, 12, compact ? 8 : 12),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        flex: compact ? 5 : 6,
-                        child: status == OheyDailyStatus.unselected
-                            ? _CalendarFriendStatusLocked(
-                                isWhite: isWhite,
-                                compact: compact,
-                                onTap: onChangeStatus,
-                              )
-                            : _CalendarFriendStatusList(
-                                day: day,
-                                friendsAsync: friendsAsync,
-                                groups: groups,
-                                isWhite: isWhite,
-                                compact: compact,
-                              ),
-                      ),
-                    ],
-                  ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(12, 0, 12, compact ? 8 : 12),
+                child: SizedBox(
+                  height: compact ? 96 : 112,
+                  child: status == OheyDailyStatus.unselected
+                      ? _CalendarFriendStatusLocked(
+                          isWhite: isWhite,
+                          compact: compact,
+                          onTap: onChangeStatus,
+                        )
+                      : _CalendarFriendStatusList(
+                          day: day,
+                          friendsAsync: friendsAsync,
+                          groups: groups,
+                          isWhite: isWhite,
+                          compact: compact,
+                        ),
                 ),
               ),
             ],
