@@ -107,19 +107,6 @@ class _SettingsSheetShell extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(
-                child: Container(
-                  width: 48,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: isWhite
-                        ? AppColors.cFFD8E0E8
-                        : AppColors.white.withValues(alpha: .18),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
