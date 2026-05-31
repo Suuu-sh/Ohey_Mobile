@@ -289,6 +289,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       title: '${friend.name}を誘う',
       subtitle: 'いつ・なにをするかを選んで送ろう。',
       primaryLabel: '${friend.name}に送る',
+      friendIds: [friend.id],
     );
     if (draft == null) throw const _InviteCancelled();
     try {
@@ -326,6 +327,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       title: '${friends.length}人をまとめて誘う',
       subtitle: 'グループにも日程とやることをつけられるよ。',
       primaryLabel: '${friends.length}人に送る',
+      friendIds: friends.map((friend) => friend.id).toList(growable: false),
     );
     if (draft == null) return;
     setState(() => _isSendingGroupInvite = true);
@@ -368,6 +370,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     required String title,
     required String subtitle,
     required String primaryLabel,
+    required List<String> friendIds,
   }) {
     HapticFeedback.selectionClick();
     return showOheyBottomSheet<_InviteDraft>(
@@ -378,6 +381,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
         title: title,
         subtitle: subtitle,
         primaryLabel: primaryLabel,
+        friendIds: friendIds,
       ),
     );
   }
@@ -548,36 +552,28 @@ class _InviteDraft {
   }
 }
 
-class _InviteOptionsSheet extends StatefulWidget {
+class _InviteOptionsSheet extends ConsumerStatefulWidget {
   const _InviteOptionsSheet({
     required this.title,
     required this.subtitle,
     required this.primaryLabel,
+    required this.friendIds,
   });
 
   final String title;
   final String subtitle;
   final String primaryLabel;
+  final List<String> friendIds;
 
   @override
-  State<_InviteOptionsSheet> createState() => _InviteOptionsSheetState();
+  ConsumerState<_InviteOptionsSheet> createState() =>
+      _InviteOptionsSheetState();
 }
 
-class _InviteOptionsSheetState extends State<_InviteOptionsSheet> {
-  static const _activityOptions = <String>[
-    '飲みに行く',
-    'ごはん',
-    'カフェ',
-    'カラオケ',
-    '散歩',
-    '相談する',
-  ];
-
+class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
   late DateTime _selectedDate;
   bool _isCustomDate = false;
-  String? _activityLabel = _activityOptions.first;
-  late final TextEditingController _customActivityController;
-  late final FocusNode _customActivityFocusNode;
+  String? _activityLabel;
 
   DateTime get _today {
     final now = DateTime.now();
@@ -588,19 +584,14 @@ class _InviteOptionsSheetState extends State<_InviteOptionsSheet> {
   void initState() {
     super.initState();
     _selectedDate = _today;
-    _customActivityController = TextEditingController();
-    _customActivityFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
-    _customActivityController.dispose();
-    _customActivityFocusNode.dispose();
     super.dispose();
   }
 
   void _selectToday() {
-    _customActivityFocusNode.unfocus();
     setState(() {
       _isCustomDate = false;
       _selectedDate = _today;
@@ -608,7 +599,6 @@ class _InviteOptionsSheetState extends State<_InviteOptionsSheet> {
   }
 
   void _selectCustomDate() {
-    _customActivityFocusNode.unfocus();
     setState(() {
       _isCustomDate = true;
       if (!_selectedDate.isAfter(_today)) {
@@ -617,14 +607,8 @@ class _InviteOptionsSheetState extends State<_InviteOptionsSheet> {
     });
   }
 
-  void _selectActivity(String? label) {
-    _customActivityFocusNode.unfocus();
-    _customActivityController.clear();
-    setState(() => _activityLabel = label);
-  }
-
-  void _useCustomActivity(String value) {
-    setState(() => _activityLabel = value.trim());
+  void _selectActivity(String label) {
+    setState(() => _activityLabel = _activityLabel == label ? null : label);
   }
 
   void _submit() {
@@ -732,58 +716,11 @@ class _InviteOptionsSheetState extends State<_InviteOptionsSheet> {
             const SizedBox(height: 20),
             _InviteSectionLabel(label: 'なにをする？（任意）', color: ink),
             const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final option in _activityOptions)
-                  _InviteOptionPill(
-                    label: option,
-                    compact: true,
-                    selected: _activityLabel == option,
-                    onTap: () => _selectActivity(option),
-                  ),
-                _InviteOptionPill(
-                  label: 'まだ決めない',
-                  compact: true,
-                  selected: _activityLabel == null || _activityLabel!.isEmpty,
-                  onTap: () => _selectActivity(null),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            CupertinoTextField(
-              controller: _customActivityController,
-              focusNode: _customActivityFocusNode,
-              placeholder: 'その他（例: 焼肉、映画）',
-              maxLength: 40,
-              inputFormatters: [LengthLimitingTextInputFormatter(40)],
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-              style: TextStyle(
-                color: ink,
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-              ),
-              placeholderStyle: TextStyle(
-                color: sub,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-              decoration: BoxDecoration(
-                color: pickerBackground,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: AppColors.primaryAction.withValues(
-                    alpha: isWhite ? .20 : .14,
-                  ),
-                ),
-              ),
-              onTap: () {
-                if (_customActivityController.text.trim().isNotEmpty) {
-                  _useCustomActivity(_customActivityController.text);
-                }
-              },
-              onChanged: _useCustomActivity,
+            _InviteWishListOptions(
+              friendIds: widget.friendIds,
+              selectedLabel: _activityLabel,
+              onSelected: _selectActivity,
+              emptyColor: sub,
             ),
             const SizedBox(height: 20),
             Ohey3DButton(
@@ -797,6 +734,76 @@ class _InviteOptionsSheetState extends State<_InviteOptionsSheet> {
         ),
       ),
     );
+  }
+}
+
+class _InviteWishListOptions extends ConsumerWidget {
+  const _InviteWishListOptions({
+    required this.friendIds,
+    required this.selectedLabel,
+    required this.onSelected,
+    required this.emptyColor,
+  });
+
+  final List<String> friendIds;
+  final String? selectedLabel;
+  final ValueChanged<String> onSelected;
+  final Color emptyColor;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ownItems =
+        ref.watch(wishItemControllerProvider).asData?.value ??
+        const <WishItem>[];
+    final friendItems = <WishItem>[
+      for (final friendId in friendIds)
+        ...?ref.watch(profileWishItemsProvider(friendId)).asData?.value,
+    ];
+    final options = _uniqueWishTitles([...friendItems, ...ownItems]);
+
+    if (options.isEmpty) {
+      final isLoading =
+          ref.watch(wishItemControllerProvider).isLoading ||
+          friendIds.any(
+            (friendId) =>
+                ref.watch(profileWishItemsProvider(friendId)).isLoading,
+          );
+      return Text(
+        isLoading ? 'リストを読み込み中…' : '選べるリストがまだないよ。',
+        style: TextStyle(
+          color: emptyColor,
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
+          height: 1.35,
+        ),
+      );
+    }
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final option in options)
+          _InviteOptionPill(
+            label: option,
+            compact: true,
+            selected: selectedLabel == option,
+            onTap: () => onSelected(option),
+          ),
+      ],
+    );
+  }
+
+  List<String> _uniqueWishTitles(List<WishItem> items) {
+    final seen = <String>{};
+    final titles = <String>[];
+    for (final item in items) {
+      final title = item.title.trim();
+      if (title.isEmpty) continue;
+      final key = title.toLowerCase();
+      if (seen.add(key)) titles.add(title);
+    }
+    return titles;
   }
 }
 
