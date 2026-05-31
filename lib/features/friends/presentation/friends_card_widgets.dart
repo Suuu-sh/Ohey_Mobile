@@ -582,7 +582,7 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
           _FriendProfileHeaderBackdrop(avatar: avatar),
           Positioned(
             right: 20,
-            top: topPadding + 30,
+            top: topPadding + 46,
             child: Opacity(
               opacity: onActionMenu == null ? .42 : 1,
               child: _FriendProfileActionIconButton(
@@ -631,7 +631,7 @@ class _FriendProfileActionIconButton extends StatelessWidget {
           child: Center(
             child: OheyGeneratedIcon(
               CupertinoIcons.gear_alt,
-              color: Colors.white,
+              color: Color(0xFF101820),
               size: 38,
             ),
           ),
