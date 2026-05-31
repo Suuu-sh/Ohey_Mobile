@@ -514,6 +514,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final event = joinedYurubos.isEmpty ? null : joinedYurubos.first;
+    const accent = AppColors.cFFFF75B5;
     final title = event == null
         ? (isLoading ? '読み込み中' : '本日の予定はありません')
         : event.title;
@@ -530,10 +531,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.darkBackgroundBottom,
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: AppColors.cFFFF75B5.withValues(alpha: .58),
-            width: 1.2,
-          ),
+          border: Border.all(color: accent.withValues(alpha: .58), width: 1.2),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 17, 18, 17),
@@ -552,7 +550,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                           height: 7,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.success,
+                            color: accent,
                           ),
                         ),
                         const SizedBox(width: 7),
@@ -611,7 +609,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 14),
-              _TodayScheduleParticipants(event: event),
+              _TodayScheduleParticipants(event: event, accent: accent),
             ],
           ),
         ),
@@ -621,9 +619,10 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
 }
 
 class _TodayScheduleParticipants extends StatelessWidget {
-  const _TodayScheduleParticipants({required this.event});
+  const _TodayScheduleParticipants({required this.event, required this.accent});
 
   final Yurubo? event;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
@@ -631,7 +630,7 @@ class _TodayScheduleParticipants extends StatelessWidget {
     if (event == null) {
       return OheyPopIcon(
         icon: CupertinoIcons.calendar_today,
-        color: AppColors.success,
+        color: accent,
         size: 42,
         iconSize: 20,
         showBubble: false,
@@ -668,12 +667,12 @@ class _TodayScheduleParticipants extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: AppColors.darkBackgroundBottom,
                   border: Border.all(
-                    color: AppColors.success.withValues(alpha: .78),
+                    color: accent.withValues(alpha: .78),
                     width: 1.4,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.success.withValues(alpha: .24),
+                      color: accent.withValues(alpha: .24),
                       blurRadius: 14,
                       spreadRadius: 1,
                     ),
