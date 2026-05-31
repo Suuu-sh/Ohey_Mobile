@@ -468,21 +468,55 @@ class _FriendProfileActionSheet extends StatelessWidget {
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.report),
           ),
           const SizedBox(height: 12),
-          Ohey3DButton.secondary(
-            label: 'キャンセル',
+          _FriendProfileCancelButton(
+            isWhite: isWhite,
             onTap: () => Navigator.of(context).pop(),
-            height: 48,
-            radius: 20,
-            color: isWhite
-                ? const Color(0xFFF2F6FA)
-                : Colors.white.withValues(alpha: .06),
-            foregroundColor: isWhite
-                ? const Color(0xFF101820)
-                : Colors.white.withValues(alpha: .82),
-            shadowColor: const Color(0xFF243240).withValues(alpha: .46),
-            useGradient: false,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FriendProfileCancelButton extends StatelessWidget {
+  const _FriendProfileCancelButton({
+    required this.isWhite,
+    required this.onTap,
+  });
+
+  final bool isWhite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final background = isWhite
+        ? const Color(0xFFF2F6FA)
+        : Colors.white.withValues(alpha: .06);
+    final foreground = isWhite
+        ? const Color(0xFF101820)
+        : Colors.white.withValues(alpha: .82);
+    return CupertinoButton(
+      onPressed: onTap,
+      minimumSize: Size.zero,
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        height: 48,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withValues(alpha: .18)),
+        ),
+        child: Text(
+          'キャンセル',
+          style: TextStyle(
+            color: foreground,
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.2,
+          ),
+        ),
       ),
     );
   }
@@ -539,19 +573,9 @@ class _FriendReportReasonSheet extends StatelessWidget {
               const SizedBox(height: 9),
           ],
           const SizedBox(height: 12),
-          Ohey3DButton.secondary(
-            label: 'キャンセル',
+          _FriendProfileCancelButton(
+            isWhite: isWhite,
             onTap: () => Navigator.of(context).pop(),
-            height: 48,
-            radius: 20,
-            color: isWhite
-                ? const Color(0xFFF2F6FA)
-                : Colors.white.withValues(alpha: .06),
-            foregroundColor: isWhite
-                ? const Color(0xFF101820)
-                : Colors.white.withValues(alpha: .82),
-            shadowColor: const Color(0xFF243240).withValues(alpha: .46),
-            useGradient: false,
           ),
         ],
       ),
