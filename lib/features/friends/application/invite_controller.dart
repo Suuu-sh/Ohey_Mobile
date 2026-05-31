@@ -24,22 +24,37 @@ class InviteController {
 
   final Ref _ref;
 
-  Future<void> sendTodayInvite(String friendId) =>
-      sendInvite(friendId: friendId, date: DateTime.now());
+  Future<void> sendTodayInvite(String friendId, {String? activityLabel}) =>
+      sendInvite(
+        friendId: friendId,
+        date: DateTime.now(),
+        activityLabel: activityLabel,
+      );
 
-  Future<void> sendTodayInvites(Iterable<String> friendIds) =>
-      sendInvites(friendIds: friendIds, date: DateTime.now());
+  Future<void> sendTodayInvites(
+    Iterable<String> friendIds, {
+    String? activityLabel,
+  }) => sendInvites(
+    friendIds: friendIds,
+    date: DateTime.now(),
+    activityLabel: activityLabel,
+  );
 
   Future<void> sendInvite({
     required String friendId,
     required DateTime date,
+    String? activityLabel,
   }) async {
     await runOptimistic<void>(
       apply: _invalidate,
       rollback: _invalidate,
       commit: () => _ref
           .read(inviteRepositoryProvider)
-          .sendInvite(friendId: friendId, date: date),
+          .sendInvite(
+            friendId: friendId,
+            date: date,
+            activityLabel: activityLabel,
+          ),
       confirm: (_) => _invalidate(),
     );
   }
@@ -47,6 +62,7 @@ class InviteController {
   Future<void> sendInvites({
     required Iterable<String> friendIds,
     required DateTime date,
+    String? activityLabel,
   }) async {
     final ids = {
       for (final friendId in friendIds)
@@ -58,7 +74,11 @@ class InviteController {
       rollback: _invalidate,
       commit: () => _ref
           .read(inviteRepositoryProvider)
-          .sendInvites(friendIds: ids, date: date),
+          .sendInvites(
+            friendIds: ids,
+            date: date,
+            activityLabel: activityLabel,
+          ),
       confirm: (_) => _invalidate(),
     );
   }

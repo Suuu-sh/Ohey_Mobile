@@ -789,7 +789,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                     ),
                   ),
                   child: Text(
-                    '${from.name}さんから予定が届いたよ。',
+                    '${from.name}さんから${widget.invite.summary()}が届いたよ。',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: .82),
                       fontSize: 14,

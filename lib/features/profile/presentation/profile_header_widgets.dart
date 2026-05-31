@@ -433,7 +433,7 @@ class _IncomingInviteCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '返事すると今日の予定に追加されます',
+                  '返事すると${invite.summary()}に参加します',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

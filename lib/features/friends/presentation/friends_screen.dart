@@ -285,13 +285,25 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   }
 
   Future<void> _sendInvite(OheyFriend friend) async {
+    final draft = await _showInviteOptionsSheet(
+      title: '${friend.name}を誘う',
+      subtitle: 'いつ・なにをするかを選んで送ろう。',
+      primaryLabel: '${friend.name}に送る',
+    );
+    if (draft == null) throw const _InviteCancelled();
     try {
-      await ref.read(inviteControllerProvider).sendTodayInvite(friend.id);
+      await ref
+          .read(inviteControllerProvider)
+          .sendInvite(
+            friendId: friend.id,
+            date: draft.date,
+            activityLabel: draft.activityLabel,
+          );
       if (!mounted) return;
       HapticFeedback.lightImpact();
       OheyToast.show(
         context,
-        '${friend.name}にお誘いを送りました。',
+        '${draft.toastPrefix}で${friend.name}にお誘いを送りました。',
         icon: CupertinoIcons.checkmark_circle_fill,
         placement: OheyToastPlacement.bottom,
       );
@@ -310,11 +322,21 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 
   Future<void> _sendGroupInvites(List<OheyFriend> friends) async {
     if (_isSendingGroupInvite || friends.isEmpty) return;
+    final draft = await _showInviteOptionsSheet(
+      title: '${friends.length}人をまとめて誘う',
+      subtitle: 'グループにも日程とやることをつけられるよ。',
+      primaryLabel: '${friends.length}人に送る',
+    );
+    if (draft == null) return;
     setState(() => _isSendingGroupInvite = true);
     try {
       await ref
           .read(inviteControllerProvider)
-          .sendTodayInvites(friends.map((friend) => friend.id));
+          .sendInvites(
+            friendIds: friends.map((friend) => friend.id),
+            date: draft.date,
+            activityLabel: draft.activityLabel,
+          );
       if (!mounted) return;
       HapticFeedback.lightImpact();
       setState(() {
@@ -324,7 +346,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       });
       OheyToast.show(
         context,
-        '${friends.length}人にまとめてお誘いを送りました。',
+        '${draft.toastPrefix}で${friends.length}人にまとめてお誘いを送りました。',
         icon: CupertinoIcons.checkmark_circle_fill,
         placement: OheyToastPlacement.bottom,
       );
@@ -340,6 +362,24 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     } finally {
       if (mounted) setState(() => _isSendingGroupInvite = false);
     }
+  }
+
+  Future<_InviteDraft?> _showInviteOptionsSheet({
+    required String title,
+    required String subtitle,
+    required String primaryLabel,
+  }) {
+    HapticFeedback.selectionClick();
+    return showOheyBottomSheet<_InviteDraft>(
+      context: context,
+      useSafeArea: true,
+      barrierColor: Colors.black.withValues(alpha: .58),
+      builder: (_) => _InviteOptionsSheet(
+        title: title,
+        subtitle: subtitle,
+        primaryLabel: primaryLabel,
+      ),
+    );
   }
 
   void _markInviteSent(OheyFriend friend) {
@@ -477,6 +517,389 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InviteCancelled implements Exception {
+  const _InviteCancelled();
+}
+
+class _InviteDraft {
+  const _InviteDraft({required this.date, required this.activityLabel});
+
+  final DateTime date;
+  final String? activityLabel;
+
+  String get dateLabel {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(date.year, date.month, date.day);
+    if (day == today) return '今日';
+    return '${day.month}/${day.day}';
+  }
+
+  String get toastPrefix {
+    final activity = activityLabel?.trim();
+    if (activity == null || activity.isEmpty) return dateLabel;
+    return '$dateLabel・$activity';
+  }
+}
+
+class _InviteOptionsSheet extends StatefulWidget {
+  const _InviteOptionsSheet({
+    required this.title,
+    required this.subtitle,
+    required this.primaryLabel,
+  });
+
+  final String title;
+  final String subtitle;
+  final String primaryLabel;
+
+  @override
+  State<_InviteOptionsSheet> createState() => _InviteOptionsSheetState();
+}
+
+class _InviteOptionsSheetState extends State<_InviteOptionsSheet> {
+  static const _activityOptions = <String>[
+    '飲みに行く',
+    'ごはん',
+    'カフェ',
+    'カラオケ',
+    '散歩',
+    '相談する',
+  ];
+
+  late DateTime _selectedDate;
+  bool _isCustomDate = false;
+  String? _activityLabel = _activityOptions.first;
+  late final TextEditingController _customActivityController;
+  late final FocusNode _customActivityFocusNode;
+
+  DateTime get _today {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = _today;
+    _customActivityController = TextEditingController();
+    _customActivityFocusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _customActivityController.dispose();
+    _customActivityFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _selectToday() {
+    _customActivityFocusNode.unfocus();
+    setState(() {
+      _isCustomDate = false;
+      _selectedDate = _today;
+    });
+  }
+
+  void _selectCustomDate() {
+    _customActivityFocusNode.unfocus();
+    setState(() {
+      _isCustomDate = true;
+      if (!_selectedDate.isAfter(_today)) {
+        _selectedDate = _today.add(const Duration(days: 1));
+      }
+    });
+  }
+
+  void _selectActivity(String? label) {
+    _customActivityFocusNode.unfocus();
+    _customActivityController.clear();
+    setState(() => _activityLabel = label);
+  }
+
+  void _useCustomActivity(String value) {
+    setState(() => _activityLabel = value.trim());
+  }
+
+  void _submit() {
+    final activity = _activityLabel?.trim();
+    Navigator.of(context).pop(
+      _InviteDraft(
+        date: _selectedDate,
+        activityLabel: activity == null || activity.isEmpty ? null : activity,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .66);
+    final pickerBackground = isWhite
+        ? const Color(0xFFF4F8F1)
+        : Colors.white.withValues(alpha: .06);
+
+    return OheyBottomSheetShell(
+      title: widget.title,
+      maxHeightFactor: .92,
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              widget.subtitle,
+              style: TextStyle(
+                color: sub,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 18),
+            _InviteSectionLabel(label: 'いつ誘う？', color: ink),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: _InviteOptionPill(
+                    label: '今日',
+                    icon: CupertinoIcons.sun_max_fill,
+                    selected: !_isCustomDate,
+                    onTap: _selectToday,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _InviteOptionPill(
+                    label: '日程を選択',
+                    icon: CupertinoIcons.calendar_badge_plus,
+                    selected: _isCustomDate,
+                    onTap: _selectCustomDate,
+                  ),
+                ),
+              ],
+            ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              child: _isCustomDate
+                  ? Padding(
+                      key: const ValueKey('date-picker'),
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Container(
+                        height: 152,
+                        decoration: BoxDecoration(
+                          color: pickerBackground,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: AppColors.primaryAction.withValues(
+                              alpha: isWhite ? .28 : .18,
+                            ),
+                          ),
+                        ),
+                        child: CupertinoDatePicker(
+                          mode: CupertinoDatePickerMode.date,
+                          minimumDate: _today,
+                          maximumDate: _today.add(const Duration(days: 120)),
+                          initialDateTime: _selectedDate,
+                          onDateTimeChanged: (value) {
+                            setState(() {
+                              _selectedDate = DateTime(
+                                value.year,
+                                value.month,
+                                value.day,
+                              );
+                            });
+                          },
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            const SizedBox(height: 20),
+            _InviteSectionLabel(label: 'なにをする？（任意）', color: ink),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final option in _activityOptions)
+                  _InviteOptionPill(
+                    label: option,
+                    compact: true,
+                    selected: _activityLabel == option,
+                    onTap: () => _selectActivity(option),
+                  ),
+                _InviteOptionPill(
+                  label: 'まだ決めない',
+                  compact: true,
+                  selected: _activityLabel == null || _activityLabel!.isEmpty,
+                  onTap: () => _selectActivity(null),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            CupertinoTextField(
+              controller: _customActivityController,
+              focusNode: _customActivityFocusNode,
+              placeholder: 'その他（例: 焼肉、映画）',
+              maxLength: 40,
+              inputFormatters: [LengthLimitingTextInputFormatter(40)],
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+              style: TextStyle(
+                color: ink,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+              ),
+              placeholderStyle: TextStyle(
+                color: sub,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+              decoration: BoxDecoration(
+                color: pickerBackground,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: AppColors.primaryAction.withValues(
+                    alpha: isWhite ? .20 : .14,
+                  ),
+                ),
+              ),
+              onTap: () {
+                if (_customActivityController.text.trim().isNotEmpty) {
+                  _useCustomActivity(_customActivityController.text);
+                }
+              },
+              onChanged: _useCustomActivity,
+            ),
+            const SizedBox(height: 20),
+            Ohey3DButton(
+              label: widget.primaryLabel,
+              icon: CupertinoIcons.paperplane_fill,
+              onTap: _submit,
+              color: AppColors.primaryAction,
+              shadowColor: AppColors.primaryActionShadow,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InviteSectionLabel extends StatelessWidget {
+  const _InviteSectionLabel({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    label,
+    style: TextStyle(
+      color: color,
+      fontSize: 14,
+      fontWeight: FontWeight.w900,
+      letterSpacing: -.2,
+    ),
+  );
+}
+
+class _InviteOptionPill extends StatelessWidget {
+  const _InviteOptionPill({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.icon,
+    this.compact = false,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final IconData? icon;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final selectedColor = AppColors.primaryAction;
+    final background = selected
+        ? selectedColor
+        : isWhite
+        ? const Color(0xFFF1F5EF)
+        : Colors.white.withValues(alpha: .08);
+    final foreground = selected
+        ? const Color(0xFF101820)
+        : isWhite
+        ? const Color(0xFF263340)
+        : Colors.white.withValues(alpha: .82);
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOutCubic,
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 12 : 14,
+            vertical: compact ? 10 : 13,
+          ),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected
+                  ? selectedColor
+                  : foreground.withValues(alpha: isWhite ? .10 : .16),
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: selectedColor.withValues(alpha: .20),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: compact ? MainAxisSize.min : MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                OheyGeneratedIcon(icon!, color: foreground, size: 17),
+                const SizedBox(width: 7),
+              ],
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: foreground,
+                  fontSize: compact ? 12.5 : 14,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.2,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

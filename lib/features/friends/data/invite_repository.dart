@@ -17,19 +17,29 @@ class InviteRepository {
 
   String? get _userId => _client.currentUserId;
 
-  Future<void> sendTodayInvite(String friendId) =>
-      sendInvite(friendId: friendId, date: DateTime.now());
+  Future<void> sendTodayInvite(String friendId, {String? activityLabel}) =>
+      sendInvite(
+        friendId: friendId,
+        date: DateTime.now(),
+        activityLabel: activityLabel,
+      );
 
   Future<void> sendInvite({
     required String friendId,
     required DateTime date,
+    String? activityLabel,
   }) async {
-    await sendInvites(friendIds: [friendId], date: date);
+    await sendInvites(
+      friendIds: [friendId],
+      date: date,
+      activityLabel: activityLabel,
+    );
   }
 
   Future<void> sendInvites({
     required Iterable<String> friendIds,
     required DateTime date,
+    String? activityLabel,
   }) async {
     final userId = _userId;
     if (userId == null) throw StateError('誘うにはログインが必要です。');
@@ -39,11 +49,14 @@ class InviteRepository {
     }.toList(growable: false);
     if (ids.isEmpty) throw StateError('誘えるフレンズがいません。');
 
+    final cleanActivityLabel = activityLabel?.trim();
     await Future.wait([
       for (final friendId in ids)
         _client.post('/v1/invites', {
           'invitee_user_id': friendId,
           'scheduled_date': _isoDate(date),
+          if (cleanActivityLabel != null && cleanActivityLabel.isNotEmpty)
+            'activity_label': cleanActivityLabel,
         }),
     ]);
   }
@@ -97,6 +110,7 @@ class InviteRepository {
       inviterUserId: row['inviter_user_id'] as String,
       inviteeUserId: row['invitee_user_id'] as String,
       scheduledDate: DateTime.parse(row['scheduled_date'] as String),
+      activityLabel: row['activity_label'] as String?,
       status: oheyInviteStatusFromKey(row['status'] as String?),
       inviter: _profileToFriend(
         Map<String, dynamic>.from(row['inviter'] as Map),

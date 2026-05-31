@@ -8,6 +8,7 @@ class OheyInvite {
     required this.inviterUserId,
     required this.inviteeUserId,
     required this.scheduledDate,
+    this.activityLabel,
     required this.status,
     required this.inviter,
     required this.invitee,
@@ -17,12 +18,33 @@ class OheyInvite {
   final String inviterUserId;
   final String inviteeUserId;
   final DateTime scheduledDate;
+  final String? activityLabel;
   final OheyInviteStatus status;
   final OheyFriend inviter;
   final OheyFriend invitee;
 
   OheyFriend otherUser(String currentUserId) =>
       inviterUserId == currentUserId ? invitee : inviter;
+
+  String dateLabel({DateTime? now}) {
+    final base = now ?? DateTime.now();
+    final today = DateTime(base.year, base.month, base.day);
+    final date = DateTime(
+      scheduledDate.year,
+      scheduledDate.month,
+      scheduledDate.day,
+    );
+    if (date == today) return '今日';
+    return '${date.month}/${date.day}';
+  }
+
+  String get cleanActivityLabel => activityLabel?.trim() ?? '';
+
+  String summary({DateTime? now}) {
+    final activity = cleanActivityLabel;
+    if (activity.isEmpty) return '${dateLabel(now: now)}のお誘い';
+    return '${dateLabel(now: now)}に「$activity」';
+  }
 }
 
 OheyInviteStatus oheyInviteStatusFromKey(String? key) {
