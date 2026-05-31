@@ -49,8 +49,8 @@ Widget _buildFeedPage({
     ),
     slivers: [
       CupertinoSliverRefreshControl(
-        refreshTriggerPullDistance: 46,
-        refreshIndicatorExtent: 42,
+        refreshTriggerPullDistance: 22,
+        refreshIndicatorExtent: 36,
         onRefresh: onRefresh,
         builder:
             (
