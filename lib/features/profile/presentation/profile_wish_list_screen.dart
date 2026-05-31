@@ -196,11 +196,6 @@ class _ProfileWishListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final place = wish.placeText.trim();
-    final isFriends = wish.visibility == 'friends';
-    final visibilityLabel = isFriends ? '友達にも見える' : '自分だけのメモ';
-    final visibilityIcon = isFriends
-        ? CupertinoIcons.person_2_fill
-        : CupertinoIcons.lock_fill;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -225,117 +220,34 @@ class _ProfileWishListCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFE5B7FF), Color(0xFF8F58DD)],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFC08BFF).withValues(alpha: .28),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  CupertinoIcons.sparkles,
-                  color: Color(0xFF101820),
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '誘いの種',
-                      style: TextStyle(
-                        color: Color(0xFFC08BFF),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: .2,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      wish.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 21,
-                        height: 1.12,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.4,
-                      ),
-                    ),
-                    if (place.isNotEmpty) ...[
-                      const SizedBox(height: 9),
-                      Row(
-                        children: [
-                          const Icon(
-                            CupertinoIcons.location_solid,
-                            color: _ProfileColors.sub,
-                            size: 14,
-                          ),
-                          const SizedBox(width: 5),
-                          Expanded(
-                            child: Text(
-                              place,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: _ProfileColors.sub,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
+          Text(
+            wish.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 21,
+              height: 1.12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.4,
+            ),
           ),
+          if (place.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              place,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: _ProfileColors.sub,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
-          Row(
-            children: [
-              _ProfileWishListPill(
-                icon: visibilityIcon,
-                label: visibilityLabel,
-              ),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  '内容はあとで編集できます',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    color: _ProfileColors.sub,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
           Ohey3DButton(
-            label: 'この内容でゆるぼを作る',
-            icon: CupertinoIcons.plus_bubble_fill,
+            label: 'ゆるぼを作る',
             onTap: onYurubo,
             height: 48,
             radius: 21,
@@ -343,40 +255,6 @@ class _ProfileWishListCard extends StatelessWidget {
             foregroundColor: const Color(0xFF101820),
             shadowColor: const Color(0xFF7F51C9),
             fontSize: 13,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileWishListPill extends StatelessWidget {
-  const _ProfileWishListPill({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .09),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: .07)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: _ProfileColors.sub, size: 13),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              color: _ProfileColors.sub,
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-            ),
           ),
         ],
       ),
