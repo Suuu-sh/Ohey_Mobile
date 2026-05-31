@@ -64,7 +64,7 @@ Widget _buildFeedPage({
               pulledExtent: pulledExtent,
               triggerDistance: refreshTriggerPullDistance,
               indicatorExtent: refreshIndicatorExtent,
-              topOffset: topPadding - 42,
+              topOffset: topPadding + 36,
             ),
       ),
       child,
