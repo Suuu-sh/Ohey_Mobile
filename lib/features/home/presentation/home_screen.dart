@@ -53,6 +53,15 @@ part 'home_feed_post_card.dart';
 part 'home_notifications.dart';
 part 'home_feed_shared.dart';
 
+Future<void> _holdRefreshIndicatorUntilDone(DateTime startedAt) async {
+  const minimumVisibleDuration = Duration(milliseconds: 650);
+  final elapsed = DateTime.now().difference(startedAt);
+  final remaining = minimumVisibleDuration - elapsed;
+  if (!remaining.isNegative) {
+    await Future<void>.delayed(remaining);
+  }
+}
+
 class _FeedCreateYuruboFab extends StatelessWidget {
   const _FeedCreateYuruboFab({required this.onTap});
 
@@ -165,8 +174,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onCreateYuruboPressed: () => _showCreateYuruboSheet(context, ref),
               onRefresh: () async {
                 HapticFeedback.lightImpact();
+                final startedAt = DateTime.now();
                 ref.invalidate(yuruboControllerProvider);
                 await ref.read(yuruboControllerProvider.future);
+                await _holdRefreshIndicatorUntilDone(startedAt);
               },
               onLikePressed: (item) => ref
                   .read(yuruboControllerProvider.notifier)

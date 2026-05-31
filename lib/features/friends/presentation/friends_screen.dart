@@ -40,6 +40,15 @@ part 'friends_list_widgets.dart';
 part 'friends_card_widgets.dart';
 part 'friends_state_widgets.dart';
 
+Future<void> _holdRefreshIndicatorUntilDone(DateTime startedAt) async {
+  const minimumVisibleDuration = Duration(milliseconds: 650);
+  final elapsed = DateTime.now().difference(startedAt);
+  final remaining = minimumVisibleDuration - elapsed;
+  if (!remaining.isNegative) {
+    await Future<void>.delayed(remaining);
+  }
+}
+
 final _friendMonthlyDailyStatusesProvider = FutureProvider.autoDispose
     .family<Map<String, OheyDailyStatus>, ({String friendId, DateTime month})>((
       ref,
@@ -507,9 +516,11 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           friends: friends,
                           onRefresh: () async {
                             HapticFeedback.lightImpact();
+                            final startedAt = DateTime.now();
                             ref.invalidate(friendsProvider);
                             ref.invalidate(outgoingActiveInvitesProvider(null));
                             await ref.read(friendsProvider.future);
+                            await _holdRefreshIndicatorUntilDone(startedAt);
                           },
                           userAvatar: user?.avatar ?? OheyAvatar.defaultAvatar,
                           selectedFilter: _selectedFilter,

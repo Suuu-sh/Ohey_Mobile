@@ -156,7 +156,7 @@ class _FriendsList extends StatelessWidget {
         .toList(growable: false);
 
     Widget withRefresh(Widget child) => CustomScrollView(
-      clipBehavior: Clip.none,
+      clipBehavior: Clip.hardEdge,
       physics: const AlwaysScrollableScrollPhysics(
         parent: BouncingScrollPhysics(),
       ),
@@ -219,7 +219,7 @@ class _FriendsList extends StatelessWidget {
 
     return withRefresh(
       SliverPadding(
-        padding: const EdgeInsets.fromLTRB(4, 0, 4, 168),
+        padding: const EdgeInsets.fromLTRB(4, 14, 4, 168),
         sliver: SliverList.separated(
           itemCount:
               filtered.length +
@@ -861,8 +861,8 @@ class _TodayInviteCandidateCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   reason,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  overflow: TextOverflow.clip,
                   style: TextStyle(
                     color: isWhite
                         ? const Color(0xFF667381)
@@ -1272,7 +1272,7 @@ bool _isSameLocalDay(DateTime a, DateTime b) =>
 String _recommendationReasonFor(_DecoratedFriend item) {
   final friend = item.friend;
   if (friend.totalMemoryCount == 0) {
-    return 'まだ一緒に行ったことない';
+    return '初めて誘える';
   }
   if (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) {
     return '30日以上行ってない';

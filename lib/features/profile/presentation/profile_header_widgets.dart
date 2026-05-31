@@ -634,14 +634,6 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
         ),
         child: Row(
           children: [
-            OheyPopIcon(
-              icon: CupertinoIcons.calendar_today,
-              color: AppColors.success,
-              size: 34,
-              iconSize: 18,
-              showBubble: false,
-            ),
-            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -687,8 +679,81 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 14),
+            _TodayScheduleParticipants(event: event),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TodayScheduleParticipants extends StatelessWidget {
+  const _TodayScheduleParticipants({required this.event});
+
+  final Yurubo? event;
+
+  @override
+  Widget build(BuildContext context) {
+    final event = this.event;
+    if (event == null) {
+      return OheyPopIcon(
+        icon: CupertinoIcons.calendar_today,
+        color: AppColors.success,
+        size: 42,
+        iconSize: 20,
+        showBubble: false,
+      );
+    }
+
+    final avatars = <OheyAvatar>[event.avatar];
+    final seenUserIds = <String>{event.ownerUserId};
+    for (final participant in event.participants) {
+      if (seenUserIds.add(participant.userId)) {
+        avatars.add(participant.avatar);
+      }
+    }
+
+    final visibleAvatars = avatars.take(3).toList(growable: false);
+    const avatarSize = 46.0;
+    const overlap = 28.0;
+    final width = avatarSize + (visibleAvatars.length - 1) * overlap;
+
+    return SizedBox(
+      width: width,
+      height: avatarSize,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          for (var index = 0; index < visibleAvatars.length; index++)
+            Positioned(
+              left: index * overlap,
+              child: Container(
+                width: avatarSize,
+                height: avatarSize,
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.darkBackgroundBottom,
+                  border: Border.all(
+                    color: AppColors.success.withValues(alpha: .78),
+                    width: 1.4,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.success.withValues(alpha: .24),
+                      blurRadius: 14,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: OheyAvatarView(
+                  avatar: visibleAvatars[index],
+                  size: avatarSize - 6,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
