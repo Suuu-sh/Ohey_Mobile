@@ -21,8 +21,6 @@ class _FeedCompanionListSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const OheyBottomSheetHandle(),
-          const SizedBox(height: 18),
           Row(
             children: [
               OheyPopIcon(

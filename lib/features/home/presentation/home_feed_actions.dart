@@ -36,8 +36,6 @@ class _FeedPostActionsSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const OheyBottomSheetHandle(),
-          const SizedBox(height: 18),
           Row(
             children: [
               _AvatarBubble(
@@ -170,8 +168,6 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const OheyBottomSheetHandle(),
-          const SizedBox(height: 20),
           Center(
             child: OheyPopIcon(
               icon: CupertinoIcons.trash_fill,
@@ -253,8 +249,6 @@ class _FeedUserSafetyConfirmSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const OheyBottomSheetHandle(),
-          const SizedBox(height: 20),
           Center(
             child: OheyPopIcon(
               icon: CupertinoIcons.hand_raised_fill,
@@ -326,8 +320,6 @@ class _FeedReportReasonSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const OheyBottomSheetHandle(),
-          const SizedBox(height: 18),
           Center(
             child: OheyPopIcon(
               icon: CupertinoIcons.exclamationmark_bubble_fill,
