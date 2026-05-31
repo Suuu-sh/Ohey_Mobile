@@ -195,7 +195,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onAuthorPressed: (item) => _showFeedAuthorProfile(context, item),
             ),
           ),
-          _FeedHeaderBackdropLayer(isWhite: isWhite),
           _FeedHeaderControlsLayer(
             child: OheyPageHeader(
               title: 'ゆるぼ',
