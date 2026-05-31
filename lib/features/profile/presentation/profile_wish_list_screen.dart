@@ -25,30 +25,11 @@ class _ProfileWishListScreen extends ConsumerWidget {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 4, 10, 8),
-                  child: Row(
-                    children: [
-                      OheyHeaderIconButton(
-                        icon: CupertinoIcons.chevron_left,
-                        semanticLabel: '戻る',
-                        color: const Color(0xFFC08BFF),
-                        onTap: () => Navigator.of(context).pop(),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OheyPageHeader(
-                          title: 'やりたいことリスト',
-                          titleColor: const Color(0xFFC08BFF),
-                          trailing: OheyHeaderIconButton(
-                            icon: CupertinoIcons.plus,
-                            semanticLabel: '追加',
-                            color: const Color(0xFFC08BFF),
-                            onTap: () =>
-                                _showProfileCreateWishItemSheet(context, ref),
-                          ),
-                        ),
-                      ),
-                    ],
+                  padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
+                  child: _ProfileWishListHeader(
+                    onBack: () => Navigator.of(context).pop(),
+                    onCreate: () =>
+                        _showProfileCreateWishItemSheet(context, ref),
                   ),
                 ),
                 Expanded(
@@ -143,6 +124,69 @@ class _ProfileWishListEmptyState extends StatelessWidget {
   }
 }
 
+class _ProfileWishListHeader extends StatelessWidget {
+  const _ProfileWishListHeader({required this.onBack, required this.onCreate});
+
+  final VoidCallback onBack;
+  final VoidCallback onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 64,
+      child: Row(
+        children: [
+          OheyHeaderIconButton(
+            icon: CupertinoIcons.chevron_left,
+            semanticLabel: '戻る',
+            color: const Color(0xFFC08BFF),
+            onTap: onBack,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  'やりたいこと',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Color(0xFFC08BFF),
+                    fontSize: 30,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1,
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  'あとで誘いたいことをためておく場所',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: _ProfileColors.sub,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          OheyHeaderIconButton(
+            icon: CupertinoIcons.plus,
+            semanticLabel: '追加',
+            color: const Color(0xFFC08BFF),
+            onTap: onCreate,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ProfileWishListCard extends StatelessWidget {
   const _ProfileWishListCard({required this.wish, required this.onYurubo});
 
@@ -152,18 +196,29 @@ class _ProfileWishListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final place = wish.placeText.trim();
-    final visibilityLabel = wish.visibility == 'friends' ? '友達に公開' : '自分だけ';
+    final isFriends = wish.visibility == 'friends';
+    final visibilityLabel = isFriends ? '友達にも見える' : '自分だけのメモ';
+    final visibilityIcon = isFriends
+        ? CupertinoIcons.person_2_fill
+        : CupertinoIcons.lock_fill;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .07),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.white.withValues(alpha: .11)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: .105),
+            Colors.white.withValues(alpha: .055),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.white.withValues(alpha: .12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: .16),
-            blurRadius: 22,
-            offset: const Offset(0, 12),
+            color: Colors.black.withValues(alpha: .20),
+            blurRadius: 24,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -174,41 +229,79 @@ class _ProfileWishListCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFFC08BFF).withValues(alpha: .22),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFE5B7FF), Color(0xFF8F58DD)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFC08BFF).withValues(alpha: .28),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   CupertinoIcons.sparkles,
-                  color: Color(0xFFC08BFF),
-                  size: 21,
+                  color: Color(0xFF101820),
+                  size: 22,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Text(
+                      '誘いの種',
+                      style: TextStyle(
+                        color: Color(0xFFC08BFF),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: .2,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
                     Text(
                       wish.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 17,
+                        fontSize: 21,
+                        height: 1.12,
                         fontWeight: FontWeight.w900,
-                        letterSpacing: -.2,
+                        letterSpacing: -.4,
                       ),
                     ),
                     if (place.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        place,
-                        style: const TextStyle(
-                          color: _ProfileColors.sub,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                        ),
+                      const SizedBox(height: 9),
+                      Row(
+                        children: [
+                          const Icon(
+                            CupertinoIcons.location_solid,
+                            color: _ProfileColors.sub,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 5),
+                          Expanded(
+                            child: Text(
+                              place,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: _ProfileColors.sub,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ],
@@ -216,40 +309,74 @@ class _ProfileWishListCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .08),
-                  borderRadius: BorderRadius.circular(999),
-                ),
+              _ProfileWishListPill(
+                icon: visibilityIcon,
+                label: visibilityLabel,
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
                 child: Text(
-                  visibilityLabel,
-                  style: const TextStyle(
+                  '内容はあとで編集できます',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
                     color: _ProfileColors.sub,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
-              const Spacer(),
-              Ohey3DButton(
-                label: 'ゆるぼにする',
-                icon: CupertinoIcons.plus_bubble_fill,
-                onTap: onYurubo,
-                height: 42,
-                radius: 18,
-                color: const Color(0xFFC08BFF),
-                foregroundColor: const Color(0xFF101820),
-                shadowColor: const Color(0xFF7F51C9),
-                fontSize: 12,
-              ),
             ],
+          ),
+          const SizedBox(height: 14),
+          Ohey3DButton(
+            label: 'この内容でゆるぼを作る',
+            icon: CupertinoIcons.plus_bubble_fill,
+            onTap: onYurubo,
+            height: 48,
+            radius: 21,
+            color: const Color(0xFFC08BFF),
+            foregroundColor: const Color(0xFF101820),
+            shadowColor: const Color(0xFF7F51C9),
+            fontSize: 13,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileWishListPill extends StatelessWidget {
+  const _ProfileWishListPill({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .09),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: .07)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: _ProfileColors.sub, size: 13),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: _ProfileColors.sub,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+            ),
           ),
         ],
       ),
