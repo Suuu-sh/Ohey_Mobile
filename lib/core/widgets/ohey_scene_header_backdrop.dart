@@ -12,6 +12,7 @@ class OheySceneHeaderBackdrop extends StatelessWidget {
     this.topShadeOpacity = .14,
     this.midShadeOpacity = .06,
     this.fadeStartOpacity = .90,
+    this.fit = BoxFit.cover,
   });
 
   final String assetPath;
@@ -23,6 +24,7 @@ class OheySceneHeaderBackdrop extends StatelessWidget {
   final double topShadeOpacity;
   final double midShadeOpacity;
   final double fadeStartOpacity;
+  final BoxFit fit;
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +38,7 @@ class OheySceneHeaderBackdrop extends StatelessWidget {
             top: imageTopOffset,
             bottom: 0,
             child: ExcludeSemantics(
-              child: Image.asset(
-                assetPath,
-                fit: BoxFit.cover,
-                alignment: alignment,
-              ),
+              child: Image.asset(assetPath, fit: fit, alignment: alignment),
             ),
           ),
           DecoratedBox(
