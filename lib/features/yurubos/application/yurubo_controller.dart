@@ -17,6 +17,11 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
     ref.invalidateSelf();
   }
 
+  Future<void> updateYurubo(String yuruboId, YuruboUpdateDraft draft) async {
+    await ref.read(yuruboRepositoryProvider).updateYurubo(yuruboId, draft);
+    ref.invalidateSelf();
+  }
+
   Future<void> toggleParticipation(String yuruboId) async {
     final current = state.asData?.value ?? const <Yurubo>[];
     final index = current.indexWhere((item) => item.id == yuruboId);

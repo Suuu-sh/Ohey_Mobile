@@ -11,6 +11,7 @@ final yuruboRepositoryProvider = Provider<YuruboRepository>((ref) {
 abstract interface class YuruboRepository {
   Future<List<Yurubo>> fetchYurubos({int limit = 50});
   Future<void> createYurubo(YuruboCreateDraft draft);
+  Future<void> updateYurubo(String yuruboId, YuruboUpdateDraft draft);
   Future<void> setReaction(String yuruboId, {required bool reacted});
 }
 
@@ -32,6 +33,20 @@ class YuruboCreateDraft {
   final String visibility;
   final String? groupId;
   final String? wishItemId;
+}
+
+class YuruboUpdateDraft {
+  const YuruboUpdateDraft({
+    required this.title,
+    this.body = '',
+    this.placeText = '',
+    this.timeLabel = '',
+  });
+
+  final String title;
+  final String body;
+  final String placeText;
+  final String timeLabel;
 }
 
 class BackendYuruboRepository implements YuruboRepository {
@@ -58,6 +73,16 @@ class BackendYuruboRepository implements YuruboRepository {
       'visibility': draft.visibility,
       if (draft.groupId != null) 'group_id': draft.groupId,
       if (draft.wishItemId != null) 'wish_item_id': draft.wishItemId,
+    });
+  }
+
+  @override
+  Future<void> updateYurubo(String yuruboId, YuruboUpdateDraft draft) async {
+    await _client.patch('/v1/yurubos/$yuruboId', {
+      'title': draft.title,
+      'body': draft.body,
+      'place_text': draft.placeText,
+      'time_label': draft.timeLabel,
     });
   }
 
