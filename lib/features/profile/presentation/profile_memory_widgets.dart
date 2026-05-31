@@ -559,17 +559,28 @@ class _SupportLegalSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Ohey3DButton.secondary(
-            label: '閉じる',
+          Ohey3DButtonSurface(
             height: 48,
             radius: 20,
             color: isWhite
                 ? const Color(0xFFF2F6FA)
                 : Colors.white.withValues(alpha: .06),
-            foregroundColor: ink,
-            shadowColor: const Color(0xFF243240).withValues(alpha: .46),
+            bottomColor: const Color(0xFF243240).withValues(alpha: .46),
             useGradient: false,
+            outerShadows: const [],
+            innerShadows: const [],
             onTap: () => Navigator.of(context).pop(),
+            child: Text(
+              '閉じる',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: ink,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.2,
+              ),
+            ),
           ),
         ],
       ),
