@@ -49,6 +49,8 @@ Widget _buildFeedPage({
     ),
     slivers: [
       CupertinoSliverRefreshControl(
+        refreshTriggerPullDistance: 24,
+        refreshIndicatorExtent: 24,
         onRefresh: onRefresh,
         builder:
             (
@@ -295,9 +297,6 @@ Future<void> _showFeedPostActions(
       if (!item.ownedByMe) return;
       await _showEditYuruboSheet(context, ref, item);
       break;
-    case _FeedPostAction.copy:
-      await Clipboard.setData(ClipboardData(text: body));
-      if (context.mounted) OheyToast.show(context, 'コメントをコピーしました');
     case _FeedPostAction.delete:
       final confirmed = await _confirmDeleteFeedPost(context);
       if (!confirmed || !context.mounted) return;

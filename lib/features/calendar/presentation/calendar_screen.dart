@@ -1,6 +1,4 @@
-// ignore_for_file: unused_element, unused_element_parameter
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/models/memory.dart';
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/data/user_repository.dart';
 import '../../../core/models/ohey_invite.dart';
@@ -317,7 +314,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const monthlyLogs = <Memory>[];
     final todayReservations =
         ref.watch(todayReservationsProvider).asData?.value ??
         const <OheyInvite>[];
@@ -411,7 +407,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               child: _PlayfulMonthGrid(
                                 month: _month,
                                 selectedDay: _selectedDay,
-                                logs: monthlyLogs,
                                 statusByDate: _statusByDate,
                                 todayReservations: todayReservations,
                                 onSelectDay: _selectDay,
@@ -1283,221 +1278,6 @@ class _CalendarAvailabilityMeter extends StatelessWidget {
   }
 }
 
-class _CalendarMemoryPreview extends StatelessWidget {
-  const _CalendarMemoryPreview({
-    required this.logs,
-    required this.isWhite,
-    required this.compact,
-    this.onCreateYuruboPressed,
-  });
-
-  final List<Memory> logs;
-  final bool isWhite;
-  final bool compact;
-  final VoidCallback? onCreateYuruboPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    const accent = Color(0xFF54D7FF);
-    final visibleLogs = logs.take(compact ? 1 : 2).toList(growable: false);
-    final hiddenCount = logs.length - visibleLogs.length;
-    return _CalendarSectionSurface(
-      label: 'ゆるぼ',
-      accent: accent,
-      isWhite: isWhite,
-      compact: compact,
-      trailing: hiddenCount > 0
-          ? _CalendarTinyPill(
-              label: '+$hiddenCount',
-              color: accent,
-              isWhite: isWhite,
-            )
-          : null,
-      child: logs.isEmpty
-          ? _CalendarMemoryEmptyState(
-              isWhite: isWhite,
-              compact: compact,
-              onCreateYuruboPressed: onCreateYuruboPressed,
-            )
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (final entry in visibleLogs.asMap().entries) ...[
-                  if (entry.key > 0) SizedBox(height: compact ? 5 : 6),
-                  _CalendarMemoryPreviewRow(
-                    log: entry.value,
-                    isWhite: isWhite,
-                    compact: compact,
-                  ),
-                ],
-              ],
-            ),
-    );
-  }
-}
-
-class _CalendarMemoryEmptyState extends StatelessWidget {
-  const _CalendarMemoryEmptyState({
-    required this.isWhite,
-    required this.compact,
-    this.onCreateYuruboPressed,
-  });
-
-  final bool isWhite;
-  final bool compact;
-  final VoidCallback? onCreateYuruboPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Row(
-        children: [
-          OheyPopIcon(
-            icon: CupertinoIcons.sparkles,
-            color: const Color(0xFF54D7FF),
-            size: compact ? 28 : 36,
-            iconSize: compact ? 13 : 17,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'この日のゆるぼはまだありません',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isWhite ? const Color(0xFF101820) : Colors.white,
-                    fontSize: compact ? 12.5 : 13.5,
-                    fontWeight: FontWeight.w900,
-                    height: 1.1,
-                  ),
-                ),
-                SizedBox(height: compact ? 2 : 3),
-                Text(
-                  'あとで写真やメモを残せるよ',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isWhite
-                        ? const Color(0xFF667381)
-                        : Colors.white.withValues(alpha: .62),
-                    fontSize: compact ? 10.5 : 11.5,
-                    fontWeight: FontWeight.w800,
-                    height: 1.1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 9),
-          SizedBox(
-            width: compact ? 56 : 62,
-            child: Ohey3DButton(
-              label: 'ゆるぼ',
-              onTap: onCreateYuruboPressed ?? () {},
-              height: compact ? 28 : 30,
-              radius: compact ? 14 : 15,
-              color: _calendarPrimaryActionColor,
-              foregroundColor: _calendarPrimaryActionForegroundColor,
-              shadowColor: _calendarPrimaryActionShadowColor,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              fontSize: compact ? 11 : 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CalendarMemoryPreviewRow extends StatelessWidget {
-  const _CalendarMemoryPreviewRow({
-    required this.log,
-    required this.isWhite,
-    required this.compact,
-  });
-
-  final Memory log;
-  final bool isWhite;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasPhoto =
-        log.photoAssetPath != null && log.photoAssetPath!.trim().isNotEmpty;
-    final accent = hasPhoto ? const Color(0xFF54D7FF) : AppColors.success;
-    final content = Container(
-      width: double.infinity,
-      constraints: BoxConstraints(minHeight: compact ? 48 : 56),
-      padding: EdgeInsets.fromLTRB(4, compact ? 6 : 8, 0, compact ? 6 : 8),
-      child: Row(
-        children: [
-          Container(
-            width: compact ? 34 : 38,
-            height: compact ? 34 : 38,
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: isWhite ? .12 : .18),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: accent.withValues(alpha: isWhite ? .24 : .32),
-              ),
-            ),
-            child: Center(
-              child: OheyGeneratedIcon(
-                hasPhoto
-                    ? CupertinoIcons.photo_fill_on_rectangle_fill
-                    : CupertinoIcons.lock_fill,
-                color: accent,
-                size: compact ? 17 : 19,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              _calendarMemoryTitle(log),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isWhite ? const Color(0xFF344152) : Colors.white,
-                fontSize: compact ? 13.5 : 15,
-                fontWeight: FontWeight.w900,
-                height: 1.05,
-              ),
-            ),
-          ),
-          if (hasPhoto) ...[
-            const SizedBox(width: 10),
-            SizedBox(
-              width: compact ? 58 : 66,
-              child: Ohey3DButton(
-                label: '見る',
-                onTap: () => _showCalendarLogPhoto(context, log),
-                height: compact ? 32 : 36,
-                radius: compact ? 16 : 18,
-                color: _calendarPrimaryActionColor,
-                foregroundColor: _calendarPrimaryActionForegroundColor,
-                shadowColor: _calendarPrimaryActionShadowColor,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                fontSize: compact ? 12 : 13,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-    if (!hasPhoto) return content;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => _showCalendarLogPhoto(context, log),
-      child: content,
-    );
-  }
-}
-
 class _CalendarFriendStatusSummary extends StatelessWidget {
   const _CalendarFriendStatusSummary({
     required this.friends,
@@ -2117,141 +1897,10 @@ class _CalendarStatusSheet extends StatelessWidget {
   }
 }
 
-Future<void> _showCalendarLogPhoto(BuildContext context, Memory log) {
-  return showOheyBottomSheet<void>(
-    context: context,
-    useSafeArea: true,
-    barrierColor: Colors.black.withValues(alpha: .62),
-    builder: (_) => _CalendarLogPhotoSheet(log: log),
-  );
-}
-
-class _CalendarLogPhotoSheet extends StatelessWidget {
-  const _CalendarLogPhotoSheet({required this.log});
-
-  final Memory log;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
-    final subColor = isWhite
-        ? const Color(0xFF657282)
-        : Colors.white.withValues(alpha: .68);
-    final title = log.place.trim().isNotEmpty
-        ? log.place.trim()
-        : log.memo.trim().isNotEmpty
-        ? log.memo.trim()
-        : 'ゆるぼ写真';
-
-    return OheyBottomSheetShell(
-      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
-      radius: 32,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 44,
-              height: 5,
-              decoration: BoxDecoration(
-                color: subColor.withValues(alpha: .42),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          AspectRatio(
-            aspectRatio: 1,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: _CalendarLogPhotoFrame(path: log.photoAssetPath),
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: titleColor,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.3,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            '${log.date.month}/${log.date.day} のゆるぼ',
-            style: TextStyle(
-              color: subColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CalendarLogPhotoFrame extends StatelessWidget {
-  const _CalendarLogPhotoFrame({required this.path});
-
-  final String? path;
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = _calendarImageProviderFor(path);
-    if (provider == null) {
-      return Container(
-        color: Colors.black.withValues(alpha: .20),
-        alignment: Alignment.center,
-        child: const OheyGeneratedIcon(
-          CupertinoIcons.photo,
-          color: Colors.white54,
-          size: 42,
-        ),
-      );
-    }
-    return Image(
-      image: provider,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) => Container(
-        color: Colors.black.withValues(alpha: .20),
-        alignment: Alignment.center,
-        child: const OheyGeneratedIcon(
-          CupertinoIcons.exclamationmark_triangle,
-          color: Colors.white54,
-          size: 42,
-        ),
-      ),
-    );
-  }
-}
-
-ImageProvider? _calendarImageProviderFor(String? value) {
-  final normalized = value?.trim();
-  if (normalized == null || normalized.isEmpty) return null;
-  if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
-    return NetworkImage(normalized);
-  }
-  if (normalized.startsWith('/')) {
-    final file = File(normalized);
-    if (!file.existsSync()) return null;
-    return FileImage(file);
-  }
-  if (normalized.startsWith('assets/')) return AssetImage(normalized);
-  return null;
-}
-
 class _PlayfulMonthGrid extends StatelessWidget {
   const _PlayfulMonthGrid({
     required this.month,
     required this.selectedDay,
-    required this.logs,
     required this.statusByDate,
     required this.todayReservations,
     required this.onSelectDay,
@@ -2259,19 +1908,9 @@ class _PlayfulMonthGrid extends StatelessWidget {
 
   final DateTime month;
   final DateTime selectedDay;
-  final List<Memory> logs;
   final Map<String, OheyDailyStatus> statusByDate;
   final List<OheyInvite> todayReservations;
   final ValueChanged<DateTime> onSelectDay;
-
-  static const _rarityColors = {
-    MemoryRarity.normal: Color(0xFF94A3B8),
-    MemoryRarity.uncommon: Color(0xFFFF75B5),
-    MemoryRarity.rare: Color(0xFFC08BFF),
-    MemoryRarity.superRare: Color(0xFFFFD166),
-    MemoryRarity.ultraRare: Color(0xFF54D7FF),
-    MemoryRarity.secret: Color(0xFFB7F51A),
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -2280,7 +1919,6 @@ class _PlayfulMonthGrid extends StatelessWidget {
     final totalCells = leadingEmptyCells + daysInMonth;
     final rows = (totalCells / 7).ceil();
     final previousMonthDays = DateTime(month.year, month.month, 0).day;
-    final markers = _markersForLogs(logs);
 
     return Column(
       children: [
@@ -2340,7 +1978,6 @@ class _PlayfulMonthGrid extends StatelessWidget {
                             ? previousMonthDays + dayNumber
                             : dayNumber - daysInMonth);
                   final day = DateTime(month.year, month.month, dayNumber);
-                  final marker = inMonth ? markers[dayNumber] : null;
                   final isToday = inMonth && _isSameDate(DateTime.now(), day);
                   final hasPlan = isToday && todayReservations.isNotEmpty;
                   final dailyStatus = inMonth
@@ -2352,7 +1989,6 @@ class _PlayfulMonthGrid extends StatelessWidget {
                     date: day,
                     inMonth: inMonth,
                     dailyStatus: dailyStatus,
-                    marker: marker,
                     isToday: isToday,
                     isSelected: inMonth && _isSameDate(selectedDay, day),
                     hasPlan: hasPlan,
@@ -2367,29 +2003,6 @@ class _PlayfulMonthGrid extends StatelessWidget {
       ],
     );
   }
-
-  Map<int, _Marker> _markersForLogs(List<Memory> logs) {
-    final rarities = <int, MemoryRarity>{};
-    for (final log in logs) {
-      final current = rarities[log.date.day];
-      if (current == null || _rarityRank(log.rarity) > _rarityRank(current)) {
-        rarities[log.date.day] = log.rarity;
-      }
-    }
-    return {
-      for (final entry in rarities.entries)
-        entry.key: _Marker(_rarityColors[entry.value]!, entry.value),
-    };
-  }
-
-  int _rarityRank(MemoryRarity rarity) => switch (rarity) {
-    MemoryRarity.normal => 0,
-    MemoryRarity.uncommon => 1,
-    MemoryRarity.rare => 2,
-    MemoryRarity.superRare => 3,
-    MemoryRarity.ultraRare => 4,
-    MemoryRarity.secret => 5,
-  };
 }
 
 class _DayTile extends StatelessWidget {
@@ -2398,7 +2011,6 @@ class _DayTile extends StatelessWidget {
     required this.date,
     required this.inMonth,
     required this.dailyStatus,
-    required this.marker,
     required this.isToday,
     required this.isSelected,
     required this.hasPlan,
@@ -2410,7 +2022,6 @@ class _DayTile extends StatelessWidget {
   final DateTime date;
   final bool inMonth;
   final OheyDailyStatus dailyStatus;
-  final _Marker? marker;
   final bool isToday;
   final bool isSelected;
   final bool hasPlan;
@@ -2484,18 +2095,13 @@ class _DayTile extends StatelessWidget {
           children: [
             Positioned.fill(
               child: Align(
-                alignment: marker == null
-                    ? Alignment.center
-                    : Alignment.topCenter,
-                child: Padding(
-                  padding: EdgeInsets.only(top: marker == null ? 0 : 8),
-                  child: Text(
-                    '$day',
-                    style: TextStyle(
-                      color: isToday && !isWhite ? Colors.white : dayColor,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                    ),
+                alignment: Alignment.center,
+                child: Text(
+                  '$day',
+                  style: TextStyle(
+                    color: isToday && !isWhite ? Colors.white : dayColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
@@ -2504,25 +2110,11 @@ class _DayTile extends StatelessWidget {
               Positioned(
                 left: 0,
                 right: 0,
-                bottom: marker == null ? 7 : 28,
+                bottom: 7,
                 child: OheyGeneratedIcon(
                   CupertinoIcons.calendar_badge_plus,
                   color: _calendarPrimaryActionColor,
                   size: 22,
-                ),
-              ),
-            if (marker != null)
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 3),
-                    child: OheyGeneratedIcon(
-                      CupertinoIcons.person_crop_circle_fill,
-                      color: marker!.accent,
-                      size: 42,
-                    ),
-                  ),
                 ),
               ),
           ],
@@ -2530,13 +2122,6 @@ class _DayTile extends StatelessWidget {
       ),
     );
   }
-}
-
-class _Marker {
-  const _Marker(this.accent, this.rarity);
-
-  final Color accent;
-  final MemoryRarity rarity;
 }
 
 bool _isSameDate(DateTime a, DateTime b) =>
@@ -2550,16 +2135,6 @@ String _dateKey(DateTime date) =>
 
 String _calendarWeekdayLabel(DateTime day) =>
     const ['月', '火', '水', '木', '金', '土', '日'][day.weekday - 1];
-
-String _calendarMemoryTitle(Memory log) {
-  final memo = log.memo.trim();
-  if (memo.isNotEmpty) return memo;
-  final place = log.place.trim();
-  if (place.isNotEmpty) return place;
-  final hasPhoto =
-      log.photoAssetPath != null && log.photoAssetPath!.trim().isNotEmpty;
-  return hasPhoto ? 'ゆるぼを残しました' : '記録だけ保存しました';
-}
 
 const _calendarStatusPink = Color(0xFFFF5EA8);
 const _calendarStatusBlue = Color(0xFF20B9FF);

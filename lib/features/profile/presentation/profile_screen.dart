@@ -1,6 +1,3 @@
-// ignore_for_file: unused_element
-
-import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +6,6 @@ import 'package:flutter/services.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
-import '../../../core/models/memory.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/wish_item.dart';
@@ -186,48 +182,6 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
   }
-}
-
-bool _isMyUserMemory(Memory memory, String? currentUserId) {
-  if (memory.isOfficial) return false;
-  if (currentUserId == null || currentUserId.isEmpty) return true;
-  if (memory.ownerUserId.isEmpty) return true;
-  return memory.ownerUserId == currentUserId;
-}
-
-List<Memory> _myProfileMemories(
-  List<Memory> memories,
-  String? currentAuthUserId,
-) =>
-    memories
-        .where((memory) => _isMyUserMemory(memory, currentAuthUserId))
-        .toList(growable: false)
-      ..sort((a, b) => b.date.compareTo(a.date));
-
-List<Memory> _photoArchiveMemories(
-  List<Memory> memories,
-  String? currentAuthUserId,
-) =>
-    memories
-        .where((memory) => _isMyUserMemory(memory, currentAuthUserId))
-        .where(_isProfileDisplayablePhoto)
-        .toList(growable: false)
-      ..sort((a, b) => b.date.compareTo(a.date));
-
-Future<void> _showProfileStatusSheet(
-  BuildContext context,
-  WidgetRef ref,
-) async {
-  final selected =
-      ref.read(oheyUserProvider)?.dailyStatus ?? OheyDailyStatus.unselected;
-  await showOheyBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    builder: (_) => _SheetShell(
-      title: '今日のステータス',
-      child: _ProfileStatusSheetContent(selected: selected, ref: ref),
-    ),
-  );
 }
 
 class _ProfileColors {
