@@ -12,6 +12,7 @@ abstract interface class YuruboRepository {
   Future<List<Yurubo>> fetchYurubos({int limit = 50});
   Future<void> createYurubo(YuruboCreateDraft draft);
   Future<void> updateYurubo(String yuruboId, YuruboUpdateDraft draft);
+  Future<void> deleteYurubo(String yuruboId);
   Future<void> setReaction(String yuruboId, {required bool reacted});
 }
 
@@ -84,6 +85,11 @@ class BackendYuruboRepository implements YuruboRepository {
       'place_text': draft.placeText,
       'time_label': draft.timeLabel,
     });
+  }
+
+  @override
+  Future<void> deleteYurubo(String yuruboId) async {
+    await _client.delete('/v1/yurubos/$yuruboId');
   }
 
   @override
