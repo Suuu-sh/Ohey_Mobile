@@ -533,11 +533,13 @@ class _ProfileActivityHome extends StatelessWidget {
   const _ProfileActivityHome({
     required this.friendsCount,
     required this.onEditProfileTap,
+    required this.onCreateYuruboTap,
     required this.onAddFriendsTap,
   });
 
   final int friendsCount;
   final VoidCallback onEditProfileTap;
+  final VoidCallback onCreateYuruboTap;
   final VoidCallback onAddFriendsTap;
 
   @override
@@ -562,7 +564,19 @@ class _ProfileActivityHome extends StatelessWidget {
           const SizedBox(height: 22),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _ProfileFriendActionRow(onAddFriendsTap: onAddFriendsTap),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _ProfileYuruboActionRow(onTap: onCreateYuruboTap),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _ProfileFriendActionRow(
+                    onAddFriendsTap: onAddFriendsTap,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -725,6 +739,59 @@ class _ProfileEditActionRow extends StatelessWidget {
         CupertinoIcons.chevron_forward,
         color: Color(0xFF101820),
         size: 22,
+      ),
+    );
+  }
+}
+
+class _ProfileYuruboActionRow extends StatelessWidget {
+  const _ProfileYuruboActionRow({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Ohey3DButtonSurface(
+      onTap: onTap,
+      height: 46,
+      radius: 20,
+      color: const Color(0xFFC08BFF),
+      bottomColor: const Color(0xFF7F51C9),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      borderColor: Colors.white.withValues(alpha: .20),
+      outerShadows: [
+        BoxShadow(
+          color: const Color(0xFFC08BFF).withValues(alpha: .18),
+          blurRadius: 14,
+          offset: const Offset(0, 7),
+        ),
+      ],
+      child: Row(
+        children: [
+          const OheyPopIcon(
+            icon: CupertinoIcons.plus_bubble_fill,
+            color: Color(0xFF101820),
+            size: 28,
+            iconSize: 15,
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'ゆるぼを追加',
+              style: TextStyle(
+                color: Color(0xFF101820),
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.3,
+              ),
+            ),
+          ),
+          OheyGeneratedIcon(
+            CupertinoIcons.plus,
+            color: Color(0xFF101820),
+            size: 18,
+          ),
+        ],
       ),
     );
   }
