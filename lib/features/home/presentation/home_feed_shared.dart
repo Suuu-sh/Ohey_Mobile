@@ -71,20 +71,145 @@ BoxDecoration _feedCardDecoration({required double radius}) => BoxDecoration(
   ],
 );
 
-List<_FeedItem> _feedItems(
-  List<Memory> memories, {
-  OheyUser? user,
-  String? currentUserId,
-}) => memories
-    .map(
-      (memory) => _FeedItem.fromMemory(
-        memory,
-        user: user,
-        currentUserId: currentUserId,
+List<_FeedItem> _mockYuruboItems({OheyUser? user, String? currentUserId}) {
+  final now = DateTime.now();
+  final meName = user?.name.trim().isNotEmpty == true
+      ? user!.name.trim()
+      : user?.userId.trim().isNotEmpty == true
+      ? user!.userId.trim()
+      : 'yisshiki391';
+  final meAvatar = user?.avatar ?? OheyAvatar.defaultAvatar;
+
+  _FeedItem item({
+    required String id,
+    required String userName,
+    required String body,
+    required String place,
+    required OheyAvatar avatar,
+    required DateTime date,
+    required int likes,
+    required bool liked,
+    required bool ownedByMe,
+    String ownerUserId = '',
+  }) {
+    return _FeedItem(
+      id: id,
+      userName: userName,
+      timeAgo: _relativeTime(date),
+      body: body,
+      place: place,
+      avatar: avatar,
+      accent: _accentForId(id),
+      photoAssetPath: null,
+      captionY: .5,
+      linkUrl: '',
+      friends: const <_Companion>[],
+      likes: likes,
+      saved: false,
+      liked: liked,
+      prop: _PostProp.memory,
+      tilt: 0,
+      ownerUserId: ownerUserId,
+      ownedByMe: ownedByMe,
+      isOfficial: false,
+      sparkles: const <Offset>[],
+      displayable: true,
+      canReport: !ownedByMe,
+      canDelete: ownedByMe,
+    );
+  }
+
+  return [
+    item(
+      id: 'mock-yurubo-1',
+      userName: meName,
+      body: '今日夜、ご飯いける人いる？',
+      place: '渋谷あたり',
+      avatar: meAvatar,
+      date: now.subtract(const Duration(minutes: 18)),
+      likes: 2,
+      liked: true,
+      ownedByMe: true,
+      ownerUserId: currentUserId ?? '',
+    ),
+    item(
+      id: 'mock-yurubo-2',
+      userName: 'momo',
+      body: '今週どこかでサウナ行きたい',
+      place: '都内',
+      avatar: const OheyAvatar(
+        skin: 1,
+        hair: 3,
+        shirt: 4,
+        eyes: 1,
+        mouth: 0,
+        accessory: 0,
       ),
-    )
-    .where((item) => item.displayable)
-    .toList(growable: false);
+      date: now.subtract(const Duration(hours: 1, minutes: 7)),
+      likes: 4,
+      liked: false,
+      ownedByMe: false,
+      ownerUserId: 'mock-friend-momo',
+    ),
+    item(
+      id: 'mock-yurubo-3',
+      userName: 'ren',
+      body: '明日カフェで作業できる人？',
+      place: '新宿 / 代々木',
+      avatar: const OheyAvatar(
+        skin: 3,
+        hair: 2,
+        shirt: 7,
+        eyes: 0,
+        mouth: 1,
+        accessory: 1,
+      ),
+      date: now.subtract(const Duration(hours: 3, minutes: 42)),
+      likes: 1,
+      liked: false,
+      ownedByMe: false,
+      ownerUserId: 'mock-friend-ren',
+    ),
+    item(
+      id: 'mock-yurubo-4',
+      userName: 'hina',
+      body: '日曜、ドライブか海行ける人募集',
+      place: '湘南方面',
+      avatar: const OheyAvatar(
+        skin: 4,
+        hair: 6,
+        shirt: 2,
+        eyes: 2,
+        mouth: 0,
+        accessory: 2,
+      ),
+      date: now.subtract(const Duration(hours: 7, minutes: 20)),
+      likes: 6,
+      liked: true,
+      ownedByMe: false,
+      ownerUserId: 'mock-friend-hina',
+    ),
+    item(
+      id: 'mock-yurubo-5',
+      userName: 'sora',
+      body: 'このあと軽く飲める人いる？',
+      place: '中目黒',
+      avatar: const OheyAvatar(
+        skin: 0,
+        hair: 8,
+        shirt: 5,
+        eyes: 1,
+        mouth: 2,
+        accessory: 0,
+      ),
+      date: now.subtract(const Duration(hours: 9, minutes: 5)),
+      likes: 0,
+      liked: false,
+      ownedByMe: false,
+      ownerUserId: 'mock-friend-sora',
+    ),
+  ];
+}
 
 class _FeedItem {
   const _FeedItem({
@@ -112,65 +237,6 @@ class _FeedItem {
     this.canReport = true,
     this.canDelete = false,
   });
-
-  factory _FeedItem.fromMemory(
-    Memory memory, {
-    OheyUser? user,
-    String? currentUserId,
-  }) {
-    final accent = _accentForId(memory.id);
-    final ownerName = memory.ownerDisplayName.trim();
-    final isOwnedByCurrentUser =
-        currentUserId?.isNotEmpty == true &&
-        memory.ownerUserId == currentUserId;
-    final backendAuthorName = memory.feedAuthorName.trim();
-    final authorName = backendAuthorName.isNotEmpty
-        ? backendAuthorName
-        : ownerName.isNotEmpty
-        ? ownerName
-        : (isOwnedByCurrentUser && user?.name.trim().isNotEmpty == true)
-        ? user!.name.trim()
-        : user?.userId ?? 'ohey_user';
-    final avatar = memory.isOfficial
-        ? OheyAvatar.adminAvatar
-        : memory.ownerAvatar ??
-              (isOwnedByCurrentUser ? user?.avatar : null) ??
-              OheyAvatar.defaultAvatar;
-    return _FeedItem(
-      id: memory.id,
-      userName: memory.isOfficial ? 'Ohey' : authorName,
-      timeAgo: _relativeTime(memory.date),
-      body: memory.memo.trim(),
-      place: memory.place.trim(),
-      avatar: avatar,
-      accent: accent,
-      photoAssetPath: memory.photoAssetPath,
-      captionY: memory.captionY,
-      linkUrl: memory.linkUrl ?? '',
-      friends: memory.friends.map(_Companion.fromFriend).toList(),
-      likes: memory.likeCount,
-      saved: memory.id.hashCode.isEven,
-      liked: memory.likedByMe,
-      prop: _PostProp.memory,
-      tilt: memory.feedTilt ?? (memory.id.hashCode.isEven ? -.08 : .08),
-      ownerUserId: memory.ownerUserId,
-      ownedByMe: memory.feedPostKind == 'mine' || isOwnedByCurrentUser,
-      isOfficial: memory.feedPostKind == 'official' || memory.isOfficial,
-      sparkles: const [
-        Offset(12, 18),
-        Offset(54, 2),
-        Offset(118, 26),
-        Offset(28, 66),
-      ],
-      displayable:
-          memory.feedDisplayable &&
-          (memory.isOfficial ||
-              _isDisplayablePostPhoto(memory.photoAssetPath) ||
-              memory.feedPostKind == 'official'),
-      canReport: memory.feedCanReport,
-      canDelete: memory.feedCanDelete,
-    );
-  }
 
   bool matches(String query) {
     final normalized = query.trim().toLowerCase();
@@ -224,15 +290,6 @@ class _Companion {
     required this.accent,
     required this.statusKey,
   });
-
-  factory _Companion.fromFriend(OheyFriend friend) => _Companion(
-    userId: friend.id,
-    name: friend.name,
-    handle: friend.vibe,
-    avatar: friend.avatar ?? OheyAvatar.defaultAvatar,
-    accent: friend.accentColor,
-    statusKey: friend.statusKey,
-  );
 
   final String userId;
   final String name;

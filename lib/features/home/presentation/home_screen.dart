@@ -12,10 +12,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
-import '../../../core/models/memory.dart';
 import '../../../core/models/ohey_avatar.dart';
-import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/ohey_friend.dart';
+import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_user.dart';
 import '../../../core/theme/app_colors.dart';
@@ -102,9 +101,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .auth
         .currentUser
         ?.id;
-    final memories = memoriesAsync.asData?.value ?? const <Memory>[];
-    final feedItems = _feedItems(
-      memories,
+    final feedItems = _mockYuruboItems(
       user: user,
       currentUserId: currentUserId,
     );
