@@ -1407,7 +1407,7 @@ class _CalendarFriendStatusSheetState
       HapticFeedback.mediumImpact();
       OheyToast.show(
         context,
-        '過去の日には招待できません',
+        '過去の日には誘えません',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
         placement: OheyToastPlacement.bottom,
       );
@@ -1437,7 +1437,7 @@ class _CalendarFriendStatusSheetState
       setState(() => _sendingFriendId = null);
       OheyToast.show(
         context,
-        '招待を送れなかったよ。あとでもう一度試してね',
+        '誘えなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
         placement: OheyToastPlacement.bottom,
       );

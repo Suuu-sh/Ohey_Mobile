@@ -556,7 +556,7 @@ class _GroupScheduleSection extends StatelessWidget {
                   label: isSendingInvite
                       ? '送信中'
                       : isGroupInvited
-                      ? '招待済み'
+                      ? '誘い済み'
                       : '${inviteTargets.length}人誘う',
                   icon: isGroupInvited ? null : CupertinoIcons.paperplane_fill,
                   onTap: canInviteGroup ? onInviteGroup : null,
@@ -881,7 +881,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
             width: double.infinity,
             child: OheyInviteSuccessBurst(
               builder: (context, runWithBurst, flightAnimation) => Ohey3DButton(
-                label: isInvited ? '招待済み' : '誘う',
+                label: isInvited ? '誘い済み' : '誘う',
                 icon: null,
                 customIcon: isInvited
                     ? null

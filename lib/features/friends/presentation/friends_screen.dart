@@ -334,7 +334,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       HapticFeedback.mediumImpact();
       OheyToast.show(
         context,
-        '招待を送れなかったよ。あとでもう一度試してね',
+        '誘えなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
         placement: OheyToastPlacement.bottom,
       );
@@ -378,7 +378,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       HapticFeedback.mediumImpact();
       OheyToast.show(
         context,
-        'まとめて招待できなかったよ。あとでもう一度試してね',
+        'まとめて誘えなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
         placement: OheyToastPlacement.bottom,
       );
