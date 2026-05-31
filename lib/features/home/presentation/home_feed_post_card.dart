@@ -653,7 +653,7 @@ class _FeedCardFooter extends StatelessWidget {
               const SizedBox(width: 8),
               OheyPostActionPill(
                 semanticLabel: compactYurubo
-                    ? 'このゆるぼのリンク'
+                    ? 'このゆるぼを共有'
                     : item.isOfficial
                     ? '公式ゆるぼを詳しく見る'
                     : item.ownedByMe
@@ -666,7 +666,7 @@ class _FeedCardFooter extends StatelessWidget {
                         size: 19,
                       ),
                 icon: item.isOfficial ? CupertinoIcons.doc_text_fill : null,
-                label: compactYurubo ? 'リンク' : _feedShareActionLabel(item),
+                label: compactYurubo ? '共有' : _feedShareActionLabel(item),
                 color: shareAccent,
                 isWhite: isWhite,
                 onTap: onShare,
