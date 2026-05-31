@@ -700,12 +700,6 @@ class _FeedCardFooter extends StatelessWidget {
                     : 'ゆるぼを共有',
                 customIcon: item.isOfficial
                     ? null
-                    : compactYurubo
-                    ? Icon(
-                        CupertinoIcons.link,
-                        color: oheyPostActionForeground(shareAccent),
-                        size: 18,
-                      )
                     : OheyPostShareIcon(
                         color: oheyPostActionForeground(shareAccent),
                         size: 19,
