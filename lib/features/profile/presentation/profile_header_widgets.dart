@@ -532,6 +532,8 @@ class _InviteResponseButton extends StatelessWidget {
 class _ProfileActivityHome extends StatelessWidget {
   const _ProfileActivityHome({
     required this.friendsCount,
+    required this.joinedYurubos,
+    required this.isYuruboLoading,
     required this.wishItems,
     required this.isWishLoading,
     required this.onCreateYuruboTap,
@@ -540,6 +542,8 @@ class _ProfileActivityHome extends StatelessWidget {
   });
 
   final int friendsCount;
+  final List<Yurubo> joinedYurubos;
+  final bool isYuruboLoading;
   final List<WishItem> wishItems;
   final bool isWishLoading;
   final VoidCallback onCreateYuruboTap;
@@ -557,6 +561,11 @@ class _ProfileActivityHome extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _ProfileSummaryStats(friendsCount: friendsCount),
+          ),
+          const SizedBox(height: 12),
+          _ProfileTodayScheduleSection(
+            joinedYurubos: joinedYurubos,
+            isLoading: isYuruboLoading,
           ),
           const SizedBox(height: 12),
           _ProfileWishListSection(
@@ -584,6 +593,102 @@ class _ProfileActivityHome extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfileTodayScheduleSection extends StatelessWidget {
+  const _ProfileTodayScheduleSection({
+    required this.joinedYurubos,
+    required this.isLoading,
+  });
+
+  final List<Yurubo> joinedYurubos;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    final event = joinedYurubos.isEmpty ? null : joinedYurubos.first;
+    final title = event == null
+        ? (isLoading ? '読み込み中' : '本日の予定はありません')
+        : event.title;
+    final details = event == null
+        ? 'Oheyで参加した予定がここに表示されます'
+        : [event.timeLabel, event.placeText]
+              .map((value) => value.trim())
+              .where((value) => value.isNotEmpty)
+              .join('・');
+    final subtitle = details.isEmpty ? 'Oheyで参加した予定' : details;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+        decoration: BoxDecoration(
+          color: AppColors.darkBackgroundBottom,
+          borderRadius: BorderRadius.circular(26),
+          border: Border.all(
+            color: AppColors.success.withValues(alpha: .38),
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          children: [
+            OheyPopIcon(
+              icon: CupertinoIcons.calendar_today,
+              color: AppColors.success,
+              size: 34,
+              iconSize: 18,
+              showBubble: false,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    '本日の予定',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: _ProfileColors.sub,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      height: 1.1,
+                    ),
+                  ),
+                  if (event != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: _ProfileColors.sub.withValues(alpha: .72),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        height: 1.1,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
