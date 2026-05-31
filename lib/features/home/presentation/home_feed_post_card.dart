@@ -125,37 +125,46 @@ class _YuruboCardBody extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _YuruboMetaChip(
-                  icon: item.targetLabel == '全フレンズ'
-                      ? CupertinoIcons.person_2_fill
-                      : CupertinoIcons.person_3_fill,
-                  label: item.targetLabel,
-                  color: _feedPrimaryActionColor,
-                  isWhite: isWhite,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: _YuruboMetaChip(
-                  icon: CupertinoIcons.location_fill,
-                  label: place.isEmpty ? 'どこでも' : place,
-                  color: _FeedColors.teal,
-                  isWhite: isWhite,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: _YuruboMetaChip(
-                  icon: CupertinoIcons.clock_fill,
-                  label: timeLabel.isEmpty ? 'いつでも' : timeLabel,
-                  color: _FeedColors.teal,
-                  isWhite: isWhite,
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final chipWidth = (constraints.maxWidth - 12) / 3;
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: chipWidth),
+                    child: _YuruboMetaChip(
+                      icon: item.targetLabel == '全フレンズ'
+                          ? CupertinoIcons.person_2_fill
+                          : CupertinoIcons.person_3_fill,
+                      label: item.targetLabel,
+                      color: _feedPrimaryActionColor,
+                      isWhite: isWhite,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: chipWidth),
+                    child: _YuruboMetaChip(
+                      icon: CupertinoIcons.location_fill,
+                      label: place.isEmpty ? 'どこでも' : place,
+                      color: _FeedColors.teal,
+                      isWhite: isWhite,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: chipWidth),
+                    child: _YuruboMetaChip(
+                      icon: CupertinoIcons.clock_fill,
+                      label: timeLabel.isEmpty ? 'いつでも' : timeLabel,
+                      color: _FeedColors.teal,
+                      isWhite: isWhite,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 12),
           Text(
@@ -203,11 +212,11 @@ class _YuruboMetaChip extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: isWhite ? .32 : .42)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.max,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 13, color: foreground),
           const SizedBox(width: 5),
-          Expanded(
+          Flexible(
             child: Text(
               label,
               maxLines: 1,
