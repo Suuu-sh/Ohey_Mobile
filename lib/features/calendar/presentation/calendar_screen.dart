@@ -2343,8 +2343,10 @@ class _PlayfulMonthGrid extends StatelessWidget {
                   final marker = inMonth ? markers[dayNumber] : null;
                   final isToday = inMonth && _isSameDate(DateTime.now(), day);
                   final hasPlan = isToday && todayReservations.isNotEmpty;
-                  final dailyStatus =
-                      statusByDate[_dateKey(day)] ?? OheyDailyStatus.unselected;
+                  final dailyStatus = inMonth
+                      ? statusByDate[_dateKey(day)] ??
+                            OheyDailyStatus.unselected
+                      : OheyDailyStatus.unselected;
                   return _DayTile(
                     day: displayDay,
                     date: day,
@@ -2352,10 +2354,10 @@ class _PlayfulMonthGrid extends StatelessWidget {
                     dailyStatus: dailyStatus,
                     marker: marker,
                     isToday: isToday,
-                    isSelected: _isSameDate(selectedDay, day),
+                    isSelected: inMonth && _isSameDate(selectedDay, day),
                     hasPlan: hasPlan,
                     column: index % 7,
-                    onTap: () => onSelectDay(day),
+                    onTap: inMonth ? () => onSelectDay(day) : null,
                   );
                 },
               ),
@@ -2418,7 +2420,7 @@ class _DayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final hasStatus = dailyStatus != OheyDailyStatus.unselected;
+    final hasStatus = inMonth && dailyStatus != OheyDailyStatus.unselected;
     final statusAccent = _calendarStatusTileAccent(dailyStatus);
     final dayColor = hasStatus
         ? _calendarStatusTileForeground(dailyStatus, isWhite: isWhite)
@@ -2435,11 +2437,13 @@ class _DayTile extends StatelessWidget {
         : Colors.white;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: inMonth ? onTap : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
         decoration: BoxDecoration(
-          color: hasStatus
+          color: !inMonth
+              ? Colors.transparent
+              : hasStatus
               ? _calendarStatusTileBackground(
                   dailyStatus,
                   isWhite: isWhite,
@@ -2450,7 +2454,9 @@ class _DayTile extends StatelessWidget {
               : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(13),
           border: Border.all(
-            color: hasPlan
+            color: !inMonth
+                ? Colors.transparent
+                : hasPlan
                 ? _calendarPrimaryActionColor
                 : hasStatus
                 ? statusAccent.withValues(alpha: isSelected ? .90 : .52)
@@ -2461,15 +2467,17 @@ class _DayTile extends StatelessWidget {
                   ),
             width: isSelected || hasPlan ? 2 : 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: hasStatus
-                  ? statusAccent.withValues(alpha: isWhite ? .16 : .24)
-                  : Colors.black.withValues(alpha: isWhite ? .05 : .20),
-              blurRadius: hasStatus ? 16 : 12,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          boxShadow: !inMonth
+              ? null
+              : [
+                  BoxShadow(
+                    color: hasStatus
+                        ? statusAccent.withValues(alpha: isWhite ? .16 : .24)
+                        : Colors.black.withValues(alpha: isWhite ? .05 : .20),
+                    blurRadius: hasStatus ? 16 : 12,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
         ),
         child: Stack(
           clipBehavior: Clip.none,
