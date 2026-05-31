@@ -8,6 +8,7 @@ import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/wish_item.dart';
+import '../../../core/models/yurubo.dart';
 import '../../../core/models/ohey_gender.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_user.dart';
@@ -58,6 +59,10 @@ class ProfileScreen extends ConsumerWidget {
         incomingInvitesAsync.asData?.value ?? const <OheyInvite>[];
     final wishItemsAsync = ref.watch(wishItemControllerProvider);
     final wishItems = wishItemsAsync.asData?.value ?? const <WishItem>[];
+    final yurubosAsync = ref.watch(yuruboControllerProvider);
+    final joinedYurubos = (yurubosAsync.asData?.value ?? const <Yurubo>[])
+        .where((yurubo) => yurubo.reactedByMe)
+        .toList(growable: false);
     final friends =
         ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
     const headerIsWhite = true;
@@ -156,6 +161,8 @@ class ProfileScreen extends ConsumerWidget {
                             Expanded(
                               child: _ProfileActivityHome(
                                 friendsCount: friends.length,
+                                joinedYurubos: joinedYurubos,
+                                isYuruboLoading: yurubosAsync.isLoading,
                                 wishItems: wishItems,
                                 isWishLoading: wishItemsAsync.isLoading,
                                 onCreateYuruboTap: () =>

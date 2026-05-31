@@ -138,7 +138,7 @@ class OsNotificationService {
     await _plugin.show(
       id: invite.id.hashCode,
       title: '${invite.inviter.name}からお誘い',
-      body: '今日会わない？アプリで返事してね。',
+      body: '${invite.summary()}が届いたよ。アプリで返事してね。',
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'ohey_notifications',

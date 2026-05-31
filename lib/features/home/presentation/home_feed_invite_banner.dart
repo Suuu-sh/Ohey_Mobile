@@ -80,8 +80,8 @@ class _FeedInviteBanner extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       hasInvite
-                          ? '${target.name}からお誘いが届いています'
-                          : '${target.name}との予定があります',
+                          ? '${target.name}から${invite!.summary()}が届いています'
+                          : '${target.name}と${reservation!.summary()}があります',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
