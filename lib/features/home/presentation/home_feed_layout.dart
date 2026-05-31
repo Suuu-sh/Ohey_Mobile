@@ -1021,15 +1021,6 @@ class _YuruboCalendarPicker extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 58,
-          height: 5,
-          decoration: BoxDecoration(
-            color: AppColors.white.withValues(alpha: .22),
-            borderRadius: BorderRadius.circular(999),
-          ),
-        ),
-        const SizedBox(height: 20),
         Row(
           children: [
             _YuruboCalendarArrow(
