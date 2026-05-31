@@ -18,18 +18,22 @@ const _feedPrimaryActionShadowColor = Color(0xFF7F51C9);
 Widget _buildFeedPage({
   required double topPadding,
   required List<_FeedItem> items,
+  required List<WishItem> wishItems,
   required bool isWhite,
   required bool isLoading,
+  required bool isWishLoading,
   required bool showSwipeTutorial,
   required VoidCallback onSwipeTutorialDismissed,
   required ValueChanged<int> onPageChanged,
   required VoidCallback onCreateYuruboPressed,
+  required VoidCallback onCreateWishPressed,
+  required ValueChanged<WishItem> onWishToYuruboPressed,
   required ValueChanged<_FeedItem> onLikePressed,
   required ValueChanged<_FeedItem> onSharePressed,
   required ValueChanged<_FeedItem> onMorePressed,
   required ValueChanged<_FeedItem> onAuthorPressed,
 }) {
-  if (isLoading && items.isEmpty) {
+  if (isLoading && items.isEmpty && wishItems.isEmpty) {
     return ListView(
       physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.only(top: topPadding, bottom: _feedBottomPageInset),
@@ -47,6 +51,14 @@ Widget _buildFeedPage({
       physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.only(top: topPadding, bottom: _feedBottomPageInset),
       children: [
+        _WishItemsSection(
+          wishItems: wishItems,
+          isWhite: isWhite,
+          isLoading: isWishLoading,
+          onCreateWishPressed: onCreateWishPressed,
+          onWishToYuruboPressed: onWishToYuruboPressed,
+        ),
+        const SizedBox(height: 14),
         _FeedSectionEmptyState(
           isWhite: isWhite,
           onCreateYuruboPressed: onCreateYuruboPressed,
@@ -58,21 +70,31 @@ Widget _buildFeedPage({
   return ListView.separated(
     physics: const BouncingScrollPhysics(),
     padding: EdgeInsets.fromLTRB(0, topPadding + 10, 0, _feedBottomPageInset),
-    itemCount: items.length + (isLoading ? 1 : 0),
+    itemCount: items.length + 1 + (isLoading ? 1 : 0),
     separatorBuilder: (context, index) => const SizedBox(height: 12),
     itemBuilder: (context, index) {
-      if (index >= items.length) {
+      if (index == 0) {
+        return _WishItemsSection(
+          wishItems: wishItems,
+          isWhite: isWhite,
+          isLoading: isWishLoading,
+          onCreateWishPressed: onCreateWishPressed,
+          onWishToYuruboPressed: onWishToYuruboPressed,
+        );
+      }
+      final itemIndex = index - 1;
+      if (itemIndex >= items.length) {
         return const Padding(
           padding: EdgeInsets.symmetric(vertical: 18),
           child: Center(child: CupertinoActivityIndicator()),
         );
       }
-      if (index >= items.length - 3) {
+      if (itemIndex >= items.length - 3) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          onPageChanged(index);
+          onPageChanged(itemIndex);
         });
       }
-      final item = items[index];
+      final item = items[itemIndex];
       return _YuruboPostListItem(
         item: item,
         isWhite: isWhite,
@@ -114,6 +136,185 @@ class _YuruboPostListItem extends StatelessWidget {
         onShare: onInvite,
         onMore: onMore,
         onAuthorTap: onAuthorTap,
+      ),
+    );
+  }
+}
+
+class _WishItemsSection extends StatelessWidget {
+  const _WishItemsSection({
+    required this.wishItems,
+    required this.isWhite,
+    required this.isLoading,
+    required this.onCreateWishPressed,
+    required this.onWishToYuruboPressed,
+  });
+
+  final List<WishItem> wishItems;
+  final bool isWhite;
+  final bool isLoading;
+  final VoidCallback onCreateWishPressed;
+  final ValueChanged<WishItem> onWishToYuruboPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .66);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? Colors.white.withValues(alpha: .86)
+              : Colors.white.withValues(alpha: .08),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: Colors.white.withValues(alpha: .12)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isWhite ? .08 : .16),
+              blurRadius: 22,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'いつかやりたいこと',
+                        style: TextStyle(
+                          color: ink,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.3,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        '誘いの種をためておけます',
+                        style: TextStyle(
+                          color: sub,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Ohey3DButton(
+                  label: '追加',
+                  icon: CupertinoIcons.plus,
+                  onTap: onCreateWishPressed,
+                  height: 40,
+                  radius: 18,
+                  color: _feedPrimaryActionColor,
+                  foregroundColor: const Color(0xFF101820),
+                  shadowColor: _feedPrimaryActionShadowColor,
+                  fontSize: 12,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (isLoading && wishItems.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Center(child: CupertinoActivityIndicator()),
+              )
+            else if (wishItems.isEmpty)
+              Text(
+                '焼肉行きたい、サウナ行きたい、作業したい…をまず置いてみよう。',
+                style: TextStyle(color: sub, fontWeight: FontWeight.w800),
+              )
+            else
+              SizedBox(
+                height: 88,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: wishItems.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 10),
+                  itemBuilder: (context, index) {
+                    final wish = wishItems[index];
+                    return _WishItemChip(
+                      wish: wish,
+                      isWhite: isWhite,
+                      onTap: () => onWishToYuruboPressed(wish),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WishItemChip extends StatelessWidget {
+  const _WishItemChip({
+    required this.wish,
+    required this.isWhite,
+    required this.onTap,
+  });
+
+  final WishItem wish;
+  final bool isWhite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .66);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 184,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFC08BFF).withValues(alpha: isWhite ? .20 : .24),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: const Color(0xFFC08BFF).withValues(alpha: .42),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              wish.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                height: 1.12,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              wish.placeText.trim().isEmpty ? 'タップしてゆるぼ化' : wish.placeText,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: sub,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -355,20 +556,164 @@ Future<bool> _confirmUserSafetyAction(
   return result ?? false;
 }
 
-Future<void> _showCreateYuruboSheet(BuildContext context, WidgetRef ref) async {
+Future<void> _showCreateWishItemSheet(
+  BuildContext context,
+  WidgetRef ref,
+) async {
   await showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
     barrierColor: Colors.black.withValues(alpha: .58),
-    builder: (_) => _CreateYuruboSheet(ref: ref),
+    builder: (_) => _CreateWishItemSheet(ref: ref),
+  );
+}
+
+class _CreateWishItemSheet extends StatefulWidget {
+  const _CreateWishItemSheet({required this.ref});
+
+  final WidgetRef ref;
+
+  @override
+  State<_CreateWishItemSheet> createState() => _CreateWishItemSheetState();
+}
+
+class _CreateWishItemSheetState extends State<_CreateWishItemSheet> {
+  final _titleController = TextEditingController();
+  final _placeController = TextEditingController();
+  String _visibility = 'private';
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _placeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final title = _titleController.text.trim();
+    if (title.isEmpty || _saving) return;
+    setState(() => _saving = true);
+    try {
+      await widget.ref
+          .read(wishItemControllerProvider.notifier)
+          .createWishItem(
+            WishItemCreateDraft(
+              title: title,
+              placeText: _placeController.text.trim(),
+              visibility: _visibility,
+            ),
+          );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      OheyToast.show(context, 'やりたいことを追加しました', icon: CupertinoIcons.sparkles);
+    } catch (_) {
+      if (mounted) OheyToast.show(context, '追加できなかったよ。あとでもう一度試してね');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .62);
+    return OheyBottomSheetShell(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+      radius: 32,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              width: 44,
+              height: 5,
+              decoration: BoxDecoration(
+                color: sub.withValues(alpha: .34),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'いつかやりたいことを追加',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: ink,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.6,
+            ),
+          ),
+          const SizedBox(height: 14),
+          _YuruboInput(
+            controller: _titleController,
+            placeholder: '焼肉行きたい / サウナ開拓したい',
+          ),
+          const SizedBox(height: 10),
+          _YuruboInput(controller: _placeController, placeholder: '場所・店名（任意）'),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _YuruboVisibilityChoice(
+                  label: '自分だけ',
+                  selected: _visibility == 'private',
+                  onTap: () => setState(() => _visibility = 'private'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _YuruboVisibilityChoice(
+                  label: '友達に公開',
+                  selected: _visibility == 'friends',
+                  onTap: () => setState(() => _visibility = 'friends'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Ohey3DButton(
+            label: _saving ? '追加中...' : '追加する',
+            icon: CupertinoIcons.sparkles,
+            onTap: _saving ? null : _submit,
+            height: 50,
+            radius: 22,
+            color: _feedPrimaryActionColor,
+            foregroundColor: const Color(0xFF101820),
+            shadowColor: _feedPrimaryActionShadowColor,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> _showCreateYuruboSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  WishItem? wish,
+}) async {
+  await showOheyBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (_) => _CreateYuruboSheet(ref: ref, initialWish: wish),
   );
 }
 
 class _CreateYuruboSheet extends StatefulWidget {
-  const _CreateYuruboSheet({required this.ref});
+  const _CreateYuruboSheet({required this.ref, this.initialWish});
 
   final WidgetRef ref;
+  final WishItem? initialWish;
 
   @override
   State<_CreateYuruboSheet> createState() => _CreateYuruboSheetState();
@@ -381,11 +726,18 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
   late Future<List<Map<String, dynamic>>> _groupsFuture;
   String _visibility = 'friends';
   String? _groupId;
+  String? _wishItemId;
   bool _saving = false;
 
   @override
   void initState() {
     super.initState();
+    final initialWish = widget.initialWish;
+    if (initialWish != null) {
+      _titleController.text = initialWish.title;
+      _placeController.text = initialWish.placeText;
+      _wishItemId = initialWish.id;
+    }
     _groupsFuture = widget.ref
         .read(friendRepositoryProvider)
         .fetchFriendGroups();
@@ -417,6 +769,7 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
               timeLabel: _timeController.text.trim(),
               visibility: _visibility,
               groupId: _visibility == 'group' ? _groupId : null,
+              wishItemId: _wishItemId,
             ),
           );
       if (!mounted) return;
@@ -463,6 +816,41 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
                 ),
               ),
               const SizedBox(height: 16),
+              if (_wishItemId != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _feedPrimaryActionColor.withValues(alpha: .18),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: _feedPrimaryActionColor.withValues(alpha: .42),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        CupertinoIcons.sparkles,
+                        color: _feedPrimaryActionColor,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'やりたいことリストから作成中',
+                          style: TextStyle(
+                            color: ink,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
               Text(
                 '誰に募集する？',
                 textAlign: TextAlign.center,

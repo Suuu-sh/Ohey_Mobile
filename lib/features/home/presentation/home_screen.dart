@@ -15,6 +15,7 @@ import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/wish_item.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_user.dart';
 import '../../../core/models/yurubo.dart';
@@ -37,6 +38,8 @@ import '../../friends/presentation/friends_screen.dart';
 import '../../memories/application/memory_controller.dart';
 import '../../yurubos/application/yurubo_controller.dart';
 import '../../yurubos/data/yurubo_repository.dart';
+import '../../wish_items/application/wish_item_controller.dart';
+import '../../wish_items/data/wish_item_repository.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../notifications/data/notification_repository.dart';
 import '../../profile/data/user_safety_repository.dart';
@@ -88,6 +91,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final yurubosAsync = ref.watch(yuruboControllerProvider);
+    final wishItemsAsync = ref.watch(wishItemControllerProvider);
     final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
     final incomingInvites =
         ref.watch(incomingInvitesProvider).asData?.value ??
@@ -102,6 +106,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .currentUser
         ?.id;
     final yurubos = yurubosAsync.asData?.value ?? const <Yurubo>[];
+    final wishItems = wishItemsAsync.asData?.value ?? const <WishItem>[];
     final feedItems = _feedItemsFromYurubos(
       yurubos,
       currentUserId: currentUserId,
@@ -115,10 +120,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: _buildFeedPage(
               topPadding: _feedHeaderScrollInset(context),
               items: feedItems,
+              wishItems: wishItems,
               isWhite: isWhite,
               isLoading: yurubosAsync.isLoading,
+              isWishLoading: wishItemsAsync.isLoading,
               onPageChanged: _handleFeedPageChanged,
               onCreateYuruboPressed: () => _showCreateYuruboSheet(context, ref),
+              onCreateWishPressed: () => _showCreateWishItemSheet(context, ref),
+              onWishToYuruboPressed: (wish) =>
+                  _showCreateYuruboSheet(context, ref, wish: wish),
               onLikePressed: (item) => ref
                   .read(yuruboControllerProvider.notifier)
                   .toggleParticipation(item.id),

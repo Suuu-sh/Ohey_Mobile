@@ -22,6 +22,7 @@ class YuruboCreateDraft {
     this.timeLabel = '',
     this.visibility = 'friends',
     this.groupId,
+    this.wishItemId,
   });
 
   final String title;
@@ -30,6 +31,7 @@ class YuruboCreateDraft {
   final String timeLabel;
   final String visibility;
   final String? groupId;
+  final String? wishItemId;
 }
 
 class BackendYuruboRepository implements YuruboRepository {
@@ -55,6 +57,7 @@ class BackendYuruboRepository implements YuruboRepository {
       'time_label': draft.timeLabel,
       'visibility': draft.visibility,
       if (draft.groupId != null) 'group_id': draft.groupId,
+      if (draft.wishItemId != null) 'wish_item_id': draft.wishItemId,
     });
   }
 
