@@ -623,6 +623,10 @@ class _ProfileWishListSection extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.darkBackgroundBottom,
           borderRadius: BorderRadius.circular(26),
+          border: Border.all(
+            color: const Color(0xFFC08BFF).withValues(alpha: .42),
+            width: 1.2,
+          ),
         ),
         child: Row(
           children: [
