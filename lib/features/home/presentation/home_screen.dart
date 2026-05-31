@@ -28,6 +28,7 @@ import '../../../core/widgets/ohey_action_tile.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
 import '../../../core/widgets/ohey_post_action_pill.dart';
+import '../../../core/widgets/ohey_profile_hero_header.dart';
 import '../../../core/widgets/ohey_scene_header_backdrop.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
@@ -281,20 +282,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             accent: item.accent,
             statusKey: null,
           );
+    if (item.ownedByMe) {
+      await showOheyFriendProfileSheet(
+        context,
+        friend: author.toOheyFriend(),
+        showActionMenu: false,
+      );
+      return;
+    }
+
     await showOheyBottomSheet<void>(
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
       barrierColor: AppColors.black.withValues(alpha: .62),
-      builder: (context) => _FeedCompanionProfileSheet(
-        friend: author,
-        initialRelationship: item.ownedByMe
-            ? const OheyFriendRelationshipStatus(
-                alreadyFriend: true,
-                requestState: OheyFriendRequestState.none,
-              )
-            : null,
-      ),
+      builder: (context) => _FeedCompanionProfileSheet(friend: author),
     );
   }
 

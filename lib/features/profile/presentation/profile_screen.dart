@@ -36,6 +36,7 @@ import '../../onboarding/presentation/create_user_dialog.dart';
 import '../data/user_safety_repository.dart';
 import 'avatar_builder_screen.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
+import '../../../core/widgets/ohey_profile_hero_header.dart';
 
 part 'profile_header_widgets.dart';
 part 'profile_memory_widgets.dart';
@@ -92,7 +93,9 @@ class ProfileScreen extends ConsumerWidget {
               right: 0,
               top: 0,
               height: headerBackgroundHeight,
-              child: _ProfileHeaderBackdrop(avatar: user?.avatar),
+              child: OheyProfileHeaderBackdrop(
+                avatar: user?.avatar ?? OheyAvatar.defaultAvatar,
+              ),
             ),
             SafeArea(
               bottom: false,

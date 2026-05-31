@@ -97,71 +97,6 @@ class _ProfileSettingsButton extends StatelessWidget {
   }
 }
 
-class _ProfileHeaderBackdrop extends StatelessWidget {
-  const _ProfileHeaderBackdrop({required this.avatar});
-
-  final OheyAvatar? avatar;
-
-  @override
-  Widget build(BuildContext context) {
-    final displayAvatar = avatar ?? OheyAvatar.defaultAvatar;
-    final imageBackdropAsset = OheyAvatar.imageBackdropAsset(
-      displayAvatar.background,
-    );
-    if (imageBackdropAsset != null) {
-      return ExcludeSemantics(
-        child: Image.asset(
-          imageBackdropAsset,
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
-        ),
-      );
-    }
-
-    final backgroundColors =
-        OheyAvatar.backgroundGradients[displayAvatar.background %
-            OheyAvatar.backgroundGradients.length];
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: backgroundColors,
-            ),
-          ),
-        ),
-        Opacity(
-          opacity: displayAvatar.background == OheyAvatar.dreamRoomBackground
-              ? .18
-              : .10,
-          child: ExcludeSemantics(
-            child: Image.asset(
-              'assets/images/profile_header_scene.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-          ),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppColors.white.withValues(alpha: .18),
-                AppColors.white.withValues(alpha: .36),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _ProfileTopSheet extends StatelessWidget {
   const _ProfileTopSheet({required this.child});
 
@@ -201,40 +136,9 @@ class _SimpleHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final joinedMonth = '${now.year}/${now.month.toString().padLeft(2, '0')}';
-    final displayAvatar = avatar ?? OheyAvatar.defaultAvatar;
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
-      child: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: 166,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: OheyAvatarView(avatar: displayAvatar, size: 156),
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(18, 8, 18, 9),
-            color: AppColors.darkBackgroundBottom,
-            child: Center(
-              child: Text(
-                '$name ・ $joinedMonth 参加',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.white.withValues(alpha: .72),
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.4,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return OheyProfileHeroBanner(
+      avatar: avatar ?? OheyAvatar.defaultAvatar,
+      label: '$name ・ $joinedMonth 参加',
     );
   }
 }
