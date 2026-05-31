@@ -91,7 +91,7 @@ class _ProfileStatusHelpCard extends StatelessWidget {
                 Text(
                   isUnset ? '今の気分、選んでみよ。' : '今の気分だよ',
                   style: TextStyle(
-                    color: isWhite ? const Color(0xFF17212B) : Colors.white,
+                    color: isWhite ? AppColors.cFF17212B : AppColors.white,
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
@@ -101,8 +101,8 @@ class _ProfileStatusHelpCard extends StatelessWidget {
                   '今空いてるか、時間次第かを出しておくとフレンズと予定を合わせやすくなります。',
                   style: TextStyle(
                     color: isWhite
-                        ? const Color(0xFF667381)
-                        : Colors.white.withValues(alpha: .64),
+                        ? AppColors.cFF667381
+                        : AppColors.white.withValues(alpha: .64),
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     height: 1.35,
@@ -136,15 +136,15 @@ class _ProfileStatusOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = _statusColor(status);
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
     final surface = selected
         ? color.withValues(alpha: isWhite ? .24 : .20)
-        : (isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground);
+        : (isWhite ? AppColors.cFFF6F8FA : AppColors.darkBackground);
     final bottom = selected
         ? ohey3DShadowColorFor(color, lightnessScale: isWhite ? .72 : .60)
         : isWhite
-        ? const Color(0xFFD8E1EA)
-        : const Color(0xFF09131D);
+        ? AppColors.cFFD8E1EA
+        : AppColors.cFF09131D;
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 160),
       opacity: disabled && !saving ? .55 : 1,
@@ -159,8 +159,8 @@ class _ProfileStatusOption extends StatelessWidget {
         borderColor: selected
             ? color
             : (isWhite
-                  ? const Color(0xFFDDE4EA)
-                  : Colors.white.withValues(alpha: .12)),
+                  ? AppColors.cFFDDE4EA
+                  : AppColors.white.withValues(alpha: .12)),
         borderWidth: selected ? 1.6 : 1,
         outerShadows: [
           BoxShadow(
@@ -171,7 +171,7 @@ class _ProfileStatusOption extends StatelessWidget {
         ],
         innerShadows: [
           BoxShadow(
-            color: Colors.white.withValues(alpha: isWhite ? .42 : .08),
+            color: AppColors.white.withValues(alpha: isWhite ? .42 : .08),
             blurRadius: 10,
             offset: const Offset(-2, -2),
           ),
@@ -196,9 +196,7 @@ class _ProfileStatusOption extends StatelessWidget {
                   Text(
                     status.description,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: isWhite
-                          ? const Color(0xFF687481)
-                          : _ProfileColors.sub,
+                      color: isWhite ? AppColors.cFF687481 : _ProfileColors.sub,
                       fontWeight: FontWeight.w800,
                       height: 1.35,
                     ),

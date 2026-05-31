@@ -9,7 +9,7 @@ class _AvatarEditCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -18,11 +18,11 @@ class _AvatarEditCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
           color: isWhite
-              ? const Color(0xFFF6F8FA)
-              : Colors.white.withValues(alpha: .06),
+              ? AppColors.cFFF6F8FA
+              : AppColors.white.withValues(alpha: .06),
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: isWhite ? const Color(0xFFDDE4EA) : _ProfileColors.line,
+            color: isWhite ? AppColors.cFFDDE4EA : _ProfileColors.line,
           ),
         ),
         child: Row(
@@ -33,7 +33,7 @@ class _AvatarEditCard extends StatelessWidget {
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: [Color(0xFF223544), Color(0xFF101B28)],
+                  colors: [AppColors.cFF223544, AppColors.cFF101B28],
                 ),
               ),
               child: OheyAvatarView(avatar: avatar, size: 82),
@@ -57,8 +57,8 @@ class _AvatarEditCard extends StatelessWidget {
                     '肌・髪型・服・表情をカスタム',
                     style: TextStyle(
                       color: isWhite
-                          ? const Color(0xFF687481)
-                          : Colors.white.withValues(alpha: .58),
+                          ? AppColors.cFF687481
+                          : AppColors.white.withValues(alpha: .58),
                       fontWeight: FontWeight.w800,
                       fontSize: 12,
                     ),
@@ -92,7 +92,7 @@ class _SettingsSheetShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF111820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF111820 : AppColors.white;
 
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -113,8 +113,8 @@ class _SettingsSheetShell extends StatelessWidget {
                   height: 5,
                   decoration: BoxDecoration(
                     color: isWhite
-                        ? const Color(0xFFD8E0E8)
-                        : Colors.white.withValues(alpha: .18),
+                        ? AppColors.cFFD8E0E8
+                        : AppColors.white.withValues(alpha: .18),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -183,10 +183,10 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF71808E)
-        : Colors.white.withValues(alpha: .58);
+        ? AppColors.cFF71808E
+        : AppColors.white.withValues(alpha: .58);
     final textColor = destructive ? _ProfileColors.pink : ink;
 
     return Padding(
@@ -205,8 +205,8 @@ class _SettingsTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(22),
               border: Border.all(
                 color: isWhite
-                    ? const Color(0xFFE1E8EF)
-                    : Colors.white.withValues(alpha: .12),
+                    ? AppColors.cFFE1E8EF
+                    : AppColors.white.withValues(alpha: .12),
                 width: 1.4,
               ),
             ),
@@ -260,7 +260,7 @@ class _SettingsTile extends StatelessWidget {
                             const SizedBox(width: 8),
                             _SettingsTileBadge(
                               count: badgeCount,
-                              accent: const Color(0xFFFF5F8F),
+                              accent: AppColors.cFFFF5F8F,
                             ),
                           ],
                         ],
@@ -286,8 +286,8 @@ class _SettingsTile extends StatelessWidget {
                   height: 32,
                   decoration: BoxDecoration(
                     color: isWhite
-                        ? const Color(0xFFF3F6F9)
-                        : Colors.white.withValues(alpha: .07),
+                        ? AppColors.cFFF3F6F9
+                        : AppColors.white.withValues(alpha: .07),
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
@@ -334,7 +334,7 @@ class _SettingsTileBadge extends StatelessWidget {
         label,
         textAlign: TextAlign.center,
         style: const TextStyle(
-          color: Colors.white,
+          color: AppColors.white,
           fontSize: 10,
           height: 1,
           fontWeight: FontWeight.w900,
@@ -363,7 +363,7 @@ class _SheetPrimaryButton extends StatelessWidget {
     height: 54,
     radius: 22,
     color: AppColors.primaryAction,
-    foregroundColor: Colors.white,
+    foregroundColor: AppColors.white,
     shadowColor: AppColors.primaryActionShadow,
   );
 }

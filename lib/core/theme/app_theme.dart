@@ -13,7 +13,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF22D7C5),
+        seedColor: AppColors.cFF22D7C5,
         brightness: Brightness.dark,
       ),
       scaffoldBackgroundColor: AppColors.darkBackground,
@@ -22,15 +22,15 @@ class AppTheme {
     return base.copyWith(
       textTheme: base.textTheme.apply(
         fontFamily: _fontFamily,
-        bodyColor: Colors.white,
-        displayColor: Colors.white,
+        bodyColor: AppColors.white,
+        displayColor: AppColors.white,
       ),
       cupertinoOverrideTheme: const CupertinoThemeData(
         brightness: Brightness.dark,
-        primaryColor: Color(0xFF22D7C5),
+        primaryColor: AppColors.cFF22D7C5,
         scaffoldBackgroundColor: AppColors.darkBackground,
         textTheme: CupertinoTextThemeData(
-          primaryColor: Colors.white,
+          primaryColor: AppColors.white,
           textStyle: TextStyle(fontFamily: _fontFamily),
         ),
       ),
@@ -104,9 +104,9 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         elevation: 0,
-        backgroundColor: const Color(0xFF102331).withValues(alpha: .96),
+        backgroundColor: AppColors.cFF102331.withValues(alpha: .96),
         contentTextStyle: const TextStyle(
-          color: Colors.white,
+          color: AppColors.white,
           fontSize: 14,
           fontWeight: FontWeight.w800,
           height: 1.35,
@@ -118,7 +118,7 @@ class AppTheme {
         ),
         insetPadding: const EdgeInsets.fromLTRB(18, 0, 18, 94),
         actionTextColor: AppColors.lemon,
-        closeIconColor: Colors.white,
+        closeIconColor: AppColors.white,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,

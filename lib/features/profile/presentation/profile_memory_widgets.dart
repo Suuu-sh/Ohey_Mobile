@@ -27,10 +27,10 @@ Future<void> _showEditProfileSheet(
       builder: (sheetBuildContext, setState) {
         final sheetIsWhite =
             Theme.of(sheetBuildContext).brightness == Brightness.light;
-        final inputInk = sheetIsWhite ? const Color(0xFF101820) : Colors.white;
+        final inputInk = sheetIsWhite ? AppColors.cFF101820 : AppColors.white;
         final inputSub = sheetIsWhite
-            ? const Color(0xFF8B96A3)
-            : Colors.white.withValues(alpha: .45);
+            ? AppColors.cFF8B96A3
+            : AppColors.white.withValues(alpha: .45);
 
         Future<void> saveProfile() async {
           final name = controller.text.trim();
@@ -243,7 +243,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
                     Text(
                       '変更を保存しますか？',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -.4,
@@ -267,7 +267,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
             icon: CupertinoIcons.check_mark_circled_solid,
             title: '保存して閉じる',
             subtitle: '変更をプロフィールに残す',
-            accent: const Color(0xFF20D0B4),
+            accent: AppColors.cFF20D0B4,
             onTap: () => Navigator.of(context).pop(_UnsavedProfileAction.save),
           ),
           const SizedBox(height: 10),
@@ -275,7 +275,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
             icon: CupertinoIcons.arrow_uturn_left,
             title: '変更を戻す',
             subtitle: '変更前のプロフィールに戻す',
-            accent: const Color(0xFFB78CFF),
+            accent: AppColors.cFFB78CFF,
             onTap: () =>
                 Navigator.of(context).pop(_UnsavedProfileAction.discard),
           ),
@@ -310,10 +310,10 @@ class _UnsavedProfileCancelButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.darkBackground,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: Colors.white.withValues(alpha: .12)),
+          border: Border.all(color: AppColors.white.withValues(alpha: .12)),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFB78CFF).withValues(alpha: .12),
+              color: AppColors.cFFB78CFF.withValues(alpha: .12),
               blurRadius: 18,
               offset: const Offset(0, 8),
             ),
@@ -322,7 +322,7 @@ class _UnsavedProfileCancelButton extends StatelessWidget {
         child: Text(
           label,
           style: const TextStyle(
-            color: Color(0xFFCF9BFF),
+            color: AppColors.cFFCF9BFF,
             fontSize: 17,
             fontWeight: FontWeight.w900,
             letterSpacing: -.3,
@@ -378,7 +378,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               icon: CupertinoIcons.play_circle_fill,
               label: 'はじめてのデモ',
               subtitle: 'Oheyの使い方をもう一度見る',
-              accent: const Color(0xFF9AF21A),
+              accent: AppColors.cFF9AF21A,
               onTap: () async {
                 if (sheetContext.mounted) {
                   Navigator.of(sheetContext).pop();
@@ -396,7 +396,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               icon: CupertinoIcons.person_2_fill,
               label: '管理',
               subtitle: '申請・ブロック・ミュートを確認',
-              accent: const Color(0xFF65D6FF),
+              accent: AppColors.cFF65D6FF,
               badgeCount: pendingRequestBadgeCount,
               onTap: () async {
                 if (sheetContext.mounted) {
@@ -413,7 +413,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               icon: CupertinoIcons.doc_text_fill,
               label: 'サポート・法務',
               subtitle: '問い合わせ・利用規約・プライバシー',
-              accent: const Color(0xFFFFD166),
+              accent: AppColors.cFFFFD166,
               onTap: () async {
                 if (sheetContext.mounted) {
                   Navigator.of(sheetContext).pop();
@@ -429,7 +429,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               icon: CupertinoIcons.delete_solid,
               label: 'アカウント削除',
               subtitle: '退会してデータを削除します',
-              accent: const Color(0xFFFF5C7A),
+              accent: AppColors.cFFFF5C7A,
               destructive: true,
               onTap: () async {
                 if (sheetContext.mounted) {
@@ -504,7 +504,7 @@ Future<void> _showSupportLegalSheet(BuildContext context) {
   return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => const _SupportLegalSheet(),
   );
 }
@@ -515,10 +515,10 @@ class _SupportLegalSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF64717D)
-        : Colors.white.withValues(alpha: .64);
+        ? AppColors.cFF64717D
+        : AppColors.white.withValues(alpha: .64);
 
     return OheyBottomSheetShell(
       title: 'サポート・法務',
@@ -545,7 +545,7 @@ class _SupportLegalSheet extends StatelessWidget {
             title: '問い合わせ',
             subtitle: 'サポート窓口メール',
             value: _oheySupportEmail,
-            accent: const Color(0xFFFFD166),
+            accent: AppColors.cFFFFD166,
           ),
           const SizedBox(height: 10),
           _SupportLegalRow(
@@ -553,7 +553,7 @@ class _SupportLegalSheet extends StatelessWidget {
             title: '利用規約',
             subtitle: 'Terms of Service URL',
             value: _oheyTermsUrl,
-            accent: const Color(0xFF65D6FF),
+            accent: AppColors.cFF65D6FF,
           ),
           const SizedBox(height: 10),
           _SupportLegalRow(
@@ -561,7 +561,7 @@ class _SupportLegalSheet extends StatelessWidget {
             title: 'プライバシーポリシー',
             subtitle: 'Privacy Policy URL',
             value: _oheyPrivacyUrl,
-            accent: const Color(0xFFFF7AB8),
+            accent: AppColors.cFFFF7AB8,
           ),
           const SizedBox(height: 14),
           Text(
@@ -578,9 +578,9 @@ class _SupportLegalSheet extends StatelessWidget {
             height: 48,
             radius: 20,
             color: isWhite
-                ? const Color(0xFFF2F6FA)
-                : Colors.white.withValues(alpha: .06),
-            bottomColor: const Color(0xFF243240).withValues(alpha: .46),
+                ? AppColors.cFFF2F6FA
+                : AppColors.white.withValues(alpha: .06),
+            bottomColor: AppColors.cFF243240.withValues(alpha: .46),
             useGradient: false,
             outerShadows: const [],
             innerShadows: const [],
@@ -621,10 +621,10 @@ class _SupportLegalRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF6D7884)
-        : Colors.white.withValues(alpha: .62);
+        ? AppColors.cFF6D7884
+        : AppColors.white.withValues(alpha: .62);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () async {
@@ -637,8 +637,8 @@ class _SupportLegalRow extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
         decoration: BoxDecoration(
           color: isWhite
-              ? const Color(0xFFF5F8FB)
-              : Colors.white.withValues(alpha: .055),
+              ? AppColors.cFFF5F8FB
+              : AppColors.white.withValues(alpha: .055),
           borderRadius: BorderRadius.circular(22),
           border: Border.all(color: accent.withValues(alpha: .26)),
         ),
@@ -704,7 +704,7 @@ Future<void> _showFriendRequestManagementSheet(BuildContext context) {
   return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => const _FriendRequestManagementSheet(),
   );
 }
@@ -714,7 +714,7 @@ Future<void> _showProfileManagementSheet(BuildContext context) {
   return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (sheetContext) => Consumer(
       builder: (context, ref, _) {
         final pendingRequestsAsync = ref.watch(pendingFriendRequestsProvider);
@@ -738,7 +738,7 @@ Future<void> _showProfileManagementSheet(BuildContext context) {
                 icon: CupertinoIcons.person_2_fill,
                 label: '申請管理',
                 subtitle: _friendRequestSettingsSubtitle(pendingRequestsAsync),
-                accent: const Color(0xFFB7F15B),
+                accent: AppColors.cFFB7F15B,
                 badgeCount: pendingRequestBadgeCount,
                 onTap: () async {
                   if (sheetContext.mounted) {
@@ -755,7 +755,7 @@ Future<void> _showProfileManagementSheet(BuildContext context) {
                 icon: CupertinoIcons.shield_lefthalf_fill,
                 label: 'ブロック・ミュート管理',
                 subtitle: '解除したい相手を確認',
-                accent: const Color(0xFF65D6FF),
+                accent: AppColors.cFF65D6FF,
                 onTap: () async {
                   if (sheetContext.mounted) {
                     Navigator.of(sheetContext).pop();
@@ -862,8 +862,8 @@ class _FriendRequestManagementSheetState
     final requestsAsync = ref.watch(pendingFriendRequestsProvider);
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite
-        ? const Color(0xFF64717D)
-        : Colors.white.withValues(alpha: .64);
+        ? AppColors.cFF64717D
+        : AppColors.white.withValues(alpha: .64);
 
     return OheyBottomSheetShell(
       title: '申請管理',
@@ -907,14 +907,14 @@ class _FriendRequestManagementSheetState
                         title: '送信中',
                         emptyMessage: '送信中の申請はありません。',
                         requests: outgoing,
-                        accent: const Color(0xFFB7F15B),
+                        accent: AppColors.cFFB7F15B,
                         busyRequestIds: _busyRequestIds,
                         onCancelAll: outgoing.isEmpty
                             ? null
                             : () => _cancelAll(outgoing),
                         rowBuilder: (request) => _FriendRequestRow(
                           request: request,
-                          accent: const Color(0xFFB7F15B),
+                          accent: AppColors.cFFB7F15B,
                           busy: _busyRequestIds.contains(request.id),
                           onCancel: () => _respond(request, 'cancelled'),
                         ),
@@ -924,11 +924,11 @@ class _FriendRequestManagementSheetState
                         title: '受信中',
                         emptyMessage: '受信中の申請はありません。',
                         requests: incoming,
-                        accent: const Color(0xFF8A62FF),
+                        accent: AppColors.cFF8A62FF,
                         busyRequestIds: _busyRequestIds,
                         rowBuilder: (request) => _FriendRequestRow(
                           request: request,
-                          accent: const Color(0xFF8A62FF),
+                          accent: AppColors.cFF8A62FF,
                           busy: _busyRequestIds.contains(request.id),
                           onAccept: () => _respond(request, 'accepted'),
                           onReject: () => _respond(request, 'rejected'),
@@ -983,10 +983,10 @@ class _FriendRequestSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF6D7884)
-        : Colors.white.withValues(alpha: .64);
+        ? AppColors.cFF6D7884
+        : AppColors.white.withValues(alpha: .64);
     final allBusy =
         requests.isNotEmpty &&
         requests.every((request) => busyRequestIds.contains(request.id));
@@ -995,8 +995,8 @@ class _FriendRequestSection extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isWhite
-            ? const Color(0xFFF5F8FB)
-            : Colors.white.withValues(alpha: .055),
+            ? AppColors.cFFF5F8FB
+            : AppColors.white.withValues(alpha: .055),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: accent.withValues(alpha: .28)),
       ),
@@ -1090,10 +1090,10 @@ class _FriendRequestRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF111820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF111820 : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF6D7884)
-        : Colors.white.withValues(alpha: .62);
+        ? AppColors.cFF6D7884
+        : AppColors.white.withValues(alpha: .62);
     final profile = request.otherUser;
     final handle = profile.userId.trim().isEmpty
         ? 'ID未設定'
@@ -1102,12 +1102,12 @@ class _FriendRequestRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
+        color: isWhite ? AppColors.white : AppColors.darkBackgroundBottom,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isWhite
-              ? const Color(0xFFE2E8EF)
-              : Colors.white.withValues(alpha: .08),
+              ? AppColors.cFFE2E8EF
+              : AppColors.white.withValues(alpha: .08),
         ),
       ),
       child: Row(
@@ -1168,9 +1168,9 @@ class _FriendRequestRow extends StatelessWidget {
                     onTap: busy ? null : onReject,
                     height: 40,
                     radius: 18,
-                    color: const Color(0xFF3A2231),
-                    foregroundColor: const Color(0xFFFF8AA8),
-                    shadowColor: const Color(0xFF1E121B),
+                    color: AppColors.cFF3A2231,
+                    foregroundColor: AppColors.cFFFF8AA8,
+                    shadowColor: AppColors.cFF1E121B,
                     fontSize: 12,
                     padding: EdgeInsets.zero,
                   ),
@@ -1184,8 +1184,8 @@ class _FriendRequestRow extends StatelessWidget {
                     height: 40,
                     radius: 18,
                     color: accent,
-                    foregroundColor: Colors.white,
-                    shadowColor: const Color(0xFF4A2BBF),
+                    foregroundColor: AppColors.white,
+                    shadowColor: AppColors.cFF4A2BBF,
                     fontSize: 12,
                     padding: EdgeInsets.zero,
                   ),
@@ -1210,7 +1210,7 @@ Future<void> _showSafetyCenterSheet(BuildContext context) {
   return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => const _SafetyCenterSheet(),
   );
 }
@@ -1299,8 +1299,8 @@ class _SafetyCenterSheetState extends ConsumerState<_SafetyCenterSheet> {
     final muted = ref.watch(mutedUsersProvider);
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite
-        ? const Color(0xFF64717D)
-        : Colors.white.withValues(alpha: .64);
+        ? AppColors.cFF64717D
+        : AppColors.white.withValues(alpha: .64);
 
     return OheyBottomSheetShell(
       title: '安全センター',
@@ -1332,7 +1332,7 @@ class _SafetyCenterSheetState extends ConsumerState<_SafetyCenterSheet> {
                 emptyMessage: 'ブロック中のユーザーはいません。',
                 usersAsync: blocked,
                 releasingUserIds: _releasingUserIds,
-                accent: const Color(0xFFFF7A9E),
+                accent: AppColors.cFFFF7A9E,
                 actionLabel: '解除',
                 onRelease: (user) => _releaseUser(user, block: true),
               ),
@@ -1342,7 +1342,7 @@ class _SafetyCenterSheetState extends ConsumerState<_SafetyCenterSheet> {
                 emptyMessage: 'ミュート中のユーザーはいません。',
                 usersAsync: muted,
                 releasingUserIds: _releasingUserIds,
-                accent: const Color(0xFF65D6FF),
+                accent: AppColors.cFF65D6FF,
                 actionLabel: '解除',
                 onRelease: (user) => _releaseUser(user, block: false),
               ),
@@ -1376,17 +1376,17 @@ class _SafetyUserSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF6D7884)
-        : Colors.white.withValues(alpha: .64);
+        ? AppColors.cFF6D7884
+        : AppColors.white.withValues(alpha: .64);
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isWhite
-            ? const Color(0xFFF5F8FB)
-            : Colors.white.withValues(alpha: .055),
+            ? AppColors.cFFF5F8FB
+            : AppColors.white.withValues(alpha: .055),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: accent.withValues(alpha: .28)),
       ),
@@ -1484,21 +1484,21 @@ class _SafetyUserRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF111820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF111820 : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF6D7884)
-        : Colors.white.withValues(alpha: .62);
+        ? AppColors.cFF6D7884
+        : AppColors.white.withValues(alpha: .62);
     final handle = user.userId.trim().isEmpty ? 'ID未設定' : '@${user.userId}';
 
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
+        color: isWhite ? AppColors.white : AppColors.darkBackgroundBottom,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isWhite
-              ? const Color(0xFFE2E8EF)
-              : Colors.white.withValues(alpha: .08),
+              ? AppColors.cFFE2E8EF
+              : AppColors.white.withValues(alpha: .08),
         ),
       ),
       child: Row(

@@ -52,7 +52,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
 
     final action = await showOheyBottomSheet<_UnsavedAvatarAction>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: .62),
+      barrierColor: AppColors.black.withValues(alpha: .62),
       builder: (context) => const _UnsavedAvatarSheet(),
     );
     if (!mounted || action == null) return;
@@ -71,7 +71,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: Colors.transparent,
+        statusBarColor: AppColors.transparent,
       ),
       child: PopScope(
         canPop: false,
@@ -154,7 +154,7 @@ class _AvatarBackgroundPickerScreenState
     final avatar = widget.initialAvatar.copyWith(background: _selected);
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: Colors.transparent,
+        statusBarColor: AppColors.transparent,
       ),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -217,7 +217,7 @@ class _AvatarBackgroundPickerScreenState
                   border: Border.all(color: _AvatarColors.line),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: .28),
+                      color: AppColors.black.withValues(alpha: .28),
                       blurRadius: 24,
                       offset: const Offset(0, 12),
                     ),
@@ -281,7 +281,7 @@ class _AvatarBackgroundOption extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: .24),
+            color: AppColors.black.withValues(alpha: .24),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -300,7 +300,7 @@ class _AvatarBackgroundOption extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: .38),
+                  color: AppColors.black.withValues(alpha: .38),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
@@ -309,7 +309,7 @@ class _AvatarBackgroundOption extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
                   ),
@@ -394,8 +394,8 @@ class _AvatarBackgroundPreview extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.white.withValues(alpha: .18),
-                Colors.white.withValues(alpha: .36),
+                AppColors.white.withValues(alpha: .18),
+                AppColors.white.withValues(alpha: .36),
               ],
             ),
           ),
@@ -427,7 +427,7 @@ class _AvatarPreviewStage extends StatelessWidget {
       border: Border.all(color: _AvatarColors.line),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withValues(alpha: .26),
+          color: AppColors.black.withValues(alpha: .26),
           blurRadius: 28,
           offset: const Offset(0, 16),
         ),
@@ -467,9 +467,9 @@ class _StageChip extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
     decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .08),
+      color: AppColors.white.withValues(alpha: .08),
       borderRadius: BorderRadius.circular(999),
-      border: Border.all(color: Colors.white.withValues(alpha: .10)),
+      border: Border.all(color: AppColors.white.withValues(alpha: .10)),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
@@ -546,9 +546,9 @@ class _UnsavedAvatarSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(13),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .06),
+              color: AppColors.white.withValues(alpha: .06),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: .10)),
+              border: Border.all(color: AppColors.white.withValues(alpha: .10)),
             ),
             child: const Row(
               children: [
@@ -578,7 +578,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
             icon: CupertinoIcons.check_mark_circled_solid,
             color: AppColors.primaryAction,
             shadowColor: AppColors.primaryActionShadow,
-            foregroundColor: Colors.white,
+            foregroundColor: AppColors.white,
             height: 52,
             radius: 22,
             fontSize: 15,
@@ -601,7 +601,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
           Ohey3DButton.secondary(
             label: '編集を続ける',
             icon: CupertinoIcons.pencil,
-            color: Colors.white.withValues(alpha: .055),
+            color: AppColors.white.withValues(alpha: .055),
             foregroundColor: _AvatarColors.sub,
             shadowColor: _AvatarColors.panelShadow,
             height: 46,
@@ -666,13 +666,13 @@ class _SaveAvatarButton extends StatelessWidget {
           width: 22,
           height: 22,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: .24),
+            color: AppColors.white.withValues(alpha: .24),
             shape: BoxShape.circle,
           ),
           child: const Center(
             child: OheyGeneratedIcon(
               CupertinoIcons.checkmark,
-              color: Colors.white,
+              color: AppColors.white,
               size: 16,
             ),
           ),
@@ -681,7 +681,7 @@ class _SaveAvatarButton extends StatelessWidget {
         const Text(
           '保存',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.white,
             fontSize: 14,
             fontWeight: FontWeight.w900,
             letterSpacing: .1,
@@ -710,12 +710,12 @@ class _RoundTool extends StatelessWidget {
       width: 78,
       height: 78,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .08),
+        color: AppColors.white.withValues(alpha: .08),
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withValues(alpha: .12)),
+        border: Border.all(color: AppColors.white.withValues(alpha: .12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: .22),
+            color: AppColors.black.withValues(alpha: .22),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -818,10 +818,10 @@ class _TabIcon extends StatelessWidget {
         decoration: BoxDecoration(
           color: active
               ? _AvatarColors.accent.withValues(alpha: .14)
-              : Colors.transparent,
+              : AppColors.transparent,
           border: Border(
             bottom: BorderSide(
-              color: active ? _AvatarColors.accent : Colors.transparent,
+              color: active ? _AvatarColors.accent : AppColors.transparent,
               width: 3,
             ),
           ),
@@ -1140,7 +1140,7 @@ class _ChoiceTile extends StatelessWidget {
               ),
               child: const OheyGeneratedIcon(
                 CupertinoIcons.checkmark,
-                color: Colors.white,
+                color: AppColors.white,
                 size: 14,
               ),
             ),
@@ -1154,12 +1154,12 @@ class _AvatarColors {
   const _AvatarColors._();
 
   static const background = AppColors.darkBackground;
-  static const panel = Color(0xFF0D1A26);
-  static const card = Color(0xFF132231);
-  static const selectedCard = Color(0xFF1A2F42);
-  static const panelShadow = Color(0xFF08111A);
-  static const line = Color(0x1EFFFFFF);
-  static const ink = Colors.white;
-  static const sub = Color(0xFF8F9BAB);
+  static const panel = AppColors.cFF0D1A26;
+  static const card = AppColors.cFF132231;
+  static const selectedCard = AppColors.cFF1A2F42;
+  static const panelShadow = AppColors.cFF08111A;
+  static const line = AppColors.c1EFFFFFF;
+  static const ink = AppColors.white;
+  static const sub = AppColors.cFF8F9BAB;
   static const accent = AppColors.primaryAction;
 }

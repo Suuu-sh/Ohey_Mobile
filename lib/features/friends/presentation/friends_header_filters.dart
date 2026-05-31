@@ -9,7 +9,7 @@ class _FriendsHeaderBackdrop extends StatelessWidget {
   Widget build(BuildContext context) {
     return OheySceneHeaderBackdrop(
       assetPath: 'assets/images/friends_header_scene.png',
-      fadeColor: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
+      fadeColor: isWhite ? AppColors.white : AppColors.darkBackgroundBottom,
       accentColor: _FriendsColors.lime,
       topShadeOpacity: .12,
       fadeStartOpacity: .84,
@@ -71,7 +71,7 @@ class _FilterBar extends StatelessWidget {
             ],
             _FilterChip(
               label: '編集',
-              accent: const Color(0xFF5DEBD3),
+              accent: AppColors.cFF5DEBD3,
               selected: false,
               icon: CupertinoIcons.pencil,
               onTap: onManageCustom,
@@ -85,7 +85,7 @@ class _FilterBar extends StatelessWidget {
 }
 
 const _filters = [
-  _FriendFilter('みんな', _FriendFilterType.all, Color(0xFFB8FF00)),
+  _FriendFilter('みんな', _FriendFilterType.all, AppColors.cFFB8FF00),
 ];
 
 class _FriendFilter {

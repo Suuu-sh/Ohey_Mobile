@@ -21,10 +21,10 @@ class _LoadingState extends StatelessWidget {
               visual: const _FriendsLoadingVisual(),
               title: 'フレンズを読み込み中...',
               message: 'かわいいフレンズたちを呼んでいます',
-              titleColor: isWhite ? const Color(0xFF1B2633) : Colors.white,
+              titleColor: isWhite ? AppColors.cFF1B2633 : AppColors.white,
               messageColor: isWhite
-                  ? const Color(0xFF6D7784)
-                  : Colors.white.withValues(alpha: .58),
+                  ? AppColors.cFF6D7784
+                  : AppColors.white.withValues(alpha: .58),
               padding: EdgeInsets.zero,
               spacing: 14,
             ),
@@ -57,10 +57,10 @@ class _ErrorState extends StatelessWidget {
               visual: const _FriendsErrorVisual(),
               title: title,
               message: message,
-              titleColor: isWhite ? const Color(0xFF1B2633) : Colors.white,
+              titleColor: isWhite ? AppColors.cFF1B2633 : AppColors.white,
               messageColor: isWhite
-                  ? const Color(0xFF6D7784)
-                  : Colors.white.withValues(alpha: .58),
+                  ? AppColors.cFF6D7784
+                  : AppColors.white.withValues(alpha: .58),
               padding: EdgeInsets.zero,
               spacing: 14,
             ),
@@ -93,7 +93,7 @@ class _FriendsLoadingVisual extends StatelessWidget {
                 colors: [
                   _FriendsColors.lime.withValues(alpha: .24),
                   _FriendsColors.lime.withValues(alpha: .06),
-                  Colors.transparent,
+                  AppColors.transparent,
                 ],
               ),
             ),
@@ -103,8 +103,8 @@ class _FriendsLoadingVisual extends StatelessWidget {
             bottom: 6,
             child: _LoadingMascotBubble(
               size: 82,
-              color: const Color(0xFF34E1C3),
-              borderColor: isWhite ? Colors.white : _FriendsColors.bg,
+              color: AppColors.cFF34E1C3,
+              borderColor: isWhite ? AppColors.white : _FriendsColors.bg,
               avatar: const OheyAvatar(
                 skin: 5,
                 hair: 1,
@@ -120,8 +120,8 @@ class _FriendsLoadingVisual extends StatelessWidget {
             top: 18,
             child: _LoadingMascotBubble(
               size: 66,
-              color: const Color(0xFF7C5CFF),
-              borderColor: isWhite ? Colors.white : _FriendsColors.bg,
+              color: AppColors.cFF7C5CFF,
+              borderColor: isWhite ? AppColors.white : _FriendsColors.bg,
               avatar: const OheyAvatar(
                 skin: 0,
                 hair: 3,
@@ -137,7 +137,7 @@ class _FriendsLoadingVisual extends StatelessWidget {
             bottom: 14,
             child: CupertinoActivityIndicator(
               radius: 12,
-              color: isWhite ? const Color(0xFF1B2633) : Colors.white,
+              color: isWhite ? AppColors.cFF1B2633 : AppColors.white,
             ),
           ),
         ],
@@ -214,17 +214,17 @@ class _FriendsErrorVisual extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  const Color(0xFFFF6B8A).withValues(alpha: .20),
+                  AppColors.cFFFF6B8A.withValues(alpha: .20),
                   _FriendsColors.lime.withValues(alpha: .07),
-                  Colors.transparent,
+                  AppColors.transparent,
                 ],
               ),
             ),
           ),
           _LoadingMascotBubble(
             size: 88,
-            color: const Color(0xFFFF8AB1),
-            borderColor: isWhite ? Colors.white : _FriendsColors.bg,
+            color: AppColors.cFFFF8AB1,
+            borderColor: isWhite ? AppColors.white : _FriendsColors.bg,
             avatar: const OheyAvatar(
               skin: 1,
               hair: 4,
@@ -242,16 +242,16 @@ class _FriendsErrorVisual extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFFF6B8A),
+                color: AppColors.cFFFF6B8A,
                 border: Border.all(
-                  color: isWhite ? Colors.white : _FriendsColors.bg,
+                  color: isWhite ? AppColors.white : _FriendsColors.bg,
                   width: 4,
                 ),
               ),
               child: const Center(
                 child: OheyGeneratedIcon(
                   CupertinoIcons.exclamationmark,
-                  color: Colors.white,
+                  color: AppColors.white,
                   size: 20,
                 ),
               ),
@@ -278,7 +278,7 @@ class _FriendStatus {
 }
 
 Color _friendBlockSurfaceColor({required bool isWhite}) =>
-    isWhite ? Colors.white : AppColors.darkBackgroundBottom;
+    isWhite ? AppColors.white : AppColors.darkBackgroundBottom;
 
 Color _friendBlockFrameColor(_FriendStatus status) =>
     _friendInviteButtonColor(status);
@@ -298,7 +298,7 @@ Color _friendInviteButtonShadowColor(_FriendStatus status) {
   if (!status.enabled) return _FriendsColors.disabledButtonShadow;
   final color = _friendInviteButtonColor(status);
   if (color == _FriendsColors.lime) return _FriendsColors.limeShadow;
-  return Color.lerp(color, Colors.black, .32)!;
+  return Color.lerp(color, AppColors.black, .32)!;
 }
 
 Color _friendInviteButtonForegroundColor(_FriendStatus status) => status.enabled
@@ -355,19 +355,19 @@ class _FriendsColors {
   const _FriendsColors._();
 
   static const bg = AppColors.darkBackgroundBottom;
-  static const lime = Color(0xFFB8FF00);
-  static const limeShadow = Color(0xFF6FB600);
-  static const limeForeground = Color(0xFF071320);
-  static const muted = Color(0xFF8792A3);
-  static const statusPink = Color(0xFFFF5EA8);
-  static const statusBlue = Color(0xFF20B9FF);
-  static const statusPurple = Color(0xFF8A62FF);
-  static const statusGreen = Color(0xFF9AF21A);
-  static const statusBlocked = Color(0xFF2B3644);
-  static const disabledButton = Color(0xFF2B3441);
-  static const disabledButtonShadow = Color(0xFF111923);
-  static const disabledButtonForeground = Color(0xFF738092);
-  static const invitedButton = Color(0xFF3C4652);
-  static const invitedButtonShadow = Color(0xFF1A222C);
-  static const invitedButtonForeground = Color(0xFFC3CAD3);
+  static const lime = AppColors.cFFB8FF00;
+  static const limeShadow = AppColors.cFF6FB600;
+  static const limeForeground = AppColors.cFF071320;
+  static const muted = AppColors.cFF8792A3;
+  static const statusPink = AppColors.cFFFF5EA8;
+  static const statusBlue = AppColors.cFF20B9FF;
+  static const statusPurple = AppColors.cFF8A62FF;
+  static const statusGreen = AppColors.cFF9AF21A;
+  static const statusBlocked = AppColors.cFF2B3644;
+  static const disabledButton = AppColors.cFF2B3441;
+  static const disabledButtonShadow = AppColors.cFF111923;
+  static const disabledButtonForeground = AppColors.cFF738092;
+  static const invitedButton = AppColors.cFF3C4652;
+  static const invitedButtonShadow = AppColors.cFF1A222C;
+  static const invitedButtonForeground = AppColors.cFFC3CAD3;
 }

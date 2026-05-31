@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../models/ohey_avatar.dart';
 import 'ohey_3d_button.dart';
 import 'ohey_avatar.dart';
 import 'ohey_pop_icon.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
 /// QR exchange display used by friend/profile exchange flows.
 ///
@@ -21,7 +21,7 @@ class OheyQrDisplayCard extends StatelessWidget {
     required this.avatar,
     required this.accentColor,
     this.cardColor,
-    this.textColor = Colors.white,
+    this.textColor = AppColors.white,
     this.mutedTextColor,
     this.qrSize = 202,
     this.qrPadding = 14,
@@ -92,7 +92,7 @@ class OheyQrDisplayCard extends StatelessWidget {
           height: qrSize,
           padding: EdgeInsets.all(qrPadding),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
@@ -110,7 +110,7 @@ class OheyQrDisplayCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
           decoration: BoxDecoration(
-            color: (cardColor ?? Colors.white).withValues(alpha: .07),
+            color: (cardColor ?? AppColors.white).withValues(alpha: .07),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(color: textColor.withValues(alpha: .08)),
           ),
@@ -167,7 +167,7 @@ class OheyExchangeActionCard extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontSize: 17,
                       fontWeight: FontWeight.w900,
                     ),
@@ -176,7 +176,7 @@ class OheyExchangeActionCard extends StatelessWidget {
                   Text(
                     subtitle,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: .50),
+                      color: AppColors.white.withValues(alpha: .50),
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                     ),
@@ -241,7 +241,7 @@ class OheyProfileResultSheet extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(34),
-          border: Border.all(color: Colors.white.withValues(alpha: .10)),
+          border: Border.all(color: AppColors.white.withValues(alpha: .10)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -250,7 +250,7 @@ class OheyProfileResultSheet extends StatelessWidget {
               width: 54,
               height: 5,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .22),
+                color: AppColors.white.withValues(alpha: .22),
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
@@ -264,12 +264,12 @@ class OheyProfileResultSheet extends StatelessWidget {
                     width: 42,
                     height: 42,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .08),
+                      color: AppColors.white.withValues(alpha: .08),
                       shape: BoxShape.circle,
                     ),
                     child: const OheyGeneratedIcon(
                       CupertinoIcons.xmark,
-                      color: Colors.white,
+                      color: AppColors.white,
                       size: 24,
                     ),
                   ),
@@ -290,7 +290,7 @@ class OheyProfileResultSheet extends StatelessWidget {
             Text(
               displayName,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
               ),
@@ -299,7 +299,7 @@ class OheyProfileResultSheet extends StatelessWidget {
             Text(
               subtitle,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: .52),
+                color: AppColors.white.withValues(alpha: .52),
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -309,10 +309,10 @@ class OheyProfileResultSheet extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .045),
+                  color: AppColors.white.withValues(alpha: .045),
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: .08),
+                    color: AppColors.white.withValues(alpha: .08),
                   ),
                 ),
                 child: Row(
@@ -328,7 +328,7 @@ class OheyProfileResultSheet extends StatelessWidget {
                       child: Text(
                         statusMessage!,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: .74),
+                          color: AppColors.white.withValues(alpha: .74),
                           fontWeight: FontWeight.w800,
                           height: 1.45,
                         ),
@@ -346,7 +346,7 @@ class OheyProfileResultSheet extends StatelessWidget {
               height: 54,
               radius: 22,
               color: accentColor,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.white,
               shadowColor: ohey3DShadowColorFor(
                 accentColor,
                 lightnessScale: .58,

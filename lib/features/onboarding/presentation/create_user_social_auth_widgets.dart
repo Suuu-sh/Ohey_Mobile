@@ -18,10 +18,10 @@ class _SocialLoginButton extends StatelessWidget {
     onTap: onTap,
     height: height,
     radius: 18,
-    topColor: const Color(0xFF52606B),
-    bottomColor: const Color(0xFF35434D),
-    borderColor: Colors.white.withValues(alpha: .18),
-    glowColor: const Color(0xFF52606B).withValues(alpha: .18),
+    topColor: AppColors.cFF52606B,
+    bottomColor: AppColors.cFF35434D,
+    borderColor: AppColors.white.withValues(alpha: .18),
+    glowColor: AppColors.cFF52606B.withValues(alpha: .18),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -30,7 +30,7 @@ class _SocialLoginButton extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: .88),
+            color: AppColors.white.withValues(alpha: .88),
             fontSize: 16,
             fontWeight: FontWeight.w900,
             letterSpacing: .6,
@@ -112,14 +112,14 @@ class _Auth3DPanelButton extends StatelessWidget {
     outerShadows: [
       BoxShadow(color: glowColor, blurRadius: 24, offset: const Offset(0, 12)),
       BoxShadow(
-        color: Colors.black.withValues(alpha: .16),
+        color: AppColors.black.withValues(alpha: .16),
         blurRadius: 18,
         offset: const Offset(0, 9),
       ),
     ],
     innerShadows: [
       BoxShadow(
-        color: Colors.white.withValues(alpha: .08),
+        color: AppColors.white.withValues(alpha: .08),
         blurRadius: 0,
         spreadRadius: -4,
         offset: const Offset(0, -5),
@@ -136,7 +136,7 @@ class _GoogleMark extends StatelessWidget {
   Widget build(BuildContext context) => const Text(
     'G',
     style: TextStyle(
-      color: Color(0xFF4285F4),
+      color: AppColors.cFF4285F4,
       fontSize: 27,
       fontWeight: FontWeight.w900,
     ),
@@ -148,5 +148,5 @@ class _AppleMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      const Icon(Icons.apple, color: Colors.white, size: 35);
+      const Icon(Icons.apple, color: AppColors.white, size: 35);
 }

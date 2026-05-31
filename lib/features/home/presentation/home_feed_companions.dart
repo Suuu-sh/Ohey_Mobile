@@ -8,10 +8,10 @@ class _FeedCompanionListSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     final subtitleColor = isWhite
-        ? const Color(0xFF697684)
-        : Colors.white.withValues(alpha: .58);
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .58);
     final listHeight = (friends.length * 78.0).clamp(
       78.0,
       MediaQuery.sizeOf(context).height * .44,
@@ -87,17 +87,21 @@ class _FeedCompanionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     final subtitleColor = isWhite
-        ? const Color(0xFF697684)
-        : Colors.white.withValues(alpha: .56);
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .56);
     final statusColor = _companionStatusColor(friend.statusKey);
     final tileColor = isWhite
-        ? const Color(0xFFF7FAFC)
+        ? AppColors.cFFF7FAFC
         : Color.lerp(AppColors.darkBackground, friend.accent, .20)!;
     final tileBorderColor = isWhite
-        ? const Color(0xFFE1E8F1)
-        : Color.lerp(friend.accent, Colors.white, .18)!.withValues(alpha: .26);
+        ? AppColors.cFFE1E8F1
+        : Color.lerp(
+            friend.accent,
+            AppColors.white,
+            .18,
+          )!.withValues(alpha: .26);
     final statusBackgroundColor = isWhite
         ? statusColor.withValues(alpha: .13)
         : Color.lerp(AppColors.darkBackground, statusColor, .34)!;
@@ -206,13 +210,13 @@ class _FeedCompanionStatusCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isWhite
-            ? const Color(0xFFF7FAFC)
-            : Colors.white.withValues(alpha: .045),
+            ? AppColors.cFFF7FAFC
+            : AppColors.white.withValues(alpha: .045),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: isWhite
-              ? const Color(0xFFE1E8F1)
-              : Colors.white.withValues(alpha: .08),
+              ? AppColors.cFFE1E8F1
+              : AppColors.white.withValues(alpha: .08),
         ),
       ),
       child: Row(
@@ -280,13 +284,13 @@ class _FeedCompanionRequestCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isWhite
-            ? const Color(0xFFF7FAFC)
-            : Colors.white.withValues(alpha: .045),
+            ? AppColors.cFFF7FAFC
+            : AppColors.white.withValues(alpha: .045),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: isWhite
-              ? const Color(0xFFE1E8F1)
-              : Colors.white.withValues(alpha: .08),
+              ? AppColors.cFFE1E8F1
+              : AppColors.white.withValues(alpha: .08),
         ),
       ),
       child: Column(
@@ -296,7 +300,7 @@ class _FeedCompanionRequestCard extends StatelessWidget {
             children: [
               const OheyPopIcon(
                 icon: CupertinoIcons.lock_fill,
-                color: Color(0xFFC08BFF),
+                color: AppColors.cFFC08BFF,
                 size: 40,
                 iconSize: 20,
                 showBubble: false,
@@ -323,9 +327,9 @@ class _FeedCompanionRequestCard extends StatelessWidget {
             enabled: enabled,
             height: 46,
             radius: 20,
-            color: const Color(0xFFC08BFF),
-            foregroundColor: Colors.white,
-            shadowColor: const Color(0xFF7F51C9),
+            color: AppColors.cFFC08BFF,
+            foregroundColor: AppColors.white,
+            shadowColor: AppColors.cFF7F51C9,
           ),
         ],
       ),
@@ -423,7 +427,7 @@ class _FeedCompanionProfileSheetState
                         const Center(child: CupertinoActivityIndicator()),
                     error: (_, _) => _FeedCompanionRequestCard(
                       isWhite: false,
-                      subtitleColor: Colors.white.withValues(alpha: .58),
+                      subtitleColor: AppColors.white.withValues(alpha: .58),
                       message: 'プロフィール情報を確認できませんでした。',
                       buttonLabel: '閉じる',
                       onTap: () => Navigator.of(context).pop(),
@@ -436,7 +440,7 @@ class _FeedCompanionProfileSheetState
                             width: double.infinity,
                             child: _FeedCompanionRequestCard(
                               isWhite: false,
-                              subtitleColor: Colors.white.withValues(
+                              subtitleColor: AppColors.white.withValues(
                                 alpha: .58,
                               ),
                               message: _requestError ?? 'フレンズになるとカレンダーを見られます。',
@@ -466,8 +470,10 @@ class _FeedCompanionProfileSheetState
                           child: _FeedCompanionStatusCard(
                             friend: friend,
                             isWhite: false,
-                            titleColor: Colors.white,
-                            subtitleColor: Colors.white.withValues(alpha: .58),
+                            titleColor: AppColors.white,
+                            subtitleColor: AppColors.white.withValues(
+                              alpha: .58,
+                            ),
                             statusColor: statusColor,
                           ),
                         ),
@@ -484,9 +490,9 @@ class _FeedCompanionProfileSheetState
                   onTap: () => Navigator.of(context).pop(),
                   height: 48,
                   radius: 22,
-                  color: const Color(0xFF252044),
-                  foregroundColor: const Color(0xFFC08BFF),
-                  shadowColor: const Color(0xFF15142C),
+                  color: AppColors.cFF252044,
+                  foregroundColor: AppColors.cFFC08BFF,
+                  shadowColor: AppColors.cFF15142C,
                 ),
               ),
               const SizedBox(height: 16),
@@ -584,8 +590,8 @@ class _FeedCompanionHeaderBackdrop extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.white.withValues(alpha: .18),
-                Colors.white.withValues(alpha: .36),
+                AppColors.white.withValues(alpha: .18),
+                AppColors.white.withValues(alpha: .36),
               ],
             ),
           ),
@@ -626,7 +632,7 @@ class _FeedCompanionHero extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.white.withValues(alpha: .72),
+                  color: AppColors.white.withValues(alpha: .72),
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.4,
                 ),

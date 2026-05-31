@@ -174,7 +174,7 @@ class _AdminRecipientSelector extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .06),
+      color: AppColors.white.withValues(alpha: .06),
       borderRadius: BorderRadius.circular(18),
       border: Border.all(color: _AdminColors.line),
     ),
@@ -354,9 +354,9 @@ Future<bool?> _confirmDestructive(
   return showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      backgroundColor: const Color(0xFF101B28),
+      backgroundColor: AppColors.cFF101B28,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-      title: Text(title, style: const TextStyle(color: Colors.white)),
+      title: Text(title, style: const TextStyle(color: AppColors.white)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -369,9 +369,9 @@ Future<bool?> _confirmDestructive(
             onTap: () => Navigator.of(context).pop(false),
             height: 46,
             radius: 20,
-            color: Colors.white.withValues(alpha: .07),
+            color: AppColors.white.withValues(alpha: .07),
             foregroundColor: _AdminColors.sub,
-            shadowColor: const Color(0xFF324860).withValues(alpha: .78),
+            shadowColor: AppColors.cFF324860.withValues(alpha: .78),
             fontSize: 13,
             useGradient: false,
           ),
@@ -383,7 +383,7 @@ Future<bool?> _confirmDestructive(
             height: 48,
             radius: 20,
             color: _AdminColors.pink,
-            shadowColor: const Color(0xFF8E2F50),
+            shadowColor: AppColors.cFF8E2F50,
             fontSize: 14,
           ),
         ],

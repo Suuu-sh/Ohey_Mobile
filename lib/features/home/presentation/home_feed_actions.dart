@@ -26,10 +26,10 @@ class _FeedPostActionsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     final subtitleColor = isWhite
-        ? const Color(0xFF697684)
-        : Colors.white.withValues(alpha: .58);
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showHandle: false,
       child: Column(
@@ -92,7 +92,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               icon: CupertinoIcons.trash_fill,
               title: 'ゆるぼを削除',
               subtitle: 'このゆるぼを一覧から消す',
-              accent: const Color(0xFFFF5F8F),
+              accent: AppColors.cFFFF5F8F,
               destructive: true,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.delete),
             )
@@ -109,7 +109,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               icon: CupertinoIcons.bell_slash_fill,
               title: '${item.userName}さんをミュート',
               subtitle: 'ゆるぼを一覧に出さない',
-              accent: const Color(0xFF88B8FF),
+              accent: AppColors.cFF88B8FF,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.muteUser),
             ),
             const SizedBox(height: 10),
@@ -117,7 +117,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               icon: CupertinoIcons.hand_raised_fill,
               title: '${item.userName}さんをブロック',
               subtitle: 'ゆるぼ・申請・お誘いを制限する',
-              accent: const Color(0xFFFF5F8F),
+              accent: AppColors.cFFFF5F8F,
               destructive: true,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.blockUser),
             ),
@@ -127,7 +127,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
                 icon: CupertinoIcons.exclamationmark_bubble_fill,
                 title: 'ゆるぼを報告',
                 subtitle: '問題のあるゆるぼを運営に送る',
-                accent: const Color(0xFFFFD166),
+                accent: AppColors.cFFFFD166,
                 onTap: () => Navigator.of(context).pop(_FeedPostAction.report),
               ),
             ],
@@ -149,10 +149,10 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     final subtitleColor = isWhite
-        ? const Color(0xFF697684)
-        : Colors.white.withValues(alpha: .58);
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showHandle: false,
       child: Column(
@@ -162,7 +162,7 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
           Center(
             child: OheyPopIcon(
               icon: CupertinoIcons.trash_fill,
-              color: const Color(0xFFFF5F8F),
+              color: AppColors.cFFFF5F8F,
               size: 64,
               iconSize: 34,
             ),
@@ -202,7 +202,7 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
               Expanded(
                 child: _FeedModalTextButton(
                   label: '削除する',
-                  color: const Color(0xFFFF5F8F),
+                  color: AppColors.cFFFF5F8F,
                   onTap: () => Navigator.of(context).pop(true),
                 ),
               ),
@@ -230,10 +230,10 @@ class _FeedUserSafetyConfirmSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     final subtitleColor = isWhite
-        ? const Color(0xFF697684)
-        : Colors.white.withValues(alpha: .58);
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showHandle: false,
       child: Column(
@@ -301,10 +301,10 @@ class _FeedReportReasonSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     final subtitleColor = isWhite
-        ? const Color(0xFF697684)
-        : Colors.white.withValues(alpha: .58);
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showHandle: false,
       child: Column(
@@ -314,7 +314,7 @@ class _FeedReportReasonSheet extends StatelessWidget {
           Center(
             child: OheyPopIcon(
               icon: CupertinoIcons.exclamationmark_bubble_fill,
-              color: const Color(0xFFFFD166),
+              color: AppColors.cFFFFD166,
               size: 60,
               iconSize: 31,
             ),
@@ -366,11 +366,11 @@ class _FeedReportReasonTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF697684)
-        : Colors.white.withValues(alpha: .58);
-    const accent = Color(0xFFFFD166);
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .58);
+    const accent = AppColors.cFFFFD166;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => Navigator.of(context).pop(reason),
@@ -378,8 +378,8 @@ class _FeedReportReasonTile extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(13, 11, 12, 11),
         decoration: BoxDecoration(
           color: isWhite
-              ? const Color(0xFFF6F8FA)
-              : Colors.white.withValues(alpha: .055),
+              ? AppColors.cFFF6F8FA
+              : AppColors.white.withValues(alpha: .055),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: accent.withValues(alpha: .26)),
         ),
@@ -456,7 +456,7 @@ class _FeedModalTextButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final surfaceColor = isWhite
-        ? Color.lerp(Colors.white, color, .24)!
+        ? Color.lerp(AppColors.white, color, .24)!
         : AppColors.darkBackground;
     return CupertinoButton(
       onPressed: onTap,
@@ -472,7 +472,7 @@ class _FeedModalTextButton extends StatelessWidget {
           border: Border.all(
             color: isWhite
                 ? color.withValues(alpha: .34)
-                : Colors.white.withValues(alpha: .12),
+                : AppColors.white.withValues(alpha: .12),
           ),
           boxShadow: [
             BoxShadow(
@@ -506,7 +506,7 @@ Future<void> _showFeedCompanionList(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (context) => _FeedCompanionListSheet(friends: friends),
   );
   if (!context.mounted || selected == null) return;
@@ -535,7 +535,7 @@ Future<void> _showFeedCompanionList(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    barrierColor: Colors.black.withValues(alpha: .62),
+    barrierColor: AppColors.black.withValues(alpha: .62),
     builder: (context) => _FeedCompanionProfileSheet(
       friend: selected,
       initialRelationship: relationship,

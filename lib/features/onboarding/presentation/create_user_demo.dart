@@ -80,8 +80,8 @@ class _DemoDots extends StatelessWidget {
           height: 9,
           decoration: BoxDecoration(
             color: i == selectedIndex
-                ? const Color(0xFF12C9A4)
-                : Colors.white.withValues(alpha: .22),
+                ? AppColors.cFF12C9A4
+                : AppColors.white.withValues(alpha: .22),
             borderRadius: BorderRadius.circular(99),
           ),
         ),

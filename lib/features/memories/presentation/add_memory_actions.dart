@@ -36,7 +36,7 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
           colorScheme: isWhite
               ? const ColorScheme.light(
                   primary: _AddMemoryColors.lime,
-                  surface: Colors.white,
+                  surface: AppColors.white,
                   onSurface: _AddMemoryColors.lightText,
                 )
               : const ColorScheme.dark(
@@ -56,7 +56,7 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
           colorScheme: isWhite
               ? const ColorScheme.light(
                   primary: _AddMemoryColors.lime,
-                  surface: Colors.white,
+                  surface: AppColors.white,
                   onSurface: _AddMemoryColors.lightText,
                 )
               : const ColorScheme.dark(
@@ -188,7 +188,7 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
       useSafeArea: true,
       isDismissible: false,
       enableDrag: false,
-      barrierColor: Colors.black.withValues(alpha: .62),
+      barrierColor: AppColors.black.withValues(alpha: .62),
       builder: (_) =>
           _MemorySuccessSheet(friends: friends, monthlyCount: monthlyCount),
     );

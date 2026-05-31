@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../models/ohey_avatar.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
 class OheyAvatarView extends StatelessWidget {
   const OheyAvatarView({
@@ -77,10 +78,10 @@ class _OheyAvatarPainter extends CustomPainter {
   }
 
   Color _lighten(Color color, double amount) =>
-      Color.lerp(color, Colors.white, amount)!;
+      Color.lerp(color, AppColors.white, amount)!;
 
   Color _darken(Color color, double amount) =>
-      Color.lerp(color, Colors.black, amount)!;
+      Color.lerp(color, AppColors.black, amount)!;
 
   Paint _verticalGradient(Rect rect, Color color, {double top = .12}) =>
       Paint()
@@ -115,7 +116,12 @@ class _OheyAvatarPainter extends CustomPainter {
       ..quadraticBezierTo(90, 131, 99, 121)
       ..cubicTo(114, 128, 126, 151, 130, 180)
       ..close();
-    canvas.drawShadow(shoulders, Colors.black.withValues(alpha: .24), 7, true);
+    canvas.drawShadow(
+      shoulders,
+      AppColors.black.withValues(alpha: .24),
+      7,
+      true,
+    );
     canvas.drawPath(
       shoulders,
       Paint()
@@ -128,7 +134,7 @@ class _OheyAvatarPainter extends CustomPainter {
     );
 
     final shirtRim = Paint()
-      ..color = Colors.white.withValues(alpha: .24)
+      ..color = AppColors.white.withValues(alpha: .24)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.4
       ..strokeCap = StrokeCap.round;
@@ -155,7 +161,7 @@ class _OheyAvatarPainter extends CustomPainter {
     for (final ear in [leftEar, rightEar]) {
       canvas.drawOval(
         ear.shift(const Offset(0, 2)),
-        Paint()..color = Colors.black.withValues(alpha: .10),
+        Paint()..color = AppColors.black.withValues(alpha: .10),
       );
       canvas.drawOval(ear, _skinGradient(ear, skin));
       final inner = Rect.fromCenter(
@@ -175,20 +181,20 @@ class _OheyAvatarPainter extends CustomPainter {
     final head = RRect.fromRectAndRadius(headRect, const Radius.circular(32));
     canvas.drawShadow(
       Path()..addRRect(head),
-      Colors.black.withValues(alpha: .20),
+      AppColors.black.withValues(alpha: .20),
       9,
       true,
     );
     canvas.drawRRect(
       head.shift(const Offset(0, 2)),
-      Paint()..color = Colors.black.withValues(alpha: .06),
+      Paint()..color = AppColors.black.withValues(alpha: .06),
     );
     canvas.drawRRect(head, _skinGradient(headRect, skin));
 
     canvas.drawRRect(
       head,
       Paint()
-        ..color = Colors.white.withValues(alpha: .24)
+        ..color = AppColors.white.withValues(alpha: .24)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.2,
     );
@@ -197,7 +203,7 @@ class _OheyAvatarPainter extends CustomPainter {
         const Rect.fromLTWH(42, 40, 42, 72),
         const Radius.circular(24),
       ),
-      Paint()..color = Colors.white.withValues(alpha: .10),
+      Paint()..color = AppColors.white.withValues(alpha: .10),
     );
     canvas.drawOval(
       const Rect.fromLTWH(56, 113, 68, 18),
@@ -226,7 +232,7 @@ class _OheyAvatarPainter extends CustomPainter {
         );
         canvas.drawShadow(
           Path()..addRRect(bob),
-          Colors.black.withValues(alpha: .18),
+          AppColors.black.withValues(alpha: .18),
           7,
           true,
         );
@@ -240,7 +246,12 @@ class _OheyAvatarPainter extends CustomPainter {
           ..quadraticBezierTo(122, 162, 90, 152)
           ..quadraticBezierTo(58, 162, 27, 150)
           ..close();
-        canvas.drawShadow(long, Colors.black.withValues(alpha: .22), 8, true);
+        canvas.drawShadow(
+          long,
+          AppColors.black.withValues(alpha: .22),
+          8,
+          true,
+        );
         canvas.drawPath(long, paint);
       case 8:
         for (final side in [-1.0, 1.0]) {
@@ -263,12 +274,17 @@ class _OheyAvatarPainter extends CustomPainter {
               58,
             )
             ..close();
-          canvas.drawShadow(tail, Colors.black.withValues(alpha: .18), 6, true);
+          canvas.drawShadow(
+            tail,
+            AppColors.black.withValues(alpha: .18),
+            6,
+            true,
+          );
           canvas.drawPath(tail, paint);
           canvas.drawCircle(
             Offset(90 + side * 46, 67),
             7,
-            Paint()..color = const Color(0xFFFF8FB2),
+            Paint()..color = AppColors.cFFFF8FB2,
           );
         }
       case 9:
@@ -302,7 +318,7 @@ class _OheyAvatarPainter extends CustomPainter {
           ..close();
         canvas.drawShadow(
           ponytail,
-          Colors.black.withValues(alpha: .18),
+          AppColors.black.withValues(alpha: .18),
           6,
           true,
         );
@@ -310,7 +326,7 @@ class _OheyAvatarPainter extends CustomPainter {
         canvas.drawCircle(
           const Offset(126, 62),
           7,
-          Paint()..color = const Color(0xFFFF8FB2),
+          Paint()..color = AppColors.cFFFF8FB2,
         );
       default:
         return;
@@ -324,7 +340,7 @@ class _OheyAvatarPainter extends CustomPainter {
       top: .15,
     );
     final shine = Paint()
-      ..color = Colors.white.withValues(alpha: .22)
+      ..color = AppColors.white.withValues(alpha: .22)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
@@ -347,7 +363,7 @@ class _OheyAvatarPainter extends CustomPainter {
           canvas.drawCircle(
             point,
             4.2,
-            Paint()..color = Colors.white.withValues(alpha: .22),
+            Paint()..color = AppColors.white.withValues(alpha: .22),
           );
         }
         canvas.drawCircle(const Offset(42, 61), 10, paint);
@@ -428,7 +444,7 @@ class _OheyAvatarPainter extends CustomPainter {
             ..moveTo(90, 34)
             ..lineTo(90, 62),
           Paint()
-            ..color = Colors.white.withValues(alpha: .24)
+            ..color = AppColors.white.withValues(alpha: .24)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2.2
             ..strokeCap = StrokeCap.round,
@@ -569,12 +585,12 @@ class _OheyAvatarPainter extends CustomPainter {
   }
 
   void _drawEyes(Canvas canvas) {
-    final white = Paint()..color = Colors.white;
-    final darkColor = const Color(0xFF24313A);
+    final white = Paint()..color = AppColors.white;
+    final darkColor = AppColors.cFF24313A;
 
     void eyeShadow(Rect rect) => canvas.drawOval(
       rect.shift(const Offset(0, 1.4)),
-      Paint()..color = Colors.black.withValues(alpha: .10),
+      Paint()..color = AppColors.black.withValues(alpha: .10),
     );
 
     void glossyEye({
@@ -603,7 +619,7 @@ class _OheyAvatarPainter extends CustomPainter {
       canvas.drawCircle(
         Offset(x - 4 + pupilDx * .25, 72),
         3.3,
-        Paint()..color = Colors.white.withValues(alpha: .92),
+        Paint()..color = AppColors.white.withValues(alpha: .92),
       );
       canvas.drawArc(
         rect.inflate(1.2),
@@ -632,7 +648,7 @@ class _OheyAvatarPainter extends CustomPainter {
             math.pi - .24,
             false,
             Paint()
-              ..color = Colors.white.withValues(alpha: .60)
+              ..color = AppColors.white.withValues(alpha: .60)
               ..style = PaintingStyle.stroke
               ..strokeWidth = 7
               ..strokeCap = StrokeCap.round,
@@ -659,9 +675,9 @@ class _OheyAvatarPainter extends CustomPainter {
             width: 26,
             height: 36,
             roundPupil: true,
-            accent: const Color(0xFF23303C),
+            accent: AppColors.cFF23303C,
           );
-          final sparkle = Paint()..color = const Color(0xFFFFD25B);
+          final sparkle = Paint()..color = AppColors.cFFFFD25B;
           canvas.drawPath(
             Path()
               ..moveTo(x + 9, 68)
@@ -688,7 +704,7 @@ class _OheyAvatarPainter extends CustomPainter {
             width: 27,
             height: 37,
             roundPupil: true,
-            accent: const Color(0xFF202A34),
+            accent: AppColors.cFF202A34,
           );
           canvas.drawLine(Offset(x - 13, 65), Offset(x - 19, 61), lash);
           canvas.drawLine(Offset(x + 13, 65), Offset(x + 19, 61), lash);
@@ -706,7 +722,7 @@ class _OheyAvatarPainter extends CustomPainter {
           math.pi - .4,
           false,
           Paint()
-            ..color = Colors.white.withValues(alpha: .66)
+            ..color = AppColors.white.withValues(alpha: .66)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 7
             ..strokeCap = StrokeCap.round,
@@ -726,7 +742,7 @@ class _OheyAvatarPainter extends CustomPainter {
             height: 32,
             pupilDx: x < 90 ? 1 : -1,
             roundPupil: true,
-            accent: const Color(0xFF253443),
+            accent: AppColors.cFF253443,
           );
           canvas.drawArc(
             Rect.fromCenter(center: Offset(x, 68), width: 29, height: 14),
@@ -752,7 +768,7 @@ class _OheyAvatarPainter extends CustomPainter {
               Rect.fromCenter(center: Offset(x, 79), width: 27, height: 14),
               const Radius.circular(9),
             ),
-            Paint()..color = Colors.white.withValues(alpha: .76),
+            Paint()..color = AppColors.white.withValues(alpha: .76),
           );
           canvas.drawLine(Offset(x - 11, 80), Offset(x + 11, 78), sleepy);
           canvas.drawCircle(
@@ -781,7 +797,7 @@ class _OheyAvatarPainter extends CustomPainter {
         ..moveTo(88, 88)
         ..quadraticBezierTo(92, 96, 88, 101),
       Paint()
-        ..color = Colors.white.withValues(alpha: .18)
+        ..color = AppColors.white.withValues(alpha: .18)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.2
         ..strokeCap = StrokeCap.round,
@@ -789,7 +805,7 @@ class _OheyAvatarPainter extends CustomPainter {
   }
 
   void _drawMouth(Canvas canvas) {
-    final darkMouth = const Color(0xFF2A1715);
+    final darkMouth = AppColors.cFF2A1715;
     final stroke = Paint()
       ..color = darkMouth.withValues(alpha: .72)
       ..style = PaintingStyle.stroke
@@ -810,11 +826,11 @@ class _OheyAvatarPainter extends CustomPainter {
             const Rect.fromLTWH(78, 101, 24, 8),
             const Radius.circular(5),
           ),
-          Paint()..color = Colors.white.withValues(alpha: .92),
+          Paint()..color = AppColors.white.withValues(alpha: .92),
         );
         canvas.drawOval(
           const Rect.fromLTWH(83, 112, 15, 7),
-          Paint()..color = const Color(0xFFFF6F8F).withValues(alpha: .72),
+          Paint()..color = AppColors.cFFFF6F8F.withValues(alpha: .72),
         );
       case 2:
         canvas.drawRRect(
@@ -822,12 +838,12 @@ class _OheyAvatarPainter extends CustomPainter {
             const Rect.fromLTWH(78, 105, 25, 7),
             const Radius.circular(8),
           ),
-          Paint()..color = const Color(0xFFC94E5D).withValues(alpha: .82),
+          Paint()..color = AppColors.cFFC94E5D.withValues(alpha: .82),
         );
         canvas.drawCircle(
           const Offset(99, 107),
           2.2,
-          Paint()..color = Colors.white.withValues(alpha: .60),
+          Paint()..color = AppColors.white.withValues(alpha: .60),
         );
       case 3:
         canvas.drawOval(
@@ -836,11 +852,11 @@ class _OheyAvatarPainter extends CustomPainter {
         );
         canvas.drawOval(
           const Rect.fromLTWH(85, 106, 10, 12),
-          Paint()..color = const Color(0xFFFF8FA6).withValues(alpha: .72),
+          Paint()..color = AppColors.cFFFF8FA6.withValues(alpha: .72),
         );
         canvas.drawOval(
           const Rect.fromLTWH(84, 103, 7, 4),
-          Paint()..color = Colors.white.withValues(alpha: .50),
+          Paint()..color = AppColors.white.withValues(alpha: .50),
         );
       case 4:
         final smile = Path()
@@ -868,13 +884,13 @@ class _OheyAvatarPainter extends CustomPainter {
             ..quadraticBezierTo(90, 101, 102, 106)
             ..quadraticBezierTo(90, 112, 78, 106)
             ..close(),
-          Paint()..color = const Color(0xFFC94E5D).withValues(alpha: .82),
+          Paint()..color = AppColors.cFFC94E5D.withValues(alpha: .82),
         );
         canvas.drawLine(
           const Offset(82, 106),
           const Offset(98, 106),
           Paint()
-            ..color = Colors.white.withValues(alpha: .26)
+            ..color = AppColors.white.withValues(alpha: .26)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.8
             ..strokeCap = StrokeCap.round,
@@ -886,7 +902,7 @@ class _OheyAvatarPainter extends CustomPainter {
         canvas.drawPath(
           path.shift(const Offset(0, 1.2)),
           Paint()
-            ..color = Colors.white.withValues(alpha: .28)
+            ..color = AppColors.white.withValues(alpha: .28)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 6
             ..strokeCap = StrokeCap.round,
@@ -903,7 +919,7 @@ class _OheyAvatarPainter extends CustomPainter {
   void _drawAccessory(Canvas canvas) {
     if (avatar.accessory == 1) {
       final stroke = Paint()
-        ..color = const Color(0xFF151D24)
+        ..color = AppColors.cFF151D24
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4.2
         ..strokeJoin = StrokeJoin.round;
@@ -913,7 +929,7 @@ class _OheyAvatarPainter extends CustomPainter {
       ]) {
         canvas.drawRRect(
           RRect.fromRectAndRadius(rect, const Radius.circular(11)),
-          Paint()..color = Colors.white.withValues(alpha: .18),
+          Paint()..color = AppColors.white.withValues(alpha: .18),
         );
         canvas.drawRRect(
           RRect.fromRectAndRadius(rect, const Radius.circular(11)),
@@ -923,7 +939,7 @@ class _OheyAvatarPainter extends CustomPainter {
           rect.topLeft + const Offset(8, 6),
           rect.topLeft + const Offset(18, 2),
           Paint()
-            ..color = Colors.white.withValues(alpha: .72)
+            ..color = AppColors.white.withValues(alpha: .72)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2.2
             ..strokeCap = StrokeCap.round,
@@ -936,14 +952,14 @@ class _OheyAvatarPainter extends CustomPainter {
           const Rect.fromLTWH(60, 94, 60, 27),
           const Radius.circular(15),
         ),
-        Paint()..color = Colors.white.withValues(alpha: .90),
+        Paint()..color = AppColors.white.withValues(alpha: .90),
       );
       for (final y in [101.0, 108.0, 115.0]) {
         canvas.drawLine(
           Offset(66, y),
           Offset(114, y),
           Paint()
-            ..color = const Color(0xFF8EA0AD).withValues(alpha: .24)
+            ..color = AppColors.cFF8EA0AD.withValues(alpha: .24)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.4
             ..strokeCap = StrokeCap.round,
@@ -953,7 +969,7 @@ class _OheyAvatarPainter extends CustomPainter {
         const Offset(60, 103),
         const Offset(49, 96),
         Paint()
-          ..color = Colors.white.withValues(alpha: .72)
+          ..color = AppColors.white.withValues(alpha: .72)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.2,
       );
@@ -961,26 +977,25 @@ class _OheyAvatarPainter extends CustomPainter {
         const Offset(120, 103),
         const Offset(131, 96),
         Paint()
-          ..color = Colors.white.withValues(alpha: .72)
+          ..color = AppColors.white.withValues(alpha: .72)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.2,
       );
     } else if (avatar.accessory == 3) {
-      final blush = Paint()
-        ..color = const Color(0xFFFF7CA8).withValues(alpha: .62);
+      final blush = Paint()..color = AppColors.cFFFF7CA8.withValues(alpha: .62);
       canvas.drawOval(const Rect.fromLTWH(49, 93, 20, 12), blush);
       canvas.drawOval(const Rect.fromLTWH(111, 93, 20, 12), blush);
       canvas.drawOval(
         const Rect.fromLTWH(53, 94, 8, 4),
-        Paint()..color = Colors.white.withValues(alpha: .24),
+        Paint()..color = AppColors.white.withValues(alpha: .24),
       );
       canvas.drawOval(
         const Rect.fromLTWH(115, 94, 8, 4),
-        Paint()..color = Colors.white.withValues(alpha: .24),
+        Paint()..color = AppColors.white.withValues(alpha: .24),
       );
     } else if (avatar.accessory == 4) {
       final freckle = Paint()
-        ..color = const Color(0xFF5C2B22).withValues(alpha: .34);
+        ..color = AppColors.cFF5C2B22.withValues(alpha: .34);
       for (final point in const [
         Offset(57, 94),
         Offset(64, 98),
@@ -995,16 +1010,16 @@ class _OheyAvatarPainter extends CustomPainter {
       canvas.drawCircle(
         const Offset(116, 101),
         2.7,
-        Paint()..color = const Color(0xFF2A1715).withValues(alpha: .74),
+        Paint()..color = AppColors.cFF2A1715.withValues(alpha: .74),
       );
       canvas.drawCircle(
         const Offset(115.3, 100.2),
         .8,
-        Paint()..color = Colors.white.withValues(alpha: .55),
+        Paint()..color = AppColors.white.withValues(alpha: .55),
       );
     } else if (avatar.accessory == 6) {
       final frame = Paint()
-        ..color = const Color(0xFF25313E)
+        ..color = AppColors.cFF25313E
         ..style = PaintingStyle.stroke
         ..strokeWidth = 5
         ..strokeCap = StrokeCap.round;
@@ -1025,17 +1040,17 @@ class _OheyAvatarPainter extends CustomPainter {
             ..shader = const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFF5869FF), Color(0xFF21E0C2)],
+              colors: [AppColors.cFF5869FF, AppColors.cFF21E0C2],
             ).createShader(cup),
         );
         canvas.drawRRect(
           RRect.fromRectAndRadius(cup.deflate(4), const Radius.circular(6)),
-          Paint()..color = const Color(0xFF101820).withValues(alpha: .28),
+          Paint()..color = AppColors.cFF101820.withValues(alpha: .28),
         );
       }
     } else if (avatar.accessory == 7) {
       final pinPaint = Paint()
-        ..color = const Color(0xFFFFD25B)
+        ..color = AppColors.cFFFFD25B
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4
         ..strokeCap = StrokeCap.round;
@@ -1044,7 +1059,7 @@ class _OheyAvatarPainter extends CustomPainter {
         const Offset(54, 60),
         const Offset(75, 51),
         Paint()
-          ..color = const Color(0xFFFF8FB2)
+          ..color = AppColors.cFFFF8FB2
           ..style = PaintingStyle.stroke
           ..strokeWidth = 4
           ..strokeCap = StrokeCap.round,
@@ -1052,7 +1067,7 @@ class _OheyAvatarPainter extends CustomPainter {
       canvas.drawCircle(
         const Offset(72, 44),
         3.3,
-        Paint()..color = Colors.white.withValues(alpha: .82),
+        Paint()..color = AppColors.white.withValues(alpha: .82),
       );
     }
   }

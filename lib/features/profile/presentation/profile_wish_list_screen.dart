@@ -75,7 +75,7 @@ class _ProfileWishListEmptyState extends StatelessWidget {
           children: [
             const Icon(
               CupertinoIcons.sparkles,
-              color: Color(0xFFC08BFF),
+              color: AppColors.cFFC08BFF,
               size: 42,
             ),
             const SizedBox(height: 14),
@@ -83,7 +83,7 @@ class _ProfileWishListEmptyState extends StatelessWidget {
               'やりたいことを置いてみよう',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
               ),
@@ -105,9 +105,9 @@ class _ProfileWishListEmptyState extends StatelessWidget {
               onTap: onCreate,
               height: 50,
               radius: 22,
-              color: const Color(0xFFC08BFF),
-              foregroundColor: const Color(0xFF101820),
-              shadowColor: const Color(0xFF7F51C9),
+              color: AppColors.cFFC08BFF,
+              foregroundColor: AppColors.cFF101820,
+              shadowColor: AppColors.cFF7F51C9,
             ),
           ],
         ),
@@ -137,7 +137,7 @@ class _ProfileWishListHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Color(0xFFC08BFF),
+                    color: AppColors.cFFC08BFF,
                     fontSize: 30,
                     height: 1,
                     fontWeight: FontWeight.w900,
@@ -162,7 +162,7 @@ class _ProfileWishListHeader extends StatelessWidget {
           OheyHeaderIconButton(
             icon: CupertinoIcons.plus,
             semanticLabel: '追加',
-            color: const Color(0xFFC08BFF),
+            color: AppColors.cFFC08BFF,
             onTap: onCreate,
           ),
         ],
@@ -191,9 +191,9 @@ class _ProfileWishListCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 15, 14, 15),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: .045),
+            color: AppColors.white.withValues(alpha: .045),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withValues(alpha: .08)),
+            border: Border.all(color: AppColors.white.withValues(alpha: .08)),
           ),
           child: Row(
             children: [
@@ -207,7 +207,7 @@ class _ProfileWishListCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 20,
                         height: 1.15,
                         fontWeight: FontWeight.w900,
@@ -236,12 +236,12 @@ class _ProfileWishListCard extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFC08BFF).withValues(alpha: .16),
+                  color: AppColors.cFFC08BFF.withValues(alpha: .16),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   CupertinoIcons.plus,
-                  color: Color(0xFFC08BFF),
+                  color: AppColors.cFFC08BFF,
                   size: 22,
                 ),
               ),

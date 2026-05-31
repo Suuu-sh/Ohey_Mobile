@@ -82,10 +82,10 @@ class _YuruboBlockGlowUnderline extends StatelessWidget {
         child: Container(
           height: 1,
           decoration: BoxDecoration(
-            color: const Color(0xFFC08BFF).withValues(alpha: .82),
+            color: AppColors.cFFC08BFF.withValues(alpha: .82),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFC08BFF).withValues(alpha: .58),
+                color: AppColors.cFFC08BFF.withValues(alpha: .58),
                 blurRadius: 9,
                 spreadRadius: .4,
               ),
@@ -105,7 +105,7 @@ class _YuruboCardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
+    final primaryText = isWhite ? AppColors.cFF17202B : AppColors.white;
     final body = _yuruboBody(item);
     final place = item.place.trim();
     final timeLabel = item.timeLabel.trim();
@@ -192,8 +192,8 @@ class _YuruboMetaChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = isWhite
-        ? Color.lerp(color, Colors.black, .20)!
-        : Colors.white;
+        ? Color.lerp(color, AppColors.black, .20)!
+        : AppColors.white;
     return Container(
       constraints: const BoxConstraints(minWidth: 0),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -239,10 +239,10 @@ class _FeedMemoryBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
+    final primaryText = isWhite ? AppColors.cFF17202B : AppColors.white;
     final secondaryText = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .66);
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .66);
     final body = _duoStyleBody(item).trim();
     final title = body.isNotEmpty
         ? body
@@ -265,8 +265,8 @@ class _FeedMemoryBody extends StatelessWidget {
             colors: [
               item.accent.withValues(alpha: isWhite ? .12 : .20),
               isWhite
-                  ? const Color(0xFFF8FAFD)
-                  : const Color(0xFF0A1521).withValues(alpha: .78),
+                  ? AppColors.cFFF8FAFD
+                  : AppColors.cFF0A1521.withValues(alpha: .78),
             ],
           ),
           borderRadius: BorderRadius.circular(24),
@@ -338,14 +338,14 @@ class _FeedCardAuthorBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
+    final primaryText = isWhite ? AppColors.cFF17202B : AppColors.white;
     final secondaryText = isWhite
-        ? const Color(0xFF778393)
-        : Colors.white.withValues(alpha: .62);
-    const menuAccent = Color(0xFFC08BFF);
+        ? AppColors.cFF778393
+        : AppColors.white.withValues(alpha: .62);
+    const menuAccent = AppColors.cFFC08BFF;
     final iconColor = isWhite
-        ? Color.lerp(menuAccent, Colors.black, .18)!
-        : Color.lerp(menuAccent, Colors.white, .18)!;
+        ? Color.lerp(menuAccent, AppColors.black, .18)!
+        : Color.lerp(menuAccent, AppColors.white, .18)!;
     final place = item.place.trim();
     final metadataLabel = compactYurubo
         ? (place.isEmpty ? 'ゆるぼ' : place)
@@ -465,11 +465,11 @@ class _FeedCardFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
+    final primaryText = isWhite ? AppColors.cFF17202B : AppColors.white;
     final secondaryText = isWhite
-        ? const Color(0xFF778393)
-        : Colors.white.withValues(alpha: .62);
-    const feedActionPurple = Color(0xFFC08BFF);
+        ? AppColors.cFF778393
+        : AppColors.white.withValues(alpha: .62);
+    const feedActionPurple = AppColors.cFFC08BFF;
     final likeAccent = item.liked
         ? Color.lerp(AppColors.danger, feedActionPurple, .58)!
         : feedActionPurple;
@@ -615,8 +615,8 @@ class _FeedPostKindBadge extends StatelessWidget {
       _FeedPostKind.official => AppColors.info,
     };
     final textColor = isWhite
-        ? Color.lerp(color, Colors.black, .22)!
-        : Colors.white;
+        ? Color.lerp(color, AppColors.black, .22)!
+        : AppColors.white;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -659,7 +659,7 @@ class _OfficialVerifiedBadge extends StatelessWidget {
               ),
               Icon(
                 CupertinoIcons.checkmark_alt,
-                color: Colors.white,
+                color: AppColors.white,
                 size: 14,
                 weight: 900,
               ),
@@ -674,9 +674,9 @@ class _OfficialVerifiedBadge extends StatelessWidget {
 class _VerifiedBadgeSeal extends CustomPainter {
   const _VerifiedBadgeSeal();
 
-  static const _pink = Color(0xFFFF5EA8);
-  static const _pinkLight = Color(0xFFFF83C0);
-  static const _rim = Color(0xFFFFC1DC);
+  static const _pink = AppColors.cFFFF5EA8;
+  static const _pinkLight = AppColors.cFFFF83C0;
+  static const _rim = AppColors.cFFFFC1DC;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -688,7 +688,7 @@ class _VerifiedBadgeSeal extends CustomPainter {
     canvas.drawPath(seal.shift(Offset(0, size.height * .10)), shadow);
 
     final outer = Paint()
-      ..color = Colors.white.withValues(alpha: .95)
+      ..color = AppColors.white.withValues(alpha: .95)
       ..style = PaintingStyle.stroke
       ..strokeWidth = size.shortestSide * .10
       ..strokeJoin = StrokeJoin.round;
@@ -712,7 +712,7 @@ class _VerifiedBadgeSeal extends CustomPainter {
     canvas.drawCircle(
       Offset(size.width * .36, size.height * .31),
       size.shortestSide * .095,
-      Paint()..color = Colors.white.withValues(alpha: .24),
+      Paint()..color = AppColors.white.withValues(alpha: .24),
     );
   }
 

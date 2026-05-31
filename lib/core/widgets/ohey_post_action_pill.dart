@@ -8,6 +8,7 @@ import 'ohey_3d_button.dart';
 import 'ohey_avatar.dart';
 import 'ohey_invite_success_burst.dart';
 import 'ohey_pop_icon.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
 class OheyPostActionPill extends StatelessWidget {
   const OheyPostActionPill({
@@ -42,7 +43,7 @@ class OheyPostActionPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = oheyPostActionForeground(color);
-    final shadowColor = Color.lerp(color, Colors.black, .34)!;
+    final shadowColor = Color.lerp(color, AppColors.black, .34)!;
     Widget buildIcon(Animation<double>? iconAnimation) {
       if (customIcon != null) return customIcon!;
       final resolvedIcon = icon ?? CupertinoIcons.circle;
@@ -73,7 +74,7 @@ class OheyPostActionPill extends StatelessWidget {
       color: color,
       bottomColor: shadowColor,
       padding: const EdgeInsets.symmetric(horizontal: 13),
-      borderColor: Colors.white.withValues(alpha: .18),
+      borderColor: AppColors.white.withValues(alpha: .18),
       outerShadows: [
         BoxShadow(
           color: color.withValues(alpha: isWhite ? .18 : .30),
@@ -82,7 +83,10 @@ class OheyPostActionPill extends StatelessWidget {
         ),
       ],
       innerShadows: [
-        BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
+        BoxShadow(
+          color: AppColors.white.withValues(alpha: .14),
+          blurRadius: 14,
+        ),
       ],
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -118,10 +122,10 @@ class OheyPostActionPill extends StatelessWidget {
             burstColor: burstColor ?? color,
             confettiColors: [
               color,
-              const Color(0xFFFF75B5),
-              const Color(0xFFC08BFF),
-              const Color(0xFFFFD166),
-              Colors.white,
+              AppColors.cFFFF75B5,
+              AppColors.cFFC08BFF,
+              AppColors.cFFFFD166,
+              AppColors.white,
             ],
             builder: (context, runWithBurst, flightAnimation) =>
                 buildButton(onTap == null ? null : () => runWithBurst(onTap)),
@@ -304,7 +308,7 @@ class _OheyPostLikeIconBurstPainter extends CustomPainter {
       ..strokeWidth = 1.15 * (1 - t)
       ..color = Color.lerp(
         color,
-        Colors.white,
+        AppColors.white,
         .44,
       )!.withValues(alpha: .42 * fade);
     canvas.drawCircle(center, shortest * (.16 + .28 * t), ringPaint);
@@ -323,7 +327,7 @@ class _OheyPostLikeIconBurstPainter extends CustomPainter {
         ..style = PaintingStyle.fill
         ..color = Color.lerp(
           color,
-          i.isEven ? Colors.white : const Color(0xFFFF75B5),
+          i.isEven ? AppColors.white : AppColors.cFFFF75B5,
           i.isEven ? .62 : .46,
         )!.withValues(alpha: .86 * fade);
 
@@ -418,7 +422,7 @@ class _OheyPostFlyingHeartBurstPainter extends CustomPainter {
         ..strokeWidth = 1.6 * flashFade
         ..color = Color.lerp(
           color,
-          Colors.white,
+          AppColors.white,
           .72,
         )!.withValues(alpha: .56 * flashFade);
       canvas.drawCircle(origin, 6 + 17 * flashProgress, flashPaint);
@@ -449,7 +453,7 @@ class _OheyPostFlyingHeartBurstPainter extends CustomPainter {
           particle.angle * .20 + math.sin((local + i) * math.pi * 2) * .36;
       final particleColor = Color.lerp(
         color,
-        i.isEven ? Colors.white : const Color(0xFFFF75B5),
+        i.isEven ? AppColors.white : AppColors.cFFFF75B5,
         i.isEven ? .34 : .22,
       )!.withValues(alpha: .94 * fade);
 
@@ -473,7 +477,7 @@ class _OheyPostFlyingHeartBurstPainter extends CustomPainter {
       final fade = (1 - local).clamp(0.0, 1.0);
       final paint = Paint()
         ..style = PaintingStyle.fill
-        ..color = Colors.white.withValues(alpha: .72 * fade);
+        ..color = AppColors.white.withValues(alpha: .72 * fade);
       canvas.drawCircle(point, (2.2 - local).clamp(.7, 2.2), paint);
     }
   }
@@ -492,7 +496,7 @@ class _OheyPostFlyingHeartBurstPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = math.max(.6, size * .10)
       ..strokeCap = StrokeCap.round
-      ..color = Colors.white.withValues(alpha: .46);
+      ..color = AppColors.white.withValues(alpha: .46);
 
     final path = Path()
       ..moveTo(0, size * .38)
@@ -556,7 +560,7 @@ class _OheyPostFlyingHeartParticle {
 
 Color oheyPostActionForeground(Color color) {
   final brightness = ThemeData.estimateBrightnessForColor(color);
-  return brightness == Brightness.dark ? Colors.white : const Color(0xFF06111D);
+  return brightness == Brightness.dark ? AppColors.white : AppColors.cFF06111D;
 }
 
 class OheyPostShareIcon extends StatelessWidget {
@@ -615,7 +619,7 @@ class OheyPostCompanionPill extends StatelessWidget {
     this.onTap,
     this.label = 'With',
     this.semanticLabel = '一緒に遊んだフレンズを表示',
-    this.color = const Color(0xFFC08BFF),
+    this.color = AppColors.cFFC08BFF,
   });
 
   final List<OheyAvatar> avatars;
@@ -637,9 +641,9 @@ class OheyPostCompanionPill extends StatelessWidget {
         height: 38,
         radius: 19,
         color: color,
-        bottomColor: Color.lerp(color, Colors.black, .34),
+        bottomColor: Color.lerp(color, AppColors.black, .34),
         padding: const EdgeInsets.fromLTRB(13, 0, 8, 0),
-        borderColor: Colors.white.withValues(alpha: .18),
+        borderColor: AppColors.white.withValues(alpha: .18),
         outerShadows: [
           BoxShadow(
             color: color.withValues(alpha: isWhite ? .18 : .30),
@@ -648,7 +652,10 @@ class OheyPostCompanionPill extends StatelessWidget {
           ),
         ],
         innerShadows: [
-          BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
+          BoxShadow(
+            color: AppColors.white.withValues(alpha: .14),
+            blurRadius: 14,
+          ),
         ],
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 182),
@@ -697,8 +704,8 @@ class _OheyPostCompanionAvatarStack extends StatelessWidget {
                 height: 28,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF112332),
-                  border: Border.all(color: Colors.white, width: 2),
+                  color: AppColors.cFF112332,
+                  border: Border.all(color: AppColors.white, width: 2),
                 ),
                 child: ClipOval(
                   child: OheyAvatarView(avatar: visible[index], size: 28),

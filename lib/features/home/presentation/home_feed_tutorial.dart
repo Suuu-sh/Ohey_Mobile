@@ -137,22 +137,22 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
   @override
   Widget build(BuildContext context) {
     final panelBackground = widget.isWhite
-        ? Colors.white.withValues(alpha: .95)
-        : const Color(0xFF0D1824).withValues(alpha: .94);
-    final titleColor = widget.isWhite ? const Color(0xFF20303D) : Colors.white;
+        ? AppColors.white.withValues(alpha: .95)
+        : AppColors.cFF0D1824.withValues(alpha: .94);
+    final titleColor = widget.isWhite ? AppColors.cFF20303D : AppColors.white;
     final subColor = widget.isWhite
-        ? const Color(0xFF657282)
-        : Colors.white.withValues(alpha: .68);
+        ? AppColors.cFF657282
+        : AppColors.white.withValues(alpha: .68);
     final borderColor = widget.isWhite
-        ? const Color(0xFFDDE6EE)
-        : Colors.white.withValues(alpha: .14);
+        ? AppColors.cFFDDE6EE
+        : AppColors.white.withValues(alpha: .14);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: widget.onDismissed,
       onVerticalDragEnd: (_) => widget.onDismissed(),
       child: ColoredBox(
-        color: Colors.black.withValues(alpha: widget.isWhite ? .08 : .18),
+        color: AppColors.black.withValues(alpha: widget.isWhite ? .08 : .18),
         child: SafeArea(
           bottom: false,
           child: Padding(
@@ -171,7 +171,7 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
                   border: Border.all(color: borderColor),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: .18),
+                      color: AppColors.black.withValues(alpha: .18),
                       blurRadius: 28,
                       offset: const Offset(0, 14),
                     ),
@@ -195,7 +195,7 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
                         },
                         child: const OheyPopIcon(
                           icon: CupertinoIcons.arrow_up,
-                          color: Color(0xFF22D7C5),
+                          color: AppColors.cFF22D7C5,
                           size: 54,
                           iconSize: 28,
                         ),
@@ -228,7 +228,7 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
                       TextButton(
                         onPressed: widget.onDismissed,
                         style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFF22D7C5),
+                          foregroundColor: AppColors.cFF22D7C5,
                           textStyle: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w900,
@@ -383,13 +383,13 @@ class _OheySleepMarks extends StatelessWidget {
         child: Text(
           'Zzz',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: Colors.white,
+            color: AppColors.white,
             fontSize: 10,
             fontWeight: FontWeight.w900,
             letterSpacing: -.4,
             shadows: [
               Shadow(
-                color: const Color(0xFF162130).withValues(alpha: .55),
+                color: AppColors.cFF162130.withValues(alpha: .55),
                 blurRadius: 6,
               ),
             ],
@@ -413,16 +413,16 @@ class _OheySpeechBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isWhite ? const Color(0xFF243241) : Colors.white;
+    final textColor = isWhite ? AppColors.cFF243241 : AppColors.white;
     final iconColor = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .70);
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .70);
     final backgroundColor = isWhite
-        ? Colors.white.withValues(alpha: .92)
-        : Colors.white.withValues(alpha: .08);
+        ? AppColors.white.withValues(alpha: .92)
+        : AppColors.white.withValues(alpha: .08);
     final borderColor = isWhite
-        ? const Color(0xFFDCE4EC)
-        : Colors.white.withValues(alpha: .14);
+        ? AppColors.cFFDCE4EC
+        : AppColors.white.withValues(alpha: .14);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -453,7 +453,7 @@ class _OheySpeechBubble extends StatelessWidget {
             border: Border.all(color: borderColor),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: .16),
+                color: AppColors.black.withValues(alpha: .16),
                 blurRadius: 18,
                 offset: const Offset(0, 10),
               ),
@@ -547,7 +547,7 @@ class _WalkingOheyPainter extends CustomPainter {
     canvas.save();
     canvas.scale(sx, sy);
 
-    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: .20);
+    final shadowPaint = Paint()..color = AppColors.black.withValues(alpha: .20);
     canvas.drawOval(const Rect.fromLTWH(9, 50, 30, 5), shadowPaint);
 
     if (!facingRight) {
@@ -563,7 +563,7 @@ class _WalkingOheyPainter extends CustomPainter {
       canvas.rotate(-.16);
     }
 
-    final shoePaint = Paint()..color = const Color(0xFFFF4CAF);
+    final shoePaint = Paint()..color = AppColors.cFFFF4CAF;
     final legStride = isSleeping ? 0.0 : step;
     final backFoot = Offset(20 - legStride * 2.8, isSleeping ? 49.5 : 50.5);
     final frontFoot = Offset(30 + legStride * 3.2, isSleeping ? 49.5 : 50.5);
@@ -583,11 +583,11 @@ class _WalkingOheyPainter extends CustomPainter {
     );
 
     final backArmPaint = Paint()
-      ..color = const Color(0xFFD4147C).withValues(alpha: .66)
+      ..color = AppColors.cFFD4147C.withValues(alpha: .66)
       ..strokeWidth = 3.2
       ..strokeCap = StrokeCap.round;
     final frontArmPaint = Paint()
-      ..color = const Color(0xFFFF4CAF)
+      ..color = AppColors.cFFFF4CAF
       ..strokeWidth = 4.2
       ..strokeCap = StrokeCap.round;
     final armSwing = isSleeping ? 0.0 : step;
@@ -609,10 +609,10 @@ class _WalkingOheyPainter extends CustomPainter {
       ..shader = ui.Gradient.linear(
         const Offset(12, 12),
         const Offset(38, 44),
-        const [Color(0xFFFF6FC5), Color(0xFFFF1493)],
+        const [AppColors.cFFFF6FC5, AppColors.cFFFF1493],
       );
     final outlinePaint = Paint()
-      ..color = const Color(0xFFFFB7DF).withValues(alpha: .45)
+      ..color = AppColors.cFFFFB7DF.withValues(alpha: .45)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
     final body = Path()
@@ -630,7 +630,7 @@ class _WalkingOheyPainter extends CustomPainter {
     canvas.drawPath(body, outlinePaint);
 
     final stemPaint = Paint()
-      ..color = const Color(0xFF78F018)
+      ..color = AppColors.cFF78F018
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
     canvas.drawLine(const Offset(27, 14), const Offset(31, 8), stemPaint);
@@ -638,7 +638,7 @@ class _WalkingOheyPainter extends CustomPainter {
       ..shader = ui.Gradient.linear(
         const Offset(28, 2),
         const Offset(42, 11),
-        const [Color(0xFFB9FF1E), Color(0xFF62D810)],
+        const [AppColors.cFFB9FF1E, AppColors.cFF62D810],
       );
     canvas.save();
     canvas.translate(35, 7);
@@ -646,11 +646,11 @@ class _WalkingOheyPainter extends CustomPainter {
     canvas.drawOval(const Rect.fromLTWH(-9, -5, 18, 10), leafPaint);
     canvas.restore();
 
-    final eyePaint = Paint()..color = const Color(0xFF111723);
-    final highlightPaint = Paint()..color = Colors.white;
+    final eyePaint = Paint()..color = AppColors.cFF111723;
+    final highlightPaint = Paint()..color = AppColors.white;
     if (isSleeping) {
       final sleepEyePaint = Paint()
-        ..color = const Color(0xFF111723)
+        ..color = AppColors.cFF111723
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.8
         ..strokeCap = StrokeCap.round;
@@ -668,11 +668,11 @@ class _WalkingOheyPainter extends CustomPainter {
       final sleepyBlink = isLookingAround && moodProgress > .62;
       canvas.drawOval(
         const Rect.fromLTWH(20.5, 25.5, 5, 9),
-        Paint()..color = const Color(0xFF111723).withValues(alpha: .22),
+        Paint()..color = AppColors.cFF111723.withValues(alpha: .22),
       );
       if (sleepyBlink) {
         final blinkPaint = Paint()
-          ..color = const Color(0xFF111723)
+          ..color = AppColors.cFF111723
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.8
           ..strokeCap = StrokeCap.round;
@@ -684,7 +684,7 @@ class _WalkingOheyPainter extends CustomPainter {
     }
 
     final mouthPaint = Paint()
-      ..color = const Color(0xFF111723)
+      ..color = AppColors.cFF111723
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
@@ -714,12 +714,12 @@ class _WalkingOheyPainter extends CustomPainter {
       text: TextSpan(
         text: 'Zz',
         style: TextStyle(
-          color: Colors.white.withValues(alpha: zOpacity),
+          color: AppColors.white.withValues(alpha: zOpacity),
           fontSize: 9,
           fontWeight: FontWeight.w900,
           shadows: [
             Shadow(
-              color: const Color(0xFF162130).withValues(alpha: .40),
+              color: AppColors.cFF162130.withValues(alpha: .40),
               blurRadius: 5,
             ),
           ],
@@ -732,7 +732,7 @@ class _WalkingOheyPainter extends CustomPainter {
 
   void _drawHopSpark(Canvas canvas, double progress) {
     final sparklePaint = Paint()
-      ..color = const Color(0xFFB9FF1E).withValues(
+      ..color = AppColors.cFFB9FF1E.withValues(
         alpha: (.35 + .55 * math.sin(progress * math.pi * 2).abs()).clamp(
           0.0,
           1.0,

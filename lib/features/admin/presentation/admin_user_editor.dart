@@ -129,7 +129,7 @@ class _AdminUserEditorScreenState
                     child: Text(
                       user == null ? 'ユーザー追加' : 'ユーザー編集',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontWeight: FontWeight.w900,
                         fontSize: 26,
                         letterSpacing: -.8,
@@ -142,7 +142,7 @@ class _AdminUserEditorScreenState
                         : () => Navigator.of(context).pop(false),
                     icon: const OheyGeneratedIcon(
                       CupertinoIcons.xmark,
-                      color: Colors.white,
+                      color: AppColors.white,
                       size: 26,
                     ),
                   ),

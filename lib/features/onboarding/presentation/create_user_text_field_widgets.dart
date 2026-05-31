@@ -38,7 +38,7 @@ class _PlainLoginTextField extends StatelessWidget {
             controller: controller,
             enabled: enabled,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 19,
               fontWeight: FontWeight.w800,
             ),
@@ -51,14 +51,14 @@ class _PlainLoginTextField extends StatelessWidget {
             onSubmitted: onSubmitted,
             decoration: InputDecoration(
               filled: false,
-              fillColor: Colors.transparent,
+              fillColor: AppColors.transparent,
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
               disabledBorder: InputBorder.none,
               hintText: hintText,
               hintStyle: TextStyle(
-                color: Colors.white.withValues(alpha: .29),
+                color: AppColors.white.withValues(alpha: .29),
                 fontSize: 19,
                 fontWeight: FontWeight.w800,
               ),

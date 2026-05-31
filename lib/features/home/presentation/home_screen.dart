@@ -93,7 +93,7 @@ class _FeedCreateYuruboFab extends StatelessWidget {
             ),
             child: const Icon(
               CupertinoIcons.plus,
-              color: Color(0xFF101820),
+              color: AppColors.cFF101820,
               size: 31,
             ),
           ),
@@ -280,7 +280,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
-      barrierColor: Colors.black.withValues(alpha: .62),
+      barrierColor: AppColors.black.withValues(alpha: .62),
       builder: (context) => _FeedCompanionProfileSheet(
         friend: author,
         initialRelationship: item.ownedByMe

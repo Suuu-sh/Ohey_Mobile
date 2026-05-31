@@ -73,7 +73,7 @@ Future<void> _showFriendProfileSheet(
   return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: false,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => _FriendProfileSheet(friend: friend, status: status),
   );
 }
@@ -155,7 +155,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
     final action = await showOheyBottomSheet<_FriendProfileAction>(
       context: context,
       useSafeArea: true,
-      barrierColor: Colors.black.withValues(alpha: .58),
+      barrierColor: AppColors.black.withValues(alpha: .58),
       builder: (_) => _FriendProfileActionSheet(friend: widget.friend),
     );
     if (!mounted || action == null) return;
@@ -283,7 +283,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
         context,
         '「${reason.label}」として通報しました',
         icon: CupertinoIcons.exclamationmark_bubble_fill,
-        accentColor: const Color(0xFFFFD166),
+        accentColor: AppColors.cFFFFD166,
       );
     } catch (_) {
       if (!mounted) return;
@@ -360,9 +360,9 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
                   onTap: () => Navigator.of(context).pop(),
                   height: 48,
                   radius: 22,
-                  color: const Color(0xFF252044),
-                  foregroundColor: const Color(0xFFC08BFF),
-                  shadowColor: const Color(0xFF15142C),
+                  color: AppColors.cFF252044,
+                  foregroundColor: AppColors.cFFC08BFF,
+                  shadowColor: AppColors.cFF15142C,
                 ),
               ),
               const SizedBox(height: 16),
@@ -417,8 +417,8 @@ class _FriendProfileActionSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite
-        ? const Color(0xFF697684)
-        : Colors.white.withValues(alpha: .58);
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .58);
 
     return OheyBottomSheetShell(
       title: 'フレンズ管理',
@@ -443,7 +443,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             icon: CupertinoIcons.person_badge_minus,
             title: 'フレンズ解除',
             subtitle: '関係を解除して、あとで再申請できます',
-            accent: const Color(0xFFFF8AA8),
+            accent: AppColors.cFFFF8AA8,
             destructive: true,
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.remove),
           ),
@@ -452,7 +452,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             icon: CupertinoIcons.bell_slash_fill,
             title: 'ミュート',
             subtitle: 'ゆるぼをフィードに出しません',
-            accent: const Color(0xFF88B8FF),
+            accent: AppColors.cFF88B8FF,
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.mute),
           ),
           const SizedBox(height: 10),
@@ -460,7 +460,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             icon: CupertinoIcons.hand_raised_fill,
             title: 'ブロック',
             subtitle: 'ゆるぼ・申請・お誘いを制限します',
-            accent: const Color(0xFFFF5F8F),
+            accent: AppColors.cFFFF5F8F,
             destructive: true,
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.block),
           ),
@@ -469,7 +469,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             icon: CupertinoIcons.exclamationmark_bubble_fill,
             title: '通報',
             subtitle: '理由を選んで運営に送信します',
-            accent: const Color(0xFFFFD166),
+            accent: AppColors.cFFFFD166,
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.report),
           ),
           const SizedBox(height: 12),
@@ -495,11 +495,11 @@ class _FriendProfileCancelButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final background = isWhite
-        ? const Color(0xFFF2F6FA)
-        : Colors.white.withValues(alpha: .06);
+        ? AppColors.cFFF2F6FA
+        : AppColors.white.withValues(alpha: .06);
     final foreground = isWhite
-        ? const Color(0xFF101820)
-        : Colors.white.withValues(alpha: .82);
+        ? AppColors.cFF101820
+        : AppColors.white.withValues(alpha: .82);
     return CupertinoButton(
       onPressed: onTap,
       minimumSize: Size.zero,
@@ -511,7 +511,7 @@ class _FriendProfileCancelButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: background,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: .18)),
+          border: Border.all(color: AppColors.white.withValues(alpha: .18)),
         ),
         child: Text(
           'キャンセル',
@@ -533,7 +533,7 @@ Future<_FriendProfileReportReason?> _selectFriendReportReason(
   return showOheyBottomSheet<_FriendProfileReportReason>(
     context: context,
     useSafeArea: true,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => const _FriendReportReasonSheet(),
   );
 }
@@ -545,8 +545,8 @@ class _FriendReportReasonSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite
-        ? const Color(0xFF697684)
-        : Colors.white.withValues(alpha: .58);
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       title: '通報理由',
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
@@ -571,7 +571,7 @@ class _FriendReportReasonSheet extends StatelessWidget {
               icon: CupertinoIcons.exclamationmark_triangle_fill,
               title: reason.label,
               subtitle: reason.description,
-              accent: const Color(0xFFFFD166),
+              accent: AppColors.cFFFFD166,
               onTap: () => Navigator.of(context).pop(reason),
             ),
             if (reason != _FriendProfileReportReason.values.last)
@@ -660,7 +660,7 @@ class _FriendProfileActionIconButton extends StatelessWidget {
           child: Center(
             child: OheyGeneratedIcon(
               CupertinoIcons.gear_alt,
-              color: Color(0xFF101820),
+              color: AppColors.cFF101820,
               size: 38,
             ),
           ),
@@ -721,8 +721,8 @@ class _FriendProfileHeaderBackdrop extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.white.withValues(alpha: .18),
-                Colors.white.withValues(alpha: .36),
+                AppColors.white.withValues(alpha: .18),
+                AppColors.white.withValues(alpha: .36),
               ],
             ),
           ),
@@ -765,7 +765,7 @@ class _FriendProfileHero extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.white.withValues(alpha: .72),
+                  color: AppColors.white.withValues(alpha: .72),
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.4,
                 ),
@@ -804,7 +804,7 @@ class _FriendProfileWishItemsPanel extends ConsumerWidget {
                 children: [
                   const Icon(
                     CupertinoIcons.sparkles,
-                    color: Color(0xFFC08BFF),
+                    color: AppColors.cFFC08BFF,
                     size: 18,
                   ),
                   const SizedBox(width: 7),
@@ -814,7 +814,7 @@ class _FriendProfileWishItemsPanel extends ConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                       ),
@@ -854,9 +854,9 @@ class _FriendProfileWishItemsShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return OheyThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-      accentColor: const Color(0xFFC08BFF),
+      accentColor: AppColors.cFFC08BFF,
       borderRadius: 22,
-      backgroundColor: const Color(0xFF231A38).withValues(alpha: .92),
+      backgroundColor: AppColors.cFF231A38.withValues(alpha: .92),
       borderAlpha: .42,
       glowAlpha: .10,
       glowBlur: 18,
@@ -878,11 +878,9 @@ class _FriendProfileWishChip extends StatelessWidget {
       width: 168,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFFC08BFF).withValues(alpha: .18),
+        color: AppColors.cFFC08BFF.withValues(alpha: .18),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFC08BFF).withValues(alpha: .34),
-        ),
+        border: Border.all(color: AppColors.cFFC08BFF.withValues(alpha: .34)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -892,7 +890,7 @@ class _FriendProfileWishChip extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 13,
               fontWeight: FontWeight.w900,
               height: 1.12,
@@ -904,7 +902,7 @@ class _FriendProfileWishChip extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: .56),
+              color: AppColors.white.withValues(alpha: .56),
               fontSize: 11,
               fontWeight: FontWeight.w800,
             ),
@@ -956,7 +954,7 @@ class _FriendProfileStatusPanel extends StatelessWidget {
                 Text(
                   status.label,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontWeight: FontWeight.w900,
                     fontSize: 15,
                   ),
@@ -965,7 +963,7 @@ class _FriendProfileStatusPanel extends StatelessWidget {
                 Text(
                   status.reason,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: .70),
+                    color: AppColors.white.withValues(alpha: .70),
                     fontWeight: FontWeight.w800,
                     height: 1.35,
                   ),
@@ -1085,7 +1083,7 @@ class _FriendProfileCalendarState
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
 
     return GestureDetector(
       onHorizontalDragEnd: _handleMonthSwipe,
@@ -1172,14 +1170,14 @@ class _FriendProfileMonthArrowButton extends StatelessWidget {
         height: 34,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: .12),
+          color: AppColors.white.withValues(alpha: .12),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withValues(alpha: .10)),
+          border: Border.all(color: AppColors.white.withValues(alpha: .10)),
         ),
         child: Text(
           label,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.white,
             fontSize: 24,
             height: .95,
             fontWeight: FontWeight.w900,
@@ -1224,10 +1222,10 @@ class _FriendProfileMonthGrid extends StatelessWidget {
                       entry.value,
                       style: TextStyle(
                         color: entry.key == 0
-                            ? Color(0xFFFF6FA6)
+                            ? AppColors.cFFFF6FA6
                             : entry.key == 6
-                            ? Color(0xFF46C8FF)
-                            : Color(0xFFB7C0CA),
+                            ? AppColors.cFF46C8FF
+                            : AppColors.cFFB7C0CA,
                         fontWeight: FontWeight.w900,
                         fontSize: 16,
                       ),
@@ -1341,15 +1339,15 @@ class _FriendProfileDayTile extends StatelessWidget {
           )
         : !inMonth
         ? (isWhite
-              ? Colors.black.withValues(alpha: .20)
-              : Colors.white.withValues(alpha: .20))
+              ? AppColors.black.withValues(alpha: .20)
+              : AppColors.white.withValues(alpha: .20))
         : column == 0
-        ? const Color(0xFFFF6FA6)
+        ? AppColors.cFFFF6FA6
         : column == 6
-        ? const Color(0xFF46C8FF)
+        ? AppColors.cFF46C8FF
         : isWhite
-        ? const Color(0xFF101820)
-        : Colors.white;
+        ? AppColors.cFF101820
+        : AppColors.white;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -1364,14 +1362,14 @@ class _FriendProfileDayTile extends StatelessWidget {
                   selected: isSelected,
                 )
               : isWhite
-              ? (isSelected ? const Color(0xFFEAF8FF) : Colors.white)
+              ? (isSelected ? AppColors.cFFEAF8FF : AppColors.white)
               : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(13),
           border: Border.all(
             color: hasStatus
                 ? statusAccent.withValues(alpha: isSelected ? .90 : .52)
                 : isSelected
-                ? const Color(0xFF54D7FF)
+                ? AppColors.cFF54D7FF
                 : const Color(
                     0xFF20B9FF,
                   ).withValues(alpha: isWhite ? .34 : .24),
@@ -1381,7 +1379,7 @@ class _FriendProfileDayTile extends StatelessWidget {
             BoxShadow(
               color: hasStatus
                   ? statusAccent.withValues(alpha: isWhite ? .16 : .24)
-                  : Colors.black.withValues(alpha: isWhite ? .05 : .20),
+                  : AppColors.black.withValues(alpha: isWhite ? .05 : .20),
               blurRadius: hasStatus ? 16 : 12,
               offset: const Offset(0, 8),
             ),
@@ -1391,7 +1389,7 @@ class _FriendProfileDayTile extends StatelessWidget {
           child: Text(
             '$day',
             style: TextStyle(
-              color: isToday && !isWhite ? Colors.white : dayColor,
+              color: isToday && !isWhite ? AppColors.white : dayColor,
               fontSize: tileExtent >= 42 ? 18 : 16,
               fontWeight: FontWeight.w900,
             ),
@@ -1416,11 +1414,11 @@ bool _friendProfileIsSameDate(DateTime a, DateTime b) =>
 
 Color _friendProfileCalendarStatusTileAccent(OheyDailyStatus status) =>
     switch (status) {
-      OheyDailyStatus.available => const Color(0xFFFF5EA8),
-      OheyDailyStatus.maybeAvailable => const Color(0xFF20B9FF),
-      OheyDailyStatus.dependsOnTime => const Color(0xFF8A62FF),
-      OheyDailyStatus.hasPlans => const Color(0xFF738092),
-      OheyDailyStatus.unselected => const Color(0xFF9AF21A),
+      OheyDailyStatus.available => AppColors.cFFFF5EA8,
+      OheyDailyStatus.maybeAvailable => AppColors.cFF20B9FF,
+      OheyDailyStatus.dependsOnTime => AppColors.cFF8A62FF,
+      OheyDailyStatus.hasPlans => AppColors.cFF738092,
+      OheyDailyStatus.unselected => AppColors.cFF9AF21A,
     };
 
 Color _friendProfileCalendarStatusTileBackground(
@@ -1430,8 +1428,8 @@ Color _friendProfileCalendarStatusTileBackground(
 }) {
   if (status == OheyDailyStatus.hasPlans) {
     return isWhite
-        ? const Color(0xFFE2E8F0)
-        : const Color(0xFF2B3644).withValues(alpha: selected ? .92 : .76);
+        ? AppColors.cFFE2E8F0
+        : AppColors.cFF2B3644.withValues(alpha: selected ? .92 : .76);
   }
   final color = _friendProfileCalendarStatusTileAccent(status);
   return color.withValues(
@@ -1444,7 +1442,7 @@ Color _friendProfileCalendarStatusTileForeground(
   required bool isWhite,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? const Color(0xFF111827) : Colors.white;
+    return isWhite ? AppColors.cFF111827 : AppColors.white;
   }
-  return const Color(0xFF06111D);
+  return AppColors.cFF06111D;
 }

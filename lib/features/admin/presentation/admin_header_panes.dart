@@ -30,7 +30,7 @@ class _AdminHeader extends StatelessWidget {
               const Text(
                 '管理画面',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontWeight: FontWeight.w900,
                   fontSize: 26,
                   letterSpacing: -.8,
@@ -51,7 +51,7 @@ class _AdminHeader extends StatelessWidget {
           onPressed: onClose,
           icon: const OheyGeneratedIcon(
             CupertinoIcons.xmark,
-            color: Colors.white,
+            color: AppColors.white,
             size: 26,
           ),
         ),
@@ -74,7 +74,7 @@ class _AdminSegmentedControl extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .06),
+        color: AppColors.white.withValues(alpha: .06),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: _AdminColors.line),
       ),
@@ -213,7 +213,7 @@ class _AdminReportCard extends StatelessWidget {
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.white,
             fontWeight: FontWeight.w900,
             fontSize: 16,
           ),
@@ -241,7 +241,7 @@ class _AdminReportCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: Colors.white70,
+              color: AppColors.white70,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -294,19 +294,19 @@ class _AdminSmallActionButton extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       decoration: BoxDecoration(
         color: destructive
-            ? const Color(0xFFFF5A72).withValues(alpha: .16)
+            ? AppColors.cFFFF5A72.withValues(alpha: .16)
             : _AdminColors.lime.withValues(alpha: .16),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
           color: destructive
-              ? const Color(0xFFFF5A72).withValues(alpha: .35)
+              ? AppColors.cFFFF5A72.withValues(alpha: .35)
               : _AdminColors.lime.withValues(alpha: .35),
         ),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: destructive ? const Color(0xFFFF8EA0) : _AdminColors.lime,
+          color: destructive ? AppColors.cFFFF8EA0 : _AdminColors.lime,
           fontWeight: FontWeight.w900,
           fontSize: 12,
         ),
@@ -335,13 +335,13 @@ class _AdminSegmentButton extends StatelessWidget {
         height: 42,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? _AdminColors.lime : Colors.transparent,
+          color: selected ? _AdminColors.lime : AppColors.transparent,
           borderRadius: BorderRadius.circular(17),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? const Color(0xFF101820) : _AdminColors.sub,
+            color: selected ? AppColors.cFF101820 : _AdminColors.sub,
             fontWeight: FontWeight.w900,
           ),
         ),
@@ -526,7 +526,7 @@ class _AdminRecipientPreview extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontWeight: FontWeight.w900,
                   fontSize: 16,
                 ),
@@ -566,7 +566,7 @@ class _AdminPaneToolbar extends StatelessWidget {
       Text(
         title,
         style: const TextStyle(
-          color: Colors.white,
+          color: AppColors.white,
           fontWeight: FontWeight.w900,
           fontSize: 20,
         ),

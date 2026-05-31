@@ -42,7 +42,7 @@ class _OheyDemoScreenState extends State<OheyDemoScreen> {
                   onPressed: () => Navigator.of(context).pop(),
                   icon: const OheyGeneratedIcon(
                     CupertinoIcons.xmark,
-                    color: Colors.white,
+                    color: AppColors.white,
                     size: 28,
                   ),
                 ),
@@ -78,11 +78,11 @@ class _OheyDemoScreenState extends State<OheyDemoScreen> {
                         width: 58,
                         height: 58,
                         decoration: const BoxDecoration(
-                          color: Color(0xFF12C9A4),
+                          color: AppColors.cFF12C9A4,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFF079078),
+                              color: AppColors.cFF079078,
                               offset: Offset(0, 6),
                               blurRadius: 0,
                             ),
@@ -93,8 +93,8 @@ class _OheyDemoScreenState extends State<OheyDemoScreen> {
                             icon: _page == slides.length - 1
                                 ? CupertinoIcons.checkmark
                                 : CupertinoIcons.arrow_right,
-                            color: Colors.white,
-                            foregroundColor: Colors.white,
+                            color: AppColors.white,
+                            foregroundColor: AppColors.white,
                             showBubble: false,
                             size: 30,
                             iconSize: 28,

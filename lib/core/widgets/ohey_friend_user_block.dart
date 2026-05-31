@@ -52,23 +52,23 @@ class OheyFriendUserBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final accent = statusEnabled ? statusColor : const Color(0xFF2B3441);
+    final accent = statusEnabled ? statusColor : AppColors.cFF2B3441;
     final ink = statusEnabled
-        ? (isWhite ? const Color(0xFF101820) : Colors.white)
-        : (isWhite ? const Color(0xFF667381) : const Color(0xFF8792A3));
+        ? (isWhite ? AppColors.cFF101820 : AppColors.white)
+        : (isWhite ? AppColors.cFF667381 : AppColors.cFF8792A3);
     final avatarSize = compact ? 52.0 : 62.0;
     final inviteEnabled =
         statusEnabled && inviteAvailable && !inviteSent && onInvite != null;
     final inviteButtonColor = inviteSent || !inviteAvailable
-        ? const Color(0xFF3C4652)
+        ? AppColors.cFF3C4652
         : accent;
     final inviteForeground = inviteSent
-        ? const Color(0xFFC3CAD3)
+        ? AppColors.cFFC3CAD3
         : !inviteAvailable
-        ? const Color(0xFF9AA4B2)
+        ? AppColors.cFF9AA4B2
         : statusEnabled
-        ? const Color(0xFF071320)
-        : const Color(0xFF738092);
+        ? AppColors.cFF071320
+        : AppColors.cFF738092;
 
     final block = ConstrainedBox(
       constraints: BoxConstraints(minHeight: compact ? 88 : 98),
@@ -81,7 +81,7 @@ class OheyFriendUserBlock extends StatelessWidget {
         ),
         accentColor: accent,
         backgroundColor: isWhite
-            ? Colors.white
+            ? AppColors.white
             : AppColors.darkBackgroundBottom,
         borderRadius: 20,
         borderAlpha: statusEnabled
@@ -145,8 +145,8 @@ class OheyFriendUserBlock extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: isWhite
-                            ? const Color(0xFF667381)
-                            : Colors.white.withValues(alpha: .62),
+                            ? AppColors.cFF667381
+                            : AppColors.white.withValues(alpha: .62),
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                       ),
@@ -184,15 +184,15 @@ class OheyFriendUserBlock extends StatelessWidget {
                         color: inviteButtonColor,
                         foregroundColor: inviteForeground,
                         shadowColor: inviteSent
-                            ? const Color(0xFF1A222C)
+                            ? AppColors.cFF1A222C
                             : !inviteAvailable
-                            ? const Color(0xFF1A222C)
+                            ? AppColors.cFF1A222C
                             : statusEnabled
-                            ? Color.lerp(accent, Colors.black, .32)
-                            : const Color(0xFF111923),
+                            ? Color.lerp(accent, AppColors.black, .32)
+                            : AppColors.cFF111923,
                         disabledColor: inviteSent
-                            ? const Color(0xFF3C4652)
-                            : const Color(0xFF2B3441),
+                            ? AppColors.cFF3C4652
+                            : AppColors.cFF2B3441,
                         disabledOpacity: 1,
                         padding: const EdgeInsets.symmetric(horizontal: 13),
                         fontSize: 12,
@@ -236,13 +236,13 @@ class _FriendBlockAvatarBubble extends StatelessWidget {
         color: accent.withValues(alpha: isWhite ? .22 : .30),
         border: Border.all(
           color: isWhite
-              ? Colors.white.withValues(alpha: .86)
-              : const Color(0xFF072130),
+              ? AppColors.white.withValues(alpha: .86)
+              : AppColors.cFF072130,
           width: 4,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .10 : .24),
+            color: AppColors.black.withValues(alpha: isWhite ? .10 : .24),
             blurRadius: 14,
             offset: const Offset(0, 7),
           ),
@@ -313,7 +313,7 @@ class _StatusPill extends StatelessWidget {
     child: Text(
       label,
       style: TextStyle(
-        color: enabled ? accent : const Color(0xFF738092),
+        color: enabled ? accent : AppColors.cFF738092,
         fontWeight: FontWeight.w900,
         fontSize: 13,
       ),
@@ -346,8 +346,8 @@ class _FavoriteStarButton extends StatelessWidget {
           child: Icon(
             isFavorite ? CupertinoIcons.star_fill : CupertinoIcons.star,
             color: isFavorite
-                ? const Color(0xFFFFC700)
-                : (isWhite ? const Color(0xFF8C9CAB) : const Color(0xFF8792A3)),
+                ? AppColors.cFFFFC700
+                : (isWhite ? AppColors.cFF8C9CAB : AppColors.cFF8792A3),
             size: 22,
           ),
         ),

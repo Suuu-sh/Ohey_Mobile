@@ -22,10 +22,10 @@ class _FeedEmptyState extends StatelessWidget {
     visual: OheyPopIcon(icon: icon, color: accent, size: 58),
     title: title,
     message: message,
-    titleColor: isWhite ? const Color(0xFF27313B) : Colors.white,
+    titleColor: isWhite ? AppColors.cFF27313B : AppColors.white,
     messageColor: isWhite
-        ? const Color(0xFF6E7783)
-        : Colors.white.withValues(alpha: .55),
+        ? AppColors.cFF6E7783
+        : AppColors.white.withValues(alpha: .55),
     action: action,
   );
 }
@@ -61,10 +61,10 @@ class _AvatarBubble extends StatelessWidget {
 BoxDecoration _feedCardDecoration({required double radius}) => BoxDecoration(
   color: _FeedColors.card.withValues(alpha: .74),
   borderRadius: BorderRadius.circular(radius),
-  border: Border.all(color: Colors.white.withValues(alpha: .11), width: 1.2),
+  border: Border.all(color: AppColors.white.withValues(alpha: .11), width: 1.2),
   boxShadow: [
     BoxShadow(
-      color: Colors.black.withValues(alpha: .18),
+      color: AppColors.black.withValues(alpha: .18),
       blurRadius: 26,
       offset: const Offset(0, 14),
     ),
@@ -254,10 +254,10 @@ IconData _companionStatusIcon(String? statusKey) {
 Color _companionStatusColor(String? statusKey) {
   final status = oheyDailyStatusFromKey(statusKey);
   return switch (status) {
-    OheyDailyStatus.available => const Color(0xFF9AF21A),
-    OheyDailyStatus.maybeAvailable => const Color(0xFF5DEBD3),
-    OheyDailyStatus.dependsOnTime => const Color(0xFFFF5EA8),
-    OheyDailyStatus.hasPlans => const Color(0xFFB8C1CD),
+    OheyDailyStatus.available => AppColors.cFF9AF21A,
+    OheyDailyStatus.maybeAvailable => AppColors.cFF5DEBD3,
+    OheyDailyStatus.dependsOnTime => AppColors.cFFFF5EA8,
+    OheyDailyStatus.hasPlans => AppColors.cFFB8C1CD,
     OheyDailyStatus.unselected => _FeedColors.sub,
   };
 }
@@ -295,14 +295,14 @@ class _FeedNotification {
         _ => CupertinoIcons.bell_fill,
       },
       accent: switch (notification.kind) {
-        'memory_like' => const Color(0xFFFF75B5),
-        'friend_request_received' => const Color(0xFF58D6FF),
-        'friend_request_accepted' => const Color(0xFF9AF21A),
-        'invite_received' => const Color(0xFFC08BFF),
+        'memory_like' => AppColors.cFFFF75B5,
+        'friend_request_received' => AppColors.cFF58D6FF,
+        'friend_request_accepted' => AppColors.cFF9AF21A,
+        'invite_received' => AppColors.cFFC08BFF,
         'invite_accepted' => _FeedColors.teal,
-        'today_reservation_reminder' => const Color(0xFFFFD166),
-        'memory_tagged' => const Color(0xFF58D6FF),
-        'system' => const Color(0xFFFFD166),
+        'today_reservation_reminder' => AppColors.cFFFFD166,
+        'memory_tagged' => AppColors.cFF58D6FF,
+        'system' => AppColors.cFFFFD166,
         _ => _FeedColors.teal,
       },
       unread: notification.isUnread,
@@ -388,7 +388,7 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
     ..shader = const LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFF05080D), Color(0xFF111821), Color(0xFF05080D)],
+      colors: [AppColors.cFF05080D, AppColors.cFF111821, AppColors.cFF05080D],
       stops: [0, .48, 1],
     ).createShader(rect);
   canvas.drawRect(rect, background);
@@ -410,10 +410,10 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
   canvas.drawRRect(
     cardRRect.shift(const Offset(0, 18)),
     Paint()
-      ..color = Colors.black.withValues(alpha: .26)
+      ..color = AppColors.black.withValues(alpha: .26)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24),
   );
-  canvas.drawRRect(cardRRect, Paint()..color = Colors.white);
+  canvas.drawRRect(cardRRect, Paint()..color = AppColors.white);
 
   final accentRect = Rect.fromLTWH(cardLeft, cardTop, cardWidth, 12);
   canvas.drawRRect(
@@ -422,7 +422,7 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
       topLeft: const Radius.circular(32),
       topRight: const Radius.circular(32),
     ),
-    Paint()..color = const Color(0xFFC08BFF),
+    Paint()..color = AppColors.cFFC08BFF,
   );
 
   final textLeft = cardLeft + cardHorizontalPadding;
@@ -436,7 +436,7 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
     maxWidth: textWidth,
     size: titleFontSize,
     weight: FontWeight.w800,
-    color: const Color(0xFF111111),
+    color: AppColors.cFF111111,
     maxLines: 3,
   );
   _paintShareText(
@@ -447,7 +447,7 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
     maxWidth: textWidth,
     size: metaFontSize,
     weight: FontWeight.w700,
-    color: const Color(0xFF8D8D8D),
+    color: AppColors.cFF8D8D8D,
     maxLines: 1,
   );
 
@@ -496,18 +496,18 @@ void _paintShareText(
 
 class _FeedColors {
   const _FeedColors._();
-  static const teal = Color(0xFFC08BFF);
-  static const card = Color(0xFF112332);
-  static const sub = Color(0xFF9AA7B7);
+  static const teal = AppColors.cFFC08BFF;
+  static const card = AppColors.cFF112332;
+  static const sub = AppColors.cFF9AA7B7;
 }
 
 Color _accentForId(String id) {
   const colors = [
-    Color(0xFF12C9A4),
-    Color(0xFFC08BFF),
-    Color(0xFF9AF21A),
-    Color(0xFFFF75B5),
-    Color(0xFF58D6FF),
+    AppColors.cFF12C9A4,
+    AppColors.cFFC08BFF,
+    AppColors.cFF9AF21A,
+    AppColors.cFFFF75B5,
+    AppColors.cFF58D6FF,
   ];
   return colors[id.hashCode.abs() % colors.length];
 }

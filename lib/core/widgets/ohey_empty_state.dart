@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
 class OheyEmptyState extends StatelessWidget {
   const OheyEmptyState({
@@ -39,7 +40,7 @@ class OheyEmptyState extends StatelessWidget {
               style: TextStyle(
                 color:
                     titleColor ??
-                    (isWhite ? const Color(0xFF27313B) : Colors.white),
+                    (isWhite ? AppColors.cFF27313B : AppColors.white),
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
               ),
@@ -52,8 +53,8 @@ class OheyEmptyState extends StatelessWidget {
                 color:
                     messageColor ??
                     (isWhite
-                        ? const Color(0xFF6E7783)
-                        : Colors.white.withValues(alpha: .55)),
+                        ? AppColors.cFF6E7783
+                        : AppColors.white.withValues(alpha: .55)),
                 fontWeight: FontWeight.w800,
                 height: 1.45,
               ),

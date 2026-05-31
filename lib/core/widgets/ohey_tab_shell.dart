@@ -42,10 +42,10 @@ class OheyTabShell extends ConsumerStatefulWidget {
 class _OheyTabShellState extends ConsumerState<OheyTabShell>
     with WidgetsBindingObserver {
   static const _invitePollInterval = Duration(seconds: 15);
-  static const _feedAccentColor = Color(0xFFC08BFF);
-  static const _friendsAccentColor = Color(0xFF9AF21A);
-  static const _calendarAccentColor = Color(0xFF20B9FF);
-  static const _profileAccentColor = Color(0xFFFF75B5);
+  static const _feedAccentColor = AppColors.cFFC08BFF;
+  static const _friendsAccentColor = AppColors.cFF9AF21A;
+  static const _calendarAccentColor = AppColors.cFF20B9FF;
+  static const _profileAccentColor = AppColors.cFFFF75B5;
 
   int _selectedIndex = 0;
   bool _didScheduleProfileRestore = false;
@@ -228,7 +228,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
         context: context,
         useSafeArea: true,
         useRootNavigator: true,
-        barrierColor: Colors.black.withValues(alpha: .62),
+        barrierColor: AppColors.black.withValues(alpha: .62),
         builder: (_) => OheyToastAccent(
           color: _selectedToastAccentColor,
           child: _IncomingInviteSheet(
@@ -277,9 +277,9 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
         useRootNavigator: true,
         isDismissible: false,
         enableDrag: false,
-        barrierColor: Colors.black.withValues(alpha: .72),
+        barrierColor: AppColors.black.withValues(alpha: .72),
         builder: (_) => OheyToastAccent(
-          color: Color(0xFF20B9FF),
+          color: AppColors.cFF20B9FF,
           child: _DailyStatusRequiredSheet(
             onSelect: (status) async {
               await ref
@@ -378,7 +378,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       return Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: isWhite
-            ? Colors.white
+            ? AppColors.white
             : AppColors.darkBackgroundBottom,
         body: const SizedBox.expand(),
       );
@@ -429,14 +429,14 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
                   customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
                   label: 'ゆるぼ',
                   selected: _selectedIndex == 0,
-                  activeColor: const Color(0xFF8A62FF),
+                  activeColor: AppColors.cFF8A62FF,
                   onTap: () => _selectTab(0),
                 ),
                 _TabItem(
                   customIcon: _FriendsTabIcon(selected: _selectedIndex == 1),
                   label: 'フレンズ',
                   selected: _selectedIndex == 1,
-                  activeColor: const Color(0xFF9AF21A),
+                  activeColor: AppColors.cFF9AF21A,
                   badgeCount: incomingFriendRequestCount,
                   onTap: () => _selectTab(1),
                 ),
@@ -444,14 +444,14 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
                   customIcon: _CalendarTabIcon(selected: _selectedIndex == 2),
                   label: 'カレンダー',
                   selected: _selectedIndex == 2,
-                  activeColor: const Color(0xFF20B9FF),
+                  activeColor: AppColors.cFF20B9FF,
                   onTap: () => _selectTab(2),
                 ),
                 _TabItem(
                   customIcon: _ProfileTabIcon(selected: _selectedIndex == 3),
                   label: 'マイページ',
                   selected: _selectedIndex == 3,
-                  activeColor: const Color(0xFFFF75B5),
+                  activeColor: AppColors.cFFFF75B5,
                   onTap: () => _selectTab(3),
                 ),
               ],
@@ -503,10 +503,10 @@ class _DailyStatusRequiredSheetState
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .64);
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .64);
     return PopScope(
       canPop: false,
       child: OheyBottomSheetShell(
@@ -521,7 +521,7 @@ class _DailyStatusRequiredSheetState
               children: [
                 const OheyPopIcon(
                   icon: CupertinoIcons.calendar_badge_plus,
-                  color: Color(0xFF20B9FF),
+                  color: AppColors.cFF20B9FF,
                   size: 48,
                   iconSize: 25,
                 ),
@@ -591,7 +591,7 @@ class _SheetInlineError extends StatelessWidget {
         ? AppColors.danger.withValues(alpha: .10)
         : AppColors.danger.withValues(alpha: .14);
     final border = AppColors.danger.withValues(alpha: isWhite ? .26 : .34);
-    final textColor = isWhite ? const Color(0xFF8F254B) : Colors.white;
+    final textColor = isWhite ? AppColors.cFF8F254B : AppColors.white;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
@@ -698,7 +698,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                     width: 44,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .22),
+                      color: AppColors.white.withValues(alpha: .22),
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -708,7 +708,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                   children: [
                     const OheyPopIcon(
                       icon: CupertinoIcons.sparkles,
-                      color: Color(0xFFFFD84D),
+                      color: AppColors.cFFFFD84D,
                       size: 54,
                       iconSize: 29,
                     ),
@@ -722,7 +722,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Color(0xFFFFF4B8),
+                              color: AppColors.cFFFFF4B8,
                               fontSize: 14,
                               fontWeight: FontWeight.w900,
                               letterSpacing: -.2,
@@ -734,7 +734,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.white,
                               fontSize: 19,
                               fontWeight: FontWeight.w900,
                               letterSpacing: -.4,
@@ -760,7 +760,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                             child: const Text(
                               '返信待ち',
                               style: TextStyle(
-                                color: Color(0xFFFFD84D),
+                                color: AppColors.cFFFFD84D,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w900,
                               ),
@@ -772,9 +772,9 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                     OheyCloseButton(
                       enabled: _busyAction == null,
                       onTap: () => Navigator.of(context).pop(),
-                      iconColor: Colors.white,
-                      backgroundColor: Colors.white.withValues(alpha: .08),
-                      borderColor: Colors.white.withValues(alpha: .10),
+                      iconColor: AppColors.white,
+                      backgroundColor: AppColors.white.withValues(alpha: .08),
+                      borderColor: AppColors.white.withValues(alpha: .10),
                     ),
                   ],
                 ),
@@ -782,16 +782,16 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .06),
+                    color: AppColors.white.withValues(alpha: .06),
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: .10),
+                      color: AppColors.white.withValues(alpha: .10),
                     ),
                   ),
                   child: Text(
                     '${from.name}さんから${widget.invite.summary()}が届いたよ。',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: .82),
+                      color: AppColors.white.withValues(alpha: .82),
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                       height: 1.45,
@@ -837,9 +837,9 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                   enabled: _busyAction == null,
                   height: 48,
                   radius: 21,
-                  color: Colors.white.withValues(alpha: .07),
-                  foregroundColor: Colors.white.withValues(alpha: .72),
-                  shadowColor: const Color(0xFF5B3A7A).withValues(alpha: .72),
+                  color: AppColors.white.withValues(alpha: .07),
+                  foregroundColor: AppColors.white.withValues(alpha: .72),
+                  shadowColor: AppColors.cFF5B3A7A.withValues(alpha: .72),
                   fontSize: 14,
                   useGradient: false,
                 ),
@@ -901,11 +901,11 @@ class _InviteCelebrationPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width * .50, size.height * .16);
     final colors = [
-      const Color(0xFFFFD84D),
-      const Color(0xFFFF4FB5),
-      const Color(0xFFC08BFF),
-      const Color(0xFF9AF21A),
-      Colors.white,
+      AppColors.cFFFFD84D,
+      AppColors.cFFFF4FB5,
+      AppColors.cFFC08BFF,
+      AppColors.cFF9AF21A,
+      AppColors.white,
     ];
     for (var i = 0; i < 24; i++) {
       final angle = (math.pi * 2 / 24) * i - math.pi / 2;
@@ -931,8 +931,8 @@ class _InviteCelebrationPainter extends CustomPainter {
     final glowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          const Color(0xFFFF4FB5).withValues(alpha: .22 * (1 - progress * .4)),
-          Colors.transparent,
+          AppColors.cFFFF4FB5.withValues(alpha: .22 * (1 - progress * .4)),
+          AppColors.transparent,
         ],
       ).createShader(Rect.fromCircle(center: center, radius: 130));
     canvas.drawCircle(center, 130, glowPaint);
@@ -963,7 +963,7 @@ class _TabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labelColor = selected ? activeColor : const Color(0xFFA5ADBC);
+    final labelColor = selected ? activeColor : AppColors.cFFA5ADBC;
     final hasBadge = badgeCount > 0;
     return Expanded(
       child: GestureDetector(
@@ -1042,13 +1042,13 @@ class _TabBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFFF5F8F), Color(0xFFFF335F)],
+          colors: [AppColors.cFFFF5F8F, AppColors.cFFFF335F],
         ),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: AppColors.darkBackgroundBottom, width: 2),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF4F7A).withValues(alpha: .42),
+            color: AppColors.cFFFF4F7A.withValues(alpha: .42),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -1058,7 +1058,7 @@ class _TabBadge extends StatelessWidget {
         label,
         textAlign: TextAlign.center,
         style: const TextStyle(
-          color: Colors.white,
+          color: AppColors.white,
           fontSize: 9.5,
           height: 1,
           fontWeight: FontWeight.w900,
@@ -1231,9 +1231,7 @@ class _FeedPainter extends CustomPainter {
         size.height * .48,
       )
       ..close();
-    final baseColor = active
-        ? const Color(0xFF8A62FF)
-        : const Color(0xFF8F98A8);
+    final baseColor = active ? AppColors.cFF8A62FF : AppColors.cFF8F98A8;
     canvas.drawShadow(
       roof,
       baseColor.withValues(alpha: active ? .55 : .18),
@@ -1245,8 +1243,8 @@ class _FeedPainter extends CustomPainter {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: active
-            ? const [Color(0xFFB392FF), Color(0xFF6D4DFF)]
-            : const [Color(0xFFB1BAC8), Color(0xFF727C8D)],
+            ? const [AppColors.cFFB392FF, AppColors.cFF6D4DFF]
+            : const [AppColors.cFFB1BAC8, AppColors.cFF727C8D],
       ).createShader(Offset.zero & size);
     canvas.drawPath(roof, paint);
     final door = RRect.fromRectAndRadius(
@@ -1260,11 +1258,10 @@ class _FeedPainter extends CustomPainter {
     );
     canvas.drawRRect(
       door,
-      Paint()
-        ..color = active ? const Color(0xFFB8EA00) : const Color(0xFF8F98A8),
+      Paint()..color = active ? AppColors.cFFB8EA00 : AppColors.cFF8F98A8,
     );
     final dotPaint = Paint()
-      ..color = active ? const Color(0xFFC8F400) : const Color(0xFFD5DBE5);
+      ..color = active ? AppColors.cFFC8F400 : AppColors.cFFD5DBE5;
     for (final offset in [
       const Offset(.44, .43),
       const Offset(.56, .43),
@@ -1291,8 +1288,8 @@ class _FriendsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final colors = active
-        ? const [Color(0xFF9AF21A), Color(0xFF5DC86C)]
-        : const [Color(0xFFB1BAC8), Color(0xFF798393)];
+        ? const [AppColors.cFF9AF21A, AppColors.cFF5DC86C]
+        : const [AppColors.cFFB1BAC8, AppColors.cFF798393];
     final paint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
@@ -1315,7 +1312,7 @@ class _FriendsPainter extends CustomPainter {
       );
       canvas.drawRRect(body, paint);
       final eye = Paint()
-        ..color = Colors.white.withValues(alpha: active ? .95 : .75);
+        ..color = AppColors.white.withValues(alpha: active ? .95 : .75);
       canvas.drawCircle(
         Offset(center.dx - 3 * scale, center.dy - 10 * scale),
         1.8 * scale,
@@ -1331,7 +1328,7 @@ class _FriendsPainter extends CustomPainter {
     person(Offset(size.width * .38, size.height * .52), 1.05);
     person(Offset(size.width * .64, size.height * .58), .78);
     if (active) {
-      final spark = Paint()..color = const Color(0xFFC8F400);
+      final spark = Paint()..color = AppColors.cFFC8F400;
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(size.width * .78, 2, 5, 14),
@@ -1361,8 +1358,8 @@ class _CalendarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final colors = active
-        ? const [Color(0xFF36C8FF), Color(0xFF0875E8)]
-        : const [Color(0xFFB1BAC8), Color(0xFF738091)];
+        ? const [AppColors.cFF36C8FF, AppColors.cFF0875E8]
+        : const [AppColors.cFFB1BAC8, AppColors.cFF738091];
     final rect = RRect.fromRectAndRadius(
       Rect.fromLTWH(6, 8, size.width - 12, size.height - 10),
       const Radius.circular(12),
@@ -1386,7 +1383,7 @@ class _CalendarPainter extends CustomPainter {
     );
     canvas.drawRRect(
       cutout,
-      Paint()..color = const Color(0xFF06111D).withValues(alpha: .88),
+      Paint()..color = AppColors.cFF06111D.withValues(alpha: .88),
     );
     final tabPaint = Paint()..color = colors.first;
     canvas.drawRRect(
@@ -1404,14 +1401,14 @@ class _CalendarPainter extends CustomPainter {
       tabPaint,
     );
     final dotPaint = Paint()
-      ..color = active ? const Color(0xFF36C8FF) : const Color(0xFFB1BAC8);
+      ..color = active ? AppColors.cFF36C8FF : AppColors.cFFB1BAC8;
     for (final y in [25.0, 33.0]) {
       for (final x in [19.0, 28.0, 37.0]) {
         canvas.drawCircle(Offset(x, y), 2.4, dotPaint);
       }
     }
     if (active) {
-      final spark = Paint()..color = const Color(0xFF36C8FF);
+      final spark = Paint()..color = AppColors.cFF36C8FF;
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(size.width - 6, 0, 6, 14),
@@ -1445,8 +1442,8 @@ class _ProfilePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final colors = active
-        ? const [Color(0xFFFF78C2), Color(0xFFFF3E9D)]
-        : const [Color(0xFFB1BAC8), Color(0xFF778293)];
+        ? const [AppColors.cFFFF78C2, AppColors.cFFFF3E9D]
+        : const [AppColors.cFFB1BAC8, AppColors.cFF778293];
     final bodyPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
@@ -1492,8 +1489,8 @@ class _ProfilePainter extends CustomPainter {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: active
-            ? const [Color(0xFF8FE978), Color(0xFF44BC55)]
-            : const [Color(0xFFB9C1CF), Color(0xFF858FA0)],
+            ? const [AppColors.cFF8FE978, AppColors.cFF44BC55]
+            : const [AppColors.cFFB9C1CF, AppColors.cFF858FA0],
       ).createShader(Offset.zero & size);
     final cap = RRect.fromRectAndRadius(
       Rect.fromLTWH(
@@ -1507,8 +1504,9 @@ class _ProfilePainter extends CustomPainter {
     canvas.drawRRect(cap, capPaint);
 
     final eyePaint = Paint()
-      ..color = const Color(0xFF243041).withValues(alpha: active ? .95 : .75);
-    final eyeHighlight = Paint()..color = Colors.white.withValues(alpha: .92);
+      ..color = AppColors.cFF243041.withValues(alpha: active ? .95 : .75);
+    final eyeHighlight = Paint()
+      ..color = AppColors.white.withValues(alpha: .92);
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(size.width * .40, size.height * .48),
@@ -1537,7 +1535,7 @@ class _ProfilePainter extends CustomPainter {
     );
 
     final smilePaint = Paint()
-      ..color = const Color(0xFF243041).withValues(alpha: active ? .72 : .55)
+      ..color = AppColors.cFF243041.withValues(alpha: active ? .72 : .55)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
@@ -1552,7 +1550,7 @@ class _ProfilePainter extends CustomPainter {
     canvas.drawPath(smile, smilePaint);
 
     if (active) {
-      final sparkle = Paint()..color = const Color(0xFFFF78C2);
+      final sparkle = Paint()..color = AppColors.cFFFF78C2;
       final star = Path()
         ..moveTo(size.width * .90, size.height * .27)
         ..lineTo(size.width * .94, size.height * .35)

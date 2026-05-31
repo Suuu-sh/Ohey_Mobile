@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'ohey_pop_icon.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
 class OheyPageHeader extends StatelessWidget {
   const OheyPageHeader({
@@ -41,7 +42,7 @@ class OheyPageHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final color =
-        titleColor ?? (isWhite ? const Color(0xFF27313B) : Colors.white);
+        titleColor ?? (isWhite ? AppColors.cFF27313B : AppColors.white);
     return SizedBox(
       height: height,
       width: double.infinity,
@@ -87,7 +88,7 @@ class OheyHeaderIconButton extends StatelessWidget {
     required this.icon,
     required this.onTap,
     this.semanticLabel,
-    this.color = const Color(0xFF2DE3D2),
+    this.color = AppColors.cFF2DE3D2,
     this.hasDot = false,
   });
 
@@ -132,7 +133,7 @@ class OheyHeaderIconButton extends StatelessWidget {
                       color: color,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isWhite ? Colors.white : const Color(0xFF0C1724),
+                        color: isWhite ? AppColors.white : AppColors.cFF0C1724,
                         width: 2,
                       ),
                     ),

@@ -27,31 +27,31 @@ class _SignupProfileTextField extends StatelessWidget {
     child: Row(
       children: [
         const SizedBox(width: 20),
-        OheyGeneratedIcon(icon, color: Colors.white.withValues(alpha: .82)),
+        OheyGeneratedIcon(icon, color: AppColors.white.withValues(alpha: .82)),
         const SizedBox(width: 14),
         Expanded(
           child: TextField(
             controller: controller,
             enabled: enabled,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 18,
               fontWeight: FontWeight.w900,
             ),
-            cursorColor: const Color(0xFF12C9A4),
+            cursorColor: AppColors.cFF12C9A4,
             textInputAction: textInputAction,
             onChanged: onChanged,
             onSubmitted: onSubmitted,
             decoration: InputDecoration(
               filled: false,
-              fillColor: Colors.transparent,
+              fillColor: AppColors.transparent,
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
               disabledBorder: InputBorder.none,
               hintText: hintText,
               hintStyle: TextStyle(
-                color: Colors.white.withValues(alpha: .34),
+                color: AppColors.white.withValues(alpha: .34),
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
@@ -114,8 +114,8 @@ class _SignupGenderOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = gender == OheyGender.male
-        ? const Color(0xFF18AFFF)
-        : const Color(0xFFFF5AA6);
+        ? AppColors.cFF18AFFF
+        : AppColors.cFFFF5AA6;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: enabled ? onTap : null,
@@ -127,12 +127,12 @@ class _SignupGenderOption extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected
               ? accent.withValues(alpha: .92)
-              : const Color(0xFF132630).withValues(alpha: .74),
+              : AppColors.cFF132630.withValues(alpha: .74),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: selected
-                ? Colors.white.withValues(alpha: .26)
-                : Colors.white.withValues(alpha: .18),
+                ? AppColors.white.withValues(alpha: .26)
+                : AppColors.white.withValues(alpha: .18),
             width: 2,
           ),
           boxShadow: selected
@@ -152,14 +152,14 @@ class _SignupGenderOption extends StatelessWidget {
               gender == OheyGender.male
                   ? CupertinoIcons.person_fill
                   : CupertinoIcons.person_crop_circle_fill,
-              color: Colors.white,
+              color: AppColors.white,
               size: compact ? 18 : 20,
             ),
             const SizedBox(width: 8),
             Text(
               gender.label,
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.white,
                 fontSize: compact ? 15 : 17,
                 fontWeight: FontWeight.w900,
               ),

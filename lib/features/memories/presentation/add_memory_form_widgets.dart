@@ -61,7 +61,7 @@ class _InputBox extends StatelessWidget {
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
                 filled: false,
-                fillColor: Colors.transparent,
+                fillColor: AppColors.transparent,
                 counterText: '',
                 hintText: hint,
                 hintStyle: TextStyle(
@@ -306,7 +306,7 @@ class _DarkShell extends StatelessWidget {
         boxShadow: _AddMemoryColors.isWhite(context)
             ? [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: .035),
+                  color: AppColors.black.withValues(alpha: .035),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
@@ -368,50 +368,49 @@ class _ErrorBox extends StatelessWidget {
 class _AddMemoryColors {
   const _AddMemoryColors._();
 
-  static const lightText = Color(0xFF101820);
-  static const lightSubText = Color(0xFF72808D);
-  static const lightMuted = Color(0xFF8A96A3);
-  static const lightLine = Color(0xFFE0E7EF);
-  static const surface = Color(0xFF14212B);
-  static const muted = Color(0xFF99A3AE);
-  static const lime = Color(0xFFB8FF00);
-  static const placeIcon = Color(0xFF7DF1FF);
-  static const searchIcon = Color(0xFFFFD166);
-  static const clearIcon = Color(0xFFFF8AB3);
-  static const calendarIcon = Color(0xFF9F7BFF);
-  static const impressionIcon = Color(0xFFFF8AB3);
-  static const friendAddIcon = Color(0xFF4CD964);
-  static const friendRemoveIcon = Color(0xFFFF5F8F);
-  static const line = Color(0xFF243542);
+  static const lightText = AppColors.cFF101820;
+  static const lightSubText = AppColors.cFF72808D;
+  static const lightMuted = AppColors.cFF8A96A3;
+  static const lightLine = AppColors.cFFE0E7EF;
+  static const surface = AppColors.cFF14212B;
+  static const muted = AppColors.cFF99A3AE;
+  static const lime = AppColors.cFFB8FF00;
+  static const placeIcon = AppColors.cFF7DF1FF;
+  static const searchIcon = AppColors.cFFFFD166;
+  static const clearIcon = AppColors.cFFFF8AB3;
+  static const calendarIcon = AppColors.cFF9F7BFF;
+  static const impressionIcon = AppColors.cFFFF8AB3;
+  static const friendAddIcon = AppColors.cFF4CD964;
+  static const friendRemoveIcon = AppColors.cFFFF5F8F;
+  static const line = AppColors.cFF243542;
 
   static bool isWhite(BuildContext context) =>
       Theme.of(context).brightness == Brightness.light;
 
-  static Color pageBackgroundFor(BuildContext context) => isWhite(context)
-      ? const Color(0xFFF7F9FC)
-      : AppColors.darkBackgroundBottom;
+  static Color pageBackgroundFor(BuildContext context) =>
+      isWhite(context) ? AppColors.cFFF7F9FC : AppColors.darkBackgroundBottom;
 
   static BoxDecoration pageDecorationFor(BuildContext context) => BoxDecoration(
     gradient: LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: isWhite(context)
-          ? const [Colors.white, Color(0xFFF7F9FC)]
+          ? const [AppColors.white, AppColors.cFFF7F9FC]
           : AppColors.darkBackgroundGradient,
     ),
   );
 
   static Color surfaceFor(BuildContext context) =>
-      isWhite(context) ? Colors.white : surface;
+      isWhite(context) ? AppColors.white : surface;
 
   static Color lineFor(BuildContext context) =>
       isWhite(context) ? lightLine : line;
 
   static Color primaryTextFor(BuildContext context) =>
-      isWhite(context) ? lightText : Colors.white;
+      isWhite(context) ? lightText : AppColors.white;
 
   static Color secondaryTextFor(BuildContext context) =>
-      isWhite(context) ? lightSubText : Colors.white.withValues(alpha: .56);
+      isWhite(context) ? lightSubText : AppColors.white.withValues(alpha: .56);
 
   static Color mutedTextFor(BuildContext context) =>
       isWhite(context) ? lightMuted : muted;

@@ -25,7 +25,7 @@ Future<T?> showOheyBottomSheet<T>({
       minWidth: MediaQuery.sizeOf(context).width,
       maxWidth: MediaQuery.sizeOf(context).width,
     ),
-    backgroundColor: Colors.transparent,
+    backgroundColor: AppColors.transparent,
     barrierColor: barrierColor,
     builder: builder,
   );
@@ -62,7 +62,7 @@ class OheyBottomSheetShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
     final maxHeight = maxHeightFactor == null
         ? null
         : MediaQuery.sizeOf(context).height * maxHeightFactor!;
@@ -97,11 +97,11 @@ class OheyBottomSheetShell extends StatelessWidget {
               child: Container(
                 padding: effectivePadding,
                 decoration: BoxDecoration(
-                  color: isWhite ? Colors.white : AppColors.darkBackground,
+                  color: isWhite ? AppColors.white : AppColors.darkBackground,
                   borderRadius: sheetRadius,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(
+                      color: AppColors.black.withValues(
                         alpha: isWhite ? .16 : .36,
                       ),
                       blurRadius: 34,
@@ -157,8 +157,8 @@ class OheyBottomSheetHandle extends StatelessWidget {
         height: 5,
         decoration: BoxDecoration(
           color: isWhite
-              ? const Color(0xFFD7E0EA)
-              : Colors.white.withValues(alpha: .20),
+              ? AppColors.cFFD7E0EA
+              : AppColors.white.withValues(alpha: .20),
           borderRadius: BorderRadius.circular(999),
         ),
       ),

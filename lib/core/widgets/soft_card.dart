@@ -47,7 +47,7 @@ class SoftCard extends StatelessWidget {
     if (onTap == null) return card;
 
     return Material(
-      color: Colors.transparent,
+      color: AppColors.transparent,
       borderRadius: radius,
       child: InkWell(borderRadius: radius, onTap: onTap, child: card),
     );

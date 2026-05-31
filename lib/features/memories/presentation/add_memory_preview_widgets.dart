@@ -139,11 +139,11 @@ class _MemorySuccessSheetState extends State<_MemorySuccessSheet>
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final background = isWhite ? Colors.white : const Color(0xFF071320);
-    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final background = isWhite ? AppColors.white : AppColors.cFF071320;
+    final ink = isWhite ? AppColors.cFF17212B : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .64);
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .64);
 
     return SafeArea(
       child: Container(
@@ -154,8 +154,8 @@ class _MemorySuccessSheetState extends State<_MemorySuccessSheet>
           borderRadius: BorderRadius.circular(34),
           border: Border.all(
             color: isWhite
-                ? const Color(0xFFDCE4EC)
-                : Colors.white.withValues(alpha: .12),
+                ? AppColors.cFFDCE4EC
+                : AppColors.white.withValues(alpha: .12),
           ),
           boxShadow: [
             BoxShadow(
