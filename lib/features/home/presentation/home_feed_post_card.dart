@@ -722,39 +722,39 @@ class _FeedCardFooter extends StatelessWidget {
               ],
             ],
           ),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  compactYurubo
-                      ? _yuruboReactionSummary(item)
-                      : _feedReactionSummary(item),
+          if (!compactYurubo) ...[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    _feedReactionSummary(item),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: item.likes > 0 ? primaryText : secondaryText,
+                      fontWeight: FontWeight.w900,
+                      height: 1.15,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  item.timeAgo,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: item.likes > 0 ? primaryText : secondaryText,
+                  textAlign: TextAlign.right,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: secondaryText,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w900,
                     height: 1.15,
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                item.timeAgo,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.right,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: secondaryText,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w900,
-                  height: 1.15,
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -1068,11 +1068,4 @@ String _yuruboBody(_FeedItem item) {
 
 String _yuruboInterestedActionLabel(_FeedItem item) {
   return item.liked ? '参加済み' : '参加する';
-}
-
-String _yuruboReactionSummary(_FeedItem item) {
-  if (item.likes <= 0) {
-    return item.ownedByMe ? '友達の参加を待とう' : '最初に参加しよう';
-  }
-  return '${item.likes}人が参加しています';
 }
