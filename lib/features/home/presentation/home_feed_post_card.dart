@@ -614,11 +614,10 @@ class _FeedCardAuthorBar extends StatelessWidget {
               onTap: onMore,
               child: Padding(
                 padding: const EdgeInsets.all(6),
-                child: OheyPopIcon(
-                  icon: CupertinoIcons.ellipsis,
+                child: Icon(
+                  CupertinoIcons.ellipsis,
                   color: iconColor,
                   size: 27,
-                  showBubble: false,
                 ),
               ),
             ),
