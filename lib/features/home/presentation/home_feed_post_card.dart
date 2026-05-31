@@ -673,6 +673,7 @@ class _FeedCardFooter extends StatelessWidget {
                 label: compactYurubo ? '共有' : _feedShareActionLabel(item),
                 color: shareAccent,
                 isWhite: isWhite,
+                glowUnderline: compactYurubo,
                 onTap: onShare,
               ),
               const Spacer(),

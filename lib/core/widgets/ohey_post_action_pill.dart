@@ -22,6 +22,7 @@ class OheyPostActionPill extends StatelessWidget {
     this.burstIcon = CupertinoIcons.sparkles,
     this.burstColor,
     this.animateIconOnBurst = false,
+    this.glowUnderline = false,
     this.onTap,
   });
 
@@ -35,6 +36,7 @@ class OheyPostActionPill extends StatelessWidget {
   final IconData burstIcon;
   final Color? burstColor;
   final bool animateIconOnBurst;
+  final bool glowUnderline;
   final VoidCallback? onTap;
 
   @override
@@ -82,19 +84,50 @@ class OheyPostActionPill extends StatelessWidget {
       innerShadows: [
         BoxShadow(color: Colors.white.withValues(alpha: .14), blurRadius: 14),
       ],
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
         children: [
-          buildIcon(iconAnimation),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: textColor,
-              fontWeight: FontWeight.w900,
-              height: 1,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildIcon(iconAnimation),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                ),
+              ),
+            ],
           ),
+          if (glowUnderline)
+            Positioned(
+              left: 8,
+              right: 8,
+              bottom: -7,
+              child: Container(
+                height: 3,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(999),
+                  color: const Color(0xFFC08BFF),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFC08BFF).withValues(alpha: .90),
+                      blurRadius: 12,
+                      spreadRadius: 1.5,
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFFFF75D6).withValues(alpha: .42),
+                      blurRadius: 22,
+                      spreadRadius: 3,
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
