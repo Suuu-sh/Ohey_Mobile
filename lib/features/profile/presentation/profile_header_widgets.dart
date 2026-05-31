@@ -986,22 +986,3 @@ class _ProfileArchiveTopGlowLine extends StatelessWidget {
     );
   }
 }
-
-bool _isProfileDisplayablePhoto(Memory memory) =>
-    _profileMemoryImageProvider(memory.photoAssetPath) != null;
-
-ImageProvider<Object>? _profileMemoryImageProvider(String? value) {
-  final normalized = value?.trim();
-  if (normalized == null || normalized.isEmpty) return null;
-  if (normalized.startsWith('ohey_memory_template_')) return null;
-  if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
-    return NetworkImage(normalized);
-  }
-  if (normalized.startsWith('/')) {
-    final file = File(normalized);
-    if (!file.existsSync()) return null;
-    return FileImage(file);
-  }
-  if (normalized.startsWith('assets/')) return AssetImage(normalized);
-  return null;
-}
