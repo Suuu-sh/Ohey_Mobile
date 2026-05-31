@@ -44,13 +44,14 @@ class _FeedPostCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: [
-                _FeedCardAuthorBar(
-                  item: item,
-                  isWhite: isWhite,
-                  compactYurubo: compactYurubo,
-                  onMore: onMore,
-                  onAuthorTap: onAuthorTap,
-                ),
+                if (!compactYurubo)
+                  _FeedCardAuthorBar(
+                    item: item,
+                    isWhite: isWhite,
+                    compactYurubo: compactYurubo,
+                    onMore: onMore,
+                    onAuthorTap: onAuthorTap,
+                  ),
                 if (compactYurubo)
                   _YuruboCardBody(item: item, isWhite: isWhite)
                 else
@@ -120,7 +121,7 @@ class _YuruboCardBody extends StatelessWidget {
     final timeLabel = item.timeLabel.trim();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
