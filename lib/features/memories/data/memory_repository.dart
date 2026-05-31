@@ -5,18 +5,14 @@ import '../../../core/models/memory.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_gender.dart';
-import '../application/memory_daily_limit.dart';
 
 final memoryRepositoryProvider = Provider<MemoryRepository>((ref) {
   return BackendMemoryRepository(ref.watch(backendApiClientProvider));
 });
 
 abstract interface class MemoryRepository {
-  Future<List<Memory>> fetchMemories();
-  Future<List<Memory>> fetchHomeFeed();
   Future<MemoryPage> fetchHomeFeedPage({int limit = 20, String? cursor});
   Future<List<OheyFriend>> fetchFriends({DateTime? date});
-  Future<Memory> addMemory(Memory memory);
   Future<void> deleteMemory(String memoryId);
   Future<void> reportMemory(String memoryId, {String reason = 'other'});
   Future<void> hideMemoryFromFeed(String memoryId);
@@ -46,17 +42,6 @@ class BackendMemoryRepository implements MemoryRepository {
   const BackendMemoryRepository(this._client);
 
   final BackendApiClient _client;
-
-  @override
-  Future<List<Memory>> fetchMemories() async {
-    final rows = await _client.getRows('/v1/memories');
-    return rows.map(_memoryFromRow).toList(growable: false);
-  }
-
-  @override
-  Future<List<Memory>> fetchHomeFeed() async {
-    return (await fetchHomeFeedPage()).memories;
-  }
 
   @override
   Future<MemoryPage> fetchHomeFeedPage({int limit = 20, String? cursor}) async {
@@ -139,61 +124,6 @@ class BackendMemoryRepository implements MemoryRepository {
           );
         })
         .toList(growable: false);
-  }
-
-  @override
-  Future<Memory> addMemory(Memory memory) async {
-    final row = await _client.postRow('/v1/memories', {
-      'happened_at': memory.date.toUtc().toIso8601String(),
-      'happened_on': memoryLocalDateKey(memory.date),
-      'timezone_offset_minutes': memory.date.timeZoneOffset.inMinutes,
-      'place_name': memory.place,
-      'place_lat': memory.placeLatitude,
-      'place_lng': memory.placeLongitude,
-      'memo': memory.memo,
-      'friend_ids': memory.friends
-          .map((friend) => friend.id)
-          .toList(growable: false),
-    });
-
-    final feed = _feedFromRow(row);
-
-    return Memory(
-      id: row['id'] as String,
-      date: DateTime.parse(row['happened_at'] as String).toLocal(),
-      friends: memory.friends,
-      place: (row['place_name'] as String?) ?? '',
-      placeLatitude: (row['place_lat'] as num?)?.toDouble(),
-      placeLongitude: (row['place_lng'] as num?)?.toDouble(),
-      memo: (row['memo'] as String?) ?? '',
-      linkUrl: row['link_url'] as String?,
-      likeCount: 0,
-      likedByMe: false,
-      ownerUserId:
-          (row['owner_user_id'] as String?) ?? _client.currentUserId ?? '',
-      isOfficial: (row['is_official'] as bool?) ?? false,
-      feedAuthorName: (feed['author_name'] as String?) ?? '',
-      feedPostKind: (feed['post_kind'] as String?) ?? '',
-      feedDisplayable:
-          (feed['displayable'] as bool?) ??
-          (row['feed_displayable'] as bool?) ??
-          true,
-      feedCanReport:
-          (feed['can_report'] as bool?) ??
-          (row['feed_can_report'] as bool?) ??
-          true,
-      feedCanDelete:
-          (feed['can_delete'] as bool?) ??
-          (row['feed_can_delete'] as bool?) ??
-          false,
-      feedTilt:
-          (feed['tilt'] as num?)?.toDouble() ??
-          (row['feed_tilt'] as num?)?.toDouble(),
-      feedCursor:
-          (feed['feed_cursor'] as String?) ??
-          (row['feed_cursor'] as String?) ??
-          '',
-    );
   }
 
   @override

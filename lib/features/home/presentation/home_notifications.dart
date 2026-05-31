@@ -238,7 +238,6 @@ class _FeedNotificationsScreenState
               .read(notificationControllerProvider.notifier)
               .acceptFriendRequest(friendRequestId);
           ref.invalidate(friendsProvider);
-          ref.invalidate(memoryControllerProvider);
         },
         onReject: () async {
           await ref

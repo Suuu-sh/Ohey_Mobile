@@ -5,9 +5,6 @@ import '../../../core/models/memory.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../data/memory_repository.dart';
 
-final memoryControllerProvider =
-    AsyncNotifierProvider<MemoryController, List<Memory>>(MemoryController.new);
-
 final homeFeedControllerProvider =
     AsyncNotifierProvider<HomeFeedController, List<Memory>>(
       HomeFeedController.new,
@@ -120,7 +117,6 @@ class HomeFeedController extends AsyncNotifier<List<Memory>> {
     ]);
     try {
       await ref.read(memoryRepositoryProvider).deleteMemory(memoryId);
-      ref.invalidate(memoryControllerProvider);
     } catch (error, stackTrace) {
       state = AsyncValue.data(previous);
       Error.throwWithStackTrace(error, stackTrace);
@@ -184,103 +180,6 @@ class HomeFeedController extends AsyncNotifier<List<Memory>> {
       ref.invalidate(friendsProvider);
     } catch (error, stackTrace) {
       state = AsyncValue.data(previous);
-      Error.throwWithStackTrace(error, stackTrace);
-    }
-  }
-}
-
-class MemoryController extends AsyncNotifier<List<Memory>> {
-  @override
-  Future<List<Memory>> build() async {
-    return ref.watch(memoryRepositoryProvider).fetchMemories();
-  }
-
-  Future<void> toggleLike(String memoryId) async {
-    final previous = state.asData?.value ?? const <Memory>[];
-    final index = previous.indexWhere((memory) => memory.id == memoryId);
-    if (index == -1) return;
-
-    final current = previous[index];
-    final nextLiked = !current.likedByMe;
-    final optimistic = current.copyWith(
-      likedByMe: nextLiked,
-      likeCount: (current.likeCount + (nextLiked ? 1 : -1)).clamp(0, 1 << 31),
-    );
-    try {
-      await runOptimistic<MemoryLikeState>(
-        apply: () => state = AsyncValue.data([
-          for (var i = 0; i < previous.length; i++)
-            i == index ? optimistic : previous[i],
-        ]),
-        rollback: () => state = AsyncValue.data(previous),
-        commit: () => ref
-            .read(memoryRepositoryProvider)
-            .setLike(memoryId, liked: nextLiked),
-        confirm: (likeState) {
-          final latest = state.asData?.value ?? previous;
-          state = AsyncValue.data([
-            for (final memory in latest)
-              if (memory.id == memoryId)
-                memory.copyWith(
-                  likeCount: likeState.likeCount,
-                  likedByMe: likeState.likedByMe,
-                )
-              else
-                memory,
-          ]);
-        },
-      );
-    } catch (error, stackTrace) {
-      Error.throwWithStackTrace(error, stackTrace);
-    }
-  }
-
-  Future<void> deleteMemory(String memoryId) async {
-    final previous = state.asData?.value ?? const <Memory>[];
-    state = AsyncValue.data([
-      for (final memory in previous)
-        if (memory.id != memoryId) memory,
-    ]);
-    try {
-      await ref.read(memoryRepositoryProvider).deleteMemory(memoryId);
-    } catch (error, stackTrace) {
-      state = AsyncValue.data(previous);
-      Error.throwWithStackTrace(error, stackTrace);
-    }
-  }
-
-  Future<void> reportMemory(String memoryId, {String reason = 'other'}) async {
-    await ref
-        .read(memoryRepositoryProvider)
-        .reportMemory(memoryId, reason: reason);
-  }
-
-  Future<void> addMemory({
-    required DateTime date,
-    required List<OheyFriend> friends,
-    required String place,
-    required String memo,
-    double? placeLatitude,
-    double? placeLongitude,
-  }) async {
-    final repository = ref.read(memoryRepositoryProvider);
-    final previous = state.asData?.value ?? const <Memory>[];
-    final now = DateTime.now();
-    final memory = Memory(
-      id: 'memory_${now.microsecondsSinceEpoch}',
-      date: date,
-      friends: friends,
-      place: place.trim(),
-      memo: String.fromCharCodes(memo.trim().runes.take(15)),
-      placeLatitude: placeLatitude,
-      placeLongitude: placeLongitude,
-    );
-
-    try {
-      final saved = await repository.addMemory(memory);
-      state = AsyncValue.data([saved, ...previous]);
-    } catch (error, stackTrace) {
-      state = AsyncValue.error(error, stackTrace);
       Error.throwWithStackTrace(error, stackTrace);
     }
   }

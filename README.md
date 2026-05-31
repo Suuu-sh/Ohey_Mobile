@@ -12,7 +12,7 @@ It focuses on cute memories, friend availability, invites, and lightweight photo
   - 1–2: にこにこ
   - 3–5: たのしい
   - 6+: ハイテンション
-- Home, add memory, friends, and calendar screens
+- Home feed, friends, calendar, profile, invites, yurubo, and wish list screens
 - Riverpod state management
 - Repository Pattern with Flutter → Go Backend → Supabase for app data
 - Feature First Architecture under `lib/features/*`
