@@ -835,11 +835,11 @@ class _ProfileYuruboActionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Ohey3DButtonSurface(
       onTap: onTap,
-      height: isLarge ? 78 : 46,
-      radius: isLarge ? 28 : 20,
+      height: 46,
+      radius: 20,
       color: AppColors.cFFC08BFF,
       bottomColor: AppColors.cFF7F51C9,
-      padding: EdgeInsets.symmetric(horizontal: isLarge ? 26 : 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       borderColor: AppColors.white.withValues(alpha: .20),
       outerShadows: [
         BoxShadow(
@@ -853,16 +853,16 @@ class _ProfileYuruboActionRow extends StatelessWidget {
           OheyPopIcon(
             icon: CupertinoIcons.plus_bubble_fill,
             color: AppColors.cFF101820,
-            size: isLarge ? 40 : 28,
-            iconSize: isLarge ? 22 : 15,
+            size: 28,
+            iconSize: 15,
           ),
-          SizedBox(width: isLarge ? 16 : 10),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               'ゆるぼを追加',
               style: TextStyle(
                 color: AppColors.cFF101820,
-                fontSize: isLarge ? 19 : 14,
+                fontSize: 14,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.3,
               ),
@@ -871,7 +871,7 @@ class _ProfileYuruboActionRow extends StatelessWidget {
           OheyGeneratedIcon(
             CupertinoIcons.plus,
             color: AppColors.cFF101820,
-            size: isLarge ? 26 : 18,
+            size: 18,
           ),
         ],
       ),
