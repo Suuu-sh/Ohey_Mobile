@@ -23,7 +23,7 @@ Widget _buildFeedPage({
   required bool showSwipeTutorial,
   required VoidCallback onSwipeTutorialDismissed,
   required ValueChanged<int> onPageChanged,
-  required VoidCallback onAddMemoryPressed,
+  required VoidCallback onCreateYuruboPressed,
   required ValueChanged<_FeedItem> onLikePressed,
   required ValueChanged<_FeedItem> onSharePressed,
   required ValueChanged<_FeedItem> onMorePressed,
@@ -49,7 +49,7 @@ Widget _buildFeedPage({
       children: [
         _FeedSectionEmptyState(
           isWhite: isWhite,
-          onAddMemoryPressed: onAddMemoryPressed,
+          onCreateYuruboPressed: onCreateYuruboPressed,
         ),
       ],
     );
@@ -122,11 +122,11 @@ class _YuruboPostListItem extends StatelessWidget {
 class _FeedSectionEmptyState extends StatelessWidget {
   const _FeedSectionEmptyState({
     required this.isWhite,
-    required this.onAddMemoryPressed,
+    required this.onCreateYuruboPressed,
   });
 
   final bool isWhite;
-  final VoidCallback onAddMemoryPressed;
+  final VoidCallback onCreateYuruboPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +143,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
           child: Ohey3DButton(
             label: 'ゆるぼする',
             icon: CupertinoIcons.plus_bubble_fill,
-            onTap: onAddMemoryPressed,
+            onTap: onCreateYuruboPressed,
             height: 50,
             radius: 22,
             color: _feedPrimaryActionColor,
@@ -185,7 +185,7 @@ Future<void> _showFeedPostActions(
             .read(homeFeedControllerProvider.notifier)
             .deleteMemory(item.id);
         ref.invalidate(homeFeedControllerProvider);
-        if (context.mounted) OheyToast.show(context, '思い出を削除しました');
+        if (context.mounted) OheyToast.show(context, 'ゆるぼを削除しました');
       } catch (error) {
         if (context.mounted) {
           OheyToast.show(context, '削除できなかったよ。あとでもう一度試してね');
@@ -245,7 +245,7 @@ Future<void> _showFeedPostActions(
       final confirmed = await _confirmUserSafetyAction(
         context,
         title: '${item.userName}さんをブロックしますか？',
-        message: '相手の投稿やお誘いが表示されにくくなります。必要ならあとで解除できます。',
+        message: '相手のゆるぼやお誘いが表示されにくくなります。必要ならあとで解除できます。',
         actionLabel: 'ブロックする',
         color: const Color(0xFFFF5F8F),
       );

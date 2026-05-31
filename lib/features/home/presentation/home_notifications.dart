@@ -188,7 +188,7 @@ class _FeedNotificationsScreenState
       ],
       _NotificationSectionHeader(
         title: '最近のお知らせ',
-        message: actionItems.isEmpty ? 'いいね・今日の思い出・予定が静かにまとまります' : '先にお返事しよっか',
+        message: actionItems.isEmpty ? '気になる・ゆるぼ・予定が静かにまとまります' : '先にお返事しよっか',
         count: recentItems.length,
         accent: AppColors.invite,
         isWhite: isWhite,
@@ -411,7 +411,7 @@ class _NotificationEmptyState extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'まずは1枚投稿するか、フレンズを追加してみよう',
+          'まずはゆるぼするか、フレンズを追加してみよう',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: isWhite

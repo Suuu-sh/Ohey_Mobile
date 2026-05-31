@@ -1194,7 +1194,7 @@ Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
     context: context,
     builder: (dialogContext) => CupertinoAlertDialog(
       title: const Text('アカウントを削除しますか？'),
-      content: const Text('プロフィール、フレンズ、投稿などのデータが削除されます。この操作は取り消せません。'),
+      content: const Text('プロフィール、フレンズ、ゆるぼなどのデータが削除されます。この操作は取り消せません。'),
       actions: [
         CupertinoDialogAction(
           onPressed: () => Navigator.of(dialogContext).pop(false),

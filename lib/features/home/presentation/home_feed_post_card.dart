@@ -26,7 +26,7 @@ class _FeedPostCard extends StatelessWidget {
     final caption = _feedCardCaption(item);
     final surfaceColor = OheyThemedPanel.surfaceColor(isWhite: isWhite);
     return Semantics(
-      label: '${item.userName}の思い出',
+      label: '${item.userName}のゆるぼ',
       child: OheyThemedPanel(
         accentColor: _FeedColors.teal,
         backgroundColor: surfaceColor,
@@ -502,7 +502,7 @@ class _FeedCardAuthorBar extends StatelessWidget {
         : item.isOfficial
         ? (place.isEmpty ? 'Ohey公式からのお知らせ' : 'Ohey公式 ・ $place')
         : place.isEmpty
-        ? '思い出'
+        ? 'ゆるぼ'
         : place;
     final kind = item.postKind;
 
@@ -578,7 +578,7 @@ class _FeedCardAuthorBar extends StatelessWidget {
           ),
           Semantics(
             button: true,
-            label: '投稿メニュー',
+            label: 'ゆるぼメニュー',
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: onMore,
@@ -660,10 +660,10 @@ class _FeedCardFooter extends StatelessWidget {
                 semanticLabel: compactYurubo
                     ? 'このゆるぼを友達に送る'
                     : item.isOfficial
-                    ? '公式投稿を詳しく見る'
+                    ? '公式ゆるぼを詳しく見る'
                     : item.ownedByMe
-                    ? '思い出を共有'
-                    : '投稿を共有',
+                    ? 'ゆるぼを共有'
+                    : 'ゆるぼを共有',
                 customIcon: item.isOfficial
                     ? null
                     : OheyPostShareIcon(
@@ -981,8 +981,8 @@ bool _isDisplayablePostPhoto(String? path) {
 String _duoStyleBody(_FeedItem item) {
   if (item.isOfficial) {
     return switch (item.prop) {
-      _PostProp.spark => 'フレンズとの思い出を、もっと楽しく。',
-      _PostProp.ticket => 'フレンズと一緒に今月の思い出をふり返ろう。',
+      _PostProp.spark => 'フレンズとのゆるぼを、もっと楽しく。',
+      _PostProp.ticket => 'フレンズと一緒に今月のゆるぼをふり返ろう。',
       _ => item.body,
     };
   }

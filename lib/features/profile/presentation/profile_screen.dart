@@ -33,7 +33,6 @@ import '../../notifications/application/notification_controller.dart';
 import '../../onboarding/presentation/create_user_dialog.dart';
 import '../data/user_safety_repository.dart';
 import 'avatar_builder_screen.dart';
-import 'photo_archive_screen.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
 
 part 'profile_header_widgets.dart';
@@ -43,9 +42,7 @@ part 'profile_settings_sheet.dart';
 part 'profile_form_helpers.dart';
 
 class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key, this.onAddMemoryPressed});
-
-  final VoidCallback? onAddMemoryPressed;
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,10 +55,6 @@ class ProfileScreen extends ConsumerWidget {
         reservationsAsync.asData?.value ?? const <OheyInvite>[];
     final incomingInvites =
         incomingInvitesAsync.asData?.value ?? const <OheyInvite>[];
-    final memories =
-        ref.watch(memoryControllerProvider).asData?.value ?? const <Memory>[];
-    final myMemories = _myProfileMemories(memories, currentAuthUserId);
-    final photoMemories = _photoArchiveMemories(memories, currentAuthUserId);
     final friends =
         ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
     const headerIsWhite = true;
@@ -159,28 +152,11 @@ class ProfileScreen extends ConsumerWidget {
                               ),
                             Expanded(
                               child: _ProfileActivityHome(
-                                memories: myMemories,
-                                photoMemories: photoMemories,
                                 friendsCount: friends.length,
-                                onArchiveTap: () => Navigator.of(context).push(
-                                  CupertinoPageRoute<void>(
-                                    fullscreenDialog: true,
-                                    builder: (_) => PhotoArchiveScreen(
-                                      memories: photoMemories,
-                                    ),
-                                  ),
-                                ),
                                 onEditProfileTap: () =>
                                     _showEditProfileSheet(context, ref, user),
                                 onAddFriendsTap: () =>
                                     showFriendAddSheet(context, ref),
-                                onAddMemoryTap:
-                                    onAddMemoryPressed ??
-                                    () => OheyToast.show(
-                                      context,
-                                      'フィードから思い出を投稿してね。',
-                                      icon: CupertinoIcons.camera_fill,
-                                    ),
                               ),
                             ),
                           ],

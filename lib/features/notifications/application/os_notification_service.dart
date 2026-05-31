@@ -58,7 +58,7 @@ class OsNotificationService {
   static const _channel = AndroidNotificationChannel(
     'ohey_notifications',
     'Ohey通知',
-    description: 'フレンズ申請、お誘い、今日の思い出など厳選したOhey通知',
+    description: 'フレンズ申請、お誘い、ゆるぼなど厳選したOhey通知',
     importance: Importance.high,
   );
   static const _lastNotifiedKey = 'ohey_last_os_notification_created_at';
@@ -109,7 +109,7 @@ class OsNotificationService {
           android: AndroidNotificationDetails(
             'ohey_notifications',
             'Ohey通知',
-            channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したOhey通知',
+            channelDescription: 'フレンズ申請、お誘い、ゆるぼなど厳選したOhey通知',
             importance: Importance.high,
             priority: Priority.high,
           ),
@@ -143,7 +143,7 @@ class OsNotificationService {
         android: AndroidNotificationDetails(
           'ohey_notifications',
           'Ohey通知',
-          channelDescription: 'フレンズ申請、お誘い、今日の思い出など厳選したOhey通知',
+          channelDescription: 'フレンズ申請、お誘い、ゆるぼなど厳選したOhey通知',
           importance: Importance.high,
           priority: Priority.high,
         ),

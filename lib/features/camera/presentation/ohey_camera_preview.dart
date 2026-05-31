@@ -196,7 +196,7 @@ class _ArAvatarCameraController {
     if (path == null || path.trim().isEmpty) {
       throw PlatformException(
         code: 'empty_snapshot_path',
-        message: 'AR写真を書き出せませんでした。',
+        message: 'ARゆるぼを書き出せませんでした。',
       );
     }
     return path;

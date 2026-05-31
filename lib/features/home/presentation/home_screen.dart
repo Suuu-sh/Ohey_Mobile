@@ -49,9 +49,7 @@ part 'home_notifications.dart';
 part 'home_feed_shared.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key, this.onAddMemoryPressed});
-
-  final VoidCallback? onAddMemoryPressed;
+  const HomeScreen({super.key});
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -117,7 +115,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               isWhite: isWhite,
               isLoading: memoriesAsync.isLoading,
               onPageChanged: _handleFeedPageChanged,
-              onAddMemoryPressed: widget.onAddMemoryPressed ?? () {},
+              onCreateYuruboPressed: () {},
               onLikePressed: (item) => ref
                   .read(homeFeedControllerProvider.notifier)
                   .toggleLike(item.id),
@@ -143,7 +141,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     icon: CupertinoIcons.plus_bubble_fill,
                     semanticLabel: 'ゆるぼする',
                     color: _FeedColors.teal,
-                    onTap: widget.onAddMemoryPressed ?? () {},
+                    onTap: () => OheyToast.show(
+                      context,
+                      'ゆるぼ作成は準備中です',
+                      icon: CupertinoIcons.plus_bubble_fill,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   OheyHeaderIconButton(
@@ -272,8 +274,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         fileNameOverrides: [
           item.isOfficial ? 'ohey_official_post.png' : 'ohey_memory.png',
         ],
-        title: item.isOfficial ? 'Ohey公式投稿を共有' : '思い出を共有',
-        subject: item.isOfficial ? 'Ohey公式のお知らせ' : 'Oheyの思い出',
+        title: item.isOfficial ? 'Ohey公式ゆるぼを共有' : 'ゆるぼを共有',
+        subject: item.isOfficial ? 'Ohey公式のお知らせ' : 'Oheyのゆるぼ',
         sharePositionOrigin: shareOrigin,
       ),
     );

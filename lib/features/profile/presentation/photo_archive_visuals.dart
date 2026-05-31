@@ -122,7 +122,7 @@ class _PreviewOverlay extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${_memoryAgoLabel(memory.date)}の思い出',
+              '${_memoryAgoLabel(memory.date)}のゆるぼ',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 color: Colors.white.withValues(alpha: .82),
                 fontWeight: FontWeight.w800,
@@ -735,8 +735,8 @@ class _ArchivePlacesEmpty extends StatelessWidget {
               ),
             ),
           ),
-          title: '場所つきの思い出はまだありません',
-          message: '場所つきの思い出、まだないみたい。',
+          title: '場所つきのゆるぼはまだありません',
+          message: '場所つきのゆるぼ、まだないみたい。',
         ),
       ),
     );
@@ -957,7 +957,7 @@ class _ArchiveMemorySection extends StatelessWidget {
           Row(
             children: [
               Text(
-                '思い出',
+                'ゆるぼ',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: titleColor,
                   fontWeight: FontWeight.w900,
@@ -967,7 +967,7 @@ class _ArchiveMemorySection extends StatelessWidget {
               OheyHeaderIconButton(
                 icon: CupertinoIcons.xmark,
                 color: subColor,
-                semanticLabel: '思い出を閉じる',
+                semanticLabel: 'ゆるぼを閉じる',
                 onTap: () {},
               ),
             ],

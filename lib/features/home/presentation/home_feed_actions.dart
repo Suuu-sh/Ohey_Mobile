@@ -63,7 +63,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      body.isEmpty ? '思い出メニュー' : body,
+                      body.isEmpty ? 'ゆるぼメニュー' : body,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -101,8 +101,8 @@ class _FeedPostActionsSheet extends StatelessWidget {
           if (item.canDelete || item.ownedByMe)
             OheyActionTile(
               icon: CupertinoIcons.trash_fill,
-              title: '思い出を削除',
-              subtitle: 'この投稿をフィードから消す',
+              title: 'ゆるぼを削除',
+              subtitle: 'このゆるぼを一覧から消す',
               accent: const Color(0xFFFF5F8F),
               destructive: true,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.delete),
@@ -110,8 +110,8 @@ class _FeedPostActionsSheet extends StatelessWidget {
           else if (!item.isOfficial) ...[
             OheyActionTile(
               icon: CupertinoIcons.eye_slash_fill,
-              title: 'この投稿を非表示',
-              subtitle: '自分のフィードからだけ消す',
+              title: 'このゆるぼを非表示',
+              subtitle: '自分のゆるぼ一覧からだけ消す',
               accent: _FeedColors.teal,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.hide),
             ),
@@ -119,7 +119,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
             OheyActionTile(
               icon: CupertinoIcons.bell_slash_fill,
               title: '${item.userName}さんをミュート',
-              subtitle: '投稿をフィードに出さない',
+              subtitle: 'ゆるぼを一覧に出さない',
               accent: const Color(0xFF88B8FF),
               onTap: () => Navigator.of(context).pop(_FeedPostAction.muteUser),
             ),
@@ -127,7 +127,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
             OheyActionTile(
               icon: CupertinoIcons.hand_raised_fill,
               title: '${item.userName}さんをブロック',
-              subtitle: '投稿・申請・お誘いを制限する',
+              subtitle: 'ゆるぼ・申請・お誘いを制限する',
               accent: const Color(0xFFFF5F8F),
               destructive: true,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.blockUser),
@@ -136,8 +136,8 @@ class _FeedPostActionsSheet extends StatelessWidget {
               const SizedBox(height: 10),
               OheyActionTile(
                 icon: CupertinoIcons.exclamationmark_bubble_fill,
-                title: '思い出を報告',
-                subtitle: '気になる投稿を運営に送る',
+                title: 'ゆるぼを報告',
+                subtitle: '気になるゆるぼを運営に送る',
                 accent: const Color(0xFFFFD166),
                 onTap: () => Navigator.of(context).pop(_FeedPostAction.report),
               ),
@@ -182,7 +182,7 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            '思い出を削除しますか？',
+            'ゆるぼを削除しますか？',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: titleColor,
@@ -193,7 +193,7 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '削除した思い出は元に戻せません。',
+            '削除したゆるぼは元に戻せません。',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: subtitleColor,
@@ -349,7 +349,7 @@ class _FeedReportReasonSheet extends StatelessWidget {
           ),
           const SizedBox(height: 7),
           Text(
-            '投稿はあなたのフィードから非表示になり、運営確認用に送信されます。',
+            'ゆるぼはあなたの一覧から非表示になり、運営確認用に送信されます。',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: subtitleColor,

@@ -211,7 +211,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
       context: context,
       builder: (dialogContext) => CupertinoAlertDialog(
         title: const Text('ブロックしますか？'),
-        content: Text('${widget.friend.name}さんとのフレンズ関係を解除し、投稿・申請・お誘いを制限します。'),
+        content: Text('${widget.friend.name}さんとのフレンズ関係を解除し、ゆるぼ・申請・お誘いを制限します。'),
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -460,7 +460,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
           OheyActionTile(
             icon: CupertinoIcons.bell_slash_fill,
             title: 'ミュート',
-            subtitle: '投稿をフィードに出しません',
+            subtitle: 'ゆるぼをフィードに出しません',
             accent: const Color(0xFF88B8FF),
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.mute),
           ),
@@ -468,7 +468,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
           OheyActionTile(
             icon: CupertinoIcons.hand_raised_fill,
             title: 'ブロック',
-            subtitle: '投稿・申請・お誘いを制限します',
+            subtitle: 'ゆるぼ・申請・お誘いを制限します',
             accent: const Color(0xFFFF5F8F),
             destructive: true,
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.block),

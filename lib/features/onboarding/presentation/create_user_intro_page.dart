@@ -68,7 +68,7 @@ extension _CreateUserIntroPage on _CreateUserDialogState {
           TextButton(
             onPressed: () =>
                 setState(() => _step = _OnboardingStep.accountChoice),
-            child: Text(_demoPage == slides.length - 1 ? '登録して1枚投稿する' : 'スキップ'),
+            child: Text(_demoPage == slides.length - 1 ? '登録してはじめる' : 'スキップ'),
           ),
         ],
       ),

@@ -98,7 +98,7 @@ class PhotoArchivePreview extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'フォトアーカイブ',
+                        'ゆるぼ履歴',
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
                               color: titleColor,
@@ -108,8 +108,8 @@ class PhotoArchivePreview extends StatelessWidget {
                       ),
                       Text(
                         featuredMemory == null
-                            ? '自分の投稿写真をおしゃれに見返す'
-                            : '${_memoryAgoLabel(featuredMemory.date)}の思い出',
+                            ? '自分のゆるぼゆるぼをおしゃれに見返す'
+                            : '${_memoryAgoLabel(featuredMemory.date)}のゆるぼ',
                         style: Theme.of(context).textTheme.labelMedium
                             ?.copyWith(
                               color: subColor,
@@ -229,7 +229,7 @@ class _PhotoArchiveScreenState extends State<PhotoArchiveScreen> {
                     0,
                   ),
                   child: OheyPageHeader(
-                    title: 'アーカイブ',
+                    title: '履歴',
                     trailing: OheyHeaderIconButton(
                       icon: CupertinoIcons.xmark,
                       color: isWhite ? const Color(0xFF101820) : Colors.white,
