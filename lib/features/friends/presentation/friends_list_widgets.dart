@@ -146,7 +146,7 @@ class _FriendsList extends StatelessWidget {
       );
     final isGroupView = selectedCustomFilter != null;
     final hasRecommendations = !isGroupView && recommendations.isNotEmpty;
-    final hasGroupSchedule = isGroupView && filtered.length >= 2;
+    final hasGroupSchedule = isGroupView && filtered.isNotEmpty;
     final groupInviteTargets = filtered
         .where(
           (item) =>
