@@ -611,82 +611,86 @@ class _ProfileWishListSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final countLabel = isLoading && wishItems.isEmpty
         ? '読み込み中'
-        : wishItems.isEmpty
-        ? 'まだありません'
         : '${wishItems.length}件';
     final preview = wishItems.take(3).map((wish) => wish.title).join('・');
+    final subtitle = preview.isEmpty ? '追加するとここに表示されます' : preview;
+    const accent = Color(0xFF39C7FF);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onOpenTap,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: .06),
-            borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: Colors.white.withValues(alpha: .10)),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(18, 22, 18, 22),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: .035),
+          borderRadius: BorderRadius.circular(26),
+          border: Border.all(
+            color: const Color(0xFFFF5EA8).withValues(alpha: .20),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFFC08BFF).withValues(alpha: .20),
-                ),
-                child: const Icon(
-                  CupertinoIcons.sparkles,
-                  color: Color(0xFFC08BFF),
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'やりたいことリスト',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.3,
-                      ),
+          boxShadow: [
+            BoxShadow(
+              color: accent.withValues(alpha: .12),
+              blurRadius: 28,
+              offset: const Offset(0, 18),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            OheyPopIcon(
+              icon: CupertinoIcons.list_bullet,
+              color: _ProfileColors.sub,
+              size: 34,
+              iconSize: 18,
+              showBubble: false,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$countLabelのやりたいこと',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      height: 1.1,
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      preview.isEmpty ? '誘いの種をためておけます' : preview,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: _ProfileColors.sub,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                      ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: _ProfileColors.sub,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 10),
-              Text(
-                countLabel,
-                style: const TextStyle(
-                  color: Color(0xFFC08BFF),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                ),
+            ),
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 62,
+              child: Ohey3DButton(
+                label: '見る',
+                onTap: onOpenTap,
+                height: 34,
+                radius: 17,
+                color: accent,
+                foregroundColor: const Color(0xFF101820),
+                shadowColor: const Color(0xFF1699D6),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                fontSize: 12,
               ),
-              const SizedBox(width: 6),
-              const Icon(
-                CupertinoIcons.chevron_right,
-                color: _ProfileColors.sub,
-                size: 18,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
