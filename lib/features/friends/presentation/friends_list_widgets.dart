@@ -1120,9 +1120,7 @@ List<_GroupScheduleSuggestion> _groupScheduleSuggestions(
       for (var i = 0; i < 2; i++)
         _GroupScheduleSuggestion(
           title: _groupScheduleDayLabel(now.add(Duration(days: i))),
-          subtitle: i == 0
-              ? '誰も予定は入ってない日。予定を入れてもらってね。'
-              : 'ここも候補にできそう。みんなに予定を入れてもらおう。',
+          subtitle: i == 0 ? '予定を入れてもらってね。' : '予定を入れてもらってね。',
           badge: '${stats.okCount}/${stats.total}人OK',
           accent: const Color(0xFFB8FF00),
         ),
