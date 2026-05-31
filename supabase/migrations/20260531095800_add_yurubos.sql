@@ -45,6 +45,7 @@ alter table public.yurubos enable row level security;
 alter table public.yurubo_reactions enable row level security;
 alter table public.hidden_yurubos enable row level security;
 
+drop policy if exists yurubos_select_owner_or_friend on public.yurubos;
 create policy yurubos_select_owner_or_friend
   on public.yurubos for select to authenticated
   using (
@@ -59,23 +60,28 @@ create policy yurubos_select_owner_or_friend
     )
   );
 
+drop policy if exists yurubos_insert_owner on public.yurubos;
 create policy yurubos_insert_owner
   on public.yurubos for insert to authenticated
   with check (owner_user_id = auth.uid());
 
+drop policy if exists yurubos_update_owner on public.yurubos;
 create policy yurubos_update_owner
   on public.yurubos for update to authenticated
   using (owner_user_id = auth.uid())
   with check (owner_user_id = auth.uid());
 
+drop policy if exists yurubos_delete_owner on public.yurubos;
 create policy yurubos_delete_owner
   on public.yurubos for delete to authenticated
   using (owner_user_id = auth.uid());
 
+drop policy if exists yurubo_reactions_select_visible_yurubo on public.yurubo_reactions;
 create policy yurubo_reactions_select_visible_yurubo
   on public.yurubo_reactions for select to authenticated
   using (exists (select 1 from public.yurubos y where y.id = yurubo_reactions.yurubo_id));
 
+drop policy if exists yurubo_reactions_insert_own_visible_yurubo on public.yurubo_reactions;
 create policy yurubo_reactions_insert_own_visible_yurubo
   on public.yurubo_reactions for insert to authenticated
   with check (
@@ -83,23 +89,28 @@ create policy yurubo_reactions_insert_own_visible_yurubo
     and exists (select 1 from public.yurubos y where y.id = yurubo_reactions.yurubo_id)
   );
 
+drop policy if exists yurubo_reactions_update_own on public.yurubo_reactions;
 create policy yurubo_reactions_update_own
   on public.yurubo_reactions for update to authenticated
   using (user_id = auth.uid())
   with check (user_id = auth.uid());
 
+drop policy if exists yurubo_reactions_delete_own on public.yurubo_reactions;
 create policy yurubo_reactions_delete_own
   on public.yurubo_reactions for delete to authenticated
   using (user_id = auth.uid());
 
+drop policy if exists hidden_yurubos_select_own on public.hidden_yurubos;
 create policy hidden_yurubos_select_own
   on public.hidden_yurubos for select to authenticated
   using (user_id = auth.uid());
 
+drop policy if exists hidden_yurubos_insert_own on public.hidden_yurubos;
 create policy hidden_yurubos_insert_own
   on public.hidden_yurubos for insert to authenticated
   with check (user_id = auth.uid());
 
+drop policy if exists hidden_yurubos_delete_own on public.hidden_yurubos;
 create policy hidden_yurubos_delete_own
   on public.hidden_yurubos for delete to authenticated
   using (user_id = auth.uid());
