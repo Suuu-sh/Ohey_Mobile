@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
+import '../../../core/data/user_repository.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_user.dart';
@@ -38,6 +39,17 @@ part 'friends_custom_filter_sheet.dart';
 part 'friends_list_widgets.dart';
 part 'friends_card_widgets.dart';
 part 'friends_state_widgets.dart';
+
+final _friendMonthlyDailyStatusesProvider = FutureProvider.autoDispose
+    .family<Map<String, OheyDailyStatus>, ({String friendId, DateTime month})>((
+      ref,
+      key,
+    ) async {
+      if (key.friendId.trim().isEmpty) return const <String, OheyDailyStatus>{};
+      return ref
+          .read(userRepositoryProvider)
+          .fetchFriendDailyStatusesForMonth(key.friendId.trim(), key.month);
+    });
 
 class FriendsScreen extends ConsumerStatefulWidget {
   const FriendsScreen({super.key});
@@ -628,10 +640,6 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
     final sub = isWhite
         ? const Color(0xFF667381)
         : Colors.white.withValues(alpha: .66);
-    final pickerBackground = isWhite
-        ? const Color(0xFFF4F8F1)
-        : Colors.white.withValues(alpha: .06);
-
     return OheyBottomSheetShell(
       title: widget.title,
       maxHeightFactor: .92,
@@ -681,34 +689,15 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
               switchOutCurve: Curves.easeInCubic,
               child: _isCustomDate
                   ? Padding(
-                      key: const ValueKey('date-picker'),
+                      key: const ValueKey('date-options'),
                       padding: const EdgeInsets.only(top: 12),
-                      child: Container(
-                        height: 152,
-                        decoration: BoxDecoration(
-                          color: pickerBackground,
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: AppColors.primaryAction.withValues(
-                              alpha: isWhite ? .28 : .18,
-                            ),
-                          ),
-                        ),
-                        child: CupertinoDatePicker(
-                          mode: CupertinoDatePickerMode.date,
-                          minimumDate: _today,
-                          maximumDate: _today.add(const Duration(days: 120)),
-                          initialDateTime: _selectedDate,
-                          onDateTimeChanged: (value) {
-                            setState(() {
-                              _selectedDate = DateTime(
-                                value.year,
-                                value.month,
-                                value.day,
-                              );
-                            });
-                          },
-                        ),
+                      child: _InviteAvailableDateOptions(
+                        friendIds: widget.friendIds,
+                        selectedDate: _selectedDate,
+                        onSelected: (date) => setState(() {
+                          _selectedDate = date;
+                        }),
+                        emptyColor: sub,
                       ),
                     )
                   : const SizedBox.shrink(),
@@ -735,6 +724,123 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
       ),
     );
   }
+}
+
+class _InviteAvailableDateOptions extends ConsumerWidget {
+  const _InviteAvailableDateOptions({
+    required this.friendIds,
+    required this.selectedDate,
+    required this.onSelected,
+    required this.emptyColor,
+  });
+
+  final List<String> friendIds;
+  final DateTime selectedDate;
+  final ValueChanged<DateTime> onSelected;
+  final Color emptyColor;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final today = _dateOnly(DateTime.now());
+    final months = _monthsFrom(today, count: 5);
+    final blockedKeys = <String>{};
+    var isLoading = false;
+
+    for (final friendId in friendIds) {
+      for (final month in months) {
+        final statuses = ref.watch(
+          _friendMonthlyDailyStatusesProvider((
+            friendId: friendId,
+            month: month,
+          )),
+        );
+        isLoading = isLoading || statuses.isLoading;
+        final values =
+            statuses.asData?.value ?? const <String, OheyDailyStatus>{};
+        for (final entry in values.entries) {
+          if (entry.value == OheyDailyStatus.hasPlans) {
+            blockedKeys.add(entry.key);
+          }
+        }
+      }
+    }
+
+    final candidates = [
+      for (var index = 1; index <= 120; index++)
+        today.add(Duration(days: index)),
+    ].where((date) => !blockedKeys.contains(_inviteDateKey(date))).toList();
+
+    if (candidates.isEmpty) {
+      return Text(
+        isLoading ? '相手の予定を確認中…' : '選べる日程がまだないよ。',
+        style: TextStyle(
+          color: emptyColor,
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
+          height: 1.35,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (isLoading) ...[
+          Text(
+            '相手の予定ありの日を除いて表示中…',
+            style: TextStyle(
+              color: emptyColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+        SizedBox(
+          height: 44,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: candidates.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final date = candidates[index];
+              return _InviteOptionPill(
+                label: _inviteDateLabel(date, today: today),
+                compact: true,
+                selected: _isSameInviteDate(selectedDate, date),
+                onTap: () => onSelected(date),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<DateTime> _monthsFrom(DateTime start, {required int count}) {
+    return [
+      for (var index = 0; index < count; index++)
+        DateTime(start.year, start.month + index),
+    ];
+  }
+}
+
+DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+
+bool _isSameInviteDate(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
+String _inviteDateKey(DateTime date) =>
+    '${date.year.toString().padLeft(4, '0')}-'
+    '${date.month.toString().padLeft(2, '0')}-'
+    '${date.day.toString().padLeft(2, '0')}';
+
+String _inviteDateLabel(DateTime date, {required DateTime today}) {
+  final diff = _dateOnly(date).difference(today).inDays;
+  final weekday = const ['月', '火', '水', '木', '金', '土', '日'][date.weekday - 1];
+  if (diff == 1) return '明日';
+  return '${date.month}/${date.day}($weekday)';
 }
 
 class _InviteWishListOptions extends ConsumerWidget {
