@@ -156,7 +156,7 @@ class _FriendsList extends StatelessWidget {
         .toList(growable: false);
 
     Widget withRefresh(Widget child) => CustomScrollView(
-      clipBehavior: Clip.none,
+      clipBehavior: Clip.hardEdge,
       physics: const AlwaysScrollableScrollPhysics(
         parent: BouncingScrollPhysics(),
       ),
@@ -219,7 +219,7 @@ class _FriendsList extends StatelessWidget {
 
     return withRefresh(
       SliverPadding(
-        padding: const EdgeInsets.fromLTRB(4, 0, 4, 168),
+        padding: const EdgeInsets.fromLTRB(4, 14, 4, 168),
         sliver: SliverList.separated(
           itemCount:
               filtered.length +
