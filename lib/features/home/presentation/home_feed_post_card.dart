@@ -473,11 +473,7 @@ class _FeedCardFooter extends StatelessWidget {
     final likeAccent = item.liked
         ? Color.lerp(AppColors.danger, feedActionPurple, .58)!
         : feedActionPurple;
-    final shareAccent = item.isOfficial
-        ? Color.lerp(AppColors.info, feedActionPurple, .58)!
-        : item.ownedByMe
-        ? Color.lerp(AppColors.invite, feedActionPurple, .66)!
-        : feedActionPurple;
+    final shareAccent = Color.lerp(AppColors.info, feedActionPurple, .58)!;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 11, 14, 14),
