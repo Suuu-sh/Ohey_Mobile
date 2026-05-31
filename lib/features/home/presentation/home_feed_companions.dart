@@ -392,7 +392,8 @@ class _FeedCompanionProfileSheetState
     final friend = widget.friend;
     final statusColor = _companionStatusColor(friend.statusKey);
     final media = MediaQuery.of(context);
-    final sheetContentHeight = media.size.height - media.padding.bottom;
+    final sheetContentHeight =
+        media.size.height - media.padding.top - media.padding.bottom;
     final relationshipAsync = widget.initialRelationship == null
         ? (friend.userId.trim().isEmpty
               ? const AsyncValue<OheyFriendRelationshipStatus>.data(
@@ -407,6 +408,7 @@ class _FeedCompanionProfileSheetState
           );
 
     return OheyBottomSheetShell(
+      showHandle: false,
       padding: EdgeInsets.zero,
       radius: 0,
       maxHeightFactor: 1,
