@@ -19,3 +19,11 @@ class WishItemController extends AsyncNotifier<List<WishItem>> {
     ref.invalidateSelf();
   }
 }
+
+final profileWishItemsProvider = FutureProvider.autoDispose
+    .family<List<WishItem>, String>((ref, profileId) async {
+      if (profileId.trim().isEmpty) return const <WishItem>[];
+      return ref
+          .read(wishItemRepositoryProvider)
+          .fetchProfileWishItems(profileId.trim());
+    });

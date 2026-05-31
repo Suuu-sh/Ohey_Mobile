@@ -9,6 +9,10 @@ final wishItemRepositoryProvider = Provider<WishItemRepository>((ref) {
 
 abstract interface class WishItemRepository {
   Future<List<WishItem>> fetchWishItems({int limit = 50});
+  Future<List<WishItem>> fetchProfileWishItems(
+    String profileId, {
+    int limit = 30,
+  });
   Future<WishItem> createWishItem(WishItemCreateDraft draft);
 }
 
@@ -39,6 +43,18 @@ class BackendWishItemRepository implements WishItemRepository {
   Future<List<WishItem>> fetchWishItems({int limit = 50}) async {
     final rows = await _client.getRows(
       '/v1/wish-items',
+      query: {'limit': '$limit'},
+    );
+    return rows.map(_wishItemFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<List<WishItem>> fetchProfileWishItems(
+    String profileId, {
+    int limit = 30,
+  }) async {
+    final rows = await _client.getRows(
+      '/v1/wish-items/profile/${Uri.encodeComponent(profileId)}',
       query: {'limit': '$limit'},
     );
     return rows.map(_wishItemFromRow).toList(growable: false);

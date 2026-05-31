@@ -330,6 +330,8 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
                         statusColor: statusColor,
                       ),
                       const SizedBox(height: 14),
+                      _FriendProfileWishItemsPanel(friend: widget.friend),
+                      const SizedBox(height: 14),
                       Expanded(
                         child: _FriendProfileCalendar(
                           friend: widget.friend,
@@ -709,6 +711,143 @@ class _FriendProfileHero extends StatelessWidget {
                   letterSpacing: -.4,
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendProfileWishItemsPanel extends ConsumerWidget {
+  const _FriendProfileWishItemsPanel({required this.friend});
+
+  final OheyFriend friend;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wishItemsAsync = ref.watch(profileWishItemsProvider(friend.id));
+    return wishItemsAsync.when(
+      loading: () => const _FriendProfileWishItemsShell(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Center(child: CupertinoActivityIndicator()),
+        ),
+      ),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (wishItems) {
+        if (wishItems.isEmpty) return const SizedBox.shrink();
+        return _FriendProfileWishItemsShell(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    CupertinoIcons.sparkles,
+                    color: Color(0xFFC08BFF),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      '${friend.name}さんのやりたいこと',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 74,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: wishItems.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final wish = wishItems[index];
+                    return _FriendProfileWishChip(wish: wish);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _FriendProfileWishItemsShell extends StatelessWidget {
+  const _FriendProfileWishItemsShell({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return OheyThemedPanel(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      accentColor: const Color(0xFFC08BFF),
+      borderRadius: 22,
+      backgroundColor: const Color(0xFF231A38).withValues(alpha: .92),
+      borderAlpha: .42,
+      glowAlpha: .10,
+      glowBlur: 18,
+      glowOffset: const Offset(0, 8),
+      child: child,
+    );
+  }
+}
+
+class _FriendProfileWishChip extends StatelessWidget {
+  const _FriendProfileWishChip({required this.wish});
+
+  final WishItem wish;
+
+  @override
+  Widget build(BuildContext context) {
+    final place = wish.placeText.trim();
+    return Container(
+      width: 168,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFC08BFF).withValues(alpha: .18),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFC08BFF).withValues(alpha: .34),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            wish.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              height: 1.12,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            place.isEmpty ? '公開リスト' : place,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: .56),
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
