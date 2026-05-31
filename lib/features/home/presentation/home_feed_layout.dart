@@ -48,7 +48,22 @@ Widget _buildFeedPage({
       parent: BouncingScrollPhysics(),
     ),
     slivers: [
-      CupertinoSliverRefreshControl(onRefresh: onRefresh),
+      CupertinoSliverRefreshControl(
+        onRefresh: onRefresh,
+        builder:
+            (
+              context,
+              refreshState,
+              pulledExtent,
+              refreshTriggerPullDistance,
+              refreshIndicatorExtent,
+            ) => _YuruboRefreshIndicator(
+              state: refreshState,
+              pulledExtent: pulledExtent,
+              triggerDistance: refreshTriggerPullDistance,
+              indicatorExtent: refreshIndicatorExtent,
+            ),
+      ),
       child,
     ],
   );
@@ -100,6 +115,91 @@ Widget _buildFeedPage({
       ),
     ),
   );
+}
+
+class _YuruboRefreshIndicator extends StatelessWidget {
+  const _YuruboRefreshIndicator({
+    required this.state,
+    required this.pulledExtent,
+    required this.triggerDistance,
+    required this.indicatorExtent,
+  });
+
+  final RefreshIndicatorMode state;
+  final double pulledExtent;
+  final double triggerDistance;
+  final double indicatorExtent;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = (pulledExtent / triggerDistance).clamp(0.0, 1.0);
+    final isRefreshing =
+        state == RefreshIndicatorMode.refresh ||
+        state == RefreshIndicatorMode.armed;
+    final label = switch (state) {
+      RefreshIndicatorMode.inactive => '',
+      RefreshIndicatorMode.drag => progress >= 1 ? '離して更新' : '下に引っ張って更新',
+      RefreshIndicatorMode.armed || RefreshIndicatorMode.refresh => '更新中...',
+      RefreshIndicatorMode.done => '更新しました',
+    };
+
+    return SizedBox(
+      height: pulledExtent,
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 120),
+            opacity: state == RefreshIndicatorMode.inactive ? 0 : 1,
+            child: Container(
+              height: 34,
+              padding: const EdgeInsets.symmetric(horizontal: 13),
+              decoration: BoxDecoration(
+                color: const Color(0xFF101C2B).withValues(alpha: .82),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: _feedPrimaryActionColor.withValues(alpha: .22),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: _feedPrimaryActionColor.withValues(alpha: .18),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isRefreshing)
+                    const CupertinoActivityIndicator(radius: 8)
+                  else
+                    Transform.rotate(
+                      angle: progress * 3.14159,
+                      child: Icon(
+                        CupertinoIcons.arrow_down,
+                        color: _feedPrimaryActionColor,
+                        size: 16,
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _YuruboPostListItem extends StatelessWidget {
