@@ -58,3 +58,11 @@ create policy yurubo_visibility_groups_delete_yurubo_owner
   using (exists (select 1 from public.yurubos y where y.id = yurubo_visibility_groups.yurubo_id and y.owner_user_id = auth.uid()));
 
 grant select, insert, delete on public.yurubo_visibility_groups to authenticated;
+
+drop policy if exists yurubo_visibility_groups_select_owner_or_member on public.yurubo_visibility_groups;
+create policy yurubo_visibility_groups_select_group_owner_or_member
+  on public.yurubo_visibility_groups for select to authenticated
+  using (
+    exists (select 1 from public.friend_groups g where g.id = yurubo_visibility_groups.group_id and g.owner_user_id = auth.uid())
+    or exists (select 1 from public.friend_group_members fgm where fgm.group_id = yurubo_visibility_groups.group_id and fgm.friend_user_id = auth.uid())
+  );
