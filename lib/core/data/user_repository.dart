@@ -108,6 +108,23 @@ class UserRepository {
     };
   }
 
+  Future<Map<String, OheyDailyStatus>> fetchFriendDailyStatusesForMonth(
+    String friendId,
+    DateTime month,
+  ) async {
+    final rows = await _client.getRows(
+      '/v1/friends/${Uri.encodeComponent(friendId)}/daily-statuses/month',
+      query: {'month': _isoMonth(month)},
+    );
+    return {
+      for (final row in rows)
+        if (row['status_date'] is String)
+          row['status_date'] as String: oheyDailyStatusFromKey(
+            row['status'] as String?,
+          ),
+    };
+  }
+
   Future<void> updateDailyStatus(
     OheyDailyStatus status, {
     DateTime? date,
