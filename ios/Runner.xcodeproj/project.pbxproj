@@ -17,7 +17,6 @@
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		A90000000000000000000002 /* OheyWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A90000000000000000000001 /* OheyWidgets.swift */; };
 		A90000000000000000000007 /* OheyWidgetsExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A90000000000000000000006 /* OheyWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		B10000000000000000000002 /* OheyArAvatarCameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* OheyArAvatarCameraView.swift */; };
 		B20000000000000000000002 /* OheyArchiveMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* OheyArchiveMapView.swift */; };
 		C0DE00000000000000001005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000001006 /* Assets.xcassets */; };
 		B144C745E088A1CCD00D1D68 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1452E07B482E90AFCE18C63B /* Pods_RunnerTests.framework */; };
@@ -92,7 +91,6 @@
 		A90000000000000000000004 /* OheyWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OheyWidgets.entitlements; sourceTree = "<group>"; };
 		A90000000000000000000005 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		A90000000000000000000006 /* OheyWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OheyWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		B10000000000000000000001 /* OheyArAvatarCameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OheyArAvatarCameraView.swift; sourceTree = "<group>"; };
 		B20000000000000000000001 /* OheyArchiveMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OheyArchiveMapView.swift; sourceTree = "<group>"; };
 		C0DE00000000000000001006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BA469E506A65B71BE3F98796 /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -194,7 +192,6 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */,
-				B10000000000000000000001 /* OheyArAvatarCameraView.swift */,
 				B20000000000000000000001 /* OheyArchiveMapView.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				A90000000000000000000005 /* Runner.entitlements */,
@@ -486,7 +483,6 @@
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */,
-				B10000000000000000000002 /* OheyArAvatarCameraView.swift in Sources */,
 				B20000000000000000000002 /* OheyArchiveMapView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

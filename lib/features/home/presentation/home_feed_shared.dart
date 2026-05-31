@@ -88,8 +88,6 @@ class _FeedItem {
     this.timeLabel = '',
     required this.avatar,
     required this.accent,
-    this.photoAssetPath,
-    this.captionY = .5,
     this.linkUrl = '',
     this.targetLabel = '全フレンズ',
     this.friends = const <_Companion>[],
@@ -123,8 +121,6 @@ class _FeedItem {
       timeLabel: yurubo.timeLabel,
       avatar: yurubo.avatar,
       accent: _accentForId(yurubo.id),
-      photoAssetPath: null,
-      captionY: .5,
       linkUrl: '',
       targetLabel: yurubo.visibilityLabel.isEmpty
           ? '全フレンズ'
@@ -183,8 +179,6 @@ class _FeedItem {
   final String timeLabel;
   final OheyAvatar avatar;
   final Color accent;
-  final String? photoAssetPath;
-  final double captionY;
   final String linkUrl;
   final String targetLabel;
   final List<_Companion> friends;
@@ -399,43 +393,19 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
     ).createShader(rect);
   canvas.drawRect(rect, background);
 
-  final photo = await _loadSharePhoto(item.photoAssetPath);
-  if (photo != null) {
-    final blurredBackdropRect = Rect.fromLTWH(-160, 0, width + 320, height);
-    _paintCoverImage(
-      canvas,
-      image: photo,
-      target: blurredBackdropRect,
-      opacity: .20,
-    );
-    canvas.drawRect(
-      rect,
-      Paint()..color = const Color(0xFF05080D).withValues(alpha: .70),
-    );
-  }
-
   const cardWidth = 930.0;
-  const cardHorizontalPadding = 42.0;
-  const cardTopPadding = 42.0;
-  const photoWidth = cardWidth - cardHorizontalPadding * 2;
-  const photoHeight = photoWidth * 9 / 16;
-  const textTopGap = 38.0;
-  const captionFontSize = 54.0;
+  const cardHorizontalPadding = 56.0;
+  const cardTopPadding = 58.0;
+  const titleFontSize = 58.0;
   const metaFontSize = 34.0;
-  const metaGap = 16.0;
-  const cardBottomPadding = 44.0;
-  const cardHeight =
-      cardTopPadding +
-      photoHeight +
-      textTopGap +
-      captionFontSize * 1.20 +
-      metaGap +
-      metaFontSize * 1.18 +
-      cardBottomPadding;
+  const cardHeight = 520.0;
   const cardLeft = (width - cardWidth) / 2;
   const cardTop = (height - cardHeight) / 2;
   final cardRect = Rect.fromLTWH(cardLeft, cardTop, cardWidth, cardHeight);
-  final cardRRect = RRect.fromRectAndRadius(cardRect, const Radius.circular(4));
+  final cardRRect = RRect.fromRectAndRadius(
+    cardRect,
+    const Radius.circular(32),
+  );
 
   canvas.drawRRect(
     cardRRect.shift(const Offset(0, 18)),
@@ -445,53 +415,36 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
   );
   canvas.drawRRect(cardRRect, Paint()..color = Colors.white);
 
-  final photoRect = Rect.fromLTWH(
-    cardLeft + cardHorizontalPadding,
-    cardTop + cardTopPadding,
-    photoWidth,
-    photoHeight,
+  final accentRect = Rect.fromLTWH(cardLeft, cardTop, cardWidth, 12);
+  canvas.drawRRect(
+    RRect.fromRectAndCorners(
+      accentRect,
+      topLeft: const Radius.circular(32),
+      topRight: const Radius.circular(32),
+    ),
+    Paint()..color = const Color(0xFFC08BFF),
   );
-  final photoRRect = RRect.fromRectAndRadius(
-    photoRect,
-    const Radius.circular(2),
-  );
-  if (photo != null) {
-    canvas.save();
-    canvas.clipRRect(photoRRect);
-    _paintCoverImage(canvas, image: photo, target: photoRect);
-    canvas.restore();
-    photo.dispose();
-  } else {
-    canvas.drawRRect(
-      photoRRect,
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFFF0A8D), Color(0xFF21D6C4)],
-        ).createShader(photoRect),
-    );
-  }
 
+  final textLeft = cardLeft + cardHorizontalPadding;
+  final textWidth = cardWidth - cardHorizontalPadding * 2;
   final title = item.body.trim().isNotEmpty ? item.body.trim() : item.userName;
-  final captionTop = photoRect.bottom + textTopGap;
   _paintShareText(
     canvas,
     title,
-    x: photoRect.left,
-    y: captionTop,
-    maxWidth: photoRect.width,
-    size: captionFontSize,
-    weight: FontWeight.w700,
+    x: textLeft,
+    y: cardTop + cardTopPadding,
+    maxWidth: textWidth,
+    size: titleFontSize,
+    weight: FontWeight.w800,
     color: const Color(0xFF111111),
-    maxLines: 1,
+    maxLines: 3,
   );
   _paintShareText(
     canvas,
     item.timeAgo,
-    x: photoRect.left,
-    y: captionTop + captionFontSize * 1.20 + metaGap,
-    maxWidth: photoRect.width,
+    x: textLeft,
+    y: cardTop + cardHeight - cardTopPadding - metaFontSize * 1.18,
+    maxWidth: textWidth,
     size: metaFontSize,
     weight: FontWeight.w700,
     color: const Color(0xFF8D8D8D),
@@ -510,79 +463,6 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
   output.dispose();
   picture.dispose();
   return path;
-}
-
-Future<ui.Image?> _loadSharePhoto(String? path) async {
-  final normalized = path?.trim();
-  if (normalized == null || normalized.isEmpty) return null;
-  try {
-    late final Uint8List bytes;
-    if (normalized.startsWith('/')) {
-      final file = File(normalized);
-      if (!await file.exists()) return null;
-      bytes = await file.readAsBytes();
-    } else if (normalized.startsWith('http://') ||
-        normalized.startsWith('https://')) {
-      final uri = Uri.tryParse(normalized);
-      if (uri == null) return null;
-      final request = await HttpClient().getUrl(uri);
-      final response = await request.close();
-      if (response.statusCode < 200 || response.statusCode >= 300) return null;
-      bytes = await consolidateHttpClientResponseBytes(response);
-    } else if (normalized.startsWith('assets/')) {
-      final data = await rootBundle.load(normalized);
-      bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-    } else {
-      return null;
-    }
-    final codec = await ui.instantiateImageCodec(bytes);
-    final frame = await codec.getNextFrame();
-    return frame.image;
-  } catch (_) {
-    return null;
-  }
-}
-
-void _paintCoverImage(
-  Canvas canvas, {
-  required ui.Image image,
-  required Rect target,
-  double opacity = 1,
-}) {
-  final source = Rect.fromLTWH(
-    0,
-    0,
-    image.width.toDouble(),
-    image.height.toDouble(),
-  );
-  final imageAspect = image.width / image.height;
-  final targetAspect = target.width / target.height;
-  Rect sourceCrop;
-  if (imageAspect > targetAspect) {
-    final cropWidth = image.height * targetAspect;
-    sourceCrop = Rect.fromLTWH(
-      (image.width - cropWidth) / 2,
-      0,
-      cropWidth,
-      image.height.toDouble(),
-    );
-  } else {
-    final cropHeight = image.width / targetAspect;
-    sourceCrop = Rect.fromLTWH(
-      0,
-      (image.height - cropHeight) / 2,
-      image.width.toDouble(),
-      cropHeight,
-    );
-  }
-  final paint = Paint()..filterQuality = ui.FilterQuality.high;
-  if (opacity < 1) {
-    paint.colorFilter = ColorFilter.mode(
-      Colors.white.withValues(alpha: opacity),
-      BlendMode.modulate,
-    );
-  }
-  canvas.drawImageRect(image, sourceCrop.intersect(source), target, paint);
 }
 
 void _paintShareText(

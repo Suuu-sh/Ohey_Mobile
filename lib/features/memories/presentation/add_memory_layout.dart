@@ -5,12 +5,6 @@ part of 'add_memory_screen.dart';
 extension _AddMemoryScreenLayout on _AddMemoryScreenState {
   Widget _buildAddMemoryScreen(BuildContext context) {
     final friendsAsync = ref.watch(friendsProvider);
-    final user = ref.watch(oheyUserProvider);
-    final selectedFriends =
-        friendsAsync.asData?.value
-            .where((friend) => _selectedFriendIds.contains(friend.id))
-            .toList(growable: false) ??
-        const <OheyFriend>[];
     final friendEditor = _FriendSelectCard(
       search: _InputBox(
         icon: CupertinoIcons.search,
@@ -83,64 +77,23 @@ extension _AddMemoryScreenLayout on _AddMemoryScreenState {
               Expanded(
                 child: ListView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 26),
+                  padding: const EdgeInsets.fromLTRB(18, 10, 18, 26),
                   children: [
-                    if (_hasPhoto) ...[
-                      _PostPreviewCard(
-                        path: _photoPath!,
-                        userName: _previewUserName(user?.name),
-                        avatar: user?.avatar ?? OheyAvatar.defaultAvatar,
-                        memoController: _memoController,
-                        captionY: _captionY,
-                        place: _placeController.text,
-                        date: _selectedDate,
-                        friends: selectedFriends,
-                        dateEditor: dateEditor,
-                        friendEditor: friendEditor,
-                        placeEditor: placeEditor,
-                        onEditDateTime: _pickDateTime,
-                        onMemoChanged: (_) => setState(() {}),
-                        onCaptionYChanged: (value) =>
-                            setState(() => _captionY = value),
-                        onRetake: _openOheyCamera,
-                      ),
-                      const SizedBox(height: 14),
-                    ] else ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                        child: _PhotoCapturePrompt(onTap: _openOheyCamera),
-                      ),
-                      const SizedBox(height: 14),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                        child: dateEditor,
-                      ),
-                      const SizedBox(height: 14),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                        child: _InputBox(
-                          icon: CupertinoIcons.text_quote,
-                          iconColor: _AddMemoryColors.impressionIcon,
-                          hint: 'コメント（任意・15文字まで）',
-                          controller: _memoController,
-                          maxLines: 3,
-                          maxLength: _memoryCommentMaxLength,
-                          onChanged: (_) => setState(() {}),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                    ],
-                    if (!_hasPhoto) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                        child: friendEditor,
-                      ),
-                      const SizedBox(height: 14),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                        child: placeEditor,
-                      ),
-                    ],
+                    dateEditor,
+                    const SizedBox(height: 14),
+                    _InputBox(
+                      icon: CupertinoIcons.text_quote,
+                      iconColor: _AddMemoryColors.impressionIcon,
+                      hint: 'コメント（任意・15文字まで）',
+                      controller: _memoController,
+                      maxLines: 3,
+                      maxLength: _memoryCommentMaxLength,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                    const SizedBox(height: 14),
+                    friendEditor,
+                    const SizedBox(height: 14),
+                    placeEditor,
                   ],
                 ),
               ),
@@ -149,7 +102,7 @@ extension _AddMemoryScreenLayout on _AddMemoryScreenState {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
                   child: _SaveButton(
-                    label: _hasPhoto ? 'この1枚を投稿する' : '記録だけ保存する',
+                    label: '記録を保存する',
                     isSaving: _isSaving,
                     onPressed: () => _save(
                       friendsAsync.asData?.value ?? const <OheyFriend>[],

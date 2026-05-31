@@ -21,9 +21,6 @@ class _FeedPostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final photoPath = item.photoAssetPath;
-    final hasPhoto = _isDisplayablePostPhoto(photoPath);
-    final caption = _feedCardCaption(item);
     final surfaceColor = OheyThemedPanel.surfaceColor(isWhite: isWhite);
     return Semantics(
       label: '${item.userName}のゆるぼ',
@@ -54,13 +51,7 @@ class _FeedPostCard extends StatelessWidget {
                 if (compactYurubo)
                   _YuruboCardBody(item: item, isWhite: isWhite)
                 else
-                  _FeedPhotoLikeSurface(
-                    item: item,
-                    hasPhoto: hasPhoto,
-                    photoPath: photoPath,
-                    caption: caption,
-                    onLike: onLike,
-                  ),
+                  _FeedMemoryBody(item: item, isWhite: isWhite, onLike: onLike),
                 _FeedCardFooter(
                   item: item,
                   isWhite: isWhite,
@@ -235,281 +226,96 @@ class _YuruboMetaChip extends StatelessWidget {
   }
 }
 
-class _FeedPhotoLikeSurface extends StatefulWidget {
-  const _FeedPhotoLikeSurface({
+class _FeedMemoryBody extends StatelessWidget {
+  const _FeedMemoryBody({
     required this.item,
-    required this.hasPhoto,
-    required this.photoPath,
-    required this.caption,
+    required this.isWhite,
     this.onLike,
   });
 
   final _FeedItem item;
-  final bool hasPhoto;
-  final String? photoPath;
-  final String caption;
+  final bool isWhite;
   final VoidCallback? onLike;
 
   @override
-  State<_FeedPhotoLikeSurface> createState() => _FeedPhotoLikeSurfaceState();
-}
-
-class _FeedPhotoLikeSurfaceState extends State<_FeedPhotoLikeSurface>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 720),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleDoubleTap() {
-    if (widget.onLike == null) return;
-    final wasLiked = widget.item.liked;
-    widget.onLike!();
-    if (wasLiked) {
-      _controller.stop();
-      _controller.value = 0;
-      return;
-    }
-    _controller.forward(from: 0);
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
+    final secondaryText = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .66);
+    final body = _duoStyleBody(item).trim();
+    final title = body.isNotEmpty
+        ? body
+        : (item.place.trim().isNotEmpty ? item.place.trim() : '思い出を記録しました');
+    final metadata = [
+      item.timeAgo,
+      if (item.place.trim().isNotEmpty) item.place.trim(),
+    ].join(' ・ ');
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onDoubleTap: widget.onLike == null ? null : _handleDoubleTap,
-      child: AspectRatio(
-        aspectRatio: 1,
-        child: ClipRect(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              widget.hasPhoto
-                  ? _PostPhoto(path: widget.photoPath!)
-                  : _FeedPhotoPlaceholder(accent: widget.item.accent),
-              _FeedPhotoCaptionOverlay(
-                caption: widget.caption,
-                captionY: widget.item.captionY,
-              ),
-              _FeedPhotoDoubleTapLikeBurst(
-                animation: _controller,
-                color: Color.lerp(
-                  AppColors.danger,
-                  const Color(0xFFC08BFF),
-                  .42,
-                )!,
-              ),
+      onDoubleTap: onLike,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 4),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 15),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              item.accent.withValues(alpha: isWhite ? .12 : .20),
+              isWhite
+                  ? const Color(0xFFF8FAFD)
+                  : const Color(0xFF0A1521).withValues(alpha: .78),
             ],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: item.accent.withValues(alpha: isWhite ? .24 : .30),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _FeedPhotoDoubleTapLikeBurst extends StatelessWidget {
-  const _FeedPhotoDoubleTapLikeBurst({
-    required this.animation,
-    required this.color,
-  });
-
-  final Animation<double> animation;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: AnimatedBuilder(
-        animation: animation,
-        builder: (context, child) {
-          final raw = animation.value.clamp(0.0, 1.0);
-          if (raw <= 0 || raw >= 1) return const SizedBox.shrink();
-
-          final scaleIn = Curves.easeOutBack.transform((raw / .34).clamp(0, 1));
-          final fadeOut = raw < .58 ? 1.0 : ((1 - raw) / .42).clamp(0.0, 1.0);
-          final scale = .58 + scaleIn * .62 + raw * .16;
-
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              CustomPaint(
-                painter: _FeedPhotoLikeParticlePainter(
-                  progress: raw,
-                  color: color,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                OheyPopIcon(
+                  icon: CupertinoIcons.text_bubble_fill,
+                  color: item.accent,
+                  size: 34,
+                  iconSize: 18,
+                  shadow: false,
                 ),
-              ),
-              Center(
-                child: Opacity(
-                  opacity: fadeOut,
-                  child: Transform.rotate(
-                    angle: math.sin(raw * math.pi * 2) * .08 * (1 - raw),
-                    child: Transform.scale(scale: scale, child: child),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: .42),
-                blurRadius: 34,
-                spreadRadius: 8,
-              ),
-            ],
-          ),
-          child: OheyPopIcon(
-            icon: CupertinoIcons.heart_fill,
-            color: color,
-            size: 96,
-            iconSize: 78,
-            showBubble: false,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FeedPhotoLikeParticlePainter extends CustomPainter {
-  const _FeedPhotoLikeParticlePainter({
-    required this.progress,
-    required this.color,
-  });
-
-  final double progress;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (progress <= 0 || progress >= 1) return;
-    final center = Offset(size.width / 2, size.height / 2);
-    final ease = Curves.easeOutCubic.transform(progress);
-    final fade = progress < .68 ? 1.0 : ((1 - progress) / .32).clamp(0.0, 1.0);
-
-    for (var i = 0; i < 14; i++) {
-      final angle = -math.pi + (math.pi * 2 * (i / 14));
-      final distance = 40 + (34 + (i % 4) * 9) * ease;
-      final drift = math.sin(progress * math.pi * 2 + i) * 9;
-      final point =
-          center +
-          Offset(
-            math.cos(angle) * distance,
-            math.sin(angle) * distance + drift,
-          );
-      final paint = Paint()
-        ..style = PaintingStyle.fill
-        ..color = Color.lerp(
-          color,
-          i.isEven ? Colors.white : const Color(0xFFFF75B5),
-          i.isEven ? .56 : .30,
-        )!.withValues(alpha: .86 * fade);
-      canvas.save();
-      canvas.translate(point.dx, point.dy);
-      canvas.rotate(angle + progress * math.pi);
-      _drawParticleHeart(canvas, paint, 5.2 + (i % 3) * 1.6);
-      canvas.restore();
-    }
-  }
-
-  void _drawParticleHeart(Canvas canvas, Paint paint, double size) {
-    final path = Path()
-      ..moveTo(0, size * .42)
-      ..cubicTo(
-        -size * .82,
-        -size * .18,
-        -size * .46,
-        -size * .78,
-        0,
-        -size * .28,
-      )
-      ..cubicTo(size * .46, -size * .78, size * .82, -size * .18, 0, size * .42)
-      ..close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _FeedPhotoLikeParticlePainter oldDelegate) =>
-      oldDelegate.progress != progress || oldDelegate.color != color;
-}
-
-class _FeedPhotoCaptionOverlay extends StatelessWidget {
-  const _FeedPhotoCaptionOverlay({
-    required this.caption,
-    required this.captionY,
-  });
-
-  final String caption;
-  final double captionY;
-
-  @override
-  Widget build(BuildContext context) {
-    final body = caption.trim();
-    if (body.isEmpty) return const SizedBox.shrink();
-
-    const bandHeight = 52.0;
-
-    return IgnorePointer(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final maxTop = (constraints.maxHeight - bandHeight).clamp(
-            0.0,
-            double.infinity,
-          );
-          final top = maxTop * captionY.clamp(0.0, 1.0);
-
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              Positioned(
-                left: 0,
-                right: 0,
-                top: top,
-                height: bandHeight,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
-                  color: Colors.black.withValues(alpha: .46),
-                  alignment: Alignment.center,
+                const SizedBox(width: 10),
+                Expanded(
                   child: Text(
-                    body,
+                    metadata,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Colors.white,
-                      fontSize: 23,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: secondaryText,
                       fontWeight: FontWeight.w900,
-                      height: 1.05,
-                      letterSpacing: -.65,
-                      shadows: const [
-                        Shadow(
-                          color: Colors.black87,
-                          blurRadius: 10,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
+                      height: 1.1,
                     ),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: primaryText,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                height: 1.18,
+                letterSpacing: -.6,
               ),
-            ],
-          );
-        },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -771,78 +577,6 @@ class _FeedCardFooter extends StatelessWidget {
   }
 }
 
-class _FeedPhotoPlaceholder extends StatelessWidget {
-  const _FeedPhotoPlaceholder({required this.accent});
-
-  final Color accent;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color.lerp(const Color(0xFF101B28), accent, .34)!,
-            const Color(0xFF090D16),
-            Color.lerp(const Color(0xFF2A1538), accent, .22)!,
-          ],
-        ),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: -52,
-            top: 80,
-            child: _FeedPlaceholderOrb(
-              color: accent.withValues(alpha: .28),
-              size: 170,
-            ),
-          ),
-          Positioned(
-            right: -46,
-            bottom: 110,
-            child: _FeedPlaceholderOrb(
-              color: const Color(0xFFFF7AB8).withValues(alpha: .20),
-              size: 190,
-            ),
-          ),
-          Center(
-            child: Icon(
-              CupertinoIcons.photo_fill_on_rectangle_fill,
-              color: Colors.white.withValues(alpha: .18),
-              size: 74,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeedPlaceholderOrb extends StatelessWidget {
-  const _FeedPlaceholderOrb({required this.color, required this.size});
-
-  final Color color;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: color,
-      boxShadow: [BoxShadow(color: color, blurRadius: 42, spreadRadius: 16)],
-    ),
-  );
-}
-
-String _feedCardCaption(_FeedItem item) {
-  return _duoStyleBody(item).trim();
-}
-
 String _feedLikeActionLabel(_FeedItem item) {
   return item.liked ? 'いいね済み' : 'いいね';
 }
@@ -1008,19 +742,6 @@ class _VerifiedBadgeSeal extends CustomPainter {
   bool shouldRepaint(covariant _VerifiedBadgeSeal oldDelegate) => false;
 }
 
-bool _isDisplayablePostPhoto(String? path) {
-  final normalized = path?.trim();
-  if (normalized == null || normalized.isEmpty) return false;
-  if (normalized.startsWith('ohey_memory_template_')) return false;
-  if (normalized.startsWith('/')) return File(normalized).existsSync();
-  if (normalized.startsWith('http://') ||
-      normalized.startsWith('https://') ||
-      normalized.startsWith('assets/')) {
-    return true;
-  }
-  return false;
-}
-
 String _duoStyleBody(_FeedItem item) {
   if (item.isOfficial) {
     return switch (item.prop) {
@@ -1030,42 +751,6 @@ String _duoStyleBody(_FeedItem item) {
     };
   }
   return item.body;
-}
-
-class _PostPhoto extends StatelessWidget {
-  const _PostPhoto({required this.path});
-
-  final String path;
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = _imageProviderFor(path);
-    if (provider == null) return const SizedBox.shrink();
-
-    return Image(
-      image: provider,
-      width: double.infinity,
-      height: double.infinity,
-      fit: BoxFit.cover,
-      gaplessPlayback: true,
-      errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
-    );
-  }
-
-  ImageProvider? _imageProviderFor(String value) {
-    final normalized = value.trim();
-    if (normalized.isEmpty) return null;
-    if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
-      return NetworkImage(normalized);
-    }
-    if (normalized.startsWith('/')) {
-      final file = File(normalized);
-      if (!file.existsSync()) return null;
-      return FileImage(file);
-    }
-    if (normalized.startsWith('assets/')) return AssetImage(normalized);
-    return null;
-  }
 }
 
 String _yuruboBody(_FeedItem item) {

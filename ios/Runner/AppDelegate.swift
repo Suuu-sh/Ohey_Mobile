@@ -15,14 +15,12 @@ import WidgetKit
   private var placeSearchLocationManager: CLLocationManager?
   private var placeSearchLocationCompletion: ((CLLocation?, FlutterError?) -> Void)?
   private var didRequestPlaceSearchLocation = false
-  private var didRegisterArAvatarCameraViewFactory = false
   private let widgetAppGroupIdentifier = "group.app.ohey.com"
 
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    registerArAvatarCameraViewFactory()
     registerArchiveMapViewFactory()
     if let controller = window?.rootViewController as? FlutterViewController {
       registerQrSaverChannel(on: controller.binaryMessenger)
@@ -47,31 +45,11 @@ import WidgetKit
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "OheyInstagramShare") {
       registerInstagramShareChannel(on: registrar.messenger())
     }
-    if !didRegisterArAvatarCameraViewFactory,
-       let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "OheyArAvatarCamera") {
-      registerArAvatarCameraViewFactory(with: registrar)
-    }
     if !didRegisterArchiveMapViewFactory,
        let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "OheyArchiveMap") {
       registerArchiveMapViewFactory(with: registrar)
     }
   }
-
-  private func registerArAvatarCameraViewFactory() {
-    guard !didRegisterArAvatarCameraViewFactory else { return }
-    guard let registrar = registrar(forPlugin: "OheyArAvatarCamera") else { return }
-    registerArAvatarCameraViewFactory(with: registrar)
-  }
-
-  private func registerArAvatarCameraViewFactory(with registrar: FlutterPluginRegistrar) {
-    guard !didRegisterArAvatarCameraViewFactory else { return }
-    didRegisterArAvatarCameraViewFactory = true
-    registrar.register(
-      OheyArAvatarCameraFactory(messenger: registrar.messenger()),
-      withId: "ohey/ar_avatar_camera"
-    )
-  }
-
 
   private func registerArchiveMapViewFactory() {
     guard !didRegisterArchiveMapViewFactory else { return }

@@ -105,15 +105,11 @@ class AdminController {
     );
   }
 
-  Future<String?> displayPhotoUrl(String path) =>
-      _repository.displayPhotoUrl(path);
-
   Future<void> createMemory({
     String? ownerUserId,
     required String placeName,
     required String memo,
     required String linkUrl,
-    required String photoPath,
     required bool isOfficial,
   }) {
     return _repository.createMemory(
@@ -121,7 +117,6 @@ class AdminController {
       placeName: placeName,
       memo: memo,
       linkUrl: linkUrl,
-      photoPath: photoPath,
       isOfficial: isOfficial,
     );
   }
@@ -132,7 +127,6 @@ class AdminController {
     required String placeName,
     required String memo,
     required String linkUrl,
-    required String photoPath,
     required bool isOfficial,
   }) {
     return _repository.updateMemory(
@@ -141,7 +135,6 @@ class AdminController {
       placeName: placeName,
       memo: memo,
       linkUrl: linkUrl,
-      photoPath: photoPath,
       isOfficial: isOfficial,
     );
   }

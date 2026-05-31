@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../../core/data/backend_api_client.dart';
-import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/memory.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
@@ -11,10 +8,7 @@ import '../../../core/models/ohey_gender.dart';
 import '../application/memory_daily_limit.dart';
 
 final memoryRepositoryProvider = Provider<MemoryRepository>((ref) {
-  return BackendMemoryRepository(
-    ref.watch(backendApiClientProvider),
-    ref.watch(supabaseClientProvider),
-  );
+  return BackendMemoryRepository(ref.watch(backendApiClientProvider));
 });
 
 abstract interface class MemoryRepository {
@@ -49,17 +43,14 @@ class MemoryLikeState {
 }
 
 class BackendMemoryRepository implements MemoryRepository {
-  const BackendMemoryRepository(this._client, this._supabase);
-
-  static const _photoBucket = 'ohey-photos';
+  const BackendMemoryRepository(this._client);
 
   final BackendApiClient _client;
-  final SupabaseClient _supabase;
 
   @override
   Future<List<Memory>> fetchMemories() async {
     final rows = await _client.getRows('/v1/memories');
-    return Future.wait(rows.map(_memoryFromRow));
+    return rows.map(_memoryFromRow).toList(growable: false);
   }
 
   @override
@@ -75,7 +66,7 @@ class BackendMemoryRepository implements MemoryRepository {
       query['cursor'] = cleanCursor;
     }
     final rows = await _client.getRows('/v1/home/feed', query: query);
-    final memories = await Future.wait(rows.map(_memoryFromRow));
+    final memories = rows.map(_memoryFromRow).toList(growable: false);
     final nextCursor = memories.isEmpty
         ? null
         : memories.last.feedCursor.trim();
@@ -152,9 +143,6 @@ class BackendMemoryRepository implements MemoryRepository {
 
   @override
   Future<Memory> addMemory(Memory memory) async {
-    final uploadedPhotoPath = await _uploadLocalPhotoIfNeeded(
-      memory.photoAssetPath,
-    );
     final row = await _client.postRow('/v1/memories', {
       'happened_at': memory.date.toUtc().toIso8601String(),
       'happened_on': memoryLocalDateKey(memory.date),
@@ -163,8 +151,6 @@ class BackendMemoryRepository implements MemoryRepository {
       'place_lat': memory.placeLatitude,
       'place_lng': memory.placeLongitude,
       'memo': memory.memo,
-      'caption_y': memory.captionY.clamp(0.0, 1.0),
-      'photo_path': uploadedPhotoPath ?? '',
       'friend_ids': memory.friends
           .map((friend) => friend.id)
           .toList(growable: false),
@@ -180,10 +166,7 @@ class BackendMemoryRepository implements MemoryRepository {
       placeLatitude: (row['place_lat'] as num?)?.toDouble(),
       placeLongitude: (row['place_lng'] as num?)?.toDouble(),
       memo: (row['memo'] as String?) ?? '',
-      captionY: _captionYFromRow(row),
-      photoAssetPath: await _displayPhotoPath(row['photo_path'] as String?),
       linkUrl: row['link_url'] as String?,
-      rarity: MemoryRarity.fromKey(row['marker_rarity'] as String?),
       likeCount: 0,
       likedByMe: false,
       ownerUserId:
@@ -213,103 +196,6 @@ class BackendMemoryRepository implements MemoryRepository {
     );
   }
 
-  double _captionYFromRow(Map<String, dynamic> row) {
-    final value = (row['caption_y'] as num?)?.toDouble() ?? .5;
-    return value.clamp(0.0, 1.0);
-  }
-
-  Future<String?> _uploadLocalPhotoIfNeeded(String? path) async {
-    final normalized = path?.trim();
-    if (normalized == null || normalized.isEmpty) return null;
-    if (!normalized.startsWith('/')) return normalized;
-
-    final file = File(normalized);
-    if (!await file.exists()) return normalized;
-
-    final extension = _safeExtension(normalized);
-    final contentType = _contentTypeForExtension(extension);
-    final upload = await _client.postRow('/v1/media/upload-url', {
-      'kind': 'memory_photo',
-      'file_extension': extension,
-      'content_type': contentType,
-    });
-    final bucket = (upload['bucket'] as String?)?.trim();
-    final storagePath = (upload['path'] as String?)?.trim();
-    final token = (upload['token'] as String?)?.trim();
-    final uploadContentType =
-        (upload['content_type'] as String?)?.trim().isNotEmpty == true
-        ? (upload['content_type'] as String).trim()
-        : contentType;
-    if (bucket == null ||
-        bucket.isEmpty ||
-        storagePath == null ||
-        storagePath.isEmpty ||
-        token == null ||
-        token.isEmpty) {
-      throw const FormatException('写真アップロードURLの形式が不正です。');
-    }
-
-    await _supabase.storage
-        .from(bucket)
-        .uploadToSignedUrl(
-          storagePath,
-          token,
-          file,
-          FileOptions(
-            cacheControl: '3600',
-            contentType: uploadContentType,
-            upsert: false,
-          ),
-        );
-    return storagePath;
-  }
-
-  Future<String?> _displayPhotoPath(String? path) async {
-    final normalized = path?.trim();
-    if (normalized == null || normalized.isEmpty) return null;
-    if (normalized.startsWith('/') ||
-        normalized.startsWith('http://') ||
-        normalized.startsWith('https://') ||
-        normalized.startsWith('assets/')) {
-      return normalized;
-    }
-
-    try {
-      final row = await _client.postRow('/v1/media/display-url', {
-        'path': normalized,
-      });
-      return (row['signed_url'] as String?)?.trim();
-    } catch (_) {
-      try {
-        return await _supabase.storage
-            .from(_photoBucket)
-            .createSignedUrl(normalized, 60 * 60);
-      } catch (_) {
-        return null;
-      }
-    }
-  }
-
-  String _safeExtension(String path) {
-    final name = path.split('/').last;
-    final dot = name.lastIndexOf('.');
-    if (dot < 0 || dot == name.length - 1) return '.jpg';
-    final extension = name.substring(dot).toLowerCase();
-    return switch (extension) {
-      '.jpg' || '.jpeg' || '.png' || '.heic' || '.webp' => extension,
-      _ => '.jpg',
-    };
-  }
-
-  String _contentTypeForExtension(String extension) {
-    return switch (extension) {
-      '.png' => 'image/png',
-      '.heic' => 'image/heic',
-      '.webp' => 'image/webp',
-      _ => 'image/jpeg',
-    };
-  }
-
   @override
   Future<void> setFriendFavorite(
     String friendId, {
@@ -320,7 +206,7 @@ class BackendMemoryRepository implements MemoryRepository {
     });
   }
 
-  Future<Memory> _memoryFromRow(Map<String, dynamic> row) async {
+  Memory _memoryFromRow(Map<String, dynamic> row) {
     final rawFriends = row['memory_tagged_users'] as List<dynamic>? ?? const [];
     final friends = rawFriends
         .map((item) => (item as Map<String, dynamic>)['profiles'])
@@ -344,10 +230,7 @@ class BackendMemoryRepository implements MemoryRepository {
       placeLatitude: (row['place_lat'] as num?)?.toDouble(),
       placeLongitude: (row['place_lng'] as num?)?.toDouble(),
       memo: (row['memo'] as String?) ?? '',
-      captionY: _captionYFromRow(row),
-      photoAssetPath: await _displayPhotoPath(row['photo_path'] as String?),
       linkUrl: row['link_url'] as String?,
-      rarity: MemoryRarity.fromKey(row['marker_rarity'] as String?),
       likeCount: (row['like_count'] as num?)?.toInt() ?? 0,
       likedByMe: (row['liked_by_me'] as bool?) ?? false,
       ownerUserId: (row['owner_user_id'] as String?) ?? '',
