@@ -41,6 +41,30 @@ part 'friends_list_widgets.dart';
 part 'friends_card_widgets.dart';
 part 'friends_state_widgets.dart';
 
+Future<bool?> _confirmDeleteCustomFilter(
+  BuildContext context,
+  _CustomFriendFilter filter,
+) {
+  return showCupertinoDialog<bool>(
+    context: context,
+    builder: (dialogContext) => CupertinoAlertDialog(
+      title: const Text('グループを削除しますか？'),
+      content: Text('「${filter.name}」を削除します。この操作は元に戻せません。'),
+      actions: [
+        CupertinoDialogAction(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('キャンセル'),
+        ),
+        CupertinoDialogAction(
+          isDestructiveAction: true,
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('削除する'),
+        ),
+      ],
+    ),
+  );
+}
+
 Future<void> _holdRefreshIndicatorUntilDone() async {
   const doneVisibleDuration = Duration(milliseconds: 650);
   await Future<void>.delayed(doneVisibleDuration);
@@ -163,6 +187,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 
   Future<void> _deleteCustomFilter(_CustomFriendFilter filter) async {
     HapticFeedback.mediumImpact();
+    final confirmed = await _confirmDeleteCustomFilter(context, filter);
+    if (confirmed != true || !mounted) return;
     setState(() {
       _customFilters = [
         for (final item in _customFilters)
@@ -258,18 +284,14 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
         break;
       case _CustomFilterSheetAction.delete:
         final filterId = result.filterId!;
-        setState(() {
-          _customFilters = [
-            for (final item in _customFilters)
-              if (item.id != filterId) item,
-          ];
-          if (_selectedCustomFilterId == filterId) {
-            _selectedCustomFilterId = null;
-            _selectedFilter = _FriendFilterType.all;
+        _CustomFriendFilter? filter;
+        for (final item in _customFilters) {
+          if (item.id == filterId) {
+            filter = item;
+            break;
           }
-        });
-        await _persistCustomFilters();
-        if (mounted) OheyToast.show(context, 'グループを削除したよ');
+        }
+        if (filter != null) await _deleteCustomFilter(filter);
         break;
     }
   }
