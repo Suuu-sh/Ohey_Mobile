@@ -1,6 +1,6 @@
 part of 'home_screen.dart';
 
-enum _FeedPostAction { edit, copy, delete, report, hide, muteUser, blockUser }
+enum _FeedPostAction { edit, delete, report, hide, muteUser, blockUser }
 
 enum _FeedReportReason {
   spam('spam', 'スパム・宣伝', '宣伝、詐欺、迷惑な勧誘'),
@@ -95,16 +95,6 @@ class _FeedPostActionsSheet extends StatelessWidget {
               subtitle: '内容・場所・いつを直す',
               accent: _FeedColors.teal,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.edit),
-            ),
-            const SizedBox(height: 10),
-          ],
-          if (body.isNotEmpty) ...[
-            OheyActionTile(
-              icon: CupertinoIcons.doc_on_clipboard_fill,
-              title: 'コメントをコピー',
-              subtitle: 'クリップボードに保存',
-              accent: _FeedColors.teal,
-              onTap: () => Navigator.of(context).pop(_FeedPostAction.copy),
             ),
             const SizedBox(height: 10),
           ],
