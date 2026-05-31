@@ -286,7 +286,7 @@ class _TodayInviteSection extends StatelessWidget {
         : AppColors.white.withValues(alpha: .60);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.only(top: 12, bottom: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
