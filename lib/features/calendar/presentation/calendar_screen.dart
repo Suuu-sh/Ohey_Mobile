@@ -1070,7 +1070,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
                         const SizedBox(height: 4),
                       ],
                       Text(
-                        availableCount > 0 ? '見るボタンで誘えそうな人を見る' : '予定あり・未定が多そう',
+                        availableCount > 0 ? '誘えそうな人を見る' : '予定あり・未定が多そう',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
