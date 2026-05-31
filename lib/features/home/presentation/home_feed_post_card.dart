@@ -44,14 +44,13 @@ class _FeedPostCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (!compactYurubo)
-                  _FeedCardAuthorBar(
-                    item: item,
-                    isWhite: isWhite,
-                    compactYurubo: compactYurubo,
-                    onMore: onMore,
-                    onAuthorTap: onAuthorTap,
-                  ),
+                _FeedCardAuthorBar(
+                  item: item,
+                  isWhite: isWhite,
+                  compactYurubo: compactYurubo,
+                  onMore: onMore,
+                  onAuthorTap: onAuthorTap,
+                ),
                 if (compactYurubo)
                   _YuruboCardBody(item: item, isWhite: isWhite)
                 else
@@ -72,38 +71,7 @@ class _FeedPostCard extends StatelessWidget {
               ],
             ),
             if (compactYurubo) const _YuruboBlockGlowUnderline(),
-            if (compactYurubo && onMore != null)
-              _YuruboCardMenuButton(isWhite: isWhite, onTap: onMore!),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _YuruboCardMenuButton extends StatelessWidget {
-  const _YuruboCardMenuButton({required this.isWhite, required this.onTap});
-
-  final bool isWhite;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isWhite
-        ? const Color(0xFF6B5C82)
-        : const Color(0xFFC08BFF).withValues(alpha: .92);
-    return Positioned(
-      top: 8,
-      right: 8,
-      child: Semantics(
-        button: true,
-        label: 'ゆるぼメニュー',
-        child: CupertinoButton(
-          onPressed: onTap,
-          minimumSize: Size.zero,
-          padding: const EdgeInsets.all(8),
-          borderRadius: BorderRadius.circular(999),
-          child: Icon(CupertinoIcons.ellipsis, color: color, size: 26),
         ),
       ),
     );
@@ -152,39 +120,11 @@ class _YuruboCardBody extends StatelessWidget {
     final timeLabel = item.timeLabel.trim();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 48, 8),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _AvatarBubble(
-                avatar: item.avatar,
-                size: 28,
-                glowColor: item.accent,
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  item.userName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: primaryText,
-                    fontWeight: FontWeight.w900,
-                    height: 1.05,
-                  ),
-                ),
-              ),
-              if (item.ownedByMe) ...[
-                const SizedBox(width: 7),
-                _FeedPostKindBadge(kind: _FeedPostKind.mine, isWhite: isWhite),
-              ],
-            ],
-          ),
-          const SizedBox(height: 10),
           Wrap(
             spacing: 8,
             runSpacing: 8,
