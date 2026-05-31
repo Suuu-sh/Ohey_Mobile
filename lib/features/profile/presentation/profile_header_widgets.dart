@@ -536,8 +536,7 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.isWishLoading,
     required this.onEditProfileTap,
     required this.onCreateYuruboTap,
-    required this.onCreateWishTap,
-    required this.onWishToYuruboTap,
+    required this.onOpenWishListTap,
     required this.onAddFriendsTap,
   });
 
@@ -546,8 +545,7 @@ class _ProfileActivityHome extends StatelessWidget {
   final bool isWishLoading;
   final VoidCallback onEditProfileTap;
   final VoidCallback onCreateYuruboTap;
-  final VoidCallback onCreateWishTap;
-  final ValueChanged<WishItem> onWishToYuruboTap;
+  final VoidCallback onOpenWishListTap;
   final VoidCallback onAddFriendsTap;
 
   @override
@@ -571,8 +569,7 @@ class _ProfileActivityHome extends StatelessWidget {
           _ProfileWishListSection(
             wishItems: wishItems,
             isLoading: isWishLoading,
-            onCreateWishTap: onCreateWishTap,
-            onWishTap: onWishToYuruboTap,
+            onOpenTap: onOpenWishListTap,
           ),
           const SizedBox(height: 12),
           const _ProfileArchiveTopGlowLine(),
@@ -603,143 +600,93 @@ class _ProfileWishListSection extends StatelessWidget {
   const _ProfileWishListSection({
     required this.wishItems,
     required this.isLoading,
-    required this.onCreateWishTap,
-    required this.onWishTap,
+    required this.onOpenTap,
   });
 
   final List<WishItem> wishItems;
   final bool isLoading;
-  final VoidCallback onCreateWishTap;
-  final ValueChanged<WishItem> onWishTap;
+  final VoidCallback onOpenTap;
 
   @override
   Widget build(BuildContext context) {
+    final countLabel = isLoading && wishItems.isEmpty
+        ? '読み込み中'
+        : wishItems.isEmpty
+        ? 'まだありません'
+        : '${wishItems.length}件';
+    final preview = wishItems.take(3).map((wish) => wish.title).join('・');
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: .06),
-          borderRadius: BorderRadius.circular(26),
-          border: Border.all(color: Colors.white.withValues(alpha: .10)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'やりたいことリスト',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.3,
-                        ),
-                      ),
-                      SizedBox(height: 3),
-                      Text(
-                        '誘いの種をためておけます',
-                        style: TextStyle(
-                          color: _ProfileColors.sub,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onOpenTap,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: .06),
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: Colors.white.withValues(alpha: .10)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFC08BFF).withValues(alpha: .20),
                 ),
-                Ohey3DButton(
-                  label: '追加',
-                  icon: CupertinoIcons.plus,
-                  onTap: onCreateWishTap,
-                  height: 40,
-                  radius: 18,
-                  color: const Color(0xFFC08BFF),
-                  foregroundColor: const Color(0xFF101820),
-                  shadowColor: const Color(0xFF7F51C9),
-                  fontSize: 12,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (isLoading && wishItems.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Center(child: CupertinoActivityIndicator()),
-              )
-            else if (wishItems.isEmpty)
-              const Text(
-                '焼肉行きたい、サウナ行きたい、作業したい…をまず置いてみよう。',
-                style: TextStyle(
-                  color: _ProfileColors.sub,
-                  fontWeight: FontWeight.w800,
-                ),
-              )
-            else
-              SizedBox(
-                height: 88,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: wishItems.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: 10),
-                  itemBuilder: (context, index) {
-                    final wish = wishItems[index];
-                    return GestureDetector(
-                      onTap: () => onWishTap(wish),
-                      child: Container(
-                        width: 184,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFC08BFF).withValues(alpha: .22),
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(
-                            color: const Color(
-                              0xFFC08BFF,
-                            ).withValues(alpha: .42),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              wish.title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w900,
-                                height: 1.12,
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              wish.placeText.trim().isEmpty
-                                  ? 'タップしてゆるぼ化'
-                                  : wish.placeText,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: _ProfileColors.sub,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                child: const Icon(
+                  CupertinoIcons.sparkles,
+                  color: Color(0xFFC08BFF),
+                  size: 22,
                 ),
               ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'やりたいことリスト',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.3,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      preview.isEmpty ? '誘いの種をためておけます' : preview,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: _ProfileColors.sub,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                countLabel,
+                style: const TextStyle(
+                  color: Color(0xFFC08BFF),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Icon(
+                CupertinoIcons.chevron_right,
+                color: _ProfileColors.sub,
+                size: 18,
+              ),
+            ],
+          ),
         ),
       ),
     );

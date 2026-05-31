@@ -45,6 +45,7 @@ part 'profile_memory_widgets.dart';
 part 'profile_status_sheet.dart';
 part 'profile_settings_sheet.dart';
 part 'profile_form_helpers.dart';
+part 'profile_wish_list_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -166,17 +167,8 @@ class ProfileScreen extends ConsumerWidget {
                                     _showEditProfileSheet(context, ref, user),
                                 onCreateYuruboTap: () =>
                                     _showProfileCreateYuruboSheet(context, ref),
-                                onCreateWishTap: () =>
-                                    _showProfileCreateWishItemSheet(
-                                      context,
-                                      ref,
-                                    ),
-                                onWishToYuruboTap: (wish) =>
-                                    _showProfileCreateYuruboSheet(
-                                      context,
-                                      ref,
-                                      wish: wish,
-                                    ),
+                                onOpenWishListTap: () =>
+                                    _openProfileWishListScreen(context),
                                 onAddFriendsTap: () =>
                                     showFriendAddSheet(context, ref),
                               ),
