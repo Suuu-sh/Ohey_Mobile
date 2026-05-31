@@ -10,7 +10,26 @@ final yuruboRepositoryProvider = Provider<YuruboRepository>((ref) {
 
 abstract interface class YuruboRepository {
   Future<List<Yurubo>> fetchYurubos({int limit = 50});
+  Future<void> createYurubo(YuruboCreateDraft draft);
   Future<void> setReaction(String yuruboId, {required bool reacted});
+}
+
+class YuruboCreateDraft {
+  const YuruboCreateDraft({
+    required this.title,
+    this.category = 'other',
+    this.placeText = '',
+    this.timeLabel = '',
+    this.visibility = 'friends',
+    this.groupId,
+  });
+
+  final String title;
+  final String category;
+  final String placeText;
+  final String timeLabel;
+  final String visibility;
+  final String? groupId;
 }
 
 class BackendYuruboRepository implements YuruboRepository {
@@ -25,6 +44,18 @@ class BackendYuruboRepository implements YuruboRepository {
       query: {'limit': '$limit'},
     );
     return rows.map(_yuruboFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> createYurubo(YuruboCreateDraft draft) async {
+    await _client.post('/v1/yurubos', {
+      'title': draft.title,
+      'category': draft.category,
+      'place_text': draft.placeText,
+      'time_label': draft.timeLabel,
+      'visibility': draft.visibility,
+      if (draft.groupId != null) 'group_id': draft.groupId,
+    });
   }
 
   @override
@@ -63,6 +94,8 @@ Yurubo _yuruboFromRow(Map<String, dynamic> row) {
     placeText: ((row['place_text'] as String?) ?? '').trim(),
     timeLabel: ((row['time_label'] as String?) ?? '').trim(),
     status: ((row['status'] as String?) ?? 'open').trim(),
+    visibility: ((row['visibility'] as String?) ?? 'friends').trim(),
+    visibilityLabel: ((row['visibility_label'] as String?) ?? '全フレンズ').trim(),
     createdAt: createdAt,
     reactionCount: (row['reaction_count'] as num?)?.toInt() ?? 0,
     reactedByMe: (row['reacted_by_me'] as bool?) ?? false,

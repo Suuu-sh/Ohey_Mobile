@@ -96,8 +96,10 @@ class _YuruboCardBody extends StatelessWidget {
           Row(
             children: [
               _YuruboMetaChip(
-                icon: CupertinoIcons.hand_raised_fill,
-                label: item.ownedByMe ? '自分のゆるぼ' : 'ゆるぼ中',
+                icon: item.targetLabel == '全フレンズ'
+                    ? CupertinoIcons.person_2_fill
+                    : CupertinoIcons.person_3_fill,
+                label: item.targetLabel,
                 color: _feedPrimaryActionColor,
                 isWhite: isWhite,
               ),

@@ -12,6 +12,8 @@ class Yurubo {
     required this.placeText,
     required this.timeLabel,
     required this.status,
+    required this.visibility,
+    required this.visibilityLabel,
     required this.createdAt,
     required this.reactionCount,
     required this.reactedByMe,
@@ -27,6 +29,8 @@ class Yurubo {
   final String placeText;
   final String timeLabel;
   final String status;
+  final String visibility;
+  final String visibilityLabel;
   final DateTime createdAt;
   final int reactionCount;
   final bool reactedByMe;
@@ -42,6 +46,8 @@ class Yurubo {
     placeText: placeText,
     timeLabel: timeLabel,
     status: status,
+    visibility: visibility,
+    visibilityLabel: visibilityLabel,
     createdAt: createdAt,
     reactionCount: reactionCount ?? this.reactionCount,
     reactedByMe: reactedByMe ?? this.reactedByMe,

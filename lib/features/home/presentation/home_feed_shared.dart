@@ -90,6 +90,7 @@ class _FeedItem {
     this.photoAssetPath,
     this.captionY = .5,
     this.linkUrl = '',
+    this.targetLabel = '全フレンズ',
     this.friends = const <_Companion>[],
     required this.likes,
     required this.saved,
@@ -123,6 +124,9 @@ class _FeedItem {
       photoAssetPath: null,
       captionY: .5,
       linkUrl: '',
+      targetLabel: yurubo.visibilityLabel.isEmpty
+          ? '全フレンズ'
+          : yurubo.visibilityLabel,
       friends: const <_Companion>[],
       likes: yurubo.reactionCount,
       saved: false,
@@ -163,6 +167,7 @@ class _FeedItem {
   final String? photoAssetPath;
   final double captionY;
   final String linkUrl;
+  final String targetLabel;
   final List<_Companion> friends;
   final int likes;
   final bool saved;

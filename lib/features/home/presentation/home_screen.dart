@@ -36,6 +36,7 @@ import '../../friends/data/friend_repository.dart';
 import '../../friends/presentation/friends_screen.dart';
 import '../../memories/application/memory_controller.dart';
 import '../../yurubos/application/yurubo_controller.dart';
+import '../../yurubos/data/yurubo_repository.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../notifications/data/notification_repository.dart';
 import '../../profile/data/user_safety_repository.dart';
@@ -143,11 +144,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     icon: CupertinoIcons.plus_bubble_fill,
                     semanticLabel: 'ゆるぼする',
                     color: _FeedColors.teal,
-                    onTap: () => OheyToast.show(
-                      context,
-                      'ゆるぼ作成は準備中です',
-                      icon: CupertinoIcons.plus_bubble_fill,
-                    ),
+                    onTap: () => _showCreateYuruboSheet(context, ref),
                   ),
                   const SizedBox(width: 8),
                   OheyHeaderIconButton(

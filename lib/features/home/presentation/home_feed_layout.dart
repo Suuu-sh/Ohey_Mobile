@@ -354,3 +354,282 @@ Future<bool> _confirmUserSafetyAction(
   );
   return result ?? false;
 }
+
+Future<void> _showCreateYuruboSheet(BuildContext context, WidgetRef ref) async {
+  await showOheyBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (_) => _CreateYuruboSheet(ref: ref),
+  );
+}
+
+class _CreateYuruboSheet extends StatefulWidget {
+  const _CreateYuruboSheet({required this.ref});
+
+  final WidgetRef ref;
+
+  @override
+  State<_CreateYuruboSheet> createState() => _CreateYuruboSheetState();
+}
+
+class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
+  final _titleController = TextEditingController();
+  final _placeController = TextEditingController();
+  final _timeController = TextEditingController();
+  late Future<List<Map<String, dynamic>>> _groupsFuture;
+  String _visibility = 'friends';
+  String? _groupId;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _groupsFuture = widget.ref
+        .read(friendRepositoryProvider)
+        .fetchFriendGroups();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _placeController.dispose();
+    _timeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final title = _titleController.text.trim();
+    if (title.isEmpty || _saving) return;
+    if (_visibility == 'group' && (_groupId == null || _groupId!.isEmpty)) {
+      OheyToast.show(context, 'グループを選んでね');
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      await widget.ref
+          .read(yuruboControllerProvider.notifier)
+          .createYurubo(
+            YuruboCreateDraft(
+              title: title,
+              placeText: _placeController.text.trim(),
+              timeLabel: _timeController.text.trim(),
+              visibility: _visibility,
+              groupId: _visibility == 'group' ? _groupId : null,
+            ),
+          );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      OheyToast.show(context, 'ゆるぼしました', icon: CupertinoIcons.plus_bubble_fill);
+    } catch (_) {
+      if (mounted) OheyToast.show(context, 'ゆるぼできなかったよ。あとでもう一度試してね');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .62);
+    return OheyBottomSheetShell(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+      radius: 32,
+      child: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _groupsFuture,
+        builder: (context, snapshot) {
+          final groups = snapshot.data ?? const <Map<String, dynamic>>[];
+          if (_visibility == 'group' && _groupId == null && groups.isNotEmpty) {
+            _groupId =
+                (groups.first['row_id'] ?? groups.first['id']) as String?;
+          }
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: sub.withValues(alpha: .34),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '誰に募集する？',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: ink,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.6,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: _YuruboVisibilityChoice(
+                      label: '全フレンズ',
+                      selected: _visibility == 'friends',
+                      onTap: () => setState(() => _visibility = 'friends'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _YuruboVisibilityChoice(
+                      label: 'グループ',
+                      selected: _visibility == 'group',
+                      onTap: () => setState(() => _visibility = 'group'),
+                    ),
+                  ),
+                ],
+              ),
+              if (_visibility == 'group') ...[
+                const SizedBox(height: 12),
+                if (groups.isEmpty)
+                  Text(
+                    '先にフレンズ画面でグループを作ってね',
+                    style: TextStyle(color: sub, fontWeight: FontWeight.w800),
+                  )
+                else
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final group in groups)
+                        _YuruboGroupChip(
+                          label: (group['name'] as String?) ?? 'グループ',
+                          selected:
+                              _groupId ==
+                              ((group['row_id'] ?? group['id']) as String?),
+                          onTap: () => setState(
+                            () => _groupId =
+                                (group['row_id'] ?? group['id']) as String?,
+                          ),
+                        ),
+                    ],
+                  ),
+              ],
+              const SizedBox(height: 14),
+              _YuruboInput(
+                controller: _titleController,
+                placeholder: '今日夜、ご飯いける人いる？',
+              ),
+              const SizedBox(height: 10),
+              _YuruboInput(controller: _placeController, placeholder: '場所（任意）'),
+              const SizedBox(height: 10),
+              _YuruboInput(controller: _timeController, placeholder: 'いつ（任意）'),
+              const SizedBox(height: 16),
+              Ohey3DButton(
+                label: _saving ? '送信中...' : 'ゆるぼする',
+                icon: CupertinoIcons.plus_bubble_fill,
+                onTap: _saving ? null : _submit,
+                height: 50,
+                radius: 22,
+                color: _feedPrimaryActionColor,
+                foregroundColor: const Color(0xFF101820),
+                shadowColor: _feedPrimaryActionShadowColor,
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _YuruboVisibilityChoice extends StatelessWidget {
+  const _YuruboVisibilityChoice({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => Ohey3DButtonSurface(
+    onTap: onTap,
+    height: 46,
+    radius: 20,
+    color: selected ? _feedPrimaryActionColor : const Color(0xFF263348),
+    bottomColor: selected
+        ? _feedPrimaryActionShadowColor
+        : const Color(0xFF151D2A),
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    child: Center(
+      child: Text(
+        label,
+        style: TextStyle(
+          color: selected ? const Color(0xFF101820) : Colors.white,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    ),
+  );
+}
+
+class _YuruboGroupChip extends StatelessWidget {
+  const _YuruboGroupChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: (selected ? _FeedColors.teal : Colors.white).withValues(
+          alpha: selected ? .26 : .08,
+        ),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: _FeedColors.teal.withValues(alpha: selected ? .7 : .25),
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    ),
+  );
+}
+
+class _YuruboInput extends StatelessWidget {
+  const _YuruboInput({required this.controller, required this.placeholder});
+  final TextEditingController controller;
+  final String placeholder;
+  @override
+  Widget build(BuildContext context) => CupertinoTextField(
+    controller: controller,
+    placeholder: placeholder,
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: .08),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: Colors.white.withValues(alpha: .13)),
+    ),
+    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+    placeholderStyle: TextStyle(
+      color: Colors.white.withValues(alpha: .42),
+      fontWeight: FontWeight.w700,
+    ),
+  );
+}
