@@ -42,10 +42,10 @@ class _ProfileWishListScreen extends ConsumerWidget {
                         )
                       : ListView.separated(
                           physics: const BouncingScrollPhysics(),
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                          padding: const EdgeInsets.fromLTRB(0, 8, 0, 120),
                           itemCount: wishItems.length,
                           separatorBuilder: (context, index) =>
-                              const SizedBox(height: 12),
+                              const SizedBox.shrink(),
                           itemBuilder: (context, index) {
                             final wish = wishItems[index];
                             return _ProfileWishListCard(
@@ -196,67 +196,133 @@ class _ProfileWishListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final place = wish.placeText.trim();
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: .105),
-            Colors.white.withValues(alpha: .055),
+    return Semantics(
+      label: '${wish.title}のやりたいこと',
+      child: OheyThemedPanel(
+        accentColor: const Color(0xFFC08BFF),
+        backgroundColor: AppColors.darkBackground,
+        borderRadius: 0,
+        border: OheyThemedPanelBorder.horizontal,
+        borderWidth: 0,
+        borderAlpha: 0,
+        glowAlpha: 0,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (place.isNotEmpty) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: _ProfileWishMetaChip(
+                        icon: CupertinoIcons.location_fill,
+                        label: place,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  Text(
+                    wish.title,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      height: 1.18,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.55,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      OheyPostActionPill(
+                        semanticLabel: 'このやりたいことからゆるぼを作る',
+                        icon: CupertinoIcons.plus,
+                        label: 'ゆるぼを作る',
+                        color: const Color(0xFFC08BFF),
+                        isWhite: false,
+                        onTap: onYurubo,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const _ProfileWishBlockUnderline(),
           ],
         ),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white.withValues(alpha: .12)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .20),
-            blurRadius: 24,
-            offset: const Offset(0, 14),
+      ),
+    );
+  }
+}
+
+class _ProfileWishMetaChip extends StatelessWidget {
+  const _ProfileWishMetaChip({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    const color = Color(0xFFC08BFF);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: .22),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: .42)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: Colors.white),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                height: 1,
+              ),
+            ),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            wish.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 21,
-              height: 1.12,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.4,
-            ),
-          ),
-          if (place.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Text(
-              place,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: _ProfileColors.sub,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
+    );
+  }
+}
+
+class _ProfileWishBlockUnderline extends StatelessWidget {
+  const _ProfileWishBlockUnderline();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: IgnorePointer(
+        child: Container(
+          height: 1,
+          decoration: BoxDecoration(
+            color: const Color(0xFFC08BFF).withValues(alpha: .82),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFC08BFF).withValues(alpha: .58),
+                blurRadius: 9,
+                spreadRadius: .4,
               ),
-            ),
-          ],
-          const SizedBox(height: 16),
-          Ohey3DButton(
-            label: 'ゆるぼを作る',
-            onTap: onYurubo,
-            height: 48,
-            radius: 21,
-            color: const Color(0xFFC08BFF),
-            foregroundColor: const Color(0xFF101820),
-            shadowColor: const Color(0xFF7F51C9),
-            fontSize: 13,
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
