@@ -26,7 +26,7 @@ class _FriendsRefreshIndicator extends StatelessWidget {
             RefreshIndicatorMode.inactive || RefreshIndicatorMode.drag => '',
             RefreshIndicatorMode.armed ||
             RefreshIndicatorMode.refresh => '更新中...',
-            RefreshIndicatorMode.done => '更新しました',
+            RefreshIndicatorMode.done => '',
           };
 
     return SizedBox(
