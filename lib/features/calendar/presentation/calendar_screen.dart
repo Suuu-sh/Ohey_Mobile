@@ -1031,7 +1031,6 @@ class _CalendarFriendStatusList extends StatelessWidget {
           accent: AppColors.primaryAction,
           isWhite: isWhite,
           compact: compact,
-          onTap: openStatusSheet,
           trailing: _CalendarTinyPill(
             label: '$availableCount/${friends.length}',
             color: accent,
@@ -1077,7 +1076,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
                         const SizedBox(height: 4),
                       ],
                       Text(
-                        availableCount > 0 ? 'タップして誘えそうな人を見る' : '予定あり・未定が多そう',
+                        availableCount > 0 ? '見るボタンで誘えそうな人を見る' : '予定あり・未定が多そう',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
