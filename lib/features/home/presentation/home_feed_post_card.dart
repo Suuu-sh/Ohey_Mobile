@@ -72,7 +72,38 @@ class _FeedPostCard extends StatelessWidget {
               ],
             ),
             if (compactYurubo) const _YuruboBlockGlowUnderline(),
+            if (compactYurubo && onMore != null)
+              _YuruboCardMenuButton(isWhite: isWhite, onTap: onMore!),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _YuruboCardMenuButton extends StatelessWidget {
+  const _YuruboCardMenuButton({required this.isWhite, required this.onTap});
+
+  final bool isWhite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isWhite
+        ? const Color(0xFF6B5C82)
+        : const Color(0xFFC08BFF).withValues(alpha: .92);
+    return Positioned(
+      top: 8,
+      right: 8,
+      child: Semantics(
+        button: true,
+        label: 'ゆるぼメニュー',
+        child: CupertinoButton(
+          onPressed: onTap,
+          minimumSize: Size.zero,
+          padding: const EdgeInsets.all(8),
+          borderRadius: BorderRadius.circular(999),
+          child: Icon(CupertinoIcons.ellipsis, color: color, size: 26),
         ),
       ),
     );
