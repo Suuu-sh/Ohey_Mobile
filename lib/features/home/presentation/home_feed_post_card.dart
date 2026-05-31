@@ -84,25 +84,19 @@ class _YuruboBlockGlowUnderline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      left: 22,
-      right: 22,
-      bottom: -2,
+      left: 0,
+      right: 0,
+      bottom: 0,
       child: IgnorePointer(
         child: Container(
-          height: 4,
+          height: 1,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(999),
-            color: const Color(0xFFC08BFF),
+            color: const Color(0xFFC08BFF).withValues(alpha: .82),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFC08BFF).withValues(alpha: .86),
-                blurRadius: 14,
-                spreadRadius: 2,
-              ),
-              BoxShadow(
-                color: const Color(0xFFFF75D6).withValues(alpha: .38),
-                blurRadius: 28,
-                spreadRadius: 5,
+                color: const Color(0xFFC08BFF).withValues(alpha: .58),
+                blurRadius: 9,
+                spreadRadius: .4,
               ),
             ],
           ),
