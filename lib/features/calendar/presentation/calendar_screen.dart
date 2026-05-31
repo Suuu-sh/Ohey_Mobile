@@ -1135,7 +1135,7 @@ class _CalendarSectionSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final fillColors = isWhite
         ? [Colors.white, const Color(0xFFF7FBFF)]
-        : const [Color(0xFF050B13), Color(0xFF07101B)];
+        : const [AppColors.darkBackground, AppColors.darkBackground];
     final content = Container(
       width: double.infinity,
       height: double.infinity,
