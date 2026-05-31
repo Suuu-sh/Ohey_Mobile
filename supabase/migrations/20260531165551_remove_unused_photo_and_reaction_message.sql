@@ -28,10 +28,5 @@ alter table if exists public.memories
 alter table if exists public.yurubo_reactions
   drop column if exists message;
 
-delete from storage.buckets
-where id = 'ohey-photos'
-  and not exists (
-    select 1
-    from storage.objects
-    where bucket_id = 'ohey-photos'
-  );
+-- Keep the storage bucket record in place. Supabase protects storage table
+-- deletion in CI; orphan cleanup should use the Storage API separately.
