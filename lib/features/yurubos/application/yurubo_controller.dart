@@ -32,24 +32,52 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
     final index = current.indexWhere((item) => item.id == yuruboId);
     if (index < 0) return;
     final item = current[index];
-    final nextReacted = !item.reactedByMe;
-    final nextCount = (item.reactionCount + (nextReacted ? 1 : -1)).clamp(
-      0,
-      1 << 30,
+    await _setParticipation(
+      yuruboId,
+      reacted: !item.reactedByMe,
+      current: current,
+      index: index,
     );
-    state = AsyncData([
-      for (var i = 0; i < current.length; i++)
-        i == index
-            ? item.copyWith(reactionCount: nextCount, reactedByMe: nextReacted)
-            : current[i],
-    ]);
+  }
+
+  Future<void> participate(String yuruboId) async {
+    final current = state.asData?.value ?? const <Yurubo>[];
+    final index = current.indexWhere((item) => item.id == yuruboId);
+    if (index >= 0 && current[index].reactedByMe) return;
+    await _setParticipation(
+      yuruboId,
+      reacted: true,
+      current: current,
+      index: index,
+    );
+  }
+
+  Future<void> _setParticipation(
+    String yuruboId, {
+    required bool reacted,
+    required List<Yurubo> current,
+    required int index,
+  }) async {
+    if (index >= 0) {
+      final item = current[index];
+      final nextCount = (item.reactionCount + (reacted ? 1 : -1)).clamp(
+        0,
+        1 << 30,
+      );
+      state = AsyncData([
+        for (var i = 0; i < current.length; i++)
+          i == index
+              ? item.copyWith(reactionCount: nextCount, reactedByMe: reacted)
+              : current[i],
+      ]);
+    }
     try {
       await ref
           .read(yuruboRepositoryProvider)
-          .setReaction(yuruboId, reacted: nextReacted);
+          .setReaction(yuruboId, reacted: reacted);
       ref.invalidateSelf();
     } catch (_) {
-      state = AsyncData(current);
+      if (index >= 0) state = AsyncData(current);
       rethrow;
     }
   }

@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
+import '../../../core/config/backend_config.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
@@ -351,7 +352,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       '',
       item.id.isEmpty
           ? 'Oheyでチェックしよう'
-          : 'Oheyでチェック: app.ohey.com://yurubos/${item.id}',
+          : 'Oheyで参加: ${BackendConfig.baseUrl}/share/yurubos/${item.id}',
     ];
     return lines.where((line) => line.trim().isNotEmpty).join('\n');
   }
