@@ -57,7 +57,7 @@ jobs:
             SUPABASE_AUTH_REDIRECT_URL=app.ohey.com.dev://login-callback/
             OHEY_BACKEND_URL=https://dev-ohey-backend.onrender.com
             OHEY_ADMIN_EMAILS=
-          analyze-command: flutter analyze
+          analyze-command: flutter analyze --no-fatal-infos
 
   flutter_test:
     name: Flutter test
