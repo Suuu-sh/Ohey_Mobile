@@ -862,7 +862,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
                 child: Text(
                   reason,
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  overflow: TextOverflow.clip,
                   style: TextStyle(
                     color: isWhite
                         ? const Color(0xFF667381)
@@ -1272,7 +1272,7 @@ bool _isSameLocalDay(DateTime a, DateTime b) =>
 String _recommendationReasonFor(_DecoratedFriend item) {
   final friend = item.friend;
   if (friend.totalMemoryCount == 0) {
-    return 'まだ一緒に行ったことない';
+    return '初めて誘える';
   }
   if (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) {
     return '30日以上行ってない';
