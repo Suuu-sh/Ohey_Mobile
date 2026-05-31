@@ -17,6 +17,7 @@ import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_user.dart';
+import '../../../core/models/yurubo.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/ohey_theme_mode.dart';
 import '../../../core/widgets/ohey_avatar.dart';
@@ -34,6 +35,7 @@ import '../../friends/application/invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
 import '../../friends/presentation/friends_screen.dart';
 import '../../memories/application/memory_controller.dart';
+import '../../yurubos/application/yurubo_controller.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../notifications/data/notification_repository.dart';
 import '../../profile/data/user_safety_repository.dart';
@@ -84,9 +86,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final memoriesAsync = ref.watch(homeFeedControllerProvider);
+    final yurubosAsync = ref.watch(yuruboControllerProvider);
     final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
-    final user = ref.watch(oheyUserProvider);
     final incomingInvites =
         ref.watch(incomingInvitesProvider).asData?.value ??
         const <OheyInvite>[];
@@ -99,8 +100,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .auth
         .currentUser
         ?.id;
-    final feedItems = _mockYuruboItems(
-      user: user,
+    final yurubos = yurubosAsync.asData?.value ?? const <Yurubo>[];
+    final feedItems = _feedItemsFromYurubos(
+      yurubos,
       currentUserId: currentUserId,
     );
 
@@ -113,12 +115,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               topPadding: _feedHeaderScrollInset(context),
               items: feedItems,
               isWhite: isWhite,
-              isLoading: memoriesAsync.isLoading,
+              isLoading: yurubosAsync.isLoading,
               onPageChanged: _handleFeedPageChanged,
               onCreateYuruboPressed: () {},
               onLikePressed: (item) => ref
-                  .read(homeFeedControllerProvider.notifier)
-                  .toggleLike(item.id),
+                  .read(yuruboControllerProvider.notifier)
+                  .toggleInterested(item.id),
               onSharePressed: (item) => _shareFeedItem(context, item),
               showSwipeTutorial:
                   !_isFeedSwipeTutorialSeen && feedItems.length > 1,
@@ -194,9 +196,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _markFeedSwipeTutorialSeen();
     }
     final loadedCount =
-        ref.read(homeFeedControllerProvider).asData?.value.length ?? 0;
+        ref.read(yuruboControllerProvider).asData?.value.length ?? 0;
     if (loadedCount > 0 && index >= loadedCount - 3) {
-      ref.read(homeFeedControllerProvider.notifier).loadMore();
+      ref.invalidate(yuruboControllerProvider);
     }
   }
 
