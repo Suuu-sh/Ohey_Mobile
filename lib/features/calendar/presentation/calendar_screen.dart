@@ -1475,8 +1475,11 @@ class _CalendarFriendStatusSheetState
         .where((friend) => _calendarFriendIsAvailable(friend.statusKey))
         .length;
     final media = MediaQuery.of(context);
-    final contentHeight = (media.size.height * .80 - media.padding.bottom - 24)
-        .clamp(460.0, 680.0)
+    // Keep the fixed inner height comfortably below the sheet's max height.
+    // The shell adds its own handle/padding, so using nearly the same factor as
+    // maxHeightFactor can overflow by a few pixels on Dynamic Island devices.
+    final contentHeight = (media.size.height * .74 - media.padding.bottom - 28)
+        .clamp(420.0, 620.0)
         .toDouble();
     return OheyBottomSheetShell(
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
