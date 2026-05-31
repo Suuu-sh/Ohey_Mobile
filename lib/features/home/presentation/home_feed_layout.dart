@@ -263,8 +263,9 @@ class _FeedSectionEmptyState extends StatelessWidget {
         icon: CupertinoIcons.plus_bubble_fill,
         isWhite: isWhite,
         title: '最初のゆるぼを出そう',
-        message: 'ご飯・作業・サウナなど、LINEで送るほどでもない誘いを軽く置けます。',
+        message: 'ホームが静かな時は、Oheyが小さな募集ボードになります。ご飯・作業・サウナなどを軽く置いてみよう。',
         accent: _feedPrimaryActionColor,
+        hints: const ['今ひま？', '今度ここ行こ', '一緒に作業しよ'],
         action: SizedBox(
           width: 240,
           child: Ohey3DButton(

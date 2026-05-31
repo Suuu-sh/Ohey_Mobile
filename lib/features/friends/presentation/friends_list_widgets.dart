@@ -1595,9 +1595,9 @@ class _EmptyFriendsState extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     return OheyEmptyState(
       visual: _EmptyFriendsVisual(avatar: avatar),
-      title: message == 'フレンズがいません' ? '一緒に残すフレンズを追加しよう' : message,
+      title: message == 'フレンズがいません' ? 'ここにフレンズを呼ぼう' : message,
       message: message == 'フレンズがいません'
-          ? 'QRかIDでつながると、ゆるぼに反応したり誘いやすくなります。'
+          ? '「誰か誘いたいな」の相手が、ここに並びます。まずはQRかIDでひとり追加してみよう。'
           : subtitle,
       titleColor: isWhite ? AppColors.cFF1B2633 : AppColors.white,
       messageColor: isWhite
@@ -1605,6 +1605,9 @@ class _EmptyFriendsState extends StatelessWidget {
           : AppColors.white.withValues(alpha: .58),
       padding: EdgeInsets.zero,
       spacing: 14,
+      hints: message == 'フレンズがいません'
+          ? const ['ゆるぼに誘える', '空き状況が見える', '思い出を一緒に残せる']
+          : const ['フィルターを変えてみよう', 'グループは長押しで編集'],
       action: message == 'フレンズがいません'
           ? _EmptyFriendsActions(onAddFriend: onAddFriend)
           : null,

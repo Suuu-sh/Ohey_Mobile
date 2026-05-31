@@ -8,6 +8,7 @@ class _FeedEmptyState extends StatelessWidget {
     this.isWhite = false,
     this.accent = _FeedColors.teal,
     this.action,
+    this.hints = const [],
   });
 
   final IconData icon;
@@ -16,6 +17,7 @@ class _FeedEmptyState extends StatelessWidget {
   final bool isWhite;
   final Color accent;
   final Widget? action;
+  final List<String> hints;
 
   @override
   Widget build(BuildContext context) => OheyEmptyState(
@@ -26,6 +28,7 @@ class _FeedEmptyState extends StatelessWidget {
     messageColor: isWhite
         ? AppColors.cFF6E7783
         : AppColors.white.withValues(alpha: .55),
+    hints: hints,
     action: action,
   );
 }

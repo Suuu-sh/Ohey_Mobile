@@ -17,6 +17,7 @@ import '../../../core/theme/ohey_theme_mode.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
 import '../../../core/widgets/ohey_daily_status_3d_option.dart';
+import '../../../core/widgets/ohey_empty_state.dart';
 import '../../../core/widgets/ohey_friend_user_block.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
@@ -983,19 +984,20 @@ class _CalendarFriendStatusList extends StatelessWidget {
             accent: AppColors.primaryAction,
             isWhite: isWhite,
             compact: compact,
-            child: Center(
-              child: Text(
-                'フレンズを追加すると空き状況を確認できます',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: isWhite
-                      ? AppColors.cFF667381
-                      : AppColors.white.withValues(alpha: .62),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                ),
+            child: OheyEmptyState(
+              visual: OheyPopIcon(
+                icon: CupertinoIcons.calendar_badge_plus,
+                color: AppColors.primaryAction,
+                size: compact ? 36 : 44,
               ),
+              title: '予定を見るフレンズを追加しよう',
+              message: '追加すると、今日誘いやすい人や空き状況がカレンダーに並びます。',
+              titleColor: isWhite ? AppColors.cFF27313B : AppColors.white,
+              messageColor: isWhite
+                  ? AppColors.cFF667381
+                  : AppColors.white.withValues(alpha: .62),
+              padding: EdgeInsets.all(compact ? 12 : 18),
+              spacing: 10,
             ),
           );
         }
