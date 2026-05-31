@@ -89,6 +89,7 @@ class _FeedItem {
     required this.body,
     this.place = '',
     this.timeLabel = '',
+    this.startsAt,
     required this.avatar,
     required this.accent,
     this.linkUrl = '',
@@ -122,6 +123,7 @@ class _FeedItem {
       body: body,
       place: yurubo.placeText,
       timeLabel: yurubo.timeLabel,
+      startsAt: yurubo.startsAt,
       avatar: yurubo.avatar,
       accent: _accentForId(yurubo.id),
       linkUrl: '',
@@ -180,6 +182,7 @@ class _FeedItem {
   final String body;
   final String place;
   final String timeLabel;
+  final DateTime? startsAt;
   final OheyAvatar avatar;
   final Color accent;
   final String linkUrl;

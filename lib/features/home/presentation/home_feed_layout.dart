@@ -509,7 +509,7 @@ class _CreateYuruboSheet extends StatefulWidget {
 class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
   final _titleController = TextEditingController();
   final _placeController = TextEditingController();
-  final _timeController = TextEditingController();
+  DateTime? _selectedDate;
   late Future<List<Map<String, dynamic>>> _groupsFuture;
   String _visibility = 'friends';
   String? _groupId;
@@ -534,7 +534,6 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
   void dispose() {
     _titleController.dispose();
     _placeController.dispose();
-    _timeController.dispose();
     super.dispose();
   }
 
@@ -553,7 +552,10 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
             YuruboCreateDraft(
               title: title,
               placeText: _yuruboPlaceOrDefault(_placeController.text),
-              timeLabel: _yuruboTimeOrDefault(_timeController.text),
+              timeLabel: _yuruboTimeLabel(_selectedDate),
+              startsAt: _selectedDate == null
+                  ? null
+                  : _dateOnly(_selectedDate!),
               visibility: _visibility,
               groupId: _visibility == 'group' ? _groupId : null,
               wishItemId: _wishItemId,
@@ -735,9 +737,20 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
                 placeholder: '場所（未入力ならどこでも）',
               ),
               const SizedBox(height: 10),
-              _YuruboInput(
-                controller: _timeController,
-                placeholder: 'いつ（未入力ならいつでも）',
+              _YuruboDateOption(
+                selectedDate: _selectedDate,
+                onTap: () async {
+                  final picked = await _showYuruboDatePicker(
+                    context,
+                    _selectedDate,
+                  );
+                  if (picked != null && mounted) {
+                    setState(() => _selectedDate = picked);
+                  }
+                },
+                onClear: _selectedDate == null
+                    ? null
+                    : () => setState(() => _selectedDate = null),
               ),
               const SizedBox(height: 16),
               Ohey3DButton(
@@ -785,7 +798,7 @@ class _EditYuruboSheet extends StatefulWidget {
 class _EditYuruboSheetState extends State<_EditYuruboSheet> {
   late final TextEditingController _titleController;
   late final TextEditingController _placeController;
-  late final TextEditingController _timeController;
+  DateTime? _selectedDate;
   bool _saving = false;
 
   @override
@@ -793,14 +806,13 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
     super.initState();
     _titleController = TextEditingController(text: widget.item.body.trim());
     _placeController = TextEditingController(text: widget.item.place.trim());
-    _timeController = TextEditingController(text: widget.item.timeLabel.trim());
+    _selectedDate = widget.item.startsAt;
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _placeController.dispose();
-    _timeController.dispose();
     super.dispose();
   }
 
@@ -816,7 +828,10 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
             YuruboUpdateDraft(
               title: title,
               placeText: _yuruboPlaceOrDefault(_placeController.text),
-              timeLabel: _yuruboTimeOrDefault(_timeController.text),
+              timeLabel: _yuruboTimeLabel(_selectedDate),
+              startsAt: _selectedDate == null
+                  ? null
+                  : _dateOnly(_selectedDate!),
             ),
           );
       if (!mounted) return;
@@ -876,9 +891,20 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
             placeholder: '場所（未入力ならどこでも）',
           ),
           const SizedBox(height: 10),
-          _YuruboInput(
-            controller: _timeController,
-            placeholder: 'いつ（未入力ならいつでも）',
+          _YuruboDateOption(
+            selectedDate: _selectedDate,
+            onTap: () async {
+              final picked = await _showYuruboDatePicker(
+                context,
+                _selectedDate,
+              );
+              if (picked != null && mounted) {
+                setState(() => _selectedDate = picked);
+              }
+            },
+            onClear: _selectedDate == null
+                ? null
+                : () => setState(() => _selectedDate = null),
           ),
           const SizedBox(height: 16),
           Ohey3DButton(
@@ -902,9 +928,155 @@ String _yuruboPlaceOrDefault(String value) {
   return trimmed.isEmpty ? 'どこでも' : trimmed;
 }
 
-String _yuruboTimeOrDefault(String value) {
-  final trimmed = value.trim();
-  return trimmed.isEmpty ? 'いつでも' : trimmed;
+String _yuruboTimeLabel(DateTime? value) {
+  if (value == null) return 'いつでも';
+  final date = _dateOnly(value);
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final diff = date.difference(today).inDays;
+  return switch (diff) {
+    0 => '今日',
+    1 => '明日',
+    _ => '${date.month}/${date.day}(${_shortWeekday(date)})',
+  };
+}
+
+DateTime _dateOnly(DateTime value) =>
+    DateTime(value.year, value.month, value.day);
+
+String _shortWeekday(DateTime value) =>
+    const ['月', '火', '水', '木', '金', '土', '日'][value.weekday - 1];
+
+Future<DateTime?> _showYuruboDatePicker(
+  BuildContext context,
+  DateTime? selected,
+) async {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  var focused = _dateOnly(selected ?? today);
+  if (focused.isBefore(today)) focused = today;
+  return showOheyBottomSheet<DateTime>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: AppColors.black.withValues(alpha: .58),
+    builder: (_) => StatefulBuilder(
+      builder: (context, setModalState) => OheyBottomSheetShell(
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 18),
+        radius: 32,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'いつにする？',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+            ),
+            CalendarDatePicker(
+              initialDate: focused,
+              firstDate: today,
+              lastDate: today.add(const Duration(days: 365)),
+              onDateChanged: (date) =>
+                  setModalState(() => focused = _dateOnly(date)),
+            ),
+            Ohey3DButton(
+              label:
+                  '${focused.month}/${focused.day}(${_shortWeekday(focused)}) にする',
+              icon: CupertinoIcons.calendar_badge_plus,
+              onTap: () => Navigator.of(context).pop(focused),
+              height: 48,
+              radius: 22,
+              color: _feedPrimaryActionColor,
+              foregroundColor: AppColors.cFF101820,
+              shadowColor: _feedPrimaryActionShadowColor,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _YuruboDateOption extends StatelessWidget {
+  const _YuruboDateOption({
+    required this.selectedDate,
+    required this.onTap,
+    required this.onClear,
+  });
+
+  final DateTime? selectedDate;
+  final VoidCallback onTap;
+  final VoidCallback? onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = selectedDate == null
+        ? 'いつ（任意）'
+        : _yuruboTimeLabel(selectedDate);
+    final subLabel = selectedDate == null ? 'カレンダーで日程を設定' : 'タップして日程を変更';
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.white.withValues(alpha: .08),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.white.withValues(alpha: .13)),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              CupertinoIcons.calendar,
+              color: AppColors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subLabel,
+                    style: TextStyle(
+                      color: AppColors.white.withValues(alpha: .5),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (onClear != null)
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size.square(30),
+                onPressed: onClear,
+                child: Icon(
+                  CupertinoIcons.xmark_circle_fill,
+                  color: AppColors.white.withValues(alpha: .58),
+                  size: 21,
+                ),
+              )
+            else
+              Icon(
+                CupertinoIcons.chevron_down,
+                color: AppColors.white.withValues(alpha: .58),
+                size: 18,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _YuruboVisibilityChoice extends StatelessWidget {

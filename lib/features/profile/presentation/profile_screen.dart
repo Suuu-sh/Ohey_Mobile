@@ -63,8 +63,10 @@ class ProfileScreen extends ConsumerWidget {
     final wishItemsAsync = ref.watch(wishItemControllerProvider);
     final wishItems = wishItemsAsync.asData?.value ?? const <WishItem>[];
     final yurubosAsync = ref.watch(yuruboControllerProvider);
+    final today = _dateOnly(DateTime.now());
     final joinedYurubos = (yurubosAsync.asData?.value ?? const <Yurubo>[])
-        .where((yurubo) => yurubo.reactedByMe)
+        .where((yurubo) => yurubo.reactedByMe && yurubo.startsAt != null)
+        .where((yurubo) => _dateOnly(yurubo.startsAt!) == today)
         .toList(growable: false);
     final friends =
         ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
@@ -666,6 +668,9 @@ class _ProfileYuruboChoice extends StatelessWidget {
     ),
   );
 }
+
+DateTime _dateOnly(DateTime value) =>
+    DateTime(value.year, value.month, value.day);
 
 class _ProfileYuruboGroupChip extends StatelessWidget {
   const _ProfileYuruboGroupChip({
