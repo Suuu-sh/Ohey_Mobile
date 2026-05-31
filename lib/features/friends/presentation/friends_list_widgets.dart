@@ -18,8 +18,7 @@ class _FriendsRefreshIndicator extends StatelessWidget {
         state == RefreshIndicatorMode.refresh ||
         state == RefreshIndicatorMode.armed;
     final label = switch (state) {
-      RefreshIndicatorMode.inactive => '',
-      RefreshIndicatorMode.drag => progress >= 1 ? '離して更新' : '下に引っ張って更新',
+      RefreshIndicatorMode.inactive || RefreshIndicatorMode.drag => '',
       RefreshIndicatorMode.armed || RefreshIndicatorMode.refresh => '更新中...',
       RefreshIndicatorMode.done => '更新しました',
     };
@@ -66,15 +65,17 @@ class _FriendsRefreshIndicator extends StatelessWidget {
                         size: 16,
                       ),
                     ),
-                  const SizedBox(width: 8),
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      color: AppColors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
+                  if (label.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
