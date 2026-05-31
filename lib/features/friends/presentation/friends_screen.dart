@@ -412,9 +412,20 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     setState(() => _invitedFriendIds.add(friend.id));
   }
 
+  Future<void> _refreshFriends({required DateTime startedAt}) async {
+    HapticFeedback.lightImpact();
+    ref.invalidate(outgoingActiveInvitesProvider(null));
+    await Future.wait([
+      ref.refresh(friendsProvider.future),
+      ref.refresh(outgoingActiveInvitesProvider(null).future),
+    ]);
+    await _holdRefreshIndicatorUntilDone(startedAt);
+  }
+
   @override
   Widget build(BuildContext context) {
     final friendsAsync = ref.watch(friendsProvider);
+    final currentFriends = friendsAsync.value;
     final persistedInvitedFriendIds =
         ref
             .watch(outgoingActiveInvitesProvider(null))
@@ -505,39 +516,63 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                     ),
                     const SizedBox(height: 18),
                     Expanded(
-                      child: friendsAsync.when(
-                        loading: () =>
-                            const _LoadingState(label: 'フレンズを読み込み中...'),
-                        error: (error, stackTrace) => _ErrorState(
-                          title: '読み込めなかったよ。あとでもう一度試してね',
-                          message: '$error',
-                        ),
-                        data: (friends) => _FriendsList(
-                          friends: friends,
-                          onRefresh: () async {
-                            HapticFeedback.lightImpact();
-                            final startedAt = DateTime.now();
-                            ref.invalidate(friendsProvider);
-                            ref.invalidate(outgoingActiveInvitesProvider(null));
-                            await ref.read(friendsProvider.future);
-                            await _holdRefreshIndicatorUntilDone(startedAt);
-                          },
-                          userAvatar: user?.avatar ?? OheyAvatar.defaultAvatar,
-                          selectedFilter: _selectedFilter,
-                          selectedCustomFilter: selectedCustomFilter,
-                          favoriteOverrides: _favoriteOverrides,
-                          invitedFriendIds: invitedFriendIds,
-                          isSendingGroupInvite: _isSendingGroupInvite,
-                          onFavoriteToggle: (friend, isFavorite) =>
-                              _onToggleFavorite(context, friend, isFavorite),
-                          onAddFriend: _openAddFriend,
-                          onInvite: (friend) => _sendInvite(friend),
-                          onGroupInvite: _sendGroupInvites,
-                          onInviteAnimationComplete: _markInviteSent,
-                          onProfile: (friend, status) =>
-                              _openFriendProfile(friend, status),
-                        ),
-                      ),
+                      child: currentFriends == null
+                          ? friendsAsync.when(
+                              loading: () =>
+                                  const _LoadingState(label: 'フレンズを読み込み中...'),
+                              error: (error, stackTrace) => _ErrorState(
+                                title: '読み込めなかったよ。あとでもう一度試してね',
+                                message: '$error',
+                              ),
+                              data: (friends) => _FriendsList(
+                                friends: friends,
+                                onRefresh: () =>
+                                    _refreshFriends(startedAt: DateTime.now()),
+                                userAvatar:
+                                    user?.avatar ?? OheyAvatar.defaultAvatar,
+                                selectedFilter: _selectedFilter,
+                                selectedCustomFilter: selectedCustomFilter,
+                                favoriteOverrides: _favoriteOverrides,
+                                invitedFriendIds: invitedFriendIds,
+                                isSendingGroupInvite: _isSendingGroupInvite,
+                                onFavoriteToggle: (friend, isFavorite) =>
+                                    _onToggleFavorite(
+                                      context,
+                                      friend,
+                                      isFavorite,
+                                    ),
+                                onAddFriend: _openAddFriend,
+                                onInvite: (friend) => _sendInvite(friend),
+                                onGroupInvite: _sendGroupInvites,
+                                onInviteAnimationComplete: _markInviteSent,
+                                onProfile: (friend, status) =>
+                                    _openFriendProfile(friend, status),
+                              ),
+                            )
+                          : _FriendsList(
+                              friends: currentFriends,
+                              onRefresh: () =>
+                                  _refreshFriends(startedAt: DateTime.now()),
+                              userAvatar:
+                                  user?.avatar ?? OheyAvatar.defaultAvatar,
+                              selectedFilter: _selectedFilter,
+                              selectedCustomFilter: selectedCustomFilter,
+                              favoriteOverrides: _favoriteOverrides,
+                              invitedFriendIds: invitedFriendIds,
+                              isSendingGroupInvite: _isSendingGroupInvite,
+                              onFavoriteToggle: (friend, isFavorite) =>
+                                  _onToggleFavorite(
+                                    context,
+                                    friend,
+                                    isFavorite,
+                                  ),
+                              onAddFriend: _openAddFriend,
+                              onInvite: (friend) => _sendInvite(friend),
+                              onGroupInvite: _sendGroupInvites,
+                              onInviteAnimationComplete: _markInviteSent,
+                              onProfile: (friend, status) =>
+                                  _openFriendProfile(friend, status),
+                            ),
                     ),
                   ],
                 ),

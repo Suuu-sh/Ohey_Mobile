@@ -153,7 +153,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .auth
         .currentUser
         ?.id;
-    final yurubos = yurubosAsync.asData?.value ?? const <Yurubo>[];
+    final yurubos = yurubosAsync.value ?? const <Yurubo>[];
     final feedItems = _feedItemsFromYurubos(
       yurubos,
       currentUserId: currentUserId,
@@ -174,8 +174,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onRefresh: () async {
                 HapticFeedback.lightImpact();
                 final startedAt = DateTime.now();
-                ref.invalidate(yuruboControllerProvider);
-                await ref.read(yuruboControllerProvider.future);
+                final refreshedYurubos = await ref.refresh(
+                  yuruboControllerProvider.future,
+                );
+                refreshedYurubos.length;
                 await _holdRefreshIndicatorUntilDone(startedAt);
               },
               onLikePressed: (item) => ref
