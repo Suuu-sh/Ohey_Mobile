@@ -344,7 +344,7 @@ class _TodayInviteSection extends StatelessWidget {
             _TodayInviteEmpty(isWhite: isWhite)
           else
             SizedBox(
-              height: 178,
+              height: 142,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 520),
                 switchInCurve: Curves.easeOutBack,
@@ -796,7 +796,6 @@ class _TodayInviteCandidateCard extends StatelessWidget {
     final ink = item.status.enabled
         ? (isWhite ? AppColors.cFF101820 : AppColors.white)
         : (isWhite ? AppColors.cFF667381 : _FriendsColors.muted);
-    final reason = _recommendationReasonFor(item);
     return OheyThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
       accentColor: frameAccent,
@@ -842,36 +841,6 @@ class _TodayInviteCandidateCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     _CompactStatusPill(status: item.status),
                   ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                CupertinoIcons.clock_fill,
-                size: 13,
-                color: isWhite
-                    ? AppColors.cFF667381
-                    : AppColors.white.withValues(alpha: .54),
-              ),
-              const SizedBox(width: 5),
-              Expanded(
-                child: Text(
-                  reason,
-                  maxLines: 1,
-                  overflow: TextOverflow.clip,
-                  style: TextStyle(
-                    color: isWhite
-                        ? AppColors.cFF667381
-                        : AppColors.white.withValues(alpha: .68),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    height: 1.25,
-                    letterSpacing: -.2,
-                  ),
                 ),
               ),
             ],
@@ -1268,23 +1237,6 @@ String _groupScheduleNote(List<_DecoratedFriend> friends) {
 
 bool _isSameLocalDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
-
-String _recommendationReasonFor(_DecoratedFriend item) {
-  final friend = item.friend;
-  if (friend.totalMemoryCount == 0) {
-    return '初めて誘える';
-  }
-  if (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) {
-    return '30日以上行ってない';
-  }
-  if (friend.statusKey == 'available') {
-    return '今日遊べそう';
-  }
-  if (friend.statusKey == 'maybe_available') {
-    return 'たぶん空いてそう';
-  }
-  return '誘って大丈夫そう';
-}
 
 bool _isRecommendedFriend(_DecoratedFriend item) {
   final friend = item.friend;
