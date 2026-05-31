@@ -318,7 +318,11 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _FriendProfileTopBackdrop(friend: widget.friend, avatar: avatar),
+              _FriendProfileTopBackdrop(
+                friend: widget.friend,
+                avatar: avatar,
+                onActionMenu: _busyAction == null ? _openActionMenu : null,
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
@@ -346,34 +350,14 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
               const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Ohey3DButton.secondary(
-                        label: _busyAction == null ? '操作メニュー' : '処理中',
-                        icon: CupertinoIcons.ellipsis_circle,
-                        onTap: _busyAction == null ? _openActionMenu : null,
-                        height: 48,
-                        radius: 22,
-                        color: const Color(0xFF203247),
-                        foregroundColor: const Color(0xFF65D6FF),
-                        shadowColor: const Color(0xFF111C2B),
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Ohey3DButton.secondary(
-                        label: '閉じる',
-                        onTap: () => Navigator.of(context).pop(),
-                        height: 48,
-                        radius: 22,
-                        color: const Color(0xFF252044),
-                        foregroundColor: const Color(0xFFC08BFF),
-                        shadowColor: const Color(0xFF15142C),
-                      ),
-                    ),
-                  ],
+                child: Ohey3DButton.secondary(
+                  label: '閉じる',
+                  onTap: () => Navigator.of(context).pop(),
+                  height: 48,
+                  radius: 22,
+                  color: const Color(0xFF252044),
+                  foregroundColor: const Color(0xFFC08BFF),
+                  shadowColor: const Color(0xFF15142C),
                 ),
               ),
               const SizedBox(height: 16),
@@ -576,10 +560,15 @@ class _FriendReportReasonSheet extends StatelessWidget {
 }
 
 class _FriendProfileTopBackdrop extends StatelessWidget {
-  const _FriendProfileTopBackdrop({required this.friend, required this.avatar});
+  const _FriendProfileTopBackdrop({
+    required this.friend,
+    required this.avatar,
+    required this.onActionMenu,
+  });
 
   final OheyFriend friend;
   final OheyAvatar avatar;
+  final VoidCallback? onActionMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -591,6 +580,19 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           _FriendProfileHeaderBackdrop(avatar: avatar),
+          Positioned(
+            right: 16,
+            top: topPadding + 8,
+            child: Opacity(
+              opacity: onActionMenu == null ? .42 : 1,
+              child: OheyHeaderIconButton(
+                icon: CupertinoIcons.gear_solid,
+                semanticLabel: '操作メニュー',
+                color: const Color(0xFF65D6FF),
+                onTap: onActionMenu ?? () {},
+              ),
+            ),
+          ),
           Padding(
             padding: EdgeInsets.fromLTRB(
               OheyPageHeader.horizontalPadding,
