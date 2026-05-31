@@ -614,10 +614,7 @@ class _GroupScheduleCardsStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isSingle = suggestions.length == 1;
-        final cardWidth = isSingle
-            ? constraints.maxWidth
-            : (constraints.maxWidth - 12) / 2;
+        final cardWidth = (constraints.maxWidth - 12) / 2;
         return ListView.separated(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
@@ -633,7 +630,7 @@ class _GroupScheduleCardsStrip extends StatelessWidget {
             builder: (context, value, child) {
               final squeeze = 1 - value;
               return Transform.scale(
-                scaleX: 1 + squeeze * (isSingle ? .10 : .18),
+                scaleX: 1 + squeeze * .18,
                 scaleY: 1 - squeeze * .08,
                 alignment: Alignment.center,
                 child: Opacity(opacity: value.clamp(0, 1), child: child),
