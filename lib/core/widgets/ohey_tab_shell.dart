@@ -1,3 +1,4 @@
+// ignore_for_file: unused_element
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -6,17 +7,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/calendar/presentation/calendar_screen.dart';
-import '../../features/camera/presentation/ohey_camera_screen.dart';
 import '../../features/friends/application/invite_controller.dart';
 import '../../features/friends/data/friend_repository.dart';
 import '../../features/friends/presentation/friends_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/memories/application/memory_controller.dart';
-import '../../features/memories/presentation/add_memory_screen.dart';
 import '../../features/notifications/application/notification_controller.dart';
 import '../../features/notifications/application/os_notification_service.dart';
 import '../../features/profile/presentation/profile_screen.dart';
@@ -122,19 +120,10 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   };
 
   List<Widget> get _pages => [
-    OheyToastAccent(
-      color: _feedAccentColor,
-      child: HomeScreen(onAddMemoryPressed: _openMemoryFlow),
-    ),
+    OheyToastAccent(color: _feedAccentColor, child: HomeScreen()),
     const OheyToastAccent(color: _friendsAccentColor, child: FriendsScreen()),
-    OheyToastAccent(
-      color: _calendarAccentColor,
-      child: CalendarScreen(onAddMemoryPressed: _openMemoryFlow),
-    ),
-    OheyToastAccent(
-      color: _profileAccentColor,
-      child: ProfileScreen(onAddMemoryPressed: _openMemoryFlow),
-    ),
+    OheyToastAccent(color: _calendarAccentColor, child: CalendarScreen()),
+    OheyToastAccent(color: _profileAccentColor, child: ProfileScreen()),
   ];
 
   void _selectTab(int index) {
@@ -158,7 +147,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
         if (showToast) {
           OheyToast.show(
             context,
-            'フィードを更新しました',
+            'ゆるぼを更新しました',
             icon: CupertinoIcons.arrow_clockwise,
           );
         }
@@ -181,7 +170,6 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
 
   void _refreshFeedOnOpen() {
     ref.invalidate(homeFeedControllerProvider);
-    ref.invalidate(memoryControllerProvider);
     ref.invalidate(friendsProvider);
     ref.invalidate(notificationControllerProvider);
   }
@@ -191,95 +179,6 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     ref.invalidate(pendingFriendRequestsProvider);
     ref.invalidate(incomingInvitesProvider);
     ref.invalidate(notificationControllerProvider);
-  }
-
-  Future<void> _openMemoryFlow() async {
-    final action = await showOheyBottomSheet<_MemoryStartAction>(
-      context: context,
-      useSafeArea: true,
-      barrierColor: Colors.black.withValues(alpha: .58),
-      builder: (_) => OheyToastAccent(
-        color: _selectedToastAccentColor,
-        child: const _MemoryStartSheet(),
-      ),
-    );
-    if (!mounted || action == null) return;
-
-    switch (action) {
-      case _MemoryStartAction.camera:
-        await _openCameraMemoryFlow();
-      case _MemoryStartAction.noPhoto:
-        final openCalendar = await Navigator.of(context).push<bool>(
-          CupertinoPageRoute(
-            builder: (_) => OheyToastAccent(
-              color: _selectedToastAccentColor,
-              child: const AddMemoryScreen(),
-            ),
-          ),
-        );
-        if (!mounted) return;
-        if (openCalendar != null) {
-          _refreshFeedOnOpen();
-        }
-        if (openCalendar == true) {
-          setState(() => _selectedIndex = 2);
-        }
-      case _MemoryStartAction.gallery:
-        await _openGalleryMemoryFlow();
-    }
-  }
-
-  Future<void> _openCameraMemoryFlow() async {
-    final result = await Navigator.of(context).push<OheyCameraResult>(
-      CupertinoPageRoute(
-        fullscreenDialog: true,
-        builder: (_) => OheyToastAccent(
-          color: _selectedToastAccentColor,
-          child: const OheyCameraScreen(),
-        ),
-      ),
-    );
-    if (!mounted || result == null) return;
-
-    final openCalendar = await Navigator.of(context).push<bool>(
-      CupertinoPageRoute(
-        builder: (_) => OheyToastAccent(
-          color: _selectedToastAccentColor,
-          child: AddMemoryScreen(initialPhotoPath: result.path),
-        ),
-      ),
-    );
-    if (!mounted) return;
-    if (openCalendar != null) {
-      _refreshFeedOnOpen();
-    }
-    if (openCalendar == true) {
-      setState(() => _selectedIndex = 2);
-    }
-  }
-
-  Future<void> _openGalleryMemoryFlow() async {
-    final picked = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 92,
-    );
-    if (!mounted || picked == null) return;
-
-    final openCalendar = await Navigator.of(context).push<bool>(
-      CupertinoPageRoute(
-        builder: (_) => OheyToastAccent(
-          color: _selectedToastAccentColor,
-          child: AddMemoryScreen(initialPhotoPath: picked.path),
-        ),
-      ),
-    );
-    if (!mounted) return;
-    if (openCalendar != null) {
-      _refreshFeedOnOpen();
-    }
-    if (openCalendar == true) {
-      setState(() => _selectedIndex = 2);
-    }
   }
 
   void _handleIncomingInvites(List<OheyInvite> invites) {
@@ -529,7 +428,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
               children: [
                 _TabItem(
                   customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
-                  label: 'フィード',
+                  label: 'ゆるぼ',
                   selected: _selectedIndex == 0,
                   activeColor: const Color(0xFF8A62FF),
                   onTap: () => _selectTab(0),
@@ -711,175 +610,6 @@ class _SheetInlineError extends StatelessWidget {
           fontSize: 13,
           fontWeight: FontWeight.w900,
           height: 1.25,
-        ),
-      ),
-    );
-  }
-}
-
-enum _MemoryStartAction { camera, noPhoto, gallery }
-
-class _MemoryStartSheet extends StatelessWidget {
-  const _MemoryStartSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
-    final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .62);
-
-    return OheyBottomSheetShell(
-      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
-      radius: 32,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 44,
-              height: 5,
-              decoration: BoxDecoration(
-                color: sub.withValues(alpha: .34),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'どう残しますか？',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: ink,
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.6,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '写真なしでも、あとからでも思い出を残せます。',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: sub,
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              height: 1.35,
-            ),
-          ),
-          const SizedBox(height: 18),
-          _MemoryStartTile(
-            icon: CupertinoIcons.camera_fill,
-            color: AppColors.primaryAction,
-            title: '写真を撮って残す',
-            subtitle: '今の一杯を撮影して投稿',
-            onTap: () => Navigator.of(context).pop(_MemoryStartAction.camera),
-          ),
-          const SizedBox(height: 10),
-          _MemoryStartTile(
-            icon: CupertinoIcons.text_badge_plus,
-            color: AppColors.invite,
-            title: '写真なしで残す',
-            subtitle: '場所・フレンズ・コメントだけで記録',
-            onTap: () => Navigator.of(context).pop(_MemoryStartAction.noPhoto),
-          ),
-          const SizedBox(height: 10),
-          _MemoryStartTile(
-            icon: CupertinoIcons.photo_on_rectangle,
-            color: AppColors.info,
-            title: '過去の写真から残す',
-            subtitle: 'ライブラリの写真を使って投稿',
-            onTap: () => Navigator.of(context).pop(_MemoryStartAction.gallery),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MemoryStartTile extends StatelessWidget {
-  const _MemoryStartTile({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
-    final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .58);
-    return Semantics(
-      button: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          HapticFeedback.selectionClick();
-          onTap();
-        },
-        child: Container(
-          height: 72,
-          padding: const EdgeInsets.fromLTRB(14, 0, 12, 0),
-          decoration: BoxDecoration(
-            color: isWhite ? const Color(0xFFF6F8FA) : AppColors.darkBackground,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: isWhite
-                  ? const Color(0xFFE0E6ED)
-                  : Colors.white.withValues(alpha: .12),
-            ),
-          ),
-          child: Row(
-            children: [
-              OheyPopIcon(icon: icon, color: color, size: 46, iconSize: 25),
-              const SizedBox(width: 13),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: ink,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.2,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: sub,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        height: 1.25,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              OheyGeneratedIcon(
-                CupertinoIcons.chevron_right,
-                color: sub,
-                size: 22,
-              ),
-            ],
-          ),
         ),
       ),
     );

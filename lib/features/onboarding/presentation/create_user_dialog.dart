@@ -138,7 +138,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         backgroundColor: AppColors.darkBackground,
         body: SafeArea(
           child: AnimatedSwitcher(

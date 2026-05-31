@@ -70,8 +70,8 @@ String oheyFriendStatusLabel(int count) {
 }
 
 String oheyFriendStatusMessage(OheyFriend friend, int count) {
-  if (count == 0) return '${friend.name}と思い出を増やす？';
-  if (count <= 2) return '${friend.name}と思い出が増えてきたね。';
-  if (count <= 5) return '${friend.name}との思い出、増えてるよ。';
+  if (count == 0) return '${friend.name}とゆるぼを増やす？';
+  if (count <= 2) return '${friend.name}とゆるぼが増えてきたね。';
+  if (count <= 5) return '${friend.name}とのゆるぼ、増えてるよ。';
   return '${friend.name}とは今月かなり仲良し。';
 }

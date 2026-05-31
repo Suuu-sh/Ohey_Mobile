@@ -27,6 +27,7 @@ class OheyFriendUserBlock extends StatelessWidget {
     this.showInvite = false,
     this.inviteAvailable = true,
     this.inviteSent = false,
+    this.invitePressed = false,
     this.onInviteAnimationComplete,
     this.compact = false,
   });
@@ -44,6 +45,7 @@ class OheyFriendUserBlock extends StatelessWidget {
   final bool showInvite;
   final bool inviteAvailable;
   final bool inviteSent;
+  final bool invitePressed;
   final VoidCallback? onInviteAnimationComplete;
   final bool compact;
 
@@ -89,7 +91,7 @@ class OheyFriendUserBlock extends StatelessWidget {
             ? (isWhite ? .09 : .18)
             : (isWhite ? .035 : .06),
         glowBlur: 24,
-        glowOffset: const Offset(0, 8),
+        glowOffset: Offset.zero,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -176,7 +178,7 @@ class OheyFriendUserBlock extends StatelessWidget {
                               )
                             : null,
                         enabled: inviteEnabled,
-                        forcePressed: inviteSent,
+                        forcePressed: inviteSent || invitePressed,
                         height: 36,
                         radius: 18,
                         color: inviteButtonColor,

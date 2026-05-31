@@ -71,19 +71,11 @@ BoxDecoration _feedCardDecoration({required double radius}) => BoxDecoration(
   ],
 );
 
-List<_FeedItem> _feedItems(
-  List<Memory> memories, {
-  OheyUser? user,
+List<_FeedItem> _feedItemsFromYurubos(
+  List<Yurubo> yurubos, {
   String? currentUserId,
-}) => memories
-    .map(
-      (memory) => _FeedItem.fromMemory(
-        memory,
-        user: user,
-        currentUserId: currentUserId,
-      ),
-    )
-    .where((item) => item.displayable)
+}) => yurubos
+    .map((yurubo) => _FeedItem.fromYurubo(yurubo, currentUserId: currentUserId))
     .toList(growable: false);
 
 class _FeedItem {
@@ -93,11 +85,13 @@ class _FeedItem {
     required this.timeAgo,
     required this.body,
     this.place = '',
+    this.timeLabel = '',
     required this.avatar,
     required this.accent,
     this.photoAssetPath,
     this.captionY = .5,
     this.linkUrl = '',
+    this.targetLabel = '全フレンズ',
     this.friends = const <_Companion>[],
     required this.likes,
     required this.saved,
@@ -113,69 +107,64 @@ class _FeedItem {
     this.canDelete = false,
   });
 
-  factory _FeedItem.fromMemory(
-    Memory memory, {
-    OheyUser? user,
-    String? currentUserId,
-  }) {
-    final accent = _accentForId(memory.id);
-    final ownerName = memory.ownerDisplayName.trim();
+  factory _FeedItem.fromYurubo(Yurubo yurubo, {String? currentUserId}) {
     final isOwnedByCurrentUser =
         currentUserId?.isNotEmpty == true &&
-        memory.ownerUserId == currentUserId;
-    final backendAuthorName = memory.feedAuthorName.trim();
-    final authorName = backendAuthorName.isNotEmpty
-        ? backendAuthorName
-        : ownerName.isNotEmpty
-        ? ownerName
-        : (isOwnedByCurrentUser && user?.name.trim().isNotEmpty == true)
-        ? user!.name.trim()
-        : user?.userId ?? 'ohey_user';
-    final avatar = memory.isOfficial
-        ? OheyAvatar.adminAvatar
-        : memory.ownerAvatar ??
-              (isOwnedByCurrentUser ? user?.avatar : null) ??
-              OheyAvatar.defaultAvatar;
+        yurubo.ownerUserId == currentUserId;
+    final body = yurubo.title.trim().isNotEmpty
+        ? yurubo.title.trim()
+        : yurubo.body.trim();
     return _FeedItem(
-      id: memory.id,
-      userName: memory.isOfficial ? 'Ohey' : authorName,
-      timeAgo: _relativeTime(memory.date),
-      body: memory.memo.trim(),
-      place: memory.place.trim(),
-      avatar: avatar,
-      accent: accent,
-      photoAssetPath: memory.photoAssetPath,
-      captionY: memory.captionY,
-      linkUrl: memory.linkUrl ?? '',
-      friends: memory.friends.map(_Companion.fromFriend).toList(),
-      likes: memory.likeCount,
-      saved: memory.id.hashCode.isEven,
-      liked: memory.likedByMe,
-      prop: _PostProp.memory,
-      tilt: memory.feedTilt ?? (memory.id.hashCode.isEven ? -.08 : .08),
-      ownerUserId: memory.ownerUserId,
-      ownedByMe: memory.feedPostKind == 'mine' || isOwnedByCurrentUser,
-      isOfficial: memory.feedPostKind == 'official' || memory.isOfficial,
-      sparkles: const [
-        Offset(12, 18),
-        Offset(54, 2),
-        Offset(118, 26),
-        Offset(28, 66),
+      id: yurubo.id,
+      userName: yurubo.userName,
+      timeAgo: _relativeTime(yurubo.createdAt),
+      body: body,
+      place: yurubo.placeText,
+      timeLabel: yurubo.timeLabel,
+      avatar: yurubo.avatar,
+      accent: _accentForId(yurubo.id),
+      photoAssetPath: null,
+      captionY: .5,
+      linkUrl: '',
+      targetLabel: yurubo.visibilityLabel.isEmpty
+          ? '全フレンズ'
+          : yurubo.visibilityLabel,
+      friends: [
+        for (final participant in yurubo.participants)
+          _Companion(
+            userId: participant.userId,
+            name: participant.name,
+            handle: participant.handle,
+            avatar: participant.avatar,
+            accent: _accentForId(participant.userId),
+            statusKey: null,
+          ),
       ],
-      displayable:
-          memory.feedDisplayable &&
-          (memory.isOfficial ||
-              _isDisplayablePostPhoto(memory.photoAssetPath) ||
-              memory.feedPostKind == 'official'),
-      canReport: memory.feedCanReport,
-      canDelete: memory.feedCanDelete,
+      likes: yurubo.reactionCount,
+      saved: false,
+      liked: yurubo.reactedByMe,
+      prop: _PostProp.memory,
+      tilt: 0,
+      ownerUserId: yurubo.ownerUserId,
+      ownedByMe: isOwnedByCurrentUser,
+      isOfficial: false,
+      sparkles: const <Offset>[],
+      displayable: true,
+      canReport: !isOwnedByCurrentUser,
+      canDelete: isOwnedByCurrentUser,
     );
   }
 
   bool matches(String query) {
     final normalized = query.trim().toLowerCase();
     if (normalized.isEmpty) return true;
-    final searchable = [userName, timeAgo, body, place].join(' ').toLowerCase();
+    final searchable = [
+      userName,
+      timeAgo,
+      body,
+      place,
+      timeLabel,
+    ].join(' ').toLowerCase();
     return searchable.contains(normalized);
   }
 
@@ -191,11 +180,13 @@ class _FeedItem {
   final String timeAgo;
   final String body;
   final String place;
+  final String timeLabel;
   final OheyAvatar avatar;
   final Color accent;
   final String? photoAssetPath;
   final double captionY;
   final String linkUrl;
+  final String targetLabel;
   final List<_Companion> friends;
   final int likes;
   final bool saved;
@@ -224,15 +215,6 @@ class _Companion {
     required this.accent,
     required this.statusKey,
   });
-
-  factory _Companion.fromFriend(OheyFriend friend) => _Companion(
-    userId: friend.id,
-    name: friend.name,
-    handle: friend.vibe,
-    avatar: friend.avatar ?? OheyAvatar.defaultAvatar,
-    accent: friend.accentColor,
-    statusKey: friend.statusKey,
-  );
 
   final String userId;
   final String name;

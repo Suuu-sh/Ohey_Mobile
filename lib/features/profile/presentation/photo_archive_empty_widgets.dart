@@ -63,8 +63,8 @@ class _ArchiveEmptyState extends StatelessWidget {
         size: 42,
       ),
     ),
-    title: '思い出アルバムを育てよう',
-    message: '写真の思い出が増えたら、ここがアルバムになるよ。',
+    title: 'ゆるぼアルバムを育てよう',
+    message: '写真のゆるぼが増えたら、ここがアルバムになるよ。',
     titleColor: isWhite ? const Color(0xFF101820) : Colors.white,
     messageColor: isWhite ? const Color(0xFF7A8490) : Colors.white60,
     padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -143,7 +143,7 @@ String _archiveTitle(Memory memory) {
   if (place.isNotEmpty) return place;
   final memo = memory.memo.trim();
   if (memo.isNotEmpty) return memo;
-  return '思い出';
+  return 'ゆるぼ';
 }
 
 String _archiveDate(DateTime date) =>

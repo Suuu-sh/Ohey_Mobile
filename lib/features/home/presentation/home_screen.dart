@@ -12,12 +12,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
-import '../../../core/models/memory.dart';
 import '../../../core/models/ohey_avatar.dart';
-import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/ohey_friend.dart';
+import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/wish_item.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_user.dart';
+import '../../../core/models/yurubo.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/ohey_theme_mode.dart';
 import '../../../core/widgets/ohey_avatar.dart';
@@ -35,6 +36,9 @@ import '../../friends/application/invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
 import '../../friends/presentation/friends_screen.dart';
 import '../../memories/application/memory_controller.dart';
+import '../../yurubos/application/yurubo_controller.dart';
+import '../../yurubos/data/yurubo_repository.dart';
+import '../../wish_items/application/wish_item_controller.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../notifications/data/notification_repository.dart';
 import '../../profile/data/user_safety_repository.dart';
@@ -49,10 +53,50 @@ part 'home_feed_post_card.dart';
 part 'home_notifications.dart';
 part 'home_feed_shared.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key, this.onAddMemoryPressed});
+class _FeedCreateYuruboFab extends StatelessWidget {
+  const _FeedCreateYuruboFab({required this.onTap});
 
-  final VoidCallback? onAddMemoryPressed;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      right: 18,
+      bottom: MediaQuery.paddingOf(context).bottom + 22,
+      child: Semantics(
+        button: true,
+        label: 'ゆるぼする',
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _FeedColors.teal,
+              boxShadow: [
+                BoxShadow(
+                  color: _FeedColors.teal.withValues(alpha: .30),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: const Icon(
+              CupertinoIcons.plus,
+              color: Color(0xFF101820),
+              size: 31,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class HomeScreen extends ConsumerStatefulWidget {
+  const HomeScreen({super.key});
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -87,9 +131,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final memoriesAsync = ref.watch(homeFeedControllerProvider);
+    final yurubosAsync = ref.watch(yuruboControllerProvider);
     final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
-    final user = ref.watch(oheyUserProvider);
     final incomingInvites =
         ref.watch(incomingInvitesProvider).asData?.value ??
         const <OheyInvite>[];
@@ -102,10 +145,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .auth
         .currentUser
         ?.id;
-    final memories = memoriesAsync.asData?.value ?? const <Memory>[];
-    final feedItems = _feedItems(
-      memories,
-      user: user,
+    final yurubos = yurubosAsync.asData?.value ?? const <Yurubo>[];
+    final feedItems = _feedItemsFromYurubos(
+      yurubos,
       currentUserId: currentUserId,
     );
 
@@ -118,12 +160,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               topPadding: _feedHeaderScrollInset(context),
               items: feedItems,
               isWhite: isWhite,
-              isLoading: memoriesAsync.isLoading,
+              isLoading: yurubosAsync.isLoading,
               onPageChanged: _handleFeedPageChanged,
-              onAddMemoryPressed: widget.onAddMemoryPressed ?? () {},
+              onCreateYuruboPressed: () => _showCreateYuruboSheet(context, ref),
+              onRefresh: () async {
+                HapticFeedback.lightImpact();
+                ref.invalidate(yuruboControllerProvider);
+                await ref.read(yuruboControllerProvider.future);
+              },
               onLikePressed: (item) => ref
-                  .read(homeFeedControllerProvider.notifier)
-                  .toggleLike(item.id),
+                  .read(yuruboControllerProvider.notifier)
+                  .toggleParticipation(item.id),
               onSharePressed: (item) => _shareFeedItem(context, item),
               showSwipeTutorial:
                   !_isFeedSwipeTutorialSeen && feedItems.length > 1,
@@ -135,34 +182,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _FeedHeaderBackdropLayer(isWhite: isWhite),
           _FeedHeaderControlsLayer(
             child: OheyPageHeader(
-              title: 'フィード',
+              title: 'ゆるぼ',
               titleColor: _FeedColors.teal,
               titleOffset: const Offset(0, -54),
               trailingOffset: const Offset(0, -54),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  OheyHeaderIconButton(
-                    icon: CupertinoIcons.camera_fill,
-                    semanticLabel: '投稿する',
-                    color: _FeedColors.teal,
-                    onTap: widget.onAddMemoryPressed ?? () {},
+              trailing: OheyHeaderIconButton(
+                icon: CupertinoIcons.bell,
+                semanticLabel: 'お知らせを開く',
+                hasDot: hasUnreadNotifications,
+                color: _FeedColors.teal,
+                onTap: () => Navigator.of(context).push(
+                  CupertinoPageRoute<void>(
+                    builder: (_) => const _FeedNotificationsScreen(),
                   ),
-                  const SizedBox(width: 8),
-                  OheyHeaderIconButton(
-                    icon: CupertinoIcons.bell,
-                    semanticLabel: 'お知らせを開く',
-                    hasDot: hasUnreadNotifications,
-                    color: _FeedColors.teal,
-                    onTap: () => Navigator.of(context).push(
-                      CupertinoPageRoute<void>(
-                        builder: (_) => const _FeedNotificationsScreen(),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
+          ),
+          _FeedCreateYuruboFab(
+            onTap: () => _showCreateYuruboSheet(context, ref),
           ),
           if (incomingInvites.isNotEmpty || todayReservations.isNotEmpty)
             _FeedInviteBanner(
@@ -195,9 +233,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _markFeedSwipeTutorialSeen();
     }
     final loadedCount =
-        ref.read(homeFeedControllerProvider).asData?.value.length ?? 0;
+        ref.read(yuruboControllerProvider).asData?.value.length ?? 0;
     if (loadedCount > 0 && index >= loadedCount - 3) {
-      ref.read(homeFeedControllerProvider.notifier).loadMore();
+      ref.invalidate(yuruboControllerProvider);
     }
   }
 
@@ -275,8 +313,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         fileNameOverrides: [
           item.isOfficial ? 'ohey_official_post.png' : 'ohey_memory.png',
         ],
-        title: item.isOfficial ? 'Ohey公式投稿を共有' : '思い出を共有',
-        subject: item.isOfficial ? 'Ohey公式のお知らせ' : 'Oheyの思い出',
+        title: item.isOfficial ? 'Ohey公式ゆるぼを共有' : 'ゆるぼを共有',
+        subject: item.isOfficial ? 'Ohey公式のお知らせ' : 'Oheyのゆるぼ',
         sharePositionOrigin: shareOrigin,
       ),
     );

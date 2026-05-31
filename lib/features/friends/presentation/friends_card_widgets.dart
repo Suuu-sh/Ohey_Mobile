@@ -211,7 +211,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
       context: context,
       builder: (dialogContext) => CupertinoAlertDialog(
         title: const Text('ブロックしますか？'),
-        content: Text('${widget.friend.name}さんとのフレンズ関係を解除し、投稿・申請・お誘いを制限します。'),
+        content: Text('${widget.friend.name}さんとのフレンズ関係を解除し、ゆるぼ・申請・お誘いを制限します。'),
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -303,7 +303,12 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
         widget.friend.avatar ?? _fallbackAvatarForFriend(widget.friend);
     final statusColor = _friendInviteButtonColor(_selectedStatus);
     final media = MediaQuery.of(context);
-    final sheetContentHeight = media.size.height - media.padding.bottom;
+    // The bottom sheet itself is laid out below the top safe area on iOS.
+    // Subtract both safe areas here; otherwise this fixed-height child becomes
+    // taller than the sheet's actual constraints and the close button overflows
+    // on devices with a Dynamic Island / home indicator.
+    final sheetContentHeight =
+        media.size.height - media.padding.top - media.padding.bottom;
     const bodyBackground = AppColors.darkBackgroundBottom;
 
     return OheyBottomSheetShell(
@@ -318,7 +323,11 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _FriendProfileTopBackdrop(friend: widget.friend, avatar: avatar),
+              _FriendProfileTopBackdrop(
+                friend: widget.friend,
+                avatar: avatar,
+                onActionMenu: _busyAction == null ? _openActionMenu : null,
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
@@ -329,6 +338,8 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
                         status: _selectedStatus,
                         statusColor: statusColor,
                       ),
+                      const SizedBox(height: 14),
+                      _FriendProfileWishItemsPanel(friend: widget.friend),
                       const SizedBox(height: 14),
                       Expanded(
                         child: _FriendProfileCalendar(
@@ -344,34 +355,14 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
               const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Ohey3DButton.secondary(
-                        label: _busyAction == null ? '操作メニュー' : '処理中',
-                        icon: CupertinoIcons.ellipsis_circle,
-                        onTap: _busyAction == null ? _openActionMenu : null,
-                        height: 48,
-                        radius: 22,
-                        color: const Color(0xFF203247),
-                        foregroundColor: const Color(0xFF65D6FF),
-                        shadowColor: const Color(0xFF111C2B),
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Ohey3DButton.secondary(
-                        label: '閉じる',
-                        onTap: () => Navigator.of(context).pop(),
-                        height: 48,
-                        radius: 22,
-                        color: const Color(0xFF252044),
-                        foregroundColor: const Color(0xFFC08BFF),
-                        shadowColor: const Color(0xFF15142C),
-                      ),
-                    ),
-                  ],
+                child: Ohey3DButton.secondary(
+                  label: '閉じる',
+                  onTap: () => Navigator.of(context).pop(),
+                  height: 48,
+                  radius: 22,
+                  color: const Color(0xFF252044),
+                  foregroundColor: const Color(0xFFC08BFF),
+                  shadowColor: const Color(0xFF15142C),
                 ),
               ),
               const SizedBox(height: 16),
@@ -460,7 +451,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
           OheyActionTile(
             icon: CupertinoIcons.bell_slash_fill,
             title: 'ミュート',
-            subtitle: '投稿をフィードに出しにくくします',
+            subtitle: 'ゆるぼをフィードに出しません',
             accent: const Color(0xFF88B8FF),
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.mute),
           ),
@@ -468,7 +459,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
           OheyActionTile(
             icon: CupertinoIcons.hand_raised_fill,
             title: 'ブロック',
-            subtitle: '投稿・申請・お誘いを制限します',
+            subtitle: 'ゆるぼ・申請・お誘いを制限します',
             accent: const Color(0xFFFF5F8F),
             destructive: true,
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.block),
@@ -482,21 +473,55 @@ class _FriendProfileActionSheet extends StatelessWidget {
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.report),
           ),
           const SizedBox(height: 12),
-          Ohey3DButton.secondary(
-            label: 'キャンセル',
+          _FriendProfileCancelButton(
+            isWhite: isWhite,
             onTap: () => Navigator.of(context).pop(),
-            height: 48,
-            radius: 20,
-            color: isWhite
-                ? const Color(0xFFF2F6FA)
-                : Colors.white.withValues(alpha: .06),
-            foregroundColor: isWhite
-                ? const Color(0xFF101820)
-                : Colors.white.withValues(alpha: .82),
-            shadowColor: const Color(0xFF243240).withValues(alpha: .46),
-            useGradient: false,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FriendProfileCancelButton extends StatelessWidget {
+  const _FriendProfileCancelButton({
+    required this.isWhite,
+    required this.onTap,
+  });
+
+  final bool isWhite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final background = isWhite
+        ? const Color(0xFFF2F6FA)
+        : Colors.white.withValues(alpha: .06);
+    final foreground = isWhite
+        ? const Color(0xFF101820)
+        : Colors.white.withValues(alpha: .82);
+    return CupertinoButton(
+      onPressed: onTap,
+      minimumSize: Size.zero,
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        height: 48,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withValues(alpha: .18)),
+        ),
+        child: Text(
+          'キャンセル',
+          style: TextStyle(
+            color: foreground,
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.2,
+          ),
+        ),
       ),
     );
   }
@@ -553,19 +578,9 @@ class _FriendReportReasonSheet extends StatelessWidget {
               const SizedBox(height: 9),
           ],
           const SizedBox(height: 12),
-          Ohey3DButton.secondary(
-            label: 'キャンセル',
+          _FriendProfileCancelButton(
+            isWhite: isWhite,
             onTap: () => Navigator.of(context).pop(),
-            height: 48,
-            radius: 20,
-            color: isWhite
-                ? const Color(0xFFF2F6FA)
-                : Colors.white.withValues(alpha: .06),
-            foregroundColor: isWhite
-                ? const Color(0xFF101820)
-                : Colors.white.withValues(alpha: .82),
-            shadowColor: const Color(0xFF243240).withValues(alpha: .46),
-            useGradient: false,
           ),
         ],
       ),
@@ -574,10 +589,15 @@ class _FriendReportReasonSheet extends StatelessWidget {
 }
 
 class _FriendProfileTopBackdrop extends StatelessWidget {
-  const _FriendProfileTopBackdrop({required this.friend, required this.avatar});
+  const _FriendProfileTopBackdrop({
+    required this.friend,
+    required this.avatar,
+    required this.onActionMenu,
+  });
 
   final OheyFriend friend;
   final OheyAvatar avatar;
+  final VoidCallback? onActionMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -589,6 +609,16 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           _FriendProfileHeaderBackdrop(avatar: avatar),
+          Positioned(
+            right: 20,
+            top: topPadding + 46,
+            child: Opacity(
+              opacity: onActionMenu == null ? .42 : 1,
+              child: _FriendProfileActionIconButton(
+                onTap: onActionMenu ?? () {},
+              ),
+            ),
+          ),
           Padding(
             padding: EdgeInsets.fromLTRB(
               OheyPageHeader.horizontalPadding,
@@ -609,6 +639,37 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
   }
 }
 
+class _FriendProfileActionIconButton extends StatelessWidget {
+  const _FriendProfileActionIconButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '操作メニュー',
+      child: CupertinoButton(
+        onPressed: onTap,
+        minimumSize: const Size(48, 48),
+        padding: EdgeInsets.zero,
+        borderRadius: BorderRadius.circular(18),
+        child: const SizedBox(
+          width: 48,
+          height: 48,
+          child: Center(
+            child: OheyGeneratedIcon(
+              CupertinoIcons.gear_alt,
+              color: Color(0xFF101820),
+              size: 38,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _FriendProfileHeaderBackdrop extends StatelessWidget {
   const _FriendProfileHeaderBackdrop({required this.avatar});
 
@@ -616,10 +677,11 @@ class _FriendProfileHeaderBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (OheyAvatar.usesMascotBackdrop(avatar.background)) {
+    final imageBackdropAsset = OheyAvatar.imageBackdropAsset(avatar.background);
+    if (imageBackdropAsset != null) {
       return ExcludeSemantics(
         child: Image.asset(
-          'assets/images/profile_mascot_backdrop_scene.png',
+          imageBackdropAsset,
           fit: BoxFit.cover,
           alignment: Alignment.center,
         ),
@@ -708,6 +770,143 @@ class _FriendProfileHero extends StatelessWidget {
                   letterSpacing: -.4,
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendProfileWishItemsPanel extends ConsumerWidget {
+  const _FriendProfileWishItemsPanel({required this.friend});
+
+  final OheyFriend friend;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wishItemsAsync = ref.watch(profileWishItemsProvider(friend.id));
+    return wishItemsAsync.when(
+      loading: () => const _FriendProfileWishItemsShell(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Center(child: CupertinoActivityIndicator()),
+        ),
+      ),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (wishItems) {
+        if (wishItems.isEmpty) return const SizedBox.shrink();
+        return _FriendProfileWishItemsShell(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    CupertinoIcons.sparkles,
+                    color: Color(0xFFC08BFF),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      '${friend.name}さんのやりたいこと',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 74,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: wishItems.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final wish = wishItems[index];
+                    return _FriendProfileWishChip(wish: wish);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _FriendProfileWishItemsShell extends StatelessWidget {
+  const _FriendProfileWishItemsShell({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return OheyThemedPanel(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      accentColor: const Color(0xFFC08BFF),
+      borderRadius: 22,
+      backgroundColor: const Color(0xFF231A38).withValues(alpha: .92),
+      borderAlpha: .42,
+      glowAlpha: .10,
+      glowBlur: 18,
+      glowOffset: const Offset(0, 8),
+      child: child,
+    );
+  }
+}
+
+class _FriendProfileWishChip extends StatelessWidget {
+  const _FriendProfileWishChip({required this.wish});
+
+  final WishItem wish;
+
+  @override
+  Widget build(BuildContext context) {
+    final place = wish.placeText.trim();
+    return Container(
+      width: 168,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFC08BFF).withValues(alpha: .18),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFC08BFF).withValues(alpha: .34),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            wish.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              height: 1.12,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            place.isEmpty ? '公開リスト' : place,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: .56),
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],

@@ -10,6 +10,7 @@ import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_user.dart';
+import '../../../core/models/wish_item.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/ohey_theme_mode.dart';
 import '../../../core/widgets/ohey_avatar.dart';
@@ -30,6 +31,7 @@ import '../data/friend_repository.dart';
 import 'friend_add_sheet.dart';
 import '../../memories/application/memory_controller.dart';
 import '../../profile/data/user_safety_repository.dart';
+import '../../wish_items/application/wish_item_controller.dart';
 
 part 'friends_header_filters.dart';
 part 'friends_custom_filter_sheet.dart';

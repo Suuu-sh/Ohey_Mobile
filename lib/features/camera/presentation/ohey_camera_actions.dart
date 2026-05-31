@@ -35,7 +35,7 @@ extension _OheyCameraScreenActions on _OheyCameraScreenState {
     } on StateError catch (error) {
       if (mounted) _showSnack(error.message);
     } catch (_) {
-      if (mounted) _showSnack('写真を処理できませんでした。');
+      if (mounted) _showSnack('ゆるぼを処理できませんでした。');
     } finally {
       if (mounted) setState(() => _isCapturing = false);
     }
@@ -60,11 +60,11 @@ extension _OheyCameraScreenActions on _OheyCameraScreenState {
         ),
       );
     } on PlatformException catch (error) {
-      if (mounted) _showSnack(error.message ?? 'AR写真を撮影できませんでした。');
+      if (mounted) _showSnack(error.message ?? 'ARゆるぼを撮影できませんでした。');
     } on StateError catch (error) {
       if (mounted) _showSnack(error.message);
     } catch (_) {
-      if (mounted) _showSnack('AR写真を撮影できませんでした。');
+      if (mounted) _showSnack('ARゆるぼを撮影できませんでした。');
     } finally {
       if (mounted) setState(() => _isCapturing = false);
     }
@@ -203,7 +203,7 @@ extension _OheyCameraScreenActions on _OheyCameraScreenState {
         ),
       );
     } catch (_) {
-      if (mounted) _showSnack('写真を読み込めませんでした。');
+      if (mounted) _showSnack('ゆるぼを読み込めませんでした。');
     } finally {
       if (mounted) setState(() => _isCapturing = false);
     }
@@ -215,7 +215,7 @@ extension _OheyCameraScreenActions on _OheyCameraScreenState {
     }
     final dimensions = await oheyReadPhotoDimensions(path);
     if (dimensions.isLandscape) return oheyWriteLandscapePhotoCopy(path);
-    _showSnack('16:9は横向きの写真を選んでください。');
+    _showSnack('16:9は横向きのゆるぼを選んでください。');
     return null;
   }
 

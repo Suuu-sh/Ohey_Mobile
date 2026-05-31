@@ -4,6 +4,7 @@ class _FeedPostCard extends StatelessWidget {
   const _FeedPostCard({
     required this.item,
     required this.isWhite,
+    this.compactYurubo = false,
     this.onLike,
     this.onShare,
     this.onMore,
@@ -12,6 +13,7 @@ class _FeedPostCard extends StatelessWidget {
 
   final _FeedItem item;
   final bool isWhite;
+  final bool compactYurubo;
   final VoidCallback? onLike;
   final VoidCallback? onShare;
   final VoidCallback? onMore;
@@ -24,7 +26,7 @@ class _FeedPostCard extends StatelessWidget {
     final caption = _feedCardCaption(item);
     final surfaceColor = OheyThemedPanel.surfaceColor(isWhite: isWhite);
     return Semantics(
-      label: '${item.userName}の思い出',
+      label: '${item.userName}のゆるぼ',
       child: OheyThemedPanel(
         accentColor: _FeedColors.teal,
         backgroundColor: surfaceColor,
@@ -35,31 +37,199 @@ class _FeedPostCard extends StatelessWidget {
         glowAlpha: 0,
         glowBlur: 24,
         glowOffset: const Offset(0, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            _FeedCardAuthorBar(
-              item: item,
-              isWhite: isWhite,
-              onMore: onMore,
-              onAuthorTap: onAuthorTap,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _FeedCardAuthorBar(
+                  item: item,
+                  isWhite: isWhite,
+                  compactYurubo: compactYurubo,
+                  onMore: onMore,
+                  onAuthorTap: onAuthorTap,
+                ),
+                if (compactYurubo)
+                  _YuruboCardBody(item: item, isWhite: isWhite)
+                else
+                  _FeedPhotoLikeSurface(
+                    item: item,
+                    hasPhoto: hasPhoto,
+                    photoPath: photoPath,
+                    caption: caption,
+                    onLike: onLike,
+                  ),
+                _FeedCardFooter(
+                  item: item,
+                  isWhite: isWhite,
+                  compactYurubo: compactYurubo,
+                  onLike: onLike,
+                  onShare: onShare,
+                ),
+              ],
             ),
-            _FeedPhotoLikeSurface(
-              item: item,
-              hasPhoto: hasPhoto,
-              photoPath: photoPath,
-              caption: caption,
-              onLike: onLike,
-            ),
-            _FeedCardFooter(
-              item: item,
-              isWhite: isWhite,
-              onLike: onLike,
-              onShare: onShare,
-            ),
+            if (compactYurubo) const _YuruboBlockGlowUnderline(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _YuruboBlockGlowUnderline extends StatelessWidget {
+  const _YuruboBlockGlowUnderline();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: IgnorePointer(
+        child: Container(
+          height: 1,
+          decoration: BoxDecoration(
+            color: const Color(0xFFC08BFF).withValues(alpha: .82),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFC08BFF).withValues(alpha: .58),
+                blurRadius: 9,
+                spreadRadius: .4,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _YuruboCardBody extends StatelessWidget {
+  const _YuruboCardBody({required this.item, required this.isWhite});
+
+  final _FeedItem item;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
+    final body = _yuruboBody(item);
+    final place = item.place.trim();
+    final timeLabel = item.timeLabel.trim();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final chipWidth = (constraints.maxWidth - 12) / 3;
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: chipWidth),
+                    child: _YuruboMetaChip(
+                      icon: item.targetLabel == '全フレンズ'
+                          ? CupertinoIcons.person_2_fill
+                          : CupertinoIcons.person_3_fill,
+                      label: item.targetLabel,
+                      color: _feedPrimaryActionColor,
+                      isWhite: isWhite,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: chipWidth),
+                    child: _YuruboMetaChip(
+                      icon: CupertinoIcons.location_fill,
+                      label: place.isEmpty ? 'どこでも' : place,
+                      color: _FeedColors.teal,
+                      isWhite: isWhite,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: chipWidth),
+                    child: _YuruboMetaChip(
+                      icon: CupertinoIcons.clock_fill,
+                      label: timeLabel.isEmpty ? 'いつでも' : timeLabel,
+                      color: _FeedColors.teal,
+                      isWhite: isWhite,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          Text(
+            body,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: primaryText,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              height: 1.18,
+              letterSpacing: -.55,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _YuruboMetaChip extends StatelessWidget {
+  const _YuruboMetaChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.isWhite,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = isWhite
+        ? Color.lerp(color, Colors.black, .20)!
+        : Colors.white;
+    return Container(
+      constraints: const BoxConstraints(minWidth: 0),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: isWhite ? .13 : .22),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: isWhite ? .32 : .42)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: foreground),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w900,
+                height: 1,
+                fontSize: 11,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -349,12 +519,14 @@ class _FeedCardAuthorBar extends StatelessWidget {
   const _FeedCardAuthorBar({
     required this.item,
     required this.isWhite,
+    this.compactYurubo = false,
     this.onMore,
     this.onAuthorTap,
   });
 
   final _FeedItem item;
   final bool isWhite;
+  final bool compactYurubo;
   final VoidCallback? onMore;
   final VoidCallback? onAuthorTap;
 
@@ -369,10 +541,12 @@ class _FeedCardAuthorBar extends StatelessWidget {
         ? Color.lerp(menuAccent, Colors.black, .18)!
         : Color.lerp(menuAccent, Colors.white, .18)!;
     final place = item.place.trim();
-    final metadataLabel = item.isOfficial
+    final metadataLabel = compactYurubo
+        ? (place.isEmpty ? 'ゆるぼ' : place)
+        : item.isOfficial
         ? (place.isEmpty ? 'Ohey公式からのお知らせ' : 'Ohey公式 ・ $place')
         : place.isEmpty
-        ? '思い出'
+        ? 'ゆるぼ'
         : place;
     final kind = item.postKind;
 
@@ -448,17 +622,16 @@ class _FeedCardAuthorBar extends StatelessWidget {
           ),
           Semantics(
             button: true,
-            label: '投稿メニュー',
+            label: 'ゆるぼメニュー',
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: onMore,
               child: Padding(
                 padding: const EdgeInsets.all(6),
-                child: OheyPopIcon(
-                  icon: CupertinoIcons.ellipsis,
+                child: Icon(
+                  CupertinoIcons.ellipsis,
                   color: iconColor,
                   size: 27,
-                  showBubble: false,
                 ),
               ),
             ),
@@ -473,12 +646,14 @@ class _FeedCardFooter extends StatelessWidget {
   const _FeedCardFooter({
     required this.item,
     required this.isWhite,
+    this.compactYurubo = false,
     this.onLike,
     this.onShare,
   });
 
   final _FeedItem item;
   final bool isWhite;
+  final bool compactYurubo;
   final VoidCallback? onLike;
   final VoidCallback? onShare;
 
@@ -512,7 +687,9 @@ class _FeedCardFooter extends StatelessWidget {
                 icon: item.liked
                     ? CupertinoIcons.heart_fill
                     : CupertinoIcons.heart,
-                label: _feedLikeActionLabel(item),
+                label: compactYurubo
+                    ? _yuruboInterestedActionLabel(item)
+                    : _feedLikeActionLabel(item),
                 color: likeAccent,
                 isWhite: isWhite,
                 burstOnTap: !item.liked,
@@ -523,11 +700,13 @@ class _FeedCardFooter extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               OheyPostActionPill(
-                semanticLabel: item.isOfficial
-                    ? '公式投稿を詳しく見る'
+                semanticLabel: compactYurubo
+                    ? 'このゆるぼを共有'
+                    : item.isOfficial
+                    ? '公式ゆるぼを詳しく見る'
                     : item.ownedByMe
-                    ? '思い出を共有'
-                    : '投稿を共有',
+                    ? 'ゆるぼを共有'
+                    : 'ゆるぼを共有',
                 customIcon: item.isOfficial
                     ? null
                     : OheyPostShareIcon(
@@ -535,7 +714,7 @@ class _FeedCardFooter extends StatelessWidget {
                         size: 19,
                       ),
                 icon: item.isOfficial ? CupertinoIcons.doc_text_fill : null,
-                label: _feedShareActionLabel(item),
+                label: compactYurubo ? '共有' : _feedShareActionLabel(item),
                 color: shareAccent,
                 isWhite: isWhite,
                 onTap: onShare,
@@ -553,37 +732,39 @@ class _FeedCardFooter extends StatelessWidget {
               ],
             ],
           ),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  _feedReactionSummary(item),
+          if (!compactYurubo) ...[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    _feedReactionSummary(item),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: item.likes > 0 ? primaryText : secondaryText,
+                      fontWeight: FontWeight.w900,
+                      height: 1.15,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  item.timeAgo,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: item.likes > 0 ? primaryText : secondaryText,
+                  textAlign: TextAlign.right,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: secondaryText,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w900,
                     height: 1.15,
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                item.timeAgo,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.right,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: secondaryText,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w900,
-                  height: 1.15,
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -678,13 +859,6 @@ String _feedReactionSummary(_FeedItem item) {
   if (item.likes <= 0) {
     return item.ownedByMe ? '友達のリアクションを待とう' : 'いいねで気持ちを送ろう';
   }
-  final companion = item.friends.isNotEmpty
-      ? item.friends.first.name.trim()
-      : '';
-  if (companion.isNotEmpty && item.likes > 1) {
-    return '$companionほか${item.likes - 1}人がいいね';
-  }
-  if (companion.isNotEmpty) return '$companionがいいね';
   return '${item.likes}件のいいね';
 }
 
@@ -850,8 +1024,8 @@ bool _isDisplayablePostPhoto(String? path) {
 String _duoStyleBody(_FeedItem item) {
   if (item.isOfficial) {
     return switch (item.prop) {
-      _PostProp.spark => 'フレンズとの思い出を、もっと楽しく。',
-      _PostProp.ticket => 'フレンズと一緒に今月の思い出をふり返ろう。',
+      _PostProp.spark => 'フレンズとのゆるぼを、もっと楽しく。',
+      _PostProp.ticket => 'フレンズと一緒に今月のゆるぼをふり返ろう。',
       _ => item.body,
     };
   }
@@ -892,4 +1066,16 @@ class _PostPhoto extends StatelessWidget {
     if (normalized.startsWith('assets/')) return AssetImage(normalized);
     return null;
   }
+}
+
+String _yuruboBody(_FeedItem item) {
+  final body = _duoStyleBody(item).trim();
+  if (body.isNotEmpty) return body;
+  final place = item.place.trim();
+  if (place.isNotEmpty) return '$place 行ける人いる？';
+  return '今日ゆるく会える人いる？';
+}
+
+String _yuruboInterestedActionLabel(_FeedItem item) {
+  return item.liked ? '参加済み' : '参加する';
 }

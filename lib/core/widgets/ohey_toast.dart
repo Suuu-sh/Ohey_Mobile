@@ -113,8 +113,11 @@ class OheyToast {
   }
 
   static double bottomOffsetFor(double bottomPadding) {
-    const tabBarTopClearance = 72.0;
-    return bottomPadding + tabBarTopClearance;
+    // Use a fixed overlay offset instead of safe-area dependent padding so
+    // POPs opened after modal sheets close land at exactly the same height as
+    // POPs opened from tab pages.
+    const tabBarTopLineOffset = 94.0;
+    return tabBarTopLineOffset;
   }
 
   static Color accentColorForIcon(

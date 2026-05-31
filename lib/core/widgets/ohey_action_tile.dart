@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
-import 'ohey_3d_button.dart';
 import 'ohey_pop_icon.dart';
 
 class OheyActionTile extends StatelessWidget {
@@ -36,86 +35,74 @@ class OheyActionTile extends StatelessWidget {
     final subtitleColor = isWhite
         ? const Color(0xFF697684)
         : Colors.white.withValues(alpha: .55);
-    final bottomColor = destructive
-        ? ohey3DShadowColorFor(
-            destructiveColor,
-            lightnessScale: isWhite ? .72 : .58,
-          )
-        : isWhite
-        ? const Color(0xFFDCE4EC)
-        : const Color(0xFF09131D);
-    final surfaceColor = destructive
-        ? bottomColor
-        : isWhite
+    final surfaceColor = isWhite
         ? Color.lerp(const Color(0xFFF7FAFC), accent, .10)!
-        : Color.lerp(AppColors.darkBackground, accent, .18)!;
-    return Ohey3DButtonSurface(
-      onTap: onTap,
-      height: 68,
-      radius: 22,
-      color: surfaceColor,
-      bottomColor: bottomColor,
-      useGradient: !destructive,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      borderColor: destructive
-          ? destructiveColor.withValues(alpha: .36)
-          : isWhite
-          ? const Color(0xFFE1E8F1)
-          : Colors.white.withValues(alpha: .12),
-      outerShadows: [
-        BoxShadow(
-          color: (destructive ? destructiveColor : accent).withValues(
-            alpha: isWhite ? .10 : .18,
+        : AppColors.darkBackground;
+    return CupertinoButton(
+      onPressed: onTap,
+      minimumSize: Size.zero,
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        height: 68,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: surfaceColor,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isWhite
+                ? const Color(0xFFE1E8F1)
+                : Colors.white.withValues(alpha: .12),
           ),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
-        ),
-      ],
-      innerShadows: [
-        BoxShadow(
-          color: Colors.white.withValues(alpha: isWhite ? .40 : .08),
-          blurRadius: 10,
-          offset: const Offset(-2, -2),
-        ),
-      ],
-      child: Row(
-        children: [
-          OheyPopIcon(icon: icon, color: accent, size: 44, iconSize: 23),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: titleColor,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.3,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: subtitleColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: (destructive ? destructiveColor : accent).withValues(
+                alpha: isWhite ? .08 : .14,
+              ),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
             ),
-          ),
-          OheyPopIcon(
-            icon: CupertinoIcons.chevron_forward,
-            color: destructive ? destructiveColor : subtitleColor,
-            size: 30,
-            iconSize: 16,
-            shadow: false,
-          ),
-        ],
+          ],
+        ),
+        child: Row(
+          children: [
+            OheyPopIcon(icon: icon, color: accent, size: 44, iconSize: 23),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: titleColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.3,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: subtitleColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            OheyPopIcon(
+              icon: CupertinoIcons.chevron_forward,
+              color: destructive ? destructiveColor : subtitleColor,
+              size: 30,
+              iconSize: 16,
+              shadow: false,
+            ),
+          ],
+        ),
       ),
     );
   }

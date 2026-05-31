@@ -1,3 +1,4 @@
+// ignore_for_file: unused_element, unused_element_parameter
 import 'dart:convert';
 import 'dart:io';
 
@@ -93,9 +94,7 @@ _CalendarFriendGroup? _findCalendarFriendGroup(
 }
 
 class CalendarScreen extends ConsumerStatefulWidget {
-  const CalendarScreen({super.key, this.onAddMemoryPressed});
-
-  final VoidCallback? onAddMemoryPressed;
+  const CalendarScreen({super.key});
 
   @override
   ConsumerState<CalendarScreen> createState() => _CalendarScreenState();
@@ -318,16 +317,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final logsAsync = ref.watch(memoryControllerProvider);
-    final logs = logsAsync.asData?.value ?? const <Memory>[];
-    final userLogs = logs.where((log) => !log.isOfficial);
-    final monthlyLogs = userLogs.where((log) => log.isInMonth(_month)).toList();
+    const monthlyLogs = <Memory>[];
     final todayReservations =
         ref.watch(todayReservationsProvider).asData?.value ??
         const <OheyInvite>[];
-    final selectedLogs = userLogs
-        .where((log) => _isSameDate(log.date, _selectedDay))
-        .toList(growable: false);
     final selectedFriendsAsync = ref.watch(
       friendsForDateProvider(_dateOnly(_selectedDay)),
     );
@@ -445,14 +438,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   padding: const EdgeInsets.only(bottom: 20),
                                   child: _SelectedDayPanel(
                                     day: _selectedDay,
-                                    logs: selectedLogs,
                                     friendsAsync: selectedFriendsAsync,
                                     groups: _calendarGroups,
                                     isWhite: isWhite,
                                     status: selectedStatus,
                                     isStatusSaving: _isStatusSaving,
-                                    onAddMemoryPressed:
-                                        widget.onAddMemoryPressed,
                                     onChangeStatus: () => _openStatusPicker(
                                       showLockedExplanation:
                                           selectedStatus ==
@@ -548,7 +538,7 @@ class _CalendarIntroCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'カレンダーに思い出がたまります',
+                  '友達の予定が見やすくなります',
                   style: TextStyle(
                     color: titleColor,
                     fontSize: 15,
@@ -559,7 +549,7 @@ class _CalendarIntroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  '思い出を残すと、その日にアメーバが出るよ。写真つきだとレアカラーになるかも。',
+                  '空き状況を入れると、誘いやすい日がひと目で分かります。',
                   style: TextStyle(
                     color: messageColor,
                     fontSize: 12.5,
@@ -665,24 +655,20 @@ class _ArrowButton extends StatelessWidget {
 class _SelectedDayPanel extends StatelessWidget {
   const _SelectedDayPanel({
     required this.day,
-    required this.logs,
     required this.friendsAsync,
     required this.groups,
     required this.isWhite,
     required this.status,
     required this.isStatusSaving,
-    required this.onAddMemoryPressed,
     required this.onChangeStatus,
   });
 
   final DateTime day;
-  final List<Memory> logs;
   final AsyncValue<List<OheyFriend>> friendsAsync;
   final List<_CalendarFriendGroup> groups;
   final bool isWhite;
   final OheyDailyStatus status;
   final bool isStatusSaving;
-  final VoidCallback? onAddMemoryPressed;
   final VoidCallback onChangeStatus;
 
   @override
@@ -762,16 +748,6 @@ class _SelectedDayPanel extends StatelessWidget {
                                 compact: compact,
                               ),
                       ),
-                      SizedBox(height: compact ? 6 : 9),
-                      Expanded(
-                        flex: compact ? 5 : 5,
-                        child: _CalendarMemoryPreview(
-                          logs: logs,
-                          isWhite: isWhite,
-                          compact: compact,
-                          onAddMemoryPressed: onAddMemoryPressed,
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -791,7 +767,7 @@ bool _useCompactCalendarDetailLayout(double availableHeight) {
 }
 
 String _calendarSelectedDayTitle(DateTime day) =>
-    '${day.month}/${day.day}(${_calendarWeekdayLabel(day)}) の空き状況と思い出';
+    '${day.month}/${day.day}(${_calendarWeekdayLabel(day)}) の空き状況とゆるぼ';
 
 class _CalendarStatusChangeButton extends StatelessWidget {
   const _CalendarStatusChangeButton({
@@ -1159,7 +1135,7 @@ class _CalendarSectionSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final fillColors = isWhite
         ? [Colors.white, const Color(0xFFF7FBFF)]
-        : const [Color(0xFF050B13), Color(0xFF07101B)];
+        : const [AppColors.darkBackground, AppColors.darkBackground];
     final content = Container(
       width: double.infinity,
       height: double.infinity,
@@ -1312,13 +1288,13 @@ class _CalendarMemoryPreview extends StatelessWidget {
     required this.logs,
     required this.isWhite,
     required this.compact,
-    required this.onAddMemoryPressed,
+    this.onCreateYuruboPressed,
   });
 
   final List<Memory> logs;
   final bool isWhite;
   final bool compact;
-  final VoidCallback? onAddMemoryPressed;
+  final VoidCallback? onCreateYuruboPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -1326,7 +1302,7 @@ class _CalendarMemoryPreview extends StatelessWidget {
     final visibleLogs = logs.take(compact ? 1 : 2).toList(growable: false);
     final hiddenCount = logs.length - visibleLogs.length;
     return _CalendarSectionSurface(
-      label: '思い出',
+      label: 'ゆるぼ',
       accent: accent,
       isWhite: isWhite,
       compact: compact,
@@ -1341,7 +1317,7 @@ class _CalendarMemoryPreview extends StatelessWidget {
           ? _CalendarMemoryEmptyState(
               isWhite: isWhite,
               compact: compact,
-              onAddMemoryPressed: onAddMemoryPressed,
+              onCreateYuruboPressed: onCreateYuruboPressed,
             )
           : Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1364,12 +1340,12 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
   const _CalendarMemoryEmptyState({
     required this.isWhite,
     required this.compact,
-    required this.onAddMemoryPressed,
+    this.onCreateYuruboPressed,
   });
 
   final bool isWhite;
   final bool compact;
-  final VoidCallback? onAddMemoryPressed;
+  final VoidCallback? onCreateYuruboPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -1389,7 +1365,7 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'この日の思い出はまだありません',
+                  'この日のゆるぼはまだありません',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -1420,8 +1396,8 @@ class _CalendarMemoryEmptyState extends StatelessWidget {
           SizedBox(
             width: compact ? 56 : 62,
             child: Ohey3DButton(
-              label: '投稿',
-              onTap: onAddMemoryPressed ?? () {},
+              label: 'ゆるぼ',
+              onTap: onCreateYuruboPressed ?? () {},
               height: compact ? 28 : 30,
               radius: compact ? 14 : 15,
               color: _calendarPrimaryActionColor,
@@ -2009,12 +1985,14 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
       separatorBuilder: (_, _) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
         final friend = friends[index];
+        final inviteSent = invitedFriendIds.contains(friend.id);
         return _CalendarFriendStatusBlock(
           friend: friend,
           isWhite: isWhite,
-          inviteEnabled: sendingFriendId == null && inviteAvailable,
+          inviteEnabled: inviteAvailable && !inviteSent,
           inviteAvailable: inviteAvailable,
-          inviteSent: invitedFriendIds.contains(friend.id),
+          inviteSent: inviteSent,
+          invitePressed: sendingFriendId == friend.id,
           onInvite: () => onInvite(friend),
         );
       },
@@ -2029,6 +2007,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
     required this.inviteEnabled,
     required this.inviteAvailable,
     required this.inviteSent,
+    required this.invitePressed,
     required this.onInvite,
   });
 
@@ -2037,6 +2016,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
   final bool inviteEnabled;
   final bool inviteAvailable;
   final bool inviteSent;
+  final bool invitePressed;
   final Future<void> Function() onInvite;
 
   @override
@@ -2052,6 +2032,7 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
       showInvite: true,
       inviteAvailable: inviteAvailable,
       inviteSent: inviteSent,
+      invitePressed: invitePressed,
       onInvite: inviteEnabled ? onInvite : null,
     );
   }
@@ -2161,7 +2142,7 @@ class _CalendarLogPhotoSheet extends StatelessWidget {
         ? log.place.trim()
         : log.memo.trim().isNotEmpty
         ? log.memo.trim()
-        : '思い出写真';
+        : 'ゆるぼ写真';
 
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
@@ -2203,7 +2184,7 @@ class _CalendarLogPhotoSheet extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            '${log.date.month}/${log.date.day} の思い出',
+            '${log.date.month}/${log.date.day} のゆるぼ',
             style: TextStyle(
               color: subColor,
               fontSize: 12,
@@ -2362,8 +2343,10 @@ class _PlayfulMonthGrid extends StatelessWidget {
                   final marker = inMonth ? markers[dayNumber] : null;
                   final isToday = inMonth && _isSameDate(DateTime.now(), day);
                   final hasPlan = isToday && todayReservations.isNotEmpty;
-                  final dailyStatus =
-                      statusByDate[_dateKey(day)] ?? OheyDailyStatus.unselected;
+                  final dailyStatus = inMonth
+                      ? statusByDate[_dateKey(day)] ??
+                            OheyDailyStatus.unselected
+                      : OheyDailyStatus.unselected;
                   return _DayTile(
                     day: displayDay,
                     date: day,
@@ -2371,10 +2354,10 @@ class _PlayfulMonthGrid extends StatelessWidget {
                     dailyStatus: dailyStatus,
                     marker: marker,
                     isToday: isToday,
-                    isSelected: _isSameDate(selectedDay, day),
+                    isSelected: inMonth && _isSameDate(selectedDay, day),
                     hasPlan: hasPlan,
                     column: index % 7,
-                    onTap: () => onSelectDay(day),
+                    onTap: inMonth ? () => onSelectDay(day) : null,
                   );
                 },
               ),
@@ -2437,7 +2420,7 @@ class _DayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final hasStatus = dailyStatus != OheyDailyStatus.unselected;
+    final hasStatus = inMonth && dailyStatus != OheyDailyStatus.unselected;
     final statusAccent = _calendarStatusTileAccent(dailyStatus);
     final dayColor = hasStatus
         ? _calendarStatusTileForeground(dailyStatus, isWhite: isWhite)
@@ -2454,11 +2437,13 @@ class _DayTile extends StatelessWidget {
         : Colors.white;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: inMonth ? onTap : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
         decoration: BoxDecoration(
-          color: hasStatus
+          color: !inMonth
+              ? Colors.transparent
+              : hasStatus
               ? _calendarStatusTileBackground(
                   dailyStatus,
                   isWhite: isWhite,
@@ -2469,7 +2454,9 @@ class _DayTile extends StatelessWidget {
               : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(13),
           border: Border.all(
-            color: hasPlan
+            color: !inMonth
+                ? Colors.transparent
+                : hasPlan
                 ? _calendarPrimaryActionColor
                 : hasStatus
                 ? statusAccent.withValues(alpha: isSelected ? .90 : .52)
@@ -2480,15 +2467,17 @@ class _DayTile extends StatelessWidget {
                   ),
             width: isSelected || hasPlan ? 2 : 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: hasStatus
-                  ? statusAccent.withValues(alpha: isWhite ? .16 : .24)
-                  : Colors.black.withValues(alpha: isWhite ? .05 : .20),
-              blurRadius: hasStatus ? 16 : 12,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          boxShadow: !inMonth
+              ? null
+              : [
+                  BoxShadow(
+                    color: hasStatus
+                        ? statusAccent.withValues(alpha: isWhite ? .16 : .24)
+                        : Colors.black.withValues(alpha: isWhite ? .05 : .20),
+                    blurRadius: hasStatus ? 16 : 12,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
         ),
         child: Stack(
           clipBehavior: Clip.none,
@@ -2569,7 +2558,7 @@ String _calendarMemoryTitle(Memory log) {
   if (place.isNotEmpty) return place;
   final hasPhoto =
       log.photoAssetPath != null && log.photoAssetPath!.trim().isNotEmpty;
-  return hasPhoto ? '思い出を残しました' : '記録だけ保存しました';
+  return hasPhoto ? 'ゆるぼを残しました' : '記録だけ保存しました';
 }
 
 const _calendarStatusPink = Color(0xFFFF5EA8);

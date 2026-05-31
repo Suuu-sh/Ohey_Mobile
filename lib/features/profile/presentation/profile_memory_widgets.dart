@@ -15,6 +15,7 @@ Future<void> _showEditProfileSheet(
   final gender = user?.gender ?? OheyGender.unspecified;
   var saving = false;
   var closing = false;
+  var didUpdateProfile = false;
   String? error;
 
   await showOheyBottomSheet<void>(
@@ -52,11 +53,9 @@ Future<void> _showEditProfileSheet(
               userId: userId,
               avatar: avatar,
             );
+            didUpdateProfile = true;
             if (sheetContext.mounted) {
               Navigator.of(sheetContext).pop();
-            }
-            if (context.mounted) {
-              _showSnack(context, 'プロフィールを更新しました。');
             }
           } catch (e) {
             if (!sheetContext.mounted) return;
@@ -207,6 +206,11 @@ Future<void> _showEditProfileSheet(
       },
     ),
   );
+
+  if (didUpdateProfile && context.mounted) {
+    _showSnack(context, 'プロフィールを更新しました。');
+  }
+
   WidgetsBinding.instance.addPostFrameCallback((_) {
     controller.dispose();
     userIdController.dispose();
@@ -219,47 +223,20 @@ class _UnsavedProfileSheet extends StatelessWidget {
   const _UnsavedProfileSheet();
 
   @override
-  Widget build(BuildContext context) => SafeArea(
-    child: Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
-      decoration: BoxDecoration(
-        color: AppColors.darkBackground,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .34),
-            blurRadius: 32,
-            offset: const Offset(0, 16),
-          ),
-        ],
-      ),
+  Widget build(BuildContext context) => Theme(
+    data: Theme.of(context).copyWith(brightness: Brightness.dark),
+    child: OheyBottomSheetShell(
+      showHandle: true,
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
+      radius: 34,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 44,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .18),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          const Row(
+          Row(
             children: [
-              OheyPopIcon(
-                icon: CupertinoIcons.person_crop_circle_fill,
-                color: Color(0xFF20D0B4),
-                size: 48,
-                iconSize: 25,
-              ),
-              SizedBox(width: 12),
-              Expanded(
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -270,90 +247,41 @@ class _UnsavedProfileSheet extends StatelessWidget {
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -.4,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      '閉じる前に、変更を残しておけるよ。',
-                      style: TextStyle(
-                        color: _ProfileColors.sub,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        height: 1.35,
+                        decoration: TextDecoration.none,
                       ),
                     ),
                   ],
                 ),
               ),
+              OheyCloseButton(
+                onTap: () =>
+                    Navigator.of(context).pop(_UnsavedProfileAction.cancel),
+                iconColor: _ProfileColors.sub,
+                size: 44,
+                iconSize: 22,
+              ),
             ],
           ),
           const SizedBox(height: 18),
-          Container(
-            padding: const EdgeInsets.all(13),
-            decoration: BoxDecoration(
-              color: AppColors.darkBackground,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: .08)),
-            ),
-            child: Row(
-              children: [
-                const OheyGeneratedIcon(
-                  CupertinoIcons.info_circle_fill,
-                  color: Color(0xFF20D0B4),
-                  size: 20,
-                ),
-                const SizedBox(width: 9),
-                Expanded(
-                  child: Text(
-                    '保存しない場合は、変更前のプロフィールに戻ります。',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .72),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      height: 1.35,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
-          Ohey3DButton(
-            label: '保存して閉じる',
+          OheyActionTile(
             icon: CupertinoIcons.check_mark_circled_solid,
-            color: const Color(0xFF20D0B4),
-            foregroundColor: Colors.white,
-            shadowColor: const Color(0xFF0C8B7A),
-            height: 52,
-            radius: 22,
-            fontSize: 15,
+            title: '保存して閉じる',
+            subtitle: '変更をプロフィールに残す',
+            accent: const Color(0xFF20D0B4),
             onTap: () => Navigator.of(context).pop(_UnsavedProfileAction.save),
           ),
           const SizedBox(height: 10),
-          Ohey3DButton(
-            label: '変更を戻す',
+          OheyActionTile(
             icon: CupertinoIcons.arrow_uturn_left,
-            color: Colors.white.withValues(alpha: .07),
-            foregroundColor: Colors.white,
-            shadowColor: const Color(0xFF315A62).withValues(alpha: .70),
-            height: 48,
-            radius: 21,
-            fontSize: 14,
-            useGradient: false,
+            title: '変更を戻す',
+            subtitle: '変更前のプロフィールに戻す',
+            accent: const Color(0xFFB78CFF),
             onTap: () =>
                 Navigator.of(context).pop(_UnsavedProfileAction.discard),
           ),
-          const SizedBox(height: 10),
-          Ohey3DButton.secondary(
+          const SizedBox(height: 12),
+          _UnsavedProfileCancelButton(
             label: '編集を続ける',
-            icon: CupertinoIcons.pencil,
-            color: Colors.white.withValues(alpha: .055),
-            foregroundColor: _ProfileColors.sub,
-            shadowColor: const Color(0xFF4A3D68).withValues(alpha: .66),
-            height: 46,
-            radius: 20,
-            fontSize: 14,
-            useGradient: false,
             onTap: () =>
                 Navigator.of(context).pop(_UnsavedProfileAction.cancel),
           ),
@@ -361,6 +289,48 @@ class _UnsavedProfileSheet extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _UnsavedProfileCancelButton extends StatelessWidget {
+  const _UnsavedProfileCancelButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      onPressed: onTap,
+      minimumSize: Size.zero,
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        height: 68,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.darkBackground,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: Colors.white.withValues(alpha: .12)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFB78CFF).withValues(alpha: .12),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFFCF9BFF),
+            fontSize: 17,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.3,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 Future<void> _openAdminScreen(BuildContext context) async {
@@ -389,27 +359,6 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
           user: user,
           onClose: () => Navigator.of(sheetContext).pop(),
           children: [
-            _SettingsTile(
-              icon: CupertinoIcons.person_crop_circle,
-              label: 'プロフィール編集',
-              subtitle: '名前・ID・アバターを変更',
-              accent: const Color(0xFF21D6C4),
-              onTap: () async {
-                if (sheetContext.mounted) {
-                  Navigator.of(sheetContext).pop();
-                }
-                // Wait until the settings sheet has finished popping. Opening
-                // another bottom sheet in the same tap while the first route is
-                // still closing can drop the tap on iOS.
-                await Future<void>.delayed(const Duration(milliseconds: 180));
-                if (!context.mounted) return;
-                await _showEditProfileSheet(
-                  context,
-                  ref,
-                  ref.read(oheyUserProvider),
-                );
-              },
-            ),
             _SettingsTile(
               icon: CupertinoIcons.play_circle_fill,
               label: 'はじめてのデモ',
@@ -441,6 +390,8 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
                 await _showProfileManagementSheet(rootContext);
+                if (!rootContext.mounted) return;
+                await _showSettingsSheet(rootContext, ref);
               },
             ),
             _SettingsTile(
@@ -455,6 +406,8 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
                 await _showSupportLegalSheet(rootContext);
+                if (!rootContext.mounted) return;
+                await _showSettingsSheet(rootContext, ref);
               },
             ),
             _SettingsTile(
@@ -606,17 +559,28 @@ class _SupportLegalSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Ohey3DButton.secondary(
-            label: '閉じる',
+          Ohey3DButtonSurface(
             height: 48,
             radius: 20,
             color: isWhite
                 ? const Color(0xFFF2F6FA)
                 : Colors.white.withValues(alpha: .06),
-            foregroundColor: ink,
-            shadowColor: const Color(0xFF243240).withValues(alpha: .46),
+            bottomColor: const Color(0xFF243240).withValues(alpha: .46),
             useGradient: false,
+            outerShadows: const [],
+            innerShadows: const [],
             onTap: () => Navigator.of(context).pop(),
+            child: Text(
+              '閉じる',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: ink,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.2,
+              ),
+            ),
           ),
         ],
       ),
@@ -768,6 +732,8 @@ Future<void> _showProfileManagementSheet(BuildContext context) {
                   await Future<void>.delayed(const Duration(milliseconds: 180));
                   if (!rootContext.mounted) return;
                   await _showFriendRequestManagementSheet(rootContext);
+                  if (!rootContext.mounted) return;
+                  await _showSettingsSheet(rootContext, ref);
                 },
               ),
               _SettingsTile(
@@ -782,6 +748,8 @@ Future<void> _showProfileManagementSheet(BuildContext context) {
                   await Future<void>.delayed(const Duration(milliseconds: 180));
                   if (!rootContext.mounted) return;
                   await _showSafetyCenterSheet(rootContext);
+                  if (!rootContext.mounted) return;
+                  await _showSettingsSheet(rootContext, ref);
                 },
               ),
             ],
@@ -1237,7 +1205,7 @@ Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
     context: context,
     builder: (dialogContext) => CupertinoAlertDialog(
       title: const Text('アカウントを削除しますか？'),
-      content: const Text('プロフィール、フレンズ、投稿などのデータが削除されます。この操作は取り消せません。'),
+      content: const Text('プロフィール、フレンズ、ゆるぼなどのデータが削除されます。この操作は取り消せません。'),
       actions: [
         CupertinoDialogAction(
           onPressed: () => Navigator.of(dialogContext).pop(false),

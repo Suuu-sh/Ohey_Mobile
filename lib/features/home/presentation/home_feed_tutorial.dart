@@ -202,7 +202,7 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        '上にスワイプで次の投稿へ',
+                        '上にスワイプで次のゆるぼへ',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
@@ -214,7 +214,7 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
                       ),
                       const SizedBox(height: 7),
                       Text(
-                        '1枚ずつめくって、気になる投稿に反応しよう。',
+                        '1枚ずつめくって、参加したいゆるぼに反応しよう。',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: subColor,

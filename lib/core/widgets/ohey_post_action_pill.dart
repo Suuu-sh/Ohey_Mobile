@@ -22,6 +22,7 @@ class OheyPostActionPill extends StatelessWidget {
     this.burstIcon = CupertinoIcons.sparkles,
     this.burstColor,
     this.animateIconOnBurst = false,
+    this.showIcon = true,
     this.onTap,
   });
 
@@ -35,6 +36,7 @@ class OheyPostActionPill extends StatelessWidget {
   final IconData burstIcon;
   final Color? burstColor;
   final bool animateIconOnBurst;
+  final bool showIcon;
   final VoidCallback? onTap;
 
   @override
@@ -85,8 +87,7 @@ class OheyPostActionPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          buildIcon(iconAnimation),
-          const SizedBox(width: 6),
+          if (showIcon) ...[buildIcon(iconAnimation), const SizedBox(width: 6)],
           Text(
             label,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(

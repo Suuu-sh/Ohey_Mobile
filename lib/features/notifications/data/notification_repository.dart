@@ -150,7 +150,7 @@ String _todayIsoDate() {
 
 String _oheylaNotificationText(String value) {
   return value
-      .replaceAll('飲みログ', '思い出')
+      .replaceAll('飲みログ', 'ゆるぼ')
       .replaceAll('飲みとも', 'フレンズ')
       .replaceAll('飲み友', 'フレンズ')
       .replaceAll('飲み会', '集まり')
@@ -159,5 +159,5 @@ String _oheylaNotificationText(String value) {
       .replaceAll('ノンアル', '軽め')
       .replaceAll('今日会わない？', '今日会わない？')
       .replaceAll('お誘い', 'お誘い')
-      .replaceAll('乾杯', '思い出');
+      .replaceAll('乾杯', 'ゆるぼ');
 }

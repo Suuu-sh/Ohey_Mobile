@@ -54,7 +54,7 @@ Future<String> oheyWriteSquarePhotoCopy(String path) async {
         side,
       );
     },
-    errorMessage: '写真を正方形にできませんでした。',
+    errorMessage: 'ゆるぼを正方形にできませんでした。',
   );
 }
 
@@ -83,7 +83,7 @@ Future<String> oheyWriteLandscapePhotoCopy(String path) async {
         cropHeight,
       );
     },
-    errorMessage: '写真を16:9にできませんでした。',
+    errorMessage: 'ゆるぼを16:9にできませんでした。',
   );
 }
 

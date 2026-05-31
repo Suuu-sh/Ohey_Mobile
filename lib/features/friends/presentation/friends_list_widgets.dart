@@ -101,10 +101,11 @@ class _FriendsList extends StatelessWidget {
     }
 
     return ListView.separated(
+      clipBehavior: Clip.none,
       physics: const AlwaysScrollableScrollPhysics(
         parent: BouncingScrollPhysics(),
       ),
-      padding: const EdgeInsets.only(bottom: 168),
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 168),
       itemCount:
           filtered.length +
           1 +
@@ -1481,7 +1482,7 @@ class _EmptyFriendsState extends StatelessWidget {
       visual: _EmptyFriendsVisual(avatar: avatar),
       title: message == 'フレンズがいません' ? '一緒に残すフレンズを追加しよう' : message,
       message: message == 'フレンズがいません'
-          ? 'QRかIDでつながると、投稿にタグ付けしたり、反応を送り合えます。'
+          ? 'QRかIDでつながると、ゆるぼに反応したり誘いやすくなります。'
           : subtitle,
       titleColor: isWhite ? const Color(0xFF1B2633) : Colors.white,
       messageColor: isWhite
