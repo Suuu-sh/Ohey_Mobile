@@ -41,13 +41,9 @@ part 'friends_list_widgets.dart';
 part 'friends_card_widgets.dart';
 part 'friends_state_widgets.dart';
 
-Future<void> _holdRefreshIndicatorUntilDone(DateTime startedAt) async {
-  const minimumVisibleDuration = Duration(milliseconds: 650);
-  final elapsed = DateTime.now().difference(startedAt);
-  final remaining = minimumVisibleDuration - elapsed;
-  if (!remaining.isNegative) {
-    await Future<void>.delayed(remaining);
-  }
+Future<void> _holdRefreshIndicatorUntilDone() async {
+  const doneVisibleDuration = Duration(milliseconds: 650);
+  await Future<void>.delayed(doneVisibleDuration);
 }
 
 final _friendMonthlyDailyStatusesProvider = FutureProvider.autoDispose
@@ -74,6 +70,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   String? _customFilterUserId;
   List<_CustomFriendFilter> _customFilters = const [];
   bool _isSendingGroupInvite = false;
+  bool _showRefreshDone = false;
   final Map<String, bool> _favoriteOverrides = {};
   final Set<String> _invitedFriendIds = <String>{};
 
@@ -413,14 +410,17 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     setState(() => _invitedFriendIds.add(friend.id));
   }
 
-  Future<void> _refreshFriends({required DateTime startedAt}) async {
+  Future<void> _refreshFriends() async {
     HapticFeedback.lightImpact();
+    if (mounted) setState(() => _showRefreshDone = false);
     ref.invalidate(outgoingActiveInvitesProvider(null));
     await Future.wait([
       ref.refresh(friendsProvider.future),
       ref.refresh(outgoingActiveInvitesProvider(null).future),
     ]);
-    await _holdRefreshIndicatorUntilDone(startedAt);
+    if (mounted) setState(() => _showRefreshDone = true);
+    await _holdRefreshIndicatorUntilDone();
+    if (mounted) setState(() => _showRefreshDone = false);
   }
 
   @override
@@ -527,8 +527,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                               ),
                               data: (friends) => _FriendsList(
                                 friends: friends,
-                                onRefresh: () =>
-                                    _refreshFriends(startedAt: DateTime.now()),
+                                onRefresh: _refreshFriends,
+                                showRefreshDone: _showRefreshDone,
                                 userAvatar:
                                     user?.avatar ?? OheyAvatar.defaultAvatar,
                                 selectedFilter: _selectedFilter,
@@ -552,8 +552,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                             )
                           : _FriendsList(
                               friends: currentFriends,
-                              onRefresh: () =>
-                                  _refreshFriends(startedAt: DateTime.now()),
+                              onRefresh: _refreshFriends,
+                              showRefreshDone: _showRefreshDone,
                               userAvatar:
                                   user?.avatar ?? OheyAvatar.defaultAvatar,
                               selectedFilter: _selectedFilter,

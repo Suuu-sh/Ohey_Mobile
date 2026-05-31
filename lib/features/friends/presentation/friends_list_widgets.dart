@@ -5,23 +5,29 @@ class _FriendsRefreshIndicator extends StatelessWidget {
     required this.state,
     required this.pulledExtent,
     required this.triggerDistance,
+    required this.showDone,
   });
 
   final RefreshIndicatorMode state;
   final double pulledExtent;
   final double triggerDistance;
+  final bool showDone;
 
   @override
   Widget build(BuildContext context) {
     final progress = (pulledExtent / triggerDistance).clamp(0.0, 1.0);
     final isRefreshing =
-        state == RefreshIndicatorMode.refresh ||
-        state == RefreshIndicatorMode.armed;
-    final label = switch (state) {
-      RefreshIndicatorMode.inactive || RefreshIndicatorMode.drag => '',
-      RefreshIndicatorMode.armed || RefreshIndicatorMode.refresh => '更新中...',
-      RefreshIndicatorMode.done => '更新しました',
-    };
+        !showDone &&
+        (state == RefreshIndicatorMode.refresh ||
+            state == RefreshIndicatorMode.armed);
+    final label = showDone
+        ? '更新しました'
+        : switch (state) {
+            RefreshIndicatorMode.inactive || RefreshIndicatorMode.drag => '',
+            RefreshIndicatorMode.armed ||
+            RefreshIndicatorMode.refresh => '更新中...',
+            RefreshIndicatorMode.done => '更新しました',
+          };
 
     return SizedBox(
       height: pulledExtent,
@@ -95,6 +101,7 @@ class _FriendsList extends StatelessWidget {
     required this.favoriteOverrides,
     required this.invitedFriendIds,
     required this.onRefresh,
+    required this.showRefreshDone,
     required this.isSendingGroupInvite,
     required this.onFavoriteToggle,
     required this.onAddFriend,
@@ -111,6 +118,7 @@ class _FriendsList extends StatelessWidget {
   final Map<String, bool> favoriteOverrides;
   final Set<String> invitedFriendIds;
   final Future<void> Function() onRefresh;
+  final bool showRefreshDone;
   final bool isSendingGroupInvite;
   final void Function(OheyFriend friend, bool isFavorite) onFavoriteToggle;
   final VoidCallback onAddFriend;
@@ -177,6 +185,7 @@ class _FriendsList extends StatelessWidget {
                 state: refreshState,
                 pulledExtent: pulledExtent,
                 triggerDistance: refreshTriggerPullDistance,
+                showDone: showRefreshDone,
               ),
         ),
         child,
