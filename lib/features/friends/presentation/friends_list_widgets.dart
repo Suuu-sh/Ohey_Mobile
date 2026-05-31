@@ -598,16 +598,6 @@ class _GroupScheduleSection extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            _groupScheduleNote(friends),
-            style: TextStyle(
-              color: sub,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              height: 1.35,
-            ),
-          ),
           const SizedBox(height: 18),
           Container(
             width: double.infinity,
@@ -1223,16 +1213,6 @@ String _groupScheduleDayLabel(DateTime day) {
   if (_isSameLocalDay(day, now.add(const Duration(days: 1)))) return '明日';
   const weekdays = ['月', '火', '水', '木', '金', '土', '日'];
   return '${day.month}/${day.day}（${weekdays[day.weekday - 1]}）';
-}
-
-String _groupScheduleNote(List<_DecoratedFriend> friends) {
-  final stats = _groupAvailabilityStats(friends);
-  if (stats.hasNoPlannedMembers && stats.weightedScore == 0) {
-    return '候補日を出して、みんなに予定を入れてもらってね。';
-  }
-  if (stats.isAlmostOk) return 'あと1人確認できたら決めやすいよ。';
-  if (stats.isMaybeOk) return 'まず候補日を出して、みんなに聞いてみよ。';
-  return '予定が合いにくそう。別の日も候補にしよ。';
 }
 
 bool _isSameLocalDay(DateTime a, DateTime b) =>
