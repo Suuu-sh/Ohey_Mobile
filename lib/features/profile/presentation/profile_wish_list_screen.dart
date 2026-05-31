@@ -1,68 +1,60 @@
 part of 'profile_screen.dart';
 
 Future<void> _openProfileWishListScreen(BuildContext context) async {
-  await Navigator.of(context).push<void>(
-    CupertinoPageRoute(builder: (_) => const _ProfileWishListScreen()),
+  await showOheyBottomSheet<void>(
+    context: context,
+    builder: (_) => const _ProfileWishListSheet(),
   );
 }
 
-class _ProfileWishListScreen extends ConsumerWidget {
-  const _ProfileWishListScreen();
+class _ProfileWishListSheet extends ConsumerWidget {
+  const _ProfileWishListSheet();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wishItemsAsync = ref.watch(wishItemControllerProvider);
     final wishItems = wishItemsAsync.asData?.value ?? const <WishItem>[];
-    const background = AppColors.darkBackgroundBottom;
 
-    return Scaffold(
-      backgroundColor: background,
-      body: Stack(
-        children: [
-          const ColoredBox(color: background, child: SizedBox.expand()),
-          SafeArea(
-            bottom: false,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
-                  child: _ProfileWishListHeader(
-                    onBack: () => Navigator.of(context).pop(),
-                    onCreate: () =>
-                        _showProfileCreateWishItemSheet(context, ref),
-                  ),
-                ),
-                Expanded(
-                  child: wishItemsAsync.isLoading && wishItems.isEmpty
-                      ? const Center(child: CupertinoActivityIndicator())
-                      : wishItems.isEmpty
-                      ? _ProfileWishListEmptyState(
-                          onCreate: () =>
-                              _showProfileCreateWishItemSheet(context, ref),
-                        )
-                      : ListView.separated(
-                          physics: const BouncingScrollPhysics(),
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
-                          itemCount: wishItems.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final wish = wishItems[index];
-                            return _ProfileWishListCard(
-                              wish: wish,
-                              onYurubo: () => _showProfileCreateYuruboSheet(
-                                context,
-                                ref,
-                                wish: wish,
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              ],
+    return OheyBottomSheetShell(
+      maxHeightFactor: .9,
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * .78,
+        child: Column(
+          children: [
+            _ProfileWishListHeader(
+              onCreate: () => _showProfileCreateWishItemSheet(context, ref),
             ),
-          ),
-        ],
+            const SizedBox(height: 14),
+            Expanded(
+              child: wishItemsAsync.isLoading && wishItems.isEmpty
+                  ? const Center(child: CupertinoActivityIndicator())
+                  : wishItems.isEmpty
+                  ? _ProfileWishListEmptyState(
+                      onCreate: () =>
+                          _showProfileCreateWishItemSheet(context, ref),
+                    )
+                  : ListView.separated(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(0, 4, 0, 24),
+                      itemCount: wishItems.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        final wish = wishItems[index];
+                        return _ProfileWishListCard(
+                          wish: wish,
+                          onYurubo: () => _showProfileCreateYuruboSheet(
+                            context,
+                            ref,
+                            wish: wish,
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -125,24 +117,16 @@ class _ProfileWishListEmptyState extends StatelessWidget {
 }
 
 class _ProfileWishListHeader extends StatelessWidget {
-  const _ProfileWishListHeader({required this.onBack, required this.onCreate});
+  const _ProfileWishListHeader({required this.onCreate});
 
-  final VoidCallback onBack;
   final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 64,
+      height: 56,
       child: Row(
         children: [
-          OheyHeaderIconButton(
-            icon: CupertinoIcons.chevron_left,
-            semanticLabel: '戻る',
-            color: const Color(0xFFC08BFF),
-            onTap: onBack,
-          ),
-          const SizedBox(width: 6),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
