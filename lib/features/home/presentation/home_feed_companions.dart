@@ -443,35 +443,44 @@ class _FeedCompanionProfileSheetState
                       if (!relationship.alreadyFriend) {
                         return Align(
                           alignment: Alignment.topCenter,
-                          child: _FeedCompanionRequestCard(
-                            isWhite: false,
-                            subtitleColor: Colors.white.withValues(alpha: .58),
-                            message: _requestError ?? 'フレンズになるとカレンダーを見られます。',
-                            buttonLabel: switch (relationship.requestState) {
-                              OheyFriendRequestState.outgoing => '申請済み',
-                              OheyFriendRequestState.incoming => '申請を確認する',
-                              OheyFriendRequestState.none => 'フレンド申請する',
-                            },
-                            isLoading: _isSendingRequest,
-                            enabled:
-                                relationship.requestState ==
-                                OheyFriendRequestState.none,
-                            onTap:
-                                relationship.requestState ==
-                                    OheyFriendRequestState.none
-                                ? _sendRequest
-                                : () => Navigator.of(context).pop(),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: _FeedCompanionRequestCard(
+                              isWhite: false,
+                              subtitleColor: Colors.white.withValues(
+                                alpha: .58,
+                              ),
+                              message: _requestError ?? 'フレンズになるとカレンダーを見られます。',
+                              buttonLabel: switch (relationship.requestState) {
+                                OheyFriendRequestState.outgoing => '申請済み',
+                                OheyFriendRequestState.incoming => '申請を確認する',
+                                OheyFriendRequestState.none => 'フレンド申請する',
+                              },
+                              isLoading: _isSendingRequest,
+                              enabled:
+                                  relationship.requestState ==
+                                  OheyFriendRequestState.none,
+                              onTap:
+                                  relationship.requestState ==
+                                      OheyFriendRequestState.none
+                                  ? _sendRequest
+                                  : () => Navigator.of(context).pop(),
+                            ),
                           ),
                         );
                       }
                       return Align(
                         alignment: Alignment.topCenter,
-                        child: _FeedCompanionStatusCard(
-                          friend: friend,
-                          isWhite: false,
-                          titleColor: Colors.white,
-                          subtitleColor: Colors.white.withValues(alpha: .58),
-                          statusColor: statusColor,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 92,
+                          child: _FeedCompanionStatusCard(
+                            friend: friend,
+                            isWhite: false,
+                            titleColor: Colors.white,
+                            subtitleColor: Colors.white.withValues(alpha: .58),
+                            statusColor: statusColor,
+                          ),
                         ),
                       );
                     },
