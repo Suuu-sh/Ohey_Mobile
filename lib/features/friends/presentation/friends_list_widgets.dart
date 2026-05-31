@@ -861,7 +861,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   reason,
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: isWhite
