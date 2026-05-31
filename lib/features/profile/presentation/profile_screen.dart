@@ -485,17 +485,6 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: sub.withValues(alpha: .34),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
               Text(
                 '誰に募集する？',
                 textAlign: TextAlign.center,
