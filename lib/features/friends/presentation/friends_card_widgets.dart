@@ -303,7 +303,12 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
         widget.friend.avatar ?? _fallbackAvatarForFriend(widget.friend);
     final statusColor = _friendInviteButtonColor(_selectedStatus);
     final media = MediaQuery.of(context);
-    final sheetContentHeight = media.size.height - media.padding.bottom;
+    // The bottom sheet itself is laid out below the top safe area on iOS.
+    // Subtract both safe areas here; otherwise this fixed-height child becomes
+    // taller than the sheet's actual constraints and the close button overflows
+    // on devices with a Dynamic Island / home indicator.
+    final sheetContentHeight =
+        media.size.height - media.padding.top - media.padding.bottom;
     const bodyBackground = AppColors.darkBackgroundBottom;
 
     return OheyBottomSheetShell(
