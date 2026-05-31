@@ -81,9 +81,6 @@ class _YuruboCardBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryText = isWhite ? const Color(0xFF17202B) : Colors.white;
-    final secondaryText = isWhite
-        ? const Color(0xFF778393)
-        : Colors.white.withValues(alpha: .66);
     final body = _yuruboBody(item);
     final place = item.place.trim();
     final timeLabel = item.timeLabel.trim();
@@ -133,17 +130,6 @@ class _YuruboCardBody extends StatelessWidget {
               fontWeight: FontWeight.w900,
               height: 1.18,
               letterSpacing: -.55,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            _yuruboSubcopy(item),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: secondaryText,
-              fontWeight: FontWeight.w800,
-              height: 1.15,
             ),
           ),
         ],
@@ -1040,11 +1026,6 @@ String _yuruboBody(_FeedItem item) {
   final place = item.place.trim();
   if (place.isNotEmpty) return '$place 行ける人いる？';
   return '今日ゆるく会える人いる？';
-}
-
-String _yuruboSubcopy(_FeedItem item) {
-  if (item.isOfficial) return 'Oheyからのおすすめです';
-  return item.ownedByMe ? '反応が来たら予定にしよう' : '行けそうなら軽くリアクションしよう';
 }
 
 String _yuruboInterestedActionLabel(_FeedItem item) {
