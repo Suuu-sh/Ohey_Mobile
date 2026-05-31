@@ -471,11 +471,13 @@ class _ProfileActivityHome extends StatelessWidget {
             joinedYurubos: joinedYurubos,
             isLoading: isYuruboLoading,
           ),
-          const SizedBox(height: 12),
-          _ProfileWishListSection(
-            wishItems: wishItems,
-            isLoading: isWishLoading,
-            onOpenTap: onOpenWishListTap,
+          const SizedBox(height: 14),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _ProfileYuruboActionRow(
+              onTap: onCreateYuruboTap,
+              isLarge: true,
+            ),
           ),
           const SizedBox(height: 12),
           const _ProfileArchiveTopGlowLine(),
@@ -485,7 +487,11 @@ class _ProfileActivityHome extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: _ProfileYuruboActionRow(onTap: onCreateYuruboTap),
+                  child: _ProfileWishListActionRow(
+                    wishItems: wishItems,
+                    isLoading: isWishLoading,
+                    onTap: onOpenWishListTap,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -690,98 +696,6 @@ class _TodayScheduleParticipants extends StatelessWidget {
   }
 }
 
-class _ProfileWishListSection extends StatelessWidget {
-  const _ProfileWishListSection({
-    required this.wishItems,
-    required this.isLoading,
-    required this.onOpenTap,
-  });
-
-  final List<WishItem> wishItems;
-  final bool isLoading;
-  final VoidCallback onOpenTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final countLabel = isLoading && wishItems.isEmpty
-        ? '読み込み中'
-        : '${wishItems.length}件';
-    final preview = wishItems.take(3).map((wish) => wish.title).join('・');
-    final subtitle = preview.isEmpty ? '追加するとここに表示されます' : preview;
-    const accent = AppColors.cFF39C7FF;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 22, 18, 22),
-        decoration: BoxDecoration(
-          color: AppColors.darkBackgroundBottom,
-          borderRadius: BorderRadius.circular(26),
-          border: Border.all(color: accent.withValues(alpha: .42), width: 1.2),
-        ),
-        child: Row(
-          children: [
-            OheyPopIcon(
-              icon: CupertinoIcons.list_bullet,
-              color: accent,
-              size: 34,
-              iconSize: 18,
-              showBubble: false,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '$countLabelのやりたいこと',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: _ProfileColors.sub,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      height: 1.1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            SizedBox(
-              width: 62,
-              child: Ohey3DButton(
-                label: '見る',
-                onTap: onOpenTap,
-                height: 34,
-                radius: 17,
-                color: accent,
-                foregroundColor: AppColors.cFF101820,
-                shadowColor: AppColors.cFF1699D6,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _ProfileSummaryStats extends StatelessWidget {
   const _ProfileSummaryStats({required this.friendsCount});
 
@@ -912,19 +826,20 @@ class _ProfileSummaryStat extends StatelessWidget {
 }
 
 class _ProfileYuruboActionRow extends StatelessWidget {
-  const _ProfileYuruboActionRow({required this.onTap});
+  const _ProfileYuruboActionRow({required this.onTap, this.isLarge = false});
 
   final VoidCallback onTap;
+  final bool isLarge;
 
   @override
   Widget build(BuildContext context) {
     return Ohey3DButtonSurface(
       onTap: onTap,
-      height: 46,
-      radius: 20,
+      height: isLarge ? 78 : 46,
+      radius: isLarge ? 28 : 20,
       color: AppColors.cFFC08BFF,
       bottomColor: AppColors.cFF7F51C9,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: EdgeInsets.symmetric(horizontal: isLarge ? 26 : 14),
       borderColor: AppColors.white.withValues(alpha: .20),
       outerShadows: [
         BoxShadow(
@@ -935,19 +850,19 @@ class _ProfileYuruboActionRow extends StatelessWidget {
       ],
       child: Row(
         children: [
-          const OheyPopIcon(
+          OheyPopIcon(
             icon: CupertinoIcons.plus_bubble_fill,
             color: AppColors.cFF101820,
-            size: 28,
-            iconSize: 15,
+            size: isLarge ? 40 : 28,
+            iconSize: isLarge ? 22 : 15,
           ),
-          const SizedBox(width: 10),
-          const Expanded(
+          SizedBox(width: isLarge ? 16 : 10),
+          Expanded(
             child: Text(
               'ゆるぼを追加',
               style: TextStyle(
                 color: AppColors.cFF101820,
-                fontSize: 14,
+                fontSize: isLarge ? 19 : 14,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.3,
               ),
@@ -956,7 +871,90 @@ class _ProfileYuruboActionRow extends StatelessWidget {
           OheyGeneratedIcon(
             CupertinoIcons.plus,
             color: AppColors.cFF101820,
-            size: 18,
+            size: isLarge ? 26 : 18,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileWishListActionRow extends StatelessWidget {
+  const _ProfileWishListActionRow({
+    required this.wishItems,
+    required this.isLoading,
+    required this.onTap,
+  });
+
+  final List<WishItem> wishItems;
+  final bool isLoading;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final countLabel = isLoading && wishItems.isEmpty
+        ? '読込中'
+        : '${wishItems.length}件';
+    return Ohey3DButtonSurface(
+      onTap: onTap,
+      height: 46,
+      radius: 20,
+      color: AppColors.cFF39C7FF,
+      bottomColor: AppColors.cFF1699D6,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      borderColor: AppColors.white.withValues(alpha: .20),
+      outerShadows: [
+        BoxShadow(
+          color: AppColors.cFF39C7FF.withValues(alpha: .16),
+          blurRadius: 14,
+          offset: const Offset(0, 7),
+        ),
+      ],
+      child: Row(
+        children: [
+          const OheyPopIcon(
+            icon: CupertinoIcons.list_bullet,
+            color: AppColors.cFF101820,
+            size: 28,
+            iconSize: 15,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'やりたいこと',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.cFF101820,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                    letterSpacing: -.35,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  countLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.cFF101820.withValues(alpha: .62),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          OheyGeneratedIcon(
+            CupertinoIcons.chevron_right,
+            color: AppColors.cFF101820,
+            size: 16,
           ),
         ],
       ),
