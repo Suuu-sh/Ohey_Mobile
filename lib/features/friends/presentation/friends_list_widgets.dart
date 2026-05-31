@@ -39,7 +39,11 @@ class _FriendsRefreshIndicator extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 6),
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 120),
-            opacity: state == RefreshIndicatorMode.inactive ? 0 : 1,
+            opacity:
+                state == RefreshIndicatorMode.inactive ||
+                    (state == RefreshIndicatorMode.done && !showDone)
+                ? 0
+                : 1,
             child: Container(
               height: 34,
               padding: const EdgeInsets.symmetric(horizontal: 13),
