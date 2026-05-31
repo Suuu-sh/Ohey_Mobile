@@ -15,6 +15,7 @@ import 'core/services/ohey_widget_sync.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/ohey_theme_mode.dart';
 import 'core/widgets/ohey_tab_shell.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
 const _openingOheyAsset = 'assets/images/opening_ohey.png';
 const _appDisplayName = 'Ohey';
@@ -204,7 +205,7 @@ class _StartupScreen extends StatelessWidget {
     final hasError = message != null;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFF02092B),
+      backgroundColor: AppColors.cFF02092B,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -227,10 +228,10 @@ class _StartupScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(28, 0, 28, 36),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF08091F).withValues(alpha: .78),
+                      color: AppColors.cFF08091F.withValues(alpha: .78),
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: const Color(0xFFFF5EA8).withValues(alpha: .28),
+                        color: AppColors.cFFFF5EA8.withValues(alpha: .28),
                       ),
                     ),
                     child: Padding(
@@ -240,7 +241,7 @@ class _StartupScreen extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.warning_rounded,
-                            color: Color(0xFFFF5EA8),
+                            color: AppColors.cFFFF5EA8,
                             size: 32,
                           ),
                           const SizedBox(height: 10),
@@ -249,7 +250,7 @@ class _StartupScreen extends StatelessWidget {
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                   fontWeight: FontWeight.w900,
                                 ),
                           ),
@@ -261,7 +262,7 @@ class _StartupScreen extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: .64),
+                                color: AppColors.white.withValues(alpha: .64),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -312,12 +313,12 @@ class _StartupWaitingMessage extends StatelessWidget {
         const SizedBox(height: 10),
         DecoratedBox(
           decoration: BoxDecoration(
-            color: const Color(0xFF08091F).withValues(alpha: .34),
+            color: AppColors.cFF08091F.withValues(alpha: .34),
             borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: Colors.white.withValues(alpha: .18)),
+            border: Border.all(color: AppColors.white.withValues(alpha: .18)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: .18),
+                color: AppColors.black.withValues(alpha: .18),
                 blurRadius: 24,
                 offset: const Offset(0, 10),
               ),
@@ -332,7 +333,7 @@ class _StartupWaitingMessage extends StatelessWidget {
                   '$_appDisplayNameを準備してるよ',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: 17,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -.3,
@@ -343,7 +344,7 @@ class _StartupWaitingMessage extends StatelessWidget {
                   'もうすぐ開きます',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: .76),
+                    color: AppColors.white.withValues(alpha: .76),
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -.1,
@@ -382,18 +383,26 @@ class _StartupWordmark extends StatelessWidget {
       foreground: ui.Paint()
         ..style = ui.PaintingStyle.stroke
         ..strokeWidth = 7
-        ..color = const Color(0xFF160C52).withValues(alpha: .50),
+        ..color = AppColors.cFF160C52.withValues(alpha: .50),
     );
 
     const fillStyle = TextStyle(
-      color: Colors.white,
+      color: AppColors.white,
       fontFamily: 'MPLUSRounded1c',
       fontSize: 48,
       fontWeight: FontWeight.w900,
       letterSpacing: -1.2,
       shadows: [
-        Shadow(color: Color(0x99060A35), blurRadius: 20, offset: Offset(0, 6)),
-        Shadow(color: Color(0x99FF5EA8), blurRadius: 22, offset: Offset(0, 0)),
+        Shadow(
+          color: AppColors.c99060A35,
+          blurRadius: 20,
+          offset: Offset(0, 6),
+        ),
+        Shadow(
+          color: AppColors.c99FF5EA8,
+          blurRadius: 22,
+          offset: Offset(0, 0),
+        ),
       ],
     );
 
@@ -409,7 +418,11 @@ class _StartupWordmark extends StatelessWidget {
               shaderCallback: (bounds) => const LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.white, Color(0xFFFFF7B0), Color(0xFFFFA3D4)],
+                colors: [
+                  AppColors.white,
+                  AppColors.cFFFFF7B0,
+                  AppColors.cFFFFA3D4,
+                ],
               ).createShader(bounds),
               child: const Text(_appDisplayName, style: fillStyle),
             ),
@@ -429,10 +442,13 @@ class _StartupDot extends StatelessWidget {
       width: 8,
       height: 8,
       decoration: BoxDecoration(
-        color: const Color(0xFF9AF21A),
+        color: AppColors.cFF9AF21A,
         shape: BoxShape.circle,
         boxShadow: [
-          BoxShadow(color: Colors.white.withValues(alpha: .24), blurRadius: 10),
+          BoxShadow(
+            color: AppColors.white.withValues(alpha: .24),
+            blurRadius: 10,
+          ),
         ],
       ),
     );

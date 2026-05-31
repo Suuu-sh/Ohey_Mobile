@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import 'ohey_pop_icon.dart';
@@ -13,7 +12,7 @@ Color ohey3DShadowColorFor(
   if (hsl.saturation < .08) {
     return Color.lerp(
       color,
-      const Color(0xFF3F5266),
+      AppColors.cFF3F5266,
       .58,
     )!.withValues(alpha: color.a);
   }
@@ -33,7 +32,7 @@ class Ohey3DButton extends StatelessWidget {
     this.height = 58,
     this.radius = 24,
     this.color = AppColors.primaryAction,
-    this.foregroundColor = Colors.white,
+    this.foregroundColor = AppColors.white,
     this.shadowColor,
     this.disabledColor,
     this.disabledOpacity = 1,
@@ -54,9 +53,9 @@ class Ohey3DButton extends StatelessWidget {
     this.customIcon,
     this.height = 58,
     this.radius = 24,
-    this.color = const Color(0xFF52606B),
-    this.foregroundColor = Colors.white,
-    this.shadowColor = const Color(0xFF35434D),
+    this.color = AppColors.cFF52606B,
+    this.foregroundColor = AppColors.white,
+    this.shadowColor = AppColors.cFF35434D,
     this.disabledColor,
     this.disabledOpacity = 1,
     this.trailing,
@@ -77,7 +76,7 @@ class Ohey3DButton extends StatelessWidget {
     this.height = 58,
     this.radius = 24,
     this.color = AppColors.danger,
-    this.foregroundColor = Colors.white,
+    this.foregroundColor = AppColors.white,
     this.shadowColor = AppColors.dangerShadow,
     this.disabledColor,
     this.disabledOpacity = 1,
@@ -270,7 +269,7 @@ class _Ohey3DButtonSurfaceState extends State<Ohey3DButtonSurface> {
               width: expandsWidth ? double.infinity : null,
               height: widget.height + 7,
               decoration: BoxDecoration(
-                color: isPressed ? Colors.transparent : bottom,
+                color: isPressed ? AppColors.transparent : bottom,
                 borderRadius: BorderRadius.circular(widget.radius + 1),
                 boxShadow:
                     widget.outerShadows ??
@@ -299,8 +298,8 @@ class _Ohey3DButtonSurfaceState extends State<Ohey3DButtonSurface> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Color.lerp(base, Colors.white, .22)!,
-                              Color.lerp(base, Colors.white, .10)!,
+                              Color.lerp(base, AppColors.white, .22)!,
+                              Color.lerp(base, AppColors.white, .10)!,
                               base,
                             ],
                             stops: const [0, .55, 1],
@@ -320,7 +319,7 @@ class _Ohey3DButtonSurfaceState extends State<Ohey3DButtonSurface> {
                     border: Border.all(
                       color:
                           widget.borderColor ??
-                          Colors.white.withValues(alpha: .18),
+                          AppColors.white.withValues(alpha: .18),
                       width: widget.borderWidth,
                     ),
                   ),

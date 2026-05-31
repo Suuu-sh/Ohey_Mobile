@@ -22,10 +22,10 @@ class _FeedEmptyState extends StatelessWidget {
     visual: OheyPopIcon(icon: icon, color: accent, size: 58),
     title: title,
     message: message,
-    titleColor: isWhite ? const Color(0xFF27313B) : Colors.white,
+    titleColor: isWhite ? AppColors.cFF27313B : AppColors.white,
     messageColor: isWhite
-        ? const Color(0xFF6E7783)
-        : Colors.white.withValues(alpha: .55),
+        ? AppColors.cFF6E7783
+        : AppColors.white.withValues(alpha: .55),
     action: action,
   );
 }
@@ -61,10 +61,10 @@ class _AvatarBubble extends StatelessWidget {
 BoxDecoration _feedCardDecoration({required double radius}) => BoxDecoration(
   color: _FeedColors.card.withValues(alpha: .74),
   borderRadius: BorderRadius.circular(radius),
-  border: Border.all(color: Colors.white.withValues(alpha: .11), width: 1.2),
+  border: Border.all(color: AppColors.white.withValues(alpha: .11), width: 1.2),
   boxShadow: [
     BoxShadow(
-      color: Colors.black.withValues(alpha: .18),
+      color: AppColors.black.withValues(alpha: .18),
       blurRadius: 26,
       offset: const Offset(0, 14),
     ),
@@ -88,8 +88,6 @@ class _FeedItem {
     this.timeLabel = '',
     required this.avatar,
     required this.accent,
-    this.photoAssetPath,
-    this.captionY = .5,
     this.linkUrl = '',
     this.targetLabel = '全フレンズ',
     this.friends = const <_Companion>[],
@@ -123,8 +121,6 @@ class _FeedItem {
       timeLabel: yurubo.timeLabel,
       avatar: yurubo.avatar,
       accent: _accentForId(yurubo.id),
-      photoAssetPath: null,
-      captionY: .5,
       linkUrl: '',
       targetLabel: yurubo.visibilityLabel.isEmpty
           ? '全フレンズ'
@@ -183,8 +179,6 @@ class _FeedItem {
   final String timeLabel;
   final OheyAvatar avatar;
   final Color accent;
-  final String? photoAssetPath;
-  final double captionY;
   final String linkUrl;
   final String targetLabel;
   final List<_Companion> friends;
@@ -260,10 +254,10 @@ IconData _companionStatusIcon(String? statusKey) {
 Color _companionStatusColor(String? statusKey) {
   final status = oheyDailyStatusFromKey(statusKey);
   return switch (status) {
-    OheyDailyStatus.available => const Color(0xFF9AF21A),
-    OheyDailyStatus.maybeAvailable => const Color(0xFF5DEBD3),
-    OheyDailyStatus.dependsOnTime => const Color(0xFFFF5EA8),
-    OheyDailyStatus.hasPlans => const Color(0xFFB8C1CD),
+    OheyDailyStatus.available => AppColors.cFF9AF21A,
+    OheyDailyStatus.maybeAvailable => AppColors.cFF5DEBD3,
+    OheyDailyStatus.dependsOnTime => AppColors.cFFFF5EA8,
+    OheyDailyStatus.hasPlans => AppColors.cFFB8C1CD,
     OheyDailyStatus.unselected => _FeedColors.sub,
   };
 }
@@ -301,14 +295,14 @@ class _FeedNotification {
         _ => CupertinoIcons.bell_fill,
       },
       accent: switch (notification.kind) {
-        'memory_like' => const Color(0xFFFF75B5),
-        'friend_request_received' => const Color(0xFF58D6FF),
-        'friend_request_accepted' => const Color(0xFF9AF21A),
-        'invite_received' => const Color(0xFFC08BFF),
+        'memory_like' => AppColors.cFFFF75B5,
+        'friend_request_received' => AppColors.cFF58D6FF,
+        'friend_request_accepted' => AppColors.cFF9AF21A,
+        'invite_received' => AppColors.cFFC08BFF,
         'invite_accepted' => _FeedColors.teal,
-        'today_reservation_reminder' => const Color(0xFFFFD166),
-        'memory_tagged' => const Color(0xFF58D6FF),
-        'system' => const Color(0xFFFFD166),
+        'today_reservation_reminder' => AppColors.cFFFFD166,
+        'memory_tagged' => AppColors.cFF58D6FF,
+        'system' => AppColors.cFFFFD166,
         _ => _FeedColors.teal,
       },
       unread: notification.isUnread,
@@ -394,107 +388,66 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
     ..shader = const LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFF05080D), Color(0xFF111821), Color(0xFF05080D)],
+      colors: [AppColors.cFF05080D, AppColors.cFF111821, AppColors.cFF05080D],
       stops: [0, .48, 1],
     ).createShader(rect);
   canvas.drawRect(rect, background);
 
-  final photo = await _loadSharePhoto(item.photoAssetPath);
-  if (photo != null) {
-    final blurredBackdropRect = Rect.fromLTWH(-160, 0, width + 320, height);
-    _paintCoverImage(
-      canvas,
-      image: photo,
-      target: blurredBackdropRect,
-      opacity: .20,
-    );
-    canvas.drawRect(
-      rect,
-      Paint()..color = const Color(0xFF05080D).withValues(alpha: .70),
-    );
-  }
-
   const cardWidth = 930.0;
-  const cardHorizontalPadding = 42.0;
-  const cardTopPadding = 42.0;
-  const photoWidth = cardWidth - cardHorizontalPadding * 2;
-  const photoHeight = photoWidth * 9 / 16;
-  const textTopGap = 38.0;
-  const captionFontSize = 54.0;
+  const cardHorizontalPadding = 56.0;
+  const cardTopPadding = 58.0;
+  const titleFontSize = 58.0;
   const metaFontSize = 34.0;
-  const metaGap = 16.0;
-  const cardBottomPadding = 44.0;
-  const cardHeight =
-      cardTopPadding +
-      photoHeight +
-      textTopGap +
-      captionFontSize * 1.20 +
-      metaGap +
-      metaFontSize * 1.18 +
-      cardBottomPadding;
+  const cardHeight = 520.0;
   const cardLeft = (width - cardWidth) / 2;
   const cardTop = (height - cardHeight) / 2;
   final cardRect = Rect.fromLTWH(cardLeft, cardTop, cardWidth, cardHeight);
-  final cardRRect = RRect.fromRectAndRadius(cardRect, const Radius.circular(4));
+  final cardRRect = RRect.fromRectAndRadius(
+    cardRect,
+    const Radius.circular(32),
+  );
 
   canvas.drawRRect(
     cardRRect.shift(const Offset(0, 18)),
     Paint()
-      ..color = Colors.black.withValues(alpha: .26)
+      ..color = AppColors.black.withValues(alpha: .26)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24),
   );
-  canvas.drawRRect(cardRRect, Paint()..color = Colors.white);
+  canvas.drawRRect(cardRRect, Paint()..color = AppColors.white);
 
-  final photoRect = Rect.fromLTWH(
-    cardLeft + cardHorizontalPadding,
-    cardTop + cardTopPadding,
-    photoWidth,
-    photoHeight,
+  final accentRect = Rect.fromLTWH(cardLeft, cardTop, cardWidth, 12);
+  canvas.drawRRect(
+    RRect.fromRectAndCorners(
+      accentRect,
+      topLeft: const Radius.circular(32),
+      topRight: const Radius.circular(32),
+    ),
+    Paint()..color = AppColors.cFFC08BFF,
   );
-  final photoRRect = RRect.fromRectAndRadius(
-    photoRect,
-    const Radius.circular(2),
-  );
-  if (photo != null) {
-    canvas.save();
-    canvas.clipRRect(photoRRect);
-    _paintCoverImage(canvas, image: photo, target: photoRect);
-    canvas.restore();
-    photo.dispose();
-  } else {
-    canvas.drawRRect(
-      photoRRect,
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFFF0A8D), Color(0xFF21D6C4)],
-        ).createShader(photoRect),
-    );
-  }
 
+  final textLeft = cardLeft + cardHorizontalPadding;
+  final textWidth = cardWidth - cardHorizontalPadding * 2;
   final title = item.body.trim().isNotEmpty ? item.body.trim() : item.userName;
-  final captionTop = photoRect.bottom + textTopGap;
   _paintShareText(
     canvas,
     title,
-    x: photoRect.left,
-    y: captionTop,
-    maxWidth: photoRect.width,
-    size: captionFontSize,
-    weight: FontWeight.w700,
-    color: const Color(0xFF111111),
-    maxLines: 1,
+    x: textLeft,
+    y: cardTop + cardTopPadding,
+    maxWidth: textWidth,
+    size: titleFontSize,
+    weight: FontWeight.w800,
+    color: AppColors.cFF111111,
+    maxLines: 3,
   );
   _paintShareText(
     canvas,
     item.timeAgo,
-    x: photoRect.left,
-    y: captionTop + captionFontSize * 1.20 + metaGap,
-    maxWidth: photoRect.width,
+    x: textLeft,
+    y: cardTop + cardHeight - cardTopPadding - metaFontSize * 1.18,
+    maxWidth: textWidth,
     size: metaFontSize,
     weight: FontWeight.w700,
-    color: const Color(0xFF8D8D8D),
+    color: AppColors.cFF8D8D8D,
     maxLines: 1,
   );
 
@@ -510,79 +463,6 @@ Future<String> _createStoryShareImage(_FeedItem item) async {
   output.dispose();
   picture.dispose();
   return path;
-}
-
-Future<ui.Image?> _loadSharePhoto(String? path) async {
-  final normalized = path?.trim();
-  if (normalized == null || normalized.isEmpty) return null;
-  try {
-    late final Uint8List bytes;
-    if (normalized.startsWith('/')) {
-      final file = File(normalized);
-      if (!await file.exists()) return null;
-      bytes = await file.readAsBytes();
-    } else if (normalized.startsWith('http://') ||
-        normalized.startsWith('https://')) {
-      final uri = Uri.tryParse(normalized);
-      if (uri == null) return null;
-      final request = await HttpClient().getUrl(uri);
-      final response = await request.close();
-      if (response.statusCode < 200 || response.statusCode >= 300) return null;
-      bytes = await consolidateHttpClientResponseBytes(response);
-    } else if (normalized.startsWith('assets/')) {
-      final data = await rootBundle.load(normalized);
-      bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-    } else {
-      return null;
-    }
-    final codec = await ui.instantiateImageCodec(bytes);
-    final frame = await codec.getNextFrame();
-    return frame.image;
-  } catch (_) {
-    return null;
-  }
-}
-
-void _paintCoverImage(
-  Canvas canvas, {
-  required ui.Image image,
-  required Rect target,
-  double opacity = 1,
-}) {
-  final source = Rect.fromLTWH(
-    0,
-    0,
-    image.width.toDouble(),
-    image.height.toDouble(),
-  );
-  final imageAspect = image.width / image.height;
-  final targetAspect = target.width / target.height;
-  Rect sourceCrop;
-  if (imageAspect > targetAspect) {
-    final cropWidth = image.height * targetAspect;
-    sourceCrop = Rect.fromLTWH(
-      (image.width - cropWidth) / 2,
-      0,
-      cropWidth,
-      image.height.toDouble(),
-    );
-  } else {
-    final cropHeight = image.width / targetAspect;
-    sourceCrop = Rect.fromLTWH(
-      0,
-      (image.height - cropHeight) / 2,
-      image.width.toDouble(),
-      cropHeight,
-    );
-  }
-  final paint = Paint()..filterQuality = ui.FilterQuality.high;
-  if (opacity < 1) {
-    paint.colorFilter = ColorFilter.mode(
-      Colors.white.withValues(alpha: opacity),
-      BlendMode.modulate,
-    );
-  }
-  canvas.drawImageRect(image, sourceCrop.intersect(source), target, paint);
 }
 
 void _paintShareText(
@@ -616,18 +496,18 @@ void _paintShareText(
 
 class _FeedColors {
   const _FeedColors._();
-  static const teal = Color(0xFFC08BFF);
-  static const card = Color(0xFF112332);
-  static const sub = Color(0xFF9AA7B7);
+  static const teal = AppColors.cFFC08BFF;
+  static const card = AppColors.cFF112332;
+  static const sub = AppColors.cFF9AA7B7;
 }
 
 Color _accentForId(String id) {
   const colors = [
-    Color(0xFF12C9A4),
-    Color(0xFFC08BFF),
-    Color(0xFF9AF21A),
-    Color(0xFFFF75B5),
-    Color(0xFF58D6FF),
+    AppColors.cFF12C9A4,
+    AppColors.cFFC08BFF,
+    AppColors.cFF9AF21A,
+    AppColors.cFFFF75B5,
+    AppColors.cFF58D6FF,
   ];
   return colors[id.hashCode.abs() % colors.length];
 }

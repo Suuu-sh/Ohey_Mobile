@@ -1,25 +1,15 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/data/backend_api_client.dart';
-import '../../../core/data/supabase_client_provider.dart';
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
-  return AdminRepository(
-    ref.watch(backendApiClientProvider),
-    ref.watch(supabaseClientProvider),
-  );
+  return AdminRepository(ref.watch(backendApiClientProvider));
 });
 
 class AdminRepository {
-  const AdminRepository(this._client, this._supabase);
-
-  static const _photoBucket = 'ohey-photos';
+  const AdminRepository(this._client);
 
   final BackendApiClient _client;
-  final SupabaseClient _supabase;
 
   Future<void> checkAccess() async {
     await _client.get('/v1/admin/me');
@@ -109,39 +99,18 @@ class AdminRepository {
     });
   }
 
-  Future<String?> displayPhotoUrl(String path) async {
-    final normalized = path.trim();
-    if (normalized.isEmpty) return null;
-    if (normalized.startsWith('http://') ||
-        normalized.startsWith('https://') ||
-        normalized.startsWith('assets/') ||
-        normalized.startsWith('/')) {
-      return normalized;
-    }
-    final row = await _client.postRow('/v1/media/display-url', {
-      'path': normalized,
-    });
-    return row['signed_url'] as String?;
-  }
-
   Future<void> createMemory({
     String? ownerUserId,
     required String placeName,
     required String memo,
     required String linkUrl,
-    required String photoPath,
     required bool isOfficial,
   }) async {
-    final uploadedPhotoPath = await _uploadLocalPhotoIfNeeded(
-      photoPath,
-      isOfficial: isOfficial,
-    );
     final body = <String, dynamic>{
       'happened_at': DateTime.now().toUtc().toIso8601String(),
       'place_name': placeName,
       'memo': memo,
       'link_url': linkUrl,
-      'photo_path': uploadedPhotoPath ?? '',
       'is_official': isOfficial,
     };
     if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
@@ -156,79 +125,18 @@ class AdminRepository {
     required String placeName,
     required String memo,
     required String linkUrl,
-    required String photoPath,
     required bool isOfficial,
   }) async {
-    final uploadedPhotoPath = await _uploadLocalPhotoIfNeeded(
-      photoPath,
-      isOfficial: isOfficial,
-    );
     final body = <String, dynamic>{
       'place_name': placeName,
       'memo': memo,
       'link_url': linkUrl,
-      'photo_path': uploadedPhotoPath ?? '',
       'is_official': isOfficial,
     };
     if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
       body['owner_user_id'] = ownerUserId.trim();
     }
     await _client.patch('/v1/admin/memories/$id', body);
-  }
-
-  Future<String?> _uploadLocalPhotoIfNeeded(
-    String? path, {
-    required bool isOfficial,
-  }) async {
-    final normalized = path?.trim();
-    if (normalized == null || normalized.isEmpty) return null;
-    if (!normalized.startsWith('/')) return normalized;
-
-    final file = File(normalized);
-    if (!await file.exists()) return normalized;
-
-    final userId = _client.currentUserId;
-    if (userId == null || userId.isEmpty) {
-      throw StateError('写真をアップロードするにはログインが必要です。');
-    }
-
-    final extension = _safeExtension(normalized);
-    final folder = isOfficial ? 'admin/official_posts' : 'admin/memories';
-    final storagePath =
-        '$folder/$userId/${DateTime.now().toUtc().microsecondsSinceEpoch}$extension';
-
-    await _supabase.storage
-        .from(_photoBucket)
-        .upload(
-          storagePath,
-          file,
-          fileOptions: FileOptions(
-            cacheControl: '3600',
-            contentType: _contentTypeForExtension(extension),
-            upsert: false,
-          ),
-        );
-    return storagePath;
-  }
-
-  String _safeExtension(String path) {
-    final name = path.split('/').last;
-    final dot = name.lastIndexOf('.');
-    if (dot < 0 || dot == name.length - 1) return '.jpg';
-    final extension = name.substring(dot).toLowerCase();
-    return switch (extension) {
-      '.jpg' || '.jpeg' || '.png' || '.heic' || '.webp' => extension,
-      _ => '.jpg',
-    };
-  }
-
-  String _contentTypeForExtension(String extension) {
-    return switch (extension) {
-      '.png' => 'image/png',
-      '.heic' => 'image/heic',
-      '.webp' => 'image/webp',
-      _ => 'image/jpeg',
-    };
   }
 
   Future<void> deleteMemory(String id) async {
@@ -306,7 +214,6 @@ class AdminMemory {
     required this.placeName,
     required this.memo,
     required this.linkUrl,
-    required this.photoPath,
     required this.isOfficial,
   });
 
@@ -318,7 +225,6 @@ class AdminMemory {
   final String placeName;
   final String memo;
   final String linkUrl;
-  final String photoPath;
   final bool isOfficial;
 
   factory AdminMemory.fromJson(Map<String, dynamic> json) {
@@ -336,7 +242,6 @@ class AdminMemory {
       placeName: json['place_name'] as String? ?? '',
       memo: json['memo'] as String? ?? '',
       linkUrl: json['link_url'] as String? ?? '',
-      photoPath: json['photo_path'] as String? ?? '',
       isOfficial: json['is_official'] as bool? ?? false,
     );
   }
@@ -370,7 +275,6 @@ class AdminMemoryReport {
     required this.ownerDisplayName,
     required this.ownerHandle,
     required this.memo,
-    required this.photoPath,
     required this.isOfficial,
     this.createdAt,
     this.reviewedAt,
@@ -386,7 +290,6 @@ class AdminMemoryReport {
   final String ownerDisplayName;
   final String ownerHandle;
   final String memo;
-  final String photoPath;
   final bool isOfficial;
   final DateTime? createdAt;
   final DateTime? reviewedAt;
@@ -412,7 +315,6 @@ class AdminMemoryReport {
       ownerDisplayName: owner['display_name'] as String? ?? 'Ohey user',
       ownerHandle: owner['user_id'] as String? ?? '',
       memo: memory['memo'] as String? ?? '',
-      photoPath: memory['photo_path'] as String? ?? '',
       isOfficial: memory['is_official'] as bool? ?? false,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? ''),
       reviewedAt: DateTime.tryParse(json['reviewed_at'] as String? ?? ''),

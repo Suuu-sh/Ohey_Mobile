@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import '../models/ohey_user.dart';
 import 'ohey_3d_button.dart';
 import 'ohey_pop_icon.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
-const oheyDailyStatusPink = Color(0xFFFF5EA8);
-const oheyDailyStatusBlue = Color(0xFF20B9FF);
-const oheyDailyStatusPurple = Color(0xFF8A62FF);
-const oheyDailyStatusGreen = Color(0xFF9AF21A);
-const oheyDailyStatusBlocked = Color(0xFF2B3644);
-const oheyDailyStatusBlockedForeground = Color(0xFF738092);
-const oheyDailyStatusActionForeground = Color(0xFF06111D);
+const oheyDailyStatusPink = AppColors.cFFFF5EA8;
+const oheyDailyStatusBlue = AppColors.cFF20B9FF;
+const oheyDailyStatusPurple = AppColors.cFF8A62FF;
+const oheyDailyStatusGreen = AppColors.cFF9AF21A;
+const oheyDailyStatusBlocked = AppColors.cFF2B3644;
+const oheyDailyStatusBlockedForeground = AppColors.cFF738092;
+const oheyDailyStatusActionForeground = AppColors.cFF06111D;
 
 class OheyDailyStatus3DOption extends StatelessWidget {
   const OheyDailyStatus3DOption({
@@ -155,7 +156,7 @@ Color oheyDailyStatus3DSurfaceColor(
   required bool selected,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? const Color(0xFFE8EEF5) : const Color(0xFF33404E);
+    return isWhite ? AppColors.cFFE8EEF5 : AppColors.cFF33404E;
   }
   return oheyDailyStatusColor(status);
 }
@@ -166,11 +167,11 @@ Color oheyDailyStatus3DShadowColor(
   required bool selected,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? const Color(0xFFC2CCD8) : const Color(0xFF16202B);
+    return isWhite ? AppColors.cFFC2CCD8 : AppColors.cFF16202B;
   }
   return Color.lerp(
     oheyDailyStatus3DSurfaceColor(status, isWhite: isWhite, selected: selected),
-    Colors.black,
+    AppColors.black,
     .32,
   )!;
 }
@@ -180,7 +181,7 @@ Color oheyDailyStatus3DForegroundColor(
   required bool isWhite,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? const Color(0xFF111827) : const Color(0xFFE8EEF5);
+    return isWhite ? AppColors.cFF111827 : AppColors.cFFE8EEF5;
   }
   return oheyDailyStatusActionForeground;
 }
@@ -190,9 +191,9 @@ Color oheyDailyStatus3DBorderColor(
   required bool selected,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return Colors.white.withValues(alpha: selected ? .24 : .18);
+    return AppColors.white.withValues(alpha: selected ? .24 : .18);
   }
-  return Colors.white.withValues(alpha: selected ? .30 : .20);
+  return AppColors.white.withValues(alpha: selected ? .30 : .20);
 }
 
 List<BoxShadow> oheyDailyStatus3DOuterShadows(
@@ -203,12 +204,12 @@ List<BoxShadow> oheyDailyStatus3DOuterShadows(
   if (status == OheyDailyStatus.hasPlans) {
     return [
       BoxShadow(
-        color: Colors.black.withValues(alpha: selected ? .34 : .28),
+        color: AppColors.black.withValues(alpha: selected ? .34 : .28),
         blurRadius: selected ? 28 : 22,
         offset: const Offset(0, 12),
       ),
       BoxShadow(
-        color: Colors.white.withValues(alpha: selected ? .08 : .05),
+        color: AppColors.white.withValues(alpha: selected ? .08 : .05),
         blurRadius: 10,
         offset: const Offset(0, -2),
       ),
@@ -230,7 +231,7 @@ List<BoxShadow> oheyDailyStatus3DInnerShadows(
   if (status == OheyDailyStatus.hasPlans) {
     return [
       BoxShadow(
-        color: Colors.white.withValues(alpha: selected ? .20 : .15),
+        color: AppColors.white.withValues(alpha: selected ? .20 : .15),
         blurRadius: selected ? 18 : 14,
         offset: const Offset(0, -1),
       ),
@@ -238,7 +239,7 @@ List<BoxShadow> oheyDailyStatus3DInnerShadows(
   }
   return [
     BoxShadow(
-      color: Colors.white.withValues(alpha: selected ? .16 : .10),
+      color: AppColors.white.withValues(alpha: selected ? .16 : .10),
       blurRadius: selected ? 18 : 12,
     ),
   ];

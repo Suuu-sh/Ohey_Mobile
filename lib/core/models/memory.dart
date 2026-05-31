@@ -1,28 +1,6 @@
 import 'ohey_avatar.dart';
 import 'ohey_friend.dart';
 
-enum MemoryRarity {
-  normal('normal'),
-  uncommon('uncommon'),
-  rare('rare'),
-  superRare('super_rare'),
-  ultraRare('ultra_rare'),
-  secret('secret');
-
-  const MemoryRarity(this.key);
-
-  final String key;
-
-  static MemoryRarity fromKey(String? key) => switch (key?.trim()) {
-    'uncommon' => MemoryRarity.uncommon,
-    'rare' => MemoryRarity.rare,
-    'super_rare' => MemoryRarity.superRare,
-    'ultra_rare' => MemoryRarity.ultraRare,
-    'secret' => MemoryRarity.secret,
-    _ => MemoryRarity.normal,
-  };
-}
-
 class Memory {
   const Memory({
     required this.id,
@@ -30,9 +8,7 @@ class Memory {
     required this.friends,
     required this.place,
     required this.memo,
-    this.photoAssetPath,
     this.linkUrl,
-    this.captionY = .5,
     this.placeLatitude,
     this.placeLongitude,
     this.likeCount = 0,
@@ -41,7 +17,6 @@ class Memory {
     this.ownerDisplayName = '',
     this.ownerAvatar,
     this.isOfficial = false,
-    this.rarity = MemoryRarity.normal,
     this.feedAuthorName = '',
     this.feedPostKind = '',
     this.feedDisplayable = true,
@@ -56,9 +31,7 @@ class Memory {
   final List<OheyFriend> friends;
   final String place;
   final String memo;
-  final String? photoAssetPath;
   final String? linkUrl;
-  final double captionY;
   final double? placeLatitude;
   final double? placeLongitude;
   final int likeCount;
@@ -67,7 +40,6 @@ class Memory {
   final String ownerDisplayName;
   final OheyAvatar? ownerAvatar;
   final bool isOfficial;
-  final MemoryRarity rarity;
   final String feedAuthorName;
   final String feedPostKind;
   final bool feedDisplayable;
@@ -82,9 +54,7 @@ class Memory {
     friends: friends,
     place: place,
     memo: memo,
-    photoAssetPath: photoAssetPath,
     linkUrl: linkUrl,
-    captionY: captionY,
     placeLatitude: placeLatitude,
     placeLongitude: placeLongitude,
     likeCount: likeCount ?? this.likeCount,
@@ -93,7 +63,6 @@ class Memory {
     ownerDisplayName: ownerDisplayName,
     ownerAvatar: ownerAvatar,
     isOfficial: isOfficial,
-    rarity: rarity,
     feedAuthorName: feedAuthorName,
     feedPostKind: feedPostKind,
     feedDisplayable: feedDisplayable,

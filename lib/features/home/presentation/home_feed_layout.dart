@@ -12,8 +12,8 @@ double _feedHeaderScrollInset(BuildContext context) {
 }
 
 const _feedBottomPageInset = 124.0;
-const _feedPrimaryActionColor = Color(0xFFC08BFF);
-const _feedPrimaryActionShadowColor = Color(0xFF7F51C9);
+const _feedPrimaryActionColor = AppColors.cFFC08BFF;
+const _feedPrimaryActionShadowColor = AppColors.cFF7F51C9;
 
 Widget _buildFeedPage({
   required double topPadding,
@@ -165,7 +165,7 @@ class _YuruboRefreshIndicator extends StatelessWidget {
                 height: 34,
                 padding: const EdgeInsets.symmetric(horizontal: 13),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF101C2B).withValues(alpha: .82),
+                  color: AppColors.cFF101C2B.withValues(alpha: .82),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
                     color: _feedPrimaryActionColor.withValues(alpha: .22),
@@ -196,7 +196,7 @@ class _YuruboRefreshIndicator extends StatelessWidget {
                     Text(
                       label,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.w900,
                       ),
@@ -274,7 +274,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
             height: 50,
             radius: 22,
             color: _feedPrimaryActionColor,
-            foregroundColor: const Color(0xFF101820),
+            foregroundColor: AppColors.cFF101820,
             shadowColor: _feedPrimaryActionShadowColor,
             fontSize: 14,
           ),
@@ -295,7 +295,7 @@ Future<void> _showFeedPostActions(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (context) => _FeedPostActionsSheet(item: item, body: body),
   );
   if (!context.mounted || action == null) return;
@@ -373,7 +373,7 @@ Future<void> _showFeedPostActions(
         title: '${item.userName}さんをブロックしますか？',
         message: '相手のゆるぼやお誘いが表示されにくくなります。必要ならあとで解除できます。',
         actionLabel: 'ブロックする',
-        color: const Color(0xFFFF5F8F),
+        color: AppColors.cFFFF5F8F,
       );
       if (!confirmed || !context.mounted) return;
       try {
@@ -443,7 +443,7 @@ Future<bool> _confirmDeleteFeedPost(BuildContext context) async {
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    barrierColor: Colors.black.withValues(alpha: .62),
+    barrierColor: AppColors.black.withValues(alpha: .62),
     builder: (context) => const _FeedDeleteConfirmSheet(),
   );
   return result ?? false;
@@ -454,7 +454,7 @@ Future<_FeedReportReason?> _selectReportReason(BuildContext context) async {
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    barrierColor: Colors.black.withValues(alpha: .62),
+    barrierColor: AppColors.black.withValues(alpha: .62),
     builder: (context) => const _FeedReportReasonSheet(),
   );
 }
@@ -470,7 +470,7 @@ Future<bool> _confirmUserSafetyAction(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    barrierColor: Colors.black.withValues(alpha: .62),
+    barrierColor: AppColors.black.withValues(alpha: .62),
     builder: (context) => _FeedUserSafetyConfirmSheet(
       title: title,
       message: message,
@@ -490,7 +490,7 @@ Future<void> _showCreateYuruboSheet(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => _CreateYuruboSheet(ref: ref, initialWish: wish),
   );
 }
@@ -571,10 +571,10 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final ink = isWhite ? AppColors.cFF17212B : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .62);
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .62);
     final wishItems =
         widget.ref.watch(wishItemControllerProvider).asData?.value ??
         const <WishItem>[];
@@ -746,7 +746,7 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
                 height: 50,
                 radius: 22,
                 color: _feedPrimaryActionColor,
-                foregroundColor: const Color(0xFF101820),
+                foregroundColor: AppColors.cFF101820,
                 shadowColor: _feedPrimaryActionShadowColor,
               ),
             ],
@@ -766,7 +766,7 @@ Future<void> _showEditYuruboSheet(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => _EditYuruboSheet(ref: ref, item: item),
   );
 }
@@ -831,10 +831,10 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final ink = isWhite ? AppColors.cFF17212B : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .62);
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .62);
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
@@ -887,7 +887,7 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
             height: 50,
             radius: 22,
             color: _feedPrimaryActionColor,
-            foregroundColor: const Color(0xFF101820),
+            foregroundColor: AppColors.cFF101820,
             shadowColor: _feedPrimaryActionShadowColor,
           ),
         ],
@@ -920,16 +920,14 @@ class _YuruboVisibilityChoice extends StatelessWidget {
     onTap: onTap,
     height: 46,
     radius: 20,
-    color: selected ? _feedPrimaryActionColor : const Color(0xFF263348),
-    bottomColor: selected
-        ? _feedPrimaryActionShadowColor
-        : const Color(0xFF151D2A),
+    color: selected ? _feedPrimaryActionColor : AppColors.cFF263348,
+    bottomColor: selected ? _feedPrimaryActionShadowColor : AppColors.cFF151D2A,
     padding: const EdgeInsets.symmetric(horizontal: 12),
     child: Center(
       child: Text(
         label,
         style: TextStyle(
-          color: selected ? const Color(0xFF101820) : Colors.white,
+          color: selected ? AppColors.cFF101820 : AppColors.white,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -952,7 +950,7 @@ class _YuruboGroupChip extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: (selected ? _FeedColors.teal : Colors.white).withValues(
+        color: (selected ? _FeedColors.teal : AppColors.white).withValues(
           alpha: selected ? .26 : .08,
         ),
         borderRadius: BorderRadius.circular(999),
@@ -963,7 +961,7 @@ class _YuruboGroupChip extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
-          color: Colors.white,
+          color: AppColors.white,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -981,13 +979,13 @@ class _YuruboInput extends StatelessWidget {
     placeholder: placeholder,
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
     decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .08),
+      color: AppColors.white.withValues(alpha: .08),
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: Colors.white.withValues(alpha: .13)),
+      border: Border.all(color: AppColors.white.withValues(alpha: .13)),
     ),
-    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+    style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.w800),
     placeholderStyle: TextStyle(
-      color: Colors.white.withValues(alpha: .42),
+      color: AppColors.white.withValues(alpha: .42),
       fontWeight: FontWeight.w700,
     ),
   );

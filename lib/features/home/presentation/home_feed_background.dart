@@ -16,7 +16,7 @@ class _FeedBackground extends ConsumerWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: isWhite
-              ? const [Colors.white, Colors.white, Color(0xFFF7F9FB)]
+              ? const [AppColors.white, AppColors.white, AppColors.cFFF7F9FB]
               : AppColors.darkBackgroundGradient,
         ),
       ),
@@ -42,7 +42,9 @@ class _FeedHeaderBackdropLayer extends StatelessWidget {
         child: ClipRect(
           child: OheySceneHeaderBackdrop(
             assetPath: 'assets/images/feed_header_scene_clear.png',
-            fadeColor: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
+            fadeColor: isWhite
+                ? AppColors.white
+                : AppColors.darkBackgroundBottom,
             accentColor: _FeedColors.teal,
             imageTopOffset: 0,
             topShadeOpacity: 0,

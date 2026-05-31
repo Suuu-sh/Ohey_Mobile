@@ -38,7 +38,7 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                       Text(
                         'プロフィールを作成して\nください',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: compact ? 24 : 28,
                           fontWeight: FontWeight.w900,
                           height: 1.18,
@@ -49,7 +49,7 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                       Text(
                         '名前とアバターを作ってね。',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: .66),
+                          color: AppColors.white.withValues(alpha: .66),
                           fontSize: compact ? 12 : 15,
                           fontWeight: FontWeight.w800,
                           height: 1.45,
@@ -72,7 +72,9 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                                     colors: [AppColors.peach, AppColors.sky],
                                   ),
                                   border: Border.all(
-                                    color: Colors.white.withValues(alpha: .20),
+                                    color: AppColors.white.withValues(
+                                      alpha: .20,
+                                    ),
                                     width: 2,
                                   ),
                                   boxShadow: [
@@ -93,13 +95,13 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                               onPressed: _isBusy ? null : _openAvatarBuilder,
                               icon: const OheyGeneratedIcon(
                                 CupertinoIcons.pencil,
-                                color: Color(0xFF12C9A4),
+                                color: AppColors.cFF12C9A4,
                                 size: 20,
                               ),
                               label: const Text(
                                 'アバターを作る',
                                 style: TextStyle(
-                                  color: Color(0xFF12C9A4),
+                                  color: AppColors.cFF12C9A4,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
                                 ),

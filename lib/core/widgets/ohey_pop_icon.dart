@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
 class OheyPopIcon extends StatelessWidget {
   const OheyPopIcon({
@@ -9,7 +10,7 @@ class OheyPopIcon extends StatelessWidget {
     required this.icon,
     this.size = 34,
     this.iconSize,
-    this.color = const Color(0xFF9BFF00),
+    this.color = AppColors.cFF9BFF00,
     this.foregroundColor,
     this.showBubble = true,
     this.shadow = true,
@@ -45,7 +46,7 @@ class OheyGeneratedIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) => OheyPopIcon(
     icon: icon,
-    color: color ?? IconTheme.of(context).color ?? Colors.white,
+    color: color ?? IconTheme.of(context).color ?? AppColors.white,
     size: size ?? IconTheme.of(context).size ?? 24,
     showBubble: false,
   );
@@ -387,14 +388,13 @@ class _CuteGlyphPainter extends CustomPainter {
   }
 
   void _drawFriends(Canvas canvas, Size s, Paint p) {
-    final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .66);
-    final dark = Paint()..color = const Color(0xFF071927);
-    final eyeWhite = Paint()..color = Colors.white.withValues(alpha: .96);
-    final shine = Paint()..color = Colors.white.withValues(alpha: .82);
-    final soft = Paint()..color = Colors.white.withValues(alpha: .32);
+    final shadow = Paint()..color = AppColors.cFF06111D.withValues(alpha: .66);
+    final dark = Paint()..color = AppColors.cFF071927;
+    final eyeWhite = Paint()..color = AppColors.white.withValues(alpha: .96);
+    final shine = Paint()..color = AppColors.white.withValues(alpha: .82);
+    final soft = Paint()..color = AppColors.white.withValues(alpha: .32);
     final secondaryColor =
-        Color.lerp(p.color, const Color(0xFF46C8FF), .26) ?? p.color;
+        Color.lerp(p.color, AppColors.cFF46C8FF, .26) ?? p.color;
     final secondary = Paint()..color = secondaryColor;
     final smile = Paint()
       ..color = dark.color
@@ -530,11 +530,10 @@ class _CuteGlyphPainter extends CustomPainter {
   }
 
   void _drawFriendAdd(Canvas canvas, Size s, Paint p) {
-    final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .68);
-    final dark = Paint()..color = const Color(0xFF071927);
-    final eyeWhite = Paint()..color = Colors.white.withValues(alpha: .96);
-    final shine = Paint()..color = Colors.white.withValues(alpha: .82);
+    final shadow = Paint()..color = AppColors.cFF06111D.withValues(alpha: .68);
+    final dark = Paint()..color = AppColors.cFF071927;
+    final eyeWhite = Paint()..color = AppColors.white.withValues(alpha: .96);
+    final shine = Paint()..color = AppColors.white.withValues(alpha: .82);
     final smile = Paint()
       ..color = dark.color
       ..style = PaintingStyle.stroke
@@ -543,8 +542,8 @@ class _CuteGlyphPainter extends CustomPainter {
       ..strokeWidth = s.width * .052;
     final badgeCut = Paint()
       ..color = p.color.computeLuminance() > .76
-          ? const Color(0xFF071927)
-          : Colors.white;
+          ? AppColors.cFF071927
+          : AppColors.white;
 
     final body = Path()
       ..moveTo(s.width * .20, s.height * .46)
@@ -651,7 +650,7 @@ class _CuteGlyphPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(s.width * .75, s.height * .27),
       s.width * .135,
-      Paint()..color = Colors.white.withValues(alpha: .16),
+      Paint()..color = AppColors.white.withValues(alpha: .16),
     );
     final plus = Paint()
       ..color = badgeCut.color
@@ -753,7 +752,7 @@ class _CuteGlyphPainter extends CustomPainter {
       ),
       p,
     );
-    final cut = Paint()..color = Colors.black.withValues(alpha: .22);
+    final cut = Paint()..color = AppColors.black.withValues(alpha: .22);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromLTWH(
@@ -818,10 +817,9 @@ class _CuteGlyphPainter extends CustomPainter {
   }
 
   void _drawBell(Canvas canvas, Size s, Paint p, Paint stroke) {
-    final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .68);
-    final shine = Paint()..color = Colors.white.withValues(alpha: .72);
-    final soft = Paint()..color = Colors.white.withValues(alpha: .26);
+    final shadow = Paint()..color = AppColors.cFF06111D.withValues(alpha: .68);
+    final shine = Paint()..color = AppColors.white.withValues(alpha: .72);
+    final soft = Paint()..color = AppColors.white.withValues(alpha: .26);
     final body = Path()
       ..moveTo(s.width * .24, s.height * .60)
       ..cubicTo(
@@ -877,7 +875,7 @@ class _CuteGlyphPainter extends CustomPainter {
   }
 
   void _drawHeart(Canvas canvas, Size s, Paint p) {
-    final shine = Paint()..color = Colors.white.withValues(alpha: .70);
+    final shine = Paint()..color = AppColors.white.withValues(alpha: .70);
     final heart = Path()
       ..moveTo(s.width * .50, s.height * .86)
       ..cubicTo(
@@ -915,7 +913,7 @@ class _CuteGlyphPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       heart.shift(Offset(s.width * .045, s.height * .065)),
-      Paint()..color = const Color(0xFF06111D).withValues(alpha: .70),
+      Paint()..color = AppColors.cFF06111D.withValues(alpha: .70),
     );
     canvas.drawPath(heart, p);
     canvas.drawCircle(
@@ -1138,11 +1136,10 @@ class _CuteGlyphPainter extends CustomPainter {
   }
 
   void _drawProfile(Canvas canvas, Size s, Paint p) {
-    final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .66);
+    final shadow = Paint()..color = AppColors.cFF06111D.withValues(alpha: .66);
     final facePaint = Paint()..color = p.color;
-    final eye = Paint()..color = const Color(0xFF06111D).withValues(alpha: .82);
-    final shine = Paint()..color = Colors.white.withValues(alpha: .65);
+    final eye = Paint()..color = AppColors.cFF06111D.withValues(alpha: .82);
+    final shine = Paint()..color = AppColors.white.withValues(alpha: .65);
     final blob = Path()
       ..moveTo(s.width * .28, s.height * .40)
       ..cubicTo(
@@ -1226,8 +1223,7 @@ class _CuteGlyphPainter extends CustomPainter {
   }
 
   void _drawMoon(Canvas canvas, Size s, Paint p) {
-    final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .66);
+    final shadow = Paint()..color = AppColors.cFF06111D.withValues(alpha: .66);
     final moon = Path()
       ..moveTo(s.width * .68, s.height * .16)
       ..cubicTo(
@@ -1268,18 +1264,17 @@ class _CuteGlyphPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(s.width * .33, s.height * .25),
       s.width * .035,
-      Paint()..color = Colors.white.withValues(alpha: .76),
+      Paint()..color = AppColors.white.withValues(alpha: .76),
     );
     canvas.drawCircle(
       Offset(s.width * .78, s.height * .30),
       s.width * .025,
-      Paint()..color = Colors.white.withValues(alpha: .62),
+      Paint()..color = AppColors.white.withValues(alpha: .62),
     );
   }
 
   void _drawSun(Canvas canvas, Size s, Paint p) {
-    final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .62);
+    final shadow = Paint()..color = AppColors.cFF06111D.withValues(alpha: .62);
     final center = Offset(s.width * .50, s.height * .50);
     canvas.drawCircle(
       center.translate(s.width * .04, s.height * .06),
@@ -1301,7 +1296,7 @@ class _CuteGlyphPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(s.width * .41, s.height * .39),
       s.width * .045,
-      Paint()..color = Colors.white.withValues(alpha: .70),
+      Paint()..color = AppColors.white.withValues(alpha: .70),
     );
   }
 
@@ -1313,7 +1308,7 @@ class _CuteGlyphPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round
       ..strokeWidth = s.width * .12;
     final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .66)
+      ..color = AppColors.cFF06111D.withValues(alpha: .66)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
@@ -1338,14 +1333,13 @@ class _CuteGlyphPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       head.shift(off),
-      Paint()..color = const Color(0xFF06111D).withValues(alpha: .66),
+      Paint()..color = AppColors.cFF06111D.withValues(alpha: .66),
     );
     canvas.drawPath(head, p);
   }
 
   void _drawPlay(Canvas canvas, Size s, Paint p) {
-    final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .66);
+    final shadow = Paint()..color = AppColors.cFF06111D.withValues(alpha: .66);
     final blob = Path()
       ..moveTo(s.width * .50, s.height * .10)
       ..cubicTo(
@@ -1380,7 +1374,10 @@ class _CuteGlyphPainter extends CustomPainter {
       ..close();
     canvas.drawPath(blob.shift(Offset(s.width * .04, s.height * .06)), shadow);
     canvas.drawPath(blob, p);
-    canvas.drawPath(tri, Paint()..color = Colors.white.withValues(alpha: .86));
+    canvas.drawPath(
+      tri,
+      Paint()..color = AppColors.white.withValues(alpha: .86),
+    );
   }
 
   void _drawLogout(Canvas canvas, Size s, Paint p) {
@@ -1391,7 +1388,7 @@ class _CuteGlyphPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round
       ..strokeWidth = s.width * .11;
     final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .66)
+      ..color = AppColors.cFF06111D.withValues(alpha: .66)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
@@ -1464,19 +1461,19 @@ class _CuteGlyphPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       bolt.shift(Offset(s.width * .04, s.height * .06)),
-      Paint()..color = const Color(0xFF06111D).withValues(alpha: .66),
+      Paint()..color = AppColors.cFF06111D.withValues(alpha: .66),
     );
     canvas.drawPath(bolt, p);
     canvas.drawCircle(
       Offset(s.width * .48, s.height * .26),
       s.width * .035,
-      Paint()..color = Colors.white.withValues(alpha: .65),
+      Paint()..color = AppColors.white.withValues(alpha: .65),
     );
   }
 
   void _drawSearch(Canvas canvas, Size s, Paint p) {
     final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .72)
+      ..color = AppColors.cFF06111D.withValues(alpha: .72)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = s.width * .15;
@@ -1516,7 +1513,7 @@ class _CuteGlyphPainter extends CustomPainter {
       math.pi * .35,
       false,
       Paint()
-        ..color = Colors.white.withValues(alpha: .38)
+        ..color = AppColors.white.withValues(alpha: .38)
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..strokeWidth = s.width * .055,
@@ -1524,9 +1521,8 @@ class _CuteGlyphPainter extends CustomPainter {
   }
 
   void _drawShare(Canvas canvas, Size s, Paint p) {
-    final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .68);
-    final shine = Paint()..color = Colors.white.withValues(alpha: .70);
+    final shadow = Paint()..color = AppColors.cFF06111D.withValues(alpha: .68);
+    final shine = Paint()..color = AppColors.white.withValues(alpha: .70);
     final avatar = Path()
       ..addOval(
         Rect.fromCircle(
@@ -1557,7 +1553,7 @@ class _CuteGlyphPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round
       ..strokeWidth = s.width * .105;
     final arrowShadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .70)
+      ..color = AppColors.cFF06111D.withValues(alpha: .70)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
@@ -1607,7 +1603,7 @@ class _CuteGlyphPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeWidth = s.width * .13;
     final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .68)
+      ..color = AppColors.cFF06111D.withValues(alpha: .68)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = s.width * .14;
@@ -1666,11 +1662,11 @@ class _CuteGlyphPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       blob.shift(Offset(s.width * .04, s.height * .06)),
-      Paint()..color = const Color(0xFF06111D).withValues(alpha: .65),
+      Paint()..color = AppColors.cFF06111D.withValues(alpha: .65),
     );
     canvas.drawPath(blob, p);
     final mark = Paint()
-      ..color = Colors.white.withValues(alpha: .85)
+      ..color = AppColors.white.withValues(alpha: .85)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
@@ -1694,11 +1690,11 @@ class _CuteGlyphPainter extends CustomPainter {
         s.height * .53,
       ).translate(s.width * .04, s.height * .06),
       s.width * .36,
-      Paint()..color = const Color(0xFF06111D).withValues(alpha: .64),
+      Paint()..color = AppColors.cFF06111D.withValues(alpha: .64),
     );
     canvas.drawCircle(Offset(s.width * .50, s.height * .50), s.width * .36, p);
     final hand = Paint()
-      ..color = Colors.white.withValues(alpha: .82)
+      ..color = AppColors.white.withValues(alpha: .82)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = s.width * .09;
@@ -1715,8 +1711,7 @@ class _CuteGlyphPainter extends CustomPainter {
   }
 
   void _drawPhoto(Canvas canvas, Size s, Paint p, Paint stroke) {
-    final shadow = Paint()
-      ..color = const Color(0xFF06111D).withValues(alpha: .64);
+    final shadow = Paint()..color = AppColors.cFF06111D.withValues(alpha: .64);
     final body = RRect.fromRectAndRadius(
       Rect.fromLTWH(
         s.width * .14,
@@ -1728,7 +1723,7 @@ class _CuteGlyphPainter extends CustomPainter {
     );
     canvas.drawRRect(body.shift(Offset(s.width * .04, s.height * .06)), shadow);
     canvas.drawRRect(body, p);
-    final cut = Paint()..color = Colors.white.withValues(alpha: .78);
+    final cut = Paint()..color = AppColors.white.withValues(alpha: .78);
     canvas.drawCircle(
       Offset(s.width * .67, s.height * .38),
       s.width * .07,
@@ -1751,7 +1746,7 @@ class _CuteGlyphPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       hill,
-      Paint()..color = const Color(0xFF06111D).withValues(alpha: .35),
+      Paint()..color = AppColors.cFF06111D.withValues(alpha: .35),
     );
   }
 
@@ -1777,18 +1772,18 @@ class _CuteGlyphPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       pin.shift(Offset(s.width * .04, s.height * .06)),
-      Paint()..color = const Color(0xFF06111D).withValues(alpha: .64),
+      Paint()..color = AppColors.cFF06111D.withValues(alpha: .64),
     );
     canvas.drawPath(pin, p);
     canvas.drawCircle(
       Offset(s.width * .50, s.height * .43),
       s.width * .09,
-      Paint()..color = Colors.white.withValues(alpha: .78),
+      Paint()..color = AppColors.white.withValues(alpha: .78),
     );
   }
 
   void _drawSpark(Canvas canvas, Size s, Paint p) {
-    final shine = Paint()..color = Colors.white.withValues(alpha: .72);
+    final shine = Paint()..color = AppColors.white.withValues(alpha: .72);
     final blob = Path()
       ..moveTo(s.width * .52, s.height * .12)
       ..cubicTo(
@@ -1834,7 +1829,7 @@ class _CuteGlyphPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       blob.shift(Offset(s.width * .045, s.height * .065)),
-      Paint()..color = const Color(0xFF06111D).withValues(alpha: .72),
+      Paint()..color = AppColors.cFF06111D.withValues(alpha: .72),
     );
     canvas.drawPath(blob, p);
     canvas.drawCircle(

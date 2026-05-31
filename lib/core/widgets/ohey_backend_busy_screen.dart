@@ -59,7 +59,7 @@ class _OheyBackendBusyScreenState extends State<OheyBackendBusyScreen>
                 'Oheyを準備中',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: 30,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.8,
@@ -70,7 +70,7 @@ class _OheyBackendBusyScreenState extends State<OheyBackendBusyScreen>
                 'データを読み込んでいます。\n少しだけお待ちください。',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: .66),
+                  color: AppColors.white.withValues(alpha: .66),
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
                   height: 1.55,
@@ -85,10 +85,10 @@ class _OheyBackendBusyScreenState extends State<OheyBackendBusyScreen>
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .06),
+                  color: AppColors.white.withValues(alpha: .06),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: .10),
+                    color: AppColors.white.withValues(alpha: .10),
                   ),
                 ),
                 child: Row(
@@ -96,14 +96,14 @@ class _OheyBackendBusyScreenState extends State<OheyBackendBusyScreen>
                   children: [
                     const OheyGeneratedIcon(
                       CupertinoIcons.clock_fill,
-                      color: Color(0xFF12C9A4),
+                      color: AppColors.cFF12C9A4,
                       size: 18,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'もうすぐ開きます',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: .78),
+                        color: AppColors.white.withValues(alpha: .78),
                         fontSize: 12,
                         fontWeight: FontWeight.w900,
                       ),
@@ -155,15 +155,11 @@ class _Dot extends StatelessWidget {
       width: 12 + wave * 5,
       height: 12 + wave * 5,
       decoration: BoxDecoration(
-        color: Color.lerp(
-          const Color(0xFF12C9A4),
-          const Color(0xFF9AF21A),
-          wave,
-        ),
+        color: Color.lerp(AppColors.cFF12C9A4, AppColors.cFF9AF21A, wave),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF12C9A4).withValues(alpha: .20 + wave * .25),
+            color: AppColors.cFF12C9A4.withValues(alpha: .20 + wave * .25),
             blurRadius: 14 + wave * 12,
           ),
         ],

@@ -15,7 +15,7 @@ class _PageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final headerColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final headerColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     return OheyPageHeader(
       title: 'マイページ',
       titleColor: headerColor,
@@ -55,7 +55,7 @@ class _ProfileAdminButton extends StatelessWidget {
           child: Center(
             child: OheyGeneratedIcon(
               CupertinoIcons.lock_shield_fill,
-              color: isWhite ? const Color(0xFF101820) : Colors.white,
+              color: isWhite ? AppColors.cFF101820 : AppColors.white,
               size: 36,
             ),
           ),
@@ -87,7 +87,7 @@ class _ProfileSettingsButton extends StatelessWidget {
           child: Center(
             child: OheyGeneratedIcon(
               CupertinoIcons.gear_alt,
-              color: isWhite ? const Color(0xFF101820) : Colors.white,
+              color: isWhite ? AppColors.cFF101820 : AppColors.white,
               size: 38,
             ),
           ),
@@ -151,8 +151,8 @@ class _ProfileHeaderBackdrop extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.white.withValues(alpha: .18),
-                Colors.white.withValues(alpha: .36),
+                AppColors.white.withValues(alpha: .18),
+                AppColors.white.withValues(alpha: .36),
               ],
             ),
           ),
@@ -178,7 +178,7 @@ class _ProfileTopSheet extends StatelessWidget {
         6,
       ),
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(34)),
       ),
       child: child,
@@ -226,7 +226,7 @@ class _SimpleHero extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.white.withValues(alpha: .72),
+                  color: AppColors.white.withValues(alpha: .72),
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.4,
                 ),
@@ -284,7 +284,7 @@ class _ProfileReservationStrip extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 86),
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: isWhite ? const Color(0xFFF6FFF2) : const Color(0xFF102614),
+        color: isWhite ? AppColors.cFFF6FFF2 : AppColors.cFF102614,
         borderRadius: BorderRadius.circular(26),
         border: Border.all(color: AppColors.success.withValues(alpha: .42)),
         boxShadow: [
@@ -323,7 +323,7 @@ class _ProfileReservationStrip extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: isWhite ? const Color(0xFF27313B) : Colors.white,
+                    color: isWhite ? AppColors.cFF27313B : AppColors.white,
                     fontWeight: FontWeight.w900,
                     fontSize: 14,
                   ),
@@ -382,7 +382,7 @@ class _IncomingInviteCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isWhite ? const Color(0xFFFFF5F1) : const Color(0xFF2B1714),
+        color: isWhite ? AppColors.cFFFFF5F1 : AppColors.cFF2B1714,
         borderRadius: BorderRadius.circular(26),
         border: Border.all(
           color: AppColors.primaryAction.withValues(alpha: .44),
@@ -426,7 +426,7 @@ class _IncomingInviteCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: isWhite ? const Color(0xFF27313B) : Colors.white,
+                    color: isWhite ? AppColors.cFF27313B : AppColors.white,
                     fontWeight: FontWeight.w900,
                     fontSize: 14,
                   ),
@@ -438,8 +438,8 @@ class _IncomingInviteCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: isWhite
-                        ? const Color(0xFF6D7884)
-                        : Colors.white.withValues(alpha: .62),
+                        ? AppColors.cFF6D7884
+                        : AppColors.white.withValues(alpha: .62),
                     fontWeight: FontWeight.w700,
                     fontSize: 11,
                   ),
@@ -457,11 +457,11 @@ class _IncomingInviteCard extends StatelessWidget {
           _InviteResponseButton(
             label: 'あとで',
             color: isWhite
-                ? Colors.white.withValues(alpha: .86)
-                : Colors.white.withValues(alpha: .10),
+                ? AppColors.white.withValues(alpha: .86)
+                : AppColors.white.withValues(alpha: .10),
             textColor: isWhite
-                ? const Color(0xFF637181)
-                : Colors.white.withValues(alpha: .70),
+                ? AppColors.cFF637181
+                : AppColors.white.withValues(alpha: .70),
             onTap: onReject,
           ),
         ],
@@ -484,9 +484,9 @@ class _ReservedAvatar extends StatelessWidget {
       height: 52,
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: const Color(0xFF12283A),
+        color: AppColors.cFF12283A,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
+        border: Border.all(color: AppColors.white, width: 2),
       ),
       child: ClipOval(
         child: OheyAvatarView(avatar: avatar ?? OheyAvatar.defaultAvatar),
@@ -500,7 +500,7 @@ class _InviteResponseButton extends StatelessWidget {
     required this.label,
     required this.color,
     required this.onTap,
-    this.textColor = const Color(0xFF06111D),
+    this.textColor = AppColors.cFF06111D,
   });
 
   final String label;
@@ -644,7 +644,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
                       height: 1.1,
@@ -777,7 +777,7 @@ class _ProfileWishListSection extends StatelessWidget {
         : '${wishItems.length}件';
     final preview = wishItems.take(3).map((wish) => wish.title).join('・');
     final subtitle = preview.isEmpty ? '追加するとここに表示されます' : preview;
-    const accent = Color(0xFF39C7FF);
+    const accent = AppColors.cFF39C7FF;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -787,7 +787,7 @@ class _ProfileWishListSection extends StatelessWidget {
           color: AppColors.darkBackgroundBottom,
           borderRadius: BorderRadius.circular(26),
           border: Border.all(
-            color: const Color(0xFFC08BFF).withValues(alpha: .42),
+            color: AppColors.cFFC08BFF.withValues(alpha: .42),
             width: 1.2,
           ),
         ),
@@ -811,7 +811,7 @@ class _ProfileWishListSection extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
                       height: 1.1,
@@ -841,8 +841,8 @@ class _ProfileWishListSection extends StatelessWidget {
                 height: 34,
                 radius: 17,
                 color: accent,
-                foregroundColor: const Color(0xFF101820),
-                shadowColor: const Color(0xFF1699D6),
+                foregroundColor: AppColors.cFF101820,
+                shadowColor: AppColors.cFF1699D6,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 fontSize: 12,
               ),
@@ -870,7 +870,7 @@ class _ProfileSummaryStats extends StatelessWidget {
           const Expanded(
             child: _ProfileSummaryStat(
               icon: CupertinoIcons.house_fill,
-              iconColor: Color(0xFFC08BFF),
+              iconColor: AppColors.cFFC08BFF,
               value: '1',
               label: 'ルーム',
             ),
@@ -879,7 +879,7 @@ class _ProfileSummaryStats extends StatelessWidget {
           Expanded(
             child: _ProfileSummaryStat(
               icon: CupertinoIcons.person_2_fill,
-              iconColor: const Color(0xFFFF9BD5),
+              iconColor: AppColors.cFFFF9BD5,
               value: '$friendsCount',
               label: 'フレンズ',
             ),
@@ -897,7 +897,7 @@ class _ProfileStatsDivider extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     width: 1,
     height: 48,
-    color: Colors.white.withValues(alpha: .18),
+    color: AppColors.white.withValues(alpha: .18),
   );
 }
 
@@ -915,7 +915,7 @@ class _ProfileStatGlyph extends StatelessWidget {
       size: 25,
       shadows: [
         Shadow(
-          color: Colors.black.withValues(alpha: .30),
+          color: AppColors.black.withValues(alpha: .30),
           blurRadius: 6,
           offset: const Offset(0, 3),
         ),
@@ -957,7 +957,7 @@ class _ProfileSummaryStat extends StatelessWidget {
               value,
               maxLines: 1,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.white,
                 fontSize: 26,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.9,
@@ -972,7 +972,7 @@ class _ProfileSummaryStat extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: .62),
+            color: AppColors.white.withValues(alpha: .62),
             fontSize: 12,
             fontWeight: FontWeight.w900,
             letterSpacing: -.35,
@@ -994,13 +994,13 @@ class _ProfileYuruboActionRow extends StatelessWidget {
       onTap: onTap,
       height: 46,
       radius: 20,
-      color: const Color(0xFFC08BFF),
-      bottomColor: const Color(0xFF7F51C9),
+      color: AppColors.cFFC08BFF,
+      bottomColor: AppColors.cFF7F51C9,
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      borderColor: Colors.white.withValues(alpha: .20),
+      borderColor: AppColors.white.withValues(alpha: .20),
       outerShadows: [
         BoxShadow(
-          color: const Color(0xFFC08BFF).withValues(alpha: .18),
+          color: AppColors.cFFC08BFF.withValues(alpha: .18),
           blurRadius: 14,
           offset: const Offset(0, 7),
         ),
@@ -1009,7 +1009,7 @@ class _ProfileYuruboActionRow extends StatelessWidget {
         children: [
           const OheyPopIcon(
             icon: CupertinoIcons.plus_bubble_fill,
-            color: Color(0xFF101820),
+            color: AppColors.cFF101820,
             size: 28,
             iconSize: 15,
           ),
@@ -1018,7 +1018,7 @@ class _ProfileYuruboActionRow extends StatelessWidget {
             child: Text(
               'ゆるぼを追加',
               style: TextStyle(
-                color: Color(0xFF101820),
+                color: AppColors.cFF101820,
                 fontSize: 14,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.3,
@@ -1027,7 +1027,7 @@ class _ProfileYuruboActionRow extends StatelessWidget {
           ),
           OheyGeneratedIcon(
             CupertinoIcons.plus,
-            color: Color(0xFF101820),
+            color: AppColors.cFF101820,
             size: 18,
           ),
         ],
@@ -1047,13 +1047,13 @@ class _ProfileFriendActionRow extends StatelessWidget {
       onTap: onAddFriendsTap,
       height: 46,
       radius: 20,
-      color: const Color(0xFF9AF21A),
-      bottomColor: const Color(0xFF5DC86C),
+      color: AppColors.cFF9AF21A,
+      bottomColor: AppColors.cFF5DC86C,
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      borderColor: Colors.white.withValues(alpha: .20),
+      borderColor: AppColors.white.withValues(alpha: .20),
       outerShadows: [
         BoxShadow(
-          color: const Color(0xFF9AF21A).withValues(alpha: .18),
+          color: AppColors.cFF9AF21A.withValues(alpha: .18),
           blurRadius: 14,
           offset: const Offset(0, 7),
         ),
@@ -1062,7 +1062,7 @@ class _ProfileFriendActionRow extends StatelessWidget {
         children: [
           const OheyPopIcon(
             icon: CupertinoIcons.person_2_fill,
-            color: Color(0xFF101820),
+            color: AppColors.cFF101820,
             size: 28,
             iconSize: 15,
           ),
@@ -1071,7 +1071,7 @@ class _ProfileFriendActionRow extends StatelessWidget {
             child: Text(
               'フレンズを追加',
               style: TextStyle(
-                color: Color(0xFF101820),
+                color: AppColors.cFF101820,
                 fontSize: 14,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.3,
@@ -1080,7 +1080,7 @@ class _ProfileFriendActionRow extends StatelessWidget {
           ),
           OheyGeneratedIcon(
             CupertinoIcons.plus,
-            color: Color(0xFF101820),
+            color: AppColors.cFF101820,
             size: 18,
           ),
         ],
@@ -1094,7 +1094,7 @@ class _ProfileArchiveTopGlowLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const pink = Color(0xFFFF75B5);
+    const pink = AppColors.cFFFF75B5;
     return Container(
       height: 1,
       decoration: BoxDecoration(

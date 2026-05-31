@@ -13,7 +13,7 @@ Future<void> showMemoryDailyLimitDialog(BuildContext context, DateTime day) {
     context: context,
     barrierDismissible: true,
     barrierLabel: '閉じる',
-    barrierColor: Colors.black.withValues(alpha: .62),
+    barrierColor: AppColors.black.withValues(alpha: .62),
     transitionDuration: const Duration(milliseconds: 220),
     pageBuilder: (dialogContext, animation, secondaryAnimation) {
       return _MemoryDailyLimitDialog(
@@ -47,26 +47,30 @@ class _MemoryDailyLimitDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     final bodyColor = isWhite
-        ? const Color(0xFF647284)
-        : Colors.white.withValues(alpha: .70);
+        ? AppColors.cFF647284
+        : AppColors.white.withValues(alpha: .70);
     final cardGradient = isWhite
         ? const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFFFFFFF), Color(0xFFFFF2F7), Color(0xFFEAF8FF)],
+            colors: [
+              AppColors.cFFFFFFFF,
+              AppColors.cFFFFF2F7,
+              AppColors.cFFEAF8FF,
+            ],
           )
         : const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF18293A), Color(0xFF0B1722)],
+            colors: [AppColors.cFF18293A, AppColors.cFF0B1722],
           );
 
     return Center(
       child: Dialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 26, vertical: 24),
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(34),
           child: BackdropFilter(
@@ -78,13 +82,15 @@ class _MemoryDailyLimitDialog extends StatelessWidget {
                 borderRadius: BorderRadius.circular(34),
                 border: Border.all(
                   color: isWhite
-                      ? Colors.white.withValues(alpha: .82)
-                      : Colors.white.withValues(alpha: .14),
+                      ? AppColors.white.withValues(alpha: .82)
+                      : AppColors.white.withValues(alpha: .14),
                   width: 1.4,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: isWhite ? .18 : .38),
+                    color: AppColors.black.withValues(
+                      alpha: isWhite ? .18 : .38,
+                    ),
                     blurRadius: 34,
                     offset: const Offset(0, 18),
                   ),
@@ -100,12 +106,12 @@ class _MemoryDailyLimitDialog extends StatelessWidget {
                   const Positioned(
                     right: -10,
                     top: -8,
-                    child: _DialogBubble(color: Color(0xFFFFDDE8), size: 56),
+                    child: _DialogBubble(color: AppColors.cFFFFDDE8, size: 56),
                   ),
                   const Positioned(
                     left: -14,
                     bottom: 36,
-                    child: _DialogBubble(color: Color(0xFFD9F0FF), size: 44),
+                    child: _DialogBubble(color: AppColors.cFFD9F0FF, size: 44),
                   ),
                   Column(
                     mainAxisSize: MainAxisSize.min,
@@ -220,19 +226,19 @@ class _DialogHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isWhite
-        ? const Color(0xFF52606B)
-        : Colors.white.withValues(alpha: .70);
+        ? AppColors.cFF52606B
+        : AppColors.white.withValues(alpha: .70);
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       decoration: BoxDecoration(
         color: isWhite
-            ? Colors.white.withValues(alpha: .72)
+            ? AppColors.white.withValues(alpha: .72)
             : AppColors.darkBackground,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isWhite
-              ? const Color(0xFFE4ECF4)
-              : Colors.white.withValues(alpha: .10),
+              ? AppColors.cFFE4ECF4
+              : AppColors.white.withValues(alpha: .10),
         ),
       ),
       child: Row(

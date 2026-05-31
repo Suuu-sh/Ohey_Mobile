@@ -36,7 +36,7 @@ class _FeedNotificationsScreenState
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: isWhite ? Colors.white : AppColors.darkBackground,
+      backgroundColor: isWhite ? AppColors.white : AppColors.darkBackground,
       body: MediaQuery(
         data: MediaQuery.of(
           context,
@@ -63,13 +63,13 @@ class _FeedNotificationsScreenState
                               height: 44,
                               decoration: BoxDecoration(
                                 color: isWhite
-                                    ? const Color(0xFFF2F4F6)
-                                    : Colors.white.withValues(alpha: .06),
+                                    ? AppColors.cFFF2F4F6
+                                    : AppColors.white.withValues(alpha: .06),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: isWhite
-                                      ? const Color(0xFFD7DEE7)
-                                      : Colors.white.withValues(alpha: .09),
+                                      ? AppColors.cFFD7DEE7
+                                      : AppColors.white.withValues(alpha: .09),
                                 ),
                               ),
                               child: Center(
@@ -85,8 +85,8 @@ class _FeedNotificationsScreenState
                                     ),
                                     style: TextStyle(
                                       color: isWhite
-                                          ? const Color(0xFF27313B)
-                                          : Colors.white,
+                                          ? AppColors.cFF27313B
+                                          : AppColors.white,
                                       fontSize: 23,
                                       fontWeight: FontWeight.w900,
                                       letterSpacing: -2,
@@ -109,8 +109,8 @@ class _FeedNotificationsScreenState
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: isWhite
-                                        ? const Color(0xFF27313B)
-                                        : Colors.white,
+                                        ? AppColors.cFF27313B
+                                        : AppColors.white,
                                     fontSize: 23,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: -.8,
@@ -134,7 +134,7 @@ class _FeedNotificationsScreenState
                           isWhite: isWhite,
                           title: 'お知らせを読み込めませんでした',
                           message: 'あとでもう一度試してね。',
-                          accent: const Color(0xFFFF75B5),
+                          accent: AppColors.cFFFF75B5,
                         )
                       else if ((notifications ?? const []).isEmpty)
                         _NotificationEmptyState(isWhite: isWhite)
@@ -230,7 +230,7 @@ class _FeedNotificationsScreenState
     await showOheyBottomSheet<void>(
       context: context,
       useSafeArea: true,
-      barrierColor: Colors.black.withValues(alpha: .62),
+      barrierColor: AppColors.black.withValues(alpha: .62),
       builder: (sheetContext) => _FriendRequestNotificationSheet(
         notification: notification,
         onAccept: () async {
@@ -260,7 +260,7 @@ class _FeedNotificationsScreenState
     await showOheyBottomSheet<void>(
       context: context,
       useSafeArea: true,
-      barrierColor: Colors.black.withValues(alpha: .62),
+      barrierColor: AppColors.black.withValues(alpha: .62),
       builder: (sheetContext) => _InviteNotificationSheet(
         notification: notification,
         onAccept: () async {
@@ -298,10 +298,10 @@ class _NotificationSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = isWhite ? const Color(0xFF27313B) : Colors.white;
+    final titleColor = isWhite ? AppColors.cFF27313B : AppColors.white;
     final messageColor = isWhite
-        ? const Color(0xFF778393)
-        : Colors.white.withValues(alpha: .58);
+        ? AppColors.cFF778393
+        : AppColors.white.withValues(alpha: .58);
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 8, 2, 10),
       child: Row(
@@ -373,21 +373,21 @@ class _NotificationSectionEmptyNote extends StatelessWidget {
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
       color: isWhite
-          ? const Color(0xFFF3F7FA)
-          : Colors.white.withValues(alpha: .045),
+          ? AppColors.cFFF3F7FA
+          : AppColors.white.withValues(alpha: .045),
       borderRadius: BorderRadius.circular(22),
       border: Border.all(
         color: isWhite
-            ? const Color(0xFFE1E8F1)
-            : Colors.white.withValues(alpha: .08),
+            ? AppColors.cFFE1E8F1
+            : AppColors.white.withValues(alpha: .08),
       ),
     ),
     child: Text(
       '今はお返事まち、ないよ。',
       style: TextStyle(
         color: isWhite
-            ? const Color(0xFF617281)
-            : Colors.white.withValues(alpha: .62),
+            ? AppColors.cFF617281
+            : AppColors.white.withValues(alpha: .62),
         fontSize: 12,
         fontWeight: FontWeight.w800,
         height: 1.35,
@@ -415,8 +415,8 @@ class _NotificationEmptyState extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: isWhite
-                ? const Color(0xFF778393)
-                : Colors.white.withValues(alpha: .56),
+                ? AppColors.cFF778393
+                : AppColors.white.withValues(alpha: .56),
             fontSize: 12,
             fontWeight: FontWeight.w800,
           ),
@@ -443,24 +443,22 @@ class _NotificationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final resolved = notification.isResolvedAction;
     final cardColor = priority
-        ? (isWhite ? const Color(0xFFFFF5F1) : const Color(0xFF2A1716))
+        ? (isWhite ? AppColors.cFFFFF5F1 : AppColors.cFF2A1716)
         : isWhite
-        ? (notification.unread
-              ? const Color(0xFFEBF5F5)
-              : const Color(0xFFEEF3FA))
+        ? (notification.unread ? AppColors.cFFEBF5F5 : AppColors.cFFEEF3FA)
         : notification.unread
         ? _FeedColors.card.withValues(alpha: .86)
         : _FeedColors.card.withValues(alpha: .52);
     final cardBorderColor = priority
         ? notification.accent.withValues(alpha: isWhite ? .36 : .30)
         : isWhite
-        ? const Color(0xFFE1E8F1)
-        : Colors.white.withValues(alpha: .11);
+        ? AppColors.cFFE1E8F1
+        : AppColors.white.withValues(alpha: .11);
     final messageColor = isWhite
-        ? const Color(0xFF617281)
-        : Colors.white.withValues(alpha: .64);
-    final titleColor = isWhite ? const Color(0xFF27313B) : Colors.white;
-    final timeColor = isWhite ? const Color(0xFF8B96A3) : _FeedColors.sub;
+        ? AppColors.cFF617281
+        : AppColors.white.withValues(alpha: .64);
+    final titleColor = isWhite ? AppColors.cFF27313B : AppColors.white;
+    final timeColor = isWhite ? AppColors.cFF8B96A3 : _FeedColors.sub;
 
     final tile = Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -663,12 +661,12 @@ class _FriendRequestNotificationSheetState
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
         decoration: BoxDecoration(
-          color: const Color(0xFF071622),
+          color: AppColors.cFF071622,
           borderRadius: BorderRadius.circular(34),
-          border: Border.all(color: Colors.white.withValues(alpha: .10)),
+          border: Border.all(color: AppColors.white.withValues(alpha: .10)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: .32),
+              color: AppColors.black.withValues(alpha: .32),
               blurRadius: 30,
               offset: const Offset(0, 18),
             ),
@@ -683,7 +681,7 @@ class _FriendRequestNotificationSheetState
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .22),
+                  color: AppColors.white.withValues(alpha: .22),
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -693,7 +691,7 @@ class _FriendRequestNotificationSheetState
               children: [
                 OheyPopIcon(
                   icon: CupertinoIcons.person_badge_plus_fill,
-                  color: const Color(0xFF58D6FF),
+                  color: AppColors.cFF58D6FF,
                   size: 54,
                   iconSize: 29,
                 ),
@@ -707,7 +705,7 @@ class _FriendRequestNotificationSheetState
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 19,
                           fontWeight: FontWeight.w900,
                           letterSpacing: -.4,
@@ -720,7 +718,7 @@ class _FriendRequestNotificationSheetState
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF58D6FF).withValues(alpha: .14),
+                          color: AppColors.cFF58D6FF.withValues(alpha: .14),
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(
                             color: const Color(
@@ -731,7 +729,7 @@ class _FriendRequestNotificationSheetState
                         child: Text(
                           statusLabel,
                           style: const TextStyle(
-                            color: Color(0xFF58D6FF),
+                            color: AppColors.cFF58D6FF,
                             fontSize: 11,
                             fontWeight: FontWeight.w900,
                           ),
@@ -742,9 +740,9 @@ class _FriendRequestNotificationSheetState
                 ),
                 OheyCloseButton(
                   onTap: () => Navigator.of(context).pop(),
-                  iconColor: Colors.white,
-                  backgroundColor: Colors.white.withValues(alpha: .08),
-                  borderColor: Colors.white.withValues(alpha: .10),
+                  iconColor: AppColors.white,
+                  backgroundColor: AppColors.white.withValues(alpha: .08),
+                  borderColor: AppColors.white.withValues(alpha: .10),
                 ),
               ],
             ),
@@ -752,16 +750,18 @@ class _FriendRequestNotificationSheetState
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .045),
+                color: AppColors.white.withValues(alpha: .045),
                 borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: Colors.white.withValues(alpha: .08)),
+                border: Border.all(
+                  color: AppColors.white.withValues(alpha: .08),
+                ),
               ),
               child: Text(
                 _isPending
                     ? widget.notification.message
                     : widget.notification.message,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: .78),
+                  color: AppColors.white.withValues(alpha: .78),
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   height: 1.45,
@@ -793,9 +793,9 @@ class _FriendRequestNotificationSheetState
                 enabled: _busyAction == null,
                 height: 48,
                 radius: 21,
-                color: Colors.white.withValues(alpha: .07),
-                foregroundColor: Colors.white.withValues(alpha: .72),
-                shadowColor: const Color(0xFF2D5E69).withValues(alpha: .72),
+                color: AppColors.white.withValues(alpha: .07),
+                foregroundColor: AppColors.white.withValues(alpha: .72),
+                shadowColor: AppColors.cFF2D5E69.withValues(alpha: .72),
                 fontSize: 14,
                 useGradient: false,
               ),
@@ -873,12 +873,12 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
         decoration: BoxDecoration(
-          color: const Color(0xFF071622),
+          color: AppColors.cFF071622,
           borderRadius: BorderRadius.circular(34),
-          border: Border.all(color: Colors.white.withValues(alpha: .10)),
+          border: Border.all(color: AppColors.white.withValues(alpha: .10)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: .32),
+              color: AppColors.black.withValues(alpha: .32),
               blurRadius: 30,
               offset: const Offset(0, 18),
             ),
@@ -893,7 +893,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .22),
+                  color: AppColors.white.withValues(alpha: .22),
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -903,7 +903,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
               children: [
                 OheyPopIcon(
                   icon: CupertinoIcons.calendar_badge_plus,
-                  color: const Color(0xFFC08BFF),
+                  color: AppColors.cFFC08BFF,
                   size: 54,
                   iconSize: 29,
                 ),
@@ -917,7 +917,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 19,
                           fontWeight: FontWeight.w900,
                           letterSpacing: -.4,
@@ -930,7 +930,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFC08BFF).withValues(alpha: .14),
+                          color: AppColors.cFFC08BFF.withValues(alpha: .14),
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(
                             color: const Color(
@@ -941,7 +941,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
                         child: Text(
                           statusLabel,
                           style: const TextStyle(
-                            color: Color(0xFFC08BFF),
+                            color: AppColors.cFFC08BFF,
                             fontSize: 11,
                             fontWeight: FontWeight.w900,
                           ),
@@ -952,9 +952,9 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
                 ),
                 OheyCloseButton(
                   onTap: () => Navigator.of(context).pop(),
-                  iconColor: Colors.white,
-                  backgroundColor: Colors.white.withValues(alpha: .08),
-                  borderColor: Colors.white.withValues(alpha: .10),
+                  iconColor: AppColors.white,
+                  backgroundColor: AppColors.white.withValues(alpha: .08),
+                  borderColor: AppColors.white.withValues(alpha: .10),
                 ),
               ],
             ),
@@ -962,16 +962,18 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .045),
+                color: AppColors.white.withValues(alpha: .045),
                 borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: Colors.white.withValues(alpha: .08)),
+                border: Border.all(
+                  color: AppColors.white.withValues(alpha: .08),
+                ),
               ),
               child: Text(
                 _isPending
                     ? widget.notification.message
                     : widget.notification.message,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: .78),
+                  color: AppColors.white.withValues(alpha: .78),
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   height: 1.45,
@@ -1003,9 +1005,9 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
                 enabled: _busyAction == null,
                 height: 48,
                 radius: 21,
-                color: Colors.white.withValues(alpha: .07),
-                foregroundColor: Colors.white.withValues(alpha: .72),
-                shadowColor: const Color(0xFF573D7A).withValues(alpha: .72),
+                color: AppColors.white.withValues(alpha: .07),
+                foregroundColor: AppColors.white.withValues(alpha: .72),
+                shadowColor: AppColors.cFF573D7A.withValues(alpha: .72),
                 fontSize: 14,
                 useGradient: false,
               ),

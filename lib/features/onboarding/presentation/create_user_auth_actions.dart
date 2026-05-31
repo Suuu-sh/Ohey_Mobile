@@ -220,7 +220,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
               const Text(
                 'アカウント管理',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
                 ),
@@ -230,7 +230,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
                 Text(
                   '保存済みアカウントはありません。',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: .68),
+                    color: AppColors.white.withValues(alpha: .68),
                     fontWeight: FontWeight.w800,
                   ),
                 )
@@ -241,14 +241,14 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
                     title: Text(
                       account.name,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                     subtitle: Text(
                       account.email,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: .58),
+                        color: AppColors.white.withValues(alpha: .58),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -271,9 +271,9 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
                 onTap: () => Navigator.of(context).pop(),
                 height: 48,
                 radius: 21,
-                color: Colors.white.withValues(alpha: .07),
-                foregroundColor: Colors.white.withValues(alpha: .76),
-                shadowColor: const Color(0xFF6E3E5D).withValues(alpha: .72),
+                color: AppColors.white.withValues(alpha: .07),
+                foregroundColor: AppColors.white.withValues(alpha: .76),
+                shadowColor: AppColors.cFF6E3E5D.withValues(alpha: .72),
                 fontSize: 14,
                 useGradient: false,
               ),

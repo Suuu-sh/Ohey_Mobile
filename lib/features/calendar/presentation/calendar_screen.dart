@@ -27,9 +27,9 @@ import '../../friends/application/invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
 import '../../memories/application/memory_controller.dart';
 
-const _calendarPrimaryActionColor = Color(0xFF20B9FF);
-const _calendarPrimaryActionForegroundColor = Color(0xFF06111D);
-const _calendarPrimaryActionShadowColor = Color(0xFF0B78B7);
+const _calendarPrimaryActionColor = AppColors.cFF20B9FF;
+const _calendarPrimaryActionForegroundColor = AppColors.cFF06111D;
+const _calendarPrimaryActionShadowColor = AppColors.cFF0B78B7;
 
 String _calendarGroupStorageKey(String userId) =>
     'ohey_custom_friend_filters_v1_$userId';
@@ -275,7 +275,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final picked = await showOheyBottomSheet<OheyDailyStatus>(
       context: context,
       useSafeArea: true,
-      barrierColor: Colors.black.withValues(alpha: .58),
+      barrierColor: AppColors.black.withValues(alpha: .58),
       builder: (_) => _CalendarStatusSheet(
         day: _selectedDay,
         selected:
@@ -334,7 +334,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: Colors.transparent,
+        statusBarColor: AppColors.transparent,
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -342,7 +342,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: isWhite
-                ? const [Colors.white, Colors.white, Color(0xFFF7F9FB)]
+                ? const [AppColors.white, AppColors.white, AppColors.cFFF7F9FB]
                 : AppColors.darkBackgroundGradient,
           ),
         ),
@@ -357,9 +357,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               child: OheySceneHeaderBackdrop(
                 assetPath: 'assets/images/calendar_header_scene.png',
                 fadeColor: isWhite
-                    ? Colors.white
+                    ? AppColors.white
                     : AppColors.darkBackgroundBottom,
-                accentColor: const Color(0xFF20B9FF),
+                accentColor: AppColors.cFF20B9FF,
                 alignment: const Alignment(0.72, -1),
                 imageTopOffset: -86,
                 topShadeOpacity: .12,
@@ -383,7 +383,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       children: [
                         const OheyPageHeader(
                           title: 'カレンダー',
-                          titleColor: Color(0xFF54D7FF),
+                          titleColor: AppColors.cFF54D7FF,
                         ),
                         const SizedBox(height: 18),
                         _MonthHeader(month: _month, onMove: _moveMonth),
@@ -493,16 +493,16 @@ class _CalendarIntroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     final messageColor = isWhite
-        ? const Color(0xFF657282)
-        : Colors.white.withValues(alpha: .66);
+        ? AppColors.cFF657282
+        : AppColors.white.withValues(alpha: .66);
     final cardColor = isWhite
-        ? Colors.white
-        : const Color(0xFF122233).withValues(alpha: .82);
+        ? AppColors.white
+        : AppColors.cFF122233.withValues(alpha: .82);
     final borderColor = isWhite
-        ? const Color(0xFFDCE4EC)
-        : Colors.white.withValues(alpha: .08);
+        ? AppColors.cFFDCE4EC
+        : AppColors.white.withValues(alpha: .08);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 15, 14, 15),
@@ -512,7 +512,7 @@ class _CalendarIntroCard extends StatelessWidget {
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .05 : .18),
+            color: AppColors.black.withValues(alpha: isWhite ? .05 : .18),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),
@@ -523,7 +523,7 @@ class _CalendarIntroCard extends StatelessWidget {
         children: [
           OheyPopIcon(
             icon: CupertinoIcons.sparkles,
-            color: const Color(0xFFFFD166),
+            color: AppColors.cFFFFD166,
             size: 42,
             iconSize: 22,
           ),
@@ -563,16 +563,16 @@ class _CalendarIntroCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF54D7FF).withValues(alpha: .16),
+                color: AppColors.cFF54D7FF.withValues(alpha: .16),
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(
-                  color: const Color(0xFF54D7FF).withValues(alpha: .30),
+                  color: AppColors.cFF54D7FF.withValues(alpha: .30),
                 ),
               ),
               child: const Text(
                 'OK',
                 style: TextStyle(
-                  color: Color(0xFF54D7FF),
+                  color: AppColors.cFF54D7FF,
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
@@ -601,7 +601,7 @@ class _MonthHeader extends StatelessWidget {
             '${month.year}/${month.month.toString().padLeft(2, '0')}',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 26,
               fontWeight: FontWeight.w900,
               letterSpacing: -.7,
@@ -629,14 +629,14 @@ class _ArrowButton extends StatelessWidget {
         height: 34,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: .12),
+          color: AppColors.white.withValues(alpha: .12),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withValues(alpha: .10)),
+          border: Border.all(color: AppColors.white.withValues(alpha: .10)),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.white,
             fontSize: 24,
             height: .95,
             fontWeight: FontWeight.w900,
@@ -668,12 +668,12 @@ class _SelectedDayPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = isWhite ? const Color(0xFF101820) : Colors.white;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     return OheyThemedPanel(
       width: double.infinity,
       padding: EdgeInsets.zero,
       accentColor: _calendarPrimaryActionColor,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       borderRadius: 0,
       borderWidth: 0,
       borderAlpha: 0,
@@ -816,7 +816,10 @@ class _CalendarStatusChangeButton extends StatelessWidget {
           ),
         ],
         innerShadows: [
-          BoxShadow(color: Colors.white.withValues(alpha: .12), blurRadius: 10),
+          BoxShadow(
+            color: AppColors.white.withValues(alpha: .12),
+            blurRadius: 10,
+          ),
         ],
         child: Center(
           child: Text(
@@ -864,7 +867,7 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
           children: [
             OheyPopIcon(
               icon: CupertinoIcons.lock_fill,
-              color: const Color(0xFF94A3B8),
+              color: AppColors.cFF94A3B8,
               size: compact ? 30 : 38,
               iconSize: compact ? 13 : 17,
             ),
@@ -879,7 +882,7 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: isWhite ? const Color(0xFF101820) : Colors.white,
+                      color: isWhite ? AppColors.cFF101820 : AppColors.white,
                       fontSize: compact ? 12.5 : 13.5,
                       fontWeight: FontWeight.w900,
                       height: 1.1,
@@ -892,8 +895,8 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: isWhite
-                          ? const Color(0xFF667381)
-                          : Colors.white.withValues(alpha: .62),
+                          ? AppColors.cFF667381
+                          : AppColors.white.withValues(alpha: .62),
                       fontSize: compact ? 10.5 : 11.5,
                       fontWeight: FontWeight.w800,
                       height: 1.1,
@@ -912,7 +915,11 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
                 radius: compact ? 14 : 15,
                 color: _calendarStatusPink,
                 foregroundColor: _calendarPrimaryActionForegroundColor,
-                shadowColor: Color.lerp(_calendarStatusPink, Colors.black, .32),
+                shadowColor: Color.lerp(
+                  _calendarStatusPink,
+                  AppColors.black,
+                  .32,
+                ),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 fontSize: compact ? 11 : 12,
               ),
@@ -961,8 +968,8 @@ class _CalendarFriendStatusList extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: isWhite
-                  ? const Color(0xFF667381)
-                  : Colors.white.withValues(alpha: .62),
+                  ? AppColors.cFF667381
+                  : AppColors.white.withValues(alpha: .62),
               fontSize: 12,
               fontWeight: FontWeight.w800,
             ),
@@ -983,8 +990,8 @@ class _CalendarFriendStatusList extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: isWhite
-                      ? const Color(0xFF667381)
-                      : Colors.white.withValues(alpha: .62),
+                      ? AppColors.cFF667381
+                      : AppColors.white.withValues(alpha: .62),
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                 ),
@@ -1016,7 +1023,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
 
         final accent = availableCount > 0
             ? _calendarPrimaryActionColor
-            : const Color(0xFF94A3B8);
+            : AppColors.cFF94A3B8;
         return _CalendarSectionSurface(
           label: 'フレンズの空き状況',
           accent: AppColors.primaryAction,
@@ -1049,8 +1056,8 @@ class _CalendarFriendStatusList extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: isWhite
-                              ? const Color(0xFF101820)
-                              : Colors.white,
+                              ? AppColors.cFF101820
+                              : AppColors.white,
                           fontSize: compact ? 13 : 14,
                           fontWeight: FontWeight.w900,
                           height: 1.1,
@@ -1073,8 +1080,8 @@ class _CalendarFriendStatusList extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: isWhite
-                              ? const Color(0xFF667381)
-                              : Colors.white.withValues(alpha: .62),
+                              ? AppColors.cFF667381
+                              : AppColors.white.withValues(alpha: .62),
                           fontSize: compact ? 10.5 : 11.5,
                           fontWeight: FontWeight.w800,
                           height: 1.1,
@@ -1129,7 +1136,7 @@ class _CalendarSectionSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fillColors = isWhite
-        ? [Colors.white, const Color(0xFFF7FBFF)]
+        ? [AppColors.white, AppColors.cFFF7FBFF]
         : const [AppColors.darkBackground, AppColors.darkBackground];
     final content = Container(
       width: double.infinity,
@@ -1149,7 +1156,7 @@ class _CalendarSectionSurface extends StatelessWidget {
           BoxShadow(
             color: isWhite
                 ? accent.withValues(alpha: .06)
-                : Colors.black.withValues(alpha: .26),
+                : AppColors.black.withValues(alpha: .26),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -1231,7 +1238,9 @@ class _CalendarTinyPill extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          color: isWhite ? Color.lerp(color, Colors.black, .20)! : Colors.white,
+          color: isWhite
+              ? Color.lerp(color, AppColors.black, .20)!
+              : AppColors.white,
           fontSize: 10,
           fontWeight: FontWeight.w900,
           height: 1,
@@ -1260,15 +1269,15 @@ class _CalendarAvailabilityMeter extends StatelessWidget {
       child: Container(
         height: 5,
         color: isWhite
-            ? const Color(0xFFE8EEF5)
-            : Colors.white.withValues(alpha: .10),
+            ? AppColors.cFFE8EEF5
+            : AppColors.white.withValues(alpha: .10),
         alignment: Alignment.centerLeft,
         child: FractionallySizedBox(
           widthFactor: normalized,
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [color, Color.lerp(color, Colors.white, .24)!],
+                colors: [color, Color.lerp(color, AppColors.white, .24)!],
               ),
             ),
           ),
@@ -1339,7 +1348,7 @@ class _CalendarFriendStatusCountChip extends StatelessWidget {
       child: Text(
         '${status.label} $count',
         style: TextStyle(
-          color: isWhite ? const Color(0xFF17212B) : Colors.white,
+          color: isWhite ? AppColors.cFF17212B : AppColors.white,
           fontSize: 10,
           fontWeight: FontWeight.w900,
         ),
@@ -1358,7 +1367,7 @@ Future<void> _showCalendarFriendStatusSheet(
   return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => _CalendarFriendStatusSheet(
       day: day,
       friends: friends,
@@ -1479,7 +1488,7 @@ class _CalendarFriendStatusSheetState
             Text(
               'フレンズの空き状況',
               style: TextStyle(
-                color: isWhite ? const Color(0xFF101820) : Colors.white,
+                color: isWhite ? AppColors.cFF101820 : AppColors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
               ),
@@ -1489,8 +1498,8 @@ class _CalendarFriendStatusSheetState
               '予定を決める前に、誰が空いているか一目で見られるよ。',
               style: TextStyle(
                 color: isWhite
-                    ? const Color(0xFF667381)
-                    : Colors.white.withValues(alpha: .62),
+                    ? AppColors.cFF667381
+                    : AppColors.white.withValues(alpha: .62),
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
                 height: 1.35,
@@ -1585,22 +1594,22 @@ class _CalendarFriendGroupChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = selected ? AppColors.primaryAction : const Color(0xFF94A3B8);
+    final accent = selected ? AppColors.primaryAction : AppColors.cFF94A3B8;
     final surface = selected
         ? accent.withValues(alpha: isWhite ? .32 : .42)
         : isWhite
-        ? const Color(0xFFF6F8FA)
-        : const Color(0xFF26323C);
+        ? AppColors.cFFF6F8FA
+        : AppColors.cFF26323C;
     final bottom = selected
-        ? Color.lerp(accent, Colors.black, .34)!
+        ? Color.lerp(accent, AppColors.black, .34)!
         : isWhite
-        ? const Color(0xFFD3DBE3)
-        : const Color(0xFF151D25);
+        ? AppColors.cFFD3DBE3
+        : AppColors.cFF151D25;
     final foreground = selected
-        ? const Color(0xFFFF86B7)
+        ? AppColors.cFFFF86B7
         : isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .78);
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .78);
 
     return Ohey3DButtonSurface(
       onTap: onTap,
@@ -1613,11 +1622,11 @@ class _CalendarFriendGroupChip extends StatelessWidget {
       borderColor: selected
           ? foreground.withValues(alpha: .48)
           : isWhite
-          ? const Color(0xFFE0E6ED)
-          : Colors.white.withValues(alpha: .14),
+          ? AppColors.cFFE0E6ED
+          : AppColors.white.withValues(alpha: .14),
       outerShadows: [
         BoxShadow(
-          color: (selected ? foreground : Colors.black).withValues(
+          color: (selected ? foreground : AppColors.black).withValues(
             alpha: selected ? .20 : .12,
           ),
           blurRadius: selected ? 16 : 10,
@@ -1626,7 +1635,7 @@ class _CalendarFriendGroupChip extends StatelessWidget {
       ],
       innerShadows: [
         BoxShadow(
-          color: Colors.white.withValues(alpha: selected ? .10 : .06),
+          color: AppColors.white.withValues(alpha: selected ? .10 : .06),
           blurRadius: 8,
           offset: const Offset(-2, -2),
         ),
@@ -1661,13 +1670,13 @@ class _CalendarFriendStatusModalOverview extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = availableCount > 0
         ? _calendarPrimaryActionColor
-        : const Color(0xFF94A3B8);
+        : AppColors.cFF94A3B8;
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
       decoration: BoxDecoration(
         color: isWhite
             ? accent.withValues(alpha: .10)
-            : Colors.white.withValues(alpha: .06),
+            : AppColors.white.withValues(alpha: .06),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: accent.withValues(alpha: .28)),
         boxShadow: [
@@ -1694,7 +1703,7 @@ class _CalendarFriendStatusModalOverview extends StatelessWidget {
                 Text(
                   '$availableCount/$totalCount人が空いてそう',
                   style: TextStyle(
-                    color: isWhite ? const Color(0xFF101820) : Colors.white,
+                    color: isWhite ? AppColors.cFF101820 : AppColors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -.2,
@@ -1707,8 +1716,8 @@ class _CalendarFriendStatusModalOverview extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: isWhite
-                        ? const Color(0xFF667381)
-                        : Colors.white.withValues(alpha: .62),
+                        ? AppColors.cFF667381
+                        : AppColors.white.withValues(alpha: .62),
                     fontSize: 11.5,
                     fontWeight: FontWeight.w800,
                   ),
@@ -1747,8 +1756,8 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
           'このグループのフレンズはいません',
           style: TextStyle(
             color: isWhite
-                ? const Color(0xFF667381)
-                : Colors.white.withValues(alpha: .62),
+                ? AppColors.cFF667381
+                : AppColors.white.withValues(alpha: .62),
             fontSize: 12,
             fontWeight: FontWeight.w800,
           ),
@@ -1857,7 +1866,7 @@ class _CalendarStatusSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final sub = isWhite ? const Color(0xFF657282) : Colors.white70;
+    final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
     final options = const [
       OheyDailyStatus.available,
       OheyDailyStatus.maybeAvailable,
@@ -1931,10 +1940,10 @@ class _PlayfulMonthGrid extends StatelessWidget {
                       entry.value,
                       style: TextStyle(
                         color: entry.key == 0
-                            ? Color(0xFFFF6FA6)
+                            ? AppColors.cFFFF6FA6
                             : entry.key == 6
-                            ? Color(0xFF46C8FF)
-                            : Color(0xFFB7C0CA),
+                            ? AppColors.cFF46C8FF
+                            : AppColors.cFFB7C0CA,
                         fontWeight: FontWeight.w900,
                         fontSize: 16,
                       ),
@@ -2035,15 +2044,15 @@ class _DayTile extends StatelessWidget {
         ? _calendarStatusTileForeground(dailyStatus, isWhite: isWhite)
         : !inMonth
         ? (isWhite
-              ? Colors.black.withValues(alpha: .20)
-              : Colors.white.withValues(alpha: .20))
+              ? AppColors.black.withValues(alpha: .20)
+              : AppColors.white.withValues(alpha: .20))
         : column == 0
-        ? const Color(0xFFFF6FA6)
+        ? AppColors.cFFFF6FA6
         : column == 6
-        ? const Color(0xFF46C8FF)
+        ? AppColors.cFF46C8FF
         : isWhite
-        ? const Color(0xFF101820)
-        : Colors.white;
+        ? AppColors.cFF101820
+        : AppColors.white;
 
     return GestureDetector(
       onTap: inMonth ? onTap : null,
@@ -2051,7 +2060,7 @@ class _DayTile extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         decoration: BoxDecoration(
           color: !inMonth
-              ? Colors.transparent
+              ? AppColors.transparent
               : hasStatus
               ? _calendarStatusTileBackground(
                   dailyStatus,
@@ -2059,18 +2068,18 @@ class _DayTile extends StatelessWidget {
                   selected: isSelected,
                 )
               : isWhite
-              ? (isSelected ? const Color(0xFFEAF8FF) : Colors.white)
+              ? (isSelected ? AppColors.cFFEAF8FF : AppColors.white)
               : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(13),
           border: Border.all(
             color: !inMonth
-                ? Colors.transparent
+                ? AppColors.transparent
                 : hasPlan
                 ? _calendarPrimaryActionColor
                 : hasStatus
                 ? statusAccent.withValues(alpha: isSelected ? .90 : .52)
                 : isSelected
-                ? const Color(0xFF54D7FF)
+                ? AppColors.cFF54D7FF
                 : _calendarPrimaryActionColor.withValues(
                     alpha: isWhite ? .34 : .24,
                   ),
@@ -2082,7 +2091,9 @@ class _DayTile extends StatelessWidget {
                   BoxShadow(
                     color: hasStatus
                         ? statusAccent.withValues(alpha: isWhite ? .16 : .24)
-                        : Colors.black.withValues(alpha: isWhite ? .05 : .20),
+                        : AppColors.black.withValues(
+                            alpha: isWhite ? .05 : .20,
+                          ),
                     blurRadius: hasStatus ? 16 : 12,
                     offset: const Offset(0, 8),
                   ),
@@ -2097,7 +2108,7 @@ class _DayTile extends StatelessWidget {
                 child: Text(
                   '$day',
                   style: TextStyle(
-                    color: isToday && !isWhite ? Colors.white : dayColor,
+                    color: isToday && !isWhite ? AppColors.white : dayColor,
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                   ),
@@ -2134,12 +2145,12 @@ String _dateKey(DateTime date) =>
 String _calendarWeekdayLabel(DateTime day) =>
     const ['月', '火', '水', '木', '金', '土', '日'][day.weekday - 1];
 
-const _calendarStatusPink = Color(0xFFFF5EA8);
-const _calendarStatusBlue = Color(0xFF20B9FF);
-const _calendarStatusPurple = Color(0xFF8A62FF);
-const _calendarStatusGreen = Color(0xFF9AF21A);
-const _calendarStatusBlocked = Color(0xFF2B3644);
-const _calendarStatusBlockedForeground = Color(0xFF738092);
+const _calendarStatusPink = AppColors.cFFFF5EA8;
+const _calendarStatusBlue = AppColors.cFF20B9FF;
+const _calendarStatusPurple = AppColors.cFF8A62FF;
+const _calendarStatusGreen = AppColors.cFF9AF21A;
+const _calendarStatusBlocked = AppColors.cFF2B3644;
+const _calendarStatusBlockedForeground = AppColors.cFF738092;
 
 Color _calendarStatusTileAccent(OheyDailyStatus status) {
   if (status == OheyDailyStatus.hasPlans) {
@@ -2155,7 +2166,7 @@ Color _calendarStatusTileBackground(
 }) {
   if (status == OheyDailyStatus.hasPlans) {
     return isWhite
-        ? const Color(0xFFE2E8F0)
+        ? AppColors.cFFE2E8F0
         : _calendarStatusBlocked.withValues(alpha: selected ? .92 : .76);
   }
   final color = _calendarStatusColor(status);
@@ -2169,7 +2180,7 @@ Color _calendarStatusTileForeground(
   required bool isWhite,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? const Color(0xFF111827) : Colors.white;
+    return isWhite ? AppColors.cFF111827 : AppColors.white;
   }
   return _calendarPrimaryActionForegroundColor;
 }
@@ -2193,7 +2204,7 @@ Color _calendarStatus3DSurfaceColor(
   required bool selected,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? const Color(0xFFE8EEF5) : const Color(0xFF33404E);
+    return isWhite ? AppColors.cFFE8EEF5 : AppColors.cFF33404E;
   }
   return _calendarStatusColor(status);
 }
@@ -2204,18 +2215,18 @@ Color _calendarStatus3DShadowColor(
   required bool selected,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? const Color(0xFFC2CCD8) : const Color(0xFF16202B);
+    return isWhite ? AppColors.cFFC2CCD8 : AppColors.cFF16202B;
   }
   return Color.lerp(
     _calendarStatus3DSurfaceColor(status, isWhite: isWhite, selected: selected),
-    Colors.black,
+    AppColors.black,
     .32,
   )!;
 }
 
 Color _calendarStatus3DForegroundColor(OheyDailyStatus status) {
   if (status == OheyDailyStatus.hasPlans) {
-    return const Color(0xFF111827);
+    return AppColors.cFF111827;
   }
   return _calendarPrimaryActionForegroundColor;
 }
@@ -2226,9 +2237,9 @@ Color _calendarStatus3DBorderColor(
   required bool selected,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return Colors.white.withValues(alpha: selected ? .24 : .18);
+    return AppColors.white.withValues(alpha: selected ? .24 : .18);
   }
-  return Colors.white.withValues(alpha: selected ? .30 : .20);
+  return AppColors.white.withValues(alpha: selected ? .30 : .20);
 }
 
 String _calendarStatusLabel(OheyDailyStatus status, {required DateTime day}) =>

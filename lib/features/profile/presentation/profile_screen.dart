@@ -77,7 +77,7 @@ class ProfileScreen extends ConsumerWidget {
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: Colors.transparent,
+        statusBarColor: AppColors.transparent,
       ),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -190,17 +190,17 @@ class ProfileScreen extends ConsumerWidget {
 
 class _ProfileColors {
   const _ProfileColors._();
-  static const line = Color(0x1EFFFFFF);
-  static const sub = Color(0xFF8F9BAB);
-  static const lime = Color(0xFF9AF21A);
-  static const pink = Color(0xFFFF5EA8);
+  static const line = AppColors.c1EFFFFFF;
+  static const sub = AppColors.cFF8F9BAB;
+  static const lime = AppColors.cFF9AF21A;
+  static const pink = AppColors.cFFFF5EA8;
 }
 
 Color _statusColor(OheyDailyStatus status) => switch (status) {
   OheyDailyStatus.available => _ProfileColors.lime,
-  OheyDailyStatus.maybeAvailable => const Color(0xFF5DEBD3),
+  OheyDailyStatus.maybeAvailable => AppColors.cFF5DEBD3,
   OheyDailyStatus.dependsOnTime => _ProfileColors.pink,
-  OheyDailyStatus.hasPlans => const Color(0xFFB8C1CD),
+  OheyDailyStatus.hasPlans => AppColors.cFFB8C1CD,
   OheyDailyStatus.unselected => _ProfileColors.sub,
 };
 
@@ -248,7 +248,7 @@ Future<void> _showProfileCreateWishItemSheet(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => _ProfileCreateWishItemSheet(ref: ref),
   );
 }
@@ -304,8 +304,8 @@ class _ProfileCreateWishItemSheetState
   @override
   Widget build(BuildContext context) {
     final ink = Theme.of(context).brightness == Brightness.light
-        ? const Color(0xFF17212B)
-        : Colors.white;
+        ? AppColors.cFF17212B
+        : AppColors.white;
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
@@ -361,9 +361,9 @@ class _ProfileCreateWishItemSheetState
             onTap: _saving ? null : _submit,
             height: 50,
             radius: 22,
-            color: const Color(0xFFC08BFF),
-            foregroundColor: const Color(0xFF101820),
-            shadowColor: const Color(0xFF7F51C9),
+            color: AppColors.cFFC08BFF,
+            foregroundColor: AppColors.cFF101820,
+            shadowColor: AppColors.cFF7F51C9,
           ),
         ],
       ),
@@ -380,7 +380,7 @@ Future<void> _showProfileCreateYuruboSheet(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    barrierColor: Colors.black.withValues(alpha: .58),
+    barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => _ProfileCreateYuruboSheet(ref: ref, initialWish: wish),
   );
 }
@@ -462,10 +462,10 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final ink = isWhite ? AppColors.cFF17212B : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .62);
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .62);
     final wishItems =
         widget.ref.watch(wishItemControllerProvider).asData?.value ??
         const <WishItem>[];
@@ -601,9 +601,9 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
                 onTap: _saving ? null : _submit,
                 height: 50,
                 radius: 22,
-                color: const Color(0xFFC08BFF),
-                foregroundColor: const Color(0xFF101820),
-                shadowColor: const Color(0xFF7F51C9),
+                color: AppColors.cFFC08BFF,
+                foregroundColor: AppColors.cFF101820,
+                shadowColor: AppColors.cFF7F51C9,
               ),
             ],
           );
@@ -637,14 +637,14 @@ class _ProfileYuruboChoice extends StatelessWidget {
     onTap: onTap,
     height: 46,
     radius: 20,
-    color: selected ? const Color(0xFFC08BFF) : const Color(0xFF263348),
-    bottomColor: selected ? const Color(0xFF7F51C9) : const Color(0xFF151D2A),
+    color: selected ? AppColors.cFFC08BFF : AppColors.cFF263348,
+    bottomColor: selected ? AppColors.cFF7F51C9 : AppColors.cFF151D2A,
     padding: const EdgeInsets.symmetric(horizontal: 12),
     child: Center(
       child: Text(
         label,
         style: TextStyle(
-          color: selected ? const Color(0xFF101820) : Colors.white,
+          color: selected ? AppColors.cFF101820 : AppColors.white,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -667,18 +667,18 @@ class _ProfileYuruboGroupChip extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: (selected ? const Color(0xFFC08BFF) : Colors.white).withValues(
+        color: (selected ? AppColors.cFFC08BFF : AppColors.white).withValues(
           alpha: selected ? .26 : .08,
         ),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
-          color: const Color(0xFFC08BFF).withValues(alpha: selected ? .7 : .25),
+          color: AppColors.cFFC08BFF.withValues(alpha: selected ? .7 : .25),
         ),
       ),
       child: Text(
         label,
         style: const TextStyle(
-          color: Colors.white,
+          color: AppColors.white,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -699,13 +699,13 @@ class _ProfileYuruboInput extends StatelessWidget {
     placeholder: placeholder,
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
     decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .08),
+      color: AppColors.white.withValues(alpha: .08),
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: Colors.white.withValues(alpha: .13)),
+      border: Border.all(color: AppColors.white.withValues(alpha: .13)),
     ),
-    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+    style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.w800),
     placeholderStyle: TextStyle(
-      color: Colors.white.withValues(alpha: .42),
+      color: AppColors.white.withValues(alpha: .42),
       fontWeight: FontWeight.w700,
     ),
   );

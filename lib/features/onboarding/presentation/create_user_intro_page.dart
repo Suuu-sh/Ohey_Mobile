@@ -38,11 +38,11 @@ extension _CreateUserIntroPage on _CreateUserDialogState {
                   width: 58,
                   height: 58,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12C9A4),
+                    color: AppColors.cFF12C9A4,
                     shape: BoxShape.circle,
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0xFF079078),
+                        color: AppColors.cFF079078,
                         offset: Offset(0, 6),
                         blurRadius: 0,
                       ),
@@ -53,8 +53,8 @@ extension _CreateUserIntroPage on _CreateUserDialogState {
                       icon: _demoPage == slides.length - 1
                           ? CupertinoIcons.camera_fill
                           : CupertinoIcons.arrow_right,
-                      color: Colors.white,
-                      foregroundColor: Colors.white,
+                      color: AppColors.white,
+                      foregroundColor: AppColors.white,
                       showBubble: false,
                       size: 30,
                       iconSize: 28,

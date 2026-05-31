@@ -25,7 +25,7 @@ class OheyThemedPanel extends StatelessWidget {
   });
 
   static Color surfaceColor({required bool isWhite}) =>
-      isWhite ? Colors.white : AppColors.darkBackground;
+      isWhite ? AppColors.white : AppColors.darkBackground;
 
   final Widget child;
   final Color accentColor;

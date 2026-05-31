@@ -13,7 +13,7 @@ class OheyActionTile extends StatelessWidget {
     required this.accent,
     required this.onTap,
     this.destructive = false,
-    this.destructiveColor = const Color(0xFFFF5F8F),
+    this.destructiveColor = AppColors.cFFFF5F8F,
   });
 
   final IconData icon;
@@ -30,13 +30,13 @@ class OheyActionTile extends StatelessWidget {
     final titleColor = destructive
         ? destructiveColor
         : isWhite
-        ? const Color(0xFF101820)
-        : Colors.white;
+        ? AppColors.cFF101820
+        : AppColors.white;
     final subtitleColor = isWhite
-        ? const Color(0xFF697684)
-        : Colors.white.withValues(alpha: .55);
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .55);
     final surfaceColor = isWhite
-        ? Color.lerp(const Color(0xFFF7FAFC), accent, .10)!
+        ? Color.lerp(AppColors.cFFF7FAFC, accent, .10)!
         : AppColors.darkBackground;
     return CupertinoButton(
       onPressed: onTap,
@@ -51,8 +51,8 @@ class OheyActionTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: isWhite
-                ? const Color(0xFFE1E8F1)
-                : Colors.white.withValues(alpha: .12),
+                ? AppColors.cFFE1E8F1
+                : AppColors.white.withValues(alpha: .12),
           ),
           boxShadow: [
             BoxShadow(

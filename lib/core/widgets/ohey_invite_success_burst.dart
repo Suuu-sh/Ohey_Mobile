@@ -34,11 +34,11 @@ class OheyInviteSuccessBurst extends StatefulWidget {
   final List<Color> confettiColors;
 
   static const _defaultConfettiColors = [
-    Color(0xFFFF5EA8),
-    Color(0xFF20B9FF),
-    Color(0xFFB8FF00),
-    Color(0xFF8A62FF),
-    Color(0xFFFFD166),
+    AppColors.cFFFF5EA8,
+    AppColors.cFF20B9FF,
+    AppColors.cFFB8FF00,
+    AppColors.cFF8A62FF,
+    AppColors.cFFFFD166,
   ];
 
   @override

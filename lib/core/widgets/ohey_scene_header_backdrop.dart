@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
 class OheySceneHeaderBackdrop extends StatelessWidget {
   const OheySceneHeaderBackdrop({
@@ -6,7 +7,7 @@ class OheySceneHeaderBackdrop extends StatelessWidget {
     required this.assetPath,
     required this.fadeColor,
     required this.accentColor,
-    this.shadeColor = const Color(0xFF03101E),
+    this.shadeColor = AppColors.cFF03101E,
     this.alignment = Alignment.topCenter,
     this.imageTopOffset = 0,
     this.topShadeOpacity = .14,
@@ -50,7 +51,7 @@ class OheySceneHeaderBackdrop extends StatelessWidget {
                 radius: 1.05,
                 colors: [
                   accentColor.withValues(alpha: .18),
-                  Colors.transparent,
+                  AppColors.transparent,
                 ],
                 stops: const [.06, 1],
               ),
@@ -78,7 +79,7 @@ class OheySceneHeaderBackdrop extends StatelessWidget {
                 end: Alignment.centerRight,
                 colors: [
                   shadeColor.withValues(alpha: .26),
-                  Colors.transparent,
+                  AppColors.transparent,
                   shadeColor.withValues(alpha: .16),
                 ],
                 stops: const [0, .48, 1],

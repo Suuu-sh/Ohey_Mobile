@@ -24,22 +24,6 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
     });
   }
 
-  bool get _hasPhoto => _photoPath != null && _photoPath!.trim().isNotEmpty;
-
-  Future<bool> _openOheyCamera() async {
-    final result = await Navigator.of(context).push<OheyCameraResult>(
-      CupertinoPageRoute(
-        fullscreenDialog: true,
-        builder: (_) => const OheyCameraScreen(),
-      ),
-    );
-    if (result == null || !mounted) return false;
-    setState(() {
-      _photoPath = result.path;
-    });
-    return true;
-  }
-
   Future<void> _pickDateTime() async {
     final isWhite = _AddMemoryColors.isWhite(context);
     final picked = await showDatePicker(
@@ -52,7 +36,7 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
           colorScheme: isWhite
               ? const ColorScheme.light(
                   primary: _AddMemoryColors.lime,
-                  surface: Colors.white,
+                  surface: AppColors.white,
                   onSurface: _AddMemoryColors.lightText,
                 )
               : const ColorScheme.dark(
@@ -63,8 +47,7 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
         child: child!,
       ),
     );
-    if (picked == null) return;
-    if (!mounted) return;
+    if (picked == null || !mounted) return;
     final pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(_selectedDate),
@@ -73,7 +56,7 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
           colorScheme: isWhite
               ? const ColorScheme.light(
                   primary: _AddMemoryColors.lime,
-                  surface: Colors.white,
+                  surface: AppColors.white,
                   onSurface: _AddMemoryColors.lightText,
                 )
               : const ColorScheme.dark(
@@ -125,7 +108,6 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
         .where((friend) => _selectedFriendIds.contains(friend.id))
         .toList(growable: false);
     try {
-      final photoPath = await _photoPathForSave();
       final previousMemories =
           ref.read(memoryControllerProvider).asData?.value ?? const <Memory>[];
       final placeText = _placeController.text.trim();
@@ -138,8 +120,6 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
             friends: selectedFriends,
             place: placeText,
             memo: _memoController.text,
-            captionY: _captionY,
-            photoAssetPath: photoPath,
             placeLatitude: hasSelectedPlaceCoordinate
                 ? _selectedPlaceLatitude
                 : null,
@@ -153,7 +133,6 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
       final openCalendar = await _showMemorySuccessSheet(
         friends: selectedFriends,
         monthlyCount: monthlyCount,
-        isPrivateRecord: photoPath == null,
       );
       if (!mounted) return;
       Navigator.of(context).pop(openCalendar);
@@ -165,7 +144,7 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
         return;
       }
       OheyToast.show(context, '保存できなかったよ。あとでもう一度試してね');
-    } catch (error) {
+    } catch (_) {
       if (!mounted) return;
       setState(() => _isSaving = false);
       OheyToast.show(context, '保存できなかったよ。あとでもう一度試してね');
@@ -203,67 +182,16 @@ extension _AddMemoryScreenActions on _AddMemoryScreenState {
   Future<bool> _showMemorySuccessSheet({
     required List<OheyFriend> friends,
     required int monthlyCount,
-    required bool isPrivateRecord,
   }) async {
     final openCalendar = await showOheyBottomSheet<bool>(
       context: context,
       useSafeArea: true,
       isDismissible: false,
       enableDrag: false,
-      barrierColor: Colors.black.withValues(alpha: .62),
-      builder: (_) => _MemorySuccessSheet(
-        friends: friends,
-        monthlyCount: monthlyCount,
-        isPrivateRecord: isPrivateRecord,
-      ),
+      barrierColor: AppColors.black.withValues(alpha: .62),
+      builder: (_) =>
+          _MemorySuccessSheet(friends: friends, monthlyCount: monthlyCount),
     );
     return openCalendar ?? false;
   }
-
-  Future<String?> _photoPathForSave() async {
-    final path = _photoPath;
-    if (path == null || path.isEmpty) return null;
-    if (!await oheyIsSquareOrLandscapePhoto(path)) {
-      throw StateError('正方形または16:9の横長写真のみ投稿できます。');
-    }
-
-    return _copyPhotoToPermanentStorage(path);
-  }
-
-  Future<String> _copyPhotoToPermanentStorage(String path) async {
-    final source = File(path);
-    if (!await source.exists()) return path;
-    final directory = await _oheyPhotoDirectory();
-    final extension = _fileExtension(path, fallback: '.jpg');
-    final outputPath =
-        '${directory.path}/ohey_photo_${DateTime.now().microsecondsSinceEpoch}$extension';
-    return source.copy(outputPath).then((file) => file.path);
-  }
-
-  Future<Directory> _oheyPhotoDirectory() async {
-    final documents = await getApplicationDocumentsDirectory();
-    final directory = Directory('${documents.path}/ohey_photos');
-    if (!await directory.exists()) {
-      await directory.create(recursive: true);
-    }
-    return directory;
-  }
-
-  String _fileExtension(String path, {required String fallback}) {
-    final name = path.split('/').last;
-    final dot = name.lastIndexOf('.');
-    if (dot < 0 || dot == name.length - 1) return fallback;
-    final extension = name.substring(dot).toLowerCase();
-    if (extension.length > 8) return fallback;
-    return extension;
-  }
-
-  String _addMemoryDateTimeLabel(DateTime date) {
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '${date.year}年${date.month}月${date.day}日（${_addMemoryWeekday(date)}） $hour:$minute';
-  }
-
-  String _addMemoryWeekday(DateTime date) =>
-      const ['月', '火', '水', '木', '金', '土', '日'][date.weekday - 1];
 }

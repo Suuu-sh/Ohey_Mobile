@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'ohey_pop_icon.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
 enum OheyToastPlacement { top, bottom }
 
@@ -34,9 +34,9 @@ class OheyToast {
   const OheyToast._();
 
   static const defaultPlacement = OheyToastPlacement.bottom;
-  static const defaultAccentColor = Color(0xFF7DDCFF);
-  static const successAccentColor = Color(0xFF74E6A4);
-  static const dangerAccentColor = Color(0xFFFF8BA8);
+  static const defaultAccentColor = AppColors.cFF7DDCFF;
+  static const successAccentColor = AppColors.cFF74E6A4;
+  static const dangerAccentColor = AppColors.cFFFF8BA8;
   static OverlayEntry? _currentEntry;
   static Timer? _timer;
 
@@ -214,10 +214,10 @@ class _OheyToastOverlayState extends State<_OheyToastOverlay>
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF122335), Color(0xFF0A1724)],
+                colors: [AppColors.cFF122335, AppColors.cFF0A1724],
               ),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withValues(alpha: .13)),
+              border: Border.all(color: AppColors.white.withValues(alpha: .13)),
               boxShadow: [
                 BoxShadow(
                   color: accentColor.withValues(alpha: .10),
@@ -225,7 +225,7 @@ class _OheyToastOverlayState extends State<_OheyToastOverlay>
                   offset: const Offset(0, 6),
                 ),
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: .32),
+                  color: AppColors.black.withValues(alpha: .32),
                   blurRadius: 28,
                   offset: const Offset(0, 16),
                 ),
@@ -258,7 +258,7 @@ class _OheyToastOverlayState extends State<_OheyToastOverlay>
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                         height: 1.35,

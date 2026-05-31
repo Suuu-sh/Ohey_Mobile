@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
 /// Compact loading/error/empty state block for panels and list sections.
 ///
@@ -38,24 +38,24 @@ class OheyStateView extends StatelessWidget {
       height: height,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .06),
+        color: AppColors.white.withValues(alpha: .06),
         borderRadius: BorderRadius.circular(compact ? 18 : 22),
-        border: Border.all(color: Colors.white.withValues(alpha: .08)),
+        border: Border.all(color: AppColors.white.withValues(alpha: .08)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (isLoading)
-            const CupertinoActivityIndicator(color: Colors.white)
+            const CupertinoActivityIndicator(color: AppColors.white)
           else
-            Icon(icon, color: Colors.white.withValues(alpha: .62), size: 18),
+            Icon(icon, color: AppColors.white.withValues(alpha: .62), size: 18),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               message,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: .62),
+                color: AppColors.white.withValues(alpha: .62),
                 fontSize: compact ? 12 : 13,
                 fontWeight: FontWeight.w800,
               ),

@@ -30,7 +30,7 @@ class _AdminHeader extends StatelessWidget {
               const Text(
                 '管理画面',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontWeight: FontWeight.w900,
                   fontSize: 26,
                   letterSpacing: -.8,
@@ -51,7 +51,7 @@ class _AdminHeader extends StatelessWidget {
           onPressed: onClose,
           icon: const OheyGeneratedIcon(
             CupertinoIcons.xmark,
-            color: Colors.white,
+            color: AppColors.white,
             size: 26,
           ),
         ),
@@ -74,7 +74,7 @@ class _AdminSegmentedControl extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .06),
+        color: AppColors.white.withValues(alpha: .06),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: _AdminColors.line),
       ),
@@ -213,15 +213,11 @@ class _AdminReportCard extends StatelessWidget {
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.white,
             fontWeight: FontWeight.w900,
             fontSize: 16,
           ),
         ),
-        if (report.photoPath.trim().isNotEmpty) ...[
-          const SizedBox(height: 12),
-          _AdminReportPhotoPreview(ref: ref, path: report.photoPath),
-        ],
         const SizedBox(height: 8),
         Text(
           '投稿者: ${report.ownerDisplayName} @${report.ownerHandle}',
@@ -245,7 +241,7 @@ class _AdminReportCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: Colors.white70,
+              color: AppColors.white70,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -280,67 +276,6 @@ class _AdminReportCard extends StatelessWidget {
   );
 }
 
-class _AdminReportPhotoPreview extends StatelessWidget {
-  const _AdminReportPhotoPreview({required this.ref, required this.path});
-
-  final WidgetRef ref;
-  final String path;
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<String?>(
-      future: ref.read(adminControllerProvider).displayPhotoUrl(path),
-      builder: (context, snapshot) {
-        final url = snapshot.data;
-        Widget child;
-        if (snapshot.connectionState != ConnectionState.done) {
-          child = const Center(
-            child: CupertinoActivityIndicator(color: _AdminColors.lime),
-          );
-        } else if (url == null || url.isEmpty) {
-          child = const Center(
-            child: Text(
-              '写真を表示できません',
-              style: TextStyle(
-                color: _AdminColors.sub,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          );
-        } else if (url.startsWith('assets/')) {
-          child = Image.asset(url, fit: BoxFit.cover);
-        } else if (url.startsWith('/')) {
-          child = Image.file(File(url), fit: BoxFit.cover);
-        } else {
-          child = Image.network(
-            url,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => const Center(
-              child: Text(
-                '写真を表示できません',
-                style: TextStyle(
-                  color: _AdminColors.sub,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          );
-        }
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: AspectRatio(
-            aspectRatio: 16 / 9,
-            child: ColoredBox(
-              color: Colors.black.withValues(alpha: .24),
-              child: child,
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
 class _AdminSmallActionButton extends StatelessWidget {
   const _AdminSmallActionButton({
     required this.label,
@@ -359,19 +294,19 @@ class _AdminSmallActionButton extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       decoration: BoxDecoration(
         color: destructive
-            ? const Color(0xFFFF5A72).withValues(alpha: .16)
+            ? AppColors.cFFFF5A72.withValues(alpha: .16)
             : _AdminColors.lime.withValues(alpha: .16),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
           color: destructive
-              ? const Color(0xFFFF5A72).withValues(alpha: .35)
+              ? AppColors.cFFFF5A72.withValues(alpha: .35)
               : _AdminColors.lime.withValues(alpha: .35),
         ),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: destructive ? const Color(0xFFFF8EA0) : _AdminColors.lime,
+          color: destructive ? AppColors.cFFFF8EA0 : _AdminColors.lime,
           fontWeight: FontWeight.w900,
           fontSize: 12,
         ),
@@ -400,13 +335,13 @@ class _AdminSegmentButton extends StatelessWidget {
         height: 42,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? _AdminColors.lime : Colors.transparent,
+          color: selected ? _AdminColors.lime : AppColors.transparent,
           borderRadius: BorderRadius.circular(17),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? const Color(0xFF101820) : _AdminColors.sub,
+            color: selected ? AppColors.cFF101820 : _AdminColors.sub,
             fontWeight: FontWeight.w900,
           ),
         ),
@@ -591,7 +526,7 @@ class _AdminRecipientPreview extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontWeight: FontWeight.w900,
                   fontSize: 16,
                 ),
@@ -631,7 +566,7 @@ class _AdminPaneToolbar extends StatelessWidget {
       Text(
         title,
         style: const TextStyle(
-          color: Colors.white,
+          color: AppColors.white,
           fontWeight: FontWeight.w900,
           fontSize: 20,
         ),

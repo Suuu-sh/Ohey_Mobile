@@ -184,7 +184,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     final result = await showOheyBottomSheet<_CustomFilterManageResult>(
       context: context,
       useSafeArea: true,
-      barrierColor: Colors.black.withValues(alpha: .58),
+      barrierColor: AppColors.black.withValues(alpha: .58),
       builder: (_) => _CustomFilterManageSheet(filters: _customFilters),
     );
     if (!mounted || result == null) return;
@@ -229,7 +229,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     final result = await showOheyBottomSheet<_CustomFilterSheetResult>(
       context: context,
       useSafeArea: true,
-      barrierColor: Colors.black.withValues(alpha: .58),
+      barrierColor: AppColors.black.withValues(alpha: .58),
       builder: (_) => _CustomFilterSheet(
         friends: friends,
         initialFilter: filter,
@@ -397,7 +397,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     return showOheyBottomSheet<_InviteDraft>(
       context: context,
       useSafeArea: true,
-      barrierColor: Colors.black.withValues(alpha: .58),
+      barrierColor: AppColors.black.withValues(alpha: .58),
       builder: (_) => _InviteOptionsSheet(
         title: title,
         subtitle: subtitle,
@@ -443,7 +443,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: Colors.transparent,
+        statusBarColor: AppColors.transparent,
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -451,7 +451,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: isWhite
-                ? const [Colors.white, Colors.white, Color(0xFFF7F9FB)]
+                ? const [AppColors.white, AppColors.white, AppColors.cFFF7F9FB]
                 : AppColors.darkBackgroundGradient,
           ),
         ),
@@ -657,10 +657,10 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF101820) : Colors.white;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
     final sub = isWhite
-        ? const Color(0xFF667381)
-        : Colors.white.withValues(alpha: .66);
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .66);
     return OheyBottomSheetShell(
       title: widget.title,
       maxHeightFactor: .92,
@@ -1017,13 +1017,13 @@ class _InviteOptionPill extends StatelessWidget {
     final background = selected
         ? selectedColor
         : isWhite
-        ? const Color(0xFFF1F5EF)
-        : Colors.white.withValues(alpha: .08);
+        ? AppColors.cFFF1F5EF
+        : AppColors.white.withValues(alpha: .08);
     final foreground = selected
-        ? const Color(0xFF101820)
+        ? AppColors.cFF101820
         : isWhite
-        ? const Color(0xFF263340)
-        : Colors.white.withValues(alpha: .82);
+        ? AppColors.cFF263340
+        : AppColors.white.withValues(alpha: .82);
     return Semantics(
       button: true,
       selected: selected,

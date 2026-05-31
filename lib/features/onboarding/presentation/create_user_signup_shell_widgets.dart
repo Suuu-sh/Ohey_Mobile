@@ -13,12 +13,12 @@ class _SignupProgressHeader extends StatelessWidget {
         width: 62,
         height: 62,
         decoration: BoxDecoration(
-          color: const Color(0xFF12222C),
+          color: AppColors.cFF12222C,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withValues(alpha: .08)),
+          border: Border.all(color: AppColors.white.withValues(alpha: .08)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: .14),
+              color: AppColors.black.withValues(alpha: .14),
               blurRadius: 18,
               offset: const Offset(0, 8),
             ),
@@ -28,7 +28,7 @@ class _SignupProgressHeader extends StatelessWidget {
           onPressed: onBack,
           icon: Icon(
             CupertinoIcons.arrow_left,
-            color: Colors.white.withValues(alpha: .76),
+            color: AppColors.white.withValues(alpha: .76),
             size: 31,
           ),
         ),
@@ -39,7 +39,7 @@ class _SignupProgressHeader extends StatelessWidget {
           borderRadius: BorderRadius.circular(99),
           child: Container(
             height: 22,
-            color: Colors.white.withValues(alpha: .18),
+            color: AppColors.white.withValues(alpha: .18),
             child: Align(
               alignment: Alignment.centerLeft,
               child: FractionallySizedBox(
@@ -51,7 +51,7 @@ class _SignupProgressHeader extends StatelessWidget {
                     borderRadius: BorderRadius.circular(99),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.white.withValues(alpha: .22),
+                        color: AppColors.white.withValues(alpha: .22),
                         blurRadius: 0,
                         spreadRadius: -5,
                         offset: const Offset(0, -5),
@@ -77,9 +77,12 @@ class _SignupInputBox extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
-      color: const Color(0xFF132630).withValues(alpha: .74),
+      color: AppColors.cFF132630.withValues(alpha: .74),
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: Colors.white.withValues(alpha: .18), width: 2),
+      border: Border.all(
+        color: AppColors.white.withValues(alpha: .18),
+        width: 2,
+      ),
     ),
     child: child,
   );

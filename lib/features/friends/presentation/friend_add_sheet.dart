@@ -16,6 +16,7 @@ import '../../../core/widgets/ohey_bottom_sheet.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../memories/application/memory_controller.dart';
 import '../data/friend_repository.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
 String _friendQrPayload(String userId) {
   final scheme = SupabaseConfig.authRedirectUrl.split('://').first;
@@ -37,7 +38,7 @@ Future<void> showFriendAddSheet(BuildContext context, WidgetRef ref) {
     context: context,
     barrierDismissible: true,
     barrierLabel: '閉じる',
-    barrierColor: Colors.black.withValues(alpha: .70),
+    barrierColor: AppColors.black.withValues(alpha: .70),
     transitionDuration: const Duration(milliseconds: 180),
     pageBuilder: (context, animation, secondaryAnimation) =>
         const _FriendQrDialog(),
@@ -202,7 +203,7 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
     final scanned = await showOheyBottomSheet<String>(
       context: context,
       useSafeArea: true,
-      barrierColor: Colors.black.withValues(alpha: .70),
+      barrierColor: AppColors.black.withValues(alpha: .70),
       builder: (_) => const _FriendQrScannerSheet(),
     );
     final friendId = scanned == null ? '' : _normalizedFriendInput(scanned);
@@ -248,7 +249,7 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 18),
             child: Material(
-              color: Colors.transparent,
+              color: AppColors.transparent,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 430),
                 child: _CuteQrCard(
@@ -352,7 +353,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     final scanned = await showOheyBottomSheet<String>(
       context: context,
       useSafeArea: true,
-      barrierColor: Colors.black.withValues(alpha: .70),
+      barrierColor: AppColors.black.withValues(alpha: .70),
       builder: (_) => const _FriendQrScannerSheet(),
     );
     final friendId = scanned == null ? '' : _normalizedFriendInput(scanned);
@@ -470,8 +471,8 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF18222E) : Colors.white;
-    final sub = isWhite ? const Color(0xFF6C7480) : Colors.white70;
+    final ink = isWhite ? AppColors.cFF18222E : AppColors.white;
+    final sub = isWhite ? AppColors.cFF6C7480 : AppColors.white70;
     final profile = _profile;
     final status = _status;
     final user = widget.ref.watch(oheyUserProvider);
@@ -497,11 +498,11 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFFF7AB8), Color(0xFFC08BFF)],
+                      colors: [AppColors.cFFFF7AB8, AppColors.cFFC08BFF],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFF7AB8).withValues(alpha: .26),
+                        color: AppColors.cFFFF7AB8.withValues(alpha: .26),
                         blurRadius: 22,
                         offset: const Offset(0, 10),
                       ),
@@ -510,7 +511,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
                   child: Center(
                     child: OheyGeneratedIcon(
                       CupertinoIcons.person_2_fill,
-                      color: Colors.white,
+                      color: AppColors.white,
                       size: 28,
                     ),
                   ),
@@ -578,7 +579,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
               _CuteMessageBox(
                 icon: CupertinoIcons.exclamationmark_bubble_fill,
                 message: _error!,
-                color: const Color(0xFFFF7A9E),
+                color: AppColors.cFFFF7A9E,
               ),
             ],
             if (profile != null) ...[
@@ -650,17 +651,17 @@ class _CuteQrCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const ink = Color(0xFF151515);
-    const softInk = Color(0xFF6D6D6D);
+    const ink = AppColors.cFF151515;
+    const softInk = AppColors.cFF6D6D6D;
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(34),
-        border: Border.all(color: Colors.black.withValues(alpha: .08)),
+        border: Border.all(color: AppColors.black.withValues(alpha: .08)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isWhite ? .10 : .34),
+            color: AppColors.black.withValues(alpha: isWhite ? .10 : .34),
             blurRadius: 34,
             offset: const Offset(0, 18),
           ),
@@ -705,9 +706,9 @@ class _CuteQrCard extends StatelessWidget {
             height: 196,
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(26),
-              border: Border.all(color: Colors.black.withValues(alpha: .05)),
+              border: Border.all(color: AppColors.black.withValues(alpha: .05)),
             ),
             child: payload == null
                 ? const Center(child: Text('ログインしてね'))
@@ -731,11 +732,11 @@ class _CuteQrCard extends StatelessWidget {
                         height: 62,
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF3F3F3),
+                          color: AppColors.cFFF3F3F3,
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.white.withValues(alpha: .96),
+                              color: AppColors.white.withValues(alpha: .96),
                               blurRadius: 0,
                               spreadRadius: 6,
                             ),
@@ -828,7 +829,7 @@ class _CuteQrCard extends StatelessWidget {
             _CuteMessageBox(
               icon: CupertinoIcons.exclamationmark_bubble_fill,
               message: searchError!,
-              color: const Color(0xFFFF7A9E),
+              color: AppColors.cFFFF7A9E,
             ),
           ],
           if (searchProfile != null && onSendSearchRequest != null) ...[
@@ -861,7 +862,7 @@ class _QrActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const ink = Color(0xFF222222);
+    const ink = AppColors.cFF222222;
     return Semantics(
       button: true,
       label: label,
@@ -873,15 +874,15 @@ class _QrActionButton extends StatelessWidget {
             onTap: onTap,
             height: 48,
             radius: 18,
-            color: Colors.white,
-            bottomColor: const Color(0xFFE1E1E1),
+            color: AppColors.white,
+            bottomColor: AppColors.cFFE1E1E1,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             useGradient: true,
-            borderColor: Colors.black.withValues(alpha: .09),
+            borderColor: AppColors.black.withValues(alpha: .09),
             borderWidth: 2,
             outerShadows: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: .06),
+                color: AppColors.black.withValues(alpha: .06),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -932,7 +933,7 @@ class _QrIdSearchChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const ink = Color(0xFF222222);
+    const ink = AppColors.cFF222222;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOutCubic,
@@ -941,14 +942,14 @@ class _QrIdSearchChip extends StatelessWidget {
         onTap: isExpanded ? null : onExpand,
         height: 34,
         radius: 17,
-        color: const Color(0xFFF7F7F7),
-        bottomColor: const Color(0xFFE1E1E1),
+        color: AppColors.cFFF7F7F7,
+        bottomColor: AppColors.cFFE1E1E1,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         useGradient: true,
-        borderColor: Colors.black.withValues(alpha: .08),
+        borderColor: AppColors.black.withValues(alpha: .08),
         outerShadows: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: .055),
+            color: AppColors.black.withValues(alpha: .055),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -1059,10 +1060,12 @@ class _CuteIdSearchCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isWhite ? Colors.white : Colors.white.withValues(alpha: .06),
+        color: isWhite
+            ? AppColors.white
+            : AppColors.white.withValues(alpha: .06),
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: isWhite ? const Color(0xFFEADDEA) : Colors.white12,
+          color: isWhite ? AppColors.cFFEADDEA : AppColors.white12,
         ),
       ),
       child: Column(
@@ -1078,17 +1081,17 @@ class _CuteIdSearchCard extends StatelessWidget {
               padding: const EdgeInsets.only(left: 12),
               child: OheyGeneratedIcon(
                 CupertinoIcons.at,
-                color: Color(0xFFFF7AB8),
+                color: AppColors.cFFFF7AB8,
                 size: 20,
               ),
             ),
             decoration: BoxDecoration(
               color: isWhite
-                  ? const Color(0xFFFFF7FB)
-                  : Colors.black.withValues(alpha: .16),
+                  ? AppColors.cFFFFF7FB
+                  : AppColors.black.withValues(alpha: .16),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isWhite ? const Color(0xFFFFC4DF) : Colors.white12,
+                color: isWhite ? AppColors.cFFFFC4DF : AppColors.white12,
               ),
             ),
           ),
@@ -1102,9 +1105,9 @@ class _CuteIdSearchCard extends StatelessWidget {
                   onTap: isLoading ? null : onSearch,
                   height: 48,
                   radius: 24,
-                  color: const Color(0xFFFF7AB8),
-                  foregroundColor: Colors.white,
-                  shadowColor: const Color(0xFFC43D7C),
+                  color: AppColors.cFFFF7AB8,
+                  foregroundColor: AppColors.white,
+                  shadowColor: AppColors.cFFC43D7C,
                 ),
               ),
               const SizedBox(width: 10),
@@ -1202,8 +1205,8 @@ class _FriendQrScannerSheetState extends State<_FriendQrScannerSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? const Color(0xFF18222E) : Colors.white;
-    final sub = isWhite ? const Color(0xFF6C7480) : Colors.white70;
+    final ink = isWhite ? AppColors.cFF18222E : AppColors.white;
+    final sub = isWhite ? AppColors.cFF6C7480 : AppColors.white70;
     return OheyBottomSheetShell(
       title: null,
       showHandle: true,
@@ -1251,7 +1254,7 @@ class _FriendQrScannerSheetState extends State<_FriendQrScannerSheet> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(28),
                         border: Border.all(
-                          color: const Color(0xFFB7F15B),
+                          color: AppColors.cFFB7F15B,
                           width: 3,
                         ),
                       ),
@@ -1293,8 +1296,8 @@ class _FriendSearchResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ink = isWhite ? const Color(0xFF18222E) : Colors.white;
-    final sub = isWhite ? const Color(0xFF6C7480) : Colors.white70;
+    final ink = isWhite ? AppColors.cFF18222E : AppColors.white;
+    final sub = isWhite ? AppColors.cFF6C7480 : AppColors.white70;
     final alreadyFriend = status?.alreadyFriend == true;
     final alreadyRequested =
         status?.requestState == OheyFriendRequestState.outgoing;
@@ -1321,11 +1324,9 @@ class _FriendSearchResultCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isWhite ? const Color(0xFFF7FFF0) : const Color(0xFF162514),
+        color: isWhite ? AppColors.cFFF7FFF0 : AppColors.cFF162514,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFFB7F15B).withValues(alpha: .36),
-        ),
+        border: Border.all(color: AppColors.cFFB7F15B.withValues(alpha: .36)),
       ),
       child: Row(
         children: [
@@ -1358,12 +1359,12 @@ class _FriendSearchResultCard extends StatelessWidget {
               height: 42,
               radius: 20,
               color: alreadyRequested
-                  ? const Color(0xFF415066)
-                  : const Color(0xFF8A62FF),
-              foregroundColor: Colors.white,
+                  ? AppColors.cFF415066
+                  : AppColors.cFF8A62FF,
+              foregroundColor: AppColors.white,
               shadowColor: alreadyRequested
-                  ? const Color(0xFF253044)
-                  : const Color(0xFF4A2BBF),
+                  ? AppColors.cFF253044
+                  : AppColors.cFF4A2BBF,
               fontSize: 13,
             ),
           ),

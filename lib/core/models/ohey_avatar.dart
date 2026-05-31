@@ -1,9 +1,8 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-
 import '../config/admin_config.dart';
 import 'ohey_gender.dart';
+import 'package:ohey/core/theme/app_colors.dart';
 
 class OheyAvatar {
   const OheyAvatar({
@@ -131,8 +130,8 @@ class OheyAvatar {
   static const backgroundStyles = ['Ohey pink', 'おへとも・もも'];
 
   static const backgroundGradients = [
-    [Color(0xFFFF7BBC), Color(0xFFFFD2E3)],
-    [Color(0xFFFF8FC8), Color(0xFFFFDDEB)],
+    [AppColors.cFFFF7BBC, AppColors.cFFFFD2E3],
+    [AppColors.cFFFF8FC8, AppColors.cFFFFDDEB],
   ];
 
   static bool usesMascotBackdrop(int background) =>
@@ -147,38 +146,38 @@ class OheyAvatar {
   };
 
   static const skinColors = [
-    Color(0xFFFFD8C2),
-    Color(0xFFE9A985),
-    Color(0xFFB96B54),
-    Color(0xFF7B3F36),
-    Color(0xFF4A2824),
-    Color(0xFFFFC08A),
+    AppColors.cFFFFD8C2,
+    AppColors.cFFE9A985,
+    AppColors.cFFB96B54,
+    AppColors.cFF7B3F36,
+    AppColors.cFF4A2824,
+    AppColors.cFFFFC08A,
   ];
 
   static const hairColors = [
-    Color(0xFF2A1715),
-    Color(0xFF4E2A20),
-    Color(0xFF8A4B2E),
-    Color(0xFFD8A24C),
-    Color(0xFF111820),
-    Color(0xFFEFE8D8),
+    AppColors.cFF2A1715,
+    AppColors.cFF4E2A20,
+    AppColors.cFF8A4B2E,
+    AppColors.cFFD8A24C,
+    AppColors.cFF111820,
+    AppColors.cFFEFE8D8,
   ];
 
   static const shirtColors = [
-    Color(0xFFB777D9),
-    Color(0xFF2EA8FF),
-    Color(0xFF39C7D7),
-    Color(0xFF65B96B),
-    Color(0xFFFFD25B),
-    Color(0xFFFF9B38),
-    Color(0xFFFF6666),
-    Color(0xFFFF9FC7),
-    Color(0xFFF8F8F8),
-    Color(0xFF3D4850),
-    Color(0xFF7C5CFF),
-    Color(0xFF00B894),
-    Color(0xFFFF6B35),
-    Color(0xFF2F80ED),
+    AppColors.cFFB777D9,
+    AppColors.cFF2EA8FF,
+    AppColors.cFF39C7D7,
+    AppColors.cFF65B96B,
+    AppColors.cFFFFD25B,
+    AppColors.cFFFF9B38,
+    AppColors.cFFFF6666,
+    AppColors.cFFFF9FC7,
+    AppColors.cFFF8F8F8,
+    AppColors.cFF3D4850,
+    AppColors.cFF7C5CFF,
+    AppColors.cFF00B894,
+    AppColors.cFFFF6B35,
+    AppColors.cFF2F80ED,
   ];
 
   static const hairStyles = [

@@ -12,7 +12,7 @@ class _AdminSheet extends StatelessWidget {
       margin: const EdgeInsets.all(14),
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF071622),
+        color: AppColors.cFF071622,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(color: _AdminColors.line),
       ),
@@ -26,7 +26,7 @@ class _AdminSheet extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontWeight: FontWeight.w900,
                     fontSize: 20,
                   ),
@@ -39,7 +39,7 @@ class _AdminSheet extends StatelessWidget {
                   },
                   icon: const OheyGeneratedIcon(
                     CupertinoIcons.xmark,
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
               ],
@@ -77,7 +77,7 @@ class _AdminInput extends StatelessWidget {
     obscureText: obscureText,
     maxLines: maxLines,
     onChanged: onChanged,
-    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+    style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.w800),
     decoration: InputDecoration(
       labelText: label,
       labelStyle: const TextStyle(
@@ -85,7 +85,7 @@ class _AdminInput extends StatelessWidget {
         fontWeight: FontWeight.w800,
       ),
       filled: true,
-      fillColor: Colors.white.withValues(alpha: .06),
+      fillColor: AppColors.white.withValues(alpha: .06),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: _AdminColors.line),
@@ -121,7 +121,7 @@ class _AdminDropdown extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 6, 10, 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .06),
+        color: AppColors.white.withValues(alpha: .06),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: _AdminColors.line),
       ),
@@ -140,7 +140,7 @@ class _AdminDropdown extends StatelessWidget {
             child: DropdownButton<String>(
               value: selectedValue,
               isExpanded: true,
-              dropdownColor: const Color(0xFF101B28),
+              dropdownColor: AppColors.cFF101B28,
               iconEnabledColor: _AdminColors.lime,
               hint: const Text(
                 '投稿者を選択',
@@ -157,7 +157,7 @@ class _AdminDropdown extends StatelessWidget {
                       '${user.displayName} @${user.userId}',
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -189,7 +189,7 @@ class _AdminStatusDropdown extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .06),
+        color: AppColors.white.withValues(alpha: .06),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: _AdminColors.line),
       ),
@@ -240,7 +240,7 @@ class _AdminGenderDropdown extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .06),
+        color: AppColors.white.withValues(alpha: .06),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: _AdminColors.line),
       ),
@@ -284,7 +284,7 @@ class _AdminReadOnlyInfoRow extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .06),
+      color: AppColors.white.withValues(alpha: .06),
       borderRadius: BorderRadius.circular(18),
       border: Border.all(color: _AdminColors.line),
     ),
@@ -302,7 +302,7 @@ class _AdminReadOnlyInfoRow extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.white,
             fontWeight: FontWeight.w900,
             fontSize: 14,
           ),
@@ -336,18 +336,18 @@ class _AdminStatusChip extends StatelessWidget {
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: selected ? _AdminColors.lime : Colors.transparent,
+            color: selected ? _AdminColors.lime : AppColors.transparent,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
               color: selected
                   ? _AdminColors.lime
-                  : Colors.white.withValues(alpha: .18),
+                  : AppColors.white.withValues(alpha: .18),
             ),
           ),
           child: Text(
             label,
             style: TextStyle(
-              color: selected ? const Color(0xFF101820) : Colors.white,
+              color: selected ? AppColors.cFF101820 : AppColors.white,
               fontWeight: FontWeight.w900,
               fontSize: 12,
             ),
@@ -424,7 +424,7 @@ class _AdminSwitchRow extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
     decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .06),
+      color: AppColors.white.withValues(alpha: .06),
       borderRadius: BorderRadius.circular(18),
       border: Border.all(color: _AdminColors.line),
     ),
@@ -433,7 +433,7 @@ class _AdminSwitchRow extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.white,
             fontWeight: FontWeight.w900,
           ),
         ),
@@ -477,7 +477,7 @@ class _AdminInfoBox extends StatelessWidget {
               Text(
                 title,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -552,13 +552,13 @@ class _AdminSmallButton extends StatelessWidget {
       height: 36,
       radius: 16,
       color: _AdminColors.lime,
-      bottomColor: const Color(0xFF5D8B00),
+      bottomColor: AppColors.cFF5D8B00,
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      borderColor: Colors.white.withValues(alpha: .14),
+      borderColor: AppColors.white.withValues(alpha: .14),
       child: Text(
         label,
         style: const TextStyle(
-          color: Color(0xFF101820),
+          color: AppColors.cFF101820,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -623,8 +623,8 @@ class _AdminPrimaryButton extends StatelessWidget {
     height: 54,
     radius: 22,
     color: _AdminColors.lime,
-    foregroundColor: const Color(0xFF101820),
-    shadowColor: const Color(0xFF5D8B00),
+    foregroundColor: AppColors.cFF101820,
+    shadowColor: AppColors.cFF5D8B00,
     fontSize: 16,
   );
 }
@@ -656,7 +656,7 @@ class _AdminEmptyState extends StatelessWidget {
     ),
     title: message,
     message: '条件を変えるか、あとでもう一度確認してください。',
-    titleColor: Colors.white,
+    titleColor: AppColors.white,
     messageColor: _AdminColors.sub,
   );
 }
@@ -681,9 +681,9 @@ class _AdminColors {
   const _AdminColors._();
 
   static const bg = AppColors.darkBackground;
-  static const panel = Color(0xFF101B28);
-  static const line = Color(0x1EFFFFFF);
-  static const sub = Color(0xFF8F9BAB);
-  static const lime = Color(0xFFB8FF00);
-  static const pink = Color(0xFFFF5EA8);
+  static const panel = AppColors.cFF101B28;
+  static const line = AppColors.c1EFFFFFF;
+  static const sub = AppColors.cFF8F9BAB;
+  static const lime = AppColors.cFFB8FF00;
+  static const pink = AppColors.cFFFF5EA8;
 }
