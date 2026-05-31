@@ -174,6 +174,10 @@ Future<void> _showFeedPostActions(
   if (!context.mounted || action == null) return;
 
   switch (action) {
+    case _FeedPostAction.edit:
+      if (!item.ownedByMe) return;
+      await _showEditYuruboSheet(context, ref, item);
+      break;
     case _FeedPostAction.copy:
       await Clipboard.setData(ClipboardData(text: body));
       if (context.mounted) OheyToast.show(context, 'コメントをコピーしました');
@@ -631,6 +635,139 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+Future<void> _showEditYuruboSheet(
+  BuildContext context,
+  WidgetRef ref,
+  _FeedItem item,
+) async {
+  await showOheyBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: Colors.black.withValues(alpha: .58),
+    builder: (_) => _EditYuruboSheet(ref: ref, item: item),
+  );
+}
+
+class _EditYuruboSheet extends StatefulWidget {
+  const _EditYuruboSheet({required this.ref, required this.item});
+
+  final WidgetRef ref;
+  final _FeedItem item;
+
+  @override
+  State<_EditYuruboSheet> createState() => _EditYuruboSheetState();
+}
+
+class _EditYuruboSheetState extends State<_EditYuruboSheet> {
+  late final TextEditingController _titleController;
+  late final TextEditingController _placeController;
+  late final TextEditingController _timeController;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.item.body.trim());
+    _placeController = TextEditingController(text: widget.item.place.trim());
+    _timeController = TextEditingController(text: widget.item.timeLabel.trim());
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _placeController.dispose();
+    _timeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final title = _titleController.text.trim();
+    if (title.isEmpty || _saving) return;
+    setState(() => _saving = true);
+    try {
+      await widget.ref
+          .read(yuruboControllerProvider.notifier)
+          .updateYurubo(
+            widget.item.id,
+            YuruboUpdateDraft(
+              title: title,
+              placeText: _placeController.text.trim(),
+              timeLabel: _timeController.text.trim(),
+            ),
+          );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      OheyToast.show(context, 'ゆるぼを更新しました');
+    } catch (_) {
+      if (mounted) OheyToast.show(context, '更新できなかったよ。あとでもう一度試してね');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? const Color(0xFF17212B) : Colors.white;
+    final sub = isWhite
+        ? const Color(0xFF667381)
+        : Colors.white.withValues(alpha: .62);
+    return OheyBottomSheetShell(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+      radius: 32,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              width: 44,
+              height: 5,
+              decoration: BoxDecoration(
+                color: sub.withValues(alpha: .34),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'ゆるぼを編集',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: ink,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.6,
+            ),
+          ),
+          const SizedBox(height: 14),
+          _YuruboInput(
+            controller: _titleController,
+            placeholder: '今日夜、ご飯いける人いる？',
+          ),
+          const SizedBox(height: 10),
+          _YuruboInput(controller: _placeController, placeholder: '場所（任意）'),
+          const SizedBox(height: 10),
+          _YuruboInput(controller: _timeController, placeholder: 'いつ（任意）'),
+          const SizedBox(height: 16),
+          Ohey3DButton(
+            label: _saving ? '保存中...' : '保存する',
+            icon: CupertinoIcons.checkmark_circle_fill,
+            onTap: _saving ? null : _submit,
+            height: 50,
+            radius: 22,
+            color: _feedPrimaryActionColor,
+            foregroundColor: const Color(0xFF101820),
+            shadowColor: _feedPrimaryActionShadowColor,
+          ),
+        ],
       ),
     );
   }
