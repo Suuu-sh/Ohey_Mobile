@@ -16,6 +16,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_action_tile.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_daily_status_3d_option.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
 import '../../../core/widgets/ohey_empty_state.dart';
 import '../../../core/widgets/ohey_page_header.dart';
@@ -202,22 +203,6 @@ class _ProfileColors {
   static const pink = AppColors.cFFFF5EA8;
 }
 
-Color _statusColor(OheyDailyStatus status) => switch (status) {
-  OheyDailyStatus.available => _ProfileColors.lime,
-  OheyDailyStatus.maybeAvailable => AppColors.cFF5DEBD3,
-  OheyDailyStatus.dependsOnTime => _ProfileColors.pink,
-  OheyDailyStatus.hasPlans => AppColors.cFFB8C1CD,
-  OheyDailyStatus.unselected => _ProfileColors.sub,
-};
-
-IconData _statusIcon(OheyDailyStatus status) => switch (status) {
-  OheyDailyStatus.available => CupertinoIcons.checkmark_circle_fill,
-  OheyDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
-  OheyDailyStatus.dependsOnTime => CupertinoIcons.clock_fill,
-  OheyDailyStatus.hasPlans => CupertinoIcons.calendar_today,
-  OheyDailyStatus.unselected => CupertinoIcons.circle,
-};
-
 Future<void> _respondInvite(
   BuildContext context,
   WidgetRef ref,
@@ -257,6 +242,7 @@ Future<void> _showProfileStatusSheet(
     isScrollControlled: true,
     barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => OheyBottomSheetShell(
+      title: 'この日の気分',
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 32,
