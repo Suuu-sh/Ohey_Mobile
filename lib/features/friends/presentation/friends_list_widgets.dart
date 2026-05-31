@@ -15,11 +15,6 @@ class _FriendsRefreshIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = (pulledExtent / triggerDistance).clamp(0.0, 1.0);
-    final isRefreshing =
-        !showDone &&
-        (state == RefreshIndicatorMode.refresh ||
-            state == RefreshIndicatorMode.armed);
     final label = showDone
         ? '更新しました'
         : switch (state) {
@@ -39,11 +34,7 @@ class _FriendsRefreshIndicator extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 6),
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 120),
-            opacity:
-                state == RefreshIndicatorMode.inactive ||
-                    (state == RefreshIndicatorMode.done && !showDone)
-                ? 0
-                : 1,
+            opacity: label.isEmpty ? 0 : 1,
             child: Container(
               height: 34,
               padding: const EdgeInsets.symmetric(horizontal: 13),
@@ -61,32 +52,15 @@ class _FriendsRefreshIndicator extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (isRefreshing)
-                    const CupertinoActivityIndicator(radius: 8)
-                  else
-                    Transform.rotate(
-                      angle: progress * 3.14159,
-                      child: Icon(
-                        CupertinoIcons.arrow_down,
-                        color: _FriendsColors.lime,
-                        size: 16,
-                      ),
-                    ),
-                  if (label.isNotEmpty) ...[
-                    const SizedBox(width: 8),
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ],
+              child: Center(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
             ),
           ),
