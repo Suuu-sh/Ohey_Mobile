@@ -717,16 +717,13 @@ class _ProfileWishListSection extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.darkBackgroundBottom,
           borderRadius: BorderRadius.circular(26),
-          border: Border.all(
-            color: AppColors.cFFC08BFF.withValues(alpha: .42),
-            width: 1.2,
-          ),
+          border: Border.all(color: accent.withValues(alpha: .42), width: 1.2),
         ),
         child: Row(
           children: [
             OheyPopIcon(
               icon: CupertinoIcons.list_bullet,
-              color: _ProfileColors.sub,
+              color: accent,
               size: 34,
               iconSize: 18,
               showBubble: false,
