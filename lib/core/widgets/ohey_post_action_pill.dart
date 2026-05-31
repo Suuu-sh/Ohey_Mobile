@@ -617,7 +617,7 @@ class OheyPostCompanionPill extends StatelessWidget {
     required this.avatars,
     required this.isWhite,
     this.onTap,
-    this.label = '一緒に',
+    this.label = 'With',
     this.semanticLabel = '一緒に遊んだフレンズを表示',
     this.color = AppColors.cFFC08BFF,
   });
