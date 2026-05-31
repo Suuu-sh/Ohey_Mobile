@@ -163,6 +163,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               isLoading: yurubosAsync.isLoading,
               onPageChanged: _handleFeedPageChanged,
               onCreateYuruboPressed: () => _showCreateYuruboSheet(context, ref),
+              onRefresh: () async {
+                HapticFeedback.lightImpact();
+                ref.invalidate(yuruboControllerProvider);
+                await ref.read(yuruboControllerProvider.future);
+              },
               onLikePressed: (item) => ref
                   .read(yuruboControllerProvider.notifier)
                   .toggleParticipation(item.id),

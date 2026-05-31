@@ -24,6 +24,7 @@ Widget _buildFeedPage({
   required VoidCallback onSwipeTutorialDismissed,
   required ValueChanged<int> onPageChanged,
   required VoidCallback onCreateYuruboPressed,
+  required Future<void> Function() onRefresh,
   required ValueChanged<_FeedItem> onLikePressed,
   required ValueChanged<_FeedItem> onSharePressed,
   required ValueChanged<_FeedItem> onMorePressed,
@@ -42,46 +43,62 @@ Widget _buildFeedPage({
     );
   }
 
+  Widget withRefresh(Widget child) => CustomScrollView(
+    physics: const AlwaysScrollableScrollPhysics(
+      parent: BouncingScrollPhysics(),
+    ),
+    slivers: [
+      CupertinoSliverRefreshControl(onRefresh: onRefresh),
+      child,
+    ],
+  );
+
   if (items.isEmpty) {
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.only(top: topPadding, bottom: _feedBottomPageInset),
-      children: [
-        _FeedSectionEmptyState(
-          isWhite: isWhite,
-          onCreateYuruboPressed: onCreateYuruboPressed,
+    return withRefresh(
+      SliverPadding(
+        padding: EdgeInsets.only(top: topPadding, bottom: _feedBottomPageInset),
+        sliver: SliverList.list(
+          children: [
+            _FeedSectionEmptyState(
+              isWhite: isWhite,
+              onCreateYuruboPressed: onCreateYuruboPressed,
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  return ListView.separated(
-    physics: const BouncingScrollPhysics(),
-    padding: EdgeInsets.fromLTRB(0, topPadding + 10, 0, _feedBottomPageInset),
-    itemCount: items.length + (isLoading ? 1 : 0),
-    separatorBuilder: (context, index) => const SizedBox(height: 12),
-    itemBuilder: (context, index) {
-      if (index >= items.length) {
-        return const Padding(
-          padding: EdgeInsets.symmetric(vertical: 18),
-          child: Center(child: CupertinoActivityIndicator()),
-        );
-      }
-      if (index >= items.length - 3) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          onPageChanged(index);
-        });
-      }
-      final item = items[index];
-      return _YuruboPostListItem(
-        item: item,
-        isWhite: isWhite,
-        onInterested: item.isLikeable ? () => onLikePressed(item) : null,
-        onInvite: item.id.isEmpty ? null : () => onSharePressed(item),
-        onMore: item.id.isEmpty ? null : () => onMorePressed(item),
-        onAuthorTap: () => onAuthorPressed(item),
-      );
-    },
+  return withRefresh(
+    SliverPadding(
+      padding: EdgeInsets.fromLTRB(0, topPadding + 10, 0, _feedBottomPageInset),
+      sliver: SliverList.separated(
+        itemCount: items.length + (isLoading ? 1 : 0),
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          if (index >= items.length) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 18),
+              child: Center(child: CupertinoActivityIndicator()),
+            );
+          }
+          if (index >= items.length - 3) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              onPageChanged(index);
+            });
+          }
+          final item = items[index];
+          return _YuruboPostListItem(
+            item: item,
+            isWhite: isWhite,
+            onInterested: item.isLikeable ? () => onLikePressed(item) : null,
+            onInvite: item.id.isEmpty ? null : () => onSharePressed(item),
+            onMore: item.id.isEmpty ? null : () => onMorePressed(item),
+            onAuthorTap: () => onAuthorPressed(item),
+          );
+        },
+      ),
+    ),
   );
 }
 
