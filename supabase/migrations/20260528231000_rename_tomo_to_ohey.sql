@@ -118,13 +118,8 @@ update storage.objects
 set bucket_id = 'ohey-photos'
 where bucket_id = 'tomo-photos';
 
-delete from storage.buckets
-where id = 'tomo-photos'
-  and not exists (
-    select 1
-    from storage.objects
-    where bucket_id = 'tomo-photos'
-  );
+-- Supabase protects direct deletion from storage tables in hosted projects.
+-- Keep the legacy bucket row if it still exists; the app now uses ohey-photos.
 
 create policy ohey_photos_select_visible
   on storage.objects
