@@ -45,8 +45,6 @@ class _FeedHeaderBackdropLayer extends StatelessWidget {
             fadeColor: isWhite ? Colors.white : AppColors.darkBackgroundBottom,
             accentColor: _FeedColors.teal,
             imageTopOffset: 0,
-            fit: BoxFit.fitWidth,
-            alignment: Alignment.topCenter,
             topShadeOpacity: 0,
             midShadeOpacity: 0,
             fadeStartOpacity: .18,
