@@ -1037,31 +1037,40 @@ class _TabBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = count > 99 ? '99+' : count.toString();
-    return Container(
-      constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.cFFFF5F8F, AppColors.cFFFF335F],
-        ),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.darkBackgroundBottom, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cFFFF4F7A.withValues(alpha: .42),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return TweenAnimationBuilder<double>(
+      key: ValueKey(count),
+      tween: Tween(begin: .72, end: 1),
+      duration: const Duration(milliseconds: 360),
+      curve: Curves.elasticOut,
+      builder: (context, scale, child) {
+        return Transform.scale(scale: scale, child: child);
+      },
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [AppColors.cFFFF5F8F, AppColors.cFFFF335F],
           ),
-        ],
-      ),
-      child: Text(
-        label,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: AppColors.white,
-          fontSize: 9.5,
-          height: 1,
-          fontWeight: FontWeight.w900,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: AppColors.darkBackgroundBottom, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.cFFFF4F7A.withValues(alpha: .42),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: AppColors.white,
+            fontSize: 9.5,
+            height: 1,
+            fontWeight: FontWeight.w900,
+          ),
         ),
       ),
     );
