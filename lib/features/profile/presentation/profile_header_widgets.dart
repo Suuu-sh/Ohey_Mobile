@@ -531,7 +531,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
           color: AppColors.darkBackgroundBottom,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: AppColors.success.withValues(alpha: .38),
+            color: AppColors.cFFFF75B5.withValues(alpha: .58),
             width: 1.2,
           ),
         ),
