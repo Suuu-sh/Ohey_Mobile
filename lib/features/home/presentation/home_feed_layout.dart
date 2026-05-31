@@ -302,9 +302,7 @@ Future<void> _showFeedPostActions(
       final confirmed = await _confirmDeleteFeedPost(context);
       if (!confirmed || !context.mounted) return;
       try {
-        await ref
-            .read(homeFeedControllerProvider.notifier)
-            .deleteMemory(item.id);
+        await ref.read(yuruboControllerProvider.notifier).deleteYurubo(item.id);
         ref.invalidate(homeFeedControllerProvider);
         if (context.mounted) OheyToast.show(context, 'ゆるぼを削除しました');
       } catch (error) {
