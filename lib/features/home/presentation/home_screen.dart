@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -302,9 +301,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _shareFeedItem(BuildContext context, _FeedItem item) async {
     try {
-      final imagePath = await _createStoryShareImage(item);
-      if (!mounted) return;
-      await _shareFeedImageWithSystemSheet(this.context, item, imagePath);
+      await _shareFeedPostWithSystemSheet(this.context, item);
     } catch (_) {
       if (!context.mounted) return;
       OheyToast.show(
@@ -315,10 +312,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<void> _shareFeedImageWithSystemSheet(
+  Future<void> _shareFeedPostWithSystemSheet(
     BuildContext context,
     _FeedItem item,
-    String imagePath,
   ) async {
     final renderBox = context.findRenderObject() as RenderBox?;
     final shareOrigin = renderBox == null
@@ -326,10 +322,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         : renderBox.localToGlobal(Offset.zero) & renderBox.size;
     final result = await SharePlus.instance.share(
       ShareParams(
-        files: [XFile(imagePath, mimeType: 'image/png')],
-        fileNameOverrides: [
-          item.isOfficial ? 'ohey_official_post.png' : 'ohey_memory.png',
-        ],
+        text: _feedPostShareText(item),
         title: item.isOfficial ? 'Ohey公式ゆるぼを共有' : 'ゆるぼを共有',
         subject: item.isOfficial ? 'Ohey公式のお知らせ' : 'Oheyのゆるぼ',
         sharePositionOrigin: shareOrigin,
@@ -343,5 +336,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         icon: CupertinoIcons.square_arrow_up,
       );
     }
+  }
+
+  String _feedPostShareText(_FeedItem item) {
+    final details = [
+      if (item.timeLabel.trim().isNotEmpty) item.timeLabel.trim(),
+      if (item.place.trim().isNotEmpty) item.place.trim(),
+      if (item.targetLabel.trim().isNotEmpty) item.targetLabel.trim(),
+    ].join(' ・ ');
+    final lines = <String>[
+      '${item.userName}さんのゆるぼ',
+      item.body.trim(),
+      if (details.isNotEmpty) details,
+      '',
+      item.id.isEmpty
+          ? 'Oheyでチェックしよう'
+          : 'Oheyでチェック: app.ohey.com://yurubos/${item.id}',
+    ];
+    return lines.where((line) => line.trim().isNotEmpty).join('\n');
   }
 }
