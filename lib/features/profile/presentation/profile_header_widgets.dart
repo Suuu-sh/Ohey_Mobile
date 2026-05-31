@@ -534,7 +534,6 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.friendsCount,
     required this.wishItems,
     required this.isWishLoading,
-    required this.onEditProfileTap,
     required this.onCreateYuruboTap,
     required this.onOpenWishListTap,
     required this.onAddFriendsTap,
@@ -543,7 +542,6 @@ class _ProfileActivityHome extends StatelessWidget {
   final int friendsCount;
   final List<WishItem> wishItems;
   final bool isWishLoading;
-  final VoidCallback onEditProfileTap;
   final VoidCallback onCreateYuruboTap;
   final VoidCallback onOpenWishListTap;
   final VoidCallback onAddFriendsTap;
@@ -559,11 +557,6 @@ class _ProfileActivityHome extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _ProfileSummaryStats(friendsCount: friendsCount),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _ProfileEditActionRow(onTap: onEditProfileTap),
           ),
           const SizedBox(height: 12),
           _ProfileWishListSection(
@@ -816,37 +809,6 @@ class _ProfileSummaryStat extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ProfileEditActionRow extends StatelessWidget {
-  const _ProfileEditActionRow({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Ohey3DButton(
-      label: 'プロフィールを編集',
-      onTap: onTap,
-      height: 48,
-      radius: 24,
-      color: AppColors.primaryAction,
-      foregroundColor: const Color(0xFF101820),
-      shadowColor: AppColors.primaryActionShadow,
-      fontSize: 18,
-      customIcon: const OheyPopIcon(
-        icon: CupertinoIcons.pencil,
-        color: Color(0xFF101820),
-        size: 32,
-        iconSize: 18,
-      ),
-      trailing: const OheyGeneratedIcon(
-        CupertinoIcons.chevron_forward,
-        color: Color(0xFF101820),
-        size: 22,
-      ),
     );
   }
 }

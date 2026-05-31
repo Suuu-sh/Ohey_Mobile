@@ -360,6 +360,21 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
           onClose: () => Navigator.of(sheetContext).pop(),
           children: [
             _SettingsTile(
+              icon: CupertinoIcons.pencil_circle_fill,
+              label: 'プロフィール編集',
+              subtitle: '名前・ユーザーID・アバターを変更',
+              accent: AppColors.primaryAction,
+              onTap: () async {
+                final currentUser = ref.read(oheyUserProvider);
+                if (sheetContext.mounted) {
+                  Navigator.of(sheetContext).pop();
+                }
+                await Future<void>.delayed(const Duration(milliseconds: 180));
+                if (!rootContext.mounted) return;
+                await _showEditProfileSheet(rootContext, ref, currentUser);
+              },
+            ),
+            _SettingsTile(
               icon: CupertinoIcons.play_circle_fill,
               label: 'はじめてのデモ',
               subtitle: 'Oheyの使い方をもう一度見る',
