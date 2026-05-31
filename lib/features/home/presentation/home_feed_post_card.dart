@@ -659,13 +659,17 @@ class _FeedCardFooter extends StatelessWidget {
                     : item.ownedByMe
                     ? 'ゆるぼを共有'
                     : 'ゆるぼを共有',
-                customIcon: item.isOfficial
+                customIcon: item.isOfficial || compactYurubo
                     ? null
                     : OheyPostShareIcon(
                         color: oheyPostActionForeground(shareAccent),
                         size: 19,
                       ),
-                icon: item.isOfficial ? CupertinoIcons.doc_text_fill : null,
+                icon: item.isOfficial
+                    ? CupertinoIcons.doc_text_fill
+                    : compactYurubo
+                    ? CupertinoIcons.link
+                    : null,
                 label: compactYurubo ? '共有' : _feedShareActionLabel(item),
                 color: shareAccent,
                 isWhite: isWhite,
