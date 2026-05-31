@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -159,8 +158,6 @@ class ProfileScreen extends ConsumerWidget {
                                 friendsCount: friends.length,
                                 wishItems: wishItems,
                                 isWishLoading: wishItemsAsync.isLoading,
-                                onEditProfileTap: () =>
-                                    _showEditProfileSheet(context, ref, user),
                                 onCreateYuruboTap: () =>
                                     _showProfileCreateYuruboSheet(context, ref),
                                 onOpenWishListTap: () =>

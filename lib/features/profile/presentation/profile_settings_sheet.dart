@@ -158,30 +158,7 @@ class _SettingsCloseButton extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    label: '閉じる',
-    child: GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: .10),
-          shape: BoxShape.circle,
-          border: Border.all(color: color.withValues(alpha: .10)),
-        ),
-        child: Center(
-          child: OheyGeneratedIcon(
-            CupertinoIcons.xmark,
-            color: color,
-            size: 23,
-          ),
-        ),
-      ),
-    ),
-  );
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }
 
 class _SettingsTile extends StatelessWidget {

@@ -49,8 +49,8 @@ Widget _buildFeedPage({
     ),
     slivers: [
       CupertinoSliverRefreshControl(
-        refreshTriggerPullDistance: 24,
-        refreshIndicatorExtent: 24,
+        refreshTriggerPullDistance: 10,
+        refreshIndicatorExtent: 10,
         onRefresh: onRefresh,
         builder:
             (
@@ -147,10 +147,12 @@ class _YuruboRefreshIndicator extends StatelessWidget {
 
     return SizedBox(
       height: pulledExtent,
-      child: Align(
+      child: OverflowBox(
         alignment: Alignment.bottomCenter,
+        minHeight: 0,
+        maxHeight: 60,
         child: Padding(
-          padding: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.only(bottom: 6),
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 120),
             opacity: state == RefreshIndicatorMode.inactive ? 0 : 1,

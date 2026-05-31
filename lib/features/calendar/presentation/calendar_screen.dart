@@ -1476,8 +1476,6 @@ class _CalendarFriendStatusSheetState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const OheyBottomSheetHandle(),
-            const SizedBox(height: 14),
             Text(
               'フレンズの空き状況',
               style: TextStyle(

@@ -1,10 +1,8 @@
 import 'dart:ui' as ui;
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
-import 'ohey_pop_icon.dart';
 
 Future<T?> showOheyBottomSheet<T>({
   required BuildContext context,
@@ -39,7 +37,7 @@ class OheyBottomSheetShell extends StatelessWidget {
     required this.child,
     this.title,
     this.onClose,
-    this.showHandle = false,
+    this.showHandle = true,
     this.topSafeArea = false,
     this.margin = EdgeInsets.zero,
     this.padding = const EdgeInsets.fromLTRB(18, 14, 18, 18),
@@ -115,10 +113,8 @@ class OheyBottomSheetShell extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (showHandle) ...[
-                      const OheyBottomSheetHandle(),
-                      const SizedBox(height: 18),
-                    ],
+                    const OheyBottomSheetHandle(),
+                    const SizedBox(height: 18),
                     if (title != null) ...[
                       Row(
                         children: [
@@ -131,10 +127,6 @@ class OheyBottomSheetShell extends StatelessWidget {
                                 ),
                           ),
                           const Spacer(),
-                          OheyCloseButton(
-                            onTap: onClose ?? () => Navigator.of(context).pop(),
-                            iconColor: ink,
-                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -175,7 +167,7 @@ class OheyBottomSheetHandle extends StatelessWidget {
 class OheyCloseButton extends StatelessWidget {
   const OheyCloseButton({
     super.key,
-    required this.onTap,
+    this.onTap,
     this.enabled = true,
     this.size = 40,
     this.iconSize = 20,
@@ -195,48 +187,5 @@ class OheyCloseButton extends StatelessWidget {
   final String semanticLabel;
 
   @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final resolvedIconColor =
-        iconColor ?? (isWhite ? const Color(0xFF101820) : Colors.white);
-    final resolvedBackground =
-        backgroundColor ??
-        (isWhite
-            ? const Color(0xFFF3F7FA)
-            : Colors.white.withValues(alpha: .08));
-    final resolvedBorder =
-        borderColor ??
-        (isWhite
-            ? const Color(0xFFE0E7EE)
-            : Colors.white.withValues(alpha: .10));
-
-    return Semantics(
-      button: true,
-      enabled: enabled,
-      label: semanticLabel,
-      child: Opacity(
-        opacity: enabled ? 1 : .45,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: enabled ? onTap : null,
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: resolvedBackground,
-              shape: BoxShape.circle,
-              border: Border.all(color: resolvedBorder),
-            ),
-            child: Center(
-              child: OheyGeneratedIcon(
-                CupertinoIcons.xmark,
-                color: resolvedIconColor,
-                size: iconSize,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }
