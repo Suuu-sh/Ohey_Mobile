@@ -471,7 +471,9 @@ class _ProfileActivityHome extends StatelessWidget {
             joinedYurubos: joinedYurubos,
             isLoading: isYuruboLoading,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
+          const _ProfileArchiveTopGlowLine(),
+          const SizedBox(height: 22),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _ProfileYuruboActionRow(
@@ -479,9 +481,7 @@ class _ProfileActivityHome extends StatelessWidget {
               isLarge: true,
             ),
           ),
-          const SizedBox(height: 12),
-          const _ProfileArchiveTopGlowLine(),
-          const SizedBox(height: 22),
+          const SizedBox(height: 14),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
