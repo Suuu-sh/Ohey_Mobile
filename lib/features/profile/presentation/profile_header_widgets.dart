@@ -624,146 +624,90 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         decoration: BoxDecoration(
+          color: AppColors.darkBackgroundBottom,
           borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.success.withValues(alpha: .18),
-              blurRadius: 28,
-              offset: const Offset(0, 14),
-            ),
-          ],
+          border: Border.all(
+            color: AppColors.success.withValues(alpha: .38),
+            width: 1.2,
+          ),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: Stack(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 17, 18, 17),
+          child: Row(
             children: [
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.cFF102331,
-                        AppColors.cFF071927,
-                        AppColors.success.withValues(alpha: .18),
-                      ],
-                      stops: const [0, .58, 1],
-                    ),
-                    border: Border.all(
-                      color: AppColors.success.withValues(alpha: .46),
-                      width: 1.4,
-                    ),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: -30,
-                top: -44,
-                child: Container(
-                  width: 132,
-                  height: 132,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.success.withValues(alpha: .12),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: -36,
-                bottom: -48,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.cFF39C7FF.withValues(alpha: .08),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18, 17, 18, 17),
-                child: Row(
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 7,
-                                height: 7,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: AppColors.success,
-                                ),
-                              ),
-                              const SizedBox(width: 7),
-                              const Text(
-                                '本日の予定',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: AppColors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w900,
-                                  height: 1.08,
-                                  letterSpacing: .2,
-                                ),
-                              ),
-                            ],
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.success,
                           ),
-                          const SizedBox(height: 7),
-                          Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: AppColors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
-                              height: 1.1,
-                            ),
+                        ),
+                        const SizedBox(width: 7),
+                        const Text(
+                          '本日の予定',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            height: 1.08,
+                            letterSpacing: .2,
                           ),
-                          const SizedBox(height: 5),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 9,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.white.withValues(alpha: .08),
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(
-                                color: AppColors.white.withValues(alpha: .08),
-                              ),
-                            ),
-                            child: Text(
-                              event == null ? subtitle : 'Today · $subtitle',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: _ProfileColors.sub.withValues(
-                                  alpha: .82,
-                                ),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                height: 1,
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 7),
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        height: 1.1,
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    _TodayScheduleParticipants(event: event),
+                    const SizedBox(height: 5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.white.withValues(alpha: .08),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: AppColors.white.withValues(alpha: .08),
+                        ),
+                      ),
+                      child: Text(
+                        event == null ? subtitle : 'Today · $subtitle',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: _ProfileColors.sub.withValues(alpha: .82),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          height: 1,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
+              const SizedBox(width: 14),
+              _TodayScheduleParticipants(event: event),
             ],
           ),
         ),
