@@ -627,14 +627,7 @@ class _Header extends StatelessWidget {
     padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
     child: Row(
       children: [
-        IconButton(
-          onPressed: onClose,
-          icon: const OheyGeneratedIcon(
-            CupertinoIcons.xmark,
-            color: _AvatarColors.ink,
-            size: 34,
-          ),
-        ),
+        const SizedBox(width: 48),
         const Expanded(
           child: Text(
             'アバターを作成する',

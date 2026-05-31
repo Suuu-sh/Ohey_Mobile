@@ -541,14 +541,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: OheyGeneratedIcon(
-                    CupertinoIcons.xmark,
-                    color: ink.withValues(alpha: .86),
-                    size: 30,
-                  ),
-                ),
+                const SizedBox.shrink(),
               ],
             ),
             if (myUserId.isNotEmpty) ...[
@@ -687,15 +680,7 @@ class _CuteQrCard extends StatelessWidget {
                         color: ink.withValues(alpha: .72),
                         size: 30,
                       )
-                    : IconButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: onClose,
-                        icon: OheyGeneratedIcon(
-                          CupertinoIcons.xmark,
-                          color: ink.withValues(alpha: .74),
-                          size: 32,
-                        ),
-                      ),
+                    : const SizedBox.shrink(),
               ),
               Expanded(
                 child: const Text(

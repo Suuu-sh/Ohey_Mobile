@@ -55,16 +55,7 @@ class _FeedCompanionListSheet extends StatelessWidget {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: OheyPopIcon(
-                  icon: CupertinoIcons.xmark,
-                  color: subtitleColor,
-                  size: 34,
-                  iconSize: 18,
-                  shadow: false,
-                ),
-              ),
+              const SizedBox.shrink(),
             ],
           ),
           const SizedBox(height: 16),
