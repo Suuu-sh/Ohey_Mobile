@@ -37,35 +37,75 @@ class _FeedPostCard extends StatelessWidget {
         glowAlpha: 0,
         glowBlur: 24,
         glowOffset: const Offset(0, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            _FeedCardAuthorBar(
-              item: item,
-              isWhite: isWhite,
-              compactYurubo: compactYurubo,
-              onMore: onMore,
-              onAuthorTap: onAuthorTap,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _FeedCardAuthorBar(
+                  item: item,
+                  isWhite: isWhite,
+                  compactYurubo: compactYurubo,
+                  onMore: onMore,
+                  onAuthorTap: onAuthorTap,
+                ),
+                if (compactYurubo)
+                  _YuruboCardBody(item: item, isWhite: isWhite)
+                else
+                  _FeedPhotoLikeSurface(
+                    item: item,
+                    hasPhoto: hasPhoto,
+                    photoPath: photoPath,
+                    caption: caption,
+                    onLike: onLike,
+                  ),
+                _FeedCardFooter(
+                  item: item,
+                  isWhite: isWhite,
+                  compactYurubo: compactYurubo,
+                  onLike: onLike,
+                  onShare: onShare,
+                ),
+              ],
             ),
-            if (compactYurubo)
-              _YuruboCardBody(item: item, isWhite: isWhite)
-            else
-              _FeedPhotoLikeSurface(
-                item: item,
-                hasPhoto: hasPhoto,
-                photoPath: photoPath,
-                caption: caption,
-                onLike: onLike,
-              ),
-            _FeedCardFooter(
-              item: item,
-              isWhite: isWhite,
-              compactYurubo: compactYurubo,
-              onLike: onLike,
-              onShare: onShare,
-            ),
+            if (compactYurubo) const _YuruboBlockGlowUnderline(),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _YuruboBlockGlowUnderline extends StatelessWidget {
+  const _YuruboBlockGlowUnderline();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: 22,
+      right: 22,
+      bottom: -2,
+      child: IgnorePointer(
+        child: Container(
+          height: 4,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            color: const Color(0xFFC08BFF),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFC08BFF).withValues(alpha: .86),
+                blurRadius: 14,
+                spreadRadius: 2,
+              ),
+              BoxShadow(
+                color: const Color(0xFFFF75D6).withValues(alpha: .38),
+                blurRadius: 28,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -673,7 +713,6 @@ class _FeedCardFooter extends StatelessWidget {
                 label: compactYurubo ? '共有' : _feedShareActionLabel(item),
                 color: shareAccent,
                 isWhite: isWhite,
-                glowUnderline: compactYurubo,
                 onTap: onShare,
               ),
               const Spacer(),
