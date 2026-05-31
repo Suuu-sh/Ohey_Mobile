@@ -91,7 +91,7 @@ class OheyFriendUserBlock extends StatelessWidget {
             ? (isWhite ? .09 : .18)
             : (isWhite ? .035 : .06),
         glowBlur: 24,
-        glowOffset: const Offset(0, 8),
+        glowOffset: Offset.zero,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

@@ -101,10 +101,11 @@ class _FriendsList extends StatelessWidget {
     }
 
     return ListView.separated(
+      clipBehavior: Clip.none,
       physics: const AlwaysScrollableScrollPhysics(
         parent: BouncingScrollPhysics(),
       ),
-      padding: const EdgeInsets.only(bottom: 168),
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 168),
       itemCount:
           filtered.length +
           1 +
