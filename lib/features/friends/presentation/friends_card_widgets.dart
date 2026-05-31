@@ -312,6 +312,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
     const bodyBackground = AppColors.darkBackgroundBottom;
 
     return OheyBottomSheetShell(
+      showHandle: false,
       padding: EdgeInsets.zero,
       radius: 0,
       maxHeightFactor: 1,
