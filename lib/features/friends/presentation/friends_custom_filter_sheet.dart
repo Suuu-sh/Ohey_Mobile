@@ -442,24 +442,18 @@ class _ManageIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 41,
-      child: Ohey3DButtonSurface(
-        onTap: onTap,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        width: 41,
         height: 34,
-        radius: 17,
-        color: color.withValues(alpha: .18),
-        bottomColor: ohey3DShadowColorFor(color, lightnessScale: .56),
-        padding: EdgeInsets.zero,
-        borderColor: color.withValues(alpha: .30),
-        outerShadows: [
-          BoxShadow(
-            color: color.withValues(alpha: .12),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-        child: OheyGeneratedIcon(icon, color: color, size: 17),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: .18),
+          borderRadius: BorderRadius.circular(17),
+          border: Border.all(color: color.withValues(alpha: .30)),
+        ),
+        child: Center(child: OheyGeneratedIcon(icon, color: color, size: 17)),
       ),
     );
   }
