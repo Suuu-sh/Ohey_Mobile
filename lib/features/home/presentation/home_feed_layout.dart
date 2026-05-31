@@ -49,8 +49,8 @@ Widget _buildFeedPage({
     ),
     slivers: [
       CupertinoSliverRefreshControl(
-        refreshTriggerPullDistance: 10,
-        refreshIndicatorExtent: 10,
+        refreshTriggerPullDistance: 34,
+        refreshIndicatorExtent: 24,
         onRefresh: onRefresh,
         builder:
             (
@@ -64,6 +64,7 @@ Widget _buildFeedPage({
               pulledExtent: pulledExtent,
               triggerDistance: refreshTriggerPullDistance,
               indicatorExtent: refreshIndicatorExtent,
+              topOffset: topPadding - 42,
             ),
       ),
       child,
@@ -125,12 +126,14 @@ class _YuruboRefreshIndicator extends StatelessWidget {
     required this.pulledExtent,
     required this.triggerDistance,
     required this.indicatorExtent,
+    required this.topOffset,
   });
 
   final RefreshIndicatorMode state;
   final double pulledExtent;
   final double triggerDistance;
   final double indicatorExtent;
+  final double topOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -156,47 +159,50 @@ class _YuruboRefreshIndicator extends StatelessWidget {
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 120),
             opacity: state == RefreshIndicatorMode.inactive ? 0 : 1,
-            child: Container(
-              height: 34,
-              padding: const EdgeInsets.symmetric(horizontal: 13),
-              decoration: BoxDecoration(
-                color: const Color(0xFF101C2B).withValues(alpha: .82),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: _feedPrimaryActionColor.withValues(alpha: .22),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: _feedPrimaryActionColor.withValues(alpha: .18),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
+            child: Transform.translate(
+              offset: Offset(0, topOffset.clamp(0, 220)),
+              child: Container(
+                height: 34,
+                padding: const EdgeInsets.symmetric(horizontal: 13),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF101C2B).withValues(alpha: .82),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: _feedPrimaryActionColor.withValues(alpha: .22),
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (isRefreshing)
-                    const CupertinoActivityIndicator(radius: 8)
-                  else
-                    Transform.rotate(
-                      angle: progress * 3.14159,
-                      child: Icon(
-                        CupertinoIcons.arrow_down,
-                        color: _feedPrimaryActionColor,
-                        size: 16,
+                  boxShadow: [
+                    BoxShadow(
+                      color: _feedPrimaryActionColor.withValues(alpha: .18),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isRefreshing)
+                      const CupertinoActivityIndicator(radius: 8)
+                    else
+                      Transform.rotate(
+                        angle: progress * 3.14159,
+                        child: Icon(
+                          CupertinoIcons.arrow_down,
+                          color: _feedPrimaryActionColor,
+                          size: 16,
+                        ),
+                      ),
+                    const SizedBox(width: 8),
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
-                  const SizedBox(width: 8),
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
