@@ -135,7 +135,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _FeedHeaderBackdropLayer(isWhite: isWhite),
           _FeedHeaderControlsLayer(
             child: OheyPageHeader(
-              title: 'フィード',
+              title: 'ゆるぼ',
               titleColor: _FeedColors.teal,
               titleOffset: const Offset(0, -54),
               trailingOffset: const Offset(0, -54),
@@ -143,8 +143,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   OheyHeaderIconButton(
-                    icon: CupertinoIcons.camera_fill,
-                    semanticLabel: '投稿する',
+                    icon: CupertinoIcons.plus_bubble_fill,
+                    semanticLabel: 'ゆるぼする',
                     color: _FeedColors.teal,
                     onTap: widget.onAddMemoryPressed ?? () {},
                   ),

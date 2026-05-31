@@ -55,21 +55,29 @@ Widget _buildFeedPage({
     );
   }
 
-  return PageView.builder(
-    scrollDirection: Axis.vertical,
-    onPageChanged: onPageChanged,
-    physics: const PageScrollPhysics(parent: BouncingScrollPhysics()),
-    itemCount: items.length,
+  return ListView.separated(
+    physics: const BouncingScrollPhysics(),
+    padding: EdgeInsets.fromLTRB(0, topPadding + 10, 0, _feedBottomPageInset),
+    itemCount: items.length + (isLoading ? 1 : 0),
+    separatorBuilder: (context, index) => const SizedBox(height: 12),
     itemBuilder: (context, index) {
+      if (index >= items.length) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 18),
+          child: Center(child: CupertinoActivityIndicator()),
+        );
+      }
+      if (index >= items.length - 3) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          onPageChanged(index);
+        });
+      }
       final item = items[index];
-      return _FeedPostPage(
-        topPadding: topPadding,
+      return _YuruboPostListItem(
         item: item,
         isWhite: isWhite,
-        showSwipeTutorial: showSwipeTutorial && index == 0,
-        onSwipeTutorialDismissed: onSwipeTutorialDismissed,
-        onLike: item.isLikeable ? () => onLikePressed(item) : null,
-        onShare: item.id.isEmpty ? null : () => onSharePressed(item),
+        onInterested: item.isLikeable ? () => onLikePressed(item) : null,
+        onInvite: item.id.isEmpty ? null : () => onSharePressed(item),
         onMore: item.id.isEmpty ? null : () => onMorePressed(item),
         onAuthorTap: () => onAuthorPressed(item),
       );
@@ -77,58 +85,36 @@ Widget _buildFeedPage({
   );
 }
 
-class _FeedPostPage extends StatelessWidget {
-  const _FeedPostPage({
-    required this.topPadding,
+class _YuruboPostListItem extends StatelessWidget {
+  const _YuruboPostListItem({
     required this.item,
     required this.isWhite,
-    required this.showSwipeTutorial,
-    required this.onSwipeTutorialDismissed,
-    this.onLike,
-    this.onShare,
+    this.onInterested,
+    this.onInvite,
     this.onMore,
     this.onAuthorTap,
   });
 
-  final double topPadding;
   final _FeedItem item;
   final bool isWhite;
-  final bool showSwipeTutorial;
-  final VoidCallback onSwipeTutorialDismissed;
-  final VoidCallback? onLike;
-  final VoidCallback? onShare;
+  final VoidCallback? onInterested;
+  final VoidCallback? onInvite;
   final VoidCallback? onMore;
   final VoidCallback? onAuthorTap;
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Padding(
-          padding: EdgeInsets.only(
-            top: topPadding,
-            bottom: _feedBottomPageInset,
-          ),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: _FeedPostCard(
-              item: item,
-              isWhite: isWhite,
-              onLike: onLike,
-              onShare: onShare,
-              onMore: onMore,
-              onAuthorTap: onAuthorTap,
-            ),
-          ),
-        ),
-        if (showSwipeTutorial)
-          Positioned.fill(
-            child: _FeedSwipeTutorialOverlay(
-              isWhite: isWhite,
-              onDismissed: onSwipeTutorialDismissed,
-            ),
-          ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: _FeedPostCard(
+        item: item,
+        isWhite: isWhite,
+        compactYurubo: true,
+        onLike: onInterested,
+        onShare: onInvite,
+        onMore: onMore,
+        onAuthorTap: onAuthorTap,
+      ),
     );
   }
 }
@@ -147,16 +133,16 @@ class _FeedSectionEmptyState extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 28),
       child: _FeedEmptyState(
-        icon: CupertinoIcons.camera_fill,
+        icon: CupertinoIcons.plus_bubble_fill,
         isWhite: isWhite,
-        title: '最初の1枚を残そう',
-        message: '今日の写真にひと言添えるだけで、ホームとアーカイブにかわいい思い出が並びます。',
+        title: '最初のゆるぼを出そう',
+        message: 'ご飯・作業・サウナなど、LINEで送るほどでもない誘いを軽く置けます。',
         accent: _feedPrimaryActionColor,
         action: SizedBox(
           width: 240,
           child: Ohey3DButton(
-            label: '写真を選んで投稿する',
-            icon: CupertinoIcons.camera_fill,
+            label: 'ゆるぼする',
+            icon: CupertinoIcons.plus_bubble_fill,
             onTap: onAddMemoryPressed,
             height: 50,
             radius: 22,

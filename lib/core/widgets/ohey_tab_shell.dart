@@ -158,7 +158,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
         if (showToast) {
           OheyToast.show(
             context,
-            'フィードを更新しました',
+            'ゆるぼを更新しました',
             icon: CupertinoIcons.arrow_clockwise,
           );
         }
@@ -529,7 +529,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
               children: [
                 _TabItem(
                   customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
-                  label: 'フィード',
+                  label: 'ゆるぼ',
                   selected: _selectedIndex == 0,
                   activeColor: const Color(0xFF8A62FF),
                   onTap: () => _selectTab(0),
