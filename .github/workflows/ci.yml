@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - development
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'assets/**'
+      - 'android/**'
+      - 'ios/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'analysis_options.yaml'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches:
+      - development
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'assets/**'
+      - 'android/**'
+      - 'ios/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'analysis_options.yaml'
+      - '.github/workflows/ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ohey-mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  flutter_analyze:
+    name: Flutter analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Run shared Flutter analyze action
+        uses: Suuu-sh/Shared/actions/flutter-analyze@main
+        with:
+          working-directory: .
+          flutter-channel: stable
+          env-file-content: |
+            OHEY_ENV=dev
+            SUPABASE_URL=https://wwyaftonswgxnjcceyfb.supabase.co
+            SUPABASE_PUBLISHABLE_KEY=test_publishable_key
+            SUPABASE_AUTH_REDIRECT_URL=app.ohey.com.dev://login-callback/
+            OHEY_BACKEND_URL=https://dev-ohey-backend.onrender.com
+            OHEY_ADMIN_EMAILS=
+          analyze-command: flutter analyze
+
+  flutter_test:
+    name: Flutter test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Run shared Flutter test action
+        uses: Suuu-sh/Shared/actions/flutter-test@main
+        with:
+          working-directory: .
+          flutter-channel: stable
+          env-file-content: |
+            OHEY_ENV=dev
+            SUPABASE_URL=https://wwyaftonswgxnjcceyfb.supabase.co
+            SUPABASE_PUBLISHABLE_KEY=test_publishable_key
+            SUPABASE_AUTH_REDIRECT_URL=app.ohey.com.dev://login-callback/
+            OHEY_BACKEND_URL=https://dev-ohey-backend.onrender.com
+            OHEY_ADMIN_EMAILS=
+          test-command: flutter test
