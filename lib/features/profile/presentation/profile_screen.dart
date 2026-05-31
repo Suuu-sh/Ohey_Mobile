@@ -175,6 +175,8 @@ class ProfileScreen extends ConsumerWidget {
                                     _openProfileWishListScreen(context),
                                 onAddFriendsTap: () =>
                                     showFriendAddSheet(context, ref),
+                                onChangeStatusTap: () =>
+                                    _showProfileStatusSheet(context, ref, user),
                               ),
                             ),
                           ],
@@ -243,6 +245,23 @@ const _selectableDailyStatuses = <OheyDailyStatus>[
   OheyDailyStatus.dependsOnTime,
   OheyDailyStatus.hasPlans,
 ];
+
+Future<void> _showProfileStatusSheet(
+  BuildContext context,
+  WidgetRef ref,
+  OheyUser? user,
+) async {
+  await showOheyBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: AppColors.black.withValues(alpha: .58),
+    builder: (_) => _ProfileStatusSheetContent(
+      selected: user?.dailyStatus ?? OheyDailyStatus.unselected,
+      ref: ref,
+    ),
+  );
+}
 
 Future<void> _showProfileCreateWishItemSheet(
   BuildContext context,

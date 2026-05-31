@@ -443,6 +443,7 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.onCreateYuruboTap,
     required this.onOpenWishListTap,
     required this.onAddFriendsTap,
+    required this.onChangeStatusTap,
   });
 
   final int friendsCount;
@@ -453,6 +454,7 @@ class _ProfileActivityHome extends StatelessWidget {
   final VoidCallback onCreateYuruboTap;
   final VoidCallback onOpenWishListTap;
   final VoidCallback onAddFriendsTap;
+  final VoidCallback onChangeStatusTap;
 
   @override
   Widget build(BuildContext context) {
@@ -476,9 +478,16 @@ class _ProfileActivityHome extends StatelessWidget {
           const SizedBox(height: 22),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _ProfileYuruboActionRow(
-              onTap: onCreateYuruboTap,
-              isLarge: true,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _ProfileYuruboActionRow(onTap: onCreateYuruboTap),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _ProfileStatusActionRow(onTap: onChangeStatusTap),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 14),
@@ -826,10 +835,9 @@ class _ProfileSummaryStat extends StatelessWidget {
 }
 
 class _ProfileYuruboActionRow extends StatelessWidget {
-  const _ProfileYuruboActionRow({required this.onTap, this.isLarge = false});
+  const _ProfileYuruboActionRow({required this.onTap});
 
   final VoidCallback onTap;
-  final bool isLarge;
 
   @override
   Widget build(BuildContext context) {
@@ -872,6 +880,61 @@ class _ProfileYuruboActionRow extends StatelessWidget {
             CupertinoIcons.plus,
             color: AppColors.cFF101820,
             size: 18,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileStatusActionRow extends StatelessWidget {
+  const _ProfileStatusActionRow({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Ohey3DButtonSurface(
+      onTap: onTap,
+      height: 46,
+      radius: 20,
+      color: AppColors.cFFFF75B5,
+      bottomColor: AppColors.cFFD4147C,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      borderColor: AppColors.white.withValues(alpha: .20),
+      outerShadows: [
+        BoxShadow(
+          color: AppColors.cFFFF75B5.withValues(alpha: .18),
+          blurRadius: 14,
+          offset: const Offset(0, 7),
+        ),
+      ],
+      child: Row(
+        children: [
+          const OheyPopIcon(
+            icon: CupertinoIcons.person_crop_circle_badge_checkmark,
+            color: AppColors.cFF101820,
+            size: 28,
+            iconSize: 15,
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'ステータス変更',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppColors.cFF101820,
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.4,
+              ),
+            ),
+          ),
+          OheyGeneratedIcon(
+            CupertinoIcons.chevron_right,
+            color: AppColors.cFF101820,
+            size: 16,
           ),
         ],
       ),
