@@ -485,8 +485,8 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
           .createYurubo(
             YuruboCreateDraft(
               title: title,
-              placeText: _placeController.text.trim(),
-              timeLabel: _timeController.text.trim(),
+              placeText: _profileYuruboPlaceOrDefault(_placeController.text),
+              timeLabel: _profileYuruboTimeOrDefault(_timeController.text),
               visibility: _visibility,
               groupId: _visibility == 'group' ? _groupId : null,
               wishItemId: _wishItemId,
@@ -641,12 +641,12 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
               const SizedBox(height: 10),
               _ProfileYuruboInput(
                 controller: _placeController,
-                placeholder: '場所（任意）',
+                placeholder: '場所（未入力ならどこでも）',
               ),
               const SizedBox(height: 10),
               _ProfileYuruboInput(
                 controller: _timeController,
-                placeholder: 'いつ（任意）',
+                placeholder: 'いつ（未入力ならいつでも）',
               ),
               const SizedBox(height: 16),
               Ohey3DButton(
@@ -665,6 +665,16 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
       ),
     );
   }
+}
+
+String _profileYuruboPlaceOrDefault(String value) {
+  final trimmed = value.trim();
+  return trimmed.isEmpty ? 'どこでも' : trimmed;
+}
+
+String _profileYuruboTimeOrDefault(String value) {
+  final trimmed = value.trim();
+  return trimmed.isEmpty ? 'いつでも' : trimmed;
 }
 
 class _ProfileYuruboChoice extends StatelessWidget {

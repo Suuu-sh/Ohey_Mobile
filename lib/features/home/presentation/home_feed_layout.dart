@@ -429,8 +429,8 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
           .createYurubo(
             YuruboCreateDraft(
               title: title,
-              placeText: _placeController.text.trim(),
-              timeLabel: _timeController.text.trim(),
+              placeText: _yuruboPlaceOrDefault(_placeController.text),
+              timeLabel: _yuruboTimeOrDefault(_timeController.text),
               visibility: _visibility,
               groupId: _visibility == 'group' ? _groupId : null,
               wishItemId: _wishItemId,
@@ -618,9 +618,15 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
                 placeholder: '今日夜、ご飯いける人いる？',
               ),
               const SizedBox(height: 10),
-              _YuruboInput(controller: _placeController, placeholder: '場所（任意）'),
+              _YuruboInput(
+                controller: _placeController,
+                placeholder: '場所（未入力ならどこでも）',
+              ),
               const SizedBox(height: 10),
-              _YuruboInput(controller: _timeController, placeholder: 'いつ（任意）'),
+              _YuruboInput(
+                controller: _timeController,
+                placeholder: 'いつ（未入力ならいつでも）',
+              ),
               const SizedBox(height: 16),
               Ohey3DButton(
                 label: _saving ? '送信中...' : 'ゆるぼする',
@@ -697,8 +703,8 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
             widget.item.id,
             YuruboUpdateDraft(
               title: title,
-              placeText: _placeController.text.trim(),
-              timeLabel: _timeController.text.trim(),
+              placeText: _yuruboPlaceOrDefault(_placeController.text),
+              timeLabel: _yuruboTimeOrDefault(_timeController.text),
             ),
           );
       if (!mounted) return;
@@ -753,9 +759,15 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
             placeholder: '今日夜、ご飯いける人いる？',
           ),
           const SizedBox(height: 10),
-          _YuruboInput(controller: _placeController, placeholder: '場所（任意）'),
+          _YuruboInput(
+            controller: _placeController,
+            placeholder: '場所（未入力ならどこでも）',
+          ),
           const SizedBox(height: 10),
-          _YuruboInput(controller: _timeController, placeholder: 'いつ（任意）'),
+          _YuruboInput(
+            controller: _timeController,
+            placeholder: 'いつ（未入力ならいつでも）',
+          ),
           const SizedBox(height: 16),
           Ohey3DButton(
             label: _saving ? '保存中...' : '保存する',
@@ -771,6 +783,16 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
       ),
     );
   }
+}
+
+String _yuruboPlaceOrDefault(String value) {
+  final trimmed = value.trim();
+  return trimmed.isEmpty ? 'どこでも' : trimmed;
+}
+
+String _yuruboTimeOrDefault(String value) {
+  final trimmed = value.trim();
+  return trimmed.isEmpty ? 'いつでも' : trimmed;
 }
 
 class _YuruboVisibilityChoice extends StatelessWidget {
