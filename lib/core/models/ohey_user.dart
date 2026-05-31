@@ -21,9 +21,9 @@ extension OheyDailyStatusX on OheyDailyStatus {
   String get label => switch (this) {
     OheyDailyStatus.unselected => 'まだ決めてない',
     OheyDailyStatus.available => '空いてる',
-    OheyDailyStatus.maybeAvailable => '多分空いてる',
+    OheyDailyStatus.maybeAvailable => 'たぶん空いてる',
     OheyDailyStatus.dependsOnTime => '時間次第',
-    OheyDailyStatus.hasPlans => '予定ある',
+    OheyDailyStatus.hasPlans => '空いてない',
   };
 
   String get description => switch (this) {
@@ -31,7 +31,7 @@ extension OheyDailyStatusX on OheyDailyStatus {
     OheyDailyStatus.available => '今日空いてます',
     OheyDailyStatus.maybeAvailable => 'たぶん空いてます',
     OheyDailyStatus.dependsOnTime => '時間が合えばOK',
-    OheyDailyStatus.hasPlans => '予定があります',
+    OheyDailyStatus.hasPlans => '今日は空いていません',
   };
 
   String get shortCopy => switch (this) {
@@ -39,7 +39,7 @@ extension OheyDailyStatusX on OheyDailyStatus {
     OheyDailyStatus.available => '今日は空いてる',
     OheyDailyStatus.maybeAvailable => 'たぶん空いてる',
     OheyDailyStatus.dependsOnTime => '時間が合えばOK',
-    OheyDailyStatus.hasPlans => '予定があります',
+    OheyDailyStatus.hasPlans => '今日は空いていません',
   };
 
   bool get canJoinPlan => switch (this) {
