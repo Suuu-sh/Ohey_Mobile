@@ -180,9 +180,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 refreshedYurubos.length;
                 await _holdRefreshIndicatorUntilDone(startedAt);
               },
-              onLikePressed: (item) => ref
-                  .read(yuruboControllerProvider.notifier)
-                  .toggleParticipation(item.id),
+              onLikePressed: (item) {
+                if (item.ownedByMe) return;
+                ref
+                    .read(yuruboControllerProvider.notifier)
+                    .toggleParticipation(item.id);
+              },
               onSharePressed: (item) => _shareFeedItem(context, item),
               showSwipeTutorial:
                   !_isFeedSwipeTutorialSeen && feedItems.length > 1,

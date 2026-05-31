@@ -141,7 +141,7 @@ class _FeedItem {
       ],
       likes: yurubo.reactionCount,
       saved: false,
-      liked: yurubo.reactedByMe,
+      liked: isOwnedByCurrentUser || yurubo.reactedByMe,
       prop: _PostProp.memory,
       tilt: 0,
       ownerUserId: yurubo.ownerUserId,
