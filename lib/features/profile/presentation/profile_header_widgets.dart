@@ -621,18 +621,8 @@ class _ProfileWishListSection extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(18, 22, 18, 22),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: .035),
+          color: AppColors.darkBackgroundBottom,
           borderRadius: BorderRadius.circular(26),
-          border: Border.all(
-            color: const Color(0xFFFF5EA8).withValues(alpha: .20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: accent.withValues(alpha: .12),
-              blurRadius: 28,
-              offset: const Offset(0, 18),
-            ),
-          ],
         ),
         child: Row(
           children: [
