@@ -133,8 +133,7 @@ class ProfileScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            if (reservations.isNotEmpty ||
-                                incomingInvites.isNotEmpty)
+                            if (incomingInvites.isNotEmpty)
                               ColoredBox(
                                 color: bodyBackground,
                                 child: Padding(
