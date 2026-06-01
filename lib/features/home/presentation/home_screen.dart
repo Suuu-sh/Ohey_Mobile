@@ -248,11 +248,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (index > 0) {
       _markFeedSwipeTutorialSeen();
     }
-    final loadedCount =
-        ref.read(yuruboControllerProvider).asData?.value.length ?? 0;
-    if (loadedCount > 0 && index >= loadedCount - 3) {
-      ref.invalidate(yuruboControllerProvider);
-    }
   }
 
   Future<void> _showFeedAuthorProfile(

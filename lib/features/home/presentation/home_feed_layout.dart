@@ -97,11 +97,6 @@ Widget _buildFeedPage({
               child: Center(child: CupertinoActivityIndicator()),
             );
           }
-          if (index >= items.length - 3) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              onPageChanged(index);
-            });
-          }
           final item = items[index];
           return _YuruboPostListItem(
             item: item,
