@@ -119,8 +119,9 @@ class OheyBottomSheetShell extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         if (showHandle) ...[
+                          const SizedBox(height: 8),
                           const OheyBottomSheetHandle(),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: 16),
                         ],
                         if (title != null) ...[
                           Row(
