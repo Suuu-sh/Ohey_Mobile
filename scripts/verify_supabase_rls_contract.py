@@ -129,7 +129,69 @@ CHECKS = {
         ],
         "forbidden": [r"grant\s+.*\s+on\s+public\.push_tokens\s+to\s+anon"],
     },
+    "yurubos": {
+        "required": [
+            r"create\s+table\s+(?:if\s+not\s+exists\s+)?public\.yurubos",
+            r"alter\s+table\s+public\.yurubos\s+enable\s+row\s+level\s+security",
+            r"create\s+policy\s+yurubos_select_owner_friend_or_group",
+            r"create\s+policy\s+yurubos_insert_owner",
+            r"create\s+policy\s+yurubos_update_owner",
+            r"create\s+policy\s+yurubos_delete_owner",
+            r"grant\s+select\s*,\s*insert\s*,\s*update\s*,\s*delete\s+on\s+public\.yurubos\s+to\s+authenticated",
+        ],
+        "forbidden": [r"grant\s+.*\s+on\s+public\.yurubos\s+to\s+anon"],
+    },
+    "yurubo_reactions": {
+        "required": [
+            r"create\s+table\s+(?:if\s+not\s+exists\s+)?public\.yurubo_reactions",
+            r"alter\s+table\s+public\.yurubo_reactions\s+enable\s+row\s+level\s+security",
+            r"create\s+policy\s+yurubo_reactions_select_visible_yurubo",
+            r"create\s+policy\s+yurubo_reactions_insert_own_visible_yurubo",
+            r"create\s+policy\s+yurubo_reactions_update_own",
+            r"create\s+policy\s+yurubo_reactions_delete_own",
+            r"grant\s+select\s*,\s*insert\s*,\s*update\s*,\s*delete\s+on\s+public\.yurubo_reactions\s+to\s+authenticated",
+        ],
+        "forbidden": [r"grant\s+.*\s+on\s+public\.yurubo_reactions\s+to\s+anon"],
+    },
+    "hidden_yurubos": {
+        "required": [
+            r"create\s+table\s+(?:if\s+not\s+exists\s+)?public\.hidden_yurubos",
+            r"alter\s+table\s+public\.hidden_yurubos\s+enable\s+row\s+level\s+security",
+            r"create\s+policy\s+hidden_yurubos_select_own",
+            r"create\s+policy\s+hidden_yurubos_insert_own",
+            r"create\s+policy\s+hidden_yurubos_delete_own",
+            r"grant\s+select\s*,\s*insert\s*,\s*delete\s+on\s+public\.hidden_yurubos\s+to\s+authenticated",
+        ],
+        "forbidden": [r"grant\s+.*\s+on\s+public\.hidden_yurubos\s+to\s+anon"],
+    },
+    "yurubo_visibility_groups": {
+        "required": [
+            r"create\s+table\s+(?:if\s+not\s+exists\s+)?public\.yurubo_visibility_groups",
+            r"alter\s+table\s+public\.yurubo_visibility_groups\s+enable\s+row\s+level\s+security",
+            r"create\s+policy\s+yurubo_visibility_groups_select_group_owner_or_member",
+            r"create\s+policy\s+yurubo_visibility_groups_insert_yurubo_owner",
+            r"create\s+policy\s+yurubo_visibility_groups_delete_yurubo_owner",
+            r"grant\s+select\s*,\s*insert\s*,\s*delete\s+on\s+public\.yurubo_visibility_groups\s+to\s+authenticated",
+        ],
+        "forbidden": [
+            r"grant\s+.*\s+on\s+public\.yurubo_visibility_groups\s+to\s+anon"
+        ],
+    },
+    "wish_items": {
+        "required": [
+            r"create\s+table\s+(?:if\s+not\s+exists\s+)?public\.wish_items",
+            r"alter\s+table\s+public\.wish_items\s+enable\s+row\s+level\s+security",
+            r"create\s+policy\s+wish_items_select_owner_or_friend",
+            r"create\s+policy\s+wish_items_insert_owner",
+            r"create\s+policy\s+wish_items_update_owner",
+            r"create\s+policy\s+wish_items_delete_owner",
+            r"grant\s+select\s*,\s*insert\s*,\s*update\s*,\s*delete\s+on\s+public\.wish_items\s+to\s+authenticated",
+        ],
+        "forbidden": [r"grant\s+.*\s+on\s+public\.wish_items\s+to\s+anon"],
+    },
 }
+
+BASELINE_FILE_NAME = "20260528230000_ohey_clean_baseline.sql"
 
 BASELINE_REQUIRED_PATTERNS = [
     r"create\s+or\s+replace\s+function\s+private\.handle_new_user",
@@ -170,8 +232,9 @@ def main() -> int:
     sql = normalize("\n".join(path.read_text() for path in files))
     failures: list[str] = []
 
-    if len(files) != 1:
-        failures.append(f"baseline: expected exactly 1 migration file, found {len(files)}")
+    baseline_files = [path for path in files if path.name == BASELINE_FILE_NAME]
+    if len(baseline_files) != 1:
+        failures.append(f"baseline: missing required file: {BASELINE_FILE_NAME}")
 
     for pattern in BASELINE_REQUIRED_PATTERNS:
         if not re.search(pattern, sql, flags=re.IGNORECASE):
