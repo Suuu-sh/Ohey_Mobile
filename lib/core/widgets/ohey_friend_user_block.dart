@@ -147,35 +147,25 @@ class OheyFriendUserBlock extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 7),
-                  Row(
-                    children: [
-                      _StatusPill(
-                        label: statusLabel,
-                        accent: accent,
-                        enabled: statusEnabled,
-                      ),
-                      if (!compact) ...[
-                        const SizedBox(width: 9),
-                        Expanded(
-                          child: Text(
-                            statusReason,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: isWhite
-                                  ? AppColors.cFF667381
-                                  : AppColors.white.withValues(alpha: .62),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+                  _StatusPill(
+                    label: statusLabel,
+                    accent: accent,
+                    enabled: statusEnabled,
                   ),
                   if (!compact) ...[
                     const SizedBox(height: 7),
-                    SizedBox(height: 13),
+                    Text(
+                      statusReason,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isWhite
+                            ? AppColors.cFF667381
+                            : AppColors.white.withValues(alpha: .62),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ],
                 ],
               ),
