@@ -4,6 +4,7 @@ import MapKit
 import Photos
 import UIKit
 import WidgetKit
+import google_mobile_ads
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate, CLLocationManagerDelegate {
@@ -16,11 +17,13 @@ import WidgetKit
   private var placeSearchLocationCompletion: ((CLLocation?, FlutterError?) -> Void)?
   private var didRequestPlaceSearchLocation = false
   private let widgetAppGroupIdentifier = "group.app.ohey.com"
+  private let yuruboNativeAdFactory = OheyYuruboNativeAdFactory()
 
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    registerYuruboNativeAdFactory(in: self)
     registerArchiveMapViewFactory()
     if let controller = window?.rootViewController as? FlutterViewController {
       registerQrSaverChannel(on: controller.binaryMessenger)
@@ -33,6 +36,7 @@ import WidgetKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    registerYuruboNativeAdFactory(in: engineBridge.pluginRegistry)
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "OheyQrSaver") {
       registerQrSaverChannel(on: registrar.messenger())
     }
@@ -49,6 +53,14 @@ import WidgetKit
        let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "OheyArchiveMap") {
       registerArchiveMapViewFactory(with: registrar)
     }
+  }
+
+  private func registerYuruboNativeAdFactory(in registry: FlutterPluginRegistry) {
+    FLTGoogleMobileAdsPlugin.registerNativeAdFactory(
+      registry,
+      factoryId: "ohey_yurubo_native_ad",
+      nativeAdFactory: yuruboNativeAdFactory
+    )
   }
 
   private func registerArchiveMapViewFactory() {

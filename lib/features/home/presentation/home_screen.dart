@@ -4,9 +4,11 @@ import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/config/backend_config.dart';
@@ -44,6 +46,7 @@ import '../../notifications/data/notification_repository.dart';
 import '../../profile/data/user_safety_repository.dart';
 
 part 'home_feed_layout.dart';
+part 'home_feed_ads.dart';
 part 'home_feed_invite_banner.dart';
 part 'home_feed_background.dart';
 part 'home_feed_tutorial.dart';

@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/supabase_config.dart';
@@ -62,6 +63,8 @@ final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
         ),
       ).timeout(const Duration(seconds: 12));
     }
+
+    unawaited(MobileAds.instance.initialize());
 
     await AuthSessionGuard.clearIfProjectMismatch(
       Supabase.instance.client,

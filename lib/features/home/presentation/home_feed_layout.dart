@@ -84,28 +84,35 @@ Widget _buildFeedPage({
     );
   }
 
+  final entries = _feedEntriesFromItems(items);
   return withRefresh(
     SliverPadding(
       padding: EdgeInsets.fromLTRB(0, topPadding + 10, 0, _feedBottomPageInset),
       sliver: SliverList.separated(
-        itemCount: items.length + (isLoading ? 1 : 0),
+        itemCount: entries.length + (isLoading ? 1 : 0),
         separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
-          if (index >= items.length) {
+          if (index >= entries.length) {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 18),
               child: Center(child: CupertinoActivityIndicator()),
             );
           }
-          final item = items[index];
-          return _YuruboPostListItem(
-            item: item,
-            isWhite: isWhite,
-            onInterested: item.isLikeable ? () => onLikePressed(item) : null,
-            onInvite: item.id.isEmpty ? null : () => onSharePressed(item),
-            onMore: item.id.isEmpty ? null : () => onMorePressed(item),
-            onAuthorTap: () => onAuthorPressed(item),
-          );
+          final entry = entries[index];
+          return switch (entry) {
+            _YuruboFeedEntry(:final item) => _YuruboPostListItem(
+              item: item,
+              isWhite: isWhite,
+              onInterested: item.isLikeable ? () => onLikePressed(item) : null,
+              onInvite: item.id.isEmpty ? null : () => onSharePressed(item),
+              onMore: item.id.isEmpty ? null : () => onMorePressed(item),
+              onAuthorTap: () => onAuthorPressed(item),
+            ),
+            _YuruboAdFeedEntry(:final index) => _YuruboNativeAdListItem(
+              index: index,
+              isWhite: isWhite,
+            ),
+          };
         },
       ),
     ),
