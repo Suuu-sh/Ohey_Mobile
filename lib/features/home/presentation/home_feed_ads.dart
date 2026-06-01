@@ -146,8 +146,9 @@ class _YuruboAdCardFrame extends StatelessWidget {
           decoration: _feedCardDecoration(radius: 30),
           child: child,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 18),
         const _YuruboAdGlowBlock(),
+        const SizedBox(height: 10),
       ],
     );
   }
@@ -215,7 +216,7 @@ class _YuruboAdGlowBlock extends StatelessWidget {
     return IgnorePointer(
       child: Container(
         height: 1,
-        margin: const EdgeInsets.symmetric(horizontal: 18),
+        margin: const EdgeInsets.symmetric(horizontal: 34),
         decoration: BoxDecoration(
           color: AppColors.cFFC08BFF.withValues(alpha: .82),
           boxShadow: [
