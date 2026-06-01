@@ -715,6 +715,7 @@ class _FriendRequestNotificationSheetState
               color: AppColors.success,
               shadowColor: AppColors.successShadow,
               fontSize: 15,
+              outerShadows: const [],
             ),
             const SizedBox(height: 10),
             Ohey3DButton.secondary(
@@ -729,6 +730,7 @@ class _FriendRequestNotificationSheetState
               shadowColor: AppColors.cFF2D5E69.withValues(alpha: .72),
               fontSize: 14,
               useGradient: false,
+              outerShadows: const [],
             ),
           ] else
             Ohey3DButton(
@@ -854,6 +856,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
               color: AppColors.success,
               shadowColor: AppColors.successShadow,
               fontSize: 15,
+              outerShadows: const [],
             ),
             const SizedBox(height: 10),
             Ohey3DButton.secondary(
@@ -868,6 +871,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
               shadowColor: AppColors.cFF573D7A.withValues(alpha: .72),
               fontSize: 14,
               useGradient: false,
+              outerShadows: const [],
             ),
           ] else
             Ohey3DButton(

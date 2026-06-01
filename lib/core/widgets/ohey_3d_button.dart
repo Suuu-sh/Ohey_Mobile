@@ -43,6 +43,7 @@ class Ohey3DButton extends StatelessWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
     this.useGradient = true,
+    this.outerShadows,
   });
 
   const Ohey3DButton.secondary({
@@ -65,6 +66,7 @@ class Ohey3DButton extends StatelessWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
     this.useGradient = false,
+    this.outerShadows,
   });
 
   const Ohey3DButton.destructive({
@@ -87,6 +89,7 @@ class Ohey3DButton extends StatelessWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
     this.useGradient = true,
+    this.outerShadows,
   });
 
   final String label;
@@ -107,6 +110,7 @@ class Ohey3DButton extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final double fontSize;
   final bool useGradient;
+  final List<BoxShadow>? outerShadows;
 
   @override
   Widget build(BuildContext context) {
@@ -123,6 +127,7 @@ class Ohey3DButton extends StatelessWidget {
       forcePressed: forcePressed,
       padding: padding,
       useGradient: useGradient,
+      outerShadows: outerShadows,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,

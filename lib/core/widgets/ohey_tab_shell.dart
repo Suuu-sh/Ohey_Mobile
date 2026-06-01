@@ -909,6 +909,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                   color: AppColors.primaryAction,
                   shadowColor: AppColors.primaryActionShadow,
                   fontSize: 15,
+                  outerShadows: const [],
                 ),
                 const SizedBox(height: 10),
                 Ohey3DButton.secondary(
@@ -926,6 +927,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                   shadowColor: AppColors.cFF5B3A7A.withValues(alpha: .72),
                   fontSize: 14,
                   useGradient: false,
+                  outerShadows: const [],
                 ),
               ],
             ),
