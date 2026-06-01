@@ -135,23 +135,20 @@ class _YuruboAdCardFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 156,
-      margin: const EdgeInsets.symmetric(horizontal: 18),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned.fill(
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              padding: padding,
-              decoration: _feedCardDecoration(radius: 30),
-              child: child,
-            ),
-          ),
-          const _YuruboBlockGlowUnderline(),
-        ],
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          height: 156,
+          margin: const EdgeInsets.symmetric(horizontal: 18),
+          clipBehavior: Clip.antiAlias,
+          padding: padding,
+          decoration: _feedCardDecoration(radius: 30),
+          child: child,
+        ),
+        const SizedBox(height: 10),
+        const _YuruboAdGlowBlock(),
+      ],
     );
   }
 }
@@ -205,6 +202,30 @@ class _YuruboAdPlaceholder extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _YuruboAdGlowBlock extends StatelessWidget {
+  const _YuruboAdGlowBlock();
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        height: 1,
+        margin: const EdgeInsets.symmetric(horizontal: 18),
+        decoration: BoxDecoration(
+          color: AppColors.cFFC08BFF.withValues(alpha: .82),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.cFFC08BFF.withValues(alpha: .58),
+              blurRadius: 9,
+              spreadRadius: .4,
+            ),
+          ],
+        ),
       ),
     );
   }
