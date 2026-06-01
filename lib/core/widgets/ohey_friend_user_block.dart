@@ -57,6 +57,19 @@ class OheyFriendUserBlock extends StatelessWidget {
         ? (isWhite ? AppColors.cFF101820 : AppColors.white)
         : (isWhite ? AppColors.cFF667381 : AppColors.cFF8792A3);
     final avatarSize = compact ? 52.0 : 62.0;
+    final displayName = friend.name.trim().isEmpty
+        ? friend.name
+        : friend.name.trim();
+    final nameLength = displayName.characters.length;
+    final longName = nameLength > 10;
+    final nameFontSize = compact
+        ? (longName ? 16.5 : 18.0)
+        : (longName ? 18.0 : 20.0);
+    final nameLetterSpacing = longName ? -.9 : -.4;
+    final avatarNameGap = longName ? 9.0 : 12.0;
+    final favoriteGap = longName ? 5.0 : 9.0;
+    final favoriteVisualSize = longName ? 28.0 : 34.0;
+    final favoriteIconSize = longName ? 20.0 : 22.0;
     final inviteEnabled =
         statusEnabled && inviteAvailable && !inviteSent && onInvite != null;
     final inviteButtonColor = inviteSent || !inviteAvailable
@@ -100,7 +113,7 @@ class OheyFriendUserBlock extends StatelessWidget {
               accent: accent,
               size: avatarSize,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: avatarNameGap),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,23 +123,25 @@ class OheyFriendUserBlock extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          friend.name,
+                          displayName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: ink,
                             fontWeight: FontWeight.w900,
-                            fontSize: compact ? 18 : 20,
-                            letterSpacing: -.4,
+                            fontSize: nameFontSize,
+                            letterSpacing: nameLetterSpacing,
                           ),
                         ),
                       ),
                       if (showFavorite) ...[
-                        const SizedBox(width: 9),
+                        SizedBox(width: favoriteGap),
                         _FavoriteStarButton(
                           isFavorite: friend.isFavorite,
                           isWhite: isWhite,
                           onTap: onFavoriteToggle,
+                          visualSize: favoriteVisualSize,
+                          iconSize: favoriteIconSize,
                         ),
                       ],
                     ],
@@ -326,11 +341,15 @@ class _FavoriteStarButton extends StatelessWidget {
     required this.isFavorite,
     required this.isWhite,
     required this.onTap,
+    this.visualSize = 34,
+    this.iconSize = 22,
   });
 
   final bool isFavorite;
   final bool isWhite;
   final VoidCallback? onTap;
+  final double visualSize;
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -340,15 +359,15 @@ class _FavoriteStarButton extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: SizedBox(
-        width: 34,
-        height: 34,
+        width: visualSize,
+        height: visualSize,
         child: Center(
           child: Icon(
             isFavorite ? CupertinoIcons.star_fill : CupertinoIcons.star,
             color: isFavorite
                 ? AppColors.cFFFFC700
                 : (isWhite ? AppColors.cFF8C9CAB : AppColors.cFF8792A3),
-            size: 22,
+            size: iconSize,
           ),
         ),
       ),
