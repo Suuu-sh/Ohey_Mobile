@@ -435,10 +435,12 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   Future<void> _refreshFriends() async {
     HapticFeedback.lightImpact();
     if (mounted) setState(() => _showRefreshDone = false);
+    ref.invalidate(pendingFriendRequestsProvider);
     ref.invalidate(outgoingActiveInvitesProvider(null));
     ref.invalidate(todayReservationsProvider);
     await Future.wait([
       ref.refresh(friendsProvider.future),
+      ref.refresh(pendingFriendRequestsProvider.future),
       ref.refresh(outgoingActiveInvitesProvider(null).future),
       ref.refresh(todayReservationsProvider.future),
     ]);
@@ -450,6 +452,12 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   @override
   Widget build(BuildContext context) {
     final friendsAsync = ref.watch(friendsProvider);
+    final pendingFriendRequestsAsync = ref.watch(pendingFriendRequestsProvider);
+    final incomingFriendRequests =
+        pendingFriendRequestsAsync.asData?.value
+            .where((request) => request.isIncoming)
+            .toList(growable: false) ??
+        const <OheyFriendRequestItem>[];
     final currentFriends = friendsAsync.value;
     final persistedInvitedFriendIds =
         ref
@@ -548,6 +556,14 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           _openCustomFilterSheet(filter: filter),
                       onManageCustom: _openCustomFilterManageSheet,
                     ),
+                    if (incomingFriendRequests.isNotEmpty) ...[
+                      const SizedBox(height: 18),
+                      _IncomingFriendRequestBanner(
+                        requests: incomingFriendRequests,
+                        onAccept: _acceptFriendRequest,
+                        onReject: _rejectFriendRequest,
+                      ),
+                    ],
                     const SizedBox(height: 18),
                     Expanded(
                       child: currentFriends == null
@@ -617,10 +633,230 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       ),
     );
   }
+
+  Future<void> _acceptFriendRequest(OheyFriendRequestItem request) async {
+    await _respondToFriendRequest(request, 'accepted');
+  }
+
+  Future<void> _rejectFriendRequest(OheyFriendRequestItem request) async {
+    await _respondToFriendRequest(request, 'rejected');
+  }
+
+  Future<void> _respondToFriendRequest(
+    OheyFriendRequestItem request,
+    String status,
+  ) async {
+    try {
+      HapticFeedback.lightImpact();
+      await ref
+          .read(friendRepositoryProvider)
+          .updateFriendRequest(request.id, status);
+      ref.invalidate(pendingFriendRequestsProvider);
+      ref.invalidate(friendsProvider);
+      if (!mounted) return;
+      OheyToast.show(
+        context,
+        status == 'accepted' ? 'フレンズ申請を承認しました' : '申請を見送りました',
+      );
+    } catch (_) {
+      if (!mounted) return;
+      OheyToast.show(
+        context,
+        '処理できませんでした。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+      );
+    }
+  }
 }
 
 class _InviteCancelled implements Exception {
   const _InviteCancelled();
+}
+
+class _IncomingFriendRequestBanner extends StatefulWidget {
+  const _IncomingFriendRequestBanner({
+    required this.requests,
+    required this.onAccept,
+    required this.onReject,
+  });
+
+  final List<OheyFriendRequestItem> requests;
+  final Future<void> Function(OheyFriendRequestItem request) onAccept;
+  final Future<void> Function(OheyFriendRequestItem request) onReject;
+
+  @override
+  State<_IncomingFriendRequestBanner> createState() =>
+      _IncomingFriendRequestBannerState();
+}
+
+class _IncomingFriendRequestBannerState
+    extends State<_IncomingFriendRequestBanner> {
+  String? _busyRequestId;
+
+  Future<void> _run(
+    OheyFriendRequestItem request,
+    Future<void> Function(OheyFriendRequestItem request) action,
+  ) async {
+    if (_busyRequestId != null) return;
+    setState(() => _busyRequestId = request.id);
+    try {
+      await action(request);
+    } finally {
+      if (mounted) setState(() => _busyRequestId = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final request = widget.requests.first;
+    final profile = request.otherUser;
+    final count = widget.requests.length;
+    final title = count == 1
+        ? '${profile.displayName}さんから申請'
+        : 'フレンズ申請が$count件届いています';
+    final subtitle = count == 1
+        ? 'ここからすぐ承認・見送りできます。'
+        : '${profile.displayName}さんほか、未対応の申請があります。';
+    final busy = _busyRequestId == request.id;
+    final ink = isWhite ? AppColors.cFF111820 : AppColors.white;
+    final sub = isWhite
+        ? AppColors.cFF6D7884
+        : AppColors.white.withValues(alpha: .68);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isWhite
+            ? AppColors.white
+            : AppColors.darkBackgroundBottom.withValues(alpha: .92),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: _FriendsColors.lime.withValues(alpha: isWhite ? .28 : .36),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _FriendsColors.lime.withValues(alpha: isWhite ? .12 : .18),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  OheyAvatarView(avatar: profile.avatar, size: 46),
+                  if (count > 1)
+                    Positioned(
+                      right: -5,
+                      top: -5,
+                      child: _IncomingFriendRequestCountBadge(count: count),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Ohey3DButton.secondary(
+                  label: '見送る',
+                  onTap: busy ? null : () => _run(request, widget.onReject),
+                  height: 42,
+                  radius: 18,
+                  color: AppColors.white.withValues(alpha: .07),
+                  foregroundColor: AppColors.white.withValues(alpha: .72),
+                  shadowColor: AppColors.cFF573D7A.withValues(alpha: .72),
+                  fontSize: 13,
+                  useGradient: false,
+                  outerShadows: const [],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Ohey3DButton(
+                  label: busy ? '処理中' : '承認する',
+                  onTap: busy ? null : () => _run(request, widget.onAccept),
+                  isLoading: busy,
+                  height: 42,
+                  radius: 18,
+                  color: AppColors.success,
+                  shadowColor: AppColors.successShadow,
+                  fontSize: 13,
+                  outerShadows: const [],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IncomingFriendRequestCountBadge extends StatelessWidget {
+  const _IncomingFriendRequestCountBadge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.cFFFF4FA3,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.white, width: 2),
+      ),
+      child: Text(
+        '$count',
+        style: const TextStyle(
+          color: AppColors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+          height: 1,
+        ),
+      ),
+    );
+  }
 }
 
 class _InviteDraft {
