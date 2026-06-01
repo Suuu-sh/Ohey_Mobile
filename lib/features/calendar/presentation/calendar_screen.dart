@@ -973,27 +973,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
       ),
       data: (friends) {
         if (friends.isEmpty) {
-          return _CalendarSectionSurface(
-            label: 'フレンズの空き状況',
-            accent: AppColors.primaryAction,
-            isWhite: isWhite,
-            compact: compact,
-            child: OheyEmptyState(
-              visual: OheyPopIcon(
-                icon: CupertinoIcons.calendar_badge_plus,
-                color: AppColors.primaryAction,
-                size: compact ? 36 : 44,
-              ),
-              title: '予定を見るフレンズを追加しよう',
-              message: '追加すると、今日誘いやすい人や空き状況がカレンダーに並びます。',
-              titleColor: isWhite ? AppColors.cFF27313B : AppColors.white,
-              messageColor: isWhite
-                  ? AppColors.cFF667381
-                  : AppColors.white.withValues(alpha: .62),
-              padding: EdgeInsets.all(compact ? 12 : 18),
-              spacing: 10,
-            ),
-          );
+          return const SizedBox.shrink();
         }
 
         final sorted = [...friends]
