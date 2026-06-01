@@ -436,9 +436,11 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     HapticFeedback.lightImpact();
     if (mounted) setState(() => _showRefreshDone = false);
     ref.invalidate(outgoingActiveInvitesProvider(null));
+    ref.invalidate(todayReservationsProvider);
     await Future.wait([
       ref.refresh(friendsProvider.future),
       ref.refresh(outgoingActiveInvitesProvider(null).future),
+      ref.refresh(todayReservationsProvider.future),
     ]);
     if (mounted) setState(() => _showRefreshDone = true);
     await _holdRefreshIndicatorUntilDone();
@@ -457,8 +459,17 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             .map((invite) => invite.inviteeUserId)
             .toSet() ??
         const <String>{};
+    final reservedFriendIds =
+        ref
+            .watch(todayReservationsProvider)
+            .asData
+            ?.value
+            .expand((invite) => [invite.inviterUserId, invite.inviteeUserId])
+            .toSet() ??
+        const <String>{};
     final invitedFriendIds = {
       ...persistedInvitedFriendIds,
+      ...reservedFriendIds,
       ..._invitedFriendIds,
     };
     final user = ref.watch(oheyUserProvider);
