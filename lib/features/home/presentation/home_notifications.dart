@@ -727,7 +727,7 @@ class _FriendRequestNotificationSheetState
               radius: 21,
               color: AppColors.white.withValues(alpha: .07),
               foregroundColor: AppColors.white.withValues(alpha: .72),
-              shadowColor: AppColors.cFF2D5E69.withValues(alpha: .72),
+              shadowColor: AppColors.cFF573D7A.withValues(alpha: .72),
               fontSize: 14,
               useGradient: false,
               outerShadows: const [],
