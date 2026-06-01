@@ -468,13 +468,13 @@ class _ProfileActivityHome extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _ProfileSummaryStats(friendsCount: friendsCount),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
+          const _ProfileArchiveTopGlowLine(),
+          const SizedBox(height: 20),
           _ProfileTodayScheduleSection(
             joinedYurubos: joinedYurubos,
             isLoading: isYuruboLoading,
           ),
-          const SizedBox(height: 12),
-          const _ProfileArchiveTopGlowLine(),
           const SizedBox(height: 22),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
