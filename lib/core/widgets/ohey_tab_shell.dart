@@ -900,7 +900,6 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                 const SizedBox(height: 18),
                 Ohey3DButton(
                   label: '承認して遊びに行く',
-                  icon: CupertinoIcons.checkmark_circle_fill,
                   onTap: () => _submit(accept: true),
                   isLoading: _busyAction == 'accept',
                   enabled: _busyAction == null,
@@ -914,7 +913,6 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                 const SizedBox(height: 10),
                 Ohey3DButton.secondary(
                   label: _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
-                  icon: CupertinoIcons.xmark_circle_fill,
                   onTap: _busyAction == null
                       ? () => _submit(accept: false)
                       : null,
