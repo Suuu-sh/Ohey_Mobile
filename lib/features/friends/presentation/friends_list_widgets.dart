@@ -1523,7 +1523,7 @@ class _EmptyFriendsState extends StatelessWidget {
       padding: EdgeInsets.zero,
       spacing: 14,
       hints: message == 'フレンズがいません'
-          ? const ['ゆるぼに誘える', '空き状況が見える', '思い出を一緒に残せる']
+          ? const ['ゆるぼに誘える', '空き状況が見える']
           : const ['フィルターを変えてみよう', 'グループは長押しで編集'],
       action: message == 'フレンズがいません'
           ? _EmptyFriendsActions(onAddFriend: onAddFriend)
