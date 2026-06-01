@@ -138,6 +138,8 @@ class _YuruboAdCardFrame extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        const _YuruboAdGlowBlock(),
+        const SizedBox(height: 18),
         Container(
           height: 156,
           margin: const EdgeInsets.symmetric(horizontal: 18),
@@ -148,7 +150,6 @@ class _YuruboAdCardFrame extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         const _YuruboAdGlowBlock(),
-        const SizedBox(height: 10),
       ],
     );
   }
@@ -216,7 +217,7 @@ class _YuruboAdGlowBlock extends StatelessWidget {
     return IgnorePointer(
       child: Container(
         height: 1,
-        margin: const EdgeInsets.symmetric(horizontal: 34),
+        margin: const EdgeInsets.symmetric(horizontal: 18),
         decoration: BoxDecoration(
           color: AppColors.cFFC08BFF.withValues(alpha: .82),
           boxShadow: [
