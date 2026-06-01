@@ -436,6 +436,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     HapticFeedback.lightImpact();
     if (mounted) setState(() => _showRefreshDone = false);
     ref.invalidate(pendingFriendRequestsProvider);
+    ref.invalidate(friendsForDateProvider);
     ref.invalidate(outgoingActiveInvitesProvider(null));
     ref.invalidate(todayReservationsProvider);
     await Future.wait([
@@ -653,6 +654,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           .updateFriendRequest(request.id, status);
       ref.invalidate(pendingFriendRequestsProvider);
       ref.invalidate(friendsProvider);
+      ref.invalidate(friendsForDateProvider);
       if (!mounted) return;
       OheyToast.show(
         context,

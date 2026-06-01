@@ -240,6 +240,7 @@ class _FeedNotificationsScreenState
               .read(notificationControllerProvider.notifier)
               .acceptFriendRequest(friendRequestId);
           ref.invalidate(friendsProvider);
+          ref.invalidate(friendsForDateProvider);
         },
         onReject: () async {
           await ref

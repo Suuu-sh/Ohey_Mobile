@@ -798,6 +798,7 @@ class _FriendRequestManagementSheetState
       ref.invalidate(notificationControllerProvider);
       if (status == 'accepted') {
         ref.invalidate(friendsProvider);
+        ref.invalidate(friendsForDateProvider);
       }
       if (!mounted) return;
       OheyToast.show(context, switch (status) {

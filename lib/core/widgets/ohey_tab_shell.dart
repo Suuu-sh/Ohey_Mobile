@@ -253,11 +253,13 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   void _refreshFeedOnOpen() {
     ref.invalidate(homeFeedControllerProvider);
     ref.invalidate(friendsProvider);
+    ref.invalidate(friendsForDateProvider);
     ref.invalidate(notificationControllerProvider);
   }
 
   void _refreshFriendsOnOpen() {
     ref.invalidate(friendsProvider);
+    ref.invalidate(friendsForDateProvider);
     ref.invalidate(pendingFriendRequestsProvider);
     ref.invalidate(incomingInvitesProvider);
     ref.invalidate(notificationControllerProvider);
@@ -369,6 +371,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
                   .read(oheyUserProvider.notifier)
                   .updateDailyStatus(status);
               ref.invalidate(friendsProvider);
+              ref.invalidate(friendsForDateProvider);
               ref.invalidate(incomingInvitesProvider);
               ref.invalidate(notificationControllerProvider);
             },
