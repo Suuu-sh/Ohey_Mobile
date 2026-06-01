@@ -473,8 +473,6 @@ class _ProfileActivityHome extends StatelessWidget {
             joinedYurubos: joinedYurubos,
             isLoading: isYuruboLoading,
           ),
-          const SizedBox(height: 12),
-          const _ProfileArchiveTopGlowLine(),
           const SizedBox(height: 22),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1071,36 +1069,6 @@ class _ProfileFriendActionRow extends StatelessWidget {
             CupertinoIcons.plus,
             color: AppColors.cFF101820,
             size: 18,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileArchiveTopGlowLine extends StatelessWidget {
-  const _ProfileArchiveTopGlowLine();
-
-  @override
-  Widget build(BuildContext context) {
-    const pink = AppColors.cFFFF75B5;
-    return Container(
-      height: 1,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(999),
-        color: pink.withValues(alpha: .72),
-        boxShadow: [
-          BoxShadow(
-            color: pink.withValues(alpha: .34),
-            blurRadius: 18,
-            spreadRadius: 2,
-            offset: const Offset(0, -3),
-          ),
-          BoxShadow(
-            color: pink.withValues(alpha: .24),
-            blurRadius: 34,
-            spreadRadius: 4,
-            offset: const Offset(0, -7),
           ),
         ],
       ),
