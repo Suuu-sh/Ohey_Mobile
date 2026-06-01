@@ -422,42 +422,45 @@ class _FriendsSectionHeader extends StatelessWidget {
         ? AppColors.cFF667381
         : AppColors.white.withValues(alpha: .60);
 
-    return Row(
-      children: [
-        OheyPopIcon(icon: icon, color: iconColor, size: 38, iconSize: 20),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: ink,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.4,
+    return SizedBox(
+      height: 47,
+      child: Row(
+        children: [
+          OheyPopIcon(icon: icon, color: iconColor, size: 38, iconSize: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.4,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: sub,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  height: 1.35,
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: sub,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    height: 1.35,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        if (trailing != null) ...[const SizedBox(width: 10), trailing!],
-      ],
+          if (trailing != null) ...[const SizedBox(width: 10), trailing!],
+        ],
+      ),
     );
   }
 }
