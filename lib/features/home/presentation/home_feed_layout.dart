@@ -49,8 +49,8 @@ Widget _buildFeedPage({
     ),
     slivers: [
       CupertinoSliverRefreshControl(
-        refreshTriggerPullDistance: 34,
-        refreshIndicatorExtent: 24,
+        refreshTriggerPullDistance: 104,
+        refreshIndicatorExtent: 64,
         onRefresh: onRefresh,
         builder:
             (
@@ -62,9 +62,6 @@ Widget _buildFeedPage({
             ) => _YuruboRefreshIndicator(
               state: refreshState,
               pulledExtent: pulledExtent,
-              triggerDistance: refreshTriggerPullDistance,
-              indicatorExtent: refreshIndicatorExtent,
-              topOffset: topPadding - 42,
             ),
       ),
       child,
@@ -124,26 +121,15 @@ class _YuruboRefreshIndicator extends StatelessWidget {
   const _YuruboRefreshIndicator({
     required this.state,
     required this.pulledExtent,
-    required this.triggerDistance,
-    required this.indicatorExtent,
-    required this.topOffset,
   });
 
   final RefreshIndicatorMode state;
   final double pulledExtent;
-  final double triggerDistance;
-  final double indicatorExtent;
-  final double topOffset;
 
   @override
   Widget build(BuildContext context) {
-    final progress = (pulledExtent / triggerDistance).clamp(0.0, 1.0);
-    final isRefreshing =
-        state == RefreshIndicatorMode.refresh ||
-        state == RefreshIndicatorMode.armed;
     final label = switch (state) {
-      RefreshIndicatorMode.inactive => '',
-      RefreshIndicatorMode.drag => progress >= 1 ? '離して更新' : '下に引っ張って更新',
+      RefreshIndicatorMode.inactive || RefreshIndicatorMode.drag => '',
       RefreshIndicatorMode.armed || RefreshIndicatorMode.refresh => '更新中...',
       RefreshIndicatorMode.done => '更新しました',
     };
@@ -158,50 +144,32 @@ class _YuruboRefreshIndicator extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 6),
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 120),
-            opacity: state == RefreshIndicatorMode.inactive ? 0 : 1,
-            child: Transform.translate(
-              offset: Offset(0, topOffset.clamp(0, 220)),
-              child: Container(
-                height: 34,
-                padding: const EdgeInsets.symmetric(horizontal: 13),
-                decoration: BoxDecoration(
-                  color: AppColors.cFF101C2B.withValues(alpha: .82),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: _feedPrimaryActionColor.withValues(alpha: .22),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _feedPrimaryActionColor.withValues(alpha: .18),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+            opacity: label.isEmpty ? 0 : 1,
+            child: Container(
+              height: 34,
+              padding: const EdgeInsets.symmetric(horizontal: 13),
+              decoration: BoxDecoration(
+                color: AppColors.cFF101C2B.withValues(alpha: .82),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: _feedPrimaryActionColor.withValues(alpha: .22),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isRefreshing)
-                      const CupertinoActivityIndicator(radius: 8)
-                    else
-                      Transform.rotate(
-                        angle: progress * 3.14159,
-                        child: Icon(
-                          CupertinoIcons.arrow_down,
-                          color: _feedPrimaryActionColor,
-                          size: 16,
-                        ),
-                      ),
-                    const SizedBox(width: 8),
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
+                boxShadow: [
+                  BoxShadow(
+                    color: _feedPrimaryActionColor.withValues(alpha: .18),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
             ),
@@ -263,8 +231,9 @@ class _FeedSectionEmptyState extends StatelessWidget {
         icon: CupertinoIcons.plus_bubble_fill,
         isWhite: isWhite,
         title: '最初のゆるぼを出そう',
-        message: 'ご飯・作業・サウナなど、LINEで送るほどでもない誘いを軽く置けます。',
+        message: 'ホームが静かな時は、Oheyが小さな募集ボードになります。ご飯・作業・サウナなどを軽く置いてみよう。',
         accent: _feedPrimaryActionColor,
+        hints: const ['今ひま？', '今度ここ行こ', '一緒に作業しよ'],
         action: SizedBox(
           width: 240,
           child: Ohey3DButton(
@@ -508,7 +477,7 @@ class _CreateYuruboSheet extends StatefulWidget {
 class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
   final _titleController = TextEditingController();
   final _placeController = TextEditingController();
-  final _timeController = TextEditingController();
+  DateTime? _selectedDate;
   late Future<List<Map<String, dynamic>>> _groupsFuture;
   String _visibility = 'friends';
   String? _groupId;
@@ -533,7 +502,6 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
   void dispose() {
     _titleController.dispose();
     _placeController.dispose();
-    _timeController.dispose();
     super.dispose();
   }
 
@@ -552,7 +520,10 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
             YuruboCreateDraft(
               title: title,
               placeText: _yuruboPlaceOrDefault(_placeController.text),
-              timeLabel: _yuruboTimeOrDefault(_timeController.text),
+              timeLabel: _yuruboTimeLabel(_selectedDate),
+              startsAt: _selectedDate == null
+                  ? null
+                  : _dateOnly(_selectedDate!),
               visibility: _visibility,
               groupId: _visibility == 'group' ? _groupId : null,
               wishItemId: _wishItemId,
@@ -734,9 +705,20 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
                 placeholder: '場所（未入力ならどこでも）',
               ),
               const SizedBox(height: 10),
-              _YuruboInput(
-                controller: _timeController,
-                placeholder: 'いつ（未入力ならいつでも）',
+              _YuruboDateOption(
+                selectedDate: _selectedDate,
+                onTap: () async {
+                  final picked = await _showYuruboDatePicker(
+                    context,
+                    _selectedDate,
+                  );
+                  if (picked != null && mounted) {
+                    setState(() => _selectedDate = picked);
+                  }
+                },
+                onClear: _selectedDate == null
+                    ? null
+                    : () => setState(() => _selectedDate = null),
               ),
               const SizedBox(height: 16),
               Ohey3DButton(
@@ -784,7 +766,7 @@ class _EditYuruboSheet extends StatefulWidget {
 class _EditYuruboSheetState extends State<_EditYuruboSheet> {
   late final TextEditingController _titleController;
   late final TextEditingController _placeController;
-  late final TextEditingController _timeController;
+  DateTime? _selectedDate;
   bool _saving = false;
 
   @override
@@ -792,14 +774,13 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
     super.initState();
     _titleController = TextEditingController(text: widget.item.body.trim());
     _placeController = TextEditingController(text: widget.item.place.trim());
-    _timeController = TextEditingController(text: widget.item.timeLabel.trim());
+    _selectedDate = widget.item.startsAt;
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _placeController.dispose();
-    _timeController.dispose();
     super.dispose();
   }
 
@@ -815,7 +796,10 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
             YuruboUpdateDraft(
               title: title,
               placeText: _yuruboPlaceOrDefault(_placeController.text),
-              timeLabel: _yuruboTimeOrDefault(_timeController.text),
+              timeLabel: _yuruboTimeLabel(_selectedDate),
+              startsAt: _selectedDate == null
+                  ? null
+                  : _dateOnly(_selectedDate!),
             ),
           );
       if (!mounted) return;
@@ -875,9 +859,20 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
             placeholder: '場所（未入力ならどこでも）',
           ),
           const SizedBox(height: 10),
-          _YuruboInput(
-            controller: _timeController,
-            placeholder: 'いつ（未入力ならいつでも）',
+          _YuruboDateOption(
+            selectedDate: _selectedDate,
+            onTap: () async {
+              final picked = await _showYuruboDatePicker(
+                context,
+                _selectedDate,
+              );
+              if (picked != null && mounted) {
+                setState(() => _selectedDate = picked);
+              }
+            },
+            onClear: _selectedDate == null
+                ? null
+                : () => setState(() => _selectedDate = null),
           ),
           const SizedBox(height: 16),
           Ohey3DButton(
@@ -901,9 +896,386 @@ String _yuruboPlaceOrDefault(String value) {
   return trimmed.isEmpty ? 'どこでも' : trimmed;
 }
 
-String _yuruboTimeOrDefault(String value) {
-  final trimmed = value.trim();
-  return trimmed.isEmpty ? 'いつでも' : trimmed;
+String _yuruboTimeLabel(DateTime? value) {
+  if (value == null) return 'いつでも';
+  final date = _dateOnly(value);
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final diff = date.difference(today).inDays;
+  return switch (diff) {
+    0 => '今日',
+    1 => '明日',
+    _ => '${date.month}/${date.day}(${_shortWeekday(date)})',
+  };
+}
+
+DateTime _dateOnly(DateTime value) =>
+    DateTime(value.year, value.month, value.day);
+
+String _shortWeekday(DateTime value) =>
+    const ['月', '火', '水', '木', '金', '土', '日'][value.weekday - 1];
+
+Future<DateTime?> _showYuruboDatePicker(
+  BuildContext context,
+  DateTime? selected,
+) async {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  var focused = _dateOnly(selected ?? today);
+  if (focused.isBefore(today)) focused = today;
+  var visibleMonth = DateTime(focused.year, focused.month);
+  return showOheyBottomSheet<DateTime>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: AppColors.black.withValues(alpha: .58),
+    builder: (_) => StatefulBuilder(
+      builder: (context, setModalState) => OheyBottomSheetShell(
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        padding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
+        radius: 32,
+        child: _YuruboCalendarPicker(
+          visibleMonth: visibleMonth,
+          selectedDate: focused,
+          firstDate: today,
+          onPreviousMonth: () => setModalState(() {
+            final previous = DateTime(
+              visibleMonth.year,
+              visibleMonth.month - 1,
+            );
+            if (!_isBeforeMonth(previous, today)) visibleMonth = previous;
+          }),
+          onNextMonth: () => setModalState(() {
+            visibleMonth = DateTime(visibleMonth.year, visibleMonth.month + 1);
+          }),
+          onDateSelected: (date) => setModalState(() => focused = date),
+          onConfirm: () => Navigator.of(context).pop(focused),
+        ),
+      ),
+    ),
+  );
+}
+
+bool _isBeforeMonth(DateTime month, DateTime date) =>
+    month.year < date.year ||
+    (month.year == date.year && month.month < date.month);
+
+class _YuruboCalendarPicker extends StatelessWidget {
+  const _YuruboCalendarPicker({
+    required this.visibleMonth,
+    required this.selectedDate,
+    required this.firstDate,
+    required this.onPreviousMonth,
+    required this.onNextMonth,
+    required this.onDateSelected,
+    required this.onConfirm,
+  });
+
+  final DateTime visibleMonth;
+  final DateTime selectedDate;
+  final DateTime firstDate;
+  final VoidCallback onPreviousMonth;
+  final VoidCallback onNextMonth;
+  final ValueChanged<DateTime> onDateSelected;
+  final VoidCallback onConfirm;
+
+  @override
+  Widget build(BuildContext context) {
+    final canGoPrevious = !_isBeforeMonth(
+      DateTime(visibleMonth.year, visibleMonth.month - 1),
+      firstDate,
+    );
+    final days = _calendarDays(visibleMonth);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            _YuruboCalendarArrow(
+              icon: CupertinoIcons.chevron_left,
+              enabled: canGoPrevious,
+              onTap: onPreviousMonth,
+            ),
+            Expanded(
+              child: Text(
+                '${visibleMonth.year}/${visibleMonth.month.toString().padLeft(2, '0')}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: .2,
+                ),
+              ),
+            ),
+            _YuruboCalendarArrow(
+              icon: CupertinoIcons.chevron_right,
+              enabled: true,
+              onTap: onNextMonth,
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            for (final label in const ['日', '月', '火', '水', '木', '金', '土'])
+              Expanded(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: label == '日'
+                        ? AppColors.cFFFF75B5
+                        : label == '土'
+                        ? AppColors.cFF54D7FF
+                        : AppColors.white.withValues(alpha: .72),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 9),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 7,
+            mainAxisSpacing: 9,
+            crossAxisSpacing: 9,
+          ),
+          itemCount: days.length,
+          itemBuilder: (context, index) {
+            final date = days[index];
+            final inMonth = date.month == visibleMonth.month;
+            final disabled = date.isBefore(firstDate);
+            final selected = _dateOnly(date) == _dateOnly(selectedDate);
+            return _YuruboCalendarDayCell(
+              date: date,
+              inMonth: inMonth,
+              disabled: disabled,
+              selected: selected,
+              onTap: disabled ? null : () => onDateSelected(date),
+            );
+          },
+        ),
+        const SizedBox(height: 18),
+        Ohey3DButton(
+          label:
+              '${selectedDate.month}/${selectedDate.day}(${_shortWeekday(selectedDate)}) にする',
+          icon: CupertinoIcons.calendar_badge_plus,
+          onTap: onConfirm,
+          height: 48,
+          radius: 22,
+          color: _feedPrimaryActionColor,
+          foregroundColor: AppColors.cFF101820,
+          shadowColor: _feedPrimaryActionShadowColor,
+        ),
+      ],
+    );
+  }
+}
+
+List<DateTime> _calendarDays(DateTime month) {
+  final first = DateTime(month.year, month.month);
+  final start = first.subtract(Duration(days: first.weekday % 7));
+  return List<DateTime>.generate(
+    35,
+    (index) => start.add(Duration(days: index)),
+  );
+}
+
+class _YuruboCalendarArrow extends StatelessWidget {
+  const _YuruboCalendarArrow({
+    required this.icon,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: enabled ? onTap : null,
+    child: Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: enabled ? .12 : .05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.white.withValues(alpha: .11)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withValues(alpha: .18),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Icon(
+        icon,
+        color: AppColors.white.withValues(alpha: enabled ? .92 : .22),
+        size: 26,
+      ),
+    ),
+  );
+}
+
+class _YuruboCalendarDayCell extends StatelessWidget {
+  const _YuruboCalendarDayCell({
+    required this.date,
+    required this.inMonth,
+    required this.disabled,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final DateTime date;
+  final bool inMonth;
+  final bool disabled;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSunday = date.weekday == DateTime.sunday;
+    final isSaturday = date.weekday == DateTime.saturday;
+    final textColor = disabled || !inMonth
+        ? AppColors.white.withValues(alpha: .18)
+        : selected
+        ? AppColors.white
+        : isSunday
+        ? AppColors.cFFFF75B5
+        : isSaturday
+        ? AppColors.cFF54D7FF
+        : AppColors.white;
+    final fillColor = selected
+        ? const Color(0xFF0CA7DF).withValues(alpha: .74)
+        : isSunday && inMonth && !disabled
+        ? AppColors.cFFFF75B5.withValues(alpha: .42)
+        : const Color(0xFF061724);
+    final borderColor = selected
+        ? AppColors.cFF54D7FF
+        : isSunday && inMonth && !disabled
+        ? AppColors.cFFFF75B5.withValues(alpha: .72)
+        : const Color(0xFF0A75A4).withValues(alpha: inMonth ? .62 : .28);
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 140),
+        decoration: BoxDecoration(
+          color: fillColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: selected ? 2 : 1.2),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: AppColors.cFF54D7FF.withValues(alpha: .26),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
+                  ),
+                ]
+              : null,
+        ),
+        child: Center(
+          child: Text(
+            '${date.day}',
+            style: TextStyle(
+              color: textColor,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _YuruboDateOption extends StatelessWidget {
+  const _YuruboDateOption({
+    required this.selectedDate,
+    required this.onTap,
+    required this.onClear,
+  });
+
+  final DateTime? selectedDate;
+  final VoidCallback onTap;
+  final VoidCallback? onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = selectedDate == null
+        ? 'いつ（任意）'
+        : _yuruboTimeLabel(selectedDate);
+    final subLabel = selectedDate == null ? 'カレンダーで日程を設定' : 'タップして日程を変更';
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.white.withValues(alpha: .08),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.white.withValues(alpha: .13)),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              CupertinoIcons.calendar,
+              color: AppColors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subLabel,
+                    style: TextStyle(
+                      color: AppColors.white.withValues(alpha: .5),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (onClear != null)
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size.square(30),
+                onPressed: onClear,
+                child: Icon(
+                  CupertinoIcons.xmark_circle_fill,
+                  color: AppColors.white.withValues(alpha: .58),
+                  size: 21,
+                ),
+              )
+            else
+              Icon(
+                CupertinoIcons.chevron_down,
+                color: AppColors.white.withValues(alpha: .58),
+                size: 18,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _YuruboVisibilityChoice extends StatelessWidget {

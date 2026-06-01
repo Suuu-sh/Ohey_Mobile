@@ -128,7 +128,7 @@ class Ohey3DButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (isLoading)
-            CupertinoActivityIndicator(color: foregroundColor)
+            _OheyButtonLoadingDots(color: foregroundColor)
           else ...[
             if (customIcon != null || icon != null) ...[
               customIcon ??
@@ -263,73 +263,163 @@ class _Ohey3DButtonSurfaceState extends State<Ohey3DButtonSurface> {
           onTapUp: canTap ? (_) => _releasePressed() : null,
           onTapCancel: canTap ? _releasePressed : null,
           onTap: canTap ? widget.onTap : null,
-          child: Opacity(
-            opacity: opacity,
-            child: Container(
-              width: expandsWidth ? double.infinity : null,
-              height: widget.height + 7,
-              decoration: BoxDecoration(
-                color: isPressed ? AppColors.transparent : bottom,
-                borderRadius: BorderRadius.circular(widget.radius + 1),
-                boxShadow:
-                    widget.outerShadows ??
-                    [
-                      BoxShadow(
-                        color: base.withValues(alpha: .22),
-                        blurRadius: 22,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-              ),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 90),
-                  curve: Curves.easeOutCubic,
-                  transform: Matrix4.translationValues(0, isPressed ? 6 : 0, 0),
-                  width: expandsWidth ? double.infinity : null,
-                  height: widget.height,
-                  alignment: widget.alignment,
-                  padding: widget.padding,
-                  decoration: BoxDecoration(
-                    color: widget.useGradient ? null : base,
-                    gradient: widget.useGradient
-                        ? LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color.lerp(base, AppColors.white, .22)!,
-                              Color.lerp(base, AppColors.white, .10)!,
-                              base,
-                            ],
-                            stops: const [0, .55, 1],
-                          )
-                        : null,
-                    boxShadow:
-                        widget.innerShadows ??
-                        [
-                          BoxShadow(
-                            color: base.withValues(alpha: .22),
-                            blurRadius: 18,
-                            spreadRadius: 1,
-                            offset: const Offset(0, 0),
-                          ),
-                        ],
-                    borderRadius: BorderRadius.circular(widget.radius),
-                    border: Border.all(
-                      color:
-                          widget.borderColor ??
-                          AppColors.white.withValues(alpha: .18),
-                      width: widget.borderWidth,
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 120),
+            curve: isPressed ? Curves.easeOutBack : Curves.easeOutCubic,
+            scale: isPressed ? .985 : 1,
+            child: Opacity(
+              opacity: opacity,
+              child: Container(
+                width: expandsWidth ? double.infinity : null,
+                height: widget.height + 7,
+                decoration: BoxDecoration(
+                  color: isPressed ? AppColors.transparent : bottom,
+                  borderRadius: BorderRadius.circular(widget.radius + 1),
+                  boxShadow:
+                      widget.outerShadows ??
+                      [
+                        BoxShadow(
+                          color: base.withValues(alpha: .22),
+                          blurRadius: 22,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                ),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 90),
+                    curve: Curves.easeOutCubic,
+                    transform: Matrix4.translationValues(
+                      0,
+                      isPressed ? 6 : 0,
+                      0,
                     ),
+                    width: expandsWidth ? double.infinity : null,
+                    height: widget.height,
+                    alignment: widget.alignment,
+                    padding: widget.padding,
+                    decoration: BoxDecoration(
+                      color: widget.useGradient ? null : base,
+                      gradient: widget.useGradient
+                          ? LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color.lerp(base, AppColors.white, .22)!,
+                                Color.lerp(base, AppColors.white, .10)!,
+                                base,
+                              ],
+                              stops: const [0, .55, 1],
+                            )
+                          : null,
+                      boxShadow:
+                          widget.innerShadows ??
+                          [
+                            BoxShadow(
+                              color: base.withValues(alpha: .22),
+                              blurRadius: 18,
+                              spreadRadius: 1,
+                              offset: const Offset(0, 0),
+                            ),
+                          ],
+                      borderRadius: BorderRadius.circular(widget.radius),
+                      border: Border.all(
+                        color:
+                            widget.borderColor ??
+                            AppColors.white.withValues(alpha: .18),
+                        width: widget.borderWidth,
+                      ),
+                    ),
+                    child: widget.child,
                   ),
-                  child: widget.child,
                 ),
               ),
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _OheyButtonLoadingDots extends StatefulWidget {
+  const _OheyButtonLoadingDots({required this.color});
+
+  final Color color;
+
+  @override
+  State<_OheyButtonLoadingDots> createState() => _OheyButtonLoadingDotsState();
+}
+
+class _OheyButtonLoadingDotsState extends State<_OheyButtonLoadingDots>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < 3; i++) ...[
+              _LoadingDot(
+                color: widget.color,
+                progress: (_controller.value + i * .18) % 1,
+              ),
+              if (i != 2) const SizedBox(width: 5),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _LoadingDot extends StatelessWidget {
+  const _LoadingDot({required this.color, required this.progress});
+
+  final Color color;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final wave = Curves.easeInOut.transform(
+      progress < .5 ? progress * 2 : (1 - progress) * 2,
+    );
+    return Transform.translate(
+      offset: Offset(0, -5 * wave),
+      child: Container(
+        width: 7 + 2 * wave,
+        height: 7 + 2 * wave,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: .56 + .38 * wave),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: .18 + .20 * wave),
+              blurRadius: 8 + 4 * wave,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

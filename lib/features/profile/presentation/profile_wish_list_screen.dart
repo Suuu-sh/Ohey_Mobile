@@ -67,49 +67,28 @@ class _ProfileWishListEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              CupertinoIcons.sparkles,
-              color: AppColors.cFFC08BFF,
-              size: 42,
-            ),
-            const SizedBox(height: 14),
-            const Text(
-              'やりたいことを置いてみよう',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              '焼肉・サウナ・作業など、誘いの種をリストにためておけます。',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: _ProfileColors.sub,
-                fontWeight: FontWeight.w800,
-                height: 1.35,
-              ),
-            ),
-            const SizedBox(height: 18),
-            Ohey3DButton(
-              label: '追加する',
-              icon: CupertinoIcons.plus,
-              onTap: onCreate,
-              height: 50,
-              radius: 22,
-              color: AppColors.cFFC08BFF,
-              foregroundColor: AppColors.cFF101820,
-              shadowColor: AppColors.cFF7F51C9,
-            ),
-          ],
+    return OheyEmptyState(
+      visual: const Icon(
+        CupertinoIcons.sparkles,
+        color: AppColors.cFFC08BFF,
+        size: 46,
+      ),
+      title: '誘いの種を置いてみよう',
+      message: '焼肉・サウナ・作業など、あとで誰かと行きたいことをここにためておけます。',
+      titleColor: AppColors.white,
+      messageColor: _ProfileColors.sub,
+      hints: const ['焼肉行きたい', 'サウナ行きたい', '一緒に作業したい'],
+      action: SizedBox(
+        width: 190,
+        child: Ohey3DButton(
+          label: '追加する',
+          icon: CupertinoIcons.plus,
+          onTap: onCreate,
+          height: 50,
+          radius: 22,
+          color: AppColors.cFFC08BFF,
+          foregroundColor: AppColors.cFF101820,
+          shadowColor: AppColors.cFF7F51C9,
         ),
       ),
     );

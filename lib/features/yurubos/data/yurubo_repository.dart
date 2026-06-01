@@ -23,6 +23,7 @@ class YuruboCreateDraft {
     this.placeText = '',
     this.timeLabel = '',
     this.visibility = 'friends',
+    this.startsAt,
     this.groupId,
     this.wishItemId,
   });
@@ -32,6 +33,7 @@ class YuruboCreateDraft {
   final String placeText;
   final String timeLabel;
   final String visibility;
+  final DateTime? startsAt;
   final String? groupId;
   final String? wishItemId;
 }
@@ -42,12 +44,14 @@ class YuruboUpdateDraft {
     this.body = '',
     this.placeText = '',
     this.timeLabel = '',
+    this.startsAt,
   });
 
   final String title;
   final String body;
   final String placeText;
   final String timeLabel;
+  final DateTime? startsAt;
 }
 
 class BackendYuruboRepository implements YuruboRepository {
@@ -72,6 +76,8 @@ class BackendYuruboRepository implements YuruboRepository {
       'place_text': draft.placeText,
       'time_label': draft.timeLabel,
       'visibility': draft.visibility,
+      if (draft.startsAt != null)
+        'starts_at': draft.startsAt!.toIso8601String(),
       if (draft.groupId != null) 'group_id': draft.groupId,
       if (draft.wishItemId != null) 'wish_item_id': draft.wishItemId,
     });
@@ -84,6 +90,7 @@ class BackendYuruboRepository implements YuruboRepository {
       'body': draft.body,
       'place_text': draft.placeText,
       'time_label': draft.timeLabel,
+      'starts_at': draft.startsAt?.toIso8601String(),
     });
   }
 
@@ -115,6 +122,7 @@ Yurubo _yuruboFromRow(Map<String, dynamic> row) {
       OheyAvatar.defaultAvatar;
   final createdAt =
       DateTime.tryParse((row['created_at'] as String?) ?? '') ?? DateTime.now();
+  final startsAt = DateTime.tryParse((row['starts_at'] as String?) ?? '');
   return Yurubo(
     id: (row['id'] as String?) ?? '',
     ownerUserId: (row['owner_user_id'] as String?) ?? '',
@@ -127,6 +135,7 @@ Yurubo _yuruboFromRow(Map<String, dynamic> row) {
     category: ((row['category'] as String?) ?? 'other').trim(),
     placeText: ((row['place_text'] as String?) ?? '').trim(),
     timeLabel: ((row['time_label'] as String?) ?? '').trim(),
+    startsAt: startsAt,
     status: ((row['status'] as String?) ?? 'open').trim(),
     visibility: ((row['visibility'] as String?) ?? 'friends').trim(),
     visibilityLabel: ((row['visibility_label'] as String?) ?? '全フレンズ').trim(),

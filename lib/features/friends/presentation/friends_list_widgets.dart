@@ -5,24 +5,24 @@ class _FriendsRefreshIndicator extends StatelessWidget {
     required this.state,
     required this.pulledExtent,
     required this.triggerDistance,
+    required this.showDone,
   });
 
   final RefreshIndicatorMode state;
   final double pulledExtent;
   final double triggerDistance;
+  final bool showDone;
 
   @override
   Widget build(BuildContext context) {
-    final progress = (pulledExtent / triggerDistance).clamp(0.0, 1.0);
-    final isRefreshing =
-        state == RefreshIndicatorMode.refresh ||
-        state == RefreshIndicatorMode.armed;
-    final label = switch (state) {
-      RefreshIndicatorMode.inactive => '',
-      RefreshIndicatorMode.drag => progress >= 1 ? '離して更新' : '下に引っ張って更新',
-      RefreshIndicatorMode.armed || RefreshIndicatorMode.refresh => '更新中...',
-      RefreshIndicatorMode.done => '更新しました',
-    };
+    final label = showDone
+        ? '更新しました'
+        : switch (state) {
+            RefreshIndicatorMode.inactive || RefreshIndicatorMode.drag => '',
+            RefreshIndicatorMode.armed ||
+            RefreshIndicatorMode.refresh => '更新中...',
+            RefreshIndicatorMode.done => '',
+          };
 
     return SizedBox(
       height: pulledExtent,
@@ -34,7 +34,7 @@ class _FriendsRefreshIndicator extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 6),
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 120),
-            opacity: state == RefreshIndicatorMode.inactive ? 0 : 1,
+            opacity: label.isEmpty ? 0 : 1,
             child: Container(
               height: 34,
               padding: const EdgeInsets.symmetric(horizontal: 13),
@@ -52,30 +52,15 @@ class _FriendsRefreshIndicator extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (isRefreshing)
-                    const CupertinoActivityIndicator(radius: 8)
-                  else
-                    Transform.rotate(
-                      angle: progress * 3.14159,
-                      child: Icon(
-                        CupertinoIcons.arrow_down,
-                        color: _FriendsColors.lime,
-                        size: 16,
-                      ),
-                    ),
-                  const SizedBox(width: 8),
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      color: AppColors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                    ),
+              child: Center(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -94,6 +79,7 @@ class _FriendsList extends StatelessWidget {
     required this.favoriteOverrides,
     required this.invitedFriendIds,
     required this.onRefresh,
+    required this.showRefreshDone,
     required this.isSendingGroupInvite,
     required this.onFavoriteToggle,
     required this.onAddFriend,
@@ -110,6 +96,7 @@ class _FriendsList extends StatelessWidget {
   final Map<String, bool> favoriteOverrides;
   final Set<String> invitedFriendIds;
   final Future<void> Function() onRefresh;
+  final bool showRefreshDone;
   final bool isSendingGroupInvite;
   final void Function(OheyFriend friend, bool isFavorite) onFavoriteToggle;
   final VoidCallback onAddFriend;
@@ -146,7 +133,7 @@ class _FriendsList extends StatelessWidget {
       );
     final isGroupView = selectedCustomFilter != null;
     final hasRecommendations = !isGroupView && recommendations.isNotEmpty;
-    final hasGroupSchedule = isGroupView && filtered.length >= 2;
+    final hasGroupSchedule = isGroupView && filtered.isNotEmpty;
     final groupInviteTargets = filtered
         .where(
           (item) =>
@@ -162,8 +149,8 @@ class _FriendsList extends StatelessWidget {
       ),
       slivers: [
         CupertinoSliverRefreshControl(
-          refreshTriggerPullDistance: 34,
-          refreshIndicatorExtent: 24,
+          refreshTriggerPullDistance: 56,
+          refreshIndicatorExtent: 56,
           onRefresh: onRefresh,
           builder:
               (
@@ -176,6 +163,7 @@ class _FriendsList extends StatelessWidget {
                 state: refreshState,
                 pulledExtent: pulledExtent,
                 triggerDistance: refreshTriggerPullDistance,
+                showDone: showRefreshDone,
               ),
         ),
         child,
@@ -298,7 +286,7 @@ class _TodayInviteSection extends StatelessWidget {
         : AppColors.white.withValues(alpha: .60);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.only(top: 12, bottom: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -344,7 +332,7 @@ class _TodayInviteSection extends StatelessWidget {
             _TodayInviteEmpty(isWhite: isWhite)
           else
             SizedBox(
-              height: 178,
+              height: 142,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 520),
                 switchInCurve: Curves.easeOutBack,
@@ -556,8 +544,8 @@ class _GroupScheduleSection extends StatelessWidget {
                   label: isSendingInvite
                       ? '送信中'
                       : isGroupInvited
-                      ? '招待済み'
-                      : '${inviteTargets.length}人誘う',
+                      ? '誘い済み'
+                      : '全員誘う',
                   icon: isGroupInvited ? null : CupertinoIcons.paperplane_fill,
                   onTap: canInviteGroup ? onInviteGroup : null,
                   enabled: canInviteGroup,
@@ -598,16 +586,6 @@ class _GroupScheduleSection extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            _groupScheduleNote(friends),
-            style: TextStyle(
-              color: sub,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              height: 1.35,
-            ),
-          ),
           const SizedBox(height: 18),
           Container(
             width: double.infinity,
@@ -636,10 +614,7 @@ class _GroupScheduleCardsStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isSingle = suggestions.length == 1;
-        final cardWidth = isSingle
-            ? constraints.maxWidth
-            : (constraints.maxWidth - 12) / 2;
+        final cardWidth = (constraints.maxWidth - 12) / 2;
         return ListView.separated(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
@@ -655,7 +630,7 @@ class _GroupScheduleCardsStrip extends StatelessWidget {
             builder: (context, value, child) {
               final squeeze = 1 - value;
               return Transform.scale(
-                scaleX: 1 + squeeze * (isSingle ? .10 : .18),
+                scaleX: 1 + squeeze * .18,
                 scaleY: 1 - squeeze * .08,
                 alignment: Alignment.center,
                 child: Opacity(opacity: value.clamp(0, 1), child: child),
@@ -796,7 +771,6 @@ class _TodayInviteCandidateCard extends StatelessWidget {
     final ink = item.status.enabled
         ? (isWhite ? AppColors.cFF101820 : AppColors.white)
         : (isWhite ? AppColors.cFF667381 : _FriendsColors.muted);
-    final reason = _recommendationReasonFor(item);
     return OheyThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
       accentColor: frameAccent,
@@ -846,42 +820,12 @@ class _TodayInviteCandidateCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                CupertinoIcons.clock_fill,
-                size: 13,
-                color: isWhite
-                    ? AppColors.cFF667381
-                    : AppColors.white.withValues(alpha: .54),
-              ),
-              const SizedBox(width: 5),
-              Expanded(
-                child: Text(
-                  reason,
-                  maxLines: 1,
-                  overflow: TextOverflow.clip,
-                  style: TextStyle(
-                    color: isWhite
-                        ? AppColors.cFF667381
-                        : AppColors.white.withValues(alpha: .68),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    height: 1.25,
-                    letterSpacing: -.2,
-                  ),
-                ),
-              ),
-            ],
-          ),
           const Spacer(),
           SizedBox(
             width: double.infinity,
             child: OheyInviteSuccessBurst(
               builder: (context, runWithBurst, flightAnimation) => Ohey3DButton(
-                label: isInvited ? '招待済み' : '誘う',
+                label: isInvited ? '誘い済み' : '誘う',
                 icon: null,
                 customIcon: isInvited
                     ? null
@@ -1256,35 +1200,8 @@ String _groupScheduleDayLabel(DateTime day) {
   return '${day.month}/${day.day}（${weekdays[day.weekday - 1]}）';
 }
 
-String _groupScheduleNote(List<_DecoratedFriend> friends) {
-  final stats = _groupAvailabilityStats(friends);
-  if (stats.hasNoPlannedMembers && stats.weightedScore == 0) {
-    return '候補日を出して、みんなに予定を入れてもらってね。';
-  }
-  if (stats.isAlmostOk) return 'あと1人確認できたら決めやすいよ。';
-  if (stats.isMaybeOk) return 'まず候補日を出して、みんなに聞いてみよ。';
-  return '予定が合いにくそう。別の日も候補にしよ。';
-}
-
 bool _isSameLocalDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
-
-String _recommendationReasonFor(_DecoratedFriend item) {
-  final friend = item.friend;
-  if (friend.totalMemoryCount == 0) {
-    return '初めて誘える';
-  }
-  if (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) {
-    return '30日以上行ってない';
-  }
-  if (friend.statusKey == 'available') {
-    return '今日遊べそう';
-  }
-  if (friend.statusKey == 'maybe_available') {
-    return 'たぶん空いてそう';
-  }
-  return '誘って大丈夫そう';
-}
 
 bool _isRecommendedFriend(_DecoratedFriend item) {
   final friend = item.friend;
@@ -1374,7 +1291,7 @@ class _AddFriendsPromoCard extends StatelessWidget {
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'フレンズを増やして、もっと楽しく飲もう',
+                            'フレンズを増やして、もっと気軽に誘おう',
                             maxLines: 1,
                             style: TextStyle(
                               color: AppColors.white.withValues(alpha: 0.68),
@@ -1595,9 +1512,9 @@ class _EmptyFriendsState extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     return OheyEmptyState(
       visual: _EmptyFriendsVisual(avatar: avatar),
-      title: message == 'フレンズがいません' ? '一緒に残すフレンズを追加しよう' : message,
+      title: message == 'フレンズがいません' ? 'ここにフレンズを呼ぼう' : message,
       message: message == 'フレンズがいません'
-          ? 'QRかIDでつながると、ゆるぼに反応したり誘いやすくなります。'
+          ? '「誰か誘いたいな」の相手が、ここに並びます。まずはQRかIDでひとり追加してみよう。'
           : subtitle,
       titleColor: isWhite ? AppColors.cFF1B2633 : AppColors.white,
       messageColor: isWhite
@@ -1605,6 +1522,9 @@ class _EmptyFriendsState extends StatelessWidget {
           : AppColors.white.withValues(alpha: .58),
       padding: EdgeInsets.zero,
       spacing: 14,
+      hints: message == 'フレンズがいません'
+          ? const ['ゆるぼに誘える', '空き状況が見える', '思い出を一緒に残せる']
+          : const ['フィルターを変えてみよう', 'グループは長押しで編集'],
       action: message == 'フレンズがいません'
           ? _EmptyFriendsActions(onAddFriend: onAddFriend)
           : null,

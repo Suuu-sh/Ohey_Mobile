@@ -24,6 +24,7 @@ import '../../../core/widgets/ohey_bottom_sheet.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
 import '../../../core/widgets/ohey_primary_button.dart';
+import '../../../core/widgets/ohey_profile_hero_header.dart';
 import '../../../core/widgets/ohey_scene_header_backdrop.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
@@ -40,13 +41,33 @@ part 'friends_list_widgets.dart';
 part 'friends_card_widgets.dart';
 part 'friends_state_widgets.dart';
 
-Future<void> _holdRefreshIndicatorUntilDone(DateTime startedAt) async {
-  const minimumVisibleDuration = Duration(milliseconds: 650);
-  final elapsed = DateTime.now().difference(startedAt);
-  final remaining = minimumVisibleDuration - elapsed;
-  if (!remaining.isNegative) {
-    await Future<void>.delayed(remaining);
-  }
+Future<bool?> _confirmDeleteCustomFilter(
+  BuildContext context,
+  _CustomFriendFilter filter,
+) {
+  return showCupertinoDialog<bool>(
+    context: context,
+    builder: (dialogContext) => CupertinoAlertDialog(
+      title: const Text('グループを削除しますか？'),
+      content: Text('「${filter.name}」を削除します。この操作は元に戻せません。'),
+      actions: [
+        CupertinoDialogAction(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('キャンセル'),
+        ),
+        CupertinoDialogAction(
+          isDestructiveAction: true,
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('削除する'),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> _holdRefreshIndicatorUntilDone() async {
+  const doneVisibleDuration = Duration(milliseconds: 650);
+  await Future<void>.delayed(doneVisibleDuration);
 }
 
 final _friendMonthlyDailyStatusesProvider = FutureProvider.autoDispose
@@ -73,6 +94,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   String? _customFilterUserId;
   List<_CustomFriendFilter> _customFilters = const [];
   bool _isSendingGroupInvite = false;
+  bool _showRefreshDone = false;
   final Map<String, bool> _favoriteOverrides = {};
   final Set<String> _invitedFriendIds = <String>{};
 
@@ -165,6 +187,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 
   Future<void> _deleteCustomFilter(_CustomFriendFilter filter) async {
     HapticFeedback.mediumImpact();
+    final confirmed = await _confirmDeleteCustomFilter(context, filter);
+    if (confirmed != true || !mounted) return;
     setState(() {
       _customFilters = [
         for (final item in _customFilters)
@@ -260,18 +284,14 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
         break;
       case _CustomFilterSheetAction.delete:
         final filterId = result.filterId!;
-        setState(() {
-          _customFilters = [
-            for (final item in _customFilters)
-              if (item.id != filterId) item,
-          ];
-          if (_selectedCustomFilterId == filterId) {
-            _selectedCustomFilterId = null;
-            _selectedFilter = _FriendFilterType.all;
+        _CustomFriendFilter? filter;
+        for (final item in _customFilters) {
+          if (item.id == filterId) {
+            filter = item;
+            break;
           }
-        });
-        await _persistCustomFilters();
-        if (mounted) OheyToast.show(context, 'グループを削除したよ');
+        }
+        if (filter != null) await _deleteCustomFilter(filter);
         break;
     }
   }
@@ -334,7 +354,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       HapticFeedback.mediumImpact();
       OheyToast.show(
         context,
-        '招待を送れなかったよ。あとでもう一度試してね',
+        '誘えなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
         placement: OheyToastPlacement.bottom,
       );
@@ -378,7 +398,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       HapticFeedback.mediumImpact();
       OheyToast.show(
         context,
-        'まとめて招待できなかったよ。あとでもう一度試してね',
+        'まとめて誘えなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
         placement: OheyToastPlacement.bottom,
       );
@@ -412,9 +432,23 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     setState(() => _invitedFriendIds.add(friend.id));
   }
 
+  Future<void> _refreshFriends() async {
+    HapticFeedback.lightImpact();
+    if (mounted) setState(() => _showRefreshDone = false);
+    ref.invalidate(outgoingActiveInvitesProvider(null));
+    await Future.wait([
+      ref.refresh(friendsProvider.future),
+      ref.refresh(outgoingActiveInvitesProvider(null).future),
+    ]);
+    if (mounted) setState(() => _showRefreshDone = true);
+    await _holdRefreshIndicatorUntilDone();
+    if (mounted) setState(() => _showRefreshDone = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final friendsAsync = ref.watch(friendsProvider);
+    final currentFriends = friendsAsync.value;
     final persistedInvitedFriendIds =
         ref
             .watch(outgoingActiveInvitesProvider(null))
@@ -505,39 +539,63 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                     ),
                     const SizedBox(height: 18),
                     Expanded(
-                      child: friendsAsync.when(
-                        loading: () =>
-                            const _LoadingState(label: 'フレンズを読み込み中...'),
-                        error: (error, stackTrace) => _ErrorState(
-                          title: '読み込めなかったよ。あとでもう一度試してね',
-                          message: '$error',
-                        ),
-                        data: (friends) => _FriendsList(
-                          friends: friends,
-                          onRefresh: () async {
-                            HapticFeedback.lightImpact();
-                            final startedAt = DateTime.now();
-                            ref.invalidate(friendsProvider);
-                            ref.invalidate(outgoingActiveInvitesProvider(null));
-                            await ref.read(friendsProvider.future);
-                            await _holdRefreshIndicatorUntilDone(startedAt);
-                          },
-                          userAvatar: user?.avatar ?? OheyAvatar.defaultAvatar,
-                          selectedFilter: _selectedFilter,
-                          selectedCustomFilter: selectedCustomFilter,
-                          favoriteOverrides: _favoriteOverrides,
-                          invitedFriendIds: invitedFriendIds,
-                          isSendingGroupInvite: _isSendingGroupInvite,
-                          onFavoriteToggle: (friend, isFavorite) =>
-                              _onToggleFavorite(context, friend, isFavorite),
-                          onAddFriend: _openAddFriend,
-                          onInvite: (friend) => _sendInvite(friend),
-                          onGroupInvite: _sendGroupInvites,
-                          onInviteAnimationComplete: _markInviteSent,
-                          onProfile: (friend, status) =>
-                              _openFriendProfile(friend, status),
-                        ),
-                      ),
+                      child: currentFriends == null
+                          ? friendsAsync.when(
+                              loading: () =>
+                                  const _LoadingState(label: 'フレンズを読み込み中...'),
+                              error: (error, stackTrace) => _ErrorState(
+                                title: '読み込めなかったよ。あとでもう一度試してね',
+                                message: '$error',
+                              ),
+                              data: (friends) => _FriendsList(
+                                friends: friends,
+                                onRefresh: _refreshFriends,
+                                showRefreshDone: _showRefreshDone,
+                                userAvatar:
+                                    user?.avatar ?? OheyAvatar.defaultAvatar,
+                                selectedFilter: _selectedFilter,
+                                selectedCustomFilter: selectedCustomFilter,
+                                favoriteOverrides: _favoriteOverrides,
+                                invitedFriendIds: invitedFriendIds,
+                                isSendingGroupInvite: _isSendingGroupInvite,
+                                onFavoriteToggle: (friend, isFavorite) =>
+                                    _onToggleFavorite(
+                                      context,
+                                      friend,
+                                      isFavorite,
+                                    ),
+                                onAddFriend: _openAddFriend,
+                                onInvite: (friend) => _sendInvite(friend),
+                                onGroupInvite: _sendGroupInvites,
+                                onInviteAnimationComplete: _markInviteSent,
+                                onProfile: (friend, status) =>
+                                    _openFriendProfile(friend, status),
+                              ),
+                            )
+                          : _FriendsList(
+                              friends: currentFriends,
+                              onRefresh: _refreshFriends,
+                              showRefreshDone: _showRefreshDone,
+                              userAvatar:
+                                  user?.avatar ?? OheyAvatar.defaultAvatar,
+                              selectedFilter: _selectedFilter,
+                              selectedCustomFilter: selectedCustomFilter,
+                              favoriteOverrides: _favoriteOverrides,
+                              invitedFriendIds: invitedFriendIds,
+                              isSendingGroupInvite: _isSendingGroupInvite,
+                              onFavoriteToggle: (friend, isFavorite) =>
+                                  _onToggleFavorite(
+                                    context,
+                                    friend,
+                                    isFavorite,
+                                  ),
+                              onAddFriend: _openAddFriend,
+                              onInvite: (friend) => _sendInvite(friend),
+                              onGroupInvite: _sendGroupInvites,
+                              onInviteAnimationComplete: _markInviteSent,
+                              onProfile: (friend, status) =>
+                                  _openFriendProfile(friend, status),
+                            ),
                     ),
                   ],
                 ),

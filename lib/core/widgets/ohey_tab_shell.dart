@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:app_links/app_links.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/calendar/presentation/calendar_screen.dart';
@@ -17,6 +18,7 @@ import '../../features/memories/application/memory_controller.dart';
 import '../../features/notifications/application/notification_controller.dart';
 import '../../features/notifications/application/os_notification_service.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/yurubos/application/yurubo_controller.dart';
 import '../../features/onboarding/presentation/create_user_dialog.dart';
 import '../application/ohey_user_controller.dart';
 import '../data/ohey_last_account_store.dart';
@@ -57,6 +59,9 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   String? _lastDailyStatusPromptKey;
   String? _lastPresentedInviteId;
   Timer? _invitePollTimer;
+  StreamSubscription<Uri>? _appLinkSubscription;
+  String? _pendingSharedYuruboId;
+  bool _isHandlingSharedYurubo = false;
   final Set<String> _notifiedInviteIds = <String>{};
 
   @override
@@ -64,11 +69,13 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _loadOnboardingPref();
+    _startAppLinkListener();
   }
 
   @override
   void dispose() {
     _invitePollTimer?.cancel();
+    _appLinkSubscription?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -109,6 +116,82 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     await SharedPreferences.getInstance().then(
       (prefs) => prefs.setBool(OheyLastAccountStore.onboardingSeenKey, true),
     );
+  }
+
+  void _startAppLinkListener() {
+    final appLinks = AppLinks();
+    unawaited(
+      appLinks
+          .getInitialLink()
+          .then((uri) {
+            if (uri != null) _handleIncomingAppLink(uri);
+          })
+          .catchError((_) {}),
+    );
+    _appLinkSubscription = appLinks.uriLinkStream.listen(
+      _handleIncomingAppLink,
+      onError: (_) {},
+    );
+  }
+
+  void _handleIncomingAppLink(Uri uri) {
+    final yuruboId = _sharedYuruboIdFromUri(uri);
+    if (yuruboId == null || yuruboId.isEmpty) return;
+    _pendingSharedYuruboId = yuruboId;
+    if (ref.read(oheyUserProvider) != null) {
+      _consumePendingSharedYurubo();
+    }
+  }
+
+  String? _sharedYuruboIdFromUri(Uri uri) {
+    final scheme = uri.scheme.toLowerCase();
+    final host = uri.host.toLowerCase();
+    final segments = uri.pathSegments;
+    if ((scheme == 'app.ohey.com' || scheme == 'app.ohey.com.dev') &&
+        host == 'yurubos' &&
+        segments.isNotEmpty) {
+      return segments.first;
+    }
+    if ((scheme == 'https' || scheme == 'http') &&
+        segments.length >= 3 &&
+        segments[0] == 'share' &&
+        segments[1] == 'yurubos') {
+      return segments[2];
+    }
+    return null;
+  }
+
+  void _consumePendingSharedYurubo() {
+    if (_isHandlingSharedYurubo) return;
+    final yuruboId = _pendingSharedYuruboId;
+    if (yuruboId == null || yuruboId.isEmpty) return;
+    _pendingSharedYuruboId = null;
+    _isHandlingSharedYurubo = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) {
+        _isHandlingSharedYurubo = false;
+        return;
+      }
+      setState(() => _selectedIndex = 0);
+      try {
+        await ref.read(yuruboControllerProvider.notifier).participate(yuruboId);
+        if (!mounted) return;
+        OheyToast.show(
+          context,
+          '共有されたゆるぼに参加しました',
+          icon: CupertinoIcons.checkmark_circle_fill,
+        );
+      } catch (_) {
+        if (!mounted) return;
+        OheyToast.show(
+          context,
+          'このゆるぼに参加できなかったよ。あとでもう一度試してね',
+          icon: CupertinoIcons.exclamationmark_triangle_fill,
+        );
+      } finally {
+        _isHandlingSharedYurubo = false;
+      }
+    });
   }
 
   Color get _selectedToastAccentColor => switch (_selectedIndex) {
@@ -331,6 +414,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       incomingInvitesAsync.whenData(_handleIncomingInvites);
       _didAttemptProfileRestore = false;
       _didScheduleProfileRestore = false;
+      _consumePendingSharedYurubo();
       if (_onboardingPrefLoaded && !_isOnboardingSeen) {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           if (!mounted || _isOnboardingSeen) return;
@@ -1037,31 +1121,40 @@ class _TabBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = count > 99 ? '99+' : count.toString();
-    return Container(
-      constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.cFFFF5F8F, AppColors.cFFFF335F],
-        ),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.darkBackgroundBottom, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cFFFF4F7A.withValues(alpha: .42),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return TweenAnimationBuilder<double>(
+      key: ValueKey(count),
+      tween: Tween(begin: .72, end: 1),
+      duration: const Duration(milliseconds: 360),
+      curve: Curves.elasticOut,
+      builder: (context, scale, child) {
+        return Transform.scale(scale: scale, child: child);
+      },
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [AppColors.cFFFF5F8F, AppColors.cFFFF335F],
           ),
-        ],
-      ),
-      child: Text(
-        label,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: AppColors.white,
-          fontSize: 9.5,
-          height: 1,
-          fontWeight: FontWeight.w900,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: AppColors.darkBackgroundBottom, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.cFFFF4F7A.withValues(alpha: .42),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: AppColors.white,
+            fontSize: 9.5,
+            height: 1,
+            fontWeight: FontWeight.w900,
+          ),
         ),
       ),
     );

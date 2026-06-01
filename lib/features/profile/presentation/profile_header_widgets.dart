@@ -97,71 +97,6 @@ class _ProfileSettingsButton extends StatelessWidget {
   }
 }
 
-class _ProfileHeaderBackdrop extends StatelessWidget {
-  const _ProfileHeaderBackdrop({required this.avatar});
-
-  final OheyAvatar? avatar;
-
-  @override
-  Widget build(BuildContext context) {
-    final displayAvatar = avatar ?? OheyAvatar.defaultAvatar;
-    final imageBackdropAsset = OheyAvatar.imageBackdropAsset(
-      displayAvatar.background,
-    );
-    if (imageBackdropAsset != null) {
-      return ExcludeSemantics(
-        child: Image.asset(
-          imageBackdropAsset,
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
-        ),
-      );
-    }
-
-    final backgroundColors =
-        OheyAvatar.backgroundGradients[displayAvatar.background %
-            OheyAvatar.backgroundGradients.length];
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: backgroundColors,
-            ),
-          ),
-        ),
-        Opacity(
-          opacity: displayAvatar.background == OheyAvatar.dreamRoomBackground
-              ? .18
-              : .10,
-          child: ExcludeSemantics(
-            child: Image.asset(
-              'assets/images/profile_header_scene.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-          ),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppColors.white.withValues(alpha: .18),
-                AppColors.white.withValues(alpha: .36),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _ProfileTopSheet extends StatelessWidget {
   const _ProfileTopSheet({required this.child});
 
@@ -201,40 +136,9 @@ class _SimpleHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final joinedMonth = '${now.year}/${now.month.toString().padLeft(2, '0')}';
-    final displayAvatar = avatar ?? OheyAvatar.defaultAvatar;
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
-      child: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: 166,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: OheyAvatarView(avatar: displayAvatar, size: 156),
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(18, 8, 18, 9),
-            color: AppColors.darkBackgroundBottom,
-            child: Center(
-              child: Text(
-                '$name ・ $joinedMonth 参加',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.white.withValues(alpha: .72),
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.4,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return OheyProfileHeroBanner(
+      avatar: avatar ?? OheyAvatar.defaultAvatar,
+      label: '$name ・ $joinedMonth 参加',
     );
   }
 }
@@ -539,6 +443,7 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.onCreateYuruboTap,
     required this.onOpenWishListTap,
     required this.onAddFriendsTap,
+    required this.onChangeStatusTap,
   });
 
   final int friendsCount;
@@ -549,6 +454,7 @@ class _ProfileActivityHome extends StatelessWidget {
   final VoidCallback onCreateYuruboTap;
   final VoidCallback onOpenWishListTap;
   final VoidCallback onAddFriendsTap;
+  final VoidCallback onChangeStatusTap;
 
   @override
   Widget build(BuildContext context) {
@@ -568,12 +474,6 @@ class _ProfileActivityHome extends StatelessWidget {
             isLoading: isYuruboLoading,
           ),
           const SizedBox(height: 12),
-          _ProfileWishListSection(
-            wishItems: wishItems,
-            isLoading: isWishLoading,
-            onOpenTap: onOpenWishListTap,
-          ),
-          const SizedBox(height: 12),
           const _ProfileArchiveTopGlowLine(),
           const SizedBox(height: 22),
           Padding(
@@ -582,6 +482,25 @@ class _ProfileActivityHome extends StatelessWidget {
               children: [
                 Expanded(
                   child: _ProfileYuruboActionRow(onTap: onCreateYuruboTap),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _ProfileStatusActionRow(onTap: onChangeStatusTap),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _ProfileWishListActionRow(
+                    wishItems: wishItems,
+                    isLoading: isWishLoading,
+                    onTap: onOpenWishListTap,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -610,6 +529,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final event = joinedYurubos.isEmpty ? null : joinedYurubos.first;
+    const accent = AppColors.cFFFF75B5;
     final title = event == null
         ? (isLoading ? '読み込み中' : '本日の予定はありません')
         : event.title;
@@ -623,65 +543,90 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
         decoration: BoxDecoration(
           color: AppColors.darkBackgroundBottom,
-          borderRadius: BorderRadius.circular(26),
-          border: Border.all(
-            color: AppColors.success.withValues(alpha: .38),
-            width: 1.2,
-          ),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: accent.withValues(alpha: .58), width: 1.2),
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    '本日の予定',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 17, 18, 17),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: accent,
+                          ),
+                        ),
+                        const SizedBox(width: 7),
+                        const Text(
+                          '本日の予定',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            height: 1.08,
+                            letterSpacing: .2,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: _ProfileColors.sub,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
-                    ),
-                  ),
-                  if (event != null) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 7),
                     Text(
-                      subtitle,
+                      title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: _ProfileColors.sub.withValues(alpha: .72),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
                         height: 1.1,
                       ),
                     ),
+                    const SizedBox(height: 5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.white.withValues(alpha: .08),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: AppColors.white.withValues(alpha: .08),
+                        ),
+                      ),
+                      child: Text(
+                        event == null ? subtitle : 'Today · $subtitle',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: _ProfileColors.sub.withValues(alpha: .82),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          height: 1,
+                        ),
+                      ),
+                    ),
                   ],
-                ],
+                ),
               ),
-            ),
-            const SizedBox(width: 14),
-            _TodayScheduleParticipants(event: event),
-          ],
+              const SizedBox(width: 14),
+              _TodayScheduleParticipants(event: event, accent: accent),
+            ],
+          ),
         ),
       ),
     );
@@ -689,9 +634,10 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
 }
 
 class _TodayScheduleParticipants extends StatelessWidget {
-  const _TodayScheduleParticipants({required this.event});
+  const _TodayScheduleParticipants({required this.event, required this.accent});
 
   final Yurubo? event;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
@@ -699,7 +645,7 @@ class _TodayScheduleParticipants extends StatelessWidget {
     if (event == null) {
       return OheyPopIcon(
         icon: CupertinoIcons.calendar_today,
-        color: AppColors.success,
+        color: accent,
         size: 42,
         iconSize: 20,
         showBubble: false,
@@ -736,12 +682,12 @@ class _TodayScheduleParticipants extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: AppColors.darkBackgroundBottom,
                   border: Border.all(
-                    color: AppColors.success.withValues(alpha: .78),
+                    color: accent.withValues(alpha: .78),
                     width: 1.4,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.success.withValues(alpha: .24),
+                      color: accent.withValues(alpha: .24),
                       blurRadius: 14,
                       spreadRadius: 1,
                     ),
@@ -754,101 +700,6 @@ class _TodayScheduleParticipants extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _ProfileWishListSection extends StatelessWidget {
-  const _ProfileWishListSection({
-    required this.wishItems,
-    required this.isLoading,
-    required this.onOpenTap,
-  });
-
-  final List<WishItem> wishItems;
-  final bool isLoading;
-  final VoidCallback onOpenTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final countLabel = isLoading && wishItems.isEmpty
-        ? '読み込み中'
-        : '${wishItems.length}件';
-    final preview = wishItems.take(3).map((wish) => wish.title).join('・');
-    final subtitle = preview.isEmpty ? '追加するとここに表示されます' : preview;
-    const accent = AppColors.cFF39C7FF;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 22, 18, 22),
-        decoration: BoxDecoration(
-          color: AppColors.darkBackgroundBottom,
-          borderRadius: BorderRadius.circular(26),
-          border: Border.all(
-            color: AppColors.cFFC08BFF.withValues(alpha: .42),
-            width: 1.2,
-          ),
-        ),
-        child: Row(
-          children: [
-            OheyPopIcon(
-              icon: CupertinoIcons.list_bullet,
-              color: _ProfileColors.sub,
-              size: 34,
-              iconSize: 18,
-              showBubble: false,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '$countLabelのやりたいこと',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: _ProfileColors.sub,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      height: 1.1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            SizedBox(
-              width: 62,
-              child: Ohey3DButton(
-                label: '見る',
-                onTap: onOpenTap,
-                height: 34,
-                radius: 17,
-                color: accent,
-                foregroundColor: AppColors.cFF101820,
-                shadowColor: AppColors.cFF1699D6,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1007,14 +858,14 @@ class _ProfileYuruboActionRow extends StatelessWidget {
       ],
       child: Row(
         children: [
-          const OheyPopIcon(
+          OheyPopIcon(
             icon: CupertinoIcons.plus_bubble_fill,
             color: AppColors.cFF101820,
             size: 28,
             iconSize: 15,
           ),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Text(
               'ゆるぼを追加',
               style: TextStyle(
@@ -1029,6 +880,144 @@ class _ProfileYuruboActionRow extends StatelessWidget {
             CupertinoIcons.plus,
             color: AppColors.cFF101820,
             size: 18,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileStatusActionRow extends StatelessWidget {
+  const _ProfileStatusActionRow({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Ohey3DButtonSurface(
+      onTap: onTap,
+      height: 46,
+      radius: 20,
+      color: AppColors.cFFFF75B5,
+      bottomColor: AppColors.cFFD4147C,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      borderColor: AppColors.white.withValues(alpha: .20),
+      outerShadows: [
+        BoxShadow(
+          color: AppColors.cFFFF75B5.withValues(alpha: .18),
+          blurRadius: 14,
+          offset: const Offset(0, 7),
+        ),
+      ],
+      child: Row(
+        children: [
+          const OheyPopIcon(
+            icon: CupertinoIcons.person_crop_circle_badge_checkmark,
+            color: AppColors.cFF101820,
+            size: 28,
+            iconSize: 15,
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'ステータス変更',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppColors.cFF101820,
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.4,
+              ),
+            ),
+          ),
+          OheyGeneratedIcon(
+            CupertinoIcons.chevron_right,
+            color: AppColors.cFF101820,
+            size: 16,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileWishListActionRow extends StatelessWidget {
+  const _ProfileWishListActionRow({
+    required this.wishItems,
+    required this.isLoading,
+    required this.onTap,
+  });
+
+  final List<WishItem> wishItems;
+  final bool isLoading;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final countLabel = isLoading && wishItems.isEmpty
+        ? '読込中'
+        : '${wishItems.length}件';
+    return Ohey3DButtonSurface(
+      onTap: onTap,
+      height: 46,
+      radius: 20,
+      color: AppColors.cFF39C7FF,
+      bottomColor: AppColors.cFF1699D6,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      borderColor: AppColors.white.withValues(alpha: .20),
+      outerShadows: [
+        BoxShadow(
+          color: AppColors.cFF39C7FF.withValues(alpha: .16),
+          blurRadius: 14,
+          offset: const Offset(0, 7),
+        ),
+      ],
+      child: Row(
+        children: [
+          const OheyPopIcon(
+            icon: CupertinoIcons.list_bullet,
+            color: AppColors.cFF101820,
+            size: 28,
+            iconSize: 15,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'やりたいこと',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.cFF101820,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                    letterSpacing: -.35,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  countLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.cFF101820.withValues(alpha: .62),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          OheyGeneratedIcon(
+            CupertinoIcons.chevron_right,
+            color: AppColors.cFF101820,
+            size: 16,
           ),
         ],
       ),

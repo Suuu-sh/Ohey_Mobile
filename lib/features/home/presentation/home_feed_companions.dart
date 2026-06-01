@@ -392,7 +392,8 @@ class _FeedCompanionProfileSheetState
     final friend = widget.friend;
     final statusColor = _companionStatusColor(friend.statusKey);
     final media = MediaQuery.of(context);
-    final sheetContentHeight = media.size.height - media.padding.bottom;
+    final sheetContentHeight =
+        media.size.height - media.padding.top - media.padding.bottom;
     final relationshipAsync = widget.initialRelationship == null
         ? (friend.userId.trim().isEmpty
               ? const AsyncValue<OheyFriendRelationshipStatus>.data(
@@ -407,6 +408,7 @@ class _FeedCompanionProfileSheetState
           );
 
     return OheyBottomSheetShell(
+      showHandle: false,
       padding: EdgeInsets.zero,
       radius: 0,
       maxHeightFactor: 1,
@@ -482,20 +484,6 @@ class _FeedCompanionProfileSheetState
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Ohey3DButton.secondary(
-                  label: '閉じる',
-                  onTap: () => Navigator.of(context).pop(),
-                  height: 48,
-                  radius: 22,
-                  color: AppColors.cFF252044,
-                  foregroundColor: AppColors.cFFC08BFF,
-                  shadowColor: AppColors.cFF15142C,
-                ),
-              ),
-              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -518,7 +506,7 @@ class _FeedCompanionTopBackdrop extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          _FeedCompanionHeaderBackdrop(avatar: friend.avatar),
+          OheyProfileHeaderBackdrop(avatar: friend.avatar),
           Padding(
             padding: EdgeInsets.fromLTRB(
               OheyPageHeader.horizontalPadding,
@@ -539,68 +527,6 @@ class _FeedCompanionTopBackdrop extends StatelessWidget {
   }
 }
 
-class _FeedCompanionHeaderBackdrop extends StatelessWidget {
-  const _FeedCompanionHeaderBackdrop({required this.avatar});
-
-  final OheyAvatar avatar;
-
-  @override
-  Widget build(BuildContext context) {
-    final imageBackdropAsset = OheyAvatar.imageBackdropAsset(avatar.background);
-    if (imageBackdropAsset != null) {
-      return ExcludeSemantics(
-        child: Image.asset(
-          imageBackdropAsset,
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
-        ),
-      );
-    }
-
-    final backgroundColors =
-        OheyAvatar.backgroundGradients[avatar.background %
-            OheyAvatar.backgroundGradients.length];
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: backgroundColors,
-            ),
-          ),
-        ),
-        Opacity(
-          opacity: avatar.background == OheyAvatar.dreamRoomBackground
-              ? .18
-              : .10,
-          child: ExcludeSemantics(
-            child: Image.asset(
-              'assets/images/profile_header_scene.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-          ),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppColors.white.withValues(alpha: .18),
-                AppColors.white.withValues(alpha: .36),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _FeedCompanionHero extends StatelessWidget {
   const _FeedCompanionHero({required this.friend});
 
@@ -608,39 +534,9 @@ class _FeedCompanionHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
-      child: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: 190,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: OheyAvatarView(avatar: friend.avatar, size: 156),
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(18, 8, 18, 9),
-            color: AppColors.darkBackgroundBottom,
-            child: Center(
-              child: Text(
-                '${friend.name} ・ ${friend.handleLabel}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.white.withValues(alpha: .72),
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.4,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return OheyProfileHeroBanner(
+      avatar: friend.avatar,
+      label: '${friend.name} ・ ${friend.handleLabel}',
     );
   }
 }

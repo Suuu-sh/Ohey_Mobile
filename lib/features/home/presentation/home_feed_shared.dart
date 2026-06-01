@@ -8,6 +8,7 @@ class _FeedEmptyState extends StatelessWidget {
     this.isWhite = false,
     this.accent = _FeedColors.teal,
     this.action,
+    this.hints = const [],
   });
 
   final IconData icon;
@@ -16,6 +17,7 @@ class _FeedEmptyState extends StatelessWidget {
   final bool isWhite;
   final Color accent;
   final Widget? action;
+  final List<String> hints;
 
   @override
   Widget build(BuildContext context) => OheyEmptyState(
@@ -26,6 +28,7 @@ class _FeedEmptyState extends StatelessWidget {
     messageColor: isWhite
         ? AppColors.cFF6E7783
         : AppColors.white.withValues(alpha: .55),
+    hints: hints,
     action: action,
   );
 }
@@ -86,6 +89,7 @@ class _FeedItem {
     required this.body,
     this.place = '',
     this.timeLabel = '',
+    this.startsAt,
     required this.avatar,
     required this.accent,
     this.linkUrl = '',
@@ -119,6 +123,7 @@ class _FeedItem {
       body: body,
       place: yurubo.placeText,
       timeLabel: yurubo.timeLabel,
+      startsAt: yurubo.startsAt,
       avatar: yurubo.avatar,
       accent: _accentForId(yurubo.id),
       linkUrl: '',
@@ -138,7 +143,7 @@ class _FeedItem {
       ],
       likes: yurubo.reactionCount,
       saved: false,
-      liked: yurubo.reactedByMe,
+      liked: isOwnedByCurrentUser || yurubo.reactedByMe,
       prop: _PostProp.memory,
       tilt: 0,
       ownerUserId: yurubo.ownerUserId,
@@ -177,6 +182,7 @@ class _FeedItem {
   final String body;
   final String place;
   final String timeLabel;
+  final DateTime? startsAt;
   final OheyAvatar avatar;
   final Color accent;
   final String linkUrl;
@@ -375,123 +381,6 @@ String _relativeTimeText(DateTime time) {
   final month = time.month.toString().padLeft(2, '0');
   final day = time.day.toString().padLeft(2, '0');
   return '$month/$day';
-}
-
-Future<String> _createStoryShareImage(_FeedItem item) async {
-  const width = 1080.0;
-  const height = 1920.0;
-  final recorder = ui.PictureRecorder();
-  final canvas = Canvas(recorder);
-  final rect = Rect.fromLTWH(0, 0, width, height);
-
-  final background = Paint()
-    ..shader = const LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [AppColors.cFF05080D, AppColors.cFF111821, AppColors.cFF05080D],
-      stops: [0, .48, 1],
-    ).createShader(rect);
-  canvas.drawRect(rect, background);
-
-  const cardWidth = 930.0;
-  const cardHorizontalPadding = 56.0;
-  const cardTopPadding = 58.0;
-  const titleFontSize = 58.0;
-  const metaFontSize = 34.0;
-  const cardHeight = 520.0;
-  const cardLeft = (width - cardWidth) / 2;
-  const cardTop = (height - cardHeight) / 2;
-  final cardRect = Rect.fromLTWH(cardLeft, cardTop, cardWidth, cardHeight);
-  final cardRRect = RRect.fromRectAndRadius(
-    cardRect,
-    const Radius.circular(32),
-  );
-
-  canvas.drawRRect(
-    cardRRect.shift(const Offset(0, 18)),
-    Paint()
-      ..color = AppColors.black.withValues(alpha: .26)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24),
-  );
-  canvas.drawRRect(cardRRect, Paint()..color = AppColors.white);
-
-  final accentRect = Rect.fromLTWH(cardLeft, cardTop, cardWidth, 12);
-  canvas.drawRRect(
-    RRect.fromRectAndCorners(
-      accentRect,
-      topLeft: const Radius.circular(32),
-      topRight: const Radius.circular(32),
-    ),
-    Paint()..color = AppColors.cFFC08BFF,
-  );
-
-  final textLeft = cardLeft + cardHorizontalPadding;
-  final textWidth = cardWidth - cardHorizontalPadding * 2;
-  final title = item.body.trim().isNotEmpty ? item.body.trim() : item.userName;
-  _paintShareText(
-    canvas,
-    title,
-    x: textLeft,
-    y: cardTop + cardTopPadding,
-    maxWidth: textWidth,
-    size: titleFontSize,
-    weight: FontWeight.w800,
-    color: AppColors.cFF111111,
-    maxLines: 3,
-  );
-  _paintShareText(
-    canvas,
-    item.timeAgo,
-    x: textLeft,
-    y: cardTop + cardHeight - cardTopPadding - metaFontSize * 1.18,
-    maxWidth: textWidth,
-    size: metaFontSize,
-    weight: FontWeight.w700,
-    color: AppColors.cFF8D8D8D,
-    maxLines: 1,
-  );
-
-  final picture = recorder.endRecording();
-  final output = await picture.toImage(width.toInt(), height.toInt());
-  final byteData = await output.toByteData(format: ui.ImageByteFormat.png);
-  if (byteData == null) {
-    throw StateError('共有画像を作成できませんでした。');
-  }
-  final path =
-      '${Directory.systemTemp.path}/ohey_story_${DateTime.now().microsecondsSinceEpoch}.png';
-  await File(path).writeAsBytes(byteData.buffer.asUint8List());
-  output.dispose();
-  picture.dispose();
-  return path;
-}
-
-void _paintShareText(
-  Canvas canvas,
-  String text, {
-  required double x,
-  required double y,
-  required double maxWidth,
-  required double size,
-  required FontWeight weight,
-  required Color color,
-  int? maxLines,
-}) {
-  final painter = TextPainter(
-    text: TextSpan(
-      text: text,
-      style: TextStyle(
-        color: color,
-        fontSize: size,
-        fontWeight: weight,
-        height: 1.18,
-        letterSpacing: -0.8,
-      ),
-    ),
-    textDirection: TextDirection.ltr,
-    maxLines: maxLines,
-    ellipsis: '…',
-  )..layout(maxWidth: maxWidth);
-  painter.paint(canvas, Offset(x, y));
 }
 
 class _FeedColors {

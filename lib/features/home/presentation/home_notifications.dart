@@ -238,7 +238,6 @@ class _FeedNotificationsScreenState
               .read(notificationControllerProvider.notifier)
               .acceptFriendRequest(friendRequestId);
           ref.invalidate(friendsProvider);
-          ref.invalidate(memoryControllerProvider);
         },
         onReject: () async {
           await ref
@@ -406,7 +405,8 @@ class _NotificationEmptyState extends StatelessWidget {
     icon: CupertinoIcons.bell,
     isWhite: isWhite,
     title: 'まだ何も来てないよ',
-    message: '反応やお誘いが来たら知らせるね。',
+    message: 'ここはOheyの連絡ポスト。いいね・お誘い・フレンズ申請が届いたら、キャラがそっと教えるね。',
+    hints: const ['お誘い', 'いいね', 'フレンズ申請'],
     action: Column(
       mainAxisSize: MainAxisSize.min,
       children: [

@@ -57,11 +57,13 @@ class _FriendCard extends StatelessWidget {
 Future<void> showOheyFriendProfileSheet(
   BuildContext context, {
   required OheyFriend friend,
+  bool showActionMenu = true,
 }) {
   return _showFriendProfileSheet(
     context,
     friend: friend,
     status: _statusForFriend(friend, 0),
+    showActionMenu: showActionMenu,
   );
 }
 
@@ -69,20 +71,30 @@ Future<void> _showFriendProfileSheet(
   BuildContext context, {
   required OheyFriend friend,
   required _FriendStatus status,
+  bool showActionMenu = true,
 }) {
   return showOheyBottomSheet<void>(
     context: context,
     useSafeArea: false,
     barrierColor: AppColors.black.withValues(alpha: .58),
-    builder: (_) => _FriendProfileSheet(friend: friend, status: status),
+    builder: (_) => _FriendProfileSheet(
+      friend: friend,
+      status: status,
+      showActionMenu: showActionMenu,
+    ),
   );
 }
 
 class _FriendProfileSheet extends ConsumerStatefulWidget {
-  const _FriendProfileSheet({required this.friend, required this.status});
+  const _FriendProfileSheet({
+    required this.friend,
+    required this.status,
+    required this.showActionMenu,
+  });
 
   final OheyFriend friend;
   final _FriendStatus status;
+  final bool showActionMenu;
 
   @override
   ConsumerState<_FriendProfileSheet> createState() =>
@@ -312,6 +324,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
     const bodyBackground = AppColors.darkBackgroundBottom;
 
     return OheyBottomSheetShell(
+      showHandle: false,
       padding: EdgeInsets.zero,
       radius: 0,
       maxHeightFactor: 1,
@@ -326,7 +339,9 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
               _FriendProfileTopBackdrop(
                 friend: widget.friend,
                 avatar: avatar,
-                onActionMenu: _busyAction == null ? _openActionMenu : null,
+                onActionMenu: widget.showActionMenu && _busyAction == null
+                    ? _openActionMenu
+                    : null,
               ),
               Expanded(
                 child: Padding(
@@ -608,17 +623,13 @@ class _FriendProfileTopBackdrop extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          _FriendProfileHeaderBackdrop(avatar: avatar),
-          Positioned(
-            right: 20,
-            top: topPadding + 46,
-            child: Opacity(
-              opacity: onActionMenu == null ? .42 : 1,
-              child: _FriendProfileActionIconButton(
-                onTap: onActionMenu ?? () {},
-              ),
+          OheyProfileHeaderBackdrop(avatar: avatar),
+          if (onActionMenu != null)
+            Positioned(
+              right: 20,
+              top: topPadding + 46,
+              child: _FriendProfileActionIconButton(onTap: onActionMenu!),
             ),
-          ),
           Padding(
             padding: EdgeInsets.fromLTRB(
               OheyPageHeader.horizontalPadding,
@@ -670,68 +681,6 @@ class _FriendProfileActionIconButton extends StatelessWidget {
   }
 }
 
-class _FriendProfileHeaderBackdrop extends StatelessWidget {
-  const _FriendProfileHeaderBackdrop({required this.avatar});
-
-  final OheyAvatar avatar;
-
-  @override
-  Widget build(BuildContext context) {
-    final imageBackdropAsset = OheyAvatar.imageBackdropAsset(avatar.background);
-    if (imageBackdropAsset != null) {
-      return ExcludeSemantics(
-        child: Image.asset(
-          imageBackdropAsset,
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
-        ),
-      );
-    }
-
-    final backgroundColors =
-        OheyAvatar.backgroundGradients[avatar.background %
-            OheyAvatar.backgroundGradients.length];
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: backgroundColors,
-            ),
-          ),
-        ),
-        Opacity(
-          opacity: avatar.background == OheyAvatar.dreamRoomBackground
-              ? .18
-              : .10,
-          child: ExcludeSemantics(
-            child: Image.asset(
-              'assets/images/profile_header_scene.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-          ),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppColors.white.withValues(alpha: .18),
-                AppColors.white.withValues(alpha: .36),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _FriendProfileHero extends StatelessWidget {
   const _FriendProfileHero({required this.friend, required this.avatar});
 
@@ -741,39 +690,9 @@ class _FriendProfileHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final handle = friend.vibe.trim().isEmpty ? friend.id : '@${friend.vibe}';
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
-      child: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: 190,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: OheyAvatarView(avatar: avatar, size: 156),
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(18, 8, 18, 9),
-            color: AppColors.darkBackgroundBottom,
-            child: Center(
-              child: Text(
-                '${friend.name} ・ $handle',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.white.withValues(alpha: .72),
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.4,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return OheyProfileHeroBanner(
+      avatar: avatar,
+      label: '${friend.name} ・ $handle',
     );
   }
 }

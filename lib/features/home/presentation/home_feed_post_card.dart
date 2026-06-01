@@ -473,11 +473,7 @@ class _FeedCardFooter extends StatelessWidget {
     final likeAccent = item.liked
         ? Color.lerp(AppColors.danger, feedActionPurple, .58)!
         : feedActionPurple;
-    final shareAccent = item.isOfficial
-        ? Color.lerp(AppColors.info, feedActionPurple, .58)!
-        : item.ownedByMe
-        ? Color.lerp(AppColors.invite, feedActionPurple, .66)!
-        : feedActionPurple;
+    final shareAccent = Color.lerp(AppColors.info, feedActionPurple, .58)!;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 11, 14, 14),
@@ -489,7 +485,7 @@ class _FeedCardFooter extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               OheyPostActionPill(
-                semanticLabel: item.liked ? 'いいねを取り消す' : 'いいねで反応',
+                semanticLabel: item.liked ? '参加を取り消す' : 'このゆるぼに参加する',
                 icon: item.liked
                     ? CupertinoIcons.heart_fill
                     : CupertinoIcons.heart,
@@ -578,7 +574,7 @@ class _FeedCardFooter extends StatelessWidget {
 }
 
 String _feedLikeActionLabel(_FeedItem item) {
-  return item.liked ? 'いいね済み' : 'いいね';
+  return item.liked ? '参加済み' : '参加する';
 }
 
 String _feedShareActionLabel(_FeedItem item) {
@@ -591,9 +587,9 @@ String _feedReactionSummary(_FeedItem item) {
     return item.likes > 0 ? '${item.likes}人がチェックしました' : 'Oheyからのお知らせです';
   }
   if (item.likes <= 0) {
-    return item.ownedByMe ? '友達のリアクションを待とう' : 'いいねで気持ちを送ろう';
+    return item.ownedByMe ? 'フレンズの参加を待とう' : '参加したい気持ちを送ろう';
   }
-  return '${item.likes}件のいいね';
+  return '${item.likes}人が参加したい';
 }
 
 class _FeedPostKindBadge extends StatelessWidget {

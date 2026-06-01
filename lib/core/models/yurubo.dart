@@ -11,6 +11,7 @@ class Yurubo {
     required this.category,
     required this.placeText,
     required this.timeLabel,
+    this.startsAt,
     required this.status,
     required this.visibility,
     required this.visibilityLabel,
@@ -29,6 +30,7 @@ class Yurubo {
   final String category;
   final String placeText;
   final String timeLabel;
+  final DateTime? startsAt;
   final String status;
   final String visibility;
   final String visibilityLabel;
@@ -40,6 +42,8 @@ class Yurubo {
   Yurubo copyWith({
     int? reactionCount,
     bool? reactedByMe,
+    DateTime? startsAt,
+    bool clearStartsAt = false,
     List<YuruboParticipant>? participants,
   }) => Yurubo(
     id: id,
@@ -51,6 +55,7 @@ class Yurubo {
     category: category,
     placeText: placeText,
     timeLabel: timeLabel,
+    startsAt: clearStartsAt ? null : (startsAt ?? this.startsAt),
     status: status,
     visibility: visibility,
     visibilityLabel: visibilityLabel,

@@ -109,32 +109,39 @@ class OheyBottomSheetShell extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (showHandle) ...[
-                      const OheyBottomSheetHandle(),
-                      const SizedBox(height: 18),
-                    ],
-                    if (title != null) ...[
-                      Row(
-                        children: [
-                          Text(
-                            title!,
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(
-                                  color: ink,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                          ),
-                          const Spacer(),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final sheetChild = constraints.hasBoundedHeight
+                        ? Flexible(fit: FlexFit.loose, child: child)
+                        : child;
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (showHandle) ...[
+                          const OheyBottomSheetHandle(),
+                          const SizedBox(height: 18),
                         ],
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    child,
-                  ],
+                        if (title != null) ...[
+                          Row(
+                            children: [
+                              Text(
+                                title!,
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(
+                                      color: ink,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                              ),
+                              const Spacer(),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        sheetChild,
+                      ],
+                    );
+                  },
                 ),
               ),
             ),

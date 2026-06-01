@@ -17,6 +17,7 @@ import '../../../core/theme/ohey_theme_mode.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
 import '../../../core/widgets/ohey_daily_status_3d_option.dart';
+import '../../../core/widgets/ohey_empty_state.dart';
 import '../../../core/widgets/ohey_friend_user_block.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
@@ -722,29 +723,23 @@ class _SelectedDayPanel extends StatelessWidget {
                 ),
               ),
               SizedBox(height: compact ? 6 : 10),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(12, 0, 12, compact ? 8 : 12),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        flex: compact ? 5 : 6,
-                        child: status == OheyDailyStatus.unselected
-                            ? _CalendarFriendStatusLocked(
-                                isWhite: isWhite,
-                                compact: compact,
-                                onTap: onChangeStatus,
-                              )
-                            : _CalendarFriendStatusList(
-                                day: day,
-                                friendsAsync: friendsAsync,
-                                groups: groups,
-                                isWhite: isWhite,
-                                compact: compact,
-                              ),
-                      ),
-                    ],
-                  ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(12, 0, 12, compact ? 8 : 12),
+                child: SizedBox(
+                  height: compact ? 96 : 112,
+                  child: status == OheyDailyStatus.unselected
+                      ? _CalendarFriendStatusLocked(
+                          isWhite: isWhite,
+                          compact: compact,
+                          onTap: onChangeStatus,
+                        )
+                      : _CalendarFriendStatusList(
+                          day: day,
+                          friendsAsync: friendsAsync,
+                          groups: groups,
+                          isWhite: isWhite,
+                          compact: compact,
+                        ),
                 ),
               ),
             ],
@@ -983,19 +978,20 @@ class _CalendarFriendStatusList extends StatelessWidget {
             accent: AppColors.primaryAction,
             isWhite: isWhite,
             compact: compact,
-            child: Center(
-              child: Text(
-                'フレンズを追加すると空き状況を確認できます',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: isWhite
-                      ? AppColors.cFF667381
-                      : AppColors.white.withValues(alpha: .62),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                ),
+            child: OheyEmptyState(
+              visual: OheyPopIcon(
+                icon: CupertinoIcons.calendar_badge_plus,
+                color: AppColors.primaryAction,
+                size: compact ? 36 : 44,
               ),
+              title: '予定を見るフレンズを追加しよう',
+              message: '追加すると、今日誘いやすい人や空き状況がカレンダーに並びます。',
+              titleColor: isWhite ? AppColors.cFF27313B : AppColors.white,
+              messageColor: isWhite
+                  ? AppColors.cFF667381
+                  : AppColors.white.withValues(alpha: .62),
+              padding: EdgeInsets.all(compact ? 12 : 18),
+              spacing: 10,
             ),
           );
         }
@@ -1029,7 +1025,6 @@ class _CalendarFriendStatusList extends StatelessWidget {
           accent: AppColors.primaryAction,
           isWhite: isWhite,
           compact: compact,
-          onTap: openStatusSheet,
           trailing: _CalendarTinyPill(
             label: '$availableCount/${friends.length}',
             color: accent,
@@ -1075,7 +1070,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
                         const SizedBox(height: 4),
                       ],
                       Text(
-                        availableCount > 0 ? 'タップして誘えそうな人を見る' : '予定あり・未定が多そう',
+                        availableCount > 0 ? '誘えそうな人を見る' : '予定あり・未定が多そう',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -1407,7 +1402,7 @@ class _CalendarFriendStatusSheetState
       HapticFeedback.mediumImpact();
       OheyToast.show(
         context,
-        '過去の日には招待できません',
+        '過去の日には誘えません',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
         placement: OheyToastPlacement.bottom,
       );
@@ -1437,7 +1432,7 @@ class _CalendarFriendStatusSheetState
       setState(() => _sendingFriendId = null);
       OheyToast.show(
         context,
-        '招待を送れなかったよ。あとでもう一度試してね',
+        '誘えなかったよ。あとでもう一度試してね',
         icon: CupertinoIcons.exclamationmark_triangle_fill,
         placement: OheyToastPlacement.bottom,
       );
@@ -1473,8 +1468,11 @@ class _CalendarFriendStatusSheetState
         .where((friend) => _calendarFriendIsAvailable(friend.statusKey))
         .length;
     final media = MediaQuery.of(context);
-    final contentHeight = (media.size.height * .80 - media.padding.bottom - 24)
-        .clamp(460.0, 680.0)
+    // Keep the fixed inner height comfortably below the sheet's max height.
+    // The shell adds its own handle/padding, so using nearly the same factor as
+    // maxHeightFactor can overflow by a few pixels on Dynamic Island devices.
+    final contentHeight = (media.size.height * .74 - media.padding.bottom - 28)
+        .clamp(420.0, 620.0)
         .toDouble();
     return OheyBottomSheetShell(
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),

@@ -786,7 +786,7 @@ class _CuteQrCard extends StatelessWidget {
             children: [
               _QrActionButton(
                 icon: CupertinoIcons.square_arrow_up,
-                label: 'リンクをシェア',
+                label: 'リンクを共有',
                 onTap: onShare,
               ),
               _QrActionButton(

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -10,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
+import '../../../core/config/backend_config.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
@@ -28,6 +28,7 @@ import '../../../core/widgets/ohey_action_tile.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
 import '../../../core/widgets/ohey_post_action_pill.dart';
+import '../../../core/widgets/ohey_profile_hero_header.dart';
 import '../../../core/widgets/ohey_scene_header_backdrop.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
@@ -153,7 +154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .auth
         .currentUser
         ?.id;
-    final yurubos = yurubosAsync.asData?.value ?? const <Yurubo>[];
+    final yurubos = yurubosAsync.value ?? const <Yurubo>[];
     final feedItems = _feedItemsFromYurubos(
       yurubos,
       currentUserId: currentUserId,
@@ -174,13 +175,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onRefresh: () async {
                 HapticFeedback.lightImpact();
                 final startedAt = DateTime.now();
-                ref.invalidate(yuruboControllerProvider);
-                await ref.read(yuruboControllerProvider.future);
+                final refreshedYurubos = await ref.refresh(
+                  yuruboControllerProvider.future,
+                );
+                refreshedYurubos.length;
                 await _holdRefreshIndicatorUntilDone(startedAt);
               },
-              onLikePressed: (item) => ref
-                  .read(yuruboControllerProvider.notifier)
-                  .toggleParticipation(item.id),
+              onLikePressed: (item) {
+                if (item.ownedByMe) return;
+                ref
+                    .read(yuruboControllerProvider.notifier)
+                    .toggleParticipation(item.id);
+              },
               onSharePressed: (item) => _shareFeedItem(context, item),
               showSwipeTutorial:
                   !_isFeedSwipeTutorialSeen && feedItems.length > 1,
@@ -276,28 +282,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             accent: item.accent,
             statusKey: null,
           );
+    if (item.ownedByMe) {
+      await showOheyFriendProfileSheet(
+        context,
+        friend: author.toOheyFriend(),
+        showActionMenu: false,
+      );
+      return;
+    }
+
     await showOheyBottomSheet<void>(
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
       barrierColor: AppColors.black.withValues(alpha: .62),
-      builder: (context) => _FeedCompanionProfileSheet(
-        friend: author,
-        initialRelationship: item.ownedByMe
-            ? const OheyFriendRelationshipStatus(
-                alreadyFriend: true,
-                requestState: OheyFriendRequestState.none,
-              )
-            : null,
-      ),
+      builder: (context) => _FeedCompanionProfileSheet(friend: author),
     );
   }
 
   Future<void> _shareFeedItem(BuildContext context, _FeedItem item) async {
     try {
-      final imagePath = await _createStoryShareImage(item);
-      if (!mounted) return;
-      await _shareFeedImageWithSystemSheet(this.context, item, imagePath);
+      await _shareFeedPostWithSystemSheet(this.context, item);
     } catch (_) {
       if (!context.mounted) return;
       OheyToast.show(
@@ -308,10 +313,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<void> _shareFeedImageWithSystemSheet(
+  Future<void> _shareFeedPostWithSystemSheet(
     BuildContext context,
     _FeedItem item,
-    String imagePath,
   ) async {
     final renderBox = context.findRenderObject() as RenderBox?;
     final shareOrigin = renderBox == null
@@ -319,10 +323,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         : renderBox.localToGlobal(Offset.zero) & renderBox.size;
     final result = await SharePlus.instance.share(
       ShareParams(
-        files: [XFile(imagePath, mimeType: 'image/png')],
-        fileNameOverrides: [
-          item.isOfficial ? 'ohey_official_post.png' : 'ohey_memory.png',
-        ],
+        text: _feedPostShareText(item),
         title: item.isOfficial ? 'Ohey公式ゆるぼを共有' : 'ゆるぼを共有',
         subject: item.isOfficial ? 'Ohey公式のお知らせ' : 'Oheyのゆるぼ',
         sharePositionOrigin: shareOrigin,
@@ -336,5 +337,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         icon: CupertinoIcons.square_arrow_up,
       );
     }
+  }
+
+  String _feedPostShareText(_FeedItem item) {
+    final details = [
+      if (item.timeLabel.trim().isNotEmpty) item.timeLabel.trim(),
+      if (item.place.trim().isNotEmpty) item.place.trim(),
+      if (item.targetLabel.trim().isNotEmpty) item.targetLabel.trim(),
+    ].join(' ・ ');
+    final lines = <String>[
+      '${item.userName}さんのゆるぼ',
+      item.body.trim(),
+      if (details.isNotEmpty) details,
+      '',
+      item.id.isEmpty
+          ? 'Oheyでチェックしよう'
+          : 'Oheyで参加: ${BackendConfig.baseUrl}/share/yurubos/${item.id}',
+    ];
+    return lines.where((line) => line.trim().isNotEmpty).join('\n');
   }
 }

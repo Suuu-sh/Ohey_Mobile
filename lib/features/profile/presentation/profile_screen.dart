@@ -16,7 +16,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_action_tile.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_daily_status_3d_option.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
+import '../../../core/widgets/ohey_empty_state.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
@@ -35,6 +37,7 @@ import '../../onboarding/presentation/create_user_dialog.dart';
 import '../data/user_safety_repository.dart';
 import 'avatar_builder_screen.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
+import '../../../core/widgets/ohey_profile_hero_header.dart';
 
 part 'profile_header_widgets.dart';
 part 'profile_memory_widgets.dart';
@@ -60,8 +63,10 @@ class ProfileScreen extends ConsumerWidget {
     final wishItemsAsync = ref.watch(wishItemControllerProvider);
     final wishItems = wishItemsAsync.asData?.value ?? const <WishItem>[];
     final yurubosAsync = ref.watch(yuruboControllerProvider);
+    final today = _dateOnly(DateTime.now());
     final joinedYurubos = (yurubosAsync.asData?.value ?? const <Yurubo>[])
-        .where((yurubo) => yurubo.reactedByMe)
+        .where((yurubo) => yurubo.reactedByMe && yurubo.startsAt != null)
+        .where((yurubo) => _dateOnly(yurubo.startsAt!) == today)
         .toList(growable: false);
     final friends =
         ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
@@ -91,7 +96,9 @@ class ProfileScreen extends ConsumerWidget {
               right: 0,
               top: 0,
               height: headerBackgroundHeight,
-              child: _ProfileHeaderBackdrop(avatar: user?.avatar),
+              child: OheyProfileHeaderBackdrop(
+                avatar: user?.avatar ?? OheyAvatar.defaultAvatar,
+              ),
             ),
             SafeArea(
               bottom: false,
@@ -171,6 +178,8 @@ class ProfileScreen extends ConsumerWidget {
                                     _openProfileWishListScreen(context),
                                 onAddFriendsTap: () =>
                                     showFriendAddSheet(context, ref),
+                                onChangeStatusTap: () =>
+                                    _showProfileStatusSheet(context, ref, user),
                               ),
                             ),
                           ],
@@ -195,22 +204,6 @@ class _ProfileColors {
   static const lime = AppColors.cFF9AF21A;
   static const pink = AppColors.cFFFF5EA8;
 }
-
-Color _statusColor(OheyDailyStatus status) => switch (status) {
-  OheyDailyStatus.available => _ProfileColors.lime,
-  OheyDailyStatus.maybeAvailable => AppColors.cFF5DEBD3,
-  OheyDailyStatus.dependsOnTime => _ProfileColors.pink,
-  OheyDailyStatus.hasPlans => AppColors.cFFB8C1CD,
-  OheyDailyStatus.unselected => _ProfileColors.sub,
-};
-
-IconData _statusIcon(OheyDailyStatus status) => switch (status) {
-  OheyDailyStatus.available => CupertinoIcons.checkmark_circle_fill,
-  OheyDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
-  OheyDailyStatus.dependsOnTime => CupertinoIcons.clock_fill,
-  OheyDailyStatus.hasPlans => CupertinoIcons.calendar_today,
-  OheyDailyStatus.unselected => CupertinoIcons.circle,
-};
 
 Future<void> _respondInvite(
   BuildContext context,
@@ -239,6 +232,30 @@ const _selectableDailyStatuses = <OheyDailyStatus>[
   OheyDailyStatus.dependsOnTime,
   OheyDailyStatus.hasPlans,
 ];
+
+Future<void> _showProfileStatusSheet(
+  BuildContext context,
+  WidgetRef ref,
+  OheyUser? user,
+) async {
+  await showOheyBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: AppColors.black.withValues(alpha: .58),
+    builder: (_) => OheyBottomSheetShell(
+      title: 'この日の気分',
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+      radius: 32,
+      maxHeightFactor: .86,
+      child: _ProfileStatusSheetContent(
+        selected: user?.dailyStatus ?? OheyDailyStatus.unselected,
+        ref: ref,
+      ),
+    ),
+  );
+}
 
 Future<void> _showProfileCreateWishItemSheet(
   BuildContext context,
@@ -651,6 +668,9 @@ class _ProfileYuruboChoice extends StatelessWidget {
     ),
   );
 }
+
+DateTime _dateOnly(DateTime value) =>
+    DateTime(value.year, value.month, value.day);
 
 class _ProfileYuruboGroupChip extends StatelessWidget {
   const _ProfileYuruboGroupChip({
