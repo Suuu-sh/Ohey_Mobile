@@ -280,52 +280,16 @@ class _TodayInviteSection extends StatelessWidget {
         .take(2)
         .toList();
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
-    final sub = isWhite
-        ? AppColors.cFF667381
-        : AppColors.white.withValues(alpha: .60);
-
     return Padding(
-      padding: const EdgeInsets.only(top: 2, bottom: 2),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const OheyPopIcon(
-                icon: CupertinoIcons.sparkles,
-                color: _FriendsColors.lime,
-                size: 38,
-                iconSize: 20,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'おすすめ',
-                      style: TextStyle(
-                        color: ink,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.4,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      'あなたにおすすめのフレンズを表示しています。',
-                      style: TextStyle(
-                        color: sub,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        height: 1.35,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          const _FriendsSectionHeader(
+            icon: CupertinoIcons.sparkles,
+            iconColor: _FriendsColors.lime,
+            title: 'おすすめ',
+            subtitle: 'あなたにおすすめのフレンズを表示しています。',
           ),
           const SizedBox(height: 14),
           if (candidates.isEmpty)
@@ -435,6 +399,69 @@ class _TodayInviteCardsStrip extends StatelessWidget {
   }
 }
 
+class _FriendsSectionHeader extends StatelessWidget {
+  const _FriendsSectionHeader({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    this.trailing,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final sub = isWhite
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .60);
+
+    return Row(
+      children: [
+        OheyPopIcon(icon: icon, color: iconColor, size: 38, iconSize: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: ink,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.4,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: sub,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (trailing != null) ...[const SizedBox(width: 10), trailing!],
+      ],
+    );
+  }
+}
+
 class _SlimeSplitTransition extends StatelessWidget {
   const _SlimeSplitTransition({required this.animation, required this.child});
 
@@ -478,10 +505,6 @@ class _GroupScheduleSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
-    final sub = isWhite
-        ? AppColors.cFF667381
-        : AppColors.white.withValues(alpha: .60);
     final suggestions = _groupScheduleSuggestions(friends);
     final isGroupInvited = inviteTargets.isEmpty;
     final canInviteGroup = !isGroupInvited && !isSendingInvite;
@@ -500,68 +523,34 @@ class _GroupScheduleSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const OheyPopIcon(
-                icon: CupertinoIcons.calendar_badge_plus,
-                color: AppColors.cFF5DEBD3,
-                size: 38,
-                iconSize: 20,
+          _FriendsSectionHeader(
+            icon: CupertinoIcons.calendar_badge_plus,
+            iconColor: AppColors.cFF5DEBD3,
+            title: '$groupNameで集まる日',
+            subtitle: 'グループからまとめて誘えるよ。',
+            trailing: SizedBox(
+              width: 104,
+              child: Ohey3DButton(
+                label: isSendingInvite
+                    ? '送信中'
+                    : isGroupInvited
+                    ? '誘い済み'
+                    : '全員誘う',
+                icon: isGroupInvited ? null : CupertinoIcons.paperplane_fill,
+                onTap: canInviteGroup ? onInviteGroup : null,
+                enabled: canInviteGroup,
+                height: 38,
+                radius: 19,
+                color: inviteButtonColor,
+                foregroundColor: inviteButtonForeground,
+                shadowColor: inviteButtonShadow,
+                disabledColor: _FriendsColors.invitedButton,
+                disabledOpacity: 1,
+                forcePressed: isGroupInvited,
+                padding: const EdgeInsets.symmetric(horizontal: 9),
+                fontSize: 12,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$groupNameで集まる日',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: ink,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.4,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      'グループからまとめて誘えるよ。',
-                      style: TextStyle(
-                        color: sub,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        height: 1.35,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              SizedBox(
-                width: 104,
-                child: Ohey3DButton(
-                  label: isSendingInvite
-                      ? '送信中'
-                      : isGroupInvited
-                      ? '誘い済み'
-                      : '全員誘う',
-                  icon: isGroupInvited ? null : CupertinoIcons.paperplane_fill,
-                  onTap: canInviteGroup ? onInviteGroup : null,
-                  enabled: canInviteGroup,
-                  height: 38,
-                  radius: 19,
-                  color: inviteButtonColor,
-                  foregroundColor: inviteButtonForeground,
-                  shadowColor: inviteButtonShadow,
-                  disabledColor: _FriendsColors.invitedButton,
-                  disabledOpacity: 1,
-                  forcePressed: isGroupInvited,
-                  padding: const EdgeInsets.symmetric(horizontal: 9),
-                  fontSize: 12,
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 14),
           SizedBox(
