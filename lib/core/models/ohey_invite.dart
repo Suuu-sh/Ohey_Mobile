@@ -72,7 +72,7 @@ extension OheyInviteStatusX on OheyInviteStatus {
   };
 
   String get actionLabel => switch (this) {
-    OheyInviteStatus.pending => 'タップして返信',
+    OheyInviteStatus.pending => '確認する',
     OheyInviteStatus.accepted => label,
     OheyInviteStatus.rejected => label,
     OheyInviteStatus.cancelled => label,

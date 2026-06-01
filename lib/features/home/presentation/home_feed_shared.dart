@@ -374,7 +374,7 @@ class _FeedNotification {
 
 String _relativeTimeText(DateTime time) {
   final diff = DateTime.now().difference(time);
-  if (diff.inMinutes < 1) return 'たった今';
+  if (diff.inMinutes < 1) return '1分未満前';
   if (diff.inHours < 1) return '${diff.inMinutes}分前';
   if (diff.inDays < 1) return '${diff.inHours}時間前';
   if (diff.inDays < 7) return '${diff.inDays}日前';
@@ -403,7 +403,7 @@ Color _accentForId(String id) {
 
 String _relativeTime(DateTime date) {
   final diff = DateTime.now().difference(date);
-  if (diff.inMinutes < 1) return 'たった今';
+  if (diff.inMinutes < 1) return '1分未満前';
   if (diff.inMinutes < 60) return '${diff.inMinutes}分前';
   if (diff.inHours < 24) return '${diff.inHours}時間前';
   return '${diff.inDays}日前';

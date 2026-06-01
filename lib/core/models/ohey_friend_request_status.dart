@@ -25,7 +25,7 @@ extension OheyFriendRequestStatusX on OheyFriendRequestStatus {
   };
 
   String get actionLabel => switch (this) {
-    OheyFriendRequestStatus.pending => 'タップして承認',
+    OheyFriendRequestStatus.pending => '確認する',
     OheyFriendRequestStatus.accepted => label,
     OheyFriendRequestStatus.rejected => label,
     OheyFriendRequestStatus.cancelled => label,

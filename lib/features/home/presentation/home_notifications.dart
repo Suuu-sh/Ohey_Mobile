@@ -133,7 +133,7 @@ class _FeedNotificationsScreenState
                           icon: CupertinoIcons.exclamationmark_triangle,
                           isWhite: isWhite,
                           title: 'お知らせを読み込めませんでした',
-                          message: 'あとでもう一度試してね。',
+                          message: '時間をおいて再度お試しください。',
                           accent: AppColors.cFFFF75B5,
                         )
                       else if ((notifications ?? const []).isEmpty)
@@ -169,7 +169,7 @@ class _FeedNotificationsScreenState
       if (actionItems.isNotEmpty) ...[
         _NotificationSectionHeader(
           title: '対応が必要',
-          message: 'お返事まちだよ',
+          message: '対応待ちのお知らせがあります',
           count: actionItems.length,
           accent: AppColors.primaryAction,
           isWhite: isWhite,
@@ -188,7 +188,9 @@ class _FeedNotificationsScreenState
       ],
       _NotificationSectionHeader(
         title: '最近のお知らせ',
-        message: actionItems.isEmpty ? '参加・ゆるぼ・予定が静かにまとまります' : '先にお返事しよっか',
+        message: actionItems.isEmpty
+            ? '新しいお知らせがここに表示されます'
+            : '対応が必要なお知らせを先に確認してください',
         count: recentItems.length,
         accent: AppColors.invite,
         isWhite: isWhite,
@@ -252,7 +254,7 @@ class _FeedNotificationsScreenState
   Future<void> _openInviteNotification(_FeedNotification notification) async {
     final inviteId = notification.inviteId;
     if (inviteId == null || inviteId.isEmpty) {
-      OheyToast.show(context, 'この予定を開けなかったよ。あとでもう一度試してね。');
+      OheyToast.show(context, 'この予定を開けませんでした。時間をおいて再度お試しください。');
       return;
     }
 
@@ -382,7 +384,7 @@ class _NotificationSectionEmptyNote extends StatelessWidget {
       ),
     ),
     child: Text(
-      '今はお返事まち、ないよ。',
+      '現在、対応が必要なお知らせはありません。',
       style: TextStyle(
         color: isWhite
             ? AppColors.cFF617281
@@ -404,14 +406,14 @@ class _NotificationEmptyState extends StatelessWidget {
   Widget build(BuildContext context) => _FeedEmptyState(
     icon: CupertinoIcons.bell,
     isWhite: isWhite,
-    title: 'まだ何も来てないよ',
-    message: 'ここはOheyの連絡ポスト。いいね・お誘い・フレンズ申請が届いたら、キャラがそっと教えるね。',
+    title: 'お知らせはありません',
+    message: 'いいね・お誘い・フレンズ申請が届くと、ここに表示されます。',
     hints: const ['お誘い', 'いいね', 'フレンズ申請'],
     action: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'まずはゆるぼするか、フレンズを追加してみよう',
+          'ゆるぼの作成やフレンズ追加から始められます',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: isWhite
@@ -644,7 +646,7 @@ class _FriendRequestNotificationSheetState
       if (!mounted) return;
       OheyToast.show(
         context,
-        accept ? '承認できなかったよ。あとでもう一度試してね。' : '見送りできなかったよ。あとでもう一度試してね。',
+        accept ? '承認できませんでした。時間をおいて再度お試しください。' : '見送りできませんでした。時間をおいて再度お試しください。',
       );
       setState(() => _busyAction = null);
     }
@@ -783,7 +785,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
       if (!mounted) return;
       OheyToast.show(
         context,
-        accept ? '承認できなかったよ。あとでもう一度試してね。' : '見送りできなかったよ。あとでもう一度試してね。',
+        accept ? '承認できませんでした。時間をおいて再度お試しください。' : '見送りできませんでした。時間をおいて再度お試しください。',
       );
       setState(() => _busyAction = null);
     }
