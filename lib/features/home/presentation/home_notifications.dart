@@ -656,162 +656,89 @@ class _FriendRequestNotificationSheetState
       widget.notification.friendRequestStatus,
     ).label;
 
-    return SafeArea(
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-        decoration: BoxDecoration(
-          color: AppColors.cFF071622,
-          borderRadius: BorderRadius.circular(34),
-          border: Border.all(color: AppColors.white.withValues(alpha: .10)),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black.withValues(alpha: .32),
-              blurRadius: 30,
-              offset: const Offset(0, 18),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 44,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: .22),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                OheyPopIcon(
-                  icon: CupertinoIcons.person_badge_plus_fill,
-                  color: AppColors.cFF58D6FF,
-                  size: 54,
-                  iconSize: 29,
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.notification.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontSize: 19,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.4,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.cFF58D6FF.withValues(alpha: .14),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: const Color(
-                              0xFF58D6FF,
-                            ).withValues(alpha: .26),
-                          ),
-                        ),
-                        child: Text(
-                          statusLabel,
-                          style: const TextStyle(
-                            color: AppColors.cFF58D6FF,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                OheyCloseButton(
-                  onTap: () => Navigator.of(context).pop(),
-                  iconColor: AppColors.white,
-                  backgroundColor: AppColors.white.withValues(alpha: .08),
-                  borderColor: AppColors.white.withValues(alpha: .10),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(14),
+    return OheyBottomSheetShell(
+      title: widget.notification.title,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: .045),
-                borderRadius: BorderRadius.circular(22),
+                color: AppColors.primaryAction.withValues(alpha: .14),
+                borderRadius: BorderRadius.circular(999),
                 border: Border.all(
-                  color: AppColors.white.withValues(alpha: .08),
+                  color: AppColors.primaryAction.withValues(alpha: .26),
                 ),
               ),
               child: Text(
-                _isPending
-                    ? widget.notification.message
-                    : widget.notification.message,
-                style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .78),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  height: 1.45,
+                statusLabel,
+                style: const TextStyle(
+                  color: AppColors.primaryAction,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ),
-            const SizedBox(height: 18),
-            if (_isPending) ...[
-              Ohey3DButton(
-                label: '承認してフレンズになる',
-                icon: CupertinoIcons.checkmark_seal_fill,
-                onTap: () => _submit(accept: true),
-                isLoading: _busyAction == 'accept',
-                enabled: _busyAction == null,
-                height: 54,
-                radius: 22,
-                color: AppColors.success,
-                shadowColor: AppColors.successShadow,
-                fontSize: 15,
-              ),
-              const SizedBox(height: 10),
-              Ohey3DButton.secondary(
-                label: _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
-                icon: CupertinoIcons.xmark_circle_fill,
-                onTap: _busyAction == null
-                    ? () => _submit(accept: false)
-                    : null,
-                isLoading: _busyAction == 'reject',
-                enabled: _busyAction == null,
-                height: 48,
-                radius: 21,
-                color: AppColors.white.withValues(alpha: .07),
-                foregroundColor: AppColors.white.withValues(alpha: .72),
-                shadowColor: AppColors.cFF2D5E69.withValues(alpha: .72),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.white.withValues(alpha: .045),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: AppColors.white.withValues(alpha: .08)),
+            ),
+            child: Text(
+              widget.notification.message,
+              style: TextStyle(
+                color: AppColors.white.withValues(alpha: .78),
                 fontSize: 14,
-                useGradient: false,
+                fontWeight: FontWeight.w800,
+                height: 1.45,
               ),
-            ] else
-              Ohey3DButton(
-                label: '閉じる',
-                icon: CupertinoIcons.checkmark_circle_fill,
-                onTap: () => Navigator.of(context).pop(),
-                height: 52,
-                radius: 22,
-                color: AppColors.invite,
-                shadowColor: AppColors.inviteShadow,
-                fontSize: 15,
-              ),
-          ],
-        ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          if (_isPending) ...[
+            Ohey3DButton(
+              label: '承認してフレンズになる',
+              onTap: () => _submit(accept: true),
+              isLoading: _busyAction == 'accept',
+              enabled: _busyAction == null,
+              height: 54,
+              radius: 22,
+              color: AppColors.success,
+              shadowColor: AppColors.successShadow,
+              fontSize: 15,
+            ),
+            const SizedBox(height: 10),
+            Ohey3DButton.secondary(
+              label: _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
+              onTap: _busyAction == null ? () => _submit(accept: false) : null,
+              isLoading: _busyAction == 'reject',
+              enabled: _busyAction == null,
+              height: 48,
+              radius: 21,
+              color: AppColors.white.withValues(alpha: .07),
+              foregroundColor: AppColors.white.withValues(alpha: .72),
+              shadowColor: AppColors.cFF2D5E69.withValues(alpha: .72),
+              fontSize: 14,
+              useGradient: false,
+            ),
+          ] else
+            Ohey3DButton(
+              label: '閉じる',
+              onTap: () => Navigator.of(context).pop(),
+              height: 52,
+              radius: 22,
+              color: AppColors.invite,
+              shadowColor: AppColors.inviteShadow,
+              fontSize: 15,
+            ),
+        ],
       ),
     );
   }
@@ -868,162 +795,89 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
       widget.notification.inviteStatus,
     ).label;
 
-    return SafeArea(
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-        decoration: BoxDecoration(
-          color: AppColors.cFF071622,
-          borderRadius: BorderRadius.circular(34),
-          border: Border.all(color: AppColors.white.withValues(alpha: .10)),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black.withValues(alpha: .32),
-              blurRadius: 30,
-              offset: const Offset(0, 18),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 44,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: .22),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                OheyPopIcon(
-                  icon: CupertinoIcons.calendar_badge_plus,
-                  color: AppColors.cFFC08BFF,
-                  size: 54,
-                  iconSize: 29,
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.notification.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontSize: 19,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.4,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.cFFC08BFF.withValues(alpha: .14),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: const Color(
-                              0xFFC08BFF,
-                            ).withValues(alpha: .26),
-                          ),
-                        ),
-                        child: Text(
-                          statusLabel,
-                          style: const TextStyle(
-                            color: AppColors.cFFC08BFF,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                OheyCloseButton(
-                  onTap: () => Navigator.of(context).pop(),
-                  iconColor: AppColors.white,
-                  backgroundColor: AppColors.white.withValues(alpha: .08),
-                  borderColor: AppColors.white.withValues(alpha: .10),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(14),
+    return OheyBottomSheetShell(
+      title: widget.notification.title,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: .045),
-                borderRadius: BorderRadius.circular(22),
+                color: AppColors.primaryAction.withValues(alpha: .14),
+                borderRadius: BorderRadius.circular(999),
                 border: Border.all(
-                  color: AppColors.white.withValues(alpha: .08),
+                  color: AppColors.primaryAction.withValues(alpha: .26),
                 ),
               ),
               child: Text(
-                _isPending
-                    ? widget.notification.message
-                    : widget.notification.message,
-                style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .78),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  height: 1.45,
+                statusLabel,
+                style: const TextStyle(
+                  color: AppColors.primaryAction,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ),
-            const SizedBox(height: 18),
-            if (_isPending) ...[
-              Ohey3DButton(
-                label: '承認して遊びに行く',
-                icon: CupertinoIcons.checkmark_circle_fill,
-                onTap: () => _submit(accept: true),
-                isLoading: _busyAction == 'accept',
-                enabled: _busyAction == null,
-                height: 54,
-                radius: 22,
-                color: AppColors.success,
-                shadowColor: AppColors.successShadow,
-                fontSize: 15,
-              ),
-              const SizedBox(height: 10),
-              Ohey3DButton.secondary(
-                label: _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
-                icon: CupertinoIcons.xmark_circle_fill,
-                onTap: _busyAction == null
-                    ? () => _submit(accept: false)
-                    : null,
-                isLoading: _busyAction == 'reject',
-                enabled: _busyAction == null,
-                height: 48,
-                radius: 21,
-                color: AppColors.white.withValues(alpha: .07),
-                foregroundColor: AppColors.white.withValues(alpha: .72),
-                shadowColor: AppColors.cFF573D7A.withValues(alpha: .72),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.white.withValues(alpha: .045),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: AppColors.white.withValues(alpha: .08)),
+            ),
+            child: Text(
+              widget.notification.message,
+              style: TextStyle(
+                color: AppColors.white.withValues(alpha: .78),
                 fontSize: 14,
-                useGradient: false,
+                fontWeight: FontWeight.w800,
+                height: 1.45,
               ),
-            ] else
-              Ohey3DButton(
-                label: '閉じる',
-                icon: CupertinoIcons.checkmark_circle_fill,
-                onTap: () => Navigator.of(context).pop(),
-                height: 52,
-                radius: 22,
-                color: AppColors.invite,
-                shadowColor: AppColors.inviteShadow,
-                fontSize: 15,
-              ),
-          ],
-        ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          if (_isPending) ...[
+            Ohey3DButton(
+              label: '承認して遊びに行く',
+              onTap: () => _submit(accept: true),
+              isLoading: _busyAction == 'accept',
+              enabled: _busyAction == null,
+              height: 54,
+              radius: 22,
+              color: AppColors.success,
+              shadowColor: AppColors.successShadow,
+              fontSize: 15,
+            ),
+            const SizedBox(height: 10),
+            Ohey3DButton.secondary(
+              label: _busyAction == 'reject' ? '見送り中...' : '今回は見送る',
+              onTap: _busyAction == null ? () => _submit(accept: false) : null,
+              isLoading: _busyAction == 'reject',
+              enabled: _busyAction == null,
+              height: 48,
+              radius: 21,
+              color: AppColors.white.withValues(alpha: .07),
+              foregroundColor: AppColors.white.withValues(alpha: .72),
+              shadowColor: AppColors.cFF573D7A.withValues(alpha: .72),
+              fontSize: 14,
+              useGradient: false,
+            ),
+          ] else
+            Ohey3DButton(
+              label: '閉じる',
+              onTap: () => Navigator.of(context).pop(),
+              height: 52,
+              radius: 22,
+              color: AppColors.invite,
+              shadowColor: AppColors.inviteShadow,
+              fontSize: 15,
+            ),
+        ],
       ),
     );
   }
