@@ -172,46 +172,49 @@ class OheyFriendUserBlock extends StatelessWidget {
             ),
             if (showInvite) ...[
               const SizedBox(width: 10),
-              SizedBox(
-                width: 92,
-                child: OheyInviteSuccessBurst(
-                  builder: (context, runWithBurst, flightAnimation) =>
-                      Ohey3DButton(
-                        label: inviteSent ? '誘い済み' : '誘う',
-                        icon: null,
-                        customIcon: inviteSent
-                            ? null
-                            : OheyInviteFlyingIcon(
-                                animation: flightAnimation,
-                                color: inviteForeground,
-                                size: 19,
-                              ),
-                        onTap: inviteEnabled
-                            ? () => runWithBurst(
-                                onInvite,
-                                afterAnimation: onInviteAnimationComplete,
-                              )
-                            : null,
-                        enabled: inviteEnabled,
-                        forcePressed: inviteSent || invitePressed,
-                        height: 36,
-                        radius: 18,
-                        color: inviteButtonColor,
-                        foregroundColor: inviteForeground,
-                        shadowColor: inviteSent
-                            ? AppColors.cFF1A222C
-                            : !inviteAvailable
-                            ? AppColors.cFF1A222C
-                            : statusEnabled
-                            ? Color.lerp(accent, AppColors.black, .32)
-                            : AppColors.cFF111923,
-                        disabledColor: inviteSent
-                            ? AppColors.cFF3C4652
-                            : AppColors.cFF2B3441,
-                        disabledOpacity: 1,
-                        padding: const EdgeInsets.symmetric(horizontal: 13),
-                        fontSize: 12,
-                      ),
+              Padding(
+                padding: EdgeInsets.only(top: compact ? 28 : 34),
+                child: SizedBox(
+                  width: 92,
+                  child: OheyInviteSuccessBurst(
+                    builder: (context, runWithBurst, flightAnimation) =>
+                        Ohey3DButton(
+                          label: inviteSent ? '誘い済み' : '誘う',
+                          icon: null,
+                          customIcon: inviteSent
+                              ? null
+                              : OheyInviteFlyingIcon(
+                                  animation: flightAnimation,
+                                  color: inviteForeground,
+                                  size: 19,
+                                ),
+                          onTap: inviteEnabled
+                              ? () => runWithBurst(
+                                  onInvite,
+                                  afterAnimation: onInviteAnimationComplete,
+                                )
+                              : null,
+                          enabled: inviteEnabled,
+                          forcePressed: inviteSent || invitePressed,
+                          height: 36,
+                          radius: 18,
+                          color: inviteButtonColor,
+                          foregroundColor: inviteForeground,
+                          shadowColor: inviteSent
+                              ? AppColors.cFF1A222C
+                              : !inviteAvailable
+                              ? AppColors.cFF1A222C
+                              : statusEnabled
+                              ? Color.lerp(accent, AppColors.black, .32)
+                              : AppColors.cFF111923,
+                          disabledColor: inviteSent
+                              ? AppColors.cFF3C4652
+                              : AppColors.cFF2B3441,
+                          disabledOpacity: 1,
+                          padding: const EdgeInsets.symmetric(horizontal: 13),
+                          fontSize: 12,
+                        ),
+                  ),
                 ),
               ),
             ],
