@@ -280,21 +280,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             accent: item.accent,
             statusKey: null,
           );
-    if (item.ownedByMe) {
-      await showOheyFriendProfileSheet(
-        context,
-        friend: author.toOheyFriend(),
-        showActionMenu: false,
-      );
-      return;
-    }
-
-    await showOheyBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      isScrollControlled: true,
-      barrierColor: AppColors.black.withValues(alpha: .62),
-      builder: (context) => _FeedCompanionProfileSheet(friend: author),
+    await showOheyFriendProfileSheet(
+      context,
+      friend: author.toOheyFriend(),
+      showActionMenu: !item.ownedByMe,
     );
   }
 
