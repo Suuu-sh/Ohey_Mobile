@@ -122,12 +122,35 @@ class _YuruboNativeAdListItemState extends State<_YuruboNativeAdListItem> {
     }
     return Semantics(
       label: '広告',
-      child: Container(
-        height: 156,
-        margin: const EdgeInsets.symmetric(horizontal: 18),
-        clipBehavior: Clip.antiAlias,
-        decoration: _feedCardDecoration(radius: 30),
-        child: AdWidget(ad: _ad!),
+      child: _YuruboAdCardFrame(child: AdWidget(ad: _ad!)),
+    );
+  }
+}
+
+class _YuruboAdCardFrame extends StatelessWidget {
+  const _YuruboAdCardFrame({required this.child, this.padding});
+
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 156,
+      margin: const EdgeInsets.symmetric(horizontal: 18),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              padding: padding,
+              decoration: _feedCardDecoration(radius: 30),
+              child: child,
+            ),
+          ),
+          const _YuruboBlockGlowUnderline(),
+        ],
       ),
     );
   }
@@ -140,11 +163,8 @@ class _YuruboAdPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 156,
-      margin: const EdgeInsets.symmetric(horizontal: 18),
+    return _YuruboAdCardFrame(
       padding: const EdgeInsets.all(16),
-      decoration: _feedCardDecoration(radius: 30),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
