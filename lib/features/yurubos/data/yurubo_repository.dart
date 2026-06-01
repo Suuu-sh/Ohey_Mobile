@@ -76,8 +76,7 @@ class BackendYuruboRepository implements YuruboRepository {
       'place_text': draft.placeText,
       'time_label': draft.timeLabel,
       'visibility': draft.visibility,
-      if (draft.startsAt != null)
-        'starts_at': draft.startsAt!.toIso8601String(),
+      if (draft.startsAt != null) 'starts_at': _dateOnlyString(draft.startsAt!),
       if (draft.groupId != null) 'group_id': draft.groupId,
       if (draft.wishItemId != null) 'wish_item_id': draft.wishItemId,
     });
@@ -90,7 +89,9 @@ class BackendYuruboRepository implements YuruboRepository {
       'body': draft.body,
       'place_text': draft.placeText,
       'time_label': draft.timeLabel,
-      'starts_at': draft.startsAt?.toIso8601String(),
+      'starts_at': draft.startsAt == null
+          ? null
+          : _dateOnlyString(draft.startsAt!),
     });
   }
 
@@ -109,6 +110,13 @@ class BackendYuruboRepository implements YuruboRepository {
       await _client.delete('/v1/yurubos/$yuruboId/reaction');
     }
   }
+}
+
+String _dateOnlyString(DateTime value) {
+  final normalized = DateTime(value.year, value.month, value.day);
+  return '${normalized.year.toString().padLeft(4, '0')}-'
+      '${normalized.month.toString().padLeft(2, '0')}-'
+      '${normalized.day.toString().padLeft(2, '0')}';
 }
 
 Yurubo _yuruboFromRow(Map<String, dynamic> row) {
