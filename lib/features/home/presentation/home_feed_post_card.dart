@@ -485,7 +485,7 @@ class _FeedCardFooter extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               OheyPostActionPill(
-                semanticLabel: item.liked ? '参加を取り消す' : 'このゆるぼに参加する',
+                semanticLabel: item.liked ? '参加申請を取り消す' : 'このゆるぼに参加申請する',
                 icon: item.liked
                     ? CupertinoIcons.heart_fill
                     : CupertinoIcons.heart,
@@ -529,7 +529,7 @@ class _FeedCardFooter extends StatelessWidget {
                       .map((friend) => friend.avatar)
                       .toList(growable: false),
                   isWhite: isWhite,
-                  onTap: () => _showFeedCompanionList(context, item.friends),
+                  onTap: () => _showFeedCompanionList(context, item),
                 ),
               ],
             ],
@@ -574,7 +574,9 @@ class _FeedCardFooter extends StatelessWidget {
 }
 
 String _feedLikeActionLabel(_FeedItem item) {
-  return item.liked ? '参加済み' : '参加する';
+  if (item.ownedByMe) return '募集主';
+  if (item.liked) return item.myReactionType == 'available' ? '参加済み' : '申請中';
+  return '参加申請';
 }
 
 String _feedShareActionLabel(_FeedItem item) {
@@ -587,9 +589,9 @@ String _feedReactionSummary(_FeedItem item) {
     return item.likes > 0 ? '${item.likes}人がチェックしました' : 'Oheyからのお知らせです';
   }
   if (item.likes <= 0) {
-    return item.ownedByMe ? 'フレンズの参加を待とう' : '参加したい気持ちを送ろう';
+    return item.ownedByMe ? 'フレンズの申請を待とう' : '参加申請を送ろう';
   }
-  return '${item.likes}人が参加したい';
+  return '${item.likes}人が参加確定';
 }
 
 class _FeedPostKindBadge extends StatelessWidget {
@@ -758,5 +760,7 @@ String _yuruboBody(_FeedItem item) {
 }
 
 String _yuruboInterestedActionLabel(_FeedItem item) {
-  return item.liked ? '参加済み' : '参加する';
+  if (item.ownedByMe) return '募集主';
+  if (item.liked) return item.myReactionType == 'available' ? '参加済み' : '申請中';
+  return '参加申請';
 }

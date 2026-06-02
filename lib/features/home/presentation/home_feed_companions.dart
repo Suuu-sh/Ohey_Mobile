@@ -1,18 +1,19 @@
 part of 'home_screen.dart';
 
-class _FeedCompanionListSheet extends StatelessWidget {
-  const _FeedCompanionListSheet({required this.friends});
+class _FeedCompanionListSheet extends ConsumerWidget {
+  const _FeedCompanionListSheet({required this.item});
 
-  final List<_Companion> friends;
+  final _FeedItem item;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     final subtitleColor = isWhite
         ? AppColors.cFF697684
         : AppColors.white.withValues(alpha: .58);
-    final listHeight = (friends.length * 78.0).clamp(
+    final friends = item.friends;
+    final listHeight = (friends.length * 82.0).clamp(
       78.0,
       MediaQuery.sizeOf(context).height * .44,
     );
@@ -35,7 +36,7 @@ class _FeedCompanionListSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '一緒に遊んだフレンズ',
+                      item.ownedByMe ? '参加申請・参加者' : '参加しているフレンズ',
                       style: TextStyle(
                         color: titleColor,
                         fontSize: 20,
@@ -45,7 +46,7 @@ class _FeedCompanionListSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'タップしてプロフィールを見る',
+                      item.ownedByMe ? '承認待ちの申請を確認できます' : 'タップしてプロフィールを見る',
                       style: TextStyle(
                         color: subtitleColor,
                         fontSize: 13,
@@ -68,6 +69,17 @@ class _FeedCompanionListSheet extends StatelessWidget {
               separatorBuilder: (_, _) => const SizedBox(height: 10),
               itemBuilder: (context, index) => _FeedCompanionTile(
                 friend: friends[index],
+                canApprove:
+                    item.ownedByMe &&
+                    friends[index].statusKey == 'pending_yurubo',
+                onApprove: () async {
+                  await ref
+                      .read(yuruboControllerProvider.notifier)
+                      .approveReaction(item.id, friends[index].userId);
+                  if (!context.mounted) return;
+                  Navigator.of(context).pop();
+                  OheyToast.show(context, '参加申請を承認しました');
+                },
                 onTap: () => Navigator.of(context).pop(friends[index]),
               ),
             ),
@@ -79,10 +91,17 @@ class _FeedCompanionListSheet extends StatelessWidget {
 }
 
 class _FeedCompanionTile extends StatelessWidget {
-  const _FeedCompanionTile({required this.friend, required this.onTap});
+  const _FeedCompanionTile({
+    required this.friend,
+    required this.onTap,
+    this.canApprove = false,
+    this.onApprove,
+  });
 
   final _Companion friend;
   final VoidCallback onTap;
+  final bool canApprove;
+  final Future<void> Function()? onApprove;
 
   @override
   Widget build(BuildContext context) {
@@ -170,16 +189,41 @@ class _FeedCompanionTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            OheyPopIcon(
-              icon: CupertinoIcons.chevron_forward,
-              color: subtitleColor,
-              size: 28,
-              iconSize: 15,
-              shadow: false,
-            ),
+            if (canApprove)
+              _FeedCompanionApproveButton(onTap: onApprove)
+            else
+              OheyPopIcon(
+                icon: CupertinoIcons.chevron_forward,
+                color: subtitleColor,
+                size: 28,
+                iconSize: 15,
+                shadow: false,
+              ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FeedCompanionApproveButton extends StatelessWidget {
+  const _FeedCompanionApproveButton({this.onTap});
+
+  final Future<void> Function()? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Ohey3DButton(
+      label: '承認',
+      icon: null,
+      onTap: onTap,
+      height: 32,
+      radius: 16,
+      color: AppColors.cFF9AF21A,
+      foregroundColor: AppColors.cFF101820,
+      shadowColor: Color.lerp(AppColors.cFF9AF21A, AppColors.black, .36)!,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      fontSize: 12,
     );
   }
 }

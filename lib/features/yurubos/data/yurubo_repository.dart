@@ -14,6 +14,7 @@ abstract interface class YuruboRepository {
   Future<void> updateYurubo(String yuruboId, YuruboUpdateDraft draft);
   Future<void> deleteYurubo(String yuruboId);
   Future<void> setReaction(String yuruboId, {required bool reacted});
+  Future<void> approveReaction(String yuruboId, String userId);
 }
 
 class YuruboCreateDraft {
@@ -96,6 +97,11 @@ class BackendYuruboRepository implements YuruboRepository {
   }
 
   @override
+  Future<void> approveReaction(String yuruboId, String userId) async {
+    await _client.patch('/v1/yurubos/$yuruboId/reactions/$userId', const {});
+  }
+
+  @override
   Future<void> deleteYurubo(String yuruboId) async {
     await _client.delete('/v1/yurubos/$yuruboId');
   }
@@ -104,7 +110,7 @@ class BackendYuruboRepository implements YuruboRepository {
   Future<void> setReaction(String yuruboId, {required bool reacted}) async {
     if (reacted) {
       await _client.put('/v1/yurubos/$yuruboId/reaction', const {
-        'reaction_type': 'available',
+        'reaction_type': 'interested',
       });
     } else {
       await _client.delete('/v1/yurubos/$yuruboId/reaction');
@@ -150,6 +156,7 @@ Yurubo _yuruboFromRow(Map<String, dynamic> row) {
     createdAt: createdAt,
     reactionCount: (row['reaction_count'] as num?)?.toInt() ?? 0,
     reactedByMe: (row['reacted_by_me'] as bool?) ?? false,
+    myReactionType: ((row['my_reaction_type'] as String?) ?? '').trim(),
     participants: _participantsFromRow(row),
   );
 }
@@ -173,6 +180,8 @@ List<YuruboParticipant> _participantsFromRow(Map<String, dynamic> row) {
           avatar:
               OheyAvatar.decode(participant['avatar_url'] as String?) ??
               OheyAvatar.defaultAvatar,
+          reactionType:
+              ((participant['reaction_type'] as String?) ?? 'available').trim(),
         );
       })
       .toList(growable: false);

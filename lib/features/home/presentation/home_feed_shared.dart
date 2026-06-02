@@ -95,6 +95,7 @@ class _FeedItem {
     this.linkUrl = '',
     this.targetLabel = '全フレンズ',
     this.friends = const <_Companion>[],
+    this.myReactionType = '',
     required this.likes,
     required this.saved,
     required this.liked,
@@ -138,10 +139,11 @@ class _FeedItem {
             handle: participant.handle,
             avatar: participant.avatar,
             accent: _accentForId(participant.userId),
-            statusKey: null,
+            statusKey: participant.isPending ? 'pending_yurubo' : null,
           ),
       ],
       likes: yurubo.reactionCount,
+      myReactionType: yurubo.myReactionType,
       saved: false,
       liked: isOwnedByCurrentUser || yurubo.reactedByMe,
       prop: _PostProp.memory,
@@ -188,6 +190,7 @@ class _FeedItem {
   final String linkUrl;
   final String targetLabel;
   final List<_Companion> friends;
+  final String myReactionType;
   final int likes;
   final bool saved;
   final bool liked;
@@ -239,6 +242,7 @@ class _Companion {
 }
 
 String _companionStatusLabel(String? statusKey) {
+  if (statusKey == 'pending_yurubo') return '承認待ち';
   return oheyDailyStatusFromKey(statusKey).label;
 }
 
@@ -258,6 +262,7 @@ IconData _companionStatusIcon(String? statusKey) {
 }
 
 Color _companionStatusColor(String? statusKey) {
+  if (statusKey == 'pending_yurubo') return AppColors.cFFFFD84D;
   final status = oheyDailyStatusFromKey(statusKey);
   return switch (status) {
     OheyDailyStatus.available => AppColors.cFF9AF21A,

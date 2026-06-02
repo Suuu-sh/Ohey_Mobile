@@ -498,8 +498,9 @@ class _FeedModalTextButton extends StatelessWidget {
 
 Future<void> _showFeedCompanionList(
   BuildContext context,
-  List<_Companion> friends,
+  _FeedItem item,
 ) async {
+  final friends = item.friends;
   if (friends.isEmpty) return;
   HapticFeedback.selectionClick();
   final selected = await showOheyBottomSheet<_Companion>(
@@ -507,7 +508,7 @@ Future<void> _showFeedCompanionList(
     useSafeArea: true,
     isScrollControlled: true,
     barrierColor: AppColors.black.withValues(alpha: .58),
-    builder: (context) => _FeedCompanionListSheet(friends: friends),
+    builder: (context) => _FeedCompanionListSheet(item: item),
   );
   if (!context.mounted || selected == null) return;
 
