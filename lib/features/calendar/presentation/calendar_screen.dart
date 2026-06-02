@@ -999,26 +999,29 @@ class _CalendarFriendStatusList extends StatelessWidget {
         final accent = availableCount > 0
             ? _calendarPrimaryActionColor
             : AppColors.cFF94A3B8;
-        return _CalendarSectionSurface(
-          label: 'フレンズの空き状況',
-          accent: AppColors.primaryAction,
-          isWhite: isWhite,
-          compact: compact,
-          trailing: _CalendarTinyPill(
-            label: '$availableCount/${friends.length}',
-            color: accent,
-            isWhite: isWhite,
-          ),
-          child: Center(
+        return ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 98),
+          child: OheyThemedPanel(
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+            accentColor: accent,
+            backgroundColor: isWhite
+                ? AppColors.white
+                : AppColors.darkBackgroundBottom,
+            borderRadius: 20,
+            borderAlpha: .42,
+            glowAlpha: .18,
+            glowBlur: 24,
+            glowOffset: Offset.zero,
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 OheyPopIcon(
                   icon: CupertinoIcons.person_2_fill,
                   color: accent,
-                  size: compact ? 30 : 38,
-                  iconSize: compact ? 14 : 18,
+                  size: compact ? 44 : 52,
+                  iconSize: compact ? 22 : 26,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -1032,22 +1035,13 @@ class _CalendarFriendStatusList extends StatelessWidget {
                           color: isWhite
                               ? AppColors.cFF101820
                               : AppColors.white,
-                          fontSize: compact ? 13 : 14,
+                          fontSize: compact ? 17 : 19,
                           fontWeight: FontWeight.w900,
                           height: 1.1,
+                          letterSpacing: -.5,
                         ),
                       ),
-                      SizedBox(height: compact ? 3 : 4),
-                      if (!compact) ...[
-                        _CalendarAvailabilityMeter(
-                          value: friends.isEmpty
-                              ? 0
-                              : availableCount / friends.length,
-                          color: accent,
-                          isWhite: isWhite,
-                        ),
-                        const SizedBox(height: 4),
-                      ],
+                      const SizedBox(height: 7),
                       Text(
                         availableCount > 0 ? '誘えそうな人を見る' : '予定あり・未定が多そう',
                         maxLines: 1,
@@ -1056,7 +1050,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
                           color: isWhite
                               ? AppColors.cFF667381
                               : AppColors.white.withValues(alpha: .62),
-                          fontSize: compact ? 10.5 : 11.5,
+                          fontSize: compact ? 11.5 : 13,
                           fontWeight: FontWeight.w800,
                           height: 1.1,
                         ),
@@ -1064,19 +1058,19 @@ class _CalendarFriendStatusList extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 9),
+                const SizedBox(width: 10),
                 SizedBox(
-                  width: compact ? 56 : 62,
+                  width: 76,
                   child: Ohey3DButton(
                     label: '見る',
                     onTap: openStatusSheet,
-                    height: compact ? 28 : 30,
-                    radius: compact ? 14 : 15,
+                    height: 40,
+                    radius: 20,
                     color: _calendarPrimaryActionColor,
                     foregroundColor: _calendarPrimaryActionForegroundColor,
                     shadowColor: _calendarPrimaryActionShadowColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    fontSize: compact ? 11 : 12,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -1095,7 +1089,6 @@ class _CalendarSectionSurface extends StatelessWidget {
     required this.isWhite,
     required this.compact,
     required this.child,
-    this.trailing,
     this.onTap,
   });
 
@@ -1104,7 +1097,6 @@ class _CalendarSectionSurface extends StatelessWidget {
   final bool isWhite;
   final bool compact;
   final Widget child;
-  final Widget? trailing;
   final VoidCallback? onTap;
 
   @override
@@ -1170,7 +1162,6 @@ class _CalendarSectionSurface extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (trailing != null) ...[const SizedBox(width: 8), trailing!],
               ],
             ),
             const SizedBox(height: 6),
@@ -1185,78 +1176,6 @@ class _CalendarSectionSurface extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: handler,
       child: content,
-    );
-  }
-}
-
-class _CalendarTinyPill extends StatelessWidget {
-  const _CalendarTinyPill({
-    required this.label,
-    required this.color,
-    required this.isWhite,
-  });
-
-  final String label;
-  final Color color;
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: isWhite ? .14 : .20),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: isWhite ? .30 : .40)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isWhite
-              ? Color.lerp(color, AppColors.black, .20)!
-              : AppColors.white,
-          fontSize: 10,
-          fontWeight: FontWeight.w900,
-          height: 1,
-        ),
-      ),
-    );
-  }
-}
-
-class _CalendarAvailabilityMeter extends StatelessWidget {
-  const _CalendarAvailabilityMeter({
-    required this.value,
-    required this.color,
-    required this.isWhite,
-  });
-
-  final double value;
-  final Color color;
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    final normalized = value.clamp(0.0, 1.0).toDouble();
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        height: 5,
-        color: isWhite
-            ? AppColors.cFFE8EEF5
-            : AppColors.white.withValues(alpha: .10),
-        alignment: Alignment.centerLeft,
-        child: FractionallySizedBox(
-          widthFactor: normalized,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [color, Color.lerp(color, AppColors.white, .24)!],
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
