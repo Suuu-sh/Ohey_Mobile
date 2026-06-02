@@ -1027,13 +1027,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
               builder: (context, runWithBurst, flightAnimation) => Ohey3DButton(
                 label: isInvited ? '誘い済み' : '誘う',
                 icon: null,
-                customIcon: isInvited
-                    ? null
-                    : OheyInviteFlyingIcon(
-                        animation: flightAnimation,
-                        color: buttonForeground,
-                        size: 19.5,
-                      ),
+                customIcon: null,
                 onTap: isInviteEnabled
                     ? () => runWithBurst(
                         onInvite,
@@ -1042,8 +1036,8 @@ class _TodayInviteCandidateCard extends StatelessWidget {
                     : null,
                 enabled: isInviteEnabled,
                 forcePressed: isInvited,
-                height: 36,
-                radius: 18,
+                height: 40,
+                radius: 20,
                 color: buttonColor,
                 foregroundColor: buttonForeground,
                 shadowColor: isInvited
@@ -1053,8 +1047,8 @@ class _TodayInviteCandidateCard extends StatelessWidget {
                     ? _FriendsColors.invitedButton
                     : _FriendsColors.disabledButton,
                 disabledOpacity: 1,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                fontSize: 12.5,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                fontSize: 14,
               ),
             ),
           ),
