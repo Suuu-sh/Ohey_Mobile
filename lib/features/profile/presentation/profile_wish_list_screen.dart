@@ -74,10 +74,10 @@ class _ProfileWishListEmptyState extends StatelessWidget {
         size: 46,
       ),
       title: 'やりたいことを保存しておこう',
-      message: 'あとで誰かと行きたいことをここにためておけます。',
+      message: 'あとで誰かと行きたいことを保存できます。',
       titleColor: AppColors.white,
       messageColor: _ProfileColors.sub,
-      hints: const ['焼肉', 'カフェ', '一緒に勉強'],
+      hints: const ['焼肉', 'カフェ', '勉強'],
       action: SizedBox(
         width: 190,
         child: Ohey3DButton(
