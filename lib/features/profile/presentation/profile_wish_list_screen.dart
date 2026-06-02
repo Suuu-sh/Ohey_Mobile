@@ -73,11 +73,11 @@ class _ProfileWishListEmptyState extends StatelessWidget {
         color: AppColors.cFFC08BFF,
         size: 46,
       ),
-      title: '誘いの種を置いてみよう',
-      message: '焼肉・サウナ・作業など、あとで誰かと行きたいことをここにためておけます。',
+      title: 'やりたいことを保存しておこう',
+      message: 'あとで誰かと行きたいことをここにためておけます。',
       titleColor: AppColors.white,
       messageColor: _ProfileColors.sub,
-      hints: const ['焼肉行きたい', 'サウナ行きたい', '一緒に作業したい'],
+      hints: const ['焼肉', 'カフェ', '一緒に勉強'],
       action: SizedBox(
         width: 190,
         child: Ohey3DButton(
