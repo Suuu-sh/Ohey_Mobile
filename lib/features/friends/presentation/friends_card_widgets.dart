@@ -979,6 +979,25 @@ class _FriendProfileCalendarState
   }
 
   Future<void> _loadStatusesForMonth(DateTime month) async {
+    final authUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    if (authUserId != null && authUserId == widget.friend.id) {
+      try {
+        final statuses = await ref
+            .read(userRepositoryProvider)
+            .fetchDailyStatusesForMonth(month);
+        if (!mounted) return;
+        setState(() => _statusByDate.addAll(statuses));
+        final selectedStatus =
+            _statusByDate[_friendProfileDateKey(_selectedDay)];
+        if (selectedStatus != null) {
+          widget.onSelectedStatusChanged(selectedStatus);
+        }
+      } catch (_) {
+        // Keep the existing unselected fallback when own monthly statuses cannot load.
+      }
+      return;
+    }
+
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
     final leadingEmptyCells = DateTime(month.year, month.month).weekday % 7;
     final totalCells = leadingEmptyCells + daysInMonth;
