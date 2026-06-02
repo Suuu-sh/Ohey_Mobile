@@ -1499,24 +1499,27 @@ class _AddFriendsPromoCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  SizedBox(
-                    width: 76,
-                    child: Semantics(
-                      button: true,
-                      label: 'フレンズを追加',
-                      child: Ohey3DButton(
-                        label: '追加',
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          onTap();
-                        },
-                        height: 40,
-                        radius: 20,
-                        color: _FriendsColors.lime,
-                        foregroundColor: AppColors.cFF0B2A22,
-                        shadowColor: AppColors.cFF77A600,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        fontSize: 14,
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: SizedBox(
+                      width: 76,
+                      child: Semantics(
+                        button: true,
+                        label: 'フレンズを追加',
+                        child: Ohey3DButton(
+                          label: '追加',
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            onTap();
+                          },
+                          height: 40,
+                          radius: 20,
+                          color: _FriendsColors.lime,
+                          foregroundColor: AppColors.cFF0B2A22,
+                          shadowColor: AppColors.cFF77A600,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ),
