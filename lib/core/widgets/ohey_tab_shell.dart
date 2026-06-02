@@ -1005,24 +1005,16 @@ class _YuruboParticipationRequestRow extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        participant.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.35,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    _YuruboRequestStatusBadge(),
-                  ],
+                Text(
+                  participant.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.35,
+                  ),
                 ),
                 const SizedBox(height: 3),
                 Text(
@@ -1032,19 +1024,6 @@ class _YuruboParticipationRequestRow extends StatelessWidget {
                   style: TextStyle(
                     color: AppColors.cFFC08BFF.withValues(alpha: .90),
                     fontSize: 12.5,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  participant.handle.trim().isEmpty
-                      ? 'Oheyフレンズ'
-                      : '@${participant.handle}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppColors.white.withValues(alpha: .58),
-                    fontSize: 13,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -1301,29 +1280,6 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _YuruboRequestStatusBadge extends StatelessWidget {
-  const _YuruboRequestStatusBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.cFFFFD84D.withValues(alpha: .28),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: const Text(
-        '承認待ち',
-        style: TextStyle(
-          color: AppColors.cFFFFD84D,
-          fontSize: 11,
-          fontWeight: FontWeight.w900,
         ),
       ),
     );

@@ -153,30 +153,16 @@ class _FeedCompanionTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          friend.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: titleColor,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -.3,
-                          ),
-                        ),
-                      ),
-                      if (friend.statusKey == 'pending_yurubo') ...[
-                        const SizedBox(width: 8),
-                        _CompanionStatusBadge(
-                          label: _companionStatusLabel(friend.statusKey),
-                          color: statusColor,
-                          backgroundColor: statusBackgroundColor,
-                        ),
-                      ],
-                    ],
+                  Text(
+                    friend.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: titleColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.3,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
