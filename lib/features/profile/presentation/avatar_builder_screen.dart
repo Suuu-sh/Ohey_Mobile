@@ -575,7 +575,6 @@ class _UnsavedAvatarSheet extends StatelessWidget {
           const SizedBox(height: 18),
           Ohey3DButton(
             label: '保存して閉じる',
-            icon: CupertinoIcons.check_mark_circled_solid,
             color: AppColors.primaryAction,
             shadowColor: AppColors.primaryActionShadow,
             foregroundColor: AppColors.white,
@@ -587,7 +586,6 @@ class _UnsavedAvatarSheet extends StatelessWidget {
           const SizedBox(height: 10),
           Ohey3DButton.secondary(
             label: '変更を戻す',
-            icon: CupertinoIcons.arrow_uturn_left,
             color: _AvatarColors.card,
             foregroundColor: _AvatarColors.ink,
             shadowColor: _AvatarColors.panelShadow,
@@ -600,7 +598,6 @@ class _UnsavedAvatarSheet extends StatelessWidget {
           const SizedBox(height: 10),
           Ohey3DButton.secondary(
             label: '編集を続ける',
-            icon: CupertinoIcons.pencil,
             color: AppColors.white.withValues(alpha: .055),
             foregroundColor: _AvatarColors.sub,
             shadowColor: _AvatarColors.panelShadow,

@@ -82,7 +82,6 @@ class _ProfileWishListEmptyState extends StatelessWidget {
         width: 190,
         child: Ohey3DButton(
           label: '追加する',
-          icon: CupertinoIcons.plus,
           onTap: onCreate,
           height: 50,
           radius: 22,

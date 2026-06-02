@@ -47,7 +47,9 @@ part 'profile_form_helpers.dart';
 part 'profile_wish_list_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({super.key, this.onOpenYurubo});
+
+  final VoidCallback? onOpenYurubo;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -173,6 +175,7 @@ class ProfileScreen extends ConsumerWidget {
                                 isWishLoading: wishItemsAsync.isLoading,
                                 onCreateYuruboTap: () =>
                                     _showProfileCreateYuruboSheet(context, ref),
+                                onOpenYuruboTap: onOpenYurubo,
                                 onOpenWishListTap: () =>
                                     _openProfileWishListScreen(context),
                                 onAddFriendsTap: () =>
@@ -377,7 +380,6 @@ class _ProfileCreateWishItemSheetState
           const SizedBox(height: 16),
           Ohey3DButton(
             label: _saving ? '追加中...' : '追加する',
-            icon: CupertinoIcons.sparkles,
             onTap: _saving ? null : _submit,
             height: 50,
             radius: 22,
@@ -617,7 +619,6 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
               const SizedBox(height: 16),
               Ohey3DButton(
                 label: _saving ? '送信中...' : 'ゆるぼする',
-                icon: CupertinoIcons.plus_bubble_fill,
                 onTap: _saving ? null : _submit,
                 height: 50,
                 radius: 22,

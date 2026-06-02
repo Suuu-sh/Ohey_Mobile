@@ -441,6 +441,7 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.wishItems,
     required this.isWishLoading,
     required this.onCreateYuruboTap,
+    required this.onOpenYuruboTap,
     required this.onOpenWishListTap,
     required this.onAddFriendsTap,
     required this.onChangeStatusTap,
@@ -452,6 +453,7 @@ class _ProfileActivityHome extends StatelessWidget {
   final List<WishItem> wishItems;
   final bool isWishLoading;
   final VoidCallback onCreateYuruboTap;
+  final VoidCallback? onOpenYuruboTap;
   final VoidCallback onOpenWishListTap;
   final VoidCallback onAddFriendsTap;
   final VoidCallback onChangeStatusTap;
@@ -472,7 +474,7 @@ class _ProfileActivityHome extends StatelessWidget {
           _ProfileTodayScheduleSection(
             joinedYurubos: joinedYurubos,
             isLoading: isYuruboLoading,
-            onFindTap: onCreateYuruboTap,
+            onFindTap: onOpenYuruboTap ?? onCreateYuruboTap,
           ),
           const SizedBox(height: 22),
           Padding(
@@ -875,32 +877,18 @@ class _ProfileYuruboActionRow extends StatelessWidget {
           offset: const Offset(0, 7),
         ),
       ],
-      child: Row(
-        children: [
-          OheyPopIcon(
-            icon: CupertinoIcons.plus_bubble_fill,
+      child: const Center(
+        child: Text(
+          'ゆるぼを追加',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
             color: AppColors.cFF101820,
-            size: 28,
-            iconSize: 15,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.3,
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'ゆるぼを追加',
-              style: TextStyle(
-                color: AppColors.cFF101820,
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.3,
-              ),
-            ),
-          ),
-          OheyGeneratedIcon(
-            CupertinoIcons.plus,
-            color: AppColors.cFF101820,
-            size: 18,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -928,34 +916,18 @@ class _ProfileStatusActionRow extends StatelessWidget {
           offset: const Offset(0, 7),
         ),
       ],
-      child: Row(
-        children: [
-          const OheyPopIcon(
-            icon: CupertinoIcons.person_crop_circle_badge_checkmark,
+      child: const Center(
+        child: Text(
+          'ステータス変更',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
             color: AppColors.cFF101820,
-            size: 28,
-            iconSize: 15,
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.4,
           ),
-          const SizedBox(width: 10),
-          const Expanded(
-            child: Text(
-              'ステータス変更',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: AppColors.cFF101820,
-                fontSize: 13,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.4,
-              ),
-            ),
-          ),
-          OheyGeneratedIcon(
-            CupertinoIcons.chevron_right,
-            color: AppColors.cFF101820,
-            size: 16,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -992,51 +964,34 @@ class _ProfileWishListActionRow extends StatelessWidget {
           offset: const Offset(0, 7),
         ),
       ],
-      child: Row(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const OheyPopIcon(
-            icon: CupertinoIcons.list_bullet,
-            color: AppColors.cFF101820,
-            size: 28,
-            iconSize: 15,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'やりたいこと',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppColors.cFF101820,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
-                    height: 1,
-                    letterSpacing: -.35,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  countLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppColors.cFF101820.withValues(alpha: .62),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    height: 1,
-                  ),
-                ),
-              ],
+          const Text(
+            'やりたいこと',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.cFF101820,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              height: 1,
+              letterSpacing: -.35,
             ),
           ),
-          OheyGeneratedIcon(
-            CupertinoIcons.chevron_right,
-            color: AppColors.cFF101820,
-            size: 16,
+          const SizedBox(height: 3),
+          Text(
+            countLabel,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.cFF101820.withValues(alpha: .62),
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
           ),
         ],
       ),
@@ -1066,32 +1021,18 @@ class _ProfileFriendActionRow extends StatelessWidget {
           offset: const Offset(0, 7),
         ),
       ],
-      child: Row(
-        children: [
-          const OheyPopIcon(
-            icon: CupertinoIcons.person_2_fill,
+      child: const Center(
+        child: Text(
+          'フレンズを追加',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
             color: AppColors.cFF101820,
-            size: 28,
-            iconSize: 15,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.3,
           ),
-          const SizedBox(width: 10),
-          const Expanded(
-            child: Text(
-              'フレンズを追加',
-              style: TextStyle(
-                color: AppColors.cFF101820,
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.3,
-              ),
-            ),
-          ),
-          OheyGeneratedIcon(
-            CupertinoIcons.plus,
-            color: AppColors.cFF101820,
-            size: 18,
-          ),
-        ],
+        ),
       ),
     );
   }
