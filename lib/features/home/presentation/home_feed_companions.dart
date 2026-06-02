@@ -153,16 +153,30 @@ class _FeedCompanionTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    friend.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: titleColor,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.3,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          friend.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: titleColor,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -.3,
+                          ),
+                        ),
+                      ),
+                      if (friend.statusKey == 'pending_yurubo') ...[
+                        const SizedBox(width: 8),
+                        _CompanionStatusBadge(
+                          label: _companionStatusLabel(friend.statusKey),
+                          color: statusColor,
+                          backgroundColor: statusBackgroundColor,
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -172,30 +186,26 @@ class _FeedCompanionTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: subtitleColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                      color: friend.statusKey == 'pending_yurubo'
+                          ? AppColors.cFFC08BFF
+                          : subtitleColor,
+                      fontSize: friend.statusKey == 'pending_yurubo'
+                          ? 12.5
+                          : 12,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
                 ],
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-              decoration: BoxDecoration(
-                color: statusBackgroundColor,
-                borderRadius: BorderRadius.circular(999),
+            if (friend.statusKey != 'pending_yurubo') ...[
+              _CompanionStatusBadge(
+                label: _companionStatusLabel(friend.statusKey),
+                color: statusColor,
+                backgroundColor: statusBackgroundColor,
               ),
-              child: Text(
-                _companionStatusLabel(friend.statusKey),
-                style: TextStyle(
-                  color: statusColor,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
+              const SizedBox(width: 8),
+            ],
             if (canApprove)
               _FeedCompanionApproveButton(onTap: onApprove)
             else
@@ -207,6 +217,37 @@ class _FeedCompanionTile extends StatelessWidget {
                 shadow: false,
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CompanionStatusBadge extends StatelessWidget {
+  const _CompanionStatusBadge({
+    required this.label,
+    required this.color,
+    required this.backgroundColor,
+  });
+
+  final String label;
+  final Color color;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
         ),
       ),
     );
