@@ -67,6 +67,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   String? _pendingSharedYuruboId;
   bool _isHandlingSharedYurubo = false;
   final Set<String> _notifiedInviteIds = <String>{};
+  final Set<String> _notifiedYuruboRequestKeys = <String>{};
 
   @override
   void initState() {
@@ -94,6 +95,8 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     }
     if (state != AppLifecycleState.resumed) return;
     _lastPresentedInviteId = null;
+    _lastPresentedYuruboRequestKey = null;
+    _notifiedYuruboRequestKeys.clear();
     unawaited(
       ref
           .read(oheyUserProvider.notifier)
@@ -286,13 +289,15 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
           .toList(growable: false);
       if (pending.isEmpty) continue;
       final requestKey = '${yurubo.id}:${pending.first.userId}';
+      if (_notifiedYuruboRequestKeys.add(requestKey)) {
+        unawaited(
+          ref
+              .read(osNotificationServiceProvider)
+              .showYuruboParticipationRequest(yurubo, pending.first),
+        );
+      }
       if (_lastPresentedYuruboRequestKey == requestKey) return;
       _lastPresentedYuruboRequestKey = requestKey;
-      unawaited(
-        ref
-            .read(osNotificationServiceProvider)
-            .showYuruboParticipationRequest(yurubo, pending.first),
-      );
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted ||
             _isInviteModalOpen ||

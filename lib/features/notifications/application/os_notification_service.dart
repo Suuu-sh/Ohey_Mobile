@@ -135,11 +135,6 @@ class OsNotificationService {
   ) async {
     await _initialize();
 
-    final prefs = await SharedPreferences.getInstance();
-    final notifiedKey =
-        'ohey_notified_yurubo_request_${yurubo.id}_${participant.userId}';
-    if (prefs.getBool(notifiedKey) ?? false) return;
-
     await _plugin.show(
       id: 'yurubo_request:${yurubo.id}:${participant.userId}'.hashCode,
       title: '${participant.name}さんから参加申請',
@@ -160,7 +155,6 @@ class OsNotificationService {
       ),
       payload: 'yurubo_request:${yurubo.id}:${participant.userId}',
     );
-    await prefs.setBool(notifiedKey, true);
   }
 
   Future<void> showInviteReceived(OheyInvite invite) async {
