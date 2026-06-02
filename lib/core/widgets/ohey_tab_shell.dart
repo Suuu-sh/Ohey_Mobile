@@ -857,7 +857,6 @@ class _YuruboParticipationRequestSheetState
         );
       },
       child: OheyBottomSheetShell(
-        showBottomCloseButton: false,
         showHandle: false,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),

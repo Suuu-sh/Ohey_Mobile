@@ -552,7 +552,6 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
         widget.ref.watch(wishItemControllerProvider).asData?.value ??
         const <WishItem>[];
     return OheyBottomSheetShell(
-      showBottomCloseButton: false,
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 32,
@@ -823,7 +822,6 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
         ? AppColors.cFF667381
         : AppColors.white.withValues(alpha: .62);
     return OheyBottomSheetShell(
-      showBottomCloseButton: false,
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 32,
