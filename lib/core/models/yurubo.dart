@@ -86,4 +86,12 @@ class YuruboParticipant {
   final String reactionType;
 
   bool get isPending => reactionType != 'available';
+
+  YuruboParticipant copyWith({String? reactionType}) => YuruboParticipant(
+    userId: userId,
+    name: name,
+    handle: handle,
+    avatar: avatar,
+    reactionType: reactionType ?? this.reactionType,
+  );
 }
