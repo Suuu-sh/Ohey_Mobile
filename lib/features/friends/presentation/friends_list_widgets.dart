@@ -747,7 +747,6 @@ class _GroupScheduleSection extends StatelessWidget {
                     : isGroupInvited
                     ? '誘い済み'
                     : '全員誘う',
-                icon: isGroupInvited ? null : CupertinoIcons.paperplane_fill,
                 onTap: canInviteGroup ? onInviteGroup : null,
                 enabled: canInviteGroup,
                 height: 38,
