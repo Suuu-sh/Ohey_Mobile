@@ -1265,12 +1265,6 @@ class _FriendQrScannerSheetState extends State<_FriendQrScannerSheet> {
             ),
           ),
           const SizedBox(height: 12),
-          Ohey3DButton.secondary(
-            label: '閉じる',
-            onTap: () => Navigator.of(context).pop(),
-            height: 44,
-            radius: 20,
-          ),
         ],
       ),
     );

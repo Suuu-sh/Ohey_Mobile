@@ -24,6 +24,7 @@ import '../application/ohey_user_controller.dart';
 import '../data/ohey_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
 import '../models/ohey_invite.dart';
+import '../models/yurubo.dart';
 import '../models/ohey_user.dart';
 import '../theme/app_colors.dart';
 import '../theme/ohey_theme_mode.dart';
@@ -33,6 +34,7 @@ import 'ohey_bottom_sheet.dart';
 import 'ohey_daily_status_3d_option.dart';
 import 'ohey_pop_icon.dart';
 import 'ohey_toast.dart';
+import 'ohey_avatar.dart';
 
 class OheyTabShell extends ConsumerStatefulWidget {
   const OheyTabShell({super.key});
@@ -55,14 +57,17 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   bool _isOnboardingSeen = false;
   bool _onboardingPrefLoaded = false;
   bool _isInviteModalOpen = false;
+  bool _isYuruboRequestModalOpen = false;
   bool _isDailyStatusPromptOpen = false;
   String? _lastDailyStatusPromptKey;
   String? _lastPresentedInviteId;
+  String? _lastPresentedYuruboRequestKey;
   Timer? _invitePollTimer;
   StreamSubscription<Uri>? _appLinkSubscription;
   String? _pendingSharedYuruboId;
   bool _isHandlingSharedYurubo = false;
   final Set<String> _notifiedInviteIds = <String>{};
+  final Set<String> _notifiedYuruboRequestKeys = <String>{};
 
   @override
   void initState() {
@@ -90,6 +95,8 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     }
     if (state != AppLifecycleState.resumed) return;
     _lastPresentedInviteId = null;
+    _lastPresentedYuruboRequestKey = null;
+    _notifiedYuruboRequestKeys.clear();
     unawaited(
       ref
           .read(oheyUserProvider.notifier)
@@ -98,6 +105,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     );
     ref.invalidate(homeFeedControllerProvider);
     ref.invalidate(incomingInvitesProvider);
+    ref.invalidate(yuruboControllerProvider);
     ref.invalidate(notificationControllerProvider);
   }
 
@@ -262,7 +270,81 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     ref.invalidate(friendsForDateProvider);
     ref.invalidate(pendingFriendRequestsProvider);
     ref.invalidate(incomingInvitesProvider);
+    ref.invalidate(yuruboControllerProvider);
     ref.invalidate(notificationControllerProvider);
+  }
+
+  void _handlePendingYuruboRequests(List<Yurubo> yurubos) {
+    final currentUser = ref.read(oheyUserProvider);
+    if (currentUser == null ||
+        _isInviteModalOpen ||
+        _isYuruboRequestModalOpen ||
+        _isDailyStatusPromptOpen) {
+      return;
+    }
+    for (final yurubo in yurubos) {
+      if (yurubo.ownerUserId !=
+          ref.read(supabaseClientProvider).auth.currentUser?.id) {
+        continue;
+      }
+      final pending = yurubo.participants
+          .where((participant) => participant.isPending)
+          .toList(growable: false);
+      if (pending.isEmpty) {
+        continue;
+      }
+      final requestKey = '${yurubo.id}:${pending.first.userId}';
+      if (_notifiedYuruboRequestKeys.add(requestKey)) {
+        unawaited(
+          ref
+              .read(osNotificationServiceProvider)
+              .showYuruboParticipationRequest(yurubo, pending.first),
+        );
+      }
+      if (_lastPresentedYuruboRequestKey == requestKey) return;
+      _lastPresentedYuruboRequestKey = requestKey;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted ||
+            _isInviteModalOpen ||
+            _isYuruboRequestModalOpen ||
+            _isDailyStatusPromptOpen) {
+          return;
+        }
+        _showYuruboParticipationRequestModal(yurubo, pending);
+      });
+      return;
+    }
+  }
+
+  Future<void> _showYuruboParticipationRequestModal(
+    Yurubo yurubo,
+    List<YuruboParticipant> participants,
+  ) async {
+    _isYuruboRequestModalOpen = true;
+    try {
+      await showOheyBottomSheet<void>(
+        context: context,
+        useSafeArea: true,
+        useRootNavigator: true,
+        barrierColor: AppColors.black.withValues(alpha: .62),
+        builder: (_) => OheyToastAccent(
+          color: _feedAccentColor,
+          child: _YuruboParticipationRequestSheet(
+            yurubo: yurubo,
+            participants: participants,
+            onApprove: (participant) async {
+              await ref
+                  .read(yuruboControllerProvider.notifier)
+                  .approveReaction(yurubo.id, participant.userId);
+              ref.invalidate(yuruboControllerProvider);
+              ref.invalidate(notificationControllerProvider);
+            },
+          ),
+        ),
+      );
+    } finally {
+      _isYuruboRequestModalOpen = false;
+    }
   }
 
   void _handleIncomingInvites(List<OheyInvite> invites) {
@@ -396,6 +478,9 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     final hasSession =
         ref.watch(supabaseClientProvider).auth.currentSession != null;
     final incomingInvitesAsync = ref.watch(incomingInvitesProvider);
+    final yurubosAsync = user == null
+        ? const AsyncValue<List<Yurubo>>.data(<Yurubo>[])
+        : ref.watch(yuruboControllerProvider);
     final pendingFriendRequestsAsync = user == null
         ? const AsyncValue<List<OheyFriendRequestItem>>.data(
             <OheyFriendRequestItem>[],
@@ -410,11 +495,16 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       incomingInvitesProvider,
       (previous, next) => next.whenData(_handleIncomingInvites),
     );
+    ref.listen<AsyncValue<List<Yurubo>>>(
+      yuruboControllerProvider,
+      (previous, next) => next.whenData(_handlePendingYuruboRequests),
+    );
 
     if (user != null) {
       _maybeShowDailyStatusPrompt(user);
       _startInvitePolling();
       incomingInvitesAsync.whenData(_handleIncomingInvites);
+      yurubosAsync.whenData(_handlePendingYuruboRequests);
       _didAttemptProfileRestore = false;
       _didScheduleProfileRestore = false;
       _consumePendingSharedYurubo();
@@ -598,6 +688,7 @@ class _DailyStatusRequiredSheetState
       canPop: false,
       child: OheyBottomSheetShell(
         showHandle: true,
+        showBottomCloseButton: false,
         maxHeightFactor: .88,
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
         child: Column(
@@ -702,6 +793,264 @@ class _SheetInlineError extends StatelessWidget {
   }
 }
 
+class _YuruboParticipationRequestSheet extends StatefulWidget {
+  const _YuruboParticipationRequestSheet({
+    required this.yurubo,
+    required this.participants,
+    required this.onApprove,
+  });
+
+  final Yurubo yurubo;
+  final List<YuruboParticipant> participants;
+  final Future<void> Function(YuruboParticipant participant) onApprove;
+
+  @override
+  State<_YuruboParticipationRequestSheet> createState() =>
+      _YuruboParticipationRequestSheetState();
+}
+
+class _YuruboParticipationRequestSheetState
+    extends State<_YuruboParticipationRequestSheet> {
+  String? _busyUserId;
+  String? _errorMessage;
+
+  Future<void> _approve(YuruboParticipant participant) async {
+    if (_busyUserId != null) return;
+    setState(() {
+      _busyUserId = participant.userId;
+      _errorMessage = null;
+    });
+    try {
+      await widget.onApprove(participant);
+      if (!mounted) return;
+      OheyToast.show(
+        context,
+        '参加申請を承認しました',
+        icon: CupertinoIcons.checkmark_circle_fill,
+        placement: OheyToastPlacement.bottom,
+      );
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (!mounted) return;
+      HapticFeedback.mediumImpact();
+      setState(() {
+        _busyUserId = null;
+        _errorMessage = '承認できなかったよ。少し時間をおいて試してみてね。';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final participants = widget.participants;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 520),
+      curve: Curves.easeOutBack,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, (1 - value) * 30),
+          child: Transform.scale(
+            scale: .92 + value * .08,
+            child: Opacity(opacity: value.clamp(0, 1), child: child),
+          ),
+        );
+      },
+      child: OheyBottomSheetShell(
+        showHandle: false,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+        radius: 34,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: .22),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                const OheyPopIcon(
+                  icon: CupertinoIcons.person_2_fill,
+                  color: AppColors.cFFC08BFF,
+                  size: 54,
+                  iconSize: 29,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '参加申請・参加者',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.6,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        '「${widget.yurubo.title}」への申請です',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppColors.white.withValues(alpha: .62),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                OheyCloseButton(
+                  enabled: _busyUserId == null,
+                  onTap: () => Navigator.of(context).pop(),
+                  iconColor: AppColors.white,
+                  backgroundColor: AppColors.white.withValues(alpha: .08),
+                  borderColor: AppColors.white.withValues(alpha: .10),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            ...participants
+                .take(3)
+                .map(
+                  (participant) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _YuruboParticipationRequestRow(
+                      participant: participant,
+                      yuruboTitle: widget.yurubo.title,
+                      isBusy: _busyUserId == participant.userId,
+                      disabled: _busyUserId != null,
+                      onApprove: () => _approve(participant),
+                    ),
+                  ),
+                ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              child: _errorMessage == null
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      key: ValueKey(_errorMessage),
+                      padding: const EdgeInsets.only(top: 4),
+                      child: _SheetInlineError(
+                        message: _errorMessage!,
+                        isWhite: false,
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _YuruboParticipationRequestRow extends StatelessWidget {
+  const _YuruboParticipationRequestRow({
+    required this.participant,
+    required this.yuruboTitle,
+    required this.isBusy,
+    required this.disabled,
+    required this.onApprove,
+  });
+
+  final YuruboParticipant participant;
+  final String yuruboTitle;
+  final bool isBusy;
+  final bool disabled;
+  final VoidCallback onApprove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 82),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: Color.lerp(
+          AppColors.darkBackgroundBottom,
+          AppColors.cFF20B9FF,
+          .22,
+        ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: AppColors.cFF54D7FF.withValues(alpha: .42),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.cFF20B9FF.withValues(alpha: .18),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          OheyAvatarView(avatar: participant.avatar, size: 52),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  participant.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.35,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '申請先: ${yuruboTitle.trim().isEmpty ? 'ゆるぼ' : yuruboTitle}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.cFFC08BFF.withValues(alpha: .90),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Ohey3DButton(
+            label: isBusy ? '承認中' : '承認',
+            onTap: disabled ? null : onApprove,
+            isLoading: isBusy,
+            height: 48,
+            radius: 22,
+            color: AppColors.cFF9AF21A,
+            foregroundColor: AppColors.cFF101820,
+            shadowColor: Color.lerp(AppColors.cFF9AF21A, AppColors.black, .36)!,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            fontSize: 14,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _IncomingInviteSheet extends StatefulWidget {
   const _IncomingInviteSheet({
     required this.invite,
@@ -770,6 +1119,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
         );
       },
       child: OheyBottomSheetShell(
+        showBottomCloseButton: false,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
         radius: 34,

@@ -138,8 +138,6 @@ class _YuruboAdCardFrame extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const _YuruboAdGlowBlock(),
-        const SizedBox(height: 18),
         Container(
           height: 156,
           margin: const EdgeInsets.symmetric(horizontal: 18),

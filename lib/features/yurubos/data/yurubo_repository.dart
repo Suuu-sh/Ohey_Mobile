@@ -14,6 +14,7 @@ abstract interface class YuruboRepository {
   Future<void> updateYurubo(String yuruboId, YuruboUpdateDraft draft);
   Future<void> deleteYurubo(String yuruboId);
   Future<void> setReaction(String yuruboId, {required bool reacted});
+  Future<void> approveReaction(String yuruboId, String userId);
 }
 
 class YuruboCreateDraft {
@@ -76,8 +77,7 @@ class BackendYuruboRepository implements YuruboRepository {
       'place_text': draft.placeText,
       'time_label': draft.timeLabel,
       'visibility': draft.visibility,
-      if (draft.startsAt != null)
-        'starts_at': draft.startsAt!.toIso8601String(),
+      if (draft.startsAt != null) 'starts_at': _dateOnlyString(draft.startsAt!),
       if (draft.groupId != null) 'group_id': draft.groupId,
       if (draft.wishItemId != null) 'wish_item_id': draft.wishItemId,
     });
@@ -90,8 +90,15 @@ class BackendYuruboRepository implements YuruboRepository {
       'body': draft.body,
       'place_text': draft.placeText,
       'time_label': draft.timeLabel,
-      'starts_at': draft.startsAt?.toIso8601String(),
+      'starts_at': draft.startsAt == null
+          ? null
+          : _dateOnlyString(draft.startsAt!),
     });
+  }
+
+  @override
+  Future<void> approveReaction(String yuruboId, String userId) async {
+    await _client.patch('/v1/yurubos/$yuruboId/reactions/$userId', const {});
   }
 
   @override
@@ -103,12 +110,19 @@ class BackendYuruboRepository implements YuruboRepository {
   Future<void> setReaction(String yuruboId, {required bool reacted}) async {
     if (reacted) {
       await _client.put('/v1/yurubos/$yuruboId/reaction', const {
-        'reaction_type': 'available',
+        'reaction_type': 'interested',
       });
     } else {
       await _client.delete('/v1/yurubos/$yuruboId/reaction');
     }
   }
+}
+
+String _dateOnlyString(DateTime value) {
+  final normalized = DateTime(value.year, value.month, value.day);
+  return '${normalized.year.toString().padLeft(4, '0')}-'
+      '${normalized.month.toString().padLeft(2, '0')}-'
+      '${normalized.day.toString().padLeft(2, '0')}';
 }
 
 Yurubo _yuruboFromRow(Map<String, dynamic> row) {
@@ -142,6 +156,7 @@ Yurubo _yuruboFromRow(Map<String, dynamic> row) {
     createdAt: createdAt,
     reactionCount: (row['reaction_count'] as num?)?.toInt() ?? 0,
     reactedByMe: (row['reacted_by_me'] as bool?) ?? false,
+    myReactionType: ((row['my_reaction_type'] as String?) ?? '').trim(),
     participants: _participantsFromRow(row),
   );
 }
@@ -165,6 +180,8 @@ List<YuruboParticipant> _participantsFromRow(Map<String, dynamic> row) {
           avatar:
               OheyAvatar.decode(participant['avatar_url'] as String?) ??
               OheyAvatar.defaultAvatar,
+          reactionType:
+              ((participant['reaction_type'] as String?) ?? 'available').trim(),
         );
       })
       .toList(growable: false);

@@ -227,6 +227,7 @@ class _UnsavedProfileSheet extends StatelessWidget {
     data: Theme.of(context).copyWith(brightness: Brightness.dark),
     child: OheyBottomSheetShell(
       showHandle: true,
+      showBottomCloseButton: false,
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
       radius: 34,

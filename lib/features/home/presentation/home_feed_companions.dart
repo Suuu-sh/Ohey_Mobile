@@ -1,18 +1,19 @@
 part of 'home_screen.dart';
 
-class _FeedCompanionListSheet extends StatelessWidget {
-  const _FeedCompanionListSheet({required this.friends});
+class _FeedCompanionListSheet extends ConsumerWidget {
+  const _FeedCompanionListSheet({required this.item});
 
-  final List<_Companion> friends;
+  final _FeedItem item;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     final subtitleColor = isWhite
         ? AppColors.cFF697684
         : AppColors.white.withValues(alpha: .58);
-    final listHeight = (friends.length * 78.0).clamp(
+    final friends = item.friends;
+    final listHeight = (friends.length * 82.0).clamp(
       78.0,
       MediaQuery.sizeOf(context).height * .44,
     );
@@ -35,7 +36,7 @@ class _FeedCompanionListSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '一緒に遊んだフレンズ',
+                      item.ownedByMe ? '参加申請・参加者' : '参加しているフレンズ',
                       style: TextStyle(
                         color: titleColor,
                         fontSize: 20,
@@ -45,7 +46,9 @@ class _FeedCompanionListSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'タップしてプロフィールを見る',
+                      item.ownedByMe
+                          ? '「${item.body.trim().isEmpty ? 'ゆるぼ' : item.body}」への申請です'
+                          : 'タップしてプロフィールを見る',
                       style: TextStyle(
                         color: subtitleColor,
                         fontSize: 13,
@@ -68,6 +71,18 @@ class _FeedCompanionListSheet extends StatelessWidget {
               separatorBuilder: (_, _) => const SizedBox(height: 10),
               itemBuilder: (context, index) => _FeedCompanionTile(
                 friend: friends[index],
+                yuruboTitle: item.body,
+                canApprove:
+                    item.ownedByMe &&
+                    friends[index].statusKey == 'pending_yurubo',
+                onApprove: () async {
+                  await ref
+                      .read(yuruboControllerProvider.notifier)
+                      .approveReaction(item.id, friends[index].userId);
+                  if (!context.mounted) return;
+                  Navigator.of(context).pop();
+                  OheyToast.show(context, '参加申請を承認しました');
+                },
                 onTap: () => Navigator.of(context).pop(friends[index]),
               ),
             ),
@@ -79,10 +94,19 @@ class _FeedCompanionListSheet extends StatelessWidget {
 }
 
 class _FeedCompanionTile extends StatelessWidget {
-  const _FeedCompanionTile({required this.friend, required this.onTap});
+  const _FeedCompanionTile({
+    required this.friend,
+    required this.onTap,
+    this.yuruboTitle = '',
+    this.canApprove = false,
+    this.onApprove,
+  });
 
   final _Companion friend;
   final VoidCallback onTap;
+  final String yuruboTitle;
+  final bool canApprove;
+  final Future<void> Function()? onApprove;
 
   @override
   Widget build(BuildContext context) {
@@ -142,44 +166,98 @@ class _FeedCompanionTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    friend.handleLabel,
+                    friend.statusKey == 'pending_yurubo'
+                        ? '申請先: ${yuruboTitle.trim().isEmpty ? 'ゆるぼ' : yuruboTitle}'
+                        : friend.handleLabel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: subtitleColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                      color: friend.statusKey == 'pending_yurubo'
+                          ? AppColors.cFFC08BFF
+                          : subtitleColor,
+                      fontSize: friend.statusKey == 'pending_yurubo'
+                          ? 12.5
+                          : 12,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
                 ],
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-              decoration: BoxDecoration(
-                color: statusBackgroundColor,
-                borderRadius: BorderRadius.circular(999),
+            if (friend.statusKey != 'pending_yurubo') ...[
+              _CompanionStatusBadge(
+                label: _companionStatusLabel(friend.statusKey),
+                color: statusColor,
+                backgroundColor: statusBackgroundColor,
               ),
-              child: Text(
-                _companionStatusLabel(friend.statusKey),
-                style: TextStyle(
-                  color: statusColor,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
-                ),
+              const SizedBox(width: 8),
+            ],
+            if (canApprove)
+              _FeedCompanionApproveButton(onTap: onApprove)
+            else
+              OheyPopIcon(
+                icon: CupertinoIcons.chevron_forward,
+                color: subtitleColor,
+                size: 28,
+                iconSize: 15,
+                shadow: false,
               ),
-            ),
-            const SizedBox(width: 8),
-            OheyPopIcon(
-              icon: CupertinoIcons.chevron_forward,
-              color: subtitleColor,
-              size: 28,
-              iconSize: 15,
-              shadow: false,
-            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _CompanionStatusBadge extends StatelessWidget {
+  const _CompanionStatusBadge({
+    required this.label,
+    required this.color,
+    required this.backgroundColor,
+  });
+
+  final String label;
+  final Color color;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedCompanionApproveButton extends StatelessWidget {
+  const _FeedCompanionApproveButton({this.onTap});
+
+  final Future<void> Function()? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Ohey3DButton(
+      label: '承認',
+      icon: null,
+      onTap: onTap,
+      height: 32,
+      radius: 16,
+      color: AppColors.cFF9AF21A,
+      foregroundColor: AppColors.cFF101820,
+      shadowColor: Color.lerp(AppColors.cFF9AF21A, AppColors.black, .36)!,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      fontSize: 12,
     );
   }
 }

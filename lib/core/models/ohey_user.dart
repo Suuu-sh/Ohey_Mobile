@@ -28,18 +28,18 @@ extension OheyDailyStatusX on OheyDailyStatus {
 
   String get description => switch (this) {
     OheyDailyStatus.unselected => 'あとで返事できます',
-    OheyDailyStatus.available => '今日空いてます',
+    OheyDailyStatus.available => '空いてます',
     OheyDailyStatus.maybeAvailable => 'たぶん空いてます',
     OheyDailyStatus.dependsOnTime => '時間が合えばOK',
-    OheyDailyStatus.hasPlans => '今日は空いていません',
+    OheyDailyStatus.hasPlans => '空いていません',
   };
 
   String get shortCopy => switch (this) {
     OheyDailyStatus.unselected => 'あとで決める',
-    OheyDailyStatus.available => '今日は空いてる',
+    OheyDailyStatus.available => '空いてる',
     OheyDailyStatus.maybeAvailable => 'たぶん空いてる',
     OheyDailyStatus.dependsOnTime => '時間が合えばOK',
-    OheyDailyStatus.hasPlans => '今日は空いていません',
+    OheyDailyStatus.hasPlans => '空いていません',
   };
 
   bool get canJoinPlan => switch (this) {

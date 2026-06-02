@@ -27,6 +27,11 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
     ref.invalidateSelf();
   }
 
+  Future<void> approveReaction(String yuruboId, String userId) async {
+    await ref.read(yuruboRepositoryProvider).approveReaction(yuruboId, userId);
+    ref.invalidateSelf();
+  }
+
   Future<void> toggleParticipation(String yuruboId) async {
     final current = state.asData?.value ?? const <Yurubo>[];
     final index = current.indexWhere((item) => item.id == yuruboId);
@@ -60,14 +65,17 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
   }) async {
     if (index >= 0) {
       final item = current[index];
-      final nextCount = (item.reactionCount + (reacted ? 1 : -1)).clamp(
-        0,
-        1 << 30,
-      );
+      final nextCount = reacted
+          ? item.reactionCount
+          : (item.reactionCount - 1).clamp(0, 1 << 30);
       state = AsyncData([
         for (var i = 0; i < current.length; i++)
           i == index
-              ? item.copyWith(reactionCount: nextCount, reactedByMe: reacted)
+              ? item.copyWith(
+                  reactionCount: nextCount,
+                  reactedByMe: reacted,
+                  myReactionType: reacted ? 'interested' : '',
+                )
               : current[i],
       ]);
     }

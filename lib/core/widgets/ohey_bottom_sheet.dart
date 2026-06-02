@@ -45,6 +45,9 @@ class OheyBottomSheetShell extends StatelessWidget {
     this.blurSigma = 16,
     this.maxHeightFactor,
     this.followKeyboard = true,
+    this.showBottomCloseButton = true,
+    this.bottomCloseLabel = '閉じる',
+    this.onBottomClose,
   });
 
   final Widget child;
@@ -58,6 +61,9 @@ class OheyBottomSheetShell extends StatelessWidget {
   final double blurSigma;
   final double? maxHeightFactor;
   final bool followKeyboard;
+  final bool showBottomCloseButton;
+  final String bottomCloseLabel;
+  final VoidCallback? onBottomClose;
 
   @override
   Widget build(BuildContext context) {
@@ -140,11 +146,73 @@ class OheyBottomSheetShell extends StatelessWidget {
                           const SizedBox(height: 12),
                         ],
                         sheetChild,
+                        if (showBottomCloseButton) ...[
+                          const SizedBox(height: 16),
+                          _OheyBottomSheetFooterButton(
+                            label: bottomCloseLabel,
+                            onTap:
+                                onBottomClose ??
+                                () => Navigator.of(context).maybePop(),
+                          ),
+                        ],
                       ],
                     );
                   },
                 ),
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OheyBottomSheetFooterButton extends StatelessWidget {
+  const _OheyBottomSheetFooterButton({
+    required this.label,
+    required this.onTap,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          height: 54,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isWhite
+                ? AppColors.cFFF2F4F6
+                : AppColors.darkBackgroundBottom,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isWhite
+                  ? AppColors.cFFD7DEE7
+                  : AppColors.white.withValues(alpha: .10),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.black.withValues(alpha: isWhite ? .08 : .22),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isWhite ? AppColors.cFF27313B : AppColors.cFFC08BFF,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.35,
             ),
           ),
         ),

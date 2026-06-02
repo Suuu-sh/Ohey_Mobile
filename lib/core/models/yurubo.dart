@@ -18,6 +18,7 @@ class Yurubo {
     required this.createdAt,
     required this.reactionCount,
     required this.reactedByMe,
+    this.myReactionType = '',
     this.participants = const <YuruboParticipant>[],
   });
 
@@ -37,11 +38,13 @@ class Yurubo {
   final DateTime createdAt;
   final int reactionCount;
   final bool reactedByMe;
+  final String myReactionType;
   final List<YuruboParticipant> participants;
 
   Yurubo copyWith({
     int? reactionCount,
     bool? reactedByMe,
+    String? myReactionType,
     DateTime? startsAt,
     bool clearStartsAt = false,
     List<YuruboParticipant>? participants,
@@ -62,6 +65,7 @@ class Yurubo {
     createdAt: createdAt,
     reactionCount: reactionCount ?? this.reactionCount,
     reactedByMe: reactedByMe ?? this.reactedByMe,
+    myReactionType: myReactionType ?? this.myReactionType,
     participants: participants ?? this.participants,
   );
 }
@@ -72,10 +76,14 @@ class YuruboParticipant {
     required this.name,
     required this.handle,
     required this.avatar,
+    this.reactionType = 'available',
   });
 
   final String userId;
   final String name;
   final String handle;
   final OheyAvatar avatar;
+  final String reactionType;
+
+  bool get isPending => reactionType != 'available';
 }

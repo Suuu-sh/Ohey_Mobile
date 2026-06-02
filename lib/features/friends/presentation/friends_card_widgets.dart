@@ -85,6 +85,151 @@ Future<void> _showFriendProfileSheet(
   );
 }
 
+Future<bool?> _showFriendProfileConfirmSheet(
+  BuildContext context, {
+  required IconData icon,
+  required Color color,
+  required String title,
+  required String message,
+  required String actionLabel,
+}) {
+  return showOheyBottomSheet<bool>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: AppColors.black.withValues(alpha: .58),
+    builder: (context) => _FriendProfileConfirmSheet(
+      icon: icon,
+      color: color,
+      title: title,
+      message: message,
+      actionLabel: actionLabel,
+    ),
+  );
+}
+
+class _FriendProfileConfirmSheet extends StatelessWidget {
+  const _FriendProfileConfirmSheet({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.message,
+    required this.actionLabel,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String message;
+  final String actionLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final subtitleColor = isWhite
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .58);
+    return OheyBottomSheetShell(
+      showBottomCloseButton: false,
+      showHandle: false,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: OheyPopIcon(
+              icon: icon,
+              color: color,
+              size: 64,
+              iconSize: 34,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: titleColor,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.7,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: subtitleColor,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _FriendProfileConfirmButton(
+                  label: 'やめる',
+                  onTap: () => Navigator.of(context).pop(false),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _FriendProfileConfirmButton(
+                  label: actionLabel,
+                  color: color,
+                  onTap: () => Navigator.of(context).pop(true),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendProfileConfirmButton extends StatelessWidget {
+  const _FriendProfileConfirmButton({
+    required this.label,
+    required this.onTap,
+    this.color = AppColors.cFFC08BFF,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 56,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.darkBackgroundBottom,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: AppColors.cFF2B3441),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.35,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _FriendProfileSheet extends ConsumerStatefulWidget {
   const _FriendProfileSheet({
     required this.friend,
@@ -118,23 +263,13 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
 
   Future<void> _confirmRemoveFriend() async {
     if (_busyAction != null) return;
-    final confirmed = await showCupertinoDialog<bool>(
-      context: context,
-      builder: (dialogContext) => CupertinoAlertDialog(
-        title: const Text('フレンズ解除しますか？'),
-        content: Text('${widget.friend.name}さんとのフレンズ関係を解除します。あとでまた申請できます。'),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('キャンセル'),
-          ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('解除する'),
-          ),
-        ],
-      ),
+    final confirmed = await _showFriendProfileConfirmSheet(
+      context,
+      icon: CupertinoIcons.person_badge_minus_fill,
+      color: AppColors.cFFFF5F8F,
+      title: 'フレンズ解除しますか？',
+      message: '${widget.friend.name}さんとのフレンズ関係を解除します。あとでまた申請できます。',
+      actionLabel: '解除する',
     );
     if (confirmed != true || !mounted) return;
     setState(() => _busyAction = _FriendProfileAction.remove);
@@ -175,11 +310,26 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
       case _FriendProfileAction.remove:
         await _confirmRemoveFriend();
       case _FriendProfileAction.mute:
-        await _muteFriend();
+        await _confirmMuteFriend();
       case _FriendProfileAction.block:
         await _confirmBlockFriend();
       case _FriendProfileAction.report:
         await _reportFriend();
+    }
+  }
+
+  Future<void> _confirmMuteFriend() async {
+    if (_busyAction != null) return;
+    final confirmed = await _showFriendProfileConfirmSheet(
+      context,
+      icon: CupertinoIcons.bell_slash_fill,
+      color: AppColors.cFF88B8FF,
+      title: 'ミュートしますか？',
+      message: '${widget.friend.name}さんのゆるぼを一覧に表示しにくくします。あとで解除できます。',
+      actionLabel: 'ミュートする',
+    );
+    if (confirmed == true && mounted) {
+      await _muteFriend();
     }
   }
 
@@ -219,23 +369,13 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
 
   Future<void> _confirmBlockFriend() async {
     if (_busyAction != null) return;
-    final confirmed = await showCupertinoDialog<bool>(
-      context: context,
-      builder: (dialogContext) => CupertinoAlertDialog(
-        title: const Text('ブロックしますか？'),
-        content: Text('${widget.friend.name}さんとのフレンズ関係を解除し、ゆるぼ・申請・お誘いを制限します。'),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('キャンセル'),
-          ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('ブロックする'),
-          ),
-        ],
-      ),
+    final confirmed = await _showFriendProfileConfirmSheet(
+      context,
+      icon: CupertinoIcons.hand_raised_fill,
+      color: AppColors.cFFFF5F8F,
+      title: 'ブロックしますか？',
+      message: '${widget.friend.name}さんとのフレンズ関係を解除し、ゆるぼ・申請・お誘いを制限します。',
+      actionLabel: 'ブロックする',
     );
     if (confirmed == true && mounted) {
       await _blockFriend();
@@ -367,19 +507,6 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Ohey3DButton.secondary(
-                  label: '閉じる',
-                  onTap: () => Navigator.of(context).pop(),
-                  height: 48,
-                  radius: 22,
-                  color: AppColors.cFF252044,
-                  foregroundColor: AppColors.cFFC08BFF,
-                  shadowColor: AppColors.cFF15142C,
-                ),
-              ),
               const SizedBox(height: 16),
             ],
           ),
@@ -436,6 +563,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
         : AppColors.white.withValues(alpha: .58);
 
     return OheyBottomSheetShell(
+      showBottomCloseButton: false,
       title: 'フレンズ管理',
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),

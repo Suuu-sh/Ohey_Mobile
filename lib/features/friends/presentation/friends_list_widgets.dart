@@ -141,6 +141,7 @@ class _FriendsList extends StatelessWidget {
         )
         .map((item) => item.friend)
         .toList(growable: false);
+    final listEntries = _friendListEntriesFromFriends(filtered);
 
     Widget withRefresh(Widget child) => CustomScrollView(
       clipBehavior: Clip.hardEdge,
@@ -210,7 +211,7 @@ class _FriendsList extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(4, 14, 4, 168),
         sliver: SliverList.separated(
           itemCount:
-              filtered.length +
+              listEntries.length +
               1 +
               (hasRecommendations ? 1 : 0) +
               (hasGroupSchedule ? 1 : 0),
@@ -237,23 +238,230 @@ class _FriendsList extends StatelessWidget {
                 index -
                 (hasRecommendations ? 1 : 0) -
                 (hasGroupSchedule ? 1 : 0);
-            if (friendIndex == filtered.length) {
+            if (friendIndex == listEntries.length) {
               return _AddFriendsPromoCard(onTap: onAddFriend);
             }
-            final item = filtered[friendIndex];
-            return _FriendCard(
-              friend: item.friend,
-              status: item.status,
-              onFavoriteToggle: () =>
-                  onFavoriteToggle(item.friend, !item.friend.isFavorite),
-              isInvited: invitedFriendIds.contains(item.friend.id),
-              onInvite: () => onInvite(item.friend),
-              onInviteAnimationComplete: () =>
-                  onInviteAnimationComplete(item.friend),
-              onProfile: () => onProfile(item.friend, item.status),
-            );
+            final entry = listEntries[friendIndex];
+            return switch (entry) {
+              _FriendBlockEntry(:final item) => _FriendCard(
+                friend: item.friend,
+                status: item.status,
+                onFavoriteToggle: () =>
+                    onFavoriteToggle(item.friend, !item.friend.isFavorite),
+                isInvited: invitedFriendIds.contains(item.friend.id),
+                onInvite: () => onInvite(item.friend),
+                onInviteAnimationComplete: () =>
+                    onInviteAnimationComplete(item.friend),
+                onProfile: () => onProfile(item.friend, item.status),
+              ),
+              _FriendAdBlockEntry(:final index) => _FriendNativeAdBlock(
+                index: index,
+              ),
+            };
           },
         ),
+      ),
+    );
+  }
+}
+
+const _friendsAdNativeFactoryId = 'ohey_yurubo_native_ad';
+const _friendsFirstAdAfter = 4;
+const _friendsAdFrequency = 10;
+
+String get _friendsNativeAdUnitId {
+  if (defaultTargetPlatform == TargetPlatform.iOS) {
+    return 'ca-app-pub-3940256099942544/3986624511';
+  }
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    return 'ca-app-pub-3940256099942544/2247696110';
+  }
+  return '';
+}
+
+List<_FriendListEntry> _friendListEntriesFromFriends(
+  List<_DecoratedFriend> friends,
+) {
+  if (friends.length < _friendsFirstAdAfter) {
+    return [for (final item in friends) _FriendBlockEntry(item)];
+  }
+  final entries = <_FriendListEntry>[];
+  var adIndex = 0;
+  for (var index = 0; index < friends.length; index++) {
+    entries.add(_FriendBlockEntry(friends[index]));
+    final position = index + 1;
+    final shouldInsertAd =
+        position == _friendsFirstAdAfter ||
+        (position > _friendsFirstAdAfter &&
+            (position - _friendsFirstAdAfter) % _friendsAdFrequency == 0);
+    if (shouldInsertAd) entries.add(_FriendAdBlockEntry(adIndex++));
+  }
+  return entries;
+}
+
+sealed class _FriendListEntry {
+  const _FriendListEntry();
+}
+
+class _FriendBlockEntry extends _FriendListEntry {
+  const _FriendBlockEntry(this.item);
+
+  final _DecoratedFriend item;
+}
+
+class _FriendAdBlockEntry extends _FriendListEntry {
+  const _FriendAdBlockEntry(this.index);
+
+  final int index;
+}
+
+class _FriendNativeAdBlock extends StatefulWidget {
+  const _FriendNativeAdBlock({required this.index});
+
+  final int index;
+
+  @override
+  State<_FriendNativeAdBlock> createState() => _FriendNativeAdBlockState();
+}
+
+class _FriendNativeAdBlockState extends State<_FriendNativeAdBlock> {
+  NativeAd? _ad;
+  bool _isLoaded = false;
+  bool _didFail = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAd();
+  }
+
+  void _loadAd() {
+    final adUnitId = _friendsNativeAdUnitId;
+    if (adUnitId.isEmpty) {
+      _didFail = true;
+      return;
+    }
+    final ad = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: _friendsAdNativeFactoryId,
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          if (!mounted) {
+            ad.dispose();
+            return;
+          }
+          setState(() {
+            _ad = ad as NativeAd;
+            _isLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          if (!mounted) return;
+          setState(() => _didFail = true);
+        },
+      ),
+    );
+    ad.load().catchError((_) {
+      if (!mounted) return;
+      setState(() => _didFail = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _ad?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_didFail) return const SizedBox.shrink();
+    if (!_isLoaded || _ad == null) return const _FriendAdPlaceholderBlock();
+    return Semantics(
+      label: '広告',
+      child: SizedBox(
+        height: 156,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: AdWidget(ad: _ad!),
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendAdPlaceholderBlock extends StatelessWidget {
+  const _FriendAdPlaceholderBlock();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return OheyThemedPanel(
+      padding: const EdgeInsets.all(14),
+      accentColor: _FriendsColors.lime,
+      backgroundColor: isWhite
+          ? AppColors.white
+          : AppColors.darkBackgroundBottom,
+      borderRadius: 20,
+      borderAlpha: isWhite ? .28 : .36,
+      glowAlpha: isWhite ? .08 : .14,
+      glowBlur: 22,
+      glowOffset: Offset.zero,
+      child: Row(
+        children: [
+          Container(
+            width: 62,
+            height: 62,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _FriendsColors.lime.withValues(alpha: .16),
+            ),
+            child: const Center(
+              child: Text(
+                'PR',
+                style: TextStyle(
+                  color: _FriendsColors.lime,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: AppColors.white.withValues(
+                      alpha: isWhite ? .22 : .10,
+                    ),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                FractionallySizedBox(
+                  widthFactor: .68,
+                  child: Container(
+                    height: 13,
+                    decoration: BoxDecoration(
+                      color: AppColors.white.withValues(
+                        alpha: isWhite ? .16 : .07,
+                      ),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

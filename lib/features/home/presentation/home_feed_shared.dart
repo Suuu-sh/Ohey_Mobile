@@ -95,6 +95,7 @@ class _FeedItem {
     this.linkUrl = '',
     this.targetLabel = '全フレンズ',
     this.friends = const <_Companion>[],
+    this.myReactionType = '',
     required this.likes,
     required this.saved,
     required this.liked,
@@ -138,10 +139,11 @@ class _FeedItem {
             handle: participant.handle,
             avatar: participant.avatar,
             accent: _accentForId(participant.userId),
-            statusKey: null,
+            statusKey: participant.isPending ? 'pending_yurubo' : null,
           ),
       ],
       likes: yurubo.reactionCount,
+      myReactionType: yurubo.myReactionType,
       saved: false,
       liked: isOwnedByCurrentUser || yurubo.reactedByMe,
       prop: _PostProp.memory,
@@ -188,6 +190,7 @@ class _FeedItem {
   final String linkUrl;
   final String targetLabel;
   final List<_Companion> friends;
+  final String myReactionType;
   final int likes;
   final bool saved;
   final bool liked;
@@ -239,6 +242,7 @@ class _Companion {
 }
 
 String _companionStatusLabel(String? statusKey) {
+  if (statusKey == 'pending_yurubo') return '承認待ち';
   return oheyDailyStatusFromKey(statusKey).label;
 }
 
@@ -258,6 +262,7 @@ IconData _companionStatusIcon(String? statusKey) {
 }
 
 Color _companionStatusColor(String? statusKey) {
+  if (statusKey == 'pending_yurubo') return AppColors.cFFFFD84D;
   final status = oheyDailyStatusFromKey(statusKey);
   return switch (status) {
     OheyDailyStatus.available => AppColors.cFF9AF21A,
@@ -281,6 +286,8 @@ class _FeedNotification {
     this.friendRequestStatus,
     this.inviteId,
     this.inviteStatus,
+    this.yurubo,
+    this.yuruboParticipant,
   });
 
   factory _FeedNotification.fromNotification(OheyNotification notification) {
@@ -330,6 +337,8 @@ class _FeedNotification {
   final String? friendRequestStatus;
   final String? inviteId;
   final String? inviteStatus;
+  final Yurubo? yurubo;
+  final YuruboParticipant? yuruboParticipant;
 
   bool get canOpen {
     if (kind == 'friend_request_received') {
@@ -337,6 +346,9 @@ class _FeedNotification {
     }
     if (kind == 'invite_received') {
       return inviteId != null && inviteId!.isNotEmpty;
+    }
+    if (kind == 'yurubo_participation_requested') {
+      return yurubo != null && yuruboParticipant != null;
     }
     return false;
   }
@@ -348,6 +360,7 @@ class _FeedNotification {
     if (kind == 'invite_received') {
       return oheyInviteStatusFromKey(inviteStatus).isPending;
     }
+    if (kind == 'yurubo_participation_requested') return true;
     return false;
   }
 
@@ -358,6 +371,7 @@ class _FeedNotification {
     if (kind == 'invite_received') {
       return !oheyInviteStatusFromKey(inviteStatus).isPending;
     }
+    if (kind == 'yurubo_participation_requested') return false;
     return false;
   }
 
@@ -368,6 +382,7 @@ class _FeedNotification {
     if (kind == 'invite_received') {
       return oheyInviteStatusFromKey(inviteStatus).actionLabel;
     }
+    if (kind == 'yurubo_participation_requested') return '承認する';
     return null;
   }
 }
