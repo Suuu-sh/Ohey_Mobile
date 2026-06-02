@@ -718,6 +718,7 @@ class _FriendRequestNotificationSheetState
     ).label;
 
     return OheyBottomSheetShell(
+      showBottomCloseButton: false,
       title: widget.notification.title,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -859,6 +860,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
     ).label;
 
     return OheyBottomSheetShell(
+      showBottomCloseButton: false,
       title: widget.notification.title,
       child: Column(
         mainAxisSize: MainAxisSize.min,

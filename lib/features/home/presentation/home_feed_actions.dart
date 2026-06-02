@@ -154,6 +154,7 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
         ? AppColors.cFF697684
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
+      showBottomCloseButton: false,
       showHandle: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -235,6 +236,7 @@ class _FeedUserSafetyConfirmSheet extends StatelessWidget {
         ? AppColors.cFF697684
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
+      showBottomCloseButton: false,
       showHandle: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -306,6 +308,7 @@ class _FeedReportReasonSheet extends StatelessWidget {
         ? AppColors.cFF697684
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
+      showBottomCloseButton: false,
       showHandle: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,

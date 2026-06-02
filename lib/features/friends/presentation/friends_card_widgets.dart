@@ -131,6 +131,7 @@ class _FriendProfileConfirmSheet extends StatelessWidget {
         ? AppColors.cFF697684
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
+      showBottomCloseButton: false,
       showHandle: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -575,6 +576,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
         : AppColors.white.withValues(alpha: .58);
 
     return OheyBottomSheetShell(
+      showBottomCloseButton: false,
       title: 'フレンズ管理',
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
