@@ -180,35 +180,40 @@ class _OheyBottomSheetFooterButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        height: 54,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isWhite ? AppColors.cFFF2F4F6 : AppColors.darkBackgroundBottom,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          height: 54,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
             color: isWhite
-                ? AppColors.cFFD7DEE7
-                : AppColors.white.withValues(alpha: .10),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black.withValues(alpha: isWhite ? .08 : .22),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
+                ? AppColors.cFFF2F4F6
+                : AppColors.darkBackgroundBottom,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isWhite
+                  ? AppColors.cFFD7DEE7
+                  : AppColors.white.withValues(alpha: .10),
             ),
-          ],
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isWhite ? AppColors.cFF27313B : AppColors.cFFC08BFF,
-            fontSize: 16,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.35,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.black.withValues(alpha: isWhite ? .08 : .22),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isWhite ? AppColors.cFF27313B : AppColors.cFFC08BFF,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.35,
+            ),
           ),
         ),
       ),
