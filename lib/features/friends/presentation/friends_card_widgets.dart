@@ -465,6 +465,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
 
     return OheyBottomSheetShell(
       showHandle: false,
+      bottomCloseHorizontalPadding: 18,
       padding: EdgeInsets.zero,
       radius: 0,
       maxHeightFactor: 1,
