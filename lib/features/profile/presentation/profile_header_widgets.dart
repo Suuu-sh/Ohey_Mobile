@@ -532,7 +532,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
         ? (isLoading ? '読み込み中' : '本日の予定はありません')
         : event.title;
     final details = event == null
-        ? 'Oheyで参加した予定がここに表示されます'
+        ? ''
         : [event.timeLabel, event.placeText]
               .map((value) => value.trim())
               .where((value) => value.isNotEmpty)
@@ -593,31 +593,33 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                         height: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 5),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 9,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.white.withValues(alpha: .08),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
+                    if (event != null) ...[
+                      const SizedBox(height: 5),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
                           color: AppColors.white.withValues(alpha: .08),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: AppColors.white.withValues(alpha: .08),
+                          ),
+                        ),
+                        child: Text(
+                          'Today · $subtitle',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: _ProfileColors.sub.withValues(alpha: .82),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            height: 1,
+                          ),
                         ),
                       ),
-                      child: Text(
-                        event == null ? subtitle : 'Today · $subtitle',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: _ProfileColors.sub.withValues(alpha: .82),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          height: 1,
-                        ),
-                      ),
-                    ),
+                    ],
                   ],
                 ),
               ),
