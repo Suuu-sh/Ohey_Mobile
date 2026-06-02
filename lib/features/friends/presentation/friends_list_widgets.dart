@@ -1431,11 +1431,15 @@ class _AddFriendsPromoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    return Container(
-      height: 106,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+    const accent = AppColors.cFF37DFCF;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 98),
+      child: OheyThemedPanel(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+        accentColor: accent,
+        backgroundColor: isWhite
+            ? AppColors.white
+            : AppColors.darkBackgroundBottom,
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -1443,91 +1447,77 @@ class _AddFriendsPromoCard extends StatelessWidget {
               ? const [AppColors.cFF123D4A, AppColors.cFF092334]
               : const [AppColors.cFF0B3240, AppColors.cFF071A2B],
         ),
-        border: Border.all(color: AppColors.cFF37DFCF.withValues(alpha: 0.22)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cFF1FE4C9.withValues(alpha: 0.12),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 18, 18),
-              child: Row(
+        borderRadius: 20,
+        borderAlpha: .42,
+        glowAlpha: .18,
+        glowBlur: 24,
+        glowOffset: Offset.zero,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const _FriendPromoAvatarStack(),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const _FriendPromoAvatarStack(),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'フレンズを追加しよう',
-                            maxLines: 1,
-                            style: TextStyle(
-                              color: AppColors.white.withValues(alpha: 0.94),
-                              fontSize: 19,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 7),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'フレンズを増やして、もっと気軽に誘おう',
-                            maxLines: 1,
-                            style: TextStyle(
-                              color: AppColors.white.withValues(alpha: 0.68),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.1,
-                            ),
-                          ),
-                        ),
-                      ],
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'フレンズを追加しよう',
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: AppColors.white.withValues(alpha: 0.94),
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: SizedBox(
-                      width: 76,
-                      child: Semantics(
-                        button: true,
-                        label: 'フレンズを追加',
-                        child: Ohey3DButton(
-                          label: '追加',
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            onTap();
-                          },
-                          height: 40,
-                          radius: 20,
-                          color: _FriendsColors.lime,
-                          foregroundColor: AppColors.cFF0B2A22,
-                          shadowColor: AppColors.cFF77A600,
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          fontSize: 14,
-                        ),
+                  const SizedBox(height: 7),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'フレンズを増やして、もっと気軽に誘おう',
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: AppColors.white.withValues(alpha: 0.68),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.1,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 76,
+              child: Semantics(
+                button: true,
+                label: 'フレンズを追加',
+                child: Ohey3DButton(
+                  label: '追加',
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    onTap();
+                  },
+                  height: 40,
+                  radius: 20,
+                  color: _FriendsColors.lime,
+                  foregroundColor: AppColors.cFF0B2A22,
+                  shadowColor: AppColors.cFF77A600,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
