@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/yurubo.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 import '../data/notification_repository.dart';
 
@@ -126,6 +127,40 @@ class OsNotificationService {
     if (newest.isAfter(lastNotifiedAt)) {
       await prefs.setString(_lastNotifiedKey, newest.toIso8601String());
     }
+  }
+
+  Future<void> showYuruboParticipationRequest(
+    Yurubo yurubo,
+    YuruboParticipant participant,
+  ) async {
+    await _initialize();
+
+    final prefs = await SharedPreferences.getInstance();
+    final notifiedKey =
+        'ohey_notified_yurubo_request_${yurubo.id}_${participant.userId}';
+    if (prefs.getBool(notifiedKey) ?? false) return;
+
+    await _plugin.show(
+      id: 'yurubo_request:${yurubo.id}:${participant.userId}'.hashCode,
+      title: '${participant.name}さんから参加申請',
+      body: '「${yurubo.title}」への参加申請が届いたよ。アプリで承認してね。',
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'ohey_notifications',
+          'Ohey通知',
+          channelDescription: 'フレンズ申請、お誘い、ゆるぼなど厳選したOhey通知',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
+      payload: 'yurubo_request:${yurubo.id}:${participant.userId}',
+    );
+    await prefs.setBool(notifiedKey, true);
   }
 
   Future<void> showInviteReceived(OheyInvite invite) async {
