@@ -900,7 +900,7 @@ class _YuruboParticipationRequestSheetState
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        '承認待ちの申請を確認できます',
+                        '「${widget.yurubo.title}」への申請です',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -930,6 +930,7 @@ class _YuruboParticipationRequestSheetState
                     padding: const EdgeInsets.only(bottom: 10),
                     child: _YuruboParticipationRequestRow(
                       participant: participant,
+                      yuruboTitle: widget.yurubo.title,
                       isBusy: _busyUserId == participant.userId,
                       disabled: _busyUserId != null,
                       onApprove: () => _approve(participant),
@@ -959,12 +960,14 @@ class _YuruboParticipationRequestSheetState
 class _YuruboParticipationRequestRow extends StatelessWidget {
   const _YuruboParticipationRequestRow({
     required this.participant,
+    required this.yuruboTitle,
     required this.isBusy,
     required this.disabled,
     required this.onApprove,
   });
 
   final YuruboParticipant participant;
+  final String yuruboTitle;
   final bool isBusy;
   final bool disabled;
   final VoidCallback onApprove;
@@ -1013,7 +1016,18 @@ class _YuruboParticipationRequestRow extends StatelessWidget {
                     letterSpacing: -.35,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
+                Text(
+                  '申請先: ${yuruboTitle.trim().isEmpty ? 'ゆるぼ' : yuruboTitle}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.cFFC08BFF.withValues(alpha: .90),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
                 Text(
                   participant.handle.trim().isEmpty
                       ? 'Oheyフレンズ'

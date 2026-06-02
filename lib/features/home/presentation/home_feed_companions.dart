@@ -46,7 +46,9 @@ class _FeedCompanionListSheet extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      item.ownedByMe ? '承認待ちの申請を確認できます' : 'タップしてプロフィールを見る',
+                      item.ownedByMe
+                          ? '「${item.body.trim().isEmpty ? 'ゆるぼ' : item.body}」への申請です'
+                          : 'タップしてプロフィールを見る',
                       style: TextStyle(
                         color: subtitleColor,
                         fontSize: 13,
@@ -69,6 +71,7 @@ class _FeedCompanionListSheet extends ConsumerWidget {
               separatorBuilder: (_, _) => const SizedBox(height: 10),
               itemBuilder: (context, index) => _FeedCompanionTile(
                 friend: friends[index],
+                yuruboTitle: item.body,
                 canApprove:
                     item.ownedByMe &&
                     friends[index].statusKey == 'pending_yurubo',
@@ -94,12 +97,14 @@ class _FeedCompanionTile extends StatelessWidget {
   const _FeedCompanionTile({
     required this.friend,
     required this.onTap,
+    this.yuruboTitle = '',
     this.canApprove = false,
     this.onApprove,
   });
 
   final _Companion friend;
   final VoidCallback onTap;
+  final String yuruboTitle;
   final bool canApprove;
   final Future<void> Function()? onApprove;
 
@@ -161,7 +166,9 @@ class _FeedCompanionTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    friend.handleLabel,
+                    friend.statusKey == 'pending_yurubo'
+                        ? '申請先: ${yuruboTitle.trim().isEmpty ? 'ゆるぼ' : yuruboTitle}'
+                        : friend.handleLabel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
