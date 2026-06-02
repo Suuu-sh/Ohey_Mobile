@@ -877,18 +877,27 @@ class _ProfileYuruboActionRow extends StatelessWidget {
           offset: const Offset(0, 7),
         ),
       ],
-      child: const Center(
-        child: Text(
-          'ゆるぼを追加',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: AppColors.cFF101820,
-            fontSize: 14,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.3,
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'ゆるぼを追加',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppColors.cFF101820,
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.3,
+              ),
+            ),
           ),
-        ),
+          OheyGeneratedIcon(
+            CupertinoIcons.plus,
+            color: AppColors.cFF101820,
+            size: 18,
+          ),
+        ],
       ),
     );
   }
@@ -916,18 +925,27 @@ class _ProfileStatusActionRow extends StatelessWidget {
           offset: const Offset(0, 7),
         ),
       ],
-      child: const Center(
-        child: Text(
-          'ステータス変更',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: AppColors.cFF101820,
-            fontSize: 13,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.4,
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'ステータス変更',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppColors.cFF101820,
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.4,
+              ),
+            ),
           ),
-        ),
+          OheyGeneratedIcon(
+            CupertinoIcons.chevron_right,
+            color: AppColors.cFF101820,
+            size: 16,
+          ),
+        ],
       ),
     );
   }
@@ -964,34 +982,44 @@ class _ProfileWishListActionRow extends StatelessWidget {
           offset: const Offset(0, 7),
         ),
       ],
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
-          const Text(
-            'やりたいこと',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.cFF101820,
-              fontSize: 13,
-              fontWeight: FontWeight.w900,
-              height: 1,
-              letterSpacing: -.35,
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'やりたいこと',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.cFF101820,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                    letterSpacing: -.35,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  countLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.cFF101820.withValues(alpha: .62),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 3),
-          Text(
-            countLabel,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.cFF101820.withValues(alpha: .62),
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              height: 1,
-            ),
+          OheyGeneratedIcon(
+            CupertinoIcons.chevron_right,
+            color: AppColors.cFF101820,
+            size: 16,
           ),
         ],
       ),
@@ -1021,18 +1049,27 @@ class _ProfileFriendActionRow extends StatelessWidget {
           offset: const Offset(0, 7),
         ),
       ],
-      child: const Center(
-        child: Text(
-          'フレンズを追加',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: AppColors.cFF101820,
-            fontSize: 14,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.3,
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'フレンズを追加',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppColors.cFF101820,
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -.3,
+              ),
+            ),
           ),
-        ),
+          OheyGeneratedIcon(
+            CupertinoIcons.plus,
+            color: AppColors.cFF101820,
+            size: 18,
+          ),
+        ],
       ),
     );
   }
