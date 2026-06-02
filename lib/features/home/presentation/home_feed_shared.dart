@@ -286,6 +286,8 @@ class _FeedNotification {
     this.friendRequestStatus,
     this.inviteId,
     this.inviteStatus,
+    this.yurubo,
+    this.yuruboParticipant,
   });
 
   factory _FeedNotification.fromNotification(OheyNotification notification) {
@@ -335,6 +337,8 @@ class _FeedNotification {
   final String? friendRequestStatus;
   final String? inviteId;
   final String? inviteStatus;
+  final Yurubo? yurubo;
+  final YuruboParticipant? yuruboParticipant;
 
   bool get canOpen {
     if (kind == 'friend_request_received') {
@@ -342,6 +346,9 @@ class _FeedNotification {
     }
     if (kind == 'invite_received') {
       return inviteId != null && inviteId!.isNotEmpty;
+    }
+    if (kind == 'yurubo_participation_requested') {
+      return yurubo != null && yuruboParticipant != null;
     }
     return false;
   }
@@ -353,6 +360,7 @@ class _FeedNotification {
     if (kind == 'invite_received') {
       return oheyInviteStatusFromKey(inviteStatus).isPending;
     }
+    if (kind == 'yurubo_participation_requested') return true;
     return false;
   }
 
@@ -363,6 +371,7 @@ class _FeedNotification {
     if (kind == 'invite_received') {
       return !oheyInviteStatusFromKey(inviteStatus).isPending;
     }
+    if (kind == 'yurubo_participation_requested') return false;
     return false;
   }
 
@@ -373,6 +382,7 @@ class _FeedNotification {
     if (kind == 'invite_received') {
       return oheyInviteStatusFromKey(inviteStatus).actionLabel;
     }
+    if (kind == 'yurubo_participation_requested') return '承認する';
     return null;
   }
 }

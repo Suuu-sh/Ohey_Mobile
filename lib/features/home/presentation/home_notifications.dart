@@ -15,9 +15,13 @@ class _FeedNotificationsScreenState
   @override
   Widget build(BuildContext context) {
     final notificationsAsync = ref.watch(notificationControllerProvider);
-    final notifications = notificationsAsync.asData?.value
-        .map(_FeedNotification.fromNotification)
-        .toList(growable: false);
+    final yurubosAsync = ref.watch(yuruboControllerProvider);
+    final notifications = [
+      ...?_pendingYuruboRequestNotifications(yurubosAsync.asData?.value),
+      ...?notificationsAsync.asData?.value.map(
+        _FeedNotification.fromNotification,
+      ),
+    ];
 
     if (!_scheduledRead &&
         (notificationsAsync.asData?.value.any(
@@ -122,13 +126,16 @@ class _FeedNotificationsScreenState
                         ],
                       ),
                       const SizedBox(height: 18),
-                      if (notificationsAsync.isLoading && notifications == null)
+                      if (notificationsAsync.isLoading &&
+                          notifications.isEmpty &&
+                          notificationsAsync.isLoading)
                         const Padding(
                           padding: EdgeInsets.only(top: 42),
                           child: Center(child: CupertinoActivityIndicator()),
                         )
                       else if (notificationsAsync.hasError &&
-                          notifications == null)
+                          notifications.isEmpty &&
+                          notificationsAsync.isLoading)
                         _FeedEmptyState(
                           icon: CupertinoIcons.exclamationmark_triangle,
                           isWhite: isWhite,
@@ -136,11 +143,11 @@ class _FeedNotificationsScreenState
                           message: '時間をおいて再度お試しください。',
                           accent: AppColors.cFFFF75B5,
                         )
-                      else if ((notifications ?? const []).isEmpty)
+                      else if (notifications.isEmpty)
                         _NotificationEmptyState(isWhite: isWhite)
                       else
                         ..._buildNotificationSections(
-                          notifications!,
+                          notifications,
                           isWhite: isWhite,
                         ),
                     ],
@@ -217,7 +224,58 @@ class _FeedNotificationsScreenState
     }
     if (notification.kind == 'invite_received') {
       await _openInviteNotification(notification);
+      return;
     }
+    if (notification.kind == 'yurubo_participation_requested') {
+      await _openYuruboParticipationRequestNotification(notification);
+    }
+  }
+
+  List<_FeedNotification>? _pendingYuruboRequestNotifications(
+    List<Yurubo>? yurubos,
+  ) {
+    if (yurubos == null) return null;
+    final authUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    if (authUserId == null || authUserId.isEmpty) return const [];
+    return [
+      for (final yurubo in yurubos)
+        if (yurubo.ownerUserId == authUserId)
+          for (final participant in yurubo.participants)
+            if (participant.isPending)
+              _FeedNotification(
+                kind: 'yurubo_participation_requested',
+                title: '${participant.name}さんから参加申請',
+                message: '「${yurubo.title}」への参加申請が届いています。',
+                timeAgo: _relativeTimeText(yurubo.createdAt),
+                icon: CupertinoIcons.person_2_fill,
+                accent: AppColors.cFFC08BFF,
+                unread: true,
+                yurubo: yurubo,
+                yuruboParticipant: participant,
+              ),
+    ];
+  }
+
+  Future<void> _openYuruboParticipationRequestNotification(
+    _FeedNotification notification,
+  ) async {
+    final yurubo = notification.yurubo;
+    if (yurubo == null || notification.yuruboParticipant == null) {
+      OheyToast.show(context, 'この参加申請を開けませんでした。もう一度お試しください。');
+      return;
+    }
+    await showOheyBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      barrierColor: AppColors.black.withValues(alpha: .62),
+      builder: (context) => _FeedCompanionListSheet(
+        item: _FeedItem.fromYurubo(
+          yurubo,
+          currentUserId: ref.read(supabaseClientProvider).auth.currentUser?.id,
+        ),
+      ),
+    );
   }
 
   Future<void> _openFriendRequestNotification(

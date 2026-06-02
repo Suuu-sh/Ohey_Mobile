@@ -283,11 +283,16 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       return;
     }
     for (final yurubo in yurubos) {
-      if (yurubo.ownerUserId != currentUser.userId) continue;
+      if (yurubo.ownerUserId !=
+          ref.read(supabaseClientProvider).auth.currentUser?.id) {
+        continue;
+      }
       final pending = yurubo.participants
           .where((participant) => participant.isPending)
           .toList(growable: false);
-      if (pending.isEmpty) continue;
+      if (pending.isEmpty) {
+        continue;
+      }
       final requestKey = '${yurubo.id}:${pending.first.userId}';
       if (_notifiedYuruboRequestKeys.add(requestKey)) {
         unawaited(
