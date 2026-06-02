@@ -181,7 +181,7 @@ class _OheyBottomSheetFooterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18),
+      padding: EdgeInsets.zero,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
