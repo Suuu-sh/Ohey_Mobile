@@ -688,6 +688,7 @@ class _DailyStatusRequiredSheetState
       canPop: false,
       child: OheyBottomSheetShell(
         showHandle: true,
+        showBottomCloseButton: false,
         maxHeightFactor: .88,
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
         child: Column(
