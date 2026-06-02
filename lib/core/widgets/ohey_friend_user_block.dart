@@ -152,63 +152,45 @@ class OheyFriendUserBlock extends StatelessWidget {
                     accent: accent,
                     enabled: statusEnabled,
                   ),
-                  if (!compact) ...[
-                    const SizedBox(height: 7),
-                    Text(
-                      statusReason,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: isWhite
-                            ? AppColors.cFF667381
-                            : AppColors.white.withValues(alpha: .62),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
             if (showInvite) ...[
               const SizedBox(width: 10),
-              Padding(
-                padding: EdgeInsets.only(top: compact ? 28 : 34),
-                child: SizedBox(
-                  width: 76,
-                  child: OheyInviteSuccessBurst(
-                    builder: (context, runWithBurst, flightAnimation) =>
-                        Ohey3DButton(
-                          label: inviteSent ? '誘い済み' : '誘う',
-                          icon: null,
-                          customIcon: null,
-                          onTap: inviteEnabled
-                              ? () => runWithBurst(
-                                  onInvite,
-                                  afterAnimation: onInviteAnimationComplete,
-                                )
-                              : null,
-                          enabled: inviteEnabled,
-                          forcePressed: inviteSent || invitePressed,
-                          height: 40,
-                          radius: 20,
-                          color: inviteButtonColor,
-                          foregroundColor: inviteForeground,
-                          shadowColor: inviteSent
-                              ? AppColors.cFF1A222C
-                              : !inviteAvailable
-                              ? AppColors.cFF1A222C
-                              : statusEnabled
-                              ? Color.lerp(accent, AppColors.black, .32)
-                              : AppColors.cFF111923,
-                          disabledColor: inviteSent
-                              ? AppColors.cFF3C4652
-                              : AppColors.cFF2B3441,
-                          disabledOpacity: 1,
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          fontSize: 14,
-                        ),
-                  ),
+              SizedBox(
+                width: 76,
+                child: OheyInviteSuccessBurst(
+                  builder: (context, runWithBurst, flightAnimation) =>
+                      Ohey3DButton(
+                        label: inviteSent ? '誘い済み' : '誘う',
+                        icon: null,
+                        customIcon: null,
+                        onTap: inviteEnabled
+                            ? () => runWithBurst(
+                                onInvite,
+                                afterAnimation: onInviteAnimationComplete,
+                              )
+                            : null,
+                        enabled: inviteEnabled,
+                        forcePressed: inviteSent || invitePressed,
+                        height: 40,
+                        radius: 20,
+                        color: inviteButtonColor,
+                        foregroundColor: inviteForeground,
+                        shadowColor: inviteSent
+                            ? AppColors.cFF1A222C
+                            : !inviteAvailable
+                            ? AppColors.cFF1A222C
+                            : statusEnabled
+                            ? Color.lerp(accent, AppColors.black, .32)
+                            : AppColors.cFF111923,
+                        disabledColor: inviteSent
+                            ? AppColors.cFF3C4652
+                            : AppColors.cFF2B3441,
+                        disabledOpacity: 1,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        fontSize: 14,
+                      ),
                 ),
               ),
             ],
