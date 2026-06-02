@@ -723,7 +723,7 @@ class _ProfileSummaryStats extends StatelessWidget {
               icon: CupertinoIcons.house_fill,
               iconColor: AppColors.cFFC08BFF,
               value: '1',
-              label: 'ルーム',
+              label: 'やりたいこと',
             ),
           ),
           const _ProfileStatsDivider(),
