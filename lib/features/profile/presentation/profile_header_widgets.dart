@@ -472,6 +472,7 @@ class _ProfileActivityHome extends StatelessWidget {
           _ProfileTodayScheduleSection(
             joinedYurubos: joinedYurubos,
             isLoading: isYuruboLoading,
+            onFindTap: onCreateYuruboTap,
           ),
           const SizedBox(height: 22),
           Padding(
@@ -519,10 +520,12 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
   const _ProfileTodayScheduleSection({
     required this.joinedYurubos,
     required this.isLoading,
+    required this.onFindTap,
   });
 
   final List<Yurubo> joinedYurubos;
   final bool isLoading;
+  final VoidCallback onFindTap;
 
   @override
   Widget build(BuildContext context) {
@@ -624,7 +627,23 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 14),
-              _TodayScheduleParticipants(event: event, accent: accent),
+              if (event == null)
+                SizedBox(
+                  width: 82,
+                  child: Ohey3DButton(
+                    label: '探す',
+                    onTap: isLoading ? null : onFindTap,
+                    height: 42,
+                    radius: 21,
+                    color: AppColors.cFFFF75B5,
+                    foregroundColor: AppColors.cFF101820,
+                    shadowColor: AppColors.cFFE05F83,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    fontSize: 14,
+                  ),
+                )
+              else
+                _TodayScheduleParticipants(event: event, accent: accent),
             ],
           ),
         ),
