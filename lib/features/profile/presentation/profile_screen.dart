@@ -358,6 +358,8 @@ class _ProfileCreateWishItemSheetState
                   label: '自分だけ',
                   selected: _visibility == 'private',
                   onTap: () => setState(() => _visibility = 'private'),
+                  selectedColor: AppColors.cFF20B9FF,
+                  selectedBottomColor: AppColors.cFF0B78B7,
                 ),
               ),
               const SizedBox(width: 10),
@@ -366,6 +368,8 @@ class _ProfileCreateWishItemSheetState
                   label: '友達に公開',
                   selected: _visibility == 'friends',
                   onTap: () => setState(() => _visibility = 'friends'),
+                  selectedColor: AppColors.cFF20B9FF,
+                  selectedBottomColor: AppColors.cFF0B78B7,
                 ),
               ),
             ],
@@ -377,9 +381,9 @@ class _ProfileCreateWishItemSheetState
             onTap: _saving ? null : _submit,
             height: 50,
             radius: 22,
-            color: AppColors.cFFC08BFF,
-            foregroundColor: AppColors.cFF101820,
-            shadowColor: AppColors.cFF7F51C9,
+            color: AppColors.cFF20B9FF,
+            foregroundColor: AppColors.cFF06111D,
+            shadowColor: AppColors.cFF0B78B7,
           ),
         ],
       ),
@@ -644,17 +648,21 @@ class _ProfileYuruboChoice extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.selectedColor = AppColors.cFFC08BFF,
+    this.selectedBottomColor = AppColors.cFF7F51C9,
   });
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final Color selectedColor;
+  final Color selectedBottomColor;
   @override
   Widget build(BuildContext context) => Ohey3DButtonSurface(
     onTap: onTap,
     height: 46,
     radius: 20,
-    color: selected ? AppColors.cFFC08BFF : AppColors.cFF263348,
-    bottomColor: selected ? AppColors.cFF7F51C9 : AppColors.cFF151D2A,
+    color: selected ? selectedColor : AppColors.cFF263348,
+    bottomColor: selected ? selectedBottomColor : AppColors.cFF151D2A,
     padding: const EdgeInsets.symmetric(horizontal: 12),
     child: Center(
       child: Text(

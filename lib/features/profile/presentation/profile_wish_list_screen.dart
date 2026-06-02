@@ -70,7 +70,7 @@ class _ProfileWishListEmptyState extends StatelessWidget {
     return OheyEmptyState(
       visual: const Icon(
         CupertinoIcons.sparkles,
-        color: AppColors.cFFC08BFF,
+        color: AppColors.cFF20B9FF,
         size: 46,
       ),
       title: 'やりたいことを保存しておこう',
@@ -86,9 +86,9 @@ class _ProfileWishListEmptyState extends StatelessWidget {
           onTap: onCreate,
           height: 50,
           radius: 22,
-          color: AppColors.cFFC08BFF,
+          color: AppColors.cFF20B9FF,
           foregroundColor: AppColors.cFF101820,
-          shadowColor: AppColors.cFF7F51C9,
+          shadowColor: AppColors.cFF0B78B7,
         ),
       ),
     );
@@ -116,7 +116,7 @@ class _ProfileWishListHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: AppColors.cFFC08BFF,
+                    color: AppColors.cFF20B9FF,
                     fontSize: 30,
                     height: 1,
                     fontWeight: FontWeight.w900,
@@ -141,7 +141,7 @@ class _ProfileWishListHeader extends StatelessWidget {
           OheyHeaderIconButton(
             icon: CupertinoIcons.plus,
             semanticLabel: '追加',
-            color: AppColors.cFFC08BFF,
+            color: AppColors.cFF20B9FF,
             onTap: onCreate,
           ),
         ],
@@ -215,12 +215,12 @@ class _ProfileWishListCard extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.cFFC08BFF.withValues(alpha: .16),
+                  color: AppColors.cFF20B9FF.withValues(alpha: .16),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   CupertinoIcons.plus,
-                  color: AppColors.cFFC08BFF,
+                  color: AppColors.cFF20B9FF,
                   size: 22,
                 ),
               ),
