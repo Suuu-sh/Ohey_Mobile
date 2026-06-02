@@ -132,11 +132,6 @@ class _FeedPostActionsSheet extends StatelessWidget {
               ),
             ],
           ],
-          const SizedBox(height: 12),
-          _FeedModalTextButton(
-            label: 'キャンセル',
-            onTap: () => Navigator.of(context).pop(),
-          ),
         ],
       ),
     );
@@ -350,11 +345,6 @@ class _FeedReportReasonSheet extends StatelessWidget {
             if (reason != _FeedReportReason.values.last)
               const SizedBox(height: 9),
           ],
-          const SizedBox(height: 12),
-          _FeedModalTextButton(
-            label: 'キャンセル',
-            onTap: () => Navigator.of(context).pop(),
-          ),
         ],
       ),
     );
