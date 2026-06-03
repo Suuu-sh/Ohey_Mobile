@@ -163,7 +163,7 @@ class OheyFriendUserBlock extends StatelessWidget {
                 child: OheyInviteSuccessBurst(
                   builder: (context, runWithBurst, flightAnimation) =>
                       Ohey3DButton(
-                        label: inviteSent ? '誘い済み' : '誘う',
+                        label: inviteSent ? '招待済み' : '招待する',
                         icon: null,
                         customIcon: null,
                         onTap: inviteEnabled

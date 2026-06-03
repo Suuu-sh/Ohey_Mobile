@@ -745,8 +745,8 @@ class _GroupScheduleSection extends StatelessWidget {
                 label: isSendingInvite
                     ? '送信中'
                     : isGroupInvited
-                    ? '誘い済み'
-                    : '全員誘う',
+                    ? '招待済み'
+                    : '全員招待',
                 onTap: canInviteGroup ? onInviteGroup : null,
                 enabled: canInviteGroup,
                 height: 38,
@@ -1024,7 +1024,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
             width: double.infinity,
             child: OheyInviteSuccessBurst(
               builder: (context, runWithBurst, flightAnimation) => Ohey3DButton(
-                label: isInvited ? '誘い済み' : '誘う',
+                label: isInvited ? '招待済み' : '招待する',
                 icon: null,
                 customIcon: null,
                 onTap: isInviteEnabled

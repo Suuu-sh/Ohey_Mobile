@@ -51,7 +51,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('誘い済み'), findsOneWidget);
+    expect(find.text('招待済み'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
