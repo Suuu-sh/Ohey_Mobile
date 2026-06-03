@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/contracts/ohey_api_paths.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
+import '../../../core/models/ohey_friend_request_status.dart';
+import '../../../core/models/ohey_invite.dart';
 
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   return BackendNotificationRepository(ref.watch(backendApiClientProvider));
@@ -95,9 +97,12 @@ abstract interface class NotificationRepository {
   Future<void> markAllRead();
   Future<void> updateFriendRequest({
     required String friendRequestId,
-    required String status,
+    required OheyFriendRequestStatus status,
   });
-  Future<void> updateInvite({required String inviteId, required String status});
+  Future<void> updateInvite({
+    required String inviteId,
+    required OheyInviteStatus status,
+  });
 }
 
 class BackendNotificationRepository implements NotificationRepository {
@@ -122,19 +127,19 @@ class BackendNotificationRepository implements NotificationRepository {
   @override
   Future<void> updateFriendRequest({
     required String friendRequestId,
-    required String status,
+    required OheyFriendRequestStatus status,
   }) async {
     await _client.patch(OheyApiPaths.friendRequest(friendRequestId), {
-      'status': status,
+      'status': status.key,
     });
   }
 
   @override
   Future<void> updateInvite({
     required String inviteId,
-    required String status,
+    required OheyInviteStatus status,
   }) async {
-    await _client.patch(OheyApiPaths.invite(inviteId), {'status': status});
+    await _client.patch(OheyApiPaths.invite(inviteId), {'status': status.key});
   }
 }
 

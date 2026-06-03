@@ -384,13 +384,7 @@ String _adminReportReasonLabel(String reason) {
 }
 
 String _adminReportStatusLabel(String status) {
-  return switch (status) {
-    OheyStatusKeys.pending => '未対応',
-    OheyStatusKeys.reviewing => '対応中',
-    OheyStatusKeys.resolved => '解決済み',
-    OheyStatusKeys.dismissed => '却下',
-    _ => status,
-  };
+  return oheyModerationStatusFromKey(status).label;
 }
 
 String _adminNormalizeStatus(String status) {

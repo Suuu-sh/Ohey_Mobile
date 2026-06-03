@@ -4,6 +4,7 @@ import '../../../core/contracts/ohey_api_paths.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/ohey_avatar.dart';
+import '../../../core/models/ohey_visibility.dart';
 import '../../../core/models/yurubo.dart';
 
 final yuruboRepositoryProvider = Provider<YuruboRepository>((ref) {
@@ -25,7 +26,7 @@ class YuruboCreateDraft {
     this.category = OheyCategoryKeys.other,
     this.placeText = '',
     this.timeLabel = '',
-    this.visibility = OheyVisibilityKeys.friends,
+    this.visibility = oheyFriendsVisibilityKey,
     this.startsAt,
     this.groupId,
     this.wishItemId,
@@ -115,7 +116,7 @@ class BackendYuruboRepository implements YuruboRepository {
   Future<void> setReaction(String yuruboId, {required bool reacted}) async {
     if (reacted) {
       await _client.put(OheyApiPaths.yuruboReaction(yuruboId), const {
-        'reaction_type': OheyReactionTypeKeys.interested,
+        'reaction_type': oheyYuruboInterestedReactionKey,
       });
     } else {
       await _client.delete(OheyApiPaths.yuruboReaction(yuruboId));
@@ -156,7 +157,7 @@ Yurubo _yuruboFromRow(Map<String, dynamic> row) {
     timeLabel: ((row['time_label'] as String?) ?? '').trim(),
     startsAt: startsAt,
     status: ((row['status'] as String?) ?? OheyStatusKeys.open).trim(),
-    visibility: ((row['visibility'] as String?) ?? OheyVisibilityKeys.friends)
+    visibility: ((row['visibility'] as String?) ?? oheyFriendsVisibilityKey)
         .trim(),
     visibilityLabel: ((row['visibility_label'] as String?) ?? '全フレンズ').trim(),
     createdAt: createdAt,
@@ -188,7 +189,7 @@ List<YuruboParticipant> _participantsFromRow(Map<String, dynamic> row) {
               OheyAvatar.defaultAvatar,
           reactionType:
               ((participant['reaction_type'] as String?) ??
-                      OheyReactionTypeKeys.available)
+                      oheyApprovedYuruboReactionKey)
                   .trim(),
         );
       })

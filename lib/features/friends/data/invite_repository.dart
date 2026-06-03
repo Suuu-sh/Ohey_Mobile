@@ -68,8 +68,7 @@ class InviteRepository {
   }) async {
     final userId = _userId;
     if (userId == null) throw StateError('返信するにはログインが必要です。');
-    if (status != OheyInviteStatus.accepted &&
-        status != OheyInviteStatus.rejected) {
+    if (!status.isResponseAction) {
       throw StateError('このステータスには変更できません。');
     }
     await _client.patch(OheyApiPaths.invite(inviteId), {'status': status.key});

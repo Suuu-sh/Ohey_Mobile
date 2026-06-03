@@ -576,9 +576,7 @@ class _FeedCardFooter extends StatelessWidget {
 String _feedLikeActionLabel(_FeedItem item) {
   if (item.ownedByMe) return '募集主';
   if (item.liked) {
-    return item.myReactionType == OheyReactionTypeKeys.available
-        ? '参加済み'
-        : '申請中';
+    return item.myReactionType.isApprovedYuruboReaction ? '参加済み' : '申請中';
   }
   return '参加申請';
 }
@@ -766,9 +764,7 @@ String _yuruboBody(_FeedItem item) {
 String _yuruboInterestedActionLabel(_FeedItem item) {
   if (item.ownedByMe) return '募集主';
   if (item.liked) {
-    return item.myReactionType == OheyReactionTypeKeys.available
-        ? '参加済み'
-        : '申請中';
+    return item.myReactionType.isApprovedYuruboReaction ? '参加済み' : '申請中';
   }
   return '参加申請';
 }

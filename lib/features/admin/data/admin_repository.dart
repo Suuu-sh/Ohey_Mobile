@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/contracts/ohey_api_paths.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
+import '../../../core/models/ohey_moderation_status.dart';
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
   return AdminRepository(ref.watch(backendApiClientProvider));
@@ -81,22 +82,22 @@ class AdminRepository {
   }
 
   Future<List<AdminMemoryReport>> listMemoryReports({
-    String status = OheyStatusKeys.pending,
+    OheyModerationStatus status = OheyModerationStatus.pending,
   }) async {
     final rows = await _client.getRows(
       OheyApiPaths.adminMemoryReports,
-      query: {'status': status},
+      query: {'status': status.key},
     );
     return rows.map(AdminMemoryReport.fromJson).toList(growable: false);
   }
 
   Future<void> updateMemoryReport({
     required String id,
-    required String status,
+    required OheyModerationStatus status,
     String? moderationNote,
   }) async {
     await _client.patch(OheyApiPaths.adminMemoryReport(id), {
-      'status': status,
+      'status': status.key,
       'moderation_note': moderationNote?.trim() ?? '',
     });
   }
@@ -311,7 +312,7 @@ class AdminMemoryReport {
       id: json['id'] as String? ?? '',
       memoryId: json['memory_id'] as String? ?? '',
       reason: json['reason'] as String? ?? OheyReportReasonKeys.other,
-      status: json['status'] as String? ?? OheyStatusKeys.pending,
+      status: json['status'] as String? ?? oheyModerationPendingKey,
       reporterDisplayName: reporter['display_name'] as String? ?? 'Reporter',
       reporterHandle: reporter['user_id'] as String? ?? '',
       ownerDisplayName: owner['display_name'] as String? ?? 'Ohey user',

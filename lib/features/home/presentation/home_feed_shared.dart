@@ -140,7 +140,7 @@ class _FeedItem {
             avatar: participant.avatar,
             accent: _accentForId(participant.userId),
             statusKey: participant.isPending
-                ? OheyReactionTypeKeys.pendingYurubo
+                ? oheyPendingYuruboCompanionKey
                 : null,
           ),
       ],
@@ -244,7 +244,7 @@ class _Companion {
 }
 
 String _companionStatusLabel(String? statusKey) {
-  if (statusKey == OheyReactionTypeKeys.pendingYurubo) return '承認待ち';
+  if (statusKey.isPendingYuruboCompanion) return '承認待ち';
   return oheyDailyStatusFromKey(statusKey).label;
 }
 
@@ -257,7 +257,7 @@ IconData _companionStatusIcon(String? statusKey) {
 }
 
 Color _companionStatusColor(String? statusKey) {
-  if (statusKey == OheyReactionTypeKeys.pendingYurubo) {
+  if (statusKey.isPendingYuruboCompanion) {
     return AppColors.cFFFFD84D;
   }
   final status = oheyDailyStatusFromKey(statusKey);

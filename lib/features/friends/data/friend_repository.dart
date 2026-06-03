@@ -4,6 +4,7 @@ import '../../../core/contracts/ohey_api_paths.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/ohey_avatar.dart';
+import '../../../core/models/ohey_friend_request_status.dart';
 
 final friendRepositoryProvider = Provider<FriendRepository>((ref) {
   return FriendRepository(ref.watch(backendApiClientProvider));
@@ -83,14 +84,17 @@ class FriendRepository {
         .toList(growable: false);
   }
 
-  Future<void> updateFriendRequest(String requestId, String status) async {
+  Future<void> updateFriendRequest(
+    String requestId,
+    OheyFriendRequestStatus status,
+  ) async {
     await _client.patch(OheyApiPaths.friendRequest(requestId), {
-      'status': status,
+      'status': status.key,
     });
   }
 
   Future<void> cancelFriendRequest(String requestId) async {
-    await updateFriendRequest(requestId, OheyStatusKeys.cancelled);
+    await updateFriendRequest(requestId, OheyFriendRequestStatus.cancelled);
   }
 }
 

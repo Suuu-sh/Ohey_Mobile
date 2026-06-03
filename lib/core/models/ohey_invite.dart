@@ -3,6 +3,11 @@ import 'ohey_friend.dart';
 
 enum OheyInviteStatus { pending, accepted, rejected, cancelled }
 
+const oheyInviteResponseStatuses = <OheyInviteStatus>[
+  OheyInviteStatus.accepted,
+  OheyInviteStatus.rejected,
+];
+
 class OheyInvite {
   const OheyInvite({
     required this.id,
@@ -80,4 +85,15 @@ extension OheyInviteStatusX on OheyInviteStatus {
   };
 
   bool get isPending => this == OheyInviteStatus.pending;
+
+  bool get isAccepted => this == OheyInviteStatus.accepted;
+
+  bool get isResponseAction => oheyInviteResponseStatuses.contains(this);
+
+  String get responseToastMessage => switch (this) {
+    OheyInviteStatus.accepted => '予定が成立しました。',
+    OheyInviteStatus.rejected => '招待を見送りました。',
+    OheyInviteStatus.cancelled => '招待を取り消しました。',
+    OheyInviteStatus.pending => label,
+  };
 }

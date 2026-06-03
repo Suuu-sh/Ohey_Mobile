@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/contracts/ohey_api_paths.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
+import '../../../core/models/ohey_visibility.dart';
 import '../../../core/models/wish_item.dart';
 
 final wishItemRepositoryProvider = Provider<WishItemRepository>((ref) {
@@ -25,7 +26,7 @@ class WishItemCreateDraft {
     this.category = OheyCategoryKeys.other,
     this.placeText = '',
     this.placeUrl = '',
-    this.visibility = OheyVisibilityKeys.private,
+    this.visibility = oheyPrivateVisibilityKey,
   });
 
   final String title;
@@ -85,7 +86,7 @@ WishItem _wishItemFromRow(Map<String, dynamic> row) {
     category: ((row['category'] as String?) ?? OheyCategoryKeys.other).trim(),
     placeText: ((row['place_text'] as String?) ?? '').trim(),
     placeUrl: ((row['place_url'] as String?) ?? '').trim(),
-    visibility: ((row['visibility'] as String?) ?? OheyVisibilityKeys.private)
+    visibility: ((row['visibility'] as String?) ?? oheyPrivateVisibilityKey)
         .trim(),
     createdAt:
         DateTime.tryParse((row['created_at'] as String?) ?? '') ??

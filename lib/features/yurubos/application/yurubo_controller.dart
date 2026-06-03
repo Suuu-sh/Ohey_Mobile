@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/models/yurubo.dart';
 import '../data/yurubo_repository.dart';
 
@@ -47,7 +46,7 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
                 for (final participant in item.participants)
                   participant.userId == userId
                       ? participant.copyWith(
-                          reactionType: OheyReactionTypeKeys.available,
+                          reactionType: oheyApprovedYuruboReactionKey,
                         )
                       : participant,
               ],
@@ -102,7 +101,7 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
                   reactionCount: nextCount,
                   reactedByMe: reacted,
                   myReactionType: reacted
-                      ? OheyReactionTypeKeys.interested
+                      ? oheyYuruboInterestedReactionKey
                       : '',
                 )
               : current[i],

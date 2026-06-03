@@ -263,13 +263,13 @@ Future<void> _showReportStatusSheet(
   BuildContext context,
   WidgetRef ref,
   AdminMemoryReport report,
-  String status,
+  OheyModerationStatus status,
 ) async {
   final noteController = TextEditingController(text: report.moderationNote);
   final note = await showOheyBottomSheet<String>(
     context: context,
     builder: (sheetContext) => _AdminSheet(
-      title: '通報を${_adminReportStatusLabel(status)}にする',
+      title: '通報を${status.label}にする',
       child: Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
@@ -311,7 +311,7 @@ Future<void> _showReportStatusSheet(
         );
     ref.invalidate(adminMemoryReportsProvider);
     if (context.mounted) {
-      OheyToast.show(context, '通報を${_adminReportStatusLabel(status)}にしました。');
+      OheyToast.show(context, '通報を${status.label}にしました。');
     }
   } catch (e) {
     if (context.mounted) OheyToast.show(context, '更新できませんでした: $e');
@@ -335,7 +335,7 @@ Future<void> _confirmDeleteReportedPost(
         .read(adminControllerProvider)
         .updateMemoryReport(
           id: report.id,
-          status: OheyStatusKeys.resolved,
+          status: OheyModerationStatus.resolved,
           moderationNote: 'Deleted reported post from admin app',
         );
     ref.invalidate(adminMemoryReportsProvider);

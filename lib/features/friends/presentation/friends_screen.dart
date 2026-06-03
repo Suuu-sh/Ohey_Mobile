@@ -14,6 +14,7 @@ import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/data/user_repository.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
+import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_user.dart';
 import '../../../core/models/wish_item.dart';
 import '../../../core/theme/app_colors.dart';
@@ -641,16 +642,16 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   }
 
   Future<void> _acceptFriendRequest(OheyFriendRequestItem request) async {
-    await _respondToFriendRequest(request, OheyStatusKeys.accepted);
+    await _respondToFriendRequest(request, OheyFriendRequestStatus.accepted);
   }
 
   Future<void> _rejectFriendRequest(OheyFriendRequestItem request) async {
-    await _respondToFriendRequest(request, OheyStatusKeys.rejected);
+    await _respondToFriendRequest(request, OheyFriendRequestStatus.rejected);
   }
 
   Future<void> _respondToFriendRequest(
     OheyFriendRequestItem request,
-    String status,
+    OheyFriendRequestStatus status,
   ) async {
     try {
       HapticFeedback.lightImpact();
@@ -661,10 +662,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       ref.invalidate(friendsProvider);
       ref.invalidate(friendsForDateProvider);
       if (!mounted) return;
-      OheyToast.show(
-        context,
-        status == OheyStatusKeys.accepted ? 'フレンズ申請を承認しました' : '申請を見送りました',
-      );
+      OheyToast.show(context, status.responseToastMessage);
     } catch (_) {
       if (!mounted) return;
       OheyToast.show(

@@ -74,8 +74,7 @@ class _FeedCompanionListSheet extends ConsumerWidget {
                 yuruboTitle: item.body,
                 canApprove:
                     item.ownedByMe &&
-                    friends[index].statusKey ==
-                        OheyReactionTypeKeys.pendingYurubo,
+                    friends[index].statusKey.isPendingYuruboCompanion,
                 onApprove: () async {
                   await ref
                       .read(yuruboControllerProvider.notifier)
@@ -167,18 +166,16 @@ class _FeedCompanionTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    friend.statusKey == OheyReactionTypeKeys.pendingYurubo
+                    friend.statusKey.isPendingYuruboCompanion
                         ? '申請先: ${yuruboTitle.trim().isEmpty ? 'ゆるぼ' : yuruboTitle}'
                         : friend.handleLabel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color:
-                          friend.statusKey == OheyReactionTypeKeys.pendingYurubo
+                      color: friend.statusKey.isPendingYuruboCompanion
                           ? AppColors.cFFC08BFF
                           : subtitleColor,
-                      fontSize:
-                          friend.statusKey == OheyReactionTypeKeys.pendingYurubo
+                      fontSize: friend.statusKey.isPendingYuruboCompanion
                           ? 12.5
                           : 12,
                       fontWeight: FontWeight.w900,
@@ -187,7 +184,7 @@ class _FeedCompanionTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (friend.statusKey != OheyReactionTypeKeys.pendingYurubo) ...[
+            if (!friend.statusKey.isPendingYuruboCompanion) ...[
               _CompanionStatusBadge(
                 label: _companionStatusLabel(friend.statusKey),
                 color: statusColor,

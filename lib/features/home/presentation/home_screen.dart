@@ -17,6 +17,7 @@ import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/ohey_visibility.dart';
 import '../../../core/models/wish_item.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_user.dart';
