@@ -62,6 +62,13 @@ extension OheyDailyStatusX on OheyDailyStatus {
     OheyDailyStatus.unselected || OheyDailyStatus.hasPlans => false,
   };
 
+  double get availabilityWeight => switch (this) {
+    OheyDailyStatus.available => 1.0,
+    OheyDailyStatus.maybeAvailable => .8,
+    OheyDailyStatus.dependsOnTime => .5,
+    OheyDailyStatus.unselected || OheyDailyStatus.hasPlans => 0,
+  };
+
   int get availabilityRank => switch (this) {
     OheyDailyStatus.available => 0,
     OheyDailyStatus.maybeAvailable => 1,
@@ -76,6 +83,18 @@ extension OheyDailyStatusX on OheyDailyStatus {
     OheyDailyStatus.maybeAvailable ||
     OheyDailyStatus.dependsOnTime => true,
     OheyDailyStatus.hasPlans => false,
+  };
+
+  bool get isUndecided => this == OheyDailyStatus.unselected;
+
+  bool get blocksRecommendations => this == OheyDailyStatus.hasPlans;
+
+  int get recommendationBonus => switch (this) {
+    OheyDailyStatus.available => 60,
+    OheyDailyStatus.maybeAvailable => 50,
+    OheyDailyStatus.unselected ||
+    OheyDailyStatus.dependsOnTime ||
+    OheyDailyStatus.hasPlans => 0,
   };
 }
 
