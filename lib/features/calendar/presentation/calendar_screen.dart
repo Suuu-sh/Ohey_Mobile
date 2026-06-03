@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
@@ -30,6 +32,19 @@ import '../../memories/application/memory_controller.dart';
 const _calendarPrimaryActionColor = AppColors.cFF20B9FF;
 const _calendarPrimaryActionForegroundColor = AppColors.cFF06111D;
 const _calendarPrimaryActionShadowColor = AppColors.cFF0B78B7;
+const _calendarFriendStatusAdNativeFactoryId = 'ohey_yurubo_native_ad';
+const _calendarFriendStatusFirstAdAfter = 4;
+const _calendarFriendStatusAdFrequency = 10;
+
+String get _calendarFriendStatusNativeAdUnitId {
+  if (defaultTargetPlatform == TargetPlatform.iOS) {
+    return 'ca-app-pub-3940256099942544/3986624511';
+  }
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    return 'ca-app-pub-3940256099942544/2247696110';
+  }
+  return '';
+}
 
 String _calendarGroupStorageKey(String userId) =>
     'ohey_custom_friend_filters_v1_$userId';
@@ -1663,24 +1678,262 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
       );
     }
 
+    final entries = _calendarFriendStatusEntriesFromFriends(friends);
     return ListView.separated(
       padding: EdgeInsets.zero,
       physics: const BouncingScrollPhysics(),
-      itemCount: friends.length,
+      itemCount: entries.length,
       separatorBuilder: (_, _) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
-        final friend = friends[index];
-        final inviteSent = invitedFriendIds.contains(friend.id);
-        return _CalendarFriendStatusBlock(
-          friend: friend,
-          isWhite: isWhite,
-          inviteEnabled: inviteAvailable && !inviteSent,
-          inviteAvailable: inviteAvailable,
-          inviteSent: inviteSent,
-          invitePressed: sendingFriendId == friend.id,
-          onInvite: () => onInvite(friend),
-        );
+        final entry = entries[index];
+        return switch (entry) {
+          _CalendarFriendStatusFriendEntry(:final friend) =>
+            _CalendarFriendStatusFriendListItem(
+              friend: friend,
+              isWhite: isWhite,
+              sendingFriendId: sendingFriendId,
+              invitedFriendIds: invitedFriendIds,
+              inviteAvailable: inviteAvailable,
+              onInvite: onInvite,
+            ),
+          _CalendarFriendStatusAdEntry(:final index) =>
+            _CalendarFriendStatusNativeAdBlock(index: index, isWhite: isWhite),
+        };
       },
+    );
+  }
+}
+
+class _CalendarFriendStatusFriendListItem extends StatelessWidget {
+  const _CalendarFriendStatusFriendListItem({
+    required this.friend,
+    required this.isWhite,
+    required this.sendingFriendId,
+    required this.invitedFriendIds,
+    required this.inviteAvailable,
+    required this.onInvite,
+  });
+
+  final OheyFriend friend;
+  final bool isWhite;
+  final String? sendingFriendId;
+  final Set<String> invitedFriendIds;
+  final bool inviteAvailable;
+  final Future<void> Function(OheyFriend friend) onInvite;
+
+  @override
+  Widget build(BuildContext context) {
+    final inviteSent = invitedFriendIds.contains(friend.id);
+    return _CalendarFriendStatusBlock(
+      friend: friend,
+      isWhite: isWhite,
+      inviteEnabled: inviteAvailable && !inviteSent,
+      inviteAvailable: inviteAvailable,
+      inviteSent: inviteSent,
+      invitePressed: sendingFriendId == friend.id,
+      onInvite: () => onInvite(friend),
+    );
+  }
+}
+
+List<_CalendarFriendStatusListEntry> _calendarFriendStatusEntriesFromFriends(
+  List<OheyFriend> friends,
+) {
+  if (friends.length < _calendarFriendStatusFirstAdAfter) {
+    return [
+      for (final friend in friends) _CalendarFriendStatusFriendEntry(friend),
+    ];
+  }
+
+  final entries = <_CalendarFriendStatusListEntry>[];
+  var adIndex = 0;
+  for (var index = 0; index < friends.length; index++) {
+    entries.add(_CalendarFriendStatusFriendEntry(friends[index]));
+    final position = index + 1;
+    final shouldInsertAd =
+        position == _calendarFriendStatusFirstAdAfter ||
+        (position > _calendarFriendStatusFirstAdAfter &&
+            (position - _calendarFriendStatusFirstAdAfter) %
+                    _calendarFriendStatusAdFrequency ==
+                0);
+    if (shouldInsertAd) entries.add(_CalendarFriendStatusAdEntry(adIndex++));
+  }
+  return entries;
+}
+
+sealed class _CalendarFriendStatusListEntry {
+  const _CalendarFriendStatusListEntry();
+}
+
+class _CalendarFriendStatusFriendEntry extends _CalendarFriendStatusListEntry {
+  const _CalendarFriendStatusFriendEntry(this.friend);
+
+  final OheyFriend friend;
+}
+
+class _CalendarFriendStatusAdEntry extends _CalendarFriendStatusListEntry {
+  const _CalendarFriendStatusAdEntry(this.index);
+
+  final int index;
+}
+
+class _CalendarFriendStatusNativeAdBlock extends StatefulWidget {
+  const _CalendarFriendStatusNativeAdBlock({
+    required this.index,
+    required this.isWhite,
+  });
+
+  final int index;
+  final bool isWhite;
+
+  @override
+  State<_CalendarFriendStatusNativeAdBlock> createState() =>
+      _CalendarFriendStatusNativeAdBlockState();
+}
+
+class _CalendarFriendStatusNativeAdBlockState
+    extends State<_CalendarFriendStatusNativeAdBlock> {
+  NativeAd? _ad;
+  bool _isLoaded = false;
+  bool _didFail = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAd();
+  }
+
+  void _loadAd() {
+    final adUnitId = _calendarFriendStatusNativeAdUnitId;
+    if (adUnitId.isEmpty) {
+      _didFail = true;
+      return;
+    }
+    final ad = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: _calendarFriendStatusAdNativeFactoryId,
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          if (!mounted) {
+            ad.dispose();
+            return;
+          }
+          setState(() {
+            _ad = ad as NativeAd;
+            _isLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          if (!mounted) return;
+          setState(() => _didFail = true);
+        },
+      ),
+    );
+    ad.load().catchError((_) {
+      if (!mounted) return;
+      setState(() => _didFail = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _ad?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_didFail) return const SizedBox.shrink();
+    if (!_isLoaded || _ad == null) {
+      return _CalendarFriendStatusAdPlaceholderBlock(isWhite: widget.isWhite);
+    }
+    return Semantics(
+      label: '広告',
+      child: SizedBox(
+        height: 156,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: AdWidget(ad: _ad!),
+        ),
+      ),
+    );
+  }
+}
+
+class _CalendarFriendStatusAdPlaceholderBlock extends StatelessWidget {
+  const _CalendarFriendStatusAdPlaceholderBlock({required this.isWhite});
+
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    return OheyThemedPanel(
+      padding: const EdgeInsets.all(14),
+      accentColor: _calendarPrimaryActionColor,
+      backgroundColor: isWhite
+          ? AppColors.white
+          : AppColors.darkBackgroundBottom,
+      borderRadius: 20,
+      borderAlpha: isWhite ? .28 : .36,
+      glowAlpha: isWhite ? .08 : .14,
+      glowBlur: 22,
+      glowOffset: Offset.zero,
+      child: Row(
+        children: [
+          Container(
+            width: 62,
+            height: 62,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _calendarPrimaryActionColor.withValues(alpha: .16),
+            ),
+            child: const Center(
+              child: Text(
+                'PR',
+                style: TextStyle(
+                  color: _calendarPrimaryActionColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: AppColors.white.withValues(
+                      alpha: isWhite ? .22 : .10,
+                    ),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                FractionallySizedBox(
+                  widthFactor: .68,
+                  child: Container(
+                    height: 13,
+                    decoration: BoxDecoration(
+                      color: AppColors.white.withValues(
+                        alpha: isWhite ? .16 : .07,
+                      ),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
