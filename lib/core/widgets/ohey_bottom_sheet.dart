@@ -48,6 +48,7 @@ class OheyBottomSheetShell extends StatelessWidget {
     this.showBottomCloseButton = true,
     this.bottomCloseLabel = '閉じる',
     this.onBottomClose,
+    this.bottomCloseHorizontalPadding = 0,
   });
 
   final Widget child;
@@ -64,6 +65,7 @@ class OheyBottomSheetShell extends StatelessWidget {
   final bool showBottomCloseButton;
   final String bottomCloseLabel;
   final VoidCallback? onBottomClose;
+  final double bottomCloseHorizontalPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -150,6 +152,7 @@ class OheyBottomSheetShell extends StatelessWidget {
                           const SizedBox(height: 16),
                           _OheyBottomSheetFooterButton(
                             label: bottomCloseLabel,
+                            horizontalPadding: bottomCloseHorizontalPadding,
                             onTap:
                                 onBottomClose ??
                                 () => Navigator.of(context).maybePop(),
@@ -172,16 +175,18 @@ class _OheyBottomSheetFooterButton extends StatelessWidget {
   const _OheyBottomSheetFooterButton({
     required this.label,
     required this.onTap,
+    required this.horizontalPadding,
   });
 
   final String label;
   final VoidCallback onTap;
+  final double horizontalPadding;
 
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,

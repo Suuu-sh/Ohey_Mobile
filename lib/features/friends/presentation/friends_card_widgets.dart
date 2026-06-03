@@ -454,63 +454,34 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
     final avatar =
         widget.friend.avatar ?? _fallbackAvatarForFriend(widget.friend);
     final statusColor = _friendInviteButtonColor(_selectedStatus);
-    final media = MediaQuery.of(context);
-    // The bottom sheet itself is laid out below the top safe area on iOS.
-    // Subtract both safe areas here; otherwise this fixed-height child becomes
-    // taller than the sheet's actual constraints and the close button overflows
-    // on devices with a Dynamic Island / home indicator.
-    final sheetContentHeight =
-        media.size.height - media.padding.top - media.padding.bottom;
-    const bodyBackground = AppColors.darkBackgroundBottom;
+    final handle = widget.friend.vibe.trim().isEmpty
+        ? widget.friend.id
+        : '@${widget.friend.vibe}';
 
-    return OheyBottomSheetShell(
-      showHandle: false,
-      padding: EdgeInsets.zero,
-      radius: 0,
-      maxHeightFactor: 1,
-      followKeyboard: false,
-      child: SizedBox(
-        height: sheetContentHeight,
-        child: ColoredBox(
-          color: bodyBackground,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _FriendProfileTopBackdrop(
-                friend: widget.friend,
-                avatar: avatar,
-                onActionMenu: widget.showActionMenu && _busyAction == null
-                    ? _openActionMenu
-                    : null,
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _FriendProfileStatusPanel(
-                        status: _selectedStatus,
-                        statusColor: statusColor,
-                      ),
-                      const SizedBox(height: 14),
-                      _FriendProfileWishItemsPanel(friend: widget.friend),
-                      const SizedBox(height: 14),
-                      Expanded(
-                        child: _FriendProfileCalendar(
-                          friend: widget.friend,
-                          status: widget.status,
-                          onSelectedStatusChanged: _handleSelectedStatusChanged,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+    return OheyUserProfileSheet(
+      avatar: avatar,
+      label: '${widget.friend.name} ・ $handle',
+      headerAction: widget.showActionMenu && _busyAction == null
+          ? _FriendProfileActionIconButton(onTap: _openActionMenu)
+          : null,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _FriendProfileStatusPanel(
+            status: _selectedStatus,
+            statusColor: statusColor,
           ),
-        ),
+          const SizedBox(height: 14),
+          _FriendProfileWishItemsPanel(friend: widget.friend),
+          const SizedBox(height: 14),
+          Expanded(
+            child: _FriendProfileCalendar(
+              friend: widget.friend,
+              status: widget.status,
+              onSelectedStatusChanged: _handleSelectedStatusChanged,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -731,53 +702,6 @@ class _FriendReportReasonSheet extends StatelessWidget {
   }
 }
 
-class _FriendProfileTopBackdrop extends StatelessWidget {
-  const _FriendProfileTopBackdrop({
-    required this.friend,
-    required this.avatar,
-    required this.onActionMenu,
-  });
-
-  final OheyFriend friend;
-  final OheyAvatar avatar;
-  final VoidCallback? onActionMenu;
-
-  @override
-  Widget build(BuildContext context) {
-    final topPadding = MediaQuery.viewPaddingOf(context).top;
-    final headerHeight = topPadding + 318;
-    return SizedBox(
-      height: headerHeight,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          OheyProfileHeaderBackdrop(avatar: avatar),
-          if (onActionMenu != null)
-            Positioned(
-              right: 20,
-              top: topPadding + 46,
-              child: _FriendProfileActionIconButton(onTap: onActionMenu!),
-            ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              OheyPageHeader.horizontalPadding,
-              topPadding + 4,
-              OheyPageHeader.horizontalPadding,
-              6,
-            ),
-            child: Column(
-              children: [
-                const Spacer(),
-                _FriendProfileHero(friend: friend, avatar: avatar),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _FriendProfileActionIconButton extends StatelessWidget {
   const _FriendProfileActionIconButton({required this.onTap});
 
@@ -805,22 +729,6 @@ class _FriendProfileActionIconButton extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _FriendProfileHero extends StatelessWidget {
-  const _FriendProfileHero({required this.friend, required this.avatar});
-
-  final OheyFriend friend;
-  final OheyAvatar avatar;
-
-  @override
-  Widget build(BuildContext context) {
-    final handle = friend.vibe.trim().isEmpty ? friend.id : '@${friend.vibe}';
-    return OheyProfileHeroBanner(
-      avatar: avatar,
-      label: '${friend.name} ・ $handle',
     );
   }
 }
@@ -1071,6 +979,25 @@ class _FriendProfileCalendarState
   }
 
   Future<void> _loadStatusesForMonth(DateTime month) async {
+    final authUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    if (authUserId != null && authUserId == widget.friend.id) {
+      try {
+        final statuses = await ref
+            .read(userRepositoryProvider)
+            .fetchDailyStatusesForMonth(month);
+        if (!mounted) return;
+        setState(() => _statusByDate.addAll(statuses));
+        final selectedStatus =
+            _statusByDate[_friendProfileDateKey(_selectedDay)];
+        if (selectedStatus != null) {
+          widget.onSelectedStatusChanged(selectedStatus);
+        }
+      } catch (_) {
+        // Keep the existing unselected fallback when own monthly statuses cannot load.
+      }
+      return;
+    }
+
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
     final leadingEmptyCells = DateTime(month.year, month.month).weekday % 7;
     final totalCells = leadingEmptyCells + daysInMonth;

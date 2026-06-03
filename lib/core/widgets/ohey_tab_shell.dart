@@ -213,7 +213,10 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     OheyToastAccent(color: _feedAccentColor, child: HomeScreen()),
     const OheyToastAccent(color: _friendsAccentColor, child: FriendsScreen()),
     OheyToastAccent(color: _calendarAccentColor, child: CalendarScreen()),
-    OheyToastAccent(color: _profileAccentColor, child: ProfileScreen()),
+    OheyToastAccent(
+      color: _profileAccentColor,
+      child: ProfileScreen(onOpenYurubo: () => _selectTab(0)),
+    ),
   ];
 
   void _selectTab(int index) {

@@ -441,6 +441,7 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.wishItems,
     required this.isWishLoading,
     required this.onCreateYuruboTap,
+    required this.onOpenYuruboTap,
     required this.onOpenWishListTap,
     required this.onAddFriendsTap,
     required this.onChangeStatusTap,
@@ -452,6 +453,7 @@ class _ProfileActivityHome extends StatelessWidget {
   final List<WishItem> wishItems;
   final bool isWishLoading;
   final VoidCallback onCreateYuruboTap;
+  final VoidCallback? onOpenYuruboTap;
   final VoidCallback onOpenWishListTap;
   final VoidCallback onAddFriendsTap;
   final VoidCallback onChangeStatusTap;
@@ -472,6 +474,7 @@ class _ProfileActivityHome extends StatelessWidget {
           _ProfileTodayScheduleSection(
             joinedYurubos: joinedYurubos,
             isLoading: isYuruboLoading,
+            onFindTap: onOpenYuruboTap ?? onCreateYuruboTap,
           ),
           const SizedBox(height: 22),
           Padding(
@@ -483,7 +486,9 @@ class _ProfileActivityHome extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: _ProfileStatusActionRow(onTap: onChangeStatusTap),
+                  child: _ProfileFriendActionRow(
+                    onAddFriendsTap: onAddFriendsTap,
+                  ),
                 ),
               ],
             ),
@@ -502,9 +507,7 @@ class _ProfileActivityHome extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: _ProfileFriendActionRow(
-                    onAddFriendsTap: onAddFriendsTap,
-                  ),
+                  child: _ProfileStatusActionRow(onTap: onChangeStatusTap),
                 ),
               ],
             ),
@@ -519,10 +522,12 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
   const _ProfileTodayScheduleSection({
     required this.joinedYurubos,
     required this.isLoading,
+    required this.onFindTap,
   });
 
   final List<Yurubo> joinedYurubos;
   final bool isLoading;
+  final VoidCallback onFindTap;
 
   @override
   Widget build(BuildContext context) {
@@ -532,7 +537,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
         ? (isLoading ? '読み込み中' : '本日の予定はありません')
         : event.title;
     final details = event == null
-        ? 'Oheyで参加した予定がここに表示されます'
+        ? ''
         : [event.timeLabel, event.placeText]
               .map((value) => value.trim())
               .where((value) => value.isNotEmpty)
@@ -593,36 +598,54 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                         height: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 5),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 9,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.white.withValues(alpha: .08),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
+                    if (event != null) ...[
+                      const SizedBox(height: 5),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
                           color: AppColors.white.withValues(alpha: .08),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: AppColors.white.withValues(alpha: .08),
+                          ),
+                        ),
+                        child: Text(
+                          'Today · $subtitle',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: _ProfileColors.sub.withValues(alpha: .82),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            height: 1,
+                          ),
                         ),
                       ),
-                      child: Text(
-                        event == null ? subtitle : 'Today · $subtitle',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: _ProfileColors.sub.withValues(alpha: .82),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          height: 1,
-                        ),
-                      ),
-                    ),
+                    ],
                   ],
                 ),
               ),
               const SizedBox(width: 14),
-              _TodayScheduleParticipants(event: event, accent: accent),
+              if (event == null)
+                SizedBox(
+                  width: 82,
+                  child: Ohey3DButton(
+                    label: '探す',
+                    onTap: isLoading ? null : onFindTap,
+                    height: 42,
+                    radius: 21,
+                    color: AppColors.cFFFF75B5,
+                    foregroundColor: AppColors.cFF101820,
+                    shadowColor: AppColors.cFFE05F83,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    fontSize: 14,
+                  ),
+                )
+              else
+                _TodayScheduleParticipants(event: event, accent: accent),
             ],
           ),
         ),
@@ -721,7 +744,7 @@ class _ProfileSummaryStats extends StatelessWidget {
               icon: CupertinoIcons.house_fill,
               iconColor: AppColors.cFFC08BFF,
               value: '1',
-              label: 'ルーム',
+              label: 'やりたいこと',
             ),
           ),
           const _ProfileStatsDivider(),
@@ -856,16 +879,11 @@ class _ProfileYuruboActionRow extends StatelessWidget {
       ],
       child: Row(
         children: [
-          OheyPopIcon(
-            icon: CupertinoIcons.plus_bubble_fill,
-            color: AppColors.cFF101820,
-            size: 28,
-            iconSize: 15,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
+          const Expanded(
             child: Text(
               'ゆるぼを追加',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: AppColors.cFF101820,
                 fontSize: 14,
@@ -909,13 +927,6 @@ class _ProfileStatusActionRow extends StatelessWidget {
       ],
       child: Row(
         children: [
-          const OheyPopIcon(
-            icon: CupertinoIcons.person_crop_circle_badge_checkmark,
-            color: AppColors.cFF101820,
-            size: 28,
-            iconSize: 15,
-          ),
-          const SizedBox(width: 10),
           const Expanded(
             child: Text(
               'ステータス変更',
@@ -973,13 +984,6 @@ class _ProfileWishListActionRow extends StatelessWidget {
       ],
       child: Row(
         children: [
-          const OheyPopIcon(
-            icon: CupertinoIcons.list_bullet,
-            color: AppColors.cFF101820,
-            size: 28,
-            iconSize: 15,
-          ),
-          const SizedBox(width: 10),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1047,16 +1051,11 @@ class _ProfileFriendActionRow extends StatelessWidget {
       ],
       child: Row(
         children: [
-          const OheyPopIcon(
-            icon: CupertinoIcons.person_2_fill,
-            color: AppColors.cFF101820,
-            size: 28,
-            iconSize: 15,
-          ),
-          const SizedBox(width: 10),
           const Expanded(
             child: Text(
               'フレンズを追加',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: AppColors.cFF101820,
                 fontSize: 14,

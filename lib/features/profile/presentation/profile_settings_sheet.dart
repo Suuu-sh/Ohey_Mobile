@@ -95,44 +95,31 @@ class _SettingsSheetShell extends StatelessWidget {
     final ink = isWhite ? AppColors.cFF111820 : AppColors.white;
 
     return OheyBottomSheetShell(
-      margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-      padding: EdgeInsets.zero,
-      radius: 34,
-      maxHeightFactor: .88,
-      child: Flexible(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+      radius: 32,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '設定',
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: ink,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -1.0,
-                              ),
-                        ),
-                      ],
-                    ),
+              Expanded(
+                child: Text(
+                  '設定',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: ink,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1.0,
                   ),
-                  _SettingsCloseButton(onTap: onClose, color: ink),
-                ],
+                ),
               ),
-              const SizedBox(height: 14),
-              ...children,
+              _SettingsCloseButton(onTap: onClose, color: ink),
             ],
           ),
-        ),
+          const SizedBox(height: 14),
+          ...children,
+        ],
       ),
     );
   }

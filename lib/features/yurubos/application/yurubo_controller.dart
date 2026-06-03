@@ -29,6 +29,30 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
 
   Future<void> approveReaction(String yuruboId, String userId) async {
     await ref.read(yuruboRepositoryProvider).approveReaction(yuruboId, userId);
+    final current = state.asData?.value;
+    if (current != null) {
+      state = AsyncData([
+        for (final item in current)
+          if (item.id == yuruboId)
+            item.copyWith(
+              reactionCount:
+                  item.participants.any(
+                    (participant) =>
+                        participant.userId == userId && participant.isPending,
+                  )
+                  ? item.reactionCount + 1
+                  : item.reactionCount,
+              participants: [
+                for (final participant in item.participants)
+                  participant.userId == userId
+                      ? participant.copyWith(reactionType: 'available')
+                      : participant,
+              ],
+            )
+          else
+            item,
+      ]);
+    }
     ref.invalidateSelf();
   }
 

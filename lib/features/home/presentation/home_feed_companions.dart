@@ -469,9 +469,6 @@ class _FeedCompanionProfileSheetState
   Widget build(BuildContext context) {
     final friend = widget.friend;
     final statusColor = _companionStatusColor(friend.statusKey);
-    final media = MediaQuery.of(context);
-    final sheetContentHeight =
-        media.size.height - media.padding.top - media.padding.bottom;
     final relationshipAsync = widget.initialRelationship == null
         ? (friend.userId.trim().isEmpty
               ? const AsyncValue<OheyFriendRelationshipStatus>.data(
@@ -485,136 +482,60 @@ class _FeedCompanionProfileSheetState
             widget.initialRelationship!,
           );
 
-    return OheyBottomSheetShell(
-      showHandle: false,
-      padding: EdgeInsets.zero,
-      radius: 0,
-      maxHeightFactor: 1,
-      followKeyboard: false,
-      child: SizedBox(
-        height: sheetContentHeight,
-        child: ColoredBox(
-          color: AppColors.darkBackgroundBottom,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _FeedCompanionTopBackdrop(friend: friend),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
-                  child: relationshipAsync.when(
-                    loading: () =>
-                        const Center(child: CupertinoActivityIndicator()),
-                    error: (_, _) => _FeedCompanionRequestCard(
-                      isWhite: false,
-                      subtitleColor: AppColors.white.withValues(alpha: .58),
-                      message: 'プロフィール情報を確認できませんでした。',
-                      buttonLabel: '閉じる',
-                      onTap: () => Navigator.of(context).pop(),
-                    ),
-                    data: (relationship) {
-                      if (!relationship.alreadyFriend) {
-                        return Align(
-                          alignment: Alignment.topCenter,
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: _FeedCompanionRequestCard(
-                              isWhite: false,
-                              subtitleColor: AppColors.white.withValues(
-                                alpha: .58,
-                              ),
-                              message: _requestError ?? 'フレンズになるとカレンダーを見られます。',
-                              buttonLabel: switch (relationship.requestState) {
-                                OheyFriendRequestState.outgoing => '申請済み',
-                                OheyFriendRequestState.incoming => '申請を確認する',
-                                OheyFriendRequestState.none => 'フレンド申請する',
-                              },
-                              isLoading: _isSendingRequest,
-                              enabled:
-                                  relationship.requestState ==
-                                  OheyFriendRequestState.none,
-                              onTap:
-                                  relationship.requestState ==
-                                      OheyFriendRequestState.none
-                                  ? _sendRequest
-                                  : () => Navigator.of(context).pop(),
-                            ),
-                          ),
-                        );
-                      }
-                      return Align(
-                        alignment: Alignment.topCenter,
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 92,
-                          child: _FeedCompanionStatusCard(
-                            friend: friend,
-                            isWhite: false,
-                            titleColor: AppColors.white,
-                            subtitleColor: AppColors.white.withValues(
-                              alpha: .58,
-                            ),
-                            statusColor: statusColor,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FeedCompanionTopBackdrop extends StatelessWidget {
-  const _FeedCompanionTopBackdrop({required this.friend});
-
-  final _Companion friend;
-
-  @override
-  Widget build(BuildContext context) {
-    final topPadding = MediaQuery.viewPaddingOf(context).top;
-    final headerHeight = topPadding + 318;
-    return SizedBox(
-      height: headerHeight,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          OheyProfileHeaderBackdrop(avatar: friend.avatar),
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              OheyPageHeader.horizontalPadding,
-              topPadding + 4,
-              OheyPageHeader.horizontalPadding,
-              6,
-            ),
-            child: Column(
-              children: [
-                const Spacer(),
-                _FeedCompanionHero(friend: friend),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeedCompanionHero extends StatelessWidget {
-  const _FeedCompanionHero({required this.friend});
-
-  final _Companion friend;
-
-  @override
-  Widget build(BuildContext context) {
-    return OheyProfileHeroBanner(
+    return OheyUserProfileSheet(
       avatar: friend.avatar,
       label: '${friend.name} ・ ${friend.handleLabel}',
+      body: relationshipAsync.when(
+        loading: () => const Center(child: CupertinoActivityIndicator()),
+        error: (_, _) => _FeedCompanionRequestCard(
+          isWhite: false,
+          subtitleColor: AppColors.white.withValues(alpha: .58),
+          message: 'プロフィール情報を確認できませんでした。',
+          buttonLabel: '閉じる',
+          onTap: () => Navigator.of(context).pop(),
+        ),
+        data: (relationship) {
+          if (!relationship.alreadyFriend) {
+            return Align(
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                width: double.infinity,
+                child: _FeedCompanionRequestCard(
+                  isWhite: false,
+                  subtitleColor: AppColors.white.withValues(alpha: .58),
+                  message: _requestError ?? 'フレンズになるとカレンダーを見られます。',
+                  buttonLabel: switch (relationship.requestState) {
+                    OheyFriendRequestState.outgoing => '申請済み',
+                    OheyFriendRequestState.incoming => '申請を確認する',
+                    OheyFriendRequestState.none => 'フレンド申請する',
+                  },
+                  isLoading: _isSendingRequest,
+                  enabled:
+                      relationship.requestState == OheyFriendRequestState.none,
+                  onTap:
+                      relationship.requestState == OheyFriendRequestState.none
+                      ? _sendRequest
+                      : () => Navigator.of(context).pop(),
+                ),
+              ),
+            );
+          }
+          return Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              width: double.infinity,
+              height: 92,
+              child: _FeedCompanionStatusCard(
+                friend: friend,
+                isWhite: false,
+                titleColor: AppColors.white,
+                subtitleColor: AppColors.white.withValues(alpha: .58),
+                statusColor: statusColor,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
