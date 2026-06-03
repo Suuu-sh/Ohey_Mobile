@@ -43,8 +43,8 @@ class OheyNotification {
   final DateTime? notificationDate;
   final String? systemKey;
 
-  String get displayTitle => _oheylaNotificationText(title);
-  String get displayMessage => _oheylaNotificationText(message);
+  String get displayTitle => _legacyNotificationTextToOhey(title);
+  String get displayMessage => _legacyNotificationTextToOhey(message);
 
   OheyNotification markRead() => OheyNotification(
     id: id,
@@ -155,7 +155,7 @@ String _todayIsoDate() {
       '${now.day.toString().padLeft(2, '0')}';
 }
 
-String _oheylaNotificationText(String value) {
+String _legacyNotificationTextToOhey(String value) {
   return value
       .replaceAll('飲みログ', 'ゆるぼ')
       .replaceAll('飲みとも', 'フレンズ')
