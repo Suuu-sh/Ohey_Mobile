@@ -776,8 +776,11 @@ class _CalendarStatusChangeButton extends StatelessWidget {
     final effectiveStatus = status == OheyDailyStatus.unselected
         ? OheyDailyStatus.available
         : status;
-    final accent = _calendarStatusBlockAccent(effectiveStatus);
-    final foreground = _calendarStatus3DForegroundColor(effectiveStatus);
+    final accent = oheyDailyStatusBlockAccent(effectiveStatus);
+    final foreground = oheyDailyStatus3DForegroundColor(
+      effectiveStatus,
+      isWhite: isWhite,
+    );
     return SizedBox(
       width: 56,
       child: Ohey3DButtonSurface(
@@ -785,19 +788,18 @@ class _CalendarStatusChangeButton extends StatelessWidget {
         enabled: !isSaving,
         height: 28,
         radius: 14,
-        color: _calendarStatus3DSurfaceColor(
+        color: oheyDailyStatus3DSurfaceColor(
           effectiveStatus,
           isWhite: isWhite,
           selected: true,
         ),
-        bottomColor: _calendarStatus3DShadowColor(
+        bottomColor: oheyDailyStatus3DShadowColor(
           effectiveStatus,
           isWhite: isWhite,
           selected: true,
         ),
-        borderColor: _calendarStatus3DBorderColor(
+        borderColor: oheyDailyStatus3DBorderColor(
           effectiveStatus,
-          isWhite: isWhite,
           selected: true,
         ),
         borderWidth: 1.1,
@@ -907,10 +909,10 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
                 onTap: onTap,
                 height: compact ? 28 : 30,
                 radius: compact ? 14 : 15,
-                color: _calendarStatusPink,
+                color: oheyDailyStatusPink,
                 foregroundColor: _calendarPrimaryActionForegroundColor,
                 shadowColor: Color.lerp(
-                  _calendarStatusPink,
+                  oheyDailyStatusPink,
                   AppColors.black,
                   .32,
                 ),
@@ -1230,7 +1232,7 @@ class _CalendarFriendStatusCountChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _calendarStatusColor(status);
+    final color = oheyDailyStatusColor(status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
@@ -1707,8 +1709,8 @@ class _CalendarFriendStatusBlock extends StatelessWidget {
     final status = oheyDailyStatusFromKey(friend.statusKey);
     return OheyFriendUserBlock(
       friend: friend,
-      statusLabel: _calendarStatusLabel(status, day: DateTime.now()),
-      statusReason: _calendarStatusCopy(status, day: DateTime.now()),
+      statusLabel: status.label,
+      statusReason: status.description,
       statusColor: _calendarFriendBlockStatusColor(status),
       statusEnabled: status.isAvailable,
       fallbackAvatar: _fallbackAvatarForCalendarFriend(friend),
@@ -1734,8 +1736,8 @@ OheyAvatar _fallbackAvatarForCalendarFriend(OheyFriend friend) {
 }
 
 Color _calendarFriendBlockStatusColor(OheyDailyStatus status) {
-  final color = _calendarStatusColor(status);
-  if (status == OheyDailyStatus.unselected) return _calendarStatusGreen;
+  final color = oheyDailyStatusColor(status);
+  if (status == OheyDailyStatus.unselected) return oheyDailyStatusGreen;
   return color;
 }
 
@@ -1787,8 +1789,8 @@ class _CalendarStatusSheet extends StatelessWidget {
           for (final status in options) ...[
             OheyDailyStatus3DOption(
               status: status,
-              title: _calendarStatusLabel(status, day: day),
-              subtitle: _calendarStatusCopy(status, day: day),
+              title: status.label,
+              subtitle: status.description,
               selected: status == selected,
               onTap: () => Navigator.of(context).pop(status),
             ),
@@ -1935,9 +1937,9 @@ class _DayTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final hasStatus = inMonth && dailyStatus != OheyDailyStatus.unselected;
-    final statusAccent = _calendarStatusTileAccent(dailyStatus);
+    final statusAccent = oheyDailyStatusTileAccent(dailyStatus);
     final dayColor = hasStatus
-        ? _calendarStatusTileForeground(dailyStatus, isWhite: isWhite)
+        ? oheyDailyStatusTileForeground(dailyStatus, isWhite: isWhite)
         : !inMonth
         ? (isWhite
               ? AppColors.black.withValues(alpha: .20)
@@ -1958,7 +1960,7 @@ class _DayTile extends StatelessWidget {
           color: !inMonth
               ? AppColors.transparent
               : hasStatus
-              ? _calendarStatusTileBackground(
+              ? oheyDailyStatusTileBackground(
                   dailyStatus,
                   isWhite: isWhite,
                   selected: isSelected,
@@ -2040,106 +2042,3 @@ String _dateKey(DateTime date) =>
 
 String _calendarWeekdayLabel(DateTime day) =>
     const ['月', '火', '水', '木', '金', '土', '日'][day.weekday - 1];
-
-const _calendarStatusPink = AppColors.cFFFF5EA8;
-const _calendarStatusBlue = AppColors.cFF20B9FF;
-const _calendarStatusPurple = AppColors.cFF8A62FF;
-const _calendarStatusGreen = AppColors.cFF9AF21A;
-const _calendarStatusBlocked = AppColors.cFF2B3644;
-const _calendarStatusBlockedForeground = AppColors.cFF738092;
-
-Color _calendarStatusTileAccent(OheyDailyStatus status) {
-  if (status == OheyDailyStatus.hasPlans) {
-    return _calendarStatusBlockedForeground;
-  }
-  return _calendarStatusColor(status);
-}
-
-Color _calendarStatusTileBackground(
-  OheyDailyStatus status, {
-  required bool isWhite,
-  required bool selected,
-}) {
-  if (status == OheyDailyStatus.hasPlans) {
-    return isWhite
-        ? AppColors.cFFE2E8F0
-        : _calendarStatusBlocked.withValues(alpha: selected ? .92 : .76);
-  }
-  final color = _calendarStatusColor(status);
-  return color.withValues(
-    alpha: isWhite ? (selected ? .34 : .22) : (selected ? .52 : .36),
-  );
-}
-
-Color _calendarStatusTileForeground(
-  OheyDailyStatus status, {
-  required bool isWhite,
-}) {
-  if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? AppColors.cFF111827 : AppColors.white;
-  }
-  return _calendarPrimaryActionForegroundColor;
-}
-
-Color _calendarStatusColor(OheyDailyStatus status) => switch (status) {
-  OheyDailyStatus.available => _calendarStatusPink,
-  OheyDailyStatus.maybeAvailable => _calendarStatusBlue,
-  OheyDailyStatus.dependsOnTime => _calendarStatusPurple,
-  OheyDailyStatus.hasPlans => _calendarStatusBlockedForeground,
-  OheyDailyStatus.unselected => _calendarStatusGreen,
-};
-
-Color _calendarStatusBlockAccent(OheyDailyStatus status) => switch (status) {
-  OheyDailyStatus.hasPlans => _calendarStatusBlocked,
-  _ => _calendarStatusColor(status),
-};
-
-Color _calendarStatus3DSurfaceColor(
-  OheyDailyStatus status, {
-  required bool isWhite,
-  required bool selected,
-}) {
-  if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? AppColors.cFFE8EEF5 : AppColors.cFF33404E;
-  }
-  return _calendarStatusColor(status);
-}
-
-Color _calendarStatus3DShadowColor(
-  OheyDailyStatus status, {
-  required bool isWhite,
-  required bool selected,
-}) {
-  if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? AppColors.cFFC2CCD8 : AppColors.cFF16202B;
-  }
-  return Color.lerp(
-    _calendarStatus3DSurfaceColor(status, isWhite: isWhite, selected: selected),
-    AppColors.black,
-    .32,
-  )!;
-}
-
-Color _calendarStatus3DForegroundColor(OheyDailyStatus status) {
-  if (status == OheyDailyStatus.hasPlans) {
-    return AppColors.cFF111827;
-  }
-  return _calendarPrimaryActionForegroundColor;
-}
-
-Color _calendarStatus3DBorderColor(
-  OheyDailyStatus status, {
-  required bool isWhite,
-  required bool selected,
-}) {
-  if (status == OheyDailyStatus.hasPlans) {
-    return AppColors.white.withValues(alpha: selected ? .24 : .18);
-  }
-  return AppColors.white.withValues(alpha: selected ? .30 : .20);
-}
-
-String _calendarStatusLabel(OheyDailyStatus status, {required DateTime day}) =>
-    status.label;
-
-String _calendarStatusCopy(OheyDailyStatus status, {required DateTime day}) =>
-    status.description;

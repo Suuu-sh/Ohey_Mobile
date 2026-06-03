@@ -253,14 +253,7 @@ String _companionStatusMessage(String? statusKey) {
 }
 
 IconData _companionStatusIcon(String? statusKey) {
-  final status = oheyDailyStatusFromKey(statusKey);
-  return switch (status) {
-    OheyDailyStatus.available => CupertinoIcons.checkmark_circle_fill,
-    OheyDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
-    OheyDailyStatus.dependsOnTime => CupertinoIcons.moon_fill,
-    OheyDailyStatus.hasPlans => CupertinoIcons.calendar_today,
-    OheyDailyStatus.unselected => CupertinoIcons.circle,
-  };
+  return oheyDailyStatusIcon(oheyDailyStatusFromKey(statusKey));
 }
 
 Color _companionStatusColor(String? statusKey) {
@@ -268,13 +261,8 @@ Color _companionStatusColor(String? statusKey) {
     return AppColors.cFFFFD84D;
   }
   final status = oheyDailyStatusFromKey(statusKey);
-  return switch (status) {
-    OheyDailyStatus.available => AppColors.cFF9AF21A,
-    OheyDailyStatus.maybeAvailable => AppColors.cFF5DEBD3,
-    OheyDailyStatus.dependsOnTime => AppColors.cFFFF5EA8,
-    OheyDailyStatus.hasPlans => AppColors.cFFB8C1CD,
-    OheyDailyStatus.unselected => _FeedColors.sub,
-  };
+  if (status == OheyDailyStatus.unselected) return _FeedColors.sub;
+  return oheyDailyStatusColor(status);
 }
 
 class _FeedNotification {

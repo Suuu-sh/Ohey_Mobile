@@ -288,7 +288,7 @@ Color _friendStatusPillColor(_FriendStatus status) =>
 
 Color _friendInviteButtonColor(_FriendStatus status) {
   if (!status.enabled) return _FriendsColors.disabledButton;
-  if (status.buttonColor == _FriendsColors.statusGreen) {
+  if (status.buttonColor == oheyDailyStatusGreen) {
     return _FriendsColors.lime;
   }
   return status.buttonColor;
@@ -329,13 +329,7 @@ _FriendStatus _friendStatusForDailyStatus(OheyDailyStatus status) {
     label: status.label,
     enabled: status.isAvailable,
     reason: status.description,
-    buttonColor: switch (status) {
-      OheyDailyStatus.available => _FriendsColors.statusPink,
-      OheyDailyStatus.maybeAvailable => _FriendsColors.statusBlue,
-      OheyDailyStatus.dependsOnTime => _FriendsColors.statusPurple,
-      OheyDailyStatus.hasPlans => _FriendsColors.statusBlocked,
-      OheyDailyStatus.unselected => _FriendsColors.statusGreen,
-    },
+    buttonColor: oheyDailyStatusBlockAccent(status),
   );
 }
 
@@ -359,11 +353,6 @@ class _FriendsColors {
   static const limeShadow = AppColors.cFF6FB600;
   static const limeForeground = AppColors.cFF071320;
   static const muted = AppColors.cFF8792A3;
-  static const statusPink = AppColors.cFFFF5EA8;
-  static const statusBlue = AppColors.cFF20B9FF;
-  static const statusPurple = AppColors.cFF8A62FF;
-  static const statusGreen = AppColors.cFF9AF21A;
-  static const statusBlocked = AppColors.cFF2B3644;
   static const disabledButton = AppColors.cFF2B3441;
   static const disabledButtonShadow = AppColors.cFF111923;
   static const disabledButtonForeground = AppColors.cFF738092;
