@@ -506,10 +506,24 @@ Future<void> _showFeedCompanionList(
   if (!context.mounted || selected == null) return;
 
   HapticFeedback.selectionClick();
-  final repository = ProviderScope.containerOf(
-    context,
-    listen: false,
-  ).read(friendRepositoryProvider);
+  final container = ProviderScope.containerOf(context, listen: false);
+  final repository = container.read(friendRepositoryProvider);
+  final currentUserId = repository.currentUserId?.trim();
+  if (currentUserId != null &&
+      currentUserId.isNotEmpty &&
+      selected.userId.trim() == currentUserId) {
+    await showOheyFriendProfileSheet(
+      context,
+      friend: _companionFriendForCurrentUser(
+        selected,
+        container.read(oheyUserProvider),
+        currentUserId,
+      ),
+      showActionMenu: false,
+    );
+    return;
+  }
+
   OheyFriendRelationshipStatus? relationship;
   if (selected.userId.trim().isNotEmpty) {
     try {
@@ -534,5 +548,27 @@ Future<void> _showFeedCompanionList(
       friend: selected,
       initialRelationship: relationship,
     ),
+  );
+}
+
+OheyFriend _companionFriendForCurrentUser(
+  _Companion companion,
+  OheyUser? currentUser,
+  String currentUserId,
+) {
+  final name = currentUser?.name.trim();
+  final handle = currentUser?.userId.trim();
+  return OheyFriend(
+    id: currentUserId,
+    name: name?.isNotEmpty == true ? name! : companion.name,
+    avatarEmoji: '👤',
+    vibe: handle?.isNotEmpty == true
+        ? handle!
+        : companion.handle.replaceFirst('@', ''),
+    characterAssetPath: '',
+    kind: OheyFriendKind.cloud,
+    palette: OheyFriendPalette.lavender,
+    avatar: currentUser?.avatar ?? companion.avatar,
+    statusKey: currentUser?.dailyStatus.key ?? companion.statusKey,
   );
 }
