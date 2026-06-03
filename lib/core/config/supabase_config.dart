@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'ohey_environment.dart';
+
 /// Supabase environment configuration for Ohey.
 ///
 /// Non-release builds (Simulator / `flutter run`) are forced to dev-ohey so
@@ -10,30 +12,23 @@ class SupabaseConfig {
   const SupabaseConfig._();
 
   static const environment = String.fromEnvironment(
-    'OHEY_ENV',
-    defaultValue: kReleaseMode ? 'production' : 'dev',
+    OheyEnvironmentValues.environmentDefineKey,
+    defaultValue: kReleaseMode
+        ? OheyEnvironmentValues.productionEnvironment
+        : OheyEnvironmentValues.devEnvironment,
   );
 
-  static const _definedUrl = String.fromEnvironment('SUPABASE_URL');
+  static const _definedUrl = String.fromEnvironment(
+    OheyEnvironmentValues.supabaseUrlDefineKey,
+  );
 
   static const _definedPublishableKey = String.fromEnvironment(
-    'SUPABASE_PUBLISHABLE_KEY',
+    OheyEnvironmentValues.supabasePublishableKeyDefineKey,
   );
 
   static const _definedAuthRedirectUrl = String.fromEnvironment(
-    'SUPABASE_AUTH_REDIRECT_URL',
+    OheyEnvironmentValues.supabaseAuthRedirectUrlDefineKey,
   );
-
-  static const _devSupabaseUrl = 'https://wwyaftonswgxnjcceyfb.supabase.co';
-  static const _devPublishableKey =
-      'sb_publishable_pPvKPrOvVmkKQIXKVWj2Rw_DlYkm0Ty';
-  static const _prodSupabaseUrl = 'https://pwifgddolctqghygwxwj.supabase.co';
-  static const _prodPublishableKey =
-      'sb_publishable_pezjPt7pYRECNFdydlon8A_RpSjNulk';
-  static const _prodAuthRedirectUrl = 'app.ohey.com://login-callback/';
-  static const _devAuthRedirectUrl = 'app.ohey.com.dev://login-callback/';
-  static const _mistypedProdSupabaseUrl =
-      'https://pwifgddolctqhygywxwj.supabase.co';
 
   /// Canonical Supabase URL used by the app.
   ///
@@ -49,33 +44,36 @@ class SupabaseConfig {
   /// intended `ohey` Supabase project.
   static String get url {
     if (!kReleaseMode) {
-      return _devSupabaseUrl;
+      return OheyEnvironmentValues.devSupabaseUrl;
     }
 
-    final normalized = (_definedUrl.isEmpty ? _prodSupabaseUrl : _definedUrl)
-        .trim()
-        .replaceFirst(RegExp(r'/+$'), '');
-    if (normalized == _mistypedProdSupabaseUrl) {
-      return _prodSupabaseUrl;
+    final normalized =
+        (_definedUrl.isEmpty
+                ? OheyEnvironmentValues.productionSupabaseUrl
+                : _definedUrl)
+            .trim()
+            .replaceFirst(RegExp(r'/+$'), '');
+    if (normalized == OheyEnvironmentValues.mistypedProductionSupabaseUrl) {
+      return OheyEnvironmentValues.productionSupabaseUrl;
     }
     return normalized;
   }
 
   static String get publishableKey {
     if (!kReleaseMode) {
-      return _devPublishableKey;
+      return OheyEnvironmentValues.devSupabasePublishableKey;
     }
     return _definedPublishableKey.isEmpty
-        ? _prodPublishableKey
+        ? OheyEnvironmentValues.productionSupabasePublishableKey
         : _definedPublishableKey;
   }
 
   static String get authRedirectUrl {
     if (!kReleaseMode) {
-      return _devAuthRedirectUrl;
+      return OheyEnvironmentValues.devAuthRedirectUrl;
     }
     return _definedAuthRedirectUrl.isEmpty
-        ? _prodAuthRedirectUrl
+        ? OheyEnvironmentValues.productionAuthRedirectUrl
         : _definedAuthRedirectUrl;
   }
 

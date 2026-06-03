@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd "$(dirname "$0")/.."
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck disable=SC1091
+source "$SCRIPT_DIR/ohey_env.sh"
+cd "$SCRIPT_DIR/.."
 
 if [[ -f .env.local ]]; then
   set -a
@@ -9,16 +13,16 @@ if [[ -f .env.local ]]; then
   set +a
 fi
 
-: "${SUPABASE_URL:?SUPABASE_URL is required. Put it in .env.local or export it.}"
-: "${SUPABASE_PUBLISHABLE_KEY:?SUPABASE_PUBLISHABLE_KEY is required. Put it in .env.local or export it.}"
-SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-app.ohey.com://login-callback/}"
+# Run Ohey against dev-ohey Supabase and the dev Render backend.
+# Public defaults are shared with lib/core/config/ohey_environment.dart.
+SUPABASE_URL="${SUPABASE_URL:-$OHEY_DEV_SUPABASE_URL}"
+SUPABASE_PUBLISHABLE_KEY="${SUPABASE_PUBLISHABLE_KEY:-$OHEY_DEV_SUPABASE_PUBLISHABLE_KEY}"
+SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-$OHEY_DEV_AUTH_REDIRECT_URL}"
+DEV_OHEY_BACKEND_URL="${DEV_OHEY_BACKEND_URL:-$OHEY_DEV_BACKEND_URL}"
 OHEY_ADMIN_EMAILS="${OHEY_ADMIN_EMAILS:-}"
 
-# Run Ohey against dev-ohey Supabase and the dev Render backend.
-DEV_OHEY_BACKEND_URL="${DEV_OHEY_BACKEND_URL:-https://dev-ohey-backend.onrender.com}"
-
 flutter run \
-  --dart-define=OHEY_ENV=dev \
+  --dart-define=OHEY_ENV="$OHEY_DEV_ENV" \
   --dart-define=SUPABASE_URL="$SUPABASE_URL" \
   --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
   --dart-define=SUPABASE_AUTH_REDIRECT_URL="$SUPABASE_AUTH_REDIRECT_URL" \

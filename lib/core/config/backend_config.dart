@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'ohey_environment.dart';
+
 /// Go backend environment configuration for Ohey.
 ///
 /// Non-release builds (Simulator / `flutter run`) are forced to the dev Render
@@ -9,17 +11,16 @@ import 'package:flutter/foundation.dart';
 class BackendConfig {
   const BackendConfig._();
 
-  // Render service display names are dev-ohey-backend / ohey-backend.
-  // The generated onrender.com hostnames are Ohey slugs.
-  static const _devBaseUrl = 'https://dev-ohey-backend.onrender.com';
-  static const _prodBaseUrl = 'https://ohey-backend.onrender.com';
-
-  static const _definedBaseUrl = String.fromEnvironment('OHEY_BACKEND_URL');
+  static const _definedBaseUrl = String.fromEnvironment(
+    OheyEnvironmentValues.backendUrlDefineKey,
+  );
 
   static String get baseUrl {
     if (!kReleaseMode) {
-      return _devBaseUrl;
+      return OheyEnvironmentValues.devBackendUrl;
     }
-    return _definedBaseUrl.isEmpty ? _prodBaseUrl : _definedBaseUrl;
+    return _definedBaseUrl.isEmpty
+        ? OheyEnvironmentValues.productionBackendUrl
+        : _definedBaseUrl;
   }
 }
