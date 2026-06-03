@@ -3,6 +3,18 @@ part of 'create_user_dialog.dart';
 bool _hasValidPassword(String password) =>
     password.length >= _minPasswordLength;
 
+const _emailInputRequirementMessage = '半角のメールアドレスを入力してね。';
+
+bool _hasValidEmailAddress(String email) {
+  final normalized = email.trim();
+  if (normalized.isEmpty) return false;
+  final asciiOnly = normalized.codeUnits.every(
+    (unit) => unit >= 0x21 && unit <= 0x7E,
+  );
+  if (!asciiOnly) return false;
+  return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(normalized);
+}
+
 String? _displayNameFromOAuth(User user) {
   final metadata = user.userMetadata;
   final candidates = [

@@ -13,7 +13,10 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
       final authRepository = ref.read(authRepositoryProvider);
       final email = _emailController.text.trim();
       final password = _passwordController.text;
-      if (email.isEmpty || !_hasValidPassword(password)) {
+      if (!_hasValidEmailAddress(email)) {
+        throw const AuthException(_emailInputRequirementMessage);
+      }
+      if (!_hasValidPassword(password)) {
         throw const AuthException(_emailPasswordRequirementMessage);
       }
 
@@ -66,7 +69,10 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
       if (authRepository.currentSession == null) {
         final email = _emailController.text.trim();
         final password = _passwordController.text;
-        if (email.isEmpty || !_hasValidPassword(password)) {
+        if (!_hasValidEmailAddress(email)) {
+          throw const AuthException(_emailInputRequirementMessage);
+        }
+        if (!_hasValidPassword(password)) {
           throw const AuthException(_emailPasswordRequirementMessage);
         }
         final res = await authRepository.signUpWithProfileMetadata(
