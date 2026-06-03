@@ -486,7 +486,9 @@ class _ProfileActivityHome extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: _ProfileStatusActionRow(onTap: onChangeStatusTap),
+                  child: _ProfileFriendActionRow(
+                    onAddFriendsTap: onAddFriendsTap,
+                  ),
                 ),
               ],
             ),
@@ -505,9 +507,7 @@ class _ProfileActivityHome extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: _ProfileFriendActionRow(
-                    onAddFriendsTap: onAddFriendsTap,
-                  ),
+                  child: _ProfileStatusActionRow(onTap: onChangeStatusTap),
                 ),
               ],
             ),
