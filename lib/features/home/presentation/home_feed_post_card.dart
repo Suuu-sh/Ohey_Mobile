@@ -347,9 +347,7 @@ class _FeedCardAuthorBar extends StatelessWidget {
         ? Color.lerp(menuAccent, AppColors.black, .18)!
         : Color.lerp(menuAccent, AppColors.white, .18)!;
     final place = item.place.trim();
-    final metadataLabel = compactYurubo
-        ? (place.isEmpty ? 'ゆるぼ' : place)
-        : item.isOfficial
+    final metadataLabel = item.isOfficial
         ? (place.isEmpty ? 'Ohey公式からのお知らせ' : 'Ohey公式 ・ $place')
         : place.isEmpty
         ? 'ゆるぼ'
@@ -392,7 +390,7 @@ class _FeedCardAuthorBar extends StatelessWidget {
                                   style: Theme.of(context).textTheme.titleSmall
                                       ?.copyWith(
                                         color: primaryText,
-                                        fontSize: 15.5,
+                                        fontSize: compactYurubo ? 17 : 15.5,
                                         fontWeight: FontWeight.w900,
                                         height: 1.05,
                                         letterSpacing: -.25,
@@ -405,19 +403,21 @@ class _FeedCardAuthorBar extends StatelessWidget {
                                 const _OfficialVerifiedBadge(),
                             ],
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            metadataLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(
-                                  color: secondaryText,
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w900,
-                                  height: 1,
-                                ),
-                          ),
+                          if (!compactYurubo) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              metadataLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: secondaryText,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w900,
+                                    height: 1,
+                                  ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
