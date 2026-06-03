@@ -481,7 +481,7 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
   final _placeController = TextEditingController();
   DateTime? _selectedDate;
   late Future<List<Map<String, dynamic>>> _groupsFuture;
-  String _visibility = 'friends';
+  String _visibility = OheyVisibilityKeys.friends;
   String? _groupId;
   String? _wishItemId;
   bool _saving = false;
@@ -510,7 +510,8 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
   Future<void> _submit() async {
     final title = _titleController.text.trim();
     if (title.isEmpty || _saving) return;
-    if (_visibility == 'group' && (_groupId == null || _groupId!.isEmpty)) {
+    if (_visibility == OheyVisibilityKeys.group &&
+        (_groupId == null || _groupId!.isEmpty)) {
       OheyToast.show(context, 'グループを選んでね');
       return;
     }
@@ -527,7 +528,9 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
                   ? null
                   : _dateOnly(_selectedDate!),
               visibility: _visibility,
-              groupId: _visibility == 'group' ? _groupId : null,
+              groupId: _visibility == OheyVisibilityKeys.group
+                  ? _groupId
+                  : null,
               wishItemId: _wishItemId,
             ),
           );
@@ -559,7 +562,9 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
         future: _groupsFuture,
         builder: (context, snapshot) {
           final groups = snapshot.data ?? const <Map<String, dynamic>>[];
-          if (_visibility == 'group' && _groupId == null && groups.isNotEmpty) {
+          if (_visibility == OheyVisibilityKeys.group &&
+              _groupId == null &&
+              groups.isNotEmpty) {
             _groupId =
                 (groups.first['row_id'] ?? groups.first['id']) as String?;
           }
@@ -618,21 +623,25 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
                   Expanded(
                     child: _YuruboVisibilityChoice(
                       label: '全フレンズ',
-                      selected: _visibility == 'friends',
-                      onTap: () => setState(() => _visibility = 'friends'),
+                      selected: _visibility == OheyVisibilityKeys.friends,
+                      onTap: () => setState(
+                        () => _visibility = OheyVisibilityKeys.friends,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: _YuruboVisibilityChoice(
                       label: 'グループ',
-                      selected: _visibility == 'group',
-                      onTap: () => setState(() => _visibility = 'group'),
+                      selected: _visibility == OheyVisibilityKeys.group,
+                      onTap: () => setState(
+                        () => _visibility = OheyVisibilityKeys.group,
+                      ),
                     ),
                   ),
                 ],
               ),
-              if (_visibility == 'group') ...[
+              if (_visibility == OheyVisibilityKeys.group) ...[
                 const SizedBox(height: 12),
                 if (groups.isEmpty)
                   Text(

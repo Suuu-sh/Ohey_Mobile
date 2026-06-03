@@ -1353,7 +1353,7 @@ _GroupAvailabilityStats _groupAvailabilityStats(
     if (_isUndecidedStatusKey(item.friend.statusKey)) {
       undecidedCount += 1;
     }
-    if (item.friend.statusKey == 'has_plans') {
+    if (item.friend.statusKey == OheyStatusKeys.hasPlans) {
       plannedCount += 1;
     }
   }
@@ -1370,11 +1370,11 @@ _GroupAvailabilityStats _groupAvailabilityStats(
 
 double _availabilityWeightForStatusKey(String? statusKey) {
   return switch (statusKey) {
-    'available' => 1.0,
-    'maybe_available' => .8,
-    'depends_on_time' => .5,
-    'has_plans' => 0,
-    'unselected' || 'unset' || null || '' => 0,
+    OheyStatusKeys.available => 1.0,
+    OheyStatusKeys.maybeAvailable => .8,
+    OheyStatusKeys.dependsOnTime => .5,
+    OheyStatusKeys.hasPlans => 0,
+    OheyStatusKeys.unselected || OheyStatusKeys.unset || null || '' => 0,
     _ => 0,
   };
 }
@@ -1382,8 +1382,8 @@ double _availabilityWeightForStatusKey(String? statusKey) {
 bool _isUndecidedStatusKey(String? statusKey) =>
     statusKey == null ||
     statusKey.isEmpty ||
-    statusKey == 'unselected' ||
-    statusKey == 'unset';
+    statusKey == OheyStatusKeys.unselected ||
+    statusKey == OheyStatusKeys.unset;
 
 String _groupScheduleDayLabel(DateTime day) {
   final now = DateTime.now();
@@ -1398,12 +1398,12 @@ bool _isSameLocalDay(DateTime a, DateTime b) =>
 
 bool _isRecommendedFriend(_DecoratedFriend item) {
   final friend = item.friend;
-  if (friend.statusKey == 'has_plans') return false;
+  if (friend.statusKey == OheyStatusKeys.hasPlans) return false;
 
   return friend.totalMemoryCount == 0 ||
       (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) ||
-      friend.statusKey == 'available' ||
-      friend.statusKey == 'maybe_available';
+      friend.statusKey == OheyStatusKeys.available ||
+      friend.statusKey == OheyStatusKeys.maybeAvailable;
 }
 
 int _recommendationScoreFor(_DecoratedFriend item) {
@@ -1411,8 +1411,8 @@ int _recommendationScoreFor(_DecoratedFriend item) {
   var score = 0;
   if (friend.totalMemoryCount == 0) score += 100;
   if (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) score += 80;
-  if (friend.statusKey == 'available') score += 60;
-  if (friend.statusKey == 'maybe_available') score += 50;
+  if (friend.statusKey == OheyStatusKeys.available) score += 60;
+  if (friend.statusKey == OheyStatusKeys.maybeAvailable) score += 50;
   return score;
 }
 

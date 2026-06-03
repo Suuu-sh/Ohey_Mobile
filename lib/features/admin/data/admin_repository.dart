@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/contracts/ohey_api_paths.dart';
+import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
@@ -12,12 +14,12 @@ class AdminRepository {
   final BackendApiClient _client;
 
   Future<void> checkAccess() async {
-    await _client.get('/v1/admin/me');
+    await _client.get(OheyApiPaths.adminMe);
   }
 
   Future<List<AdminUserProfile>> listUsers() async {
     final rows = await _client.getRows(
-      '/v1/admin/users',
+      OheyApiPaths.adminUsers,
       query: {'date': _todayIsoDate()},
     );
     return rows.map(AdminUserProfile.fromJson).toList(growable: false);
@@ -32,7 +34,7 @@ class AdminRepository {
     required String status,
     required bool isPlus,
   }) async {
-    await _client.post('/v1/admin/users', {
+    await _client.post(OheyApiPaths.adminUsers, {
       'email': email,
       'password': password,
       'user_id': userId,
@@ -66,23 +68,23 @@ class AdminRepository {
     if (password != null && password.trim().isNotEmpty) {
       body['password'] = password.trim();
     }
-    await _client.patch('/v1/admin/users/$id', body);
+    await _client.patch(OheyApiPaths.adminUser(id), body);
   }
 
   Future<void> deleteUser(String id) async {
-    await _client.delete('/v1/admin/users/$id');
+    await _client.delete(OheyApiPaths.adminUser(id));
   }
 
   Future<List<AdminMemory>> listMemorys() async {
-    final rows = await _client.getRows('/v1/admin/memories');
+    final rows = await _client.getRows(OheyApiPaths.adminMemories);
     return rows.map(AdminMemory.fromJson).toList(growable: false);
   }
 
   Future<List<AdminMemoryReport>> listMemoryReports({
-    String status = 'pending',
+    String status = OheyStatusKeys.pending,
   }) async {
     final rows = await _client.getRows(
-      '/v1/admin/memory-reports',
+      OheyApiPaths.adminMemoryReports,
       query: {'status': status},
     );
     return rows.map(AdminMemoryReport.fromJson).toList(growable: false);
@@ -93,7 +95,7 @@ class AdminRepository {
     required String status,
     String? moderationNote,
   }) async {
-    await _client.patch('/v1/admin/memory-reports/$id', {
+    await _client.patch(OheyApiPaths.adminMemoryReport(id), {
       'status': status,
       'moderation_note': moderationNote?.trim() ?? '',
     });
@@ -116,7 +118,7 @@ class AdminRepository {
     if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
       body['owner_user_id'] = ownerUserId.trim();
     }
-    await _client.post('/v1/admin/memories', body);
+    await _client.post(OheyApiPaths.adminMemories, body);
   }
 
   Future<void> updateMemory({
@@ -136,11 +138,11 @@ class AdminRepository {
     if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
       body['owner_user_id'] = ownerUserId.trim();
     }
-    await _client.patch('/v1/admin/memories/$id', body);
+    await _client.patch(OheyApiPaths.adminMemory(id), body);
   }
 
   Future<void> deleteMemory(String id) async {
-    await _client.delete('/v1/admin/memories/$id');
+    await _client.delete(OheyApiPaths.adminMemory(id));
   }
 
   Future<AdminNotificationResult> createSystemNotification({
@@ -150,7 +152,7 @@ class AdminRepository {
     required List<String> recipientUserIds,
     String? systemKey,
   }) async {
-    final row = await _client.postRow('/v1/admin/notifications', {
+    final row = await _client.postRow(OheyApiPaths.adminNotifications, {
       'title': title,
       'message': message,
       'send_to_all': sendToAll,
@@ -197,7 +199,7 @@ class AdminUserProfile {
       displayName: json['display_name'] as String? ?? 'Ohey user',
       avatarUrl: json['avatar_url'] as String?,
       gender: json['gender'] as String? ?? 'unspecified',
-      status: json['status'] as String? ?? 'unselected',
+      status: json['status'] as String? ?? OheyStatusKeys.unselected,
       isPlus: json['is_plus'] as bool? ?? false,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? ''),
     );
@@ -308,8 +310,8 @@ class AdminMemoryReport {
     return AdminMemoryReport(
       id: json['id'] as String? ?? '',
       memoryId: json['memory_id'] as String? ?? '',
-      reason: json['reason'] as String? ?? 'other',
-      status: json['status'] as String? ?? 'pending',
+      reason: json['reason'] as String? ?? OheyReportReasonKeys.other,
+      status: json['status'] as String? ?? OheyStatusKeys.pending,
       reporterDisplayName: reporter['display_name'] as String? ?? 'Reporter',
       reporterHandle: reporter['user_id'] as String? ?? '',
       ownerDisplayName: owner['display_name'] as String? ?? 'Ohey user',

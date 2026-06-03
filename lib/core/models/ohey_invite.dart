@@ -1,3 +1,4 @@
+import '../contracts/ohey_api_values.dart';
 import 'ohey_friend.dart';
 
 enum OheyInviteStatus { pending, accepted, rejected, cancelled }
@@ -49,19 +50,19 @@ class OheyInvite {
 
 OheyInviteStatus oheyInviteStatusFromKey(String? key) {
   return switch (key) {
-    'accepted' => OheyInviteStatus.accepted,
-    'rejected' => OheyInviteStatus.rejected,
-    'cancelled' => OheyInviteStatus.cancelled,
+    OheyStatusKeys.accepted => OheyInviteStatus.accepted,
+    OheyStatusKeys.rejected => OheyInviteStatus.rejected,
+    OheyStatusKeys.cancelled => OheyInviteStatus.cancelled,
     _ => OheyInviteStatus.pending,
   };
 }
 
 extension OheyInviteStatusX on OheyInviteStatus {
   String get key => switch (this) {
-    OheyInviteStatus.pending => 'pending',
-    OheyInviteStatus.accepted => 'accepted',
-    OheyInviteStatus.rejected => 'rejected',
-    OheyInviteStatus.cancelled => 'cancelled',
+    OheyInviteStatus.pending => OheyStatusKeys.pending,
+    OheyInviteStatus.accepted => OheyStatusKeys.accepted,
+    OheyInviteStatus.rejected => OheyStatusKeys.rejected,
+    OheyInviteStatus.cancelled => OheyStatusKeys.cancelled,
   };
 
   String get label => switch (this) {

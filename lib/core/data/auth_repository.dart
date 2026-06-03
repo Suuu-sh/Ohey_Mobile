@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/backend_config.dart';
 import '../config/supabase_config.dart';
+import '../contracts/ohey_api_paths.dart';
 import '../models/ohey_avatar.dart';
 import '../models/ohey_gender.dart';
 import 'supabase_client_provider.dart';
@@ -78,7 +79,7 @@ class AuthRepository {
     try {
       final baseUri = Uri.parse(BackendConfig.baseUrl);
       final uri = baseUri.replace(
-        path: _joinPath(baseUri.path, '/v1/auth/signup'),
+        path: _joinPath(baseUri.path, OheyApiPaths.authSignup),
       );
       final request = await client
           .postUrl(uri)

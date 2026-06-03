@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../contracts/ohey_api_paths.dart';
+import '../contracts/ohey_api_values.dart';
 import 'backend_api_client.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -27,17 +29,19 @@ class PushTokenRepository {
 
   Future<void> registerToken(String token) async {
     if (!hasSignedInUser || token.trim().isEmpty) return;
-    await _client.put('/v1/me/push-token', pushTokenPayload(token));
+    await _client.put(OheyApiPaths.mePushToken, pushTokenPayload(token));
   }
 
   Future<void> unregisterToken(String? token) async {
     final normalized = token?.trim();
     if (!hasSignedInUser || normalized == null || normalized.isEmpty) return;
-    await _client.delete('/v1/me/push-token', body: {'token': normalized});
+    await _client.delete(OheyApiPaths.mePushToken, body: {'token': normalized});
   }
 }
 
-String currentPushPlatformKey() => Platform.isAndroid ? 'android' : 'ios';
+String currentPushPlatformKey() => Platform.isAndroid
+    ? OheyPushPlatformKeys.android
+    : OheyPushPlatformKeys.ios;
 
 Map<String, dynamic> pushTokenPayload(String token) => {
   'token': token,

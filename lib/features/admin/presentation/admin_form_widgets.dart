@@ -335,7 +335,7 @@ Future<void> _confirmDeleteReportedPost(
         .read(adminControllerProvider)
         .updateMemoryReport(
           id: report.id,
-          status: 'resolved',
+          status: OheyStatusKeys.resolved,
           moderationNote: 'Deleted reported post from admin app',
         );
     ref.invalidate(adminMemoryReportsProvider);

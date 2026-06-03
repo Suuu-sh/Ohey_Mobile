@@ -1,5 +1,6 @@
 import 'ohey_avatar.dart';
 import 'ohey_gender.dart';
+import '../contracts/ohey_api_values.dart';
 
 enum OheyDailyStatus {
   unselected,
@@ -11,11 +12,11 @@ enum OheyDailyStatus {
 
 extension OheyDailyStatusX on OheyDailyStatus {
   String get key => switch (this) {
-    OheyDailyStatus.unselected => 'unselected',
-    OheyDailyStatus.available => 'available',
-    OheyDailyStatus.maybeAvailable => 'maybe_available',
-    OheyDailyStatus.dependsOnTime => 'depends_on_time',
-    OheyDailyStatus.hasPlans => 'has_plans',
+    OheyDailyStatus.unselected => OheyStatusKeys.unselected,
+    OheyDailyStatus.available => OheyStatusKeys.available,
+    OheyDailyStatus.maybeAvailable => OheyStatusKeys.maybeAvailable,
+    OheyDailyStatus.dependsOnTime => OheyStatusKeys.dependsOnTime,
+    OheyDailyStatus.hasPlans => OheyStatusKeys.hasPlans,
   };
 
   String get label => switch (this) {
@@ -67,10 +68,10 @@ extension OheyDailyStatusX on OheyDailyStatus {
 }
 
 OheyDailyStatus oheyDailyStatusFromKey(String? key) => switch (key) {
-  'available' => OheyDailyStatus.available,
-  'maybe_available' => OheyDailyStatus.maybeAvailable,
-  'depends_on_time' => OheyDailyStatus.dependsOnTime,
-  'has_plans' => OheyDailyStatus.hasPlans,
+  OheyStatusKeys.available => OheyDailyStatus.available,
+  OheyStatusKeys.maybeAvailable => OheyDailyStatus.maybeAvailable,
+  OheyStatusKeys.dependsOnTime => OheyDailyStatus.dependsOnTime,
+  OheyStatusKeys.hasPlans => OheyDailyStatus.hasPlans,
   _ => OheyDailyStatus.unselected,
 };
 

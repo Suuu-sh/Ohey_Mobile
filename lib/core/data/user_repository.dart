@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../contracts/ohey_api_paths.dart';
 import '../models/ohey_avatar.dart';
 import '../models/ohey_gender.dart';
 import '../models/ohey_user.dart';
@@ -22,14 +23,14 @@ class UserRepository {
 
     Map<String, dynamic> row;
     try {
-      row = await _client.getRow('/v1/me/profile');
+      row = await _client.getRow(OheyApiPaths.meProfile);
     } on BackendApiException catch (error) {
       if (error.statusCode == 404) return null;
       rethrow;
     }
 
     final statusRows = await _client.getRows(
-      '/v1/daily-status',
+      OheyApiPaths.dailyStatus,
       query: {'date': _isoDate(DateTime.now())},
     );
     final statusRow = statusRows.isEmpty ? null : statusRows.first;
@@ -42,7 +43,7 @@ class UserRepository {
     if (authUserId == null || authUserId.isEmpty) return fallback;
 
     try {
-      final row = await _client.getRow('/v1/me/profile');
+      final row = await _client.getRow(OheyApiPaths.meProfile);
       final displayName = (row['display_name'] as String?)?.trim();
       if (displayName != null && displayName.isNotEmpty) return displayName;
     } catch (_) {
@@ -58,7 +59,7 @@ class UserRepository {
     OheyAvatar? avatar,
   }) async {
     await _client.put(
-      '/v1/me/profile',
+      OheyApiPaths.meProfile,
       createProfilePayload(
         name: name,
         userId: userId,
@@ -74,18 +75,18 @@ class UserRepository {
     OheyAvatar? avatar,
   }) async {
     await _client.patch(
-      '/v1/me/profile',
+      OheyApiPaths.meProfile,
       updateProfilePayload(name: name, userId: userId, avatar: avatar),
     );
   }
 
   Future<void> deleteAccount() async {
-    await _client.delete('/v1/me/account');
+    await _client.delete(OheyApiPaths.meAccount);
   }
 
   Future<OheyDailyStatus> fetchDailyStatus(DateTime date) async {
     final rows = await _client.getRows(
-      '/v1/daily-status',
+      OheyApiPaths.dailyStatus,
       query: {'date': _isoDate(date)},
     );
     if (rows.isEmpty) return OheyDailyStatus.unselected;
@@ -96,7 +97,7 @@ class UserRepository {
     DateTime month,
   ) async {
     final rows = await _client.getRows(
-      '/v1/daily-statuses/month',
+      OheyApiPaths.monthlyDailyStatuses,
       query: {'month': _isoMonth(month)},
     );
     return {
@@ -113,7 +114,7 @@ class UserRepository {
     DateTime month,
   ) async {
     final rows = await _client.getRows(
-      '/v1/friends/${Uri.encodeComponent(friendId)}/daily-statuses/month',
+      OheyApiPaths.friendMonthlyDailyStatuses(friendId),
       query: {'month': _isoMonth(month)},
     );
     return {
@@ -129,7 +130,7 @@ class UserRepository {
     OheyDailyStatus status, {
     DateTime? date,
   }) async {
-    await _client.put('/v1/daily-status', {
+    await _client.put(OheyApiPaths.dailyStatus, {
       'status_date': _isoDate(date ?? DateTime.now()),
       'status': status.key,
     });

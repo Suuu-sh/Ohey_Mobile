@@ -1,3 +1,4 @@
+import '../contracts/ohey_api_values.dart';
 import 'ohey_avatar.dart';
 
 class Yurubo {
@@ -76,7 +77,7 @@ class YuruboParticipant {
     required this.name,
     required this.handle,
     required this.avatar,
-    this.reactionType = 'available',
+    this.reactionType = OheyReactionTypeKeys.available,
   });
 
   final String userId;
@@ -85,7 +86,7 @@ class YuruboParticipant {
   final OheyAvatar avatar;
   final String reactionType;
 
-  bool get isPending => reactionType != 'available';
+  bool get isPending => reactionType != OheyReactionTypeKeys.available;
 
   YuruboParticipant copyWith({String? reactionType}) => YuruboParticipant(
     userId: userId,

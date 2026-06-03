@@ -1,20 +1,22 @@
+import '../contracts/ohey_api_values.dart';
+
 enum OheyFriendRequestStatus { pending, accepted, rejected, cancelled }
 
 OheyFriendRequestStatus oheyFriendRequestStatusFromKey(String? key) {
   return switch (key) {
-    'accepted' => OheyFriendRequestStatus.accepted,
-    'rejected' => OheyFriendRequestStatus.rejected,
-    'cancelled' => OheyFriendRequestStatus.cancelled,
+    OheyStatusKeys.accepted => OheyFriendRequestStatus.accepted,
+    OheyStatusKeys.rejected => OheyFriendRequestStatus.rejected,
+    OheyStatusKeys.cancelled => OheyFriendRequestStatus.cancelled,
     _ => OheyFriendRequestStatus.pending,
   };
 }
 
 extension OheyFriendRequestStatusX on OheyFriendRequestStatus {
   String get key => switch (this) {
-    OheyFriendRequestStatus.pending => 'pending',
-    OheyFriendRequestStatus.accepted => 'accepted',
-    OheyFriendRequestStatus.rejected => 'rejected',
-    OheyFriendRequestStatus.cancelled => 'cancelled',
+    OheyFriendRequestStatus.pending => OheyStatusKeys.pending,
+    OheyFriendRequestStatus.accepted => OheyStatusKeys.accepted,
+    OheyFriendRequestStatus.rejected => OheyStatusKeys.rejected,
+    OheyFriendRequestStatus.cancelled => OheyStatusKeys.cancelled,
   };
 
   String get label => switch (this) {

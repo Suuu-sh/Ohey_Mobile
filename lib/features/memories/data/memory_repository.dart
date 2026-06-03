@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/contracts/ohey_api_paths.dart';
+import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/memory.dart';
 import '../../../core/models/ohey_avatar.dart';
@@ -14,7 +16,10 @@ abstract interface class MemoryRepository {
   Future<MemoryPage> fetchHomeFeedPage({int limit = 20, String? cursor});
   Future<List<OheyFriend>> fetchFriends({DateTime? date});
   Future<void> deleteMemory(String memoryId);
-  Future<void> reportMemory(String memoryId, {String reason = 'other'});
+  Future<void> reportMemory(
+    String memoryId, {
+    String reason = OheyReportReasonKeys.other,
+  });
   Future<void> hideMemoryFromFeed(String memoryId);
   Future<void> muteUser(String userId);
   Future<void> blockUser(String userId);
@@ -50,7 +55,7 @@ class BackendMemoryRepository implements MemoryRepository {
     if (cleanCursor != null && cleanCursor.isNotEmpty) {
       query['cursor'] = cleanCursor;
     }
-    final rows = await _client.getRows('/v1/home/feed', query: query);
+    final rows = await _client.getRows(OheyApiPaths.homeFeed, query: query);
     final memories = rows.map(_memoryFromRow).toList(growable: false);
     final nextCursor = memories.isEmpty
         ? null
@@ -60,27 +65,30 @@ class BackendMemoryRepository implements MemoryRepository {
 
   @override
   Future<void> hideMemoryFromFeed(String memoryId) async {
-    await _client.post('/v1/memory-hides', {'memory_id': memoryId});
+    await _client.post(OheyApiPaths.memoryHides, {'memory_id': memoryId});
   }
 
   @override
   Future<void> muteUser(String userId) async {
-    await _client.post('/v1/user-mutes', {'target_user_id': userId});
+    await _client.post(OheyApiPaths.userMutes, {'target_user_id': userId});
   }
 
   @override
   Future<void> blockUser(String userId) async {
-    await _client.post('/v1/user-blocks', {'target_user_id': userId});
+    await _client.post(OheyApiPaths.userBlocks, {'target_user_id': userId});
   }
 
   @override
   Future<void> deleteMemory(String memoryId) async {
-    await _client.delete('/v1/memories/$memoryId');
+    await _client.delete(OheyApiPaths.memory(memoryId));
   }
 
   @override
-  Future<void> reportMemory(String memoryId, {String reason = 'other'}) async {
-    await _client.post('/v1/memories/$memoryId/report', {'reason': reason});
+  Future<void> reportMemory(
+    String memoryId, {
+    String reason = OheyReportReasonKeys.other,
+  }) async {
+    await _client.post(OheyApiPaths.memoryReport(memoryId), {'reason': reason});
   }
 
   @override
@@ -89,8 +97,8 @@ class BackendMemoryRepository implements MemoryRepository {
     required bool liked,
   }) async {
     final response = liked
-        ? await _client.put('/v1/memories/$memoryId/like', const {})
-        : await _client.delete('/v1/memories/$memoryId/like');
+        ? await _client.put(OheyApiPaths.memoryLike(memoryId), const {})
+        : await _client.delete(OheyApiPaths.memoryLike(memoryId));
     final row = BackendApiClient.mapFrom(response);
     return MemoryLikeState(
       likeCount: (row['like_count'] as num?)?.toInt() ?? 0,
@@ -106,7 +114,7 @@ class BackendMemoryRepository implements MemoryRepository {
     }
 
     final rows = await _client.getRows(
-      '/v1/friends',
+      OheyApiPaths.friends,
       query: {'date': _isoDate(date ?? DateTime.now())},
     );
 
@@ -131,7 +139,7 @@ class BackendMemoryRepository implements MemoryRepository {
     String friendId, {
     required bool isFavorite,
   }) async {
-    await _client.put('/v1/friends/$friendId/favorite', {
+    await _client.put(OheyApiPaths.friendFavorite(friendId), {
       'is_favorite': isFavorite,
     });
   }

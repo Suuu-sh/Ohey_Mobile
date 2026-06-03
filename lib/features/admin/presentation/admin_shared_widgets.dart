@@ -382,21 +382,21 @@ String _adminGenderLabel(String gender) {
 
 String _adminReportReasonLabel(String reason) {
   return switch (reason) {
-    'spam' => 'スパム',
-    'harassment' => '嫌がらせ',
-    'inappropriate' => '不適切',
-    'violence' => '暴力・危険',
-    'minor_safety' => '未成年安全',
+    OheyReportReasonKeys.spam => 'スパム',
+    OheyReportReasonKeys.harassment => '嫌がらせ',
+    OheyReportReasonKeys.inappropriate => '不適切',
+    OheyReportReasonKeys.violence => '暴力・危険',
+    OheyReportReasonKeys.minorSafety => '未成年安全',
     _ => 'その他',
   };
 }
 
 String _adminReportStatusLabel(String status) {
   return switch (status) {
-    'pending' => '未対応',
-    'reviewing' => '対応中',
-    'resolved' => '解決済み',
-    'dismissed' => '却下',
+    OheyStatusKeys.pending => '未対応',
+    OheyStatusKeys.reviewing => '対応中',
+    OheyStatusKeys.resolved => '解決済み',
+    OheyStatusKeys.dismissed => '却下',
     _ => status,
   };
 }

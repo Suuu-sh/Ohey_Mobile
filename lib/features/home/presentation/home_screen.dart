@@ -12,6 +12,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/config/backend_config.dart';
+import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';

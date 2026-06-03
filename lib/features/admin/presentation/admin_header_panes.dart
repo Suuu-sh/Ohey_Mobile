@@ -253,16 +253,16 @@ class _AdminReportCard extends StatelessWidget {
           children: [
             _AdminSmallActionButton(
               label: '対応中',
-              onTap: () => onStatus('reviewing'),
+              onTap: () => onStatus(OheyStatusKeys.reviewing),
             ),
             _AdminSmallActionButton(
               label: '解決',
-              onTap: () => onStatus('resolved'),
+              onTap: () => onStatus(OheyStatusKeys.resolved),
             ),
             _AdminSmallActionButton(
               label: '却下',
               destructive: true,
-              onTap: () => onStatus('dismissed'),
+              onTap: () => onStatus(OheyStatusKeys.dismissed),
             ),
             _AdminSmallActionButton(
               label: '投稿削除',

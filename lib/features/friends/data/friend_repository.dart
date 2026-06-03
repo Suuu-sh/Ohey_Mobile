@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/contracts/ohey_api_paths.dart';
+import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/ohey_avatar.dart';
 
@@ -24,7 +26,7 @@ class FriendRepository {
     if (exactUserId.isEmpty) return null;
     try {
       final row = await _client.getRow(
-        '/v1/profiles/by-user-id/${Uri.encodeComponent(exactUserId)}',
+        OheyApiPaths.profileByUserId(exactUserId),
       );
       return OheyFriendProfile.fromRow(row);
     } on BackendApiException catch (error) {
@@ -37,40 +39,42 @@ class FriendRepository {
     String friendId,
   ) async {
     final row = await _client.getRow(
-      '/v1/friend-requests/status',
+      OheyApiPaths.friendRequestStatus,
       query: {'friend_id': friendId},
     );
     return OheyFriendRelationshipStatus.fromRow(row);
   }
 
   Future<List<Map<String, dynamic>>> fetchFriendGroups() async {
-    return _client.getRows('/v1/friend-groups');
+    return _client.getRows(OheyApiPaths.friendGroups);
   }
 
   Future<List<Map<String, dynamic>>> saveFriendGroups(
     List<Map<String, dynamic>> groups,
   ) async {
-    final response = await _client.put('/v1/friend-groups', {'groups': groups});
+    final response = await _client.put(OheyApiPaths.friendGroups, {
+      'groups': groups,
+    });
     return BackendApiClient.rowsFrom(response);
   }
 
   Future<void> addFriend(String friendId) async {
-    await _client.post('/v1/friends', {'friend_id': friendId});
+    await _client.post(OheyApiPaths.friends, {'friend_id': friendId});
   }
 
   Future<void> deleteFriend(String friendId) async {
-    await _client.delete('/v1/friends/${Uri.encodeComponent(friendId)}');
+    await _client.delete(OheyApiPaths.friend(friendId));
   }
 
   Future<void> sendFriendRequest(String friendId) async {
-    await _client.post('/v1/friend-requests', {'to_user_id': friendId});
+    await _client.post(OheyApiPaths.friendRequests, {'to_user_id': friendId});
   }
 
   Future<List<OheyFriendRequestItem>> fetchPendingFriendRequests({
-    String direction = 'all',
+    String direction = OheyRequestDirectionKeys.all,
   }) async {
     final rows = await _client.getRows(
-      '/v1/friend-requests',
+      OheyApiPaths.friendRequests,
       query: {'direction': direction},
     );
     final currentUserId = _client.currentUserId ?? '';
@@ -80,14 +84,13 @@ class FriendRepository {
   }
 
   Future<void> updateFriendRequest(String requestId, String status) async {
-    await _client.patch(
-      '/v1/friend-requests/${Uri.encodeComponent(requestId)}',
-      {'status': status},
-    );
+    await _client.patch(OheyApiPaths.friendRequest(requestId), {
+      'status': status,
+    });
   }
 
   Future<void> cancelFriendRequest(String requestId) async {
-    await updateFriendRequest(requestId, 'cancelled');
+    await updateFriendRequest(requestId, OheyStatusKeys.cancelled);
   }
 }
 
@@ -129,8 +132,8 @@ class OheyFriendRelationshipStatus {
 
   factory OheyFriendRelationshipStatus.fromRow(Map<String, dynamic> row) {
     final requestState = switch (row['request_state'] as String?) {
-      'outgoing' => OheyFriendRequestState.outgoing,
-      'incoming' => OheyFriendRequestState.incoming,
+      OheyRelationshipStateKeys.outgoing => OheyFriendRequestState.outgoing,
+      OheyRelationshipStateKeys.incoming => OheyFriendRequestState.incoming,
       _ => OheyFriendRequestState.none,
     };
     return OheyFriendRelationshipStatus(
