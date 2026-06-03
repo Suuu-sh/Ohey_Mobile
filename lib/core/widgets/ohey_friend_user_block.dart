@@ -82,6 +82,7 @@ class OheyFriendUserBlock extends StatelessWidget {
         : statusEnabled
         ? AppColors.cFF071320
         : AppColors.cFF738092;
+    const inviteButtonPadding = EdgeInsets.symmetric(horizontal: 9);
 
     final block = ConstrainedBox(
       constraints: BoxConstraints(minHeight: compact ? 88 : 98),
@@ -188,7 +189,7 @@ class OheyFriendUserBlock extends StatelessWidget {
                             ? AppColors.cFF3C4652
                             : AppColors.cFF2B3441,
                         disabledOpacity: 1,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        padding: inviteButtonPadding,
                         fontSize: 14,
                       ),
                 ),
