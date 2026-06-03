@@ -229,13 +229,6 @@ Future<void> _respondInvite(
   }
 }
 
-const _selectableDailyStatuses = <OheyDailyStatus>[
-  OheyDailyStatus.available,
-  OheyDailyStatus.maybeAvailable,
-  OheyDailyStatus.dependsOnTime,
-  OheyDailyStatus.hasPlans,
-];
-
 Future<void> _showProfileStatusSheet(
   BuildContext context,
   WidgetRef ref,

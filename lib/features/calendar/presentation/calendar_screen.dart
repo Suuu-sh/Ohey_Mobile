@@ -1765,12 +1765,6 @@ class _CalendarStatusSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
-    final options = const [
-      OheyDailyStatus.available,
-      OheyDailyStatus.maybeAvailable,
-      OheyDailyStatus.dependsOnTime,
-      OheyDailyStatus.hasPlans,
-    ];
     return OheyBottomSheetShell(
       title: 'この日の気分',
       showHandle: true,
@@ -1786,7 +1780,7 @@ class _CalendarStatusSheet extends StatelessWidget {
             style: TextStyle(color: sub, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 14),
-          for (final status in options) ...[
+          for (final status in OheyDailyStatus.selectable) ...[
             OheyDailyStatus3DOption(
               status: status,
               title: status.label,

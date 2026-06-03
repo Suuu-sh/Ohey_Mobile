@@ -7,7 +7,19 @@ enum OheyDailyStatus {
   available,
   maybeAvailable,
   dependsOnTime,
-  hasPlans,
+  hasPlans;
+
+  static const selectable = <OheyDailyStatus>[
+    OheyDailyStatus.available,
+    OheyDailyStatus.maybeAvailable,
+    OheyDailyStatus.dependsOnTime,
+    OheyDailyStatus.hasPlans,
+  ];
+
+  static const adminSelectable = <OheyDailyStatus>[
+    OheyDailyStatus.unselected,
+    ...selectable,
+  ];
 }
 
 extension OheyDailyStatusX on OheyDailyStatus {

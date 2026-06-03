@@ -209,7 +209,7 @@ class _AdminStatusDropdown extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final status in _adminSelectableStatusKeys)
+              for (final status in OheyDailyStatus.adminSelectable)
                 _AdminStatusChip(
                   label: status.label,
                   selected: status.key == selected,
@@ -357,14 +357,6 @@ class _AdminStatusChip extends StatelessWidget {
     );
   }
 }
-
-const _adminSelectableStatusKeys = <OheyDailyStatus>[
-  OheyDailyStatus.unselected,
-  OheyDailyStatus.available,
-  OheyDailyStatus.maybeAvailable,
-  OheyDailyStatus.dependsOnTime,
-  OheyDailyStatus.hasPlans,
-];
 
 const _adminSelectableGenders = <OheyGender>[
   OheyGender.unspecified,
