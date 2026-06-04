@@ -35,6 +35,8 @@ class OheyApiPaths {
   static const homeFeed = '/v1/home/feed';
 
   static const wishItems = '/v1/wish-items';
+  static String wishItem(String wishItemId) =>
+      '$wishItems/${Uri.encodeComponent(wishItemId)}';
   static const wishItemsProfileBase = '/v1/wish-items/profile';
   static String profileWishItems(String profileId) =>
       '$wishItemsProfileBase/${Uri.encodeComponent(profileId)}';

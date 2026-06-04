@@ -14,50 +14,97 @@ class _ProfileWishListSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final wishItemsAsync = ref.watch(wishItemControllerProvider);
     final wishItems = wishItemsAsync.asData?.value ?? const <WishItem>[];
+    final listMaxHeight = MediaQuery.sizeOf(context).height * .42;
 
     return OheyBottomSheetShell(
-      maxHeightFactor: .9,
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * .78,
-        child: Column(
-          children: [
-            _ProfileWishListHeader(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ProfileWishListHeader(
+            onCreate: () => _showProfileCreateWishItemSheet(context, ref),
+          ),
+          const SizedBox(height: 14),
+          if (wishItemsAsync.isLoading && wishItems.isEmpty)
+            const SizedBox(
+              height: 180,
+              child: Center(child: CupertinoActivityIndicator()),
+            )
+          else if (wishItems.isEmpty)
+            _ProfileWishListEmptyState(
               onCreate: () => _showProfileCreateWishItemSheet(context, ref),
-            ),
-            const SizedBox(height: 14),
-            Expanded(
-              child: wishItemsAsync.isLoading && wishItems.isEmpty
-                  ? const Center(child: CupertinoActivityIndicator())
-                  : wishItems.isEmpty
-                  ? _ProfileWishListEmptyState(
-                      onCreate: () =>
-                          _showProfileCreateWishItemSheet(context, ref),
-                    )
-                  : ListView.separated(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(0, 4, 0, 24),
-                      itemCount: wishItems.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        final wish = wishItems[index];
-                        return _ProfileWishListCard(
-                          wish: wish,
-                          onYurubo: () => _showProfileCreateYuruboSheet(
-                            context,
-                            ref,
-                            wish: wish,
-                          ),
-                        );
-                      },
+            )
+          else
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: listMaxHeight > 360 ? 360 : listMaxHeight,
+              ),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+                itemCount: wishItems.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final wish = wishItems[index];
+                  return _ProfileWishListCard(
+                    wish: wish,
+                    onYurubo: () =>
+                        _showProfileCreateYuruboSheet(context, ref, wish: wish),
+                    onEdit: () => _showProfileCreateWishItemSheet(
+                      context,
+                      ref,
+                      wish: wish,
                     ),
+                    onDelete: () => _deleteProfileWishItem(context, ref, wish),
+                  );
+                },
+              ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
+}
+
+Future<void> _deleteProfileWishItem(
+  BuildContext context,
+  WidgetRef ref,
+  WishItem wish,
+) async {
+  final confirmed = await _confirmDeleteWishItem(context, wish);
+  if (confirmed != true) return;
+  try {
+    await ref.read(wishItemControllerProvider.notifier).deleteWishItem(wish.id);
+    if (!context.mounted) return;
+    OheyToast.show(context, 'やりたいことを削除しました', icon: CupertinoIcons.trash_fill);
+  } catch (_) {
+    if (context.mounted) {
+      OheyToast.show(context, '削除できなかったよ。あとでもう一度試してね');
+    }
+  }
+}
+
+Future<bool?> _confirmDeleteWishItem(BuildContext context, WishItem wish) {
+  return showCupertinoDialog<bool>(
+    context: context,
+    builder: (dialogContext) => CupertinoAlertDialog(
+      title: const Text('やりたいことを削除しますか？'),
+      content: Text('「${wish.title}」を削除します。この操作は元に戻せません。'),
+      actions: [
+        CupertinoDialogAction(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('キャンセル'),
+        ),
+        CupertinoDialogAction(
+          isDestructiveAction: true,
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('削除する'),
+        ),
+      ],
+    ),
+  );
 }
 
 class _ProfileWishListEmptyState extends StatelessWidget {
@@ -150,10 +197,17 @@ class _ProfileWishListHeader extends StatelessWidget {
 }
 
 class _ProfileWishListCard extends StatelessWidget {
-  const _ProfileWishListCard({required this.wish, required this.onYurubo});
+  const _ProfileWishListCard({
+    required this.wish,
+    required this.onYurubo,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   final WishItem wish;
   final VoidCallback onYurubo;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -173,10 +227,16 @@ class _ProfileWishListCard extends StatelessWidget {
       ),
       actions: [
         OheyManageListIconButton(
-          icon: CupertinoIcons.plus,
+          icon: CupertinoIcons.pencil,
           color: AppColors.cFF20B9FF,
-          semanticLabel: '${wish.title}からゆるぼを作る',
-          onTap: onYurubo,
+          semanticLabel: '${wish.title}を編集',
+          onTap: onEdit,
+        ),
+        OheyManageListIconButton(
+          icon: CupertinoIcons.trash_fill,
+          color: AppColors.cFFFF6B9A,
+          semanticLabel: '${wish.title}を削除',
+          onTap: onDelete,
         ),
       ],
     );

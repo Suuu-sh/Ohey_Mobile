@@ -260,21 +260,23 @@ Future<void> _showProfileStatusSheet(
 
 Future<void> _showProfileCreateWishItemSheet(
   BuildContext context,
-  WidgetRef ref,
-) async {
+  WidgetRef ref, {
+  WishItem? wish,
+}) async {
   await showOheyBottomSheet<void>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
     barrierColor: AppColors.black.withValues(alpha: .58),
-    builder: (_) => _ProfileCreateWishItemSheet(ref: ref),
+    builder: (_) => _ProfileCreateWishItemSheet(ref: ref, initialWish: wish),
   );
 }
 
 class _ProfileCreateWishItemSheet extends StatefulWidget {
-  const _ProfileCreateWishItemSheet({required this.ref});
+  const _ProfileCreateWishItemSheet({required this.ref, this.initialWish});
 
   final WidgetRef ref;
+  final WishItem? initialWish;
 
   @override
   State<_ProfileCreateWishItemSheet> createState() =>
@@ -283,10 +285,25 @@ class _ProfileCreateWishItemSheet extends StatefulWidget {
 
 class _ProfileCreateWishItemSheetState
     extends State<_ProfileCreateWishItemSheet> {
-  final _titleController = TextEditingController();
-  final _placeController = TextEditingController();
-  String _visibility = OheyVisibility.private.key;
+  late final TextEditingController _titleController;
+  late final TextEditingController _placeController;
+  late String _visibility;
   bool _saving = false;
+
+  bool get _isEditing => widget.initialWish != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialWish = widget.initialWish;
+    _titleController = TextEditingController(text: initialWish?.title ?? '');
+    _placeController = TextEditingController(
+      text: initialWish?.placeText ?? '',
+    );
+    _visibility = initialWish?.visibility.trim().isNotEmpty == true
+        ? initialWish!.visibility
+        : OheyVisibility.private.key;
+  }
 
   @override
   void dispose() {
@@ -300,20 +317,35 @@ class _ProfileCreateWishItemSheetState
     if (title.isEmpty || _saving) return;
     setState(() => _saving = true);
     try {
-      await widget.ref
-          .read(wishItemControllerProvider.notifier)
-          .createWishItem(
-            WishItemCreateDraft(
-              title: title,
-              placeText: _placeController.text.trim(),
-              visibility: _visibility,
-            ),
-          );
+      final initialWish = widget.initialWish;
+      final draft = WishItemCreateDraft(
+        title: title,
+        note: initialWish?.note ?? '',
+        category: initialWish?.category ?? '',
+        placeText: _placeController.text.trim(),
+        placeUrl: initialWish?.placeUrl ?? '',
+        visibility: _visibility,
+      );
+      final controller = widget.ref.read(wishItemControllerProvider.notifier);
+      if (initialWish == null) {
+        await controller.createWishItem(draft);
+      } else {
+        await controller.updateWishItem(initialWish.id, draft);
+      }
       if (!mounted) return;
       Navigator.of(context).pop();
-      OheyToast.show(context, 'やりたいことを追加しました', icon: CupertinoIcons.sparkles);
+      OheyToast.show(
+        context,
+        _isEditing ? 'やりたいことを保存しました' : 'やりたいことを追加しました',
+        icon: CupertinoIcons.sparkles,
+      );
     } catch (_) {
-      if (mounted) OheyToast.show(context, '追加できなかったよ。あとでもう一度試してね');
+      if (mounted) {
+        OheyToast.show(
+          context,
+          _isEditing ? '保存できなかったよ。あとでもう一度試してね' : '追加できなかったよ。あとでもう一度試してね',
+        );
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -333,7 +365,7 @@ class _ProfileCreateWishItemSheetState
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'やりたいことリストに追加',
+            _isEditing ? 'やりたいことを編集' : 'やりたいことリストに追加',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: ink,
@@ -380,7 +412,9 @@ class _ProfileCreateWishItemSheetState
           ),
           const SizedBox(height: 16),
           Ohey3DButton(
-            label: _saving ? '追加中...' : '追加する',
+            label: _saving
+                ? (_isEditing ? '保存中...' : '追加中...')
+                : (_isEditing ? '保存する' : '追加する'),
             onTap: _saving ? null : _submit,
             height: 50,
             radius: 22,
