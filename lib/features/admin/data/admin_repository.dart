@@ -82,11 +82,11 @@ class AdminRepository {
   }
 
   Future<List<AdminMemoryReport>> listMemoryReports({
-    OheyModerationStatus status = OheyModerationStatus.pending,
+    String status = OheyStatusKeys.pending,
   }) async {
     final rows = await _client.getRows(
       OheyApiPaths.adminMemoryReports,
-      query: {'status': status.key},
+      query: {'status': status},
     );
     return rows.map(AdminMemoryReport.fromJson).toList(growable: false);
   }
@@ -162,6 +162,30 @@ class AdminRepository {
         'system_key': systemKey.trim(),
     });
     return AdminNotificationResult.fromJson(row);
+  }
+
+  Future<List<AdminNotificationOutboxItem>> listNotificationOutbox({
+    String status = OheyStatusKeys.failed,
+  }) async {
+    final rows = await _client.getRows(
+      OheyApiPaths.adminNotificationOutbox,
+      query: {'status': status},
+    );
+    return rows
+        .map(AdminNotificationOutboxItem.fromJson)
+        .toList(growable: false);
+  }
+
+  Future<AdminNotificationOutboxProcessResult> processNotificationOutbox({
+    int limit = 50,
+  }) async {
+    final row = BackendApiClient.mapFrom(
+      await _client.postNoBody(
+        OheyApiPaths.adminNotificationOutboxProcess,
+        query: {'limit': limit.clamp(1, 100).toString()},
+      ),
+    );
+    return AdminNotificationOutboxProcessResult.fromJson(row);
   }
 }
 
@@ -267,6 +291,78 @@ class AdminNotificationResult {
   }
 }
 
+class AdminNotificationOutboxItem {
+  const AdminNotificationOutboxItem({
+    required this.id,
+    required this.eventKind,
+    required this.aggregateType,
+    required this.aggregateId,
+    required this.actorUserId,
+    required this.recipientUserId,
+    required this.status,
+    required this.attempts,
+    required this.payload,
+    this.lastError,
+    this.nextAttemptAt,
+    this.processedAt,
+    this.createdAt,
+  });
+
+  final String id;
+  final String eventKind;
+  final String aggregateType;
+  final String aggregateId;
+  final String actorUserId;
+  final String recipientUserId;
+  final String status;
+  final int attempts;
+  final String? lastError;
+  final DateTime? nextAttemptAt;
+  final DateTime? processedAt;
+  final DateTime? createdAt;
+  final Map<String, dynamic> payload;
+
+  factory AdminNotificationOutboxItem.fromJson(Map<String, dynamic> json) {
+    return AdminNotificationOutboxItem(
+      id: json['id'] as String? ?? '',
+      eventKind: json['event_kind'] as String? ?? '',
+      aggregateType: json['aggregate_type'] as String? ?? '',
+      aggregateId: json['aggregate_id'] as String? ?? '',
+      actorUserId: json['actor_user_id'] as String? ?? '',
+      recipientUserId: json['recipient_user_id'] as String? ?? '',
+      status: json['status'] as String? ?? OheyStatusKeys.pending,
+      attempts: _intFromJson(json['attempts']),
+      lastError: json['last_error'] as String?,
+      nextAttemptAt: _dateFromJson(json['next_attempt_at']),
+      processedAt: _dateFromJson(json['processed_at']),
+      createdAt: _dateFromJson(json['created_at']),
+      payload: _mapFromJson(json['payload']),
+    );
+  }
+}
+
+class AdminNotificationOutboxProcessResult {
+  const AdminNotificationOutboxProcessResult({
+    required this.processedCount,
+    required this.failedCount,
+    required this.skippedCount,
+  });
+
+  final int processedCount;
+  final int failedCount;
+  final int skippedCount;
+
+  factory AdminNotificationOutboxProcessResult.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return AdminNotificationOutboxProcessResult(
+      processedCount: _intFromJson(json['processed_count']),
+      failedCount: _intFromJson(json['failed_count']),
+      skippedCount: _intFromJson(json['skipped_count']),
+    );
+  }
+}
+
 class AdminMemoryReport {
   const AdminMemoryReport({
     required this.id,
@@ -324,4 +420,22 @@ class AdminMemoryReport {
       moderationNote: json['moderation_note'] as String?,
     );
   }
+}
+
+int _intFromJson(dynamic value) {
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? 0;
+  return 0;
+}
+
+DateTime? _dateFromJson(dynamic value) {
+  if (value is! String || value.trim().isEmpty) return null;
+  return DateTime.tryParse(value);
+}
+
+Map<String, dynamic> _mapFromJson(dynamic value) {
+  if (value is Map) {
+    return Map<String, dynamic>.from(value);
+  }
+  return const <String, dynamic>{};
 }

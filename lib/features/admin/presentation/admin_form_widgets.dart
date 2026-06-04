@@ -155,6 +155,7 @@ Future<void> _showNotificationSheet(BuildContext context, WidgetRef ref) async {
     keyController.dispose();
   }
   if (didSave && context.mounted) {
+    _invalidateAdminOutboxProviders(ref);
     OheyToast.show(context, 'System通知を送信しました。');
   }
 }
@@ -309,7 +310,9 @@ Future<void> _showReportStatusSheet(
           status: status,
           moderationNote: moderationNote,
         );
-    ref.invalidate(adminMemoryReportsProvider);
+    for (final option in _adminReportStatusFilters) {
+      ref.invalidate(adminMemoryReportsProvider(option.key));
+    }
     if (context.mounted) {
       OheyToast.show(context, '通報を${status.label}にしました。');
     }
@@ -338,7 +341,9 @@ Future<void> _confirmDeleteReportedPost(
           status: OheyModerationStatus.resolved,
           moderationNote: 'Deleted reported post from admin app',
         );
-    ref.invalidate(adminMemoryReportsProvider);
+    for (final option in _adminReportStatusFilters) {
+      ref.invalidate(adminMemoryReportsProvider(option.key));
+    }
     ref.invalidate(adminMemorysProvider);
     if (context.mounted) OheyToast.show(context, '投稿を削除し、通報を解決済みにしました。');
   } catch (e) {

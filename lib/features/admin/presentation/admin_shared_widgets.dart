@@ -358,6 +358,63 @@ class _AdminStatusChip extends StatelessWidget {
   }
 }
 
+class _AdminFilterOption {
+  const _AdminFilterOption({required this.key, required this.label});
+
+  final String key;
+  final String label;
+}
+
+class _AdminFilterChips extends StatelessWidget {
+  const _AdminFilterChips({
+    required this.options,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final List<_AdminFilterOption> options;
+  final String value;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) => SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: Row(
+      children: [
+        for (final option in options) ...[
+          _AdminStatusChip(
+            label: option.label,
+            selected: option.key == value,
+            onTap: () => onChanged(option.key),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ],
+    ),
+  );
+}
+
+const _adminReportStatusFilters = <_AdminFilterOption>[
+  _AdminFilterOption(key: OheyStatusKeys.pending, label: '未対応'),
+  _AdminFilterOption(key: OheyStatusKeys.reviewing, label: '対応中'),
+  _AdminFilterOption(key: OheyStatusKeys.resolved, label: '解決済み'),
+  _AdminFilterOption(key: OheyStatusKeys.dismissed, label: '却下'),
+  _AdminFilterOption(key: OheyStatusKeys.all, label: 'すべて'),
+];
+
+const _adminOutboxStatusFilters = <_AdminFilterOption>[
+  _AdminFilterOption(key: OheyStatusKeys.failed, label: '失敗'),
+  _AdminFilterOption(key: OheyStatusKeys.pending, label: '待機中'),
+  _AdminFilterOption(key: OheyStatusKeys.processed, label: '処理済み'),
+  _AdminFilterOption(key: OheyStatusKeys.all, label: 'すべて'),
+];
+
+void _invalidateAdminOutboxProviders(WidgetRef ref) {
+  for (final option in _adminOutboxStatusFilters) {
+    ref.invalidate(adminNotificationOutboxProvider(option.key));
+  }
+}
+
 const _adminSelectableGenders = <OheyGender>[
   OheyGender.unspecified,
   OheyGender.male,
@@ -385,6 +442,50 @@ String _adminReportReasonLabel(String reason) {
 
 String _adminReportStatusLabel(String status) {
   return oheyModerationStatusFromKey(status).label;
+}
+
+String _adminOutboxStatusLabel(String status) {
+  return switch (status.trim()) {
+    OheyStatusKeys.failed => '失敗',
+    OheyStatusKeys.processed => '処理済み',
+    OheyStatusKeys.pending => '待機中',
+    _ => status.trim().isEmpty ? '不明' : status.trim(),
+  };
+}
+
+String _adminOutboxEventLabel(String eventKind) {
+  return switch (eventKind.trim()) {
+    'invite.created' => 'お誘い作成',
+    'invite.accepted' => 'お誘い承認',
+    'friend_request.created' => 'フレンド申請',
+    'friend_request.accepted' => 'フレンド承認',
+    'memory.tagged' => '思い出タグ付け',
+    'memory.liked' => '思い出いいね',
+    'memory.reported' => '思い出通報',
+    'system_notification.created' => 'System通知',
+    _ => eventKind.trim().isEmpty ? '通知イベント' : eventKind.trim(),
+  };
+}
+
+String _adminOutboxPayloadTitle(Map<String, dynamic> payload) {
+  final title = payload['title'] as String?;
+  final message = payload['message'] as String?;
+  if ((title ?? '').trim().isNotEmpty && (message ?? '').trim().isNotEmpty) {
+    return '${title!.trim()} / ${message!.trim()}';
+  }
+  if ((title ?? '').trim().isNotEmpty) return title!.trim();
+  if ((message ?? '').trim().isNotEmpty) return message!.trim();
+  final notificationTitle = payload['notification_title'] as String?;
+  if ((notificationTitle ?? '').trim().isNotEmpty) {
+    return notificationTitle!.trim();
+  }
+  return '';
+}
+
+String _shortAdminId(String id) {
+  final trimmed = id.trim();
+  if (trimmed.length <= 8) return trimmed;
+  return trimmed.substring(0, 8);
 }
 
 String _adminNormalizeStatus(String status) {

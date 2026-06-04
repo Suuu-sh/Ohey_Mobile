@@ -23,6 +23,9 @@ class OheyStatusKeys {
   static const reviewing = 'reviewing';
   static const resolved = 'resolved';
   static const dismissed = 'dismissed';
+  static const processed = 'processed';
+  static const failed = 'failed';
+  static const all = 'all';
 }
 
 class OheyVisibilityKeys {

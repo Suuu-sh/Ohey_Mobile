@@ -84,5 +84,8 @@ class OheyApiPaths {
   static const adminMemoryReports = '/v1/admin/memory-reports';
   static String adminMemoryReport(String reportId) =>
       '$adminMemoryReports/${Uri.encodeComponent(reportId)}';
+  static const adminNotificationOutbox = '/v1/admin/notification-outbox';
+  static const adminNotificationOutboxProcess =
+      '/v1/admin/notification-outbox/process';
   static const adminNotifications = '/v1/admin/notifications';
 }

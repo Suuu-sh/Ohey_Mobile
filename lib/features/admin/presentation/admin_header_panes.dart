@@ -106,28 +106,42 @@ class _AdminSegmentedControl extends StatelessWidget {
   }
 }
 
-class _AdminReportsPane extends StatelessWidget {
-  const _AdminReportsPane({required this.ref});
+class _AdminReportsPane extends ConsumerStatefulWidget {
+  const _AdminReportsPane();
 
-  final WidgetRef ref;
+  @override
+  ConsumerState<_AdminReportsPane> createState() => _AdminReportsPaneState();
+}
+
+class _AdminReportsPaneState extends ConsumerState<_AdminReportsPane> {
+  String _status = OheyStatusKeys.pending;
 
   @override
   Widget build(BuildContext context) {
-    final reportsAsync = ref.watch(adminMemoryReportsProvider);
+    final reportsAsync = ref.watch(adminMemoryReportsProvider(_status));
     return Column(
       children: [
         _AdminPaneToolbar(
           title: '通報・モデレーション',
           actionLabel: '更新',
-          onAction: () => ref.invalidate(adminMemoryReportsProvider),
-          onRefresh: () => ref.invalidate(adminMemoryReportsProvider),
+          onAction: () => ref.invalidate(adminMemoryReportsProvider(_status)),
+          onRefresh: () => ref.invalidate(adminMemoryReportsProvider(_status)),
+        ),
+        _AdminFilterChips(
+          options: _adminReportStatusFilters,
+          value: _status,
+          onChanged: (value) => setState(() => _status = value),
         ),
         const SizedBox(height: 12),
         Expanded(
           child: reportsAsync.when(
             data: (reports) {
               if (reports.isEmpty) {
-                return const _AdminEmptyState(message: '未対応の通報はありません。');
+                return _AdminEmptyState(
+                  message: _status == OheyStatusKeys.pending
+                      ? '未対応の通報はありません。'
+                      : 'この条件の通報はありません。',
+                );
               }
               return ListView.separated(
                 padding: const EdgeInsets.only(bottom: 120),
@@ -152,7 +166,8 @@ class _AdminReportsPane extends StatelessWidget {
             ),
             error: (error, _) => _AdminErrorState(
               message: '$error',
-              onRetry: () => ref.invalidate(adminMemoryReportsProvider),
+              onRetry: () =>
+                  ref.invalidate(adminMemoryReportsProvider(_status)),
             ),
           ),
         ),
@@ -321,21 +336,27 @@ class _AdminSegmentButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Expanded(
-    child: GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        height: 42,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? _AdminColors.lime : AppColors.transparent,
-          borderRadius: BorderRadius.circular(17),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? AppColors.cFF101820 : _AdminColors.sub,
-            fontWeight: FontWeight.w900,
+    child: Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          height: 42,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: selected ? _AdminColors.lime : AppColors.transparent,
+            borderRadius: BorderRadius.circular(17),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? AppColors.cFF101820 : _AdminColors.sub,
+              fontWeight: FontWeight.w900,
+            ),
           ),
         ),
       ),
@@ -443,101 +464,220 @@ class _AdminPostsPane extends StatelessWidget {
   }
 }
 
-class _AdminNotificationsPane extends StatelessWidget {
-  const _AdminNotificationsPane({required this.ref});
+class _AdminNotificationsPane extends ConsumerStatefulWidget {
+  const _AdminNotificationsPane();
 
-  final WidgetRef ref;
+  @override
+  ConsumerState<_AdminNotificationsPane> createState() =>
+      _AdminNotificationsPaneState();
+}
+
+class _AdminNotificationsPaneState
+    extends ConsumerState<_AdminNotificationsPane> {
+  String _status = OheyStatusKeys.failed;
+  bool _processing = false;
+  AdminNotificationOutboxProcessResult? _lastProcessResult;
 
   @override
   Widget build(BuildContext context) {
+    final usersAsync = ref.watch(adminUsersProvider);
+    final outboxAsync = ref.watch(adminNotificationOutboxProvider(_status));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _AdminPaneToolbar(
-          title: 'System通知',
+          title: '通知運用',
           actionLabel: '作成',
           onAction: () => _showNotificationSheet(context, ref),
-          onRefresh: () => ref.invalidate(adminUsersProvider),
+          onRefresh: () {
+            ref.invalidate(adminUsersProvider);
+            ref.invalidate(adminNotificationOutboxProvider(_status));
+          },
         ),
         const SizedBox(height: 12),
-        const _AdminInfoBox(
-          title: 'アプリ内のお知らせに出るよ',
-          message: 'ユーザー全員、または選んだユーザーにお知らせを届けます。',
+        _AdminInfoBox(
+          title: usersAsync.maybeWhen(
+            data: (users) => 'System通知と Outbox を管理',
+            orElse: () => 'System通知と Outbox を管理',
+          ),
+          message: usersAsync.maybeWhen(
+            data: (users) =>
+                '送信対象 ${users.length} 人。失敗/待機中の push outbox はここから手動で再処理できます。',
+            orElse: () => '全体・個別 System通知の作成と、push outbox の状態確認/再処理を行います。',
+          ),
         ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _AdminFilterChips(
+                options: _adminOutboxStatusFilters,
+                value: _status,
+                onChanged: (value) => setState(() => _status = value),
+              ),
+            ),
+            const SizedBox(width: 10),
+            _AdminSmallActionButton(
+              label: _processing ? '処理中' : '再処理',
+              onTap: _processOutbox,
+            ),
+          ],
+        ),
+        if (_lastProcessResult != null) ...[
+          const SizedBox(height: 10),
+          _AdminInfoBox(
+            title: 'Outbox再処理結果',
+            message:
+                '成功 ${_lastProcessResult!.processedCount} 件 / 失敗 ${_lastProcessResult!.failedCount} 件 / スキップ ${_lastProcessResult!.skippedCount} 件',
+          ),
+        ],
         const SizedBox(height: 12),
         Expanded(
-          child: ref
-              .watch(adminUsersProvider)
-              .when(
-                data: (users) {
-                  if (users.isEmpty) {
-                    return const _AdminEmptyState(message: '送信先ユーザーがまだいません。');
-                  }
-                  return ListView.separated(
-                    padding: const EdgeInsets.only(bottom: 120),
-                    itemBuilder: (context, index) =>
-                        _AdminRecipientPreview(user: users[index]),
-                    separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemCount: users.length,
-                  );
-                },
-                loading: () => const Center(
-                  child: CupertinoActivityIndicator(color: _AdminColors.lime),
-                ),
-                error: (error, _) => _AdminErrorState(
-                  message: '$error',
-                  onRetry: () => ref.invalidate(adminUsersProvider),
-                ),
-              ),
+          child: outboxAsync.when(
+            data: (items) {
+              if (items.isEmpty) {
+                return const _AdminEmptyState(message: 'Outbox は空です。');
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.only(bottom: 120),
+                itemBuilder: (context, index) =>
+                    _AdminOutboxCard(item: items[index]),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemCount: items.length,
+              );
+            },
+            loading: () => const Center(
+              child: CupertinoActivityIndicator(color: _AdminColors.lime),
+            ),
+            error: (error, _) => _AdminErrorState(
+              message: '$error',
+              onRetry: () =>
+                  ref.invalidate(adminNotificationOutboxProvider(_status)),
+            ),
+          ),
         ),
       ],
     );
   }
+
+  Future<void> _processOutbox() async {
+    if (_processing) return;
+    setState(() {
+      _processing = true;
+      _lastProcessResult = null;
+    });
+    try {
+      final result = await ref
+          .read(adminControllerProvider)
+          .processNotificationOutbox(limit: 50);
+      _invalidateAdminOutboxProviders(ref);
+      if (!mounted) return;
+      setState(() {
+        _processing = false;
+        _lastProcessResult = result;
+      });
+      OheyToast.show(
+        context,
+        'Outboxを再処理しました（成功 ${result.processedCount} / 失敗 ${result.failedCount}）',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _processing = false);
+      OheyToast.show(context, 'Outboxを再処理できませんでした: $e');
+    }
+  }
 }
 
-class _AdminRecipientPreview extends StatelessWidget {
-  const _AdminRecipientPreview({required this.user});
+class _AdminOutboxCard extends StatelessWidget {
+  const _AdminOutboxCard({required this.item});
 
-  final AdminUserProfile user;
+  final AdminNotificationOutboxItem item;
 
   @override
-  Widget build(BuildContext context) => _AdminCard(
-    child: Row(
-      children: [
-        const OheyGeneratedIcon(
-          CupertinoIcons.person_crop_circle,
-          color: _AdminColors.lime,
-          size: 28,
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context) {
+    final payloadTitle = _adminOutboxPayloadTitle(item.payload);
+    return _AdminCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Text(
-                user.displayName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '@${user.userId}',
-                style: const TextStyle(
-                  color: _AdminColors.sub,
-                  fontWeight: FontWeight.w800,
+              _AdminBadge(label: _adminOutboxStatusLabel(item.status)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _adminOutboxEventLabel(item.eventKind),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-      ],
-    ),
-  );
+          if (payloadTitle.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              payloadTitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.white,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Text(
+            [
+              if (item.recipientUserId.isNotEmpty)
+                'to ${_shortAdminId(item.recipientUserId)}',
+              if (item.actorUserId.isNotEmpty)
+                'actor ${_shortAdminId(item.actorUserId)}',
+              'attempts ${item.attempts}',
+            ].join(' / '),
+            style: const TextStyle(
+              color: _AdminColors.sub,
+              fontWeight: FontWeight.w800,
+              fontSize: 12,
+            ),
+          ),
+          if ((item.lastError ?? '').trim().isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              item.lastError!.trim(),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: _AdminColors.pink,
+                fontWeight: FontWeight.w800,
+                fontSize: 12,
+              ),
+            ),
+          ],
+          if (item.createdAt != null || item.nextAttemptAt != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              [
+                if (item.createdAt != null) '作成 ${_dateLabel(item.createdAt!)}',
+                if (item.nextAttemptAt != null)
+                  '次回 ${_dateLabel(item.nextAttemptAt!)}',
+              ].join(' / '),
+              style: const TextStyle(
+                color: _AdminColors.sub,
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 class _AdminPaneToolbar extends StatelessWidget {
