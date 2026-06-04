@@ -27,6 +27,7 @@ import '../../../core/widgets/ohey_friend_user_block.dart';
 import '../../../core/widgets/ohey_invite_success_burst.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_confirm_sheet.dart';
 import '../../../core/widgets/ohey_daily_status_3d_option.dart';
 import '../../../core/widgets/ohey_manage_list_row.dart';
 import '../../../core/widgets/ohey_page_header.dart';
@@ -52,23 +53,13 @@ Future<bool?> _confirmDeleteCustomFilter(
   BuildContext context,
   _CustomFriendFilter filter,
 ) {
-  return showCupertinoDialog<bool>(
-    context: context,
-    builder: (dialogContext) => CupertinoAlertDialog(
-      title: const Text('グループを削除しますか？'),
-      content: Text('「${filter.name}」を削除します。この操作は元に戻せません。'),
-      actions: [
-        CupertinoDialogAction(
-          onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('キャンセル'),
-        ),
-        CupertinoDialogAction(
-          isDestructiveAction: true,
-          onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: const Text('削除する'),
-        ),
-      ],
-    ),
+  return showOheyConfirmSheet(
+    context,
+    title: 'グループを削除しますか？',
+    message: '「${filter.name}」を削除します。この操作は元に戻せません。',
+    confirmLabel: '削除する',
+    destructive: true,
+    icon: CupertinoIcons.trash_fill,
   );
 }
 

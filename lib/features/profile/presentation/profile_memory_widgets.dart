@@ -1205,23 +1205,13 @@ Future<void> _showSafetyCenterSheet(BuildContext context) {
 }
 
 Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
-  final confirmed = await showCupertinoDialog<bool>(
-    context: context,
-    builder: (dialogContext) => CupertinoAlertDialog(
-      title: const Text('アカウントを削除しますか？'),
-      content: const Text('プロフィール、フレンズ、ゆるぼなどのデータが削除されます。この操作は取り消せません。'),
-      actions: [
-        CupertinoDialogAction(
-          onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('キャンセル'),
-        ),
-        CupertinoDialogAction(
-          isDestructiveAction: true,
-          onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: const Text('削除する'),
-        ),
-      ],
-    ),
+  final confirmed = await showOheyConfirmSheet(
+    context,
+    title: 'アカウントを削除しますか？',
+    message: 'プロフィール、フレンズ、ゆるぼなどのデータが削除されます。この操作は取り消せません。',
+    confirmLabel: '削除する',
+    destructive: true,
+    icon: CupertinoIcons.trash_fill,
   );
   if (confirmed != true) return;
 

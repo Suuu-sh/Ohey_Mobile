@@ -87,23 +87,13 @@ Future<void> _deleteProfileWishItem(
 }
 
 Future<bool?> _confirmDeleteWishItem(BuildContext context, WishItem wish) {
-  return showCupertinoDialog<bool>(
-    context: context,
-    builder: (dialogContext) => CupertinoAlertDialog(
-      title: const Text('やりたいことを削除しますか？'),
-      content: Text('「${wish.title}」を削除します。この操作は元に戻せません。'),
-      actions: [
-        CupertinoDialogAction(
-          onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('キャンセル'),
-        ),
-        CupertinoDialogAction(
-          isDestructiveAction: true,
-          onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: const Text('削除する'),
-        ),
-      ],
-    ),
+  return showOheyConfirmSheet(
+    context,
+    title: 'やりたいことを削除しますか？',
+    message: '「${wish.title}」を削除します。この操作は元に戻せません。',
+    confirmLabel: '削除する',
+    destructive: true,
+    icon: CupertinoIcons.trash_fill,
   );
 }
 
