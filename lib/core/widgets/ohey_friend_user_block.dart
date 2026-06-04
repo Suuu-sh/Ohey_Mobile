@@ -53,6 +53,12 @@ class OheyFriendUserBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final accent = statusEnabled ? statusColor : AppColors.cFF2B3441;
+    final borderAlpha = statusEnabled
+        ? (isWhite ? .34 : .42)
+        : (isWhite ? .34 : .58);
+    final glowAlpha = statusEnabled
+        ? (isWhite ? .09 : .18)
+        : (isWhite ? .055 : .11);
     final ink = statusEnabled
         ? (isWhite ? AppColors.cFF101820 : AppColors.white)
         : (isWhite ? AppColors.cFF667381 : AppColors.cFF8792A3);
@@ -98,12 +104,9 @@ class OheyFriendUserBlock extends StatelessWidget {
             ? AppColors.white
             : AppColors.darkBackgroundBottom,
         borderRadius: 20,
-        borderAlpha: statusEnabled
-            ? (isWhite ? .34 : .42)
-            : (isWhite ? .20 : .24),
-        glowAlpha: statusEnabled
-            ? (isWhite ? .09 : .18)
-            : (isWhite ? .035 : .06),
+        borderWidth: statusEnabled ? 1 : 1.25,
+        borderAlpha: borderAlpha,
+        glowAlpha: glowAlpha,
         glowBlur: 24,
         glowOffset: Offset.zero,
         child: Row(
