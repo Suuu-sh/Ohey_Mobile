@@ -363,6 +363,10 @@ class _FeedNotification {
   }
 
   bool get isResolvedAction {
+    if (kind == OheyNotificationKindKeys.friendRequestAccepted ||
+        kind == OheyNotificationKindKeys.inviteAccepted) {
+      return true;
+    }
     if (kind == OheyNotificationKindKeys.friendRequestReceived) {
       return !oheyFriendRequestStatusFromKey(friendRequestStatus).isPending;
     }
