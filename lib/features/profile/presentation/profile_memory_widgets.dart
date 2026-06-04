@@ -516,7 +516,6 @@ class _SupportLegalSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
     final sub = isWhite
         ? AppColors.cFF64717D
         : AppColors.white.withValues(alpha: .64);
@@ -572,30 +571,6 @@ class _SupportLegalSheet extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w800,
               height: 1.35,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Ohey3DButtonSurface(
-            height: 48,
-            radius: 20,
-            color: isWhite
-                ? AppColors.cFFF2F6FA
-                : AppColors.white.withValues(alpha: .06),
-            bottomColor: AppColors.cFF243240.withValues(alpha: .46),
-            useGradient: false,
-            outerShadows: const [],
-            innerShadows: const [],
-            onTap: () => Navigator.of(context).pop(),
-            child: Text(
-              '閉じる',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: ink,
-                fontSize: 16,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.2,
-              ),
             ),
           ),
         ],
