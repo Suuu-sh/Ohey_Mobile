@@ -26,6 +26,11 @@ final adminUsersProvider = FutureProvider.autoDispose<List<AdminUserProfile>>((
   return ref.watch(adminControllerProvider).listUsers();
 });
 
+final adminYurubosProvider = FutureProvider.autoDispose
+    .family<List<AdminYurubo>, String>((ref, status) async {
+      return ref.watch(adminControllerProvider).listYurubos(status);
+    });
+
 final adminMemorysProvider = FutureProvider.autoDispose<List<AdminMemory>>((
   ref,
 ) async {
@@ -92,6 +97,58 @@ class AdminController {
   }
 
   Future<void> deleteUser(String id) => _repository.deleteUser(id);
+
+  Future<List<AdminYurubo>> listYurubos(String status) {
+    return _repository.listYurubos(status: status);
+  }
+
+  Future<void> createYurubo({
+    required String ownerUserId,
+    required String title,
+    required String body,
+    required String placeText,
+    required String timeLabel,
+    required String startsAt,
+    required String status,
+    required String visibility,
+  }) {
+    return _repository.createYurubo(
+      ownerUserId: ownerUserId,
+      title: title,
+      body: body,
+      placeText: placeText,
+      timeLabel: timeLabel,
+      startsAt: startsAt,
+      status: status,
+      visibility: visibility,
+    );
+  }
+
+  Future<void> updateYurubo({
+    required String id,
+    required String ownerUserId,
+    required String title,
+    required String body,
+    required String placeText,
+    required String timeLabel,
+    required String startsAt,
+    required String status,
+    required String visibility,
+  }) {
+    return _repository.updateYurubo(
+      id: id,
+      ownerUserId: ownerUserId,
+      title: title,
+      body: body,
+      placeText: placeText,
+      timeLabel: timeLabel,
+      startsAt: startsAt,
+      status: status,
+      visibility: visibility,
+    );
+  }
+
+  Future<void> deleteYurubo(String id) => _repository.deleteYurubo(id);
 
   Future<List<AdminMemory>> listMemorys() => _repository.listMemorys();
 

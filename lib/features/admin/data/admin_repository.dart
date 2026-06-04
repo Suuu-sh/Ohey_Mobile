@@ -76,6 +76,97 @@ class AdminRepository {
     await _client.delete(OheyApiPaths.adminUser(id));
   }
 
+  Future<List<AdminYurubo>> listYurubos({
+    String status = OheyStatusKeys.open,
+  }) async {
+    final rows = await _getRowsWithLegacyYuruboFallback(
+      OheyApiPaths.adminYurubos,
+      query: {'status': status},
+      fallbackQuery: {'limit': '80'},
+    );
+    return rows.map(AdminYurubo.fromJson).toList(growable: false);
+  }
+
+  Future<void> createYurubo({
+    required String ownerUserId,
+    required String title,
+    required String body,
+    required String placeText,
+    required String timeLabel,
+    required String startsAt,
+    required String status,
+    required String visibility,
+  }) async {
+    final bodyMap = {
+      'owner_user_id': ownerUserId,
+      'title': title,
+      'body': body,
+      'category': OheyCategoryKeys.other,
+      'place_text': placeText,
+      'time_label': timeLabel,
+      'starts_at': startsAt,
+      'status': status,
+      'visibility': visibility,
+    };
+    try {
+      await _client.post(OheyApiPaths.adminYurubos, bodyMap);
+    } on BackendApiException catch (error) {
+      if (error.statusCode != 404) rethrow;
+      await _client.post(OheyApiPaths.yurubos, bodyMap);
+    }
+  }
+
+  Future<void> updateYurubo({
+    required String id,
+    required String ownerUserId,
+    required String title,
+    required String body,
+    required String placeText,
+    required String timeLabel,
+    required String startsAt,
+    required String status,
+    required String visibility,
+  }) async {
+    final bodyMap = {
+      'owner_user_id': ownerUserId,
+      'title': title,
+      'body': body,
+      'place_text': placeText,
+      'time_label': timeLabel,
+      'starts_at': startsAt,
+      'status': status,
+      'visibility': visibility,
+    };
+    try {
+      await _client.patch(OheyApiPaths.adminYurubo(id), bodyMap);
+    } on BackendApiException catch (error) {
+      if (error.statusCode != 404) rethrow;
+      await _client.patch(OheyApiPaths.yurubo(id), bodyMap);
+    }
+  }
+
+  Future<void> deleteYurubo(String id) async {
+    try {
+      await _client.delete(OheyApiPaths.adminYurubo(id));
+    } on BackendApiException catch (error) {
+      if (error.statusCode != 404) rethrow;
+      await _client.delete(OheyApiPaths.yurubo(id));
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _getRowsWithLegacyYuruboFallback(
+    String path, {
+    required Map<String, String> query,
+    required Map<String, String> fallbackQuery,
+  }) async {
+    try {
+      return await _client.getRows(path, query: query);
+    } on BackendApiException catch (error) {
+      if (error.statusCode != 404) rethrow;
+      return _client.getRows(OheyApiPaths.yurubos, query: fallbackQuery);
+    }
+  }
+
   Future<List<AdminMemory>> listMemorys() async {
     final rows = await _client.getRows(OheyApiPaths.adminMemories);
     return rows.map(AdminMemory.fromJson).toList(growable: false);
@@ -227,6 +318,62 @@ class AdminUserProfile {
       status: json['status'] as String? ?? OheyStatusKeys.unselected,
       isPlus: json['is_plus'] as bool? ?? false,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? ''),
+    );
+  }
+}
+
+class AdminYurubo {
+  const AdminYurubo({
+    required this.id,
+    required this.ownerUserId,
+    required this.ownerDisplayName,
+    required this.ownerHandle,
+    required this.title,
+    required this.body,
+    required this.category,
+    required this.placeText,
+    required this.timeLabel,
+    required this.status,
+    required this.visibility,
+    required this.reactionCount,
+    this.startsAt,
+    this.createdAt,
+  });
+
+  final String id;
+  final String ownerUserId;
+  final String ownerDisplayName;
+  final String ownerHandle;
+  final String title;
+  final String body;
+  final String category;
+  final String placeText;
+  final String timeLabel;
+  final String status;
+  final String visibility;
+  final int reactionCount;
+  final DateTime? startsAt;
+  final DateTime? createdAt;
+
+  factory AdminYurubo.fromJson(Map<String, dynamic> json) {
+    final owner = json['owner'] is Map
+        ? Map<String, dynamic>.from(json['owner'] as Map)
+        : const <String, dynamic>{};
+    return AdminYurubo(
+      id: json['id'] as String? ?? '',
+      ownerUserId: json['owner_user_id'] as String? ?? '',
+      ownerDisplayName: owner['display_name'] as String? ?? 'Ohey user',
+      ownerHandle: owner['user_id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      body: json['body'] as String? ?? '',
+      category: json['category'] as String? ?? OheyCategoryKeys.other,
+      placeText: json['place_text'] as String? ?? '',
+      timeLabel: json['time_label'] as String? ?? '',
+      status: json['status'] as String? ?? OheyStatusKeys.open,
+      visibility: json['visibility'] as String? ?? OheyVisibilityKeys.friends,
+      reactionCount: _intFromJson(json['reaction_count']),
+      startsAt: _dateFromJson(json['starts_at']),
+      createdAt: _dateFromJson(json['created_at']),
     );
   }
 }

@@ -129,7 +129,7 @@ class _AdminDropdown extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '思い出のユーザー',
+            '投稿ユーザー',
             style: TextStyle(
               color: _AdminColors.sub,
               fontSize: 12,
@@ -170,6 +170,56 @@ class _AdminDropdown extends StatelessWidget {
       ),
     );
   }
+}
+
+class _AdminOptionChips extends StatelessWidget {
+  const _AdminOptionChips({
+    required this.label,
+    required this.options,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final List<_AdminFilterOption> options;
+  final String value;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: AppColors.white.withValues(alpha: .06),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: _AdminColors.line),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: _AdminColors.sub,
+            fontWeight: FontWeight.w800,
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final option in options)
+              _AdminStatusChip(
+                label: option.label,
+                selected: option.key == value,
+                onTap: () => onChanged(option.key),
+              ),
+          ],
+        ),
+      ],
+    ),
+  );
 }
 
 class _AdminStatusDropdown extends StatelessWidget {
@@ -402,6 +452,27 @@ const _adminReportStatusFilters = <_AdminFilterOption>[
   _AdminFilterOption(key: OheyStatusKeys.all, label: 'すべて'),
 ];
 
+const _adminYuruboStatusFilters = <_AdminFilterOption>[
+  _AdminFilterOption(key: OheyStatusKeys.open, label: '募集中'),
+  _AdminFilterOption(key: OheyStatusKeys.closed, label: '終了'),
+  _AdminFilterOption(key: OheyStatusKeys.expired, label: '期限切れ'),
+  _AdminFilterOption(key: OheyStatusKeys.cancelled, label: 'キャンセル'),
+  _AdminFilterOption(key: OheyStatusKeys.scheduled, label: '予定'),
+  _AdminFilterOption(key: OheyStatusKeys.all, label: 'すべて'),
+];
+
+const _adminYuruboEditableStatusOptions = <_AdminFilterOption>[
+  _AdminFilterOption(key: OheyStatusKeys.open, label: '募集中'),
+  _AdminFilterOption(key: OheyStatusKeys.closed, label: '終了'),
+  _AdminFilterOption(key: OheyStatusKeys.cancelled, label: 'キャンセル'),
+  _AdminFilterOption(key: OheyStatusKeys.scheduled, label: '予定'),
+];
+
+const _adminYuruboVisibilityOptions = <_AdminFilterOption>[
+  _AdminFilterOption(key: OheyVisibilityKeys.friends, label: 'フレンズ'),
+  _AdminFilterOption(key: OheyVisibilityKeys.private, label: '非公開'),
+];
+
 const _adminOutboxStatusFilters = <_AdminFilterOption>[
   _AdminFilterOption(key: OheyStatusKeys.failed, label: '失敗'),
   _AdminFilterOption(key: OheyStatusKeys.pending, label: '待機中'),
@@ -412,6 +483,12 @@ const _adminOutboxStatusFilters = <_AdminFilterOption>[
 void _invalidateAdminOutboxProviders(WidgetRef ref) {
   for (final option in _adminOutboxStatusFilters) {
     ref.invalidate(adminNotificationOutboxProvider(option.key));
+  }
+}
+
+void _invalidateAdminYuruboProviders(WidgetRef ref) {
+  for (final option in _adminYuruboStatusFilters) {
+    ref.invalidate(adminYurubosProvider(option.key));
   }
 }
 
@@ -442,6 +519,26 @@ String _adminReportReasonLabel(String reason) {
 
 String _adminReportStatusLabel(String status) {
   return oheyModerationStatusFromKey(status).label;
+}
+
+String _adminYuruboStatusLabel(String status) {
+  return switch (status.trim()) {
+    OheyStatusKeys.open => '募集中',
+    OheyStatusKeys.closed => '終了',
+    OheyStatusKeys.expired => '期限切れ',
+    OheyStatusKeys.cancelled => 'キャンセル',
+    OheyStatusKeys.scheduled => '予定',
+    _ => status.trim().isEmpty ? '不明' : status.trim(),
+  };
+}
+
+String _adminYuruboVisibilityLabel(String visibility) {
+  return switch (visibility.trim()) {
+    OheyVisibilityKeys.friends => 'フレンズ',
+    OheyVisibilityKeys.private => '非公開',
+    OheyVisibilityKeys.group => 'グループ',
+    _ => visibility.trim().isEmpty ? '公開範囲不明' : visibility.trim(),
+  };
 }
 
 String _adminOutboxStatusLabel(String status) {
@@ -496,6 +593,29 @@ String _adminNormalizeGender(String gender) {
   return oheyGenderFromKey(gender).key;
 }
 
+String _adminNormalizeYuruboStatus(String status) {
+  final trimmed = status.trim();
+  return _adminYuruboEditableStatusOptions.any(
+        (option) => option.key == trimmed,
+      )
+      ? trimmed
+      : OheyStatusKeys.open;
+}
+
+String _adminNormalizeYuruboVisibility(String visibility) {
+  final trimmed = visibility.trim();
+  return _adminYuruboVisibilityOptions.any((option) => option.key == trimmed)
+      ? trimmed
+      : OheyVisibilityKeys.friends;
+}
+
+String _adminDateInput(DateTime date) {
+  final local = date.toLocal();
+  return '${local.year.toString().padLeft(4, '0')}-'
+      '${local.month.toString().padLeft(2, '0')}-'
+      '${local.day.toString().padLeft(2, '0')}';
+}
+
 class _AdminSwitchRow extends StatelessWidget {
   const _AdminSwitchRow({
     required this.label,
@@ -536,7 +656,7 @@ class _AdminSwitchRow extends StatelessWidget {
 }
 
 class _AdminInfoBox extends StatelessWidget {
-  const _AdminInfoBox({super.key, required this.title, required this.message});
+  const _AdminInfoBox({required this.title, required this.message});
 
   final String title;
   final String message;

@@ -2,7 +2,6 @@ part of 'admin_screen.dart';
 
 class _AdminOwnerField extends StatelessWidget {
   const _AdminOwnerField({
-    super.key,
     required this.users,
     required this.ownerUserId,
     required this.ownerController,
@@ -233,28 +232,28 @@ Future<void> _confirmDeleteUser(
   try {
     await ref.read(adminControllerProvider).deleteUser(user.id);
     ref.invalidate(adminUsersProvider);
-    ref.invalidate(adminMemorysProvider);
+    _invalidateAdminYuruboProviders(ref);
     if (context.mounted) OheyToast.show(context, 'ユーザーを削除しました。');
   } catch (e) {
     if (context.mounted) OheyToast.show(context, '削除できませんでした: $e');
   }
 }
 
-Future<void> _confirmDeletePost(
+Future<void> _confirmDeleteYurubo(
   BuildContext context,
   WidgetRef ref,
-  AdminMemory memory,
+  AdminYurubo yurubo,
 ) async {
   final ok = await _confirmDestructive(
     context,
-    title: '思い出を削除しますか？',
-    message: memory.placeName.isEmpty ? memory.id : memory.placeName,
+    title: 'ゆるぼを削除しますか？',
+    message: yurubo.title.isEmpty ? yurubo.id : yurubo.title,
   );
   if (ok != true) return;
   try {
-    await ref.read(adminControllerProvider).deleteMemory(memory.id);
-    ref.invalidate(adminMemorysProvider);
-    if (context.mounted) OheyToast.show(context, '思い出を削除しました。');
+    await ref.read(adminControllerProvider).deleteYurubo(yurubo.id);
+    _invalidateAdminYuruboProviders(ref);
+    if (context.mounted) OheyToast.show(context, 'ゆるぼを削除しました。');
   } catch (e) {
     if (context.mounted) OheyToast.show(context, '削除できませんでした: $e');
   }

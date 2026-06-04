@@ -78,6 +78,9 @@ class OheyApiPaths {
   static const adminUsers = '/v1/admin/users';
   static String adminUser(String userId) =>
       '$adminUsers/${Uri.encodeComponent(userId)}';
+  static const adminYurubos = '/v1/admin/yurubos';
+  static String adminYurubo(String yuruboId) =>
+      '$adminYurubos/${Uri.encodeComponent(yuruboId)}';
   static const adminMemories = '/v1/admin/memories';
   static String adminMemory(String memoryId) =>
       '$adminMemories/${Uri.encodeComponent(memoryId)}';

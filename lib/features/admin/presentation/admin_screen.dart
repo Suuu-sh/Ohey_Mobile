@@ -23,12 +23,12 @@ import '../data/admin_repository.dart';
 part 'admin_header_panes.dart';
 part 'admin_cards.dart';
 part 'admin_user_editor.dart';
-part 'admin_post_editor.dart';
+part 'admin_yurubo_editor.dart';
 part 'admin_form_widgets.dart';
 part 'admin_shared_widgets.dart';
 part 'admin_screen_body.dart';
 
-enum _AdminSection { users, posts, reports, notifications }
+enum _AdminSection { users, yurubos, reports, notifications }
 
 class AdminScreen extends ConsumerStatefulWidget {
   const AdminScreen({super.key});

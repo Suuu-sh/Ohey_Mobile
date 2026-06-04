@@ -86,9 +86,9 @@ class _AdminSegmentedControl extends StatelessWidget {
             onTap: () => onChanged(_AdminSection.users),
           ),
           _AdminSegmentButton(
-            label: '思い出',
-            selected: section == _AdminSection.posts,
-            onTap: () => onChanged(_AdminSection.posts),
+            label: 'ゆるぼ',
+            selected: section == _AdminSection.yurubos,
+            onTap: () => onChanged(_AdminSection.yurubos),
           ),
           _AdminSegmentButton(
             label: '通報',
@@ -414,40 +414,50 @@ class _AdminUsersPane extends StatelessWidget {
   }
 }
 
-class _AdminPostsPane extends StatelessWidget {
-  const _AdminPostsPane({required this.ref});
+class _AdminYurubosPane extends ConsumerStatefulWidget {
+  const _AdminYurubosPane();
 
-  final WidgetRef ref;
+  @override
+  ConsumerState<_AdminYurubosPane> createState() => _AdminYurubosPaneState();
+}
+
+class _AdminYurubosPaneState extends ConsumerState<_AdminYurubosPane> {
+  String _status = OheyStatusKeys.open;
 
   @override
   Widget build(BuildContext context) {
-    final logsAsync = ref.watch(adminMemorysProvider);
+    final yurubosAsync = ref.watch(adminYurubosProvider(_status));
     return Column(
       children: [
         _AdminPaneToolbar(
-          title: '思い出管理',
+          title: 'ゆるぼ管理',
           actionLabel: '作成',
-          onAction: () => _showPostSheet(context, ref),
-          onRefresh: () => ref.invalidate(adminMemorysProvider),
+          onAction: () => _showYuruboSheet(context, ref),
+          onRefresh: () => ref.invalidate(adminYurubosProvider(_status)),
+        ),
+        _AdminFilterChips(
+          options: _adminYuruboStatusFilters,
+          value: _status,
+          onChanged: (value) => setState(() => _status = value),
         ),
         const SizedBox(height: 12),
         Expanded(
-          child: logsAsync.when(
-            data: (memories) {
-              if (memories.isEmpty) {
-                return const _AdminEmptyState(message: '思い出がまだありません。');
+          child: yurubosAsync.when(
+            data: (yurubos) {
+              if (yurubos.isEmpty) {
+                return const _AdminEmptyState(message: 'ゆるぼがまだありません。');
               }
               return ListView.separated(
                 padding: const EdgeInsets.only(bottom: 120),
-                itemBuilder: (context, index) => _AdminPostCard(
-                  memory: memories[index],
+                itemBuilder: (context, index) => _AdminYuruboCard(
+                  yurubo: yurubos[index],
                   onEdit: () =>
-                      _showPostSheet(context, ref, memory: memories[index]),
+                      _showYuruboSheet(context, ref, yurubo: yurubos[index]),
                   onDelete: () =>
-                      _confirmDeletePost(context, ref, memories[index]),
+                      _confirmDeleteYurubo(context, ref, yurubos[index]),
                 ),
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemCount: memories.length,
+                itemCount: yurubos.length,
               );
             },
             loading: () => const Center(
@@ -455,7 +465,7 @@ class _AdminPostsPane extends StatelessWidget {
             ),
             error: (error, _) => _AdminErrorState(
               message: '$error',
-              onRetry: () => ref.invalidate(adminMemorysProvider),
+              onRetry: () => ref.invalidate(adminYurubosProvider(_status)),
             ),
           ),
         ),

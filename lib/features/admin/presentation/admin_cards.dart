@@ -81,14 +81,14 @@ class _AdminUserCard extends StatelessWidget {
   );
 }
 
-class _AdminPostCard extends StatelessWidget {
-  const _AdminPostCard({
-    required this.memory,
+class _AdminYuruboCard extends StatelessWidget {
+  const _AdminYuruboCard({
+    required this.yurubo,
     required this.onEdit,
     required this.onDelete,
   });
 
-  final AdminMemory memory;
+  final AdminYurubo yurubo;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -101,7 +101,7 @@ class _AdminPostCard extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                memory.placeName.isEmpty ? '場所未設定の思い出' : memory.placeName,
+                yurubo.title.isEmpty ? 'タイトル未設定のゆるぼ' : yurubo.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -111,10 +111,8 @@ class _AdminPostCard extends StatelessWidget {
                 ),
               ),
             ),
-            if (memory.isOfficial) ...[
-              const _AdminBadge(label: '公式'),
-              const SizedBox(width: 8),
-            ],
+            _AdminBadge(label: _adminYuruboStatusLabel(yurubo.status)),
+            const SizedBox(width: 8),
             _AdminIconButton(icon: CupertinoIcons.pencil, onTap: onEdit),
             const SizedBox(width: 8),
             _AdminIconButton(
@@ -126,16 +124,16 @@ class _AdminPostCard extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          '${memory.ownerDisplayName} @${memory.ownerHandle}',
+          '${yurubo.ownerDisplayName} @${yurubo.ownerHandle}',
           style: const TextStyle(
             color: _AdminColors.lime,
             fontWeight: FontWeight.w900,
           ),
         ),
-        if (memory.memo.isNotEmpty) ...[
+        if (yurubo.body.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
-            memory.memo,
+            yurubo.body,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -144,10 +142,13 @@ class _AdminPostCard extends StatelessWidget {
             ),
           ),
         ],
-        if (memory.linkUrl.isNotEmpty) ...[
+        if (yurubo.placeText.isNotEmpty || yurubo.timeLabel.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
-            memory.linkUrl,
+            [
+              if (yurubo.placeText.isNotEmpty) yurubo.placeText,
+              if (yurubo.timeLabel.isNotEmpty) yurubo.timeLabel,
+            ].join(' / '),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -158,7 +159,12 @@ class _AdminPostCard extends StatelessWidget {
         ],
         const SizedBox(height: 8),
         Text(
-          _dateLabel(memory.happenedAt),
+          [
+            if (yurubo.startsAt != null) '開始 ${_dateLabel(yurubo.startsAt!)}',
+            '反応 ${yurubo.reactionCount}',
+            _adminYuruboVisibilityLabel(yurubo.visibility),
+            if (yurubo.createdAt != null) '作成 ${_dateLabel(yurubo.createdAt!)}',
+          ].join(' / '),
           style: const TextStyle(
             color: _AdminColors.sub,
             fontWeight: FontWeight.w700,

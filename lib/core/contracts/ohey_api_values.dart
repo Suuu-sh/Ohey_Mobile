@@ -19,6 +19,9 @@ class OheyStatusKeys {
 
   static const active = 'active';
   static const open = 'open';
+  static const closed = 'closed';
+  static const expired = 'expired';
+  static const scheduled = 'scheduled';
 
   static const reviewing = 'reviewing';
   static const resolved = 'resolved';
