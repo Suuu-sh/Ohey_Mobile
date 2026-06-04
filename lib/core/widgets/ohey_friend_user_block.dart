@@ -6,9 +6,8 @@ import 'package:flutter/material.dart';
 import '../models/ohey_avatar.dart';
 import '../models/ohey_friend.dart';
 import '../theme/app_colors.dart';
-import 'ohey_3d_button.dart';
 import 'ohey_avatar.dart';
-import 'ohey_invite_success_burst.dart';
+import 'ohey_compact_action_button.dart';
 import 'ohey_themed_panel.dart';
 
 class OheyFriendUserBlock extends StatelessWidget {
@@ -185,45 +184,41 @@ class OheyFriendUserBlock extends StatelessWidget {
               const SizedBox(width: 10),
               SizedBox(
                 width: 76,
-                child: OheyInviteSuccessBurst(
+                child: OheyCompactActionButton(
+                  label: inviteButtonLabel,
+                  semanticLabel: inviteButtonLabel,
+                  onTap: inviteEnabled ? onInvite : null,
+                  enabled: inviteEnabled,
+                  forcePressed: inviteSent || invitePressed,
+                  height: 40,
+                  radius: 20,
+                  color: effectiveInviteButtonColor,
+                  foregroundColor: inviteForeground,
+                  shadowColor: inviteSent
+                      ? AppColors.cFF1A222C
+                      : !inviteAvailable
+                      ? AppColors.cFF1A222C
+                      : statusEnabled
+                      ? inviteShadowColor ??
+                            Color.lerp(
+                              activeInviteButtonColor,
+                              AppColors.black,
+                              .32,
+                            )
+                      : AppColors.cFF111923,
+                  disabledColor: inviteSent
+                      ? AppColors.cFF3C4652
+                      : AppColors.cFF2B3441,
+                  disabledOpacity: 1,
+                  padding: inviteButtonPadding,
+                  fontSize: 14,
+                  outerShadowAlpha: 0,
+                  innerShadowAlpha: 0,
+                  borderColor: null,
+                  burstOnTap: true,
                   burstIcon: inviteBurstIcon,
                   burstColor: inviteBurstColor ?? activeInviteButtonColor,
-                  builder: (context, runWithBurst, flightAnimation) =>
-                      Ohey3DButton(
-                        label: inviteButtonLabel,
-                        icon: null,
-                        customIcon: null,
-                        onTap: inviteEnabled
-                            ? () => runWithBurst(
-                                onInvite,
-                                afterAnimation: onInviteAnimationComplete,
-                              )
-                            : null,
-                        enabled: inviteEnabled,
-                        forcePressed: inviteSent || invitePressed,
-                        height: 40,
-                        radius: 20,
-                        color: effectiveInviteButtonColor,
-                        foregroundColor: inviteForeground,
-                        shadowColor: inviteSent
-                            ? AppColors.cFF1A222C
-                            : !inviteAvailable
-                            ? AppColors.cFF1A222C
-                            : statusEnabled
-                            ? inviteShadowColor ??
-                                  Color.lerp(
-                                    activeInviteButtonColor,
-                                    AppColors.black,
-                                    .32,
-                                  )
-                            : AppColors.cFF111923,
-                        disabledColor: inviteSent
-                            ? AppColors.cFF3C4652
-                            : AppColors.cFF2B3441,
-                        disabledOpacity: 1,
-                        padding: inviteButtonPadding,
-                        fontSize: 14,
-                      ),
+                  onBurstComplete: onInviteAnimationComplete,
                 ),
               ),
             ],
