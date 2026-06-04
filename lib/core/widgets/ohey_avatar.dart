@@ -412,6 +412,8 @@ class _OheyAvatarPainter extends CustomPainter {
   }
 
   void _drawHairFront(Canvas canvas, Color color, Color shirt) {
+    if (avatar.hair == 0) return;
+
     final paint = _verticalGradient(
       const Rect.fromLTWH(34, 20, 112, 68),
       color,
@@ -422,9 +424,17 @@ class _OheyAvatarPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
+
+    canvas.save();
+    // The front hair silhouettes were a touch narrower than the head, which
+    // made the temples look slightly sparse. Widen only the hair layer by a
+    // few pixels while keeping the existing character proportions intact.
+    canvas
+      ..translate(90, 0)
+      ..scale(1.045, 1)
+      ..translate(-90, 0);
+
     switch (avatar.hair) {
-      case 0:
-        return;
       case 1:
         for (var i = 0; i < 8; i++) {
           canvas.drawCircle(
@@ -835,6 +845,8 @@ class _OheyAvatarPainter extends CustomPainter {
             ..quadraticBezierTo(90, 32, 117, 47),
         );
     }
+
+    canvas.restore();
   }
 
   void _drawEyes(Canvas canvas) {
