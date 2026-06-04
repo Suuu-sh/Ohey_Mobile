@@ -38,21 +38,21 @@ assets/
 
 Auth stays in Flutter via Supabase Auth. Memories, invites, and friend reads go through the Go backend.
 
-Local backend:
+Dev / iOS Simulator builds must use the shared dev environment:
+
+- Supabase: `dev-ohey`
+- Backend: `https://dev-ohey-backend.onrender.com`
+- Auth redirect scheme: `app.ohey.com.dev://login-callback/`
+
+Use the shared script so local values do not drift:
 
 ```sh
-cd /Users/yota/Projects/Products/Ohey/Backend
-set -a; source /Users/yota/Projects/Secrets/Ohey/backend_dev.env; set +a
-go run ./cmd/api
+./scripts/run_dev_render.sh
 ```
 
-Run Flutter against it:
+`./scripts/run_dev_local.sh` is intentionally deprecated and delegates to the dev Render backend. Do not point Simulator verification at `localhost:8080`.
 
-```sh
-flutter run --dart-define=OHEY_BACKEND_URL=https://dev-ohey-backend.onrender.com
-```
-
-For prod builds, set `OHEY_BACKEND_URL=https://ohey-backend.onrender.com`. For dev/Simulator use `https://dev-ohey-backend.onrender.com`. Render service display names are `ohey-backend` / `dev-ohey-backend`; the generated hostnames are Ohey slugs.
+For prod/TestFlight builds, set `OHEY_BACKEND_URL=https://ohey-backend.onrender.com`. Public non-secret environment defaults are centralized in `lib/core/config/ohey_environment.dart` and `scripts/ohey_env.sh`.
 
 ## Run
 
@@ -81,7 +81,7 @@ Ohey supports separate Firebase values for dev and prod. Keep filled config file
 
 Recommended Firebase apps:
 
-- dev iOS bundle ID: `app.ohey.com.dev`
+- dev iOS bundle ID: `app.ohey.com` with dev Firebase project and `app.ohey.com.dev` URL scheme
 - prod iOS bundle ID: `app.ohey.com`
 - dev Android application ID: `app.ohey.com.dev`
 - prod Android application ID: `app.ohey.com`
@@ -98,7 +98,7 @@ dart scripts/check_dart_define_keys.dart config/firebase/dev.json config/firebas
 Run dev builds with:
 
 ```sh
-flutter run --dart-define-from-file=config/firebase/dev.json
+./scripts/run_dev_render.sh --dart-define-from-file=config/firebase/dev.json
 ```
 
 Run prod/TestFlight values with:

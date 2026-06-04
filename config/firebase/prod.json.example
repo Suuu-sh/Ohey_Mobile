@@ -1,5 +1,5 @@
 {
-  "OHEY_ENV": "prod",
+  "OHEY_ENV": "production",
   "OHEY_ADMIN_PORTAL_PASSWORD": "set_via_secret_not_in_git",
   "OHEY_ADMIN_EMAILS": "set_via_secret_not_in_git",
   "OHEY_BACKEND_URL": "https://ohey-backend.onrender.com",

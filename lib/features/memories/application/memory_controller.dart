@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/optimistic_update.dart';
+import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/models/memory.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../data/memory_repository.dart';
@@ -123,7 +124,10 @@ class HomeFeedController extends AsyncNotifier<List<Memory>> {
     }
   }
 
-  Future<void> reportMemory(String memoryId, {String reason = 'other'}) async {
+  Future<void> reportMemory(
+    String memoryId, {
+    String reason = OheyReportReasonKeys.other,
+  }) async {
     final previous = state.asData?.value ?? const <Memory>[];
     try {
       await ref

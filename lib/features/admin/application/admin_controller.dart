@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/data/backend_api_client.dart';
+import '../../../core/models/ohey_moderation_status.dart';
 import '../data/admin_repository.dart';
 
 final adminControllerProvider = Provider<AdminController>((ref) {
@@ -95,7 +96,7 @@ class AdminController {
 
   Future<void> updateMemoryReport({
     required String id,
-    required String status,
+    required OheyModerationStatus status,
     String? moderationNote,
   }) {
     return _repository.updateMemoryReport(

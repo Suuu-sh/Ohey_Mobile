@@ -72,8 +72,12 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
 
   void _goToLoginPasswordStep() {
     final email = _emailController.text.trim();
-    if (email.isEmpty) {
-      setState(() => _error = 'メールアドレスを入力してください。');
+    if (!_hasValidEmailAddress(email)) {
+      setState(
+        () => _error = email.isEmpty
+            ? 'メールアドレスを入力してください。'
+            : _emailInputRequirementMessage,
+      );
       return;
     }
     setState(() {
@@ -85,8 +89,12 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
 
   void _goToSignupPasswordStep() {
     final email = _emailController.text.trim();
-    if (email.isEmpty) {
-      setState(() => _error = 'メールアドレスを入力してください。');
+    if (!_hasValidEmailAddress(email)) {
+      setState(
+        () => _error = email.isEmpty
+            ? 'メールアドレスを入力してください。'
+            : _emailInputRequirementMessage,
+      );
       return;
     }
     setState(() {

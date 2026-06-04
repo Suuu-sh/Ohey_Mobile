@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/ohey_avatar.dart';
+import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/ohey_visibility.dart';
 import '../../../core/models/wish_item.dart';
 import '../../../core/models/yurubo.dart';
 import '../../../core/models/ohey_gender.dart';
@@ -215,25 +217,21 @@ Future<void> _respondInvite(
 }) async {
   try {
     final controller = ref.read(inviteControllerProvider);
-    if (accept) {
+    final status = accept
+        ? OheyInviteStatus.accepted
+        : OheyInviteStatus.rejected;
+    if (status.isAccepted) {
       await controller.accept(invite.id);
     } else {
       await controller.reject(invite.id);
     }
     if (!context.mounted) return;
-    OheyToast.show(context, accept ? '予定が成立しました。' : '招待を見送りました。');
+    OheyToast.show(context, status.responseToastMessage);
   } catch (error) {
     if (!context.mounted) return;
     OheyToast.show(context, '返信できなかったよ。あとでもう一度試してね');
   }
 }
-
-const _selectableDailyStatuses = <OheyDailyStatus>[
-  OheyDailyStatus.available,
-  OheyDailyStatus.maybeAvailable,
-  OheyDailyStatus.dependsOnTime,
-  OheyDailyStatus.hasPlans,
-];
 
 Future<void> _showProfileStatusSheet(
   BuildContext context,
@@ -286,7 +284,7 @@ class _ProfileCreateWishItemSheetState
     extends State<_ProfileCreateWishItemSheet> {
   final _titleController = TextEditingController();
   final _placeController = TextEditingController();
-  String _visibility = 'private';
+  String _visibility = OheyVisibility.private.key;
   bool _saving = false;
 
   @override
@@ -359,8 +357,9 @@ class _ProfileCreateWishItemSheetState
               Expanded(
                 child: _ProfileYuruboChoice(
                   label: '自分だけ',
-                  selected: _visibility == 'private',
-                  onTap: () => setState(() => _visibility = 'private'),
+                  selected: _visibility == OheyVisibility.private.key,
+                  onTap: () =>
+                      setState(() => _visibility = OheyVisibility.private.key),
                   selectedColor: AppColors.cFF20B9FF,
                   selectedBottomColor: AppColors.cFF0B78B7,
                 ),
@@ -369,8 +368,9 @@ class _ProfileCreateWishItemSheetState
               Expanded(
                 child: _ProfileYuruboChoice(
                   label: '友達に公開',
-                  selected: _visibility == 'friends',
-                  onTap: () => setState(() => _visibility = 'friends'),
+                  selected: _visibility == OheyVisibility.friends.key,
+                  onTap: () =>
+                      setState(() => _visibility = OheyVisibility.friends.key),
                   selectedColor: AppColors.cFF20B9FF,
                   selectedBottomColor: AppColors.cFF0B78B7,
                 ),
@@ -423,7 +423,7 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
   final _placeController = TextEditingController();
   final _timeController = TextEditingController();
   late Future<List<Map<String, dynamic>>> _groupsFuture;
-  String _visibility = 'friends';
+  String _visibility = OheyVisibility.friends.key;
   String? _groupId;
   String? _wishItemId;
   bool _saving = false;
@@ -453,7 +453,8 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
   Future<void> _submit() async {
     final title = _titleController.text.trim();
     if (title.isEmpty || _saving) return;
-    if (_visibility == 'group' && (_groupId == null || _groupId!.isEmpty)) {
+    if (_visibility.requiresVisibilityGroup &&
+        (_groupId == null || _groupId!.isEmpty)) {
       OheyToast.show(context, 'グループを選んでね');
       return;
     }
@@ -467,7 +468,7 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
               placeText: _profileYuruboPlaceOrDefault(_placeController.text),
               timeLabel: _profileYuruboTimeOrDefault(_timeController.text),
               visibility: _visibility,
-              groupId: _visibility == 'group' ? _groupId : null,
+              groupId: _visibility.requiresVisibilityGroup ? _groupId : null,
               wishItemId: _wishItemId,
             ),
           );
@@ -499,7 +500,9 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
         future: _groupsFuture,
         builder: (context, snapshot) {
           final groups = snapshot.data ?? const <Map<String, dynamic>>[];
-          if (_visibility == 'group' && _groupId == null && groups.isNotEmpty) {
+          if (_visibility.requiresVisibilityGroup &&
+              _groupId == null &&
+              groups.isNotEmpty) {
             _groupId =
                 (groups.first['row_id'] ?? groups.first['id']) as String?;
           }
@@ -523,21 +526,25 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
                   Expanded(
                     child: _ProfileYuruboChoice(
                       label: '全フレンズ',
-                      selected: _visibility == 'friends',
-                      onTap: () => setState(() => _visibility = 'friends'),
+                      selected: _visibility == OheyVisibility.friends.key,
+                      onTap: () => setState(
+                        () => _visibility = OheyVisibility.friends.key,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: _ProfileYuruboChoice(
                       label: 'グループ',
-                      selected: _visibility == 'group',
-                      onTap: () => setState(() => _visibility = 'group'),
+                      selected: _visibility == OheyVisibility.group.key,
+                      onTap: () => setState(
+                        () => _visibility = OheyVisibility.group.key,
+                      ),
                     ),
                   ),
                 ],
               ),
-              if (_visibility == 'group') ...[
+              if (_visibility.requiresVisibilityGroup) ...[
                 const SizedBox(height: 12),
                 if (groups.isEmpty)
                   Text(

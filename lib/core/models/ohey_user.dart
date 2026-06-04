@@ -1,21 +1,34 @@
 import 'ohey_avatar.dart';
 import 'ohey_gender.dart';
+import '../contracts/ohey_api_values.dart';
 
 enum OheyDailyStatus {
   unselected,
   available,
   maybeAvailable,
   dependsOnTime,
-  hasPlans,
+  hasPlans;
+
+  static const selectable = <OheyDailyStatus>[
+    OheyDailyStatus.available,
+    OheyDailyStatus.maybeAvailable,
+    OheyDailyStatus.dependsOnTime,
+    OheyDailyStatus.hasPlans,
+  ];
+
+  static const adminSelectable = <OheyDailyStatus>[
+    OheyDailyStatus.unselected,
+    ...selectable,
+  ];
 }
 
 extension OheyDailyStatusX on OheyDailyStatus {
   String get key => switch (this) {
-    OheyDailyStatus.unselected => 'unselected',
-    OheyDailyStatus.available => 'available',
-    OheyDailyStatus.maybeAvailable => 'maybe_available',
-    OheyDailyStatus.dependsOnTime => 'depends_on_time',
-    OheyDailyStatus.hasPlans => 'has_plans',
+    OheyDailyStatus.unselected => OheyStatusKeys.unselected,
+    OheyDailyStatus.available => OheyStatusKeys.available,
+    OheyDailyStatus.maybeAvailable => OheyStatusKeys.maybeAvailable,
+    OheyDailyStatus.dependsOnTime => OheyStatusKeys.dependsOnTime,
+    OheyDailyStatus.hasPlans => OheyStatusKeys.hasPlans,
   };
 
   String get label => switch (this) {
@@ -49,6 +62,13 @@ extension OheyDailyStatusX on OheyDailyStatus {
     OheyDailyStatus.unselected || OheyDailyStatus.hasPlans => false,
   };
 
+  double get availabilityWeight => switch (this) {
+    OheyDailyStatus.available => 1.0,
+    OheyDailyStatus.maybeAvailable => .8,
+    OheyDailyStatus.dependsOnTime => .5,
+    OheyDailyStatus.unselected || OheyDailyStatus.hasPlans => 0,
+  };
+
   int get availabilityRank => switch (this) {
     OheyDailyStatus.available => 0,
     OheyDailyStatus.maybeAvailable => 1,
@@ -64,13 +84,25 @@ extension OheyDailyStatusX on OheyDailyStatus {
     OheyDailyStatus.dependsOnTime => true,
     OheyDailyStatus.hasPlans => false,
   };
+
+  bool get isUndecided => this == OheyDailyStatus.unselected;
+
+  bool get blocksRecommendations => this == OheyDailyStatus.hasPlans;
+
+  int get recommendationBonus => switch (this) {
+    OheyDailyStatus.available => 60,
+    OheyDailyStatus.maybeAvailable => 50,
+    OheyDailyStatus.unselected ||
+    OheyDailyStatus.dependsOnTime ||
+    OheyDailyStatus.hasPlans => 0,
+  };
 }
 
 OheyDailyStatus oheyDailyStatusFromKey(String? key) => switch (key) {
-  'available' => OheyDailyStatus.available,
-  'maybe_available' => OheyDailyStatus.maybeAvailable,
-  'depends_on_time' => OheyDailyStatus.dependsOnTime,
-  'has_plans' => OheyDailyStatus.hasPlans,
+  OheyStatusKeys.available => OheyDailyStatus.available,
+  OheyStatusKeys.maybeAvailable => OheyDailyStatus.maybeAvailable,
+  OheyStatusKeys.dependsOnTime => OheyDailyStatus.dependsOnTime,
+  OheyStatusKeys.hasPlans => OheyDailyStatus.hasPlans,
   _ => OheyDailyStatus.unselected,
 };
 

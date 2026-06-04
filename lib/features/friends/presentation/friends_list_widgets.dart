@@ -745,8 +745,8 @@ class _GroupScheduleSection extends StatelessWidget {
                 label: isSendingInvite
                     ? '送信中'
                     : isGroupInvited
-                    ? '誘い済み'
-                    : '全員誘う',
+                    ? '招待済み'
+                    : '全員招待',
                 onTap: canInviteGroup ? onInviteGroup : null,
                 enabled: canInviteGroup,
                 height: 38,
@@ -1024,7 +1024,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
             width: double.infinity,
             child: OheyInviteSuccessBurst(
               builder: (context, runWithBurst, flightAnimation) => Ohey3DButton(
-                label: isInvited ? '誘い済み' : '誘う',
+                label: isInvited ? '招待済み' : '招待する',
                 icon: null,
                 customIcon: null,
                 onTap: isInviteEnabled
@@ -1342,7 +1342,8 @@ _GroupAvailabilityStats _groupAvailabilityStats(
   var plannedCount = 0;
   var weightedScore = 0.0;
   for (final item in friends) {
-    final weight = _availabilityWeightForStatusKey(item.friend.statusKey);
+    final status = oheyDailyStatusFromKey(item.friend.statusKey);
+    final weight = status.availabilityWeight;
     weightedScore += weight;
     if (weight >= .8) okCount += 1;
     if (weight > 0) {
@@ -1350,10 +1351,10 @@ _GroupAvailabilityStats _groupAvailabilityStats(
     } else {
       blockedCount += 1;
     }
-    if (_isUndecidedStatusKey(item.friend.statusKey)) {
+    if (status.isUndecided) {
       undecidedCount += 1;
     }
-    if (item.friend.statusKey == 'has_plans') {
+    if (status == OheyDailyStatus.hasPlans) {
       plannedCount += 1;
     }
   }
@@ -1368,23 +1369,6 @@ _GroupAvailabilityStats _groupAvailabilityStats(
   );
 }
 
-double _availabilityWeightForStatusKey(String? statusKey) {
-  return switch (statusKey) {
-    'available' => 1.0,
-    'maybe_available' => .8,
-    'depends_on_time' => .5,
-    'has_plans' => 0,
-    'unselected' || 'unset' || null || '' => 0,
-    _ => 0,
-  };
-}
-
-bool _isUndecidedStatusKey(String? statusKey) =>
-    statusKey == null ||
-    statusKey.isEmpty ||
-    statusKey == 'unselected' ||
-    statusKey == 'unset';
-
 String _groupScheduleDayLabel(DateTime day) {
   final now = DateTime.now();
   if (_isSameLocalDay(day, now)) return '今日';
@@ -1398,21 +1382,21 @@ bool _isSameLocalDay(DateTime a, DateTime b) =>
 
 bool _isRecommendedFriend(_DecoratedFriend item) {
   final friend = item.friend;
-  if (friend.statusKey == 'has_plans') return false;
+  final status = oheyDailyStatusFromKey(friend.statusKey);
+  if (status.blocksRecommendations) return false;
 
   return friend.totalMemoryCount == 0 ||
       (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) ||
-      friend.statusKey == 'available' ||
-      friend.statusKey == 'maybe_available';
+      status.recommendationBonus > 0;
 }
 
 int _recommendationScoreFor(_DecoratedFriend item) {
   final friend = item.friend;
+  final status = oheyDailyStatusFromKey(friend.statusKey);
   var score = 0;
   if (friend.totalMemoryCount == 0) score += 100;
   if (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) score += 80;
-  if (friend.statusKey == 'available') score += 60;
-  if (friend.statusKey == 'maybe_available') score += 50;
+  score += status.recommendationBonus;
   return score;
 }
 

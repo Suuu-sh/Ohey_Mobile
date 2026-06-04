@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/contracts/ohey_api_paths.dart';
+import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/ohey_avatar.dart';
 
@@ -21,36 +23,39 @@ class UserSafetyRepository {
   final BackendApiClient _client;
 
   Future<void> blockUser(String userId) async {
-    await _client.post('/v1/user-blocks', {'target_user_id': userId});
+    await _client.post(OheyApiPaths.userBlocks, {'target_user_id': userId});
   }
 
   Future<void> muteUser(String userId) async {
-    await _client.post('/v1/user-mutes', {'target_user_id': userId});
+    await _client.post(OheyApiPaths.userMutes, {'target_user_id': userId});
   }
 
-  Future<void> reportUser(String userId, {String reason = 'other'}) async {
-    await _client.post('/v1/user-reports', {
+  Future<void> reportUser(
+    String userId, {
+    String reason = OheyReportReasonKeys.other,
+  }) async {
+    await _client.post(OheyApiPaths.userReports, {
       'target_user_id': userId,
       'reason': reason,
     });
   }
 
   Future<List<OheySafetyUser>> fetchBlockedUsers() async {
-    final rows = await _client.getRows('/v1/user-blocks');
+    final rows = await _client.getRows(OheyApiPaths.userBlocks);
     return rows.map(OheySafetyUser.fromRow).toList(growable: false);
   }
 
   Future<List<OheySafetyUser>> fetchMutedUsers() async {
-    final rows = await _client.getRows('/v1/user-mutes');
+    final rows = await _client.getRows(OheyApiPaths.userMutes);
     return rows.map(OheySafetyUser.fromRow).toList(growable: false);
   }
 
   Future<void> unblockUser(String userId) async {
-    await _client.delete('/v1/user-blocks/${Uri.encodeComponent(userId)}');
+    await _client.delete(OheyApiPaths.userBlock(userId));
   }
 
   Future<void> unmuteUser(String userId) async {
-    await _client.delete('/v1/user-mutes/${Uri.encodeComponent(userId)}');
+    await _client.delete(OheyApiPaths.userMute(userId));
   }
 }
 

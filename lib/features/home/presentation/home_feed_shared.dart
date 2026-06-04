@@ -139,7 +139,9 @@ class _FeedItem {
             handle: participant.handle,
             avatar: participant.avatar,
             accent: _accentForId(participant.userId),
-            statusKey: participant.isPending ? 'pending_yurubo' : null,
+            statusKey: participant.isPending
+                ? oheyPendingYuruboCompanionKey
+                : null,
           ),
       ],
       likes: yurubo.reactionCount,
@@ -242,7 +244,7 @@ class _Companion {
 }
 
 String _companionStatusLabel(String? statusKey) {
-  if (statusKey == 'pending_yurubo') return '承認待ち';
+  if (statusKey.isPendingYuruboCompanion) return '承認待ち';
   return oheyDailyStatusFromKey(statusKey).label;
 }
 
@@ -251,26 +253,16 @@ String _companionStatusMessage(String? statusKey) {
 }
 
 IconData _companionStatusIcon(String? statusKey) {
-  final status = oheyDailyStatusFromKey(statusKey);
-  return switch (status) {
-    OheyDailyStatus.available => CupertinoIcons.checkmark_circle_fill,
-    OheyDailyStatus.maybeAvailable => CupertinoIcons.drop_fill,
-    OheyDailyStatus.dependsOnTime => CupertinoIcons.moon_fill,
-    OheyDailyStatus.hasPlans => CupertinoIcons.calendar_today,
-    OheyDailyStatus.unselected => CupertinoIcons.circle,
-  };
+  return oheyDailyStatusIcon(oheyDailyStatusFromKey(statusKey));
 }
 
 Color _companionStatusColor(String? statusKey) {
-  if (statusKey == 'pending_yurubo') return AppColors.cFFFFD84D;
+  if (statusKey.isPendingYuruboCompanion) {
+    return AppColors.cFFFFD84D;
+  }
   final status = oheyDailyStatusFromKey(statusKey);
-  return switch (status) {
-    OheyDailyStatus.available => AppColors.cFF9AF21A,
-    OheyDailyStatus.maybeAvailable => AppColors.cFF5DEBD3,
-    OheyDailyStatus.dependsOnTime => AppColors.cFFFF5EA8,
-    OheyDailyStatus.hasPlans => AppColors.cFFB8C1CD,
-    OheyDailyStatus.unselected => _FeedColors.sub,
-  };
+  if (status == OheyDailyStatus.unselected) return _FeedColors.sub;
+  return oheyDailyStatusColor(status);
 }
 
 class _FeedNotification {
@@ -297,25 +289,31 @@ class _FeedNotification {
       message: notification.displayMessage,
       timeAgo: _relativeTimeText(notification.createdAt),
       icon: switch (notification.kind) {
-        'memory_like' => CupertinoIcons.heart_fill,
-        'friend_request_received' => CupertinoIcons.person_badge_plus_fill,
-        'friend_request_accepted' => CupertinoIcons.checkmark_seal_fill,
-        'invite_received' => CupertinoIcons.calendar_badge_plus,
-        'invite_accepted' => CupertinoIcons.checkmark_circle_fill,
-        'today_reservation_reminder' => CupertinoIcons.calendar_today,
-        'memory_tagged' => CupertinoIcons.person_2_fill,
-        'system' => CupertinoIcons.bell_fill,
+        OheyNotificationKindKeys.memoryLike => CupertinoIcons.heart_fill,
+        OheyNotificationKindKeys.friendRequestReceived =>
+          CupertinoIcons.person_badge_plus_fill,
+        OheyNotificationKindKeys.friendRequestAccepted =>
+          CupertinoIcons.checkmark_seal_fill,
+        OheyNotificationKindKeys.inviteReceived =>
+          CupertinoIcons.calendar_badge_plus,
+        OheyNotificationKindKeys.inviteAccepted =>
+          CupertinoIcons.checkmark_circle_fill,
+        OheyNotificationKindKeys.todayReservationReminder =>
+          CupertinoIcons.calendar_today,
+        OheyNotificationKindKeys.memoryTagged => CupertinoIcons.person_2_fill,
+        OheyNotificationKindKeys.system => CupertinoIcons.bell_fill,
         _ => CupertinoIcons.bell_fill,
       },
       accent: switch (notification.kind) {
-        'memory_like' => AppColors.cFFFF75B5,
-        'friend_request_received' => AppColors.cFF58D6FF,
-        'friend_request_accepted' => AppColors.cFF9AF21A,
-        'invite_received' => AppColors.cFFC08BFF,
-        'invite_accepted' => _FeedColors.teal,
-        'today_reservation_reminder' => AppColors.cFFFFD166,
-        'memory_tagged' => AppColors.cFF58D6FF,
-        'system' => AppColors.cFFFFD166,
+        OheyNotificationKindKeys.memoryLike => AppColors.cFFFF75B5,
+        OheyNotificationKindKeys.friendRequestReceived => AppColors.cFF58D6FF,
+        OheyNotificationKindKeys.friendRequestAccepted => AppColors.cFF9AF21A,
+        OheyNotificationKindKeys.inviteReceived => AppColors.cFFC08BFF,
+        OheyNotificationKindKeys.inviteAccepted => _FeedColors.teal,
+        OheyNotificationKindKeys.todayReservationReminder =>
+          AppColors.cFFFFD166,
+        OheyNotificationKindKeys.memoryTagged => AppColors.cFF58D6FF,
+        OheyNotificationKindKeys.system => AppColors.cFFFFD166,
         _ => _FeedColors.teal,
       },
       unread: notification.isUnread,
@@ -341,10 +339,10 @@ class _FeedNotification {
   final YuruboParticipant? yuruboParticipant;
 
   bool get canOpen {
-    if (kind == 'friend_request_received') {
+    if (kind == OheyNotificationKindKeys.friendRequestReceived) {
       return friendRequestId != null && friendRequestId!.isNotEmpty;
     }
-    if (kind == 'invite_received') {
+    if (kind == OheyNotificationKindKeys.inviteReceived) {
       return inviteId != null && inviteId!.isNotEmpty;
     }
     if (kind == 'yurubo_participation_requested') {
@@ -354,10 +352,10 @@ class _FeedNotification {
   }
 
   bool get requiresAction {
-    if (kind == 'friend_request_received') {
+    if (kind == OheyNotificationKindKeys.friendRequestReceived) {
       return oheyFriendRequestStatusFromKey(friendRequestStatus).isPending;
     }
-    if (kind == 'invite_received') {
+    if (kind == OheyNotificationKindKeys.inviteReceived) {
       return oheyInviteStatusFromKey(inviteStatus).isPending;
     }
     if (kind == 'yurubo_participation_requested') return true;
@@ -365,10 +363,10 @@ class _FeedNotification {
   }
 
   bool get isResolvedAction {
-    if (kind == 'friend_request_received') {
+    if (kind == OheyNotificationKindKeys.friendRequestReceived) {
       return !oheyFriendRequestStatusFromKey(friendRequestStatus).isPending;
     }
-    if (kind == 'invite_received') {
+    if (kind == OheyNotificationKindKeys.inviteReceived) {
       return !oheyInviteStatusFromKey(inviteStatus).isPending;
     }
     if (kind == 'yurubo_participation_requested') return false;
@@ -376,10 +374,10 @@ class _FeedNotification {
   }
 
   String? get actionLabel {
-    if (kind == 'friend_request_received') {
+    if (kind == OheyNotificationKindKeys.friendRequestReceived) {
       return oheyFriendRequestStatusFromKey(friendRequestStatus).actionLabel;
     }
-    if (kind == 'invite_received') {
+    if (kind == OheyNotificationKindKeys.inviteReceived) {
       return oheyInviteStatusFromKey(inviteStatus).actionLabel;
     }
     if (kind == 'yurubo_participation_requested') return '承認する';

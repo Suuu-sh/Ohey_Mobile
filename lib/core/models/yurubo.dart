@@ -1,4 +1,49 @@
+import '../contracts/ohey_api_values.dart';
 import 'ohey_avatar.dart';
+
+const oheyYuruboInterestedReactionKey = OheyReactionTypeKeys.interested;
+const oheyApprovedYuruboReactionKey = OheyReactionTypeKeys.available;
+const oheyYuruboAnotherDayReactionKey = OheyReactionTypeKeys.anotherDay;
+const oheyPendingYuruboCompanionKey = OheyReactionTypeKeys.pendingYurubo;
+
+enum OheyYuruboReactionType {
+  interested(oheyYuruboInterestedReactionKey),
+  available(oheyApprovedYuruboReactionKey),
+  anotherDay(oheyYuruboAnotherDayReactionKey),
+  pendingYurubo(oheyPendingYuruboCompanionKey);
+
+  const OheyYuruboReactionType(this.key);
+
+  final String key;
+}
+
+extension OheyYuruboReactionTypeX on OheyYuruboReactionType {
+  bool get isApproved => this == OheyYuruboReactionType.available;
+
+  bool get isPendingParticipation => !isApproved;
+
+  bool get isPendingYuruboCompanion =>
+      this == OheyYuruboReactionType.pendingYurubo;
+}
+
+OheyYuruboReactionType oheyYuruboReactionTypeFromKey(String? key) {
+  return switch (key?.trim()) {
+    oheyApprovedYuruboReactionKey => OheyYuruboReactionType.available,
+    oheyYuruboAnotherDayReactionKey => OheyYuruboReactionType.anotherDay,
+    oheyPendingYuruboCompanionKey => OheyYuruboReactionType.pendingYurubo,
+    _ => OheyYuruboReactionType.interested,
+  };
+}
+
+extension OheyYuruboReactionKeyX on String? {
+  OheyYuruboReactionType get yuruboReactionType =>
+      oheyYuruboReactionTypeFromKey(this);
+
+  bool get isApprovedYuruboReaction => yuruboReactionType.isApproved;
+
+  bool get isPendingYuruboCompanion =>
+      yuruboReactionType.isPendingYuruboCompanion;
+}
 
 class Yurubo {
   const Yurubo({
@@ -76,7 +121,7 @@ class YuruboParticipant {
     required this.name,
     required this.handle,
     required this.avatar,
-    this.reactionType = 'available',
+    this.reactionType = oheyApprovedYuruboReactionKey,
   });
 
   final String userId;
@@ -85,7 +130,7 @@ class YuruboParticipant {
   final OheyAvatar avatar;
   final String reactionType;
 
-  bool get isPending => reactionType != 'available';
+  bool get isPending => reactionType.yuruboReactionType.isPendingParticipation;
 
   YuruboParticipant copyWith({String? reactionType}) => YuruboParticipant(
     userId: userId,

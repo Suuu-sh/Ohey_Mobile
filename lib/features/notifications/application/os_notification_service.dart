@@ -4,6 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/yurubo.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
@@ -18,21 +19,21 @@ class _NotificationDeliveryPolicy {
 
   static const _osAllowedKinds = <String>{
     // Actionable and social-graph changing notifications only.
-    'friend_request_received',
-    'friend_request_accepted',
-    'invite_received',
-    'invite_accepted',
-    'today_reservation_reminder',
+    OheyNotificationKindKeys.friendRequestReceived,
+    OheyNotificationKindKeys.friendRequestAccepted,
+    OheyNotificationKindKeys.inviteReceived,
+    OheyNotificationKindKeys.inviteAccepted,
+    OheyNotificationKindKeys.todayReservationReminder,
   };
 
   static bool shouldShowOsNotification(OheyNotification notification) {
     if (!_osAllowedKinds.contains(notification.kind)) return false;
-    if (notification.kind == 'friend_request_received') {
+    if (notification.kind == OheyNotificationKindKeys.friendRequestReceived) {
       return oheyFriendRequestStatusFromKey(
         notification.friendRequestStatus,
       ).isPending;
     }
-    if (notification.kind == 'invite_received') {
+    if (notification.kind == OheyNotificationKindKeys.inviteReceived) {
       return oheyInviteStatusFromKey(notification.inviteStatus).isPending;
     }
     return true;
@@ -43,8 +44,9 @@ class _NotificationDeliveryPolicy {
     final actionable = notifications
         .where(
           (notification) =>
-              notification.kind == 'friend_request_received' ||
-              notification.kind == 'invite_received',
+              notification.kind ==
+                  OheyNotificationKindKeys.friendRequestReceived ||
+              notification.kind == OheyNotificationKindKeys.inviteReceived,
         )
         .take(2)
         .toList(growable: false);

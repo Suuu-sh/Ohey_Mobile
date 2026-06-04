@@ -1,6 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/contracts/ohey_api_paths.dart';
+import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
+import '../../../core/models/ohey_friend_request_status.dart';
+import '../../../core/models/ohey_invite.dart';
 
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   return BackendNotificationRepository(ref.watch(backendApiClientProvider));
@@ -39,8 +43,8 @@ class OheyNotification {
   final DateTime? notificationDate;
   final String? systemKey;
 
-  String get displayTitle => _oheylaNotificationText(title);
-  String get displayMessage => _oheylaNotificationText(message);
+  String get displayTitle => _legacyNotificationTextToOhey(title);
+  String get displayMessage => _legacyNotificationTextToOhey(message);
 
   OheyNotification markRead() => OheyNotification(
     id: id,
@@ -69,7 +73,7 @@ class OheyNotification {
     final inviteMap = invite is Map ? Map<String, dynamic>.from(invite) : null;
     return OheyNotification(
       id: json['id'] as String,
-      kind: (json['kind'] as String?) ?? 'memory_like',
+      kind: (json['kind'] as String?) ?? OheyNotificationKindKeys.memoryLike,
       title: (json['title'] as String?) ?? 'お知らせ',
       message: (json['message'] as String?) ?? '',
       createdAt: createdAtText == null
@@ -93,9 +97,12 @@ abstract interface class NotificationRepository {
   Future<void> markAllRead();
   Future<void> updateFriendRequest({
     required String friendRequestId,
-    required String status,
+    required OheyFriendRequestStatus status,
   });
-  Future<void> updateInvite({required String inviteId, required String status});
+  Future<void> updateInvite({
+    required String inviteId,
+    required OheyInviteStatus status,
+  });
 }
 
 class BackendNotificationRepository implements NotificationRepository {
@@ -106,7 +113,7 @@ class BackendNotificationRepository implements NotificationRepository {
   @override
   Future<List<OheyNotification>> fetchNotifications() async {
     final rows = await _client.getRows(
-      '/v1/notifications',
+      OheyApiPaths.notifications,
       query: {'date': _todayIsoDate()},
     );
     return rows.map(OheyNotification.fromJson).toList(growable: false);
@@ -114,25 +121,25 @@ class BackendNotificationRepository implements NotificationRepository {
 
   @override
   Future<void> markAllRead() async {
-    await _client.patch('/v1/notifications/read-all', const {});
+    await _client.patch(OheyApiPaths.notificationsReadAll, const {});
   }
 
   @override
   Future<void> updateFriendRequest({
     required String friendRequestId,
-    required String status,
+    required OheyFriendRequestStatus status,
   }) async {
-    await _client.patch('/v1/friend-requests/$friendRequestId', {
-      'status': status,
+    await _client.patch(OheyApiPaths.friendRequest(friendRequestId), {
+      'status': status.key,
     });
   }
 
   @override
   Future<void> updateInvite({
     required String inviteId,
-    required String status,
+    required OheyInviteStatus status,
   }) async {
-    await _client.patch('/v1/invites/$inviteId', {'status': status});
+    await _client.patch(OheyApiPaths.invite(inviteId), {'status': status.key});
   }
 }
 
@@ -148,7 +155,7 @@ String _todayIsoDate() {
       '${now.day.toString().padLeft(2, '0')}';
 }
 
-String _oheylaNotificationText(String value) {
+String _legacyNotificationTextToOhey(String value) {
   return value
       .replaceAll('飲みログ', 'ゆるぼ')
       .replaceAll('飲みとも', 'フレンズ')

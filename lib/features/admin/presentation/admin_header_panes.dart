@@ -171,7 +171,7 @@ class _AdminReportCard extends StatelessWidget {
 
   final WidgetRef ref;
   final AdminMemoryReport report;
-  final ValueChanged<String> onStatus;
+  final ValueChanged<OheyModerationStatus> onStatus;
   final VoidCallback onDeletePost;
 
   @override
@@ -251,19 +251,12 @@ class _AdminReportCard extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: [
-            _AdminSmallActionButton(
-              label: '対応中',
-              onTap: () => onStatus('reviewing'),
-            ),
-            _AdminSmallActionButton(
-              label: '解決',
-              onTap: () => onStatus('resolved'),
-            ),
-            _AdminSmallActionButton(
-              label: '却下',
-              destructive: true,
-              onTap: () => onStatus('dismissed'),
-            ),
+            for (final status in OheyModerationStatus.actions)
+              _AdminSmallActionButton(
+                label: status.actionLabel,
+                destructive: status.isDestructiveAction,
+                onTap: () => onStatus(status),
+              ),
             _AdminSmallActionButton(
               label: '投稿削除',
               destructive: true,

@@ -347,9 +347,7 @@ class _FeedCardAuthorBar extends StatelessWidget {
         ? Color.lerp(menuAccent, AppColors.black, .18)!
         : Color.lerp(menuAccent, AppColors.white, .18)!;
     final place = item.place.trim();
-    final metadataLabel = compactYurubo
-        ? (place.isEmpty ? 'ゆるぼ' : place)
-        : item.isOfficial
+    final metadataLabel = item.isOfficial
         ? (place.isEmpty ? 'Ohey公式からのお知らせ' : 'Ohey公式 ・ $place')
         : place.isEmpty
         ? 'ゆるぼ'
@@ -392,7 +390,7 @@ class _FeedCardAuthorBar extends StatelessWidget {
                                   style: Theme.of(context).textTheme.titleSmall
                                       ?.copyWith(
                                         color: primaryText,
-                                        fontSize: 15.5,
+                                        fontSize: compactYurubo ? 17 : 15.5,
                                         fontWeight: FontWeight.w900,
                                         height: 1.05,
                                         letterSpacing: -.25,
@@ -405,19 +403,21 @@ class _FeedCardAuthorBar extends StatelessWidget {
                                 const _OfficialVerifiedBadge(),
                             ],
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            metadataLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(
-                                  color: secondaryText,
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w900,
-                                  height: 1,
-                                ),
-                          ),
+                          if (!compactYurubo) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              metadataLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: secondaryText,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w900,
+                                    height: 1,
+                                  ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -575,7 +575,9 @@ class _FeedCardFooter extends StatelessWidget {
 
 String _feedLikeActionLabel(_FeedItem item) {
   if (item.ownedByMe) return '募集主';
-  if (item.liked) return item.myReactionType == 'available' ? '参加済み' : '申請中';
+  if (item.liked) {
+    return item.myReactionType.isApprovedYuruboReaction ? '参加済み' : '申請中';
+  }
   return '参加申請';
 }
 
@@ -761,6 +763,8 @@ String _yuruboBody(_FeedItem item) {
 
 String _yuruboInterestedActionLabel(_FeedItem item) {
   if (item.ownedByMe) return '募集主';
-  if (item.liked) return item.myReactionType == 'available' ? '参加済み' : '申請中';
+  if (item.liked) {
+    return item.myReactionType.isApprovedYuruboReaction ? '参加済み' : '申請中';
+  }
   return '参加申請';
 }

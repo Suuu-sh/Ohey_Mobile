@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/supabase_config.dart';
+import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/ohey_gender.dart';
+import '../../../core/models/ohey_moderation_status.dart';
 import '../../../core/models/ohey_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/ohey_3d_button.dart';

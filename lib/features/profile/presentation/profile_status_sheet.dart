@@ -45,7 +45,7 @@ class _ProfileStatusSheetContentState
           style: TextStyle(color: sub, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 14),
-        for (final status in _selectableDailyStatuses) ...[
+        for (final status in OheyDailyStatus.selectable) ...[
           OheyDailyStatus3DOption(
             status: status,
             title: status.label,

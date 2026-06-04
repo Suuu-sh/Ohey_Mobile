@@ -788,7 +788,10 @@ class _FriendRequestManagementSheetState
     extends ConsumerState<_FriendRequestManagementSheet> {
   final Set<String> _busyRequestIds = <String>{};
 
-  Future<void> _respond(OheyFriendRequestItem request, String status) async {
+  Future<void> _respond(
+    OheyFriendRequestItem request,
+    OheyFriendRequestStatus status,
+  ) async {
     if (!_busyRequestIds.add(request.id)) return;
     setState(() {});
     try {
@@ -797,16 +800,16 @@ class _FriendRequestManagementSheetState
           .updateFriendRequest(request.id, status);
       ref.invalidate(pendingFriendRequestsProvider);
       ref.invalidate(notificationControllerProvider);
-      if (status == 'accepted') {
+      if (status.isAccepted) {
         ref.invalidate(friendsProvider);
         ref.invalidate(friendsForDateProvider);
       }
       if (!mounted) return;
-      OheyToast.show(context, switch (status) {
-        'accepted' => '申請を承認しました',
-        'rejected' => '申請を見送りました',
-        _ => '申請を取り消しました',
-      }, icon: CupertinoIcons.checkmark_circle_fill);
+      OheyToast.show(
+        context,
+        status.responseToastMessage,
+        icon: CupertinoIcons.checkmark_circle_fill,
+      );
     } catch (_) {
       if (!mounted) return;
       OheyToast.show(
@@ -918,7 +921,10 @@ class _FriendRequestManagementSheetState
                           request: request,
                           accent: AppColors.cFFB7F15B,
                           busy: _busyRequestIds.contains(request.id),
-                          onCancel: () => _respond(request, 'cancelled'),
+                          onCancel: () => _respond(
+                            request,
+                            OheyFriendRequestStatus.cancelled,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -932,8 +938,14 @@ class _FriendRequestManagementSheetState
                           request: request,
                           accent: AppColors.cFF8A62FF,
                           busy: _busyRequestIds.contains(request.id),
-                          onAccept: () => _respond(request, 'accepted'),
-                          onReject: () => _respond(request, 'rejected'),
+                          onAccept: () => _respond(
+                            request,
+                            OheyFriendRequestStatus.accepted,
+                          ),
+                          onReject: () => _respond(
+                            request,
+                            OheyFriendRequestStatus.rejected,
+                          ),
                         ),
                       ),
                     ],

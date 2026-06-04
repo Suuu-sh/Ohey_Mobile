@@ -209,7 +209,7 @@ class _AdminStatusDropdown extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final status in _adminSelectableStatusKeys)
+              for (final status in OheyDailyStatus.adminSelectable)
                 _AdminStatusChip(
                   label: status.label,
                   selected: status.key == selected,
@@ -358,14 +358,6 @@ class _AdminStatusChip extends StatelessWidget {
   }
 }
 
-const _adminSelectableStatusKeys = <OheyDailyStatus>[
-  OheyDailyStatus.unselected,
-  OheyDailyStatus.available,
-  OheyDailyStatus.maybeAvailable,
-  OheyDailyStatus.dependsOnTime,
-  OheyDailyStatus.hasPlans,
-];
-
 const _adminSelectableGenders = <OheyGender>[
   OheyGender.unspecified,
   OheyGender.male,
@@ -382,23 +374,17 @@ String _adminGenderLabel(String gender) {
 
 String _adminReportReasonLabel(String reason) {
   return switch (reason) {
-    'spam' => 'スパム',
-    'harassment' => '嫌がらせ',
-    'inappropriate' => '不適切',
-    'violence' => '暴力・危険',
-    'minor_safety' => '未成年安全',
+    OheyReportReasonKeys.spam => 'スパム',
+    OheyReportReasonKeys.harassment => '嫌がらせ',
+    OheyReportReasonKeys.inappropriate => '不適切',
+    OheyReportReasonKeys.violence => '暴力・危険',
+    OheyReportReasonKeys.minorSafety => '未成年安全',
     _ => 'その他',
   };
 }
 
 String _adminReportStatusLabel(String status) {
-  return switch (status) {
-    'pending' => '未対応',
-    'reviewing' => '対応中',
-    'resolved' => '解決済み',
-    'dismissed' => '却下',
-    _ => status,
-  };
+  return oheyModerationStatusFromKey(status).label;
 }
 
 String _adminNormalizeStatus(String status) {

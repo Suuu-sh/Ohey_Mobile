@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/contracts/ohey_api_paths.dart';
+import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
+import '../../../core/models/ohey_visibility.dart';
 import '../../../core/models/wish_item.dart';
 
 final wishItemRepositoryProvider = Provider<WishItemRepository>((ref) {
@@ -20,10 +23,10 @@ class WishItemCreateDraft {
   const WishItemCreateDraft({
     required this.title,
     this.note = '',
-    this.category = 'other',
+    this.category = OheyCategoryKeys.other,
     this.placeText = '',
     this.placeUrl = '',
-    this.visibility = 'private',
+    this.visibility = oheyPrivateVisibilityKey,
   });
 
   final String title;
@@ -42,7 +45,7 @@ class BackendWishItemRepository implements WishItemRepository {
   @override
   Future<List<WishItem>> fetchWishItems({int limit = 50}) async {
     final rows = await _client.getRows(
-      '/v1/wish-items',
+      OheyApiPaths.wishItems,
       query: {'limit': '$limit'},
     );
     return rows.map(_wishItemFromRow).toList(growable: false);
@@ -54,7 +57,7 @@ class BackendWishItemRepository implements WishItemRepository {
     int limit = 30,
   }) async {
     final rows = await _client.getRows(
-      '/v1/wish-items/profile/${Uri.encodeComponent(profileId)}',
+      OheyApiPaths.profileWishItems(profileId),
       query: {'limit': '$limit'},
     );
     return rows.map(_wishItemFromRow).toList(growable: false);
@@ -62,7 +65,7 @@ class BackendWishItemRepository implements WishItemRepository {
 
   @override
   Future<WishItem> createWishItem(WishItemCreateDraft draft) async {
-    final row = await _client.postRow('/v1/wish-items', {
+    final row = await _client.postRow(OheyApiPaths.wishItems, {
       'title': draft.title,
       'note': draft.note,
       'category': draft.category,
@@ -80,10 +83,11 @@ WishItem _wishItemFromRow(Map<String, dynamic> row) {
     ownerUserId: (row['owner_user_id'] as String?) ?? '',
     title: ((row['title'] as String?) ?? '').trim(),
     note: ((row['note'] as String?) ?? '').trim(),
-    category: ((row['category'] as String?) ?? 'other').trim(),
+    category: ((row['category'] as String?) ?? OheyCategoryKeys.other).trim(),
     placeText: ((row['place_text'] as String?) ?? '').trim(),
     placeUrl: ((row['place_url'] as String?) ?? '').trim(),
-    visibility: ((row['visibility'] as String?) ?? 'private').trim(),
+    visibility: ((row['visibility'] as String?) ?? oheyPrivateVisibilityKey)
+        .trim(),
     createdAt:
         DateTime.tryParse((row['created_at'] as String?) ?? '') ??
         DateTime.now(),

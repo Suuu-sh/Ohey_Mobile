@@ -218,11 +218,11 @@ class _FeedNotificationsScreenState
   }
 
   Future<void> _openNotification(_FeedNotification notification) async {
-    if (notification.kind == 'friend_request_received') {
+    if (notification.kind == OheyNotificationKindKeys.friendRequestReceived) {
       await _openFriendRequestNotification(notification);
       return;
     }
-    if (notification.kind == 'invite_received') {
+    if (notification.kind == OheyNotificationKindKeys.inviteReceived) {
       await _openInviteNotification(notification);
       return;
     }

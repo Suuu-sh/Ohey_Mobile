@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/optimistic_update.dart';
+import '../../../core/models/ohey_friend_request_status.dart';
+import '../../../core/models/ohey_invite.dart';
 
 import 'os_notification_service.dart';
 import '../data/notification_repository.dart';
@@ -47,7 +49,7 @@ class NotificationController extends AsyncNotifier<List<OheyNotification>> {
           .read(notificationRepositoryProvider)
           .updateFriendRequest(
             friendRequestId: friendRequestId,
-            status: 'accepted',
+            status: OheyFriendRequestStatus.accepted,
           ),
     );
   }
@@ -59,7 +61,7 @@ class NotificationController extends AsyncNotifier<List<OheyNotification>> {
           .read(notificationRepositoryProvider)
           .updateFriendRequest(
             friendRequestId: friendRequestId,
-            status: 'rejected',
+            status: OheyFriendRequestStatus.rejected,
           ),
     );
   }
@@ -69,7 +71,7 @@ class NotificationController extends AsyncNotifier<List<OheyNotification>> {
       id: inviteId,
       update: () => ref
           .read(notificationRepositoryProvider)
-          .updateInvite(inviteId: inviteId, status: 'accepted'),
+          .updateInvite(inviteId: inviteId, status: OheyInviteStatus.accepted),
     );
   }
 
@@ -78,7 +80,7 @@ class NotificationController extends AsyncNotifier<List<OheyNotification>> {
       id: inviteId,
       update: () => ref
           .read(notificationRepositoryProvider)
-          .updateInvite(inviteId: inviteId, status: 'rejected'),
+          .updateInvite(inviteId: inviteId, status: OheyInviteStatus.rejected),
     );
   }
 

@@ -9,10 +9,12 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
+import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/data/user_repository.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
+import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_user.dart';
 import '../../../core/models/wish_item.dart';
 import '../../../core/theme/app_colors.dart';
@@ -24,6 +26,7 @@ import '../../../core/widgets/ohey_friend_user_block.dart';
 import '../../../core/widgets/ohey_invite_success_burst.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_daily_status_3d_option.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
 import '../../../core/widgets/ohey_primary_button.dart';
@@ -639,16 +642,16 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   }
 
   Future<void> _acceptFriendRequest(OheyFriendRequestItem request) async {
-    await _respondToFriendRequest(request, 'accepted');
+    await _respondToFriendRequest(request, OheyFriendRequestStatus.accepted);
   }
 
   Future<void> _rejectFriendRequest(OheyFriendRequestItem request) async {
-    await _respondToFriendRequest(request, 'rejected');
+    await _respondToFriendRequest(request, OheyFriendRequestStatus.rejected);
   }
 
   Future<void> _respondToFriendRequest(
     OheyFriendRequestItem request,
-    String status,
+    OheyFriendRequestStatus status,
   ) async {
     try {
       HapticFeedback.lightImpact();
@@ -659,10 +662,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       ref.invalidate(friendsProvider);
       ref.invalidate(friendsForDateProvider);
       if (!mounted) return;
-      OheyToast.show(
-        context,
-        status == 'accepted' ? 'フレンズ申請を承認しました' : '申請を見送りました',
-      );
+      OheyToast.show(context, status.responseToastMessage);
     } catch (_) {
       if (!mounted) return;
       OheyToast.show(

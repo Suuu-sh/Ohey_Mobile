@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/contracts/ohey_api_paths.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_invite.dart';
@@ -52,7 +53,7 @@ class InviteRepository {
     final cleanActivityLabel = activityLabel?.trim();
     await Future.wait([
       for (final friendId in ids)
-        _client.post('/v1/invites', {
+        _client.post(OheyApiPaths.invites, {
           'invitee_user_id': friendId,
           'scheduled_date': _isoDate(date),
           if (cleanActivityLabel != null && cleanActivityLabel.isNotEmpty)
@@ -67,18 +68,17 @@ class InviteRepository {
   }) async {
     final userId = _userId;
     if (userId == null) throw StateError('返信するにはログインが必要です。');
-    if (status != OheyInviteStatus.accepted &&
-        status != OheyInviteStatus.rejected) {
+    if (!status.isResponseAction) {
       throw StateError('このステータスには変更できません。');
     }
-    await _client.patch('/v1/invites/$inviteId', {'status': status.key});
+    await _client.patch(OheyApiPaths.invite(inviteId), {'status': status.key});
   }
 
   Future<List<OheyInvite>> fetchTodayReservations() async {
     final userId = _userId;
     if (userId == null) return const [];
     final rows = await _client.getRows(
-      '/v1/invites/today-reservations',
+      OheyApiPaths.todayReservations,
       query: {'date': _todayIsoDate()},
     );
     return rows.map(_inviteFromRow).toList(growable: false);
@@ -88,7 +88,7 @@ class InviteRepository {
     final userId = _userId;
     if (userId == null) return const [];
     final rows = await _client.getRows(
-      '/v1/invites/incoming-pending',
+      OheyApiPaths.incomingPendingInvites,
       query: {'date': _todayIsoDate()},
     );
     return rows.map(_inviteFromRow).toList(growable: false);
@@ -98,7 +98,7 @@ class InviteRepository {
     final userId = _userId;
     if (userId == null) return const [];
     final rows = await _client.getRows(
-      '/v1/invites/outgoing-active',
+      OheyApiPaths.outgoingActiveInvites,
       query: {'date': date == null ? _todayIsoDate() : _isoDate(date)},
     );
     return rows.map(_inviteFromRow).toList(growable: false);

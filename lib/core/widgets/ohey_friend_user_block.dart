@@ -82,6 +82,7 @@ class OheyFriendUserBlock extends StatelessWidget {
         : statusEnabled
         ? AppColors.cFF071320
         : AppColors.cFF738092;
+    const inviteButtonPadding = EdgeInsets.symmetric(horizontal: 9);
 
     final block = ConstrainedBox(
       constraints: BoxConstraints(minHeight: compact ? 88 : 98),
@@ -162,7 +163,7 @@ class OheyFriendUserBlock extends StatelessWidget {
                 child: OheyInviteSuccessBurst(
                   builder: (context, runWithBurst, flightAnimation) =>
                       Ohey3DButton(
-                        label: inviteSent ? '誘い済み' : '誘う',
+                        label: inviteSent ? '招待済み' : '招待する',
                         icon: null,
                         customIcon: null,
                         onTap: inviteEnabled
@@ -188,7 +189,7 @@ class OheyFriendUserBlock extends StatelessWidget {
                             ? AppColors.cFF3C4652
                             : AppColors.cFF2B3441,
                         disabledOpacity: 1,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        padding: inviteButtonPadding,
                         fontSize: 14,
                       ),
                 ),

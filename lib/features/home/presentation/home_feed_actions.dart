@@ -3,12 +3,12 @@ part of 'home_screen.dart';
 enum _FeedPostAction { edit, delete, report, hide, muteUser, blockUser }
 
 enum _FeedReportReason {
-  spam('spam', 'スパム・宣伝', '宣伝、詐欺、迷惑な勧誘'),
-  harassment('harassment', '不快・いやがらせ', '攻撃的、差別的、嫌がらせに感じる内容'),
-  inappropriate('inappropriate', '不適切な内容', '性的・過度に不快な表現'),
-  violence('violence', '暴力・危険行為', '暴力、危険行為、自傷を助長する内容'),
-  minorSafety('minor_safety', '未成年・危険', '未成年の安全に関わる懸念'),
-  other('other', 'その他', '上記に当てはまらない問題');
+  spam(OheyReportReasonKeys.spam, 'スパム・宣伝', '宣伝、詐欺、迷惑な勧誘'),
+  harassment(OheyReportReasonKeys.harassment, '不快・いやがらせ', '攻撃的、差別的、嫌がらせに感じる内容'),
+  inappropriate(OheyReportReasonKeys.inappropriate, '不適切な内容', '性的・過度に不快な表現'),
+  violence(OheyReportReasonKeys.violence, '暴力・危険行為', '暴力、危険行為、自傷を助長する内容'),
+  minorSafety(OheyReportReasonKeys.minorSafety, '未成年・危険', '未成年の安全に関わる懸念'),
+  other(OheyReportReasonKeys.other, 'その他', '上記に当てはまらない問題');
 
   const _FeedReportReason(this.value, this.label, this.description);
 
@@ -506,10 +506,24 @@ Future<void> _showFeedCompanionList(
   if (!context.mounted || selected == null) return;
 
   HapticFeedback.selectionClick();
-  final repository = ProviderScope.containerOf(
-    context,
-    listen: false,
-  ).read(friendRepositoryProvider);
+  final container = ProviderScope.containerOf(context, listen: false);
+  final repository = container.read(friendRepositoryProvider);
+  final currentUserId = repository.currentUserId?.trim();
+  if (currentUserId != null &&
+      currentUserId.isNotEmpty &&
+      selected.userId.trim() == currentUserId) {
+    await showOheyFriendProfileSheet(
+      context,
+      friend: _companionFriendForCurrentUser(
+        selected,
+        container.read(oheyUserProvider),
+        currentUserId,
+      ),
+      showActionMenu: false,
+    );
+    return;
+  }
+
   OheyFriendRelationshipStatus? relationship;
   if (selected.userId.trim().isNotEmpty) {
     try {
@@ -534,5 +548,27 @@ Future<void> _showFeedCompanionList(
       friend: selected,
       initialRelationship: relationship,
     ),
+  );
+}
+
+OheyFriend _companionFriendForCurrentUser(
+  _Companion companion,
+  OheyUser? currentUser,
+  String currentUserId,
+) {
+  final name = currentUser?.name.trim();
+  final handle = currentUser?.userId.trim();
+  return OheyFriend(
+    id: currentUserId,
+    name: name?.isNotEmpty == true ? name! : companion.name,
+    avatarEmoji: '👤',
+    vibe: handle?.isNotEmpty == true
+        ? handle!
+        : companion.handle.replaceFirst('@', ''),
+    characterAssetPath: '',
+    kind: OheyFriendKind.cloud,
+    palette: OheyFriendPalette.lavender,
+    avatar: currentUser?.avatar ?? companion.avatar,
+    statusKey: currentUser?.dailyStatus.key ?? companion.statusKey,
   );
 }

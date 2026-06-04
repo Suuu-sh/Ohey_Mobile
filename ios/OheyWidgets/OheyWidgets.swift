@@ -10,6 +10,70 @@ struct OheyAvailableFriend: Equatable, Identifiable {
   var id: String { "\(name)-\(statusLabel)" }
 }
 
+fileprivate enum OheyWidgetDailyStatus: String {
+  case unselected = "unselected"
+  case available = "available"
+  case maybeAvailable = "maybe_available"
+  case dependsOnTime = "depends_on_time"
+  case hasPlans = "has_plans"
+
+  init(key: String) {
+    self = Self(rawValue: key) ?? .unselected
+  }
+
+  var hasEmbeddedWidgetTitle: Bool {
+    switch self {
+    case .available, .maybeAvailable, .dependsOnTime, .hasPlans, .unselected:
+      return true
+    }
+  }
+
+  var symbolName: String {
+    switch self {
+    case .available:
+      return "checkmark.circle.fill"
+    case .maybeAvailable:
+      return "drop.fill"
+    case .dependsOnTime:
+      return "clock.fill"
+    case .hasPlans:
+      return "calendar"
+    case .unselected:
+      return "questionmark.bubble.fill"
+    }
+  }
+
+  var accent: Color {
+    switch self {
+    case .available:
+      return .oheyLime
+    case .maybeAvailable:
+      return .oheyCyan
+    case .dependsOnTime:
+      return .oheyPurple
+    case .hasPlans:
+      return .oheySoftBlue
+    case .unselected:
+      return .oheyPink
+    }
+  }
+
+  var artworkSlug: String {
+    switch self {
+    case .available:
+      return "Available"
+    case .maybeAvailable:
+      return "MaybeAvailable"
+    case .dependsOnTime:
+      return "DependsOnTime"
+    case .hasPlans:
+      return "HasPlans"
+    case .unselected:
+      return "Unselected"
+    }
+  }
+}
+
 struct OheyWidgetSnapshot: Equatable {
   let statusKey: String
   let statusLabel: String
@@ -18,6 +82,10 @@ struct OheyWidgetSnapshot: Equatable {
   let availableFriendNames: [String]
   let availableFriends: [OheyAvailableFriend]
   let updatedAt: Date?
+
+  fileprivate var dailyStatus: OheyWidgetDailyStatus {
+    OheyWidgetDailyStatus(key: statusKey)
+  }
 
   static let placeholder = OheyWidgetSnapshot(
     statusKey: "unselected",
@@ -151,7 +219,7 @@ private struct SmallStatusContent: View {
   var body: some View {
     Color.clear
       .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .oheyWidgetBackground(artwork: .statusSmall(snapshot.statusKey))
+      .oheyWidgetBackground(artwork: .statusSmall(snapshot.dailyStatus))
   }
 }
 
@@ -160,7 +228,7 @@ private struct MediumStatusContent: View {
 
   var body: some View {
     ZStack(alignment: .trailing) {
-      if !hasEmbeddedStatusTitle {
+      if !snapshot.dailyStatus.hasEmbeddedWidgetTitle {
         Text(snapshot.statusLabel)
           .font(.system(size: 32, weight: .black, design: .rounded))
           .foregroundStyle(.white)
@@ -175,16 +243,7 @@ private struct MediumStatusContent: View {
     .padding(.leading, 146)
     .padding(.vertical, 12)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-    .oheyWidgetBackground(artwork: .statusMedium(snapshot.statusKey))
-  }
-
-  private var hasEmbeddedStatusTitle: Bool {
-    switch snapshot.statusKey {
-    case "available", "maybe_available", "depends_on_time", "has_plans", "unselected":
-      return true
-    default:
-      return false
-    }
+    .oheyWidgetBackground(artwork: .statusMedium(snapshot.dailyStatus))
   }
 }
 
@@ -315,24 +374,9 @@ private struct OheyStatusWidgetStyle {
   let symbolName: String
   let accent: Color
 
-  init(statusKey: String) {
-    switch statusKey {
-    case "available":
-      symbolName = "checkmark.circle.fill"
-      accent = .oheyLime
-    case "maybe_available":
-      symbolName = "drop.fill"
-      accent = .oheyCyan
-    case "depends_on_time":
-      symbolName = "clock.fill"
-      accent = .oheyPurple
-    case "has_plans":
-      symbolName = "calendar"
-      accent = .oheySoftBlue
-    default:
-      symbolName = "questionmark.bubble.fill"
-      accent = .oheyPink
-    }
+  init(status: OheyWidgetDailyStatus) {
+    symbolName = status.symbolName
+    accent = status.accent
   }
 }
 
@@ -391,8 +435,8 @@ private struct FriendCountBadge: View {
 private enum OheyWidgetArtwork {
   case mascotSmall
   case mascotMedium
-  case statusSmall(String)
-  case statusMedium(String)
+  case statusSmall(OheyWidgetDailyStatus)
+  case statusMedium(OheyWidgetDailyStatus)
 
   var imageName: String {
     switch self {
@@ -400,25 +444,10 @@ private enum OheyWidgetArtwork {
       return "OheyWidgetMascotSmall"
     case .mascotMedium:
       return "OheyWidgetMascotMedium"
-    case .statusSmall(let statusKey):
-      return "OheyWidgetStatus\(Self.statusSlug(for: statusKey))Small"
-    case .statusMedium(let statusKey):
-      return "OheyWidgetStatus\(Self.statusSlug(for: statusKey))Medium"
-    }
-  }
-
-  private static func statusSlug(for statusKey: String) -> String {
-    switch statusKey {
-    case "available":
-      return "Available"
-    case "maybe_available":
-      return "MaybeAvailable"
-    case "depends_on_time":
-      return "DependsOnTime"
-    case "has_plans":
-      return "HasPlans"
-    default:
-      return "Unselected"
+    case .statusSmall(let status):
+      return "OheyWidgetStatus\(status.artworkSlug)Small"
+    case .statusMedium(let status):
+      return "OheyWidgetStatus\(status.artworkSlug)Medium"
     }
   }
 }

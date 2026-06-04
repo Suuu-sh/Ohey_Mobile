@@ -45,7 +45,9 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
               participants: [
                 for (final participant in item.participants)
                   participant.userId == userId
-                      ? participant.copyWith(reactionType: 'available')
+                      ? participant.copyWith(
+                          reactionType: oheyApprovedYuruboReactionKey,
+                        )
                       : participant,
               ],
             )
@@ -98,7 +100,9 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
               ? item.copyWith(
                   reactionCount: nextCount,
                   reactedByMe: reacted,
-                  myReactionType: reacted ? 'interested' : '',
+                  myReactionType: reacted
+                      ? oheyYuruboInterestedReactionKey
+                      : '',
                 )
               : current[i],
       ]);

@@ -1,20 +1,27 @@
+import '../contracts/ohey_api_values.dart';
+
 enum OheyFriendRequestStatus { pending, accepted, rejected, cancelled }
+
+const oheyFriendRequestResponseStatuses = <OheyFriendRequestStatus>[
+  OheyFriendRequestStatus.accepted,
+  OheyFriendRequestStatus.rejected,
+];
 
 OheyFriendRequestStatus oheyFriendRequestStatusFromKey(String? key) {
   return switch (key) {
-    'accepted' => OheyFriendRequestStatus.accepted,
-    'rejected' => OheyFriendRequestStatus.rejected,
-    'cancelled' => OheyFriendRequestStatus.cancelled,
+    OheyStatusKeys.accepted => OheyFriendRequestStatus.accepted,
+    OheyStatusKeys.rejected => OheyFriendRequestStatus.rejected,
+    OheyStatusKeys.cancelled => OheyFriendRequestStatus.cancelled,
     _ => OheyFriendRequestStatus.pending,
   };
 }
 
 extension OheyFriendRequestStatusX on OheyFriendRequestStatus {
   String get key => switch (this) {
-    OheyFriendRequestStatus.pending => 'pending',
-    OheyFriendRequestStatus.accepted => 'accepted',
-    OheyFriendRequestStatus.rejected => 'rejected',
-    OheyFriendRequestStatus.cancelled => 'cancelled',
+    OheyFriendRequestStatus.pending => OheyStatusKeys.pending,
+    OheyFriendRequestStatus.accepted => OheyStatusKeys.accepted,
+    OheyFriendRequestStatus.rejected => OheyStatusKeys.rejected,
+    OheyFriendRequestStatus.cancelled => OheyStatusKeys.cancelled,
   };
 
   String get label => switch (this) {
@@ -32,4 +39,15 @@ extension OheyFriendRequestStatusX on OheyFriendRequestStatus {
   };
 
   bool get isPending => this == OheyFriendRequestStatus.pending;
+
+  bool get isAccepted => this == OheyFriendRequestStatus.accepted;
+
+  bool get isResponseAction => oheyFriendRequestResponseStatuses.contains(this);
+
+  String get responseToastMessage => switch (this) {
+    OheyFriendRequestStatus.accepted => 'フレンズ申請を承認しました',
+    OheyFriendRequestStatus.rejected => '申請を見送りました',
+    OheyFriendRequestStatus.cancelled => '申請を取り消しました',
+    OheyFriendRequestStatus.pending => label,
+  };
 }

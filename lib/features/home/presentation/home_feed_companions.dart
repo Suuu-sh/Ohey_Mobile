@@ -74,7 +74,7 @@ class _FeedCompanionListSheet extends ConsumerWidget {
                 yuruboTitle: item.body,
                 canApprove:
                     item.ownedByMe &&
-                    friends[index].statusKey == 'pending_yurubo',
+                    friends[index].statusKey.isPendingYuruboCompanion,
                 onApprove: () async {
                   await ref
                       .read(yuruboControllerProvider.notifier)
@@ -166,16 +166,16 @@ class _FeedCompanionTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    friend.statusKey == 'pending_yurubo'
+                    friend.statusKey.isPendingYuruboCompanion
                         ? '申請先: ${yuruboTitle.trim().isEmpty ? 'ゆるぼ' : yuruboTitle}'
                         : friend.handleLabel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: friend.statusKey == 'pending_yurubo'
+                      color: friend.statusKey.isPendingYuruboCompanion
                           ? AppColors.cFFC08BFF
                           : subtitleColor,
-                      fontSize: friend.statusKey == 'pending_yurubo'
+                      fontSize: friend.statusKey.isPendingYuruboCompanion
                           ? 12.5
                           : 12,
                       fontWeight: FontWeight.w900,
@@ -184,7 +184,7 @@ class _FeedCompanionTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (friend.statusKey != 'pending_yurubo') ...[
+            if (!friend.statusKey.isPendingYuruboCompanion) ...[
               _CompanionStatusBadge(
                 label: _companionStatusLabel(friend.statusKey),
                 color: statusColor,

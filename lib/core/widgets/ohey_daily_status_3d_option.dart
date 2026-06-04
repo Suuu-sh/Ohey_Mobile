@@ -2,9 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../models/ohey_user.dart';
+import '../theme/app_colors.dart';
 import 'ohey_3d_button.dart';
 import 'ohey_pop_icon.dart';
-import 'package:ohey/core/theme/app_colors.dart';
 
 const oheyDailyStatusPink = AppColors.cFFFF5EA8;
 const oheyDailyStatusBlue = AppColors.cFF20B9FF;
@@ -149,6 +149,38 @@ Color oheyDailyStatusBlockAccent(OheyDailyStatus status) => switch (status) {
   OheyDailyStatus.hasPlans => oheyDailyStatusBlocked,
   _ => oheyDailyStatusColor(status),
 };
+
+Color oheyDailyStatusTileAccent(OheyDailyStatus status) {
+  if (status == OheyDailyStatus.hasPlans) {
+    return oheyDailyStatusBlockedForeground;
+  }
+  return oheyDailyStatusColor(status);
+}
+
+Color oheyDailyStatusTileBackground(
+  OheyDailyStatus status, {
+  required bool isWhite,
+  required bool selected,
+}) {
+  if (status == OheyDailyStatus.hasPlans) {
+    return isWhite
+        ? AppColors.cFFE2E8F0
+        : oheyDailyStatusBlocked.withValues(alpha: selected ? .92 : .76);
+  }
+  return oheyDailyStatusColor(status).withValues(
+    alpha: isWhite ? (selected ? .34 : .22) : (selected ? .52 : .36),
+  );
+}
+
+Color oheyDailyStatusTileForeground(
+  OheyDailyStatus status, {
+  required bool isWhite,
+}) {
+  if (status == OheyDailyStatus.hasPlans) {
+    return isWhite ? AppColors.cFF111827 : AppColors.white;
+  }
+  return oheyDailyStatusActionForeground;
+}
 
 Color oheyDailyStatus3DSurfaceColor(
   OheyDailyStatus status, {

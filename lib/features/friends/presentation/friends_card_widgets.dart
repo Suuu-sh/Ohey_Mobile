@@ -3,12 +3,12 @@ part of 'friends_screen.dart';
 enum _FriendProfileAction { remove, mute, block, report }
 
 enum _FriendProfileReportReason {
-  spam('spam', 'スパム・宣伝', '宣伝、詐欺、迷惑な勧誘'),
-  harassment('harassment', '不快・いやがらせ', '攻撃的、差別的、嫌がらせに感じる内容'),
-  inappropriate('inappropriate', '不適切な内容', '性的・過度に不快な表現'),
-  violence('violence', '暴力・危険行為', '暴力、危険行為、自傷を助長する内容'),
-  minorSafety('minor_safety', '未成年・危険', '未成年の安全に関わる懸念'),
-  other('other', 'その他', '上記に当てはまらない問題');
+  spam(OheyReportReasonKeys.spam, 'スパム・宣伝', '宣伝、詐欺、迷惑な勧誘'),
+  harassment(OheyReportReasonKeys.harassment, '不快・いやがらせ', '攻撃的、差別的、嫌がらせに感じる内容'),
+  inappropriate(OheyReportReasonKeys.inappropriate, '不適切な内容', '性的・過度に不快な表現'),
+  violence(OheyReportReasonKeys.violence, '暴力・危険行為', '暴力、危険行為、自傷を助長する内容'),
+  minorSafety(OheyReportReasonKeys.minorSafety, '未成年・危険', '未成年の安全に関わる懸念'),
+  other(OheyReportReasonKeys.other, 'その他', '上記に当てはまらない問題');
 
   const _FriendProfileReportReason(this.value, this.label, this.description);
 
@@ -1305,12 +1305,9 @@ class _FriendProfileDayTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final hasStatus = dailyStatus != OheyDailyStatus.unselected;
-    final statusAccent = _friendProfileCalendarStatusTileAccent(dailyStatus);
+    final statusAccent = oheyDailyStatusTileAccent(dailyStatus);
     final dayColor = hasStatus
-        ? _friendProfileCalendarStatusTileForeground(
-            dailyStatus,
-            isWhite: isWhite,
-          )
+        ? oheyDailyStatusTileForeground(dailyStatus, isWhite: isWhite)
         : !inMonth
         ? (isWhite
               ? AppColors.black.withValues(alpha: .20)
@@ -1330,7 +1327,7 @@ class _FriendProfileDayTile extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         decoration: BoxDecoration(
           color: hasStatus
-              ? _friendProfileCalendarStatusTileBackground(
+              ? oheyDailyStatusTileBackground(
                   dailyStatus,
                   isWhite: isWhite,
                   selected: isSelected,
@@ -1385,38 +1382,3 @@ bool _friendProfileIsSameMonth(DateTime a, DateTime b) =>
 
 bool _friendProfileIsSameDate(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
-
-Color _friendProfileCalendarStatusTileAccent(OheyDailyStatus status) =>
-    switch (status) {
-      OheyDailyStatus.available => AppColors.cFFFF5EA8,
-      OheyDailyStatus.maybeAvailable => AppColors.cFF20B9FF,
-      OheyDailyStatus.dependsOnTime => AppColors.cFF8A62FF,
-      OheyDailyStatus.hasPlans => AppColors.cFF738092,
-      OheyDailyStatus.unselected => AppColors.cFF9AF21A,
-    };
-
-Color _friendProfileCalendarStatusTileBackground(
-  OheyDailyStatus status, {
-  required bool isWhite,
-  required bool selected,
-}) {
-  if (status == OheyDailyStatus.hasPlans) {
-    return isWhite
-        ? AppColors.cFFE2E8F0
-        : AppColors.cFF2B3644.withValues(alpha: selected ? .92 : .76);
-  }
-  final color = _friendProfileCalendarStatusTileAccent(status);
-  return color.withValues(
-    alpha: isWhite ? (selected ? .34 : .22) : (selected ? .52 : .36),
-  );
-}
-
-Color _friendProfileCalendarStatusTileForeground(
-  OheyDailyStatus status, {
-  required bool isWhite,
-}) {
-  if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? AppColors.cFF111827 : AppColors.white;
-  }
-  return AppColors.cFF06111D;
-}

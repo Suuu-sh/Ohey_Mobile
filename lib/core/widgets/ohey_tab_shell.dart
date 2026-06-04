@@ -655,13 +655,6 @@ class _DailyStatusRequiredSheet extends ConsumerStatefulWidget {
 
 class _DailyStatusRequiredSheetState
     extends ConsumerState<_DailyStatusRequiredSheet> {
-  static const _options = <OheyDailyStatus>[
-    OheyDailyStatus.available,
-    OheyDailyStatus.maybeAvailable,
-    OheyDailyStatus.dependsOnTime,
-    OheyDailyStatus.hasPlans,
-  ];
-
   OheyDailyStatus? _savingStatus;
 
   Future<void> _select(OheyDailyStatus status) async {
@@ -736,7 +729,7 @@ class _DailyStatusRequiredSheetState
               ],
             ),
             const SizedBox(height: 18),
-            for (final status in _options) ...[
+            for (final status in OheyDailyStatus.selectable) ...[
               OheyDailyStatus3DOption(
                 status: status,
                 title: status.label,
@@ -746,7 +739,8 @@ class _DailyStatusRequiredSheetState
                 isLoading: _savingStatus == status,
                 showChevron: _savingStatus == null,
               ),
-              if (status != _options.last) const SizedBox(height: 10),
+              if (status != OheyDailyStatus.selectable.last)
+                const SizedBox(height: 10),
             ],
           ],
         ),

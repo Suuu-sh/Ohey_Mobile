@@ -61,7 +61,9 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                   enabled: !_isBusy,
                   hintText: isEmailStep ? 'メールアドレス' : 'パスワード',
                   height: textFieldHeight,
-                  keyboardType: isEmailStep ? TextInputType.emailAddress : null,
+                  keyboardType: isEmailStep
+                      ? TextInputType.emailAddress
+                      : TextInputType.visiblePassword,
                   textInputAction: isEmailStep
                       ? TextInputAction.next
                       : TextInputAction.done,
@@ -192,7 +194,9 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                   enabled: !_isBusy,
                   hintText: isEmailStep ? 'メールアドレス' : 'パスワード',
                   height: fieldHeight,
-                  keyboardType: isEmailStep ? TextInputType.emailAddress : null,
+                  keyboardType: isEmailStep
+                      ? TextInputType.emailAddress
+                      : TextInputType.visiblePassword,
                   textInputAction: isEmailStep
                       ? TextInputAction.next
                       : TextInputAction.done,
