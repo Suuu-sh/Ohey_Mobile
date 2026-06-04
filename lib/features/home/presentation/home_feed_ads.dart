@@ -145,22 +145,39 @@ class _YuruboAdCardFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaceColor = OheyThemedPanel.surfaceColor(isWhite: isWhite);
+    final radius = BorderRadius.circular(30);
+    final frameColor = _FeedColors.teal.withValues(alpha: isWhite ? .28 : .46);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: OheyThemedPanel(
-        accentColor: _FeedColors.teal,
-        backgroundColor: surfaceColor,
-        borderRadius: 0,
-        border: OheyThemedPanelBorder.horizontal,
-        borderWidth: 1.2,
-        borderAlpha: isWhite ? .22 : .38,
-        glowAlpha: 0,
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: surfaceColor,
+          borderRadius: radius,
+          boxShadow: [
+            BoxShadow(
+              color: _FeedColors.teal.withValues(alpha: isWhite ? .06 : .13),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
             SizedBox(
               height: 156,
               child: Padding(padding: padding ?? EdgeInsets.zero, child: child),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: radius,
+                    border: Border.all(color: frameColor, width: 1.2),
+                  ),
+                ),
+              ),
             ),
             const _YuruboBlockGlowUnderline(),
           ],
