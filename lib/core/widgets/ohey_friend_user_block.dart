@@ -28,6 +28,14 @@ class OheyFriendUserBlock extends StatelessWidget {
     this.inviteAvailable = true,
     this.inviteSent = false,
     this.invitePressed = false,
+    this.inviteLabel = '招待する',
+    this.inviteSentLabel = '招待済み',
+    this.invitePressedLabel,
+    this.inviteButtonColor,
+    this.inviteForegroundColor,
+    this.inviteShadowColor,
+    this.inviteBurstIcon = CupertinoIcons.paperplane_fill,
+    this.inviteBurstColor,
     this.onInviteAnimationComplete,
     this.compact = false,
   });
@@ -46,6 +54,14 @@ class OheyFriendUserBlock extends StatelessWidget {
   final bool inviteAvailable;
   final bool inviteSent;
   final bool invitePressed;
+  final String inviteLabel;
+  final String inviteSentLabel;
+  final String? invitePressedLabel;
+  final Color? inviteButtonColor;
+  final Color? inviteForegroundColor;
+  final Color? inviteShadowColor;
+  final IconData inviteBurstIcon;
+  final Color? inviteBurstColor;
   final VoidCallback? onInviteAnimationComplete;
   final bool compact;
 
@@ -78,16 +94,22 @@ class OheyFriendUserBlock extends StatelessWidget {
     final favoriteIconSize = longName ? 20.0 : 22.0;
     final inviteEnabled =
         statusEnabled && inviteAvailable && !inviteSent && onInvite != null;
-    final inviteButtonColor = inviteSent || !inviteAvailable
+    final activeInviteButtonColor = inviteButtonColor ?? accent;
+    final effectiveInviteButtonColor = inviteSent || !inviteAvailable
         ? AppColors.cFF3C4652
-        : accent;
+        : activeInviteButtonColor;
     final inviteForeground = inviteSent
         ? AppColors.cFFC3CAD3
         : !inviteAvailable
         ? AppColors.cFF9AA4B2
         : statusEnabled
-        ? AppColors.cFF071320
+        ? inviteForegroundColor ?? AppColors.cFF071320
         : AppColors.cFF738092;
+    final inviteButtonLabel = inviteSent
+        ? inviteSentLabel
+        : invitePressed && invitePressedLabel != null
+        ? invitePressedLabel!
+        : inviteLabel;
     const inviteButtonPadding = EdgeInsets.symmetric(horizontal: 9);
 
     final block = ConstrainedBox(
@@ -164,9 +186,11 @@ class OheyFriendUserBlock extends StatelessWidget {
               SizedBox(
                 width: 76,
                 child: OheyInviteSuccessBurst(
+                  burstIcon: inviteBurstIcon,
+                  burstColor: inviteBurstColor ?? activeInviteButtonColor,
                   builder: (context, runWithBurst, flightAnimation) =>
                       Ohey3DButton(
-                        label: inviteSent ? '招待済み' : '招待する',
+                        label: inviteButtonLabel,
                         icon: null,
                         customIcon: null,
                         onTap: inviteEnabled
@@ -179,14 +203,19 @@ class OheyFriendUserBlock extends StatelessWidget {
                         forcePressed: inviteSent || invitePressed,
                         height: 40,
                         radius: 20,
-                        color: inviteButtonColor,
+                        color: effectiveInviteButtonColor,
                         foregroundColor: inviteForeground,
                         shadowColor: inviteSent
                             ? AppColors.cFF1A222C
                             : !inviteAvailable
                             ? AppColors.cFF1A222C
                             : statusEnabled
-                            ? Color.lerp(accent, AppColors.black, .32)
+                            ? inviteShadowColor ??
+                                  Color.lerp(
+                                    activeInviteButtonColor,
+                                    AppColors.black,
+                                    .32,
+                                  )
                             : AppColors.cFF111923,
                         disabledColor: inviteSent
                             ? AppColors.cFF3C4652
