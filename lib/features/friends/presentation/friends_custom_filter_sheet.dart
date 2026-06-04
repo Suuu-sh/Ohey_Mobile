@@ -18,14 +18,13 @@ class _CustomFilterSheetResult {
   final String? filterId;
 }
 
-enum _CustomFilterManageAction { add, edit, delete, reorder }
+enum _CustomFilterManageAction { add, edit, delete }
 
 class _CustomFilterManageResult {
   const _CustomFilterManageResult._({
     required this.action,
     this.filter,
     this.filterId,
-    this.filters,
   });
 
   const _CustomFilterManageResult.edit(_CustomFriendFilter filter)
@@ -37,13 +36,9 @@ class _CustomFilterManageResult {
   const _CustomFilterManageResult.delete(String filterId)
     : this._(action: _CustomFilterManageAction.delete, filterId: filterId);
 
-  const _CustomFilterManageResult.reorder(List<_CustomFriendFilter> filters)
-    : this._(action: _CustomFilterManageAction.reorder, filters: filters);
-
   final _CustomFilterManageAction action;
   final _CustomFriendFilter? filter;
   final String? filterId;
-  final List<_CustomFriendFilter>? filters;
 }
 
 String _customFilterStorageKey(String userId) =>
@@ -197,9 +192,13 @@ class _FilterChip extends StatelessWidget {
 }
 
 class _CustomFilterManageSheet extends StatefulWidget {
-  const _CustomFilterManageSheet({required this.filters});
+  const _CustomFilterManageSheet({
+    required this.filters,
+    required this.onReorder,
+  });
 
   final List<_CustomFriendFilter> filters;
+  final ValueChanged<List<_CustomFriendFilter>> onReorder;
 
   @override
   State<_CustomFilterManageSheet> createState() =>
@@ -229,7 +228,7 @@ class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            '追加・並び替え・削除をここでまとめてできるよ。',
+            '追加・長押しで並び替え・削除をここでまとめてできるよ。',
             style: TextStyle(color: sub, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 14),
@@ -249,6 +248,32 @@ class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
                   final item = _filters.removeAt(oldIndex);
                   _filters.insert(newIndex, item);
                 });
+                widget.onReorder(List.unmodifiable(_filters));
+              },
+              proxyDecorator: (child, index, animation) {
+                return AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, child) {
+                    final lift = Curves.easeOutCubic.transform(animation.value);
+                    return Transform.scale(
+                      scale: 1 + lift * .035,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.black.withValues(alpha: .34),
+                              blurRadius: 28,
+                              offset: const Offset(0, 16),
+                            ),
+                          ],
+                        ),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: child,
+                );
               },
               itemBuilder: (context, index) {
                 final filter = _filters[index];
@@ -272,14 +297,6 @@ class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
                 );
               },
             ),
-          ),
-          const SizedBox(height: 14),
-          OheyPrimaryButton(
-            label: 'この順番で保存',
-            icon: CupertinoIcons.checkmark_alt_circle_fill,
-            onPressed: () => Navigator.of(
-              context,
-            ).pop(_CustomFilterManageResult.reorder(_filters)),
           ),
         ],
       ),
@@ -326,34 +343,34 @@ class _CustomFilterManageRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = _customFilterAccent(index);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: OheyManageListRow(
-        title: filter.name,
-        titleColor: ink,
-        leading: ReorderableDragStartListener(
-          index: index,
-          child: OheyPopIcon(
+    return ReorderableDelayedDragStartListener(
+      index: index,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: OheyManageListRow(
+          title: filter.name,
+          titleColor: ink,
+          leading: OheyPopIcon(
             icon: CupertinoIcons.line_horizontal_3,
             color: accent,
             size: 36,
             iconSize: 18,
           ),
+          actions: [
+            OheyManageListIconButton(
+              icon: CupertinoIcons.pencil,
+              color: accent,
+              semanticLabel: '${filter.name}を編集',
+              onTap: onEdit,
+            ),
+            OheyManageListIconButton(
+              icon: CupertinoIcons.trash_fill,
+              color: AppColors.cFFFF6B9A,
+              semanticLabel: '${filter.name}を削除',
+              onTap: onDelete,
+            ),
+          ],
         ),
-        actions: [
-          OheyManageListIconButton(
-            icon: CupertinoIcons.pencil,
-            color: accent,
-            semanticLabel: '${filter.name}を編集',
-            onTap: onEdit,
-          ),
-          OheyManageListIconButton(
-            icon: CupertinoIcons.trash_fill,
-            color: AppColors.cFFFF6B9A,
-            semanticLabel: '${filter.name}を削除',
-            onTap: onDelete,
-          ),
-        ],
       ),
     );
   }
