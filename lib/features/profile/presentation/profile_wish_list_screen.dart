@@ -21,19 +21,19 @@ class _ProfileWishListSheet extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _ProfileWishListHeader(
+          const _ProfileWishListHeader(),
+          const SizedBox(height: 14),
+          _ProfileWishListAddButton(
             onCreate: () => _showProfileCreateWishItemSheet(context, ref),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           if (wishItemsAsync.isLoading && wishItems.isEmpty)
             const SizedBox(
               height: 180,
               child: Center(child: CupertinoActivityIndicator()),
             )
           else if (wishItems.isEmpty)
-            _ProfileWishListEmptyState(
-              onCreate: () => _showProfileCreateWishItemSheet(context, ref),
-            )
+            const _ProfileWishListEmptyState()
           else
             ConstrainedBox(
               constraints: BoxConstraints(
@@ -108,9 +108,7 @@ Future<bool?> _confirmDeleteWishItem(BuildContext context, WishItem wish) {
 }
 
 class _ProfileWishListEmptyState extends StatelessWidget {
-  const _ProfileWishListEmptyState({required this.onCreate});
-
-  final VoidCallback onCreate;
+  const _ProfileWishListEmptyState();
 
   @override
   Widget build(BuildContext context) {
@@ -125,26 +123,12 @@ class _ProfileWishListEmptyState extends StatelessWidget {
       titleColor: AppColors.white,
       messageColor: _ProfileColors.sub,
       hints: const ['焼肉', 'カフェ', '勉強'],
-      action: SizedBox(
-        width: 190,
-        child: Ohey3DButton(
-          label: '追加する',
-          onTap: onCreate,
-          height: 50,
-          radius: 22,
-          color: AppColors.cFF20B9FF,
-          foregroundColor: AppColors.cFF101820,
-          shadowColor: AppColors.cFF0B78B7,
-        ),
-      ),
     );
   }
 }
 
 class _ProfileWishListHeader extends StatelessWidget {
-  const _ProfileWishListHeader({required this.onCreate});
-
-  final VoidCallback onCreate;
+  const _ProfileWishListHeader();
 
   @override
   Widget build(BuildContext context) {
@@ -183,15 +167,30 @@ class _ProfileWishListHeader extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          OheyHeaderIconButton(
-            icon: CupertinoIcons.plus,
-            semanticLabel: '追加',
-            color: AppColors.cFF20B9FF,
-            onTap: onCreate,
-          ),
         ],
       ),
+    );
+  }
+}
+
+class _ProfileWishListAddButton extends StatelessWidget {
+  const _ProfileWishListAddButton({required this.onCreate});
+
+  final VoidCallback onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = Theme.of(context).brightness == Brightness.light
+        ? AppColors.cFF101820
+        : AppColors.white;
+    return OheyManageAddTile(
+      label: 'やりたいことを追加',
+      accent: AppColors.cFF20B9FF,
+      foregroundColor: ink,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onCreate();
+      },
     );
   }
 }
