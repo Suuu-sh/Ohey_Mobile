@@ -564,47 +564,74 @@ class _OheyAvatarPainter extends CustomPainter {
             ..strokeCap = StrokeCap.round,
         );
       case 6:
+        final bobOuter = Path()
+          ..moveTo(90, 25)
+          ..cubicTo(55, 25, 36, 43, 36, 73)
+          ..lineTo(36, 109)
+          ..cubicTo(36, 140, 59, 150, 90, 150)
+          ..cubicTo(121, 150, 144, 140, 144, 109)
+          ..lineTo(144, 73)
+          ..cubicTo(144, 43, 125, 25, 90, 25)
+          ..close();
+        final faceWindow = RRect.fromRectAndCorners(
+          const Rect.fromLTWH(61, 57, 58, 81),
+          topLeft: const Radius.circular(19),
+          topRight: const Radius.circular(19),
+          bottomLeft: const Radius.circular(15),
+          bottomRight: const Radius.circular(15),
+        );
         final bobFront = Path()
-          ..moveTo(43, 66)
-          ..cubicTo(43, 36, 63, 25, 90, 25)
-          ..cubicTo(117, 25, 137, 36, 137, 66)
-          ..cubicTo(137, 87, 135, 106, 132, 119)
-          ..cubicTo(129, 128, 118, 130, 114, 118)
-          ..cubicTo(112, 97, 115, 80, 110, 66)
-          ..quadraticBezierTo(101, 62, 91, 62)
-          ..quadraticBezierTo(80, 62, 69, 66)
-          ..cubicTo(64, 80, 67, 97, 64, 118)
-          ..cubicTo(60, 130, 49, 128, 46, 119)
-          ..cubicTo(44, 106, 43, 87, 43, 66)
+          ..fillType = PathFillType.evenOdd
+          ..addPath(bobOuter, Offset.zero)
+          ..addRRect(faceWindow);
+        final leftTemple = Path()
+          ..moveTo(61, 61)
+          ..cubicTo(53, 70, 52, 93, 55, 119)
+          ..cubicTo(57, 130, 66, 130, 69, 118)
+          ..cubicTo(67, 96, 66, 76, 69, 63)
+          ..close();
+        final rightTemple = Path()
+          ..moveTo(119, 61)
+          ..cubicTo(127, 70, 128, 93, 125, 119)
+          ..cubicTo(123, 130, 114, 130, 111, 118)
+          ..cubicTo(113, 96, 114, 76, 111, 63)
           ..close();
         _drawHairShape(
           canvas,
           bobFront,
-          const Rect.fromLTWH(43, 25, 94, 105),
+          const Rect.fromLTWH(36, 25, 108, 125),
           color,
           shadowAlpha: .18,
           outlineAlpha: .26,
         );
+        canvas.drawPath(
+          leftTemple,
+          _hairGradient(leftTemple.getBounds(), color),
+        );
+        canvas.drawPath(
+          rightTemple,
+          _hairGradient(rightTemple.getBounds(), color),
+        );
         _drawHairlineShadow(
           canvas,
           Path()
-            ..moveTo(69, 66)
-            ..quadraticBezierTo(80, 62, 91, 62)
-            ..quadraticBezierTo(101, 62, 110, 66),
+            ..moveTo(61, 61)
+            ..quadraticBezierTo(78, 56, 90, 56)
+            ..quadraticBezierTo(103, 56, 119, 61),
           color,
         );
         _drawHairStrand(
           canvas,
           Path()
-            ..moveTo(66, 70)
-            ..cubicTo(61, 84, 62, 103, 58, 116),
+            ..moveTo(63, 68)
+            ..cubicTo(58, 85, 58, 104, 55, 122),
           color,
         );
         _drawHairStrand(
           canvas,
           Path()
-            ..moveTo(114, 70)
-            ..cubicTo(119, 84, 118, 103, 122, 116),
+            ..moveTo(117, 68)
+            ..cubicTo(122, 85, 122, 104, 125, 122),
           color,
         );
         _drawHairHighlight(
