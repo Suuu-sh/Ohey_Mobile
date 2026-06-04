@@ -257,7 +257,6 @@ class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
                   filter: filter,
                   index: index,
                   ink: ink,
-                  isWhite: isWhite,
                   onEdit: () {
                     HapticFeedback.selectionClick();
                     Navigator.of(
@@ -296,58 +295,14 @@ class _CustomFilterManageAddButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
-    final surfaceColor = Color.lerp(
-      isWhite ? AppColors.white : AppColors.darkBackground,
-      _FriendsColors.lime,
-      isWhite ? .20 : .15,
-    )!;
-    return Semantics(
-      button: true,
+    return OheyManageAddTile(
       label: 'グループを追加',
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          HapticFeedback.selectionClick();
-          Navigator.of(context).pop(const _CustomFilterManageResult.add());
-        },
-        child: Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: surfaceColor,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: _FriendsColors.lime.withValues(alpha: .46),
-            ),
-          ),
-          child: Row(
-            children: [
-              const OheyPopIcon(
-                icon: CupertinoIcons.plus,
-                color: _FriendsColors.lime,
-                size: 36,
-                iconSize: 20,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'グループを追加',
-                  style: TextStyle(
-                    color: ink,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              OheyGeneratedIcon(
-                CupertinoIcons.chevron_right,
-                color: _FriendsColors.lime,
-                size: 18,
-              ),
-            ],
-          ),
-        ),
-      ),
+      accent: _FriendsColors.lime,
+      foregroundColor: ink,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        Navigator.of(context).pop(const _CustomFilterManageResult.add());
+      },
     );
   }
 }
@@ -358,7 +313,6 @@ class _CustomFilterManageRow extends StatelessWidget {
     required this.filter,
     required this.index,
     required this.ink,
-    required this.isWhite,
     required this.onEdit,
     required this.onDelete,
   });
@@ -366,7 +320,6 @@ class _CustomFilterManageRow extends StatelessWidget {
   final _CustomFriendFilter filter;
   final int index;
   final Color ink;
-  final bool isWhite;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -375,85 +328,32 @@ class _CustomFilterManageRow extends StatelessWidget {
     final accent = _customFilterAccent(index);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: isWhite
-              ? AppColors.cFFF7F9FC
-              : AppColors.white.withValues(alpha: .06),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isWhite ? AppColors.cFFE2E8F0 : AppColors.white12,
+      child: OheyManageListRow(
+        title: filter.name,
+        titleColor: ink,
+        leading: ReorderableDragStartListener(
+          index: index,
+          child: OheyPopIcon(
+            icon: CupertinoIcons.line_horizontal_3,
+            color: accent,
+            size: 36,
+            iconSize: 18,
           ),
         ),
-        child: Row(
-          children: [
-            ReorderableDragStartListener(
-              index: index,
-              child: OheyPopIcon(
-                icon: CupertinoIcons.line_horizontal_3,
-                color: accent,
-                size: 36,
-                iconSize: 18,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                filter.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: ink,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            _ManageIconButton(
-              icon: CupertinoIcons.pencil,
-              color: accent,
-              onTap: onEdit,
-            ),
-            const SizedBox(width: 6),
-            _ManageIconButton(
-              icon: CupertinoIcons.trash_fill,
-              color: AppColors.cFFFF6B9A,
-              onTap: onDelete,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ManageIconButton extends StatelessWidget {
-  const _ManageIconButton({
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        width: 41,
-        height: 34,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: .18),
-          borderRadius: BorderRadius.circular(17),
-          border: Border.all(color: color.withValues(alpha: .30)),
-        ),
-        child: Center(child: OheyGeneratedIcon(icon, color: color, size: 17)),
+        actions: [
+          OheyManageListIconButton(
+            icon: CupertinoIcons.pencil,
+            color: accent,
+            semanticLabel: '${filter.name}を編集',
+            onTap: onEdit,
+          ),
+          OheyManageListIconButton(
+            icon: CupertinoIcons.trash_fill,
+            color: AppColors.cFFFF6B9A,
+            semanticLabel: '${filter.name}を削除',
+            onTap: onDelete,
+          ),
+        ],
       ),
     );
   }

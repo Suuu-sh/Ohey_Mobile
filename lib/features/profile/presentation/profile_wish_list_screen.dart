@@ -158,75 +158,27 @@ class _ProfileWishListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final place = wish.placeText.trim();
-    return Semantics(
-      button: true,
-      label: '${wish.title}からゆるぼを作る',
-      child: CupertinoButton(
-        onPressed: onYurubo,
-        minimumSize: Size.zero,
-        padding: EdgeInsets.zero,
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 15, 14, 15),
-          decoration: BoxDecoration(
-            color: AppColors.white.withValues(alpha: .045),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.white.withValues(alpha: .08)),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      wish.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontSize: 20,
-                        height: 1.15,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.45,
-                      ),
-                    ),
-                    if (place.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        place,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: _ProfileColors.sub,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          height: 1.15,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.cFF20B9FF.withValues(alpha: .16),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  CupertinoIcons.plus,
-                  color: AppColors.cFF20B9FF,
-                  size: 22,
-                ),
-              ),
-            ],
-          ),
-        ),
+    return OheyManageListRow(
+      title: wish.title,
+      subtitle: place.isEmpty ? null : place,
+      titleColor: AppColors.white,
+      subtitleColor: _ProfileColors.sub,
+      onTap: onYurubo,
+      semanticLabel: '${wish.title}からゆるぼを作る',
+      leading: const OheyPopIcon(
+        icon: CupertinoIcons.sparkles,
+        color: AppColors.cFF20B9FF,
+        size: 36,
+        iconSize: 18,
       ),
+      actions: [
+        OheyManageListIconButton(
+          icon: CupertinoIcons.plus,
+          color: AppColors.cFF20B9FF,
+          semanticLabel: '${wish.title}からゆるぼを作る',
+          onTap: onYurubo,
+        ),
+      ],
     );
   }
 }
