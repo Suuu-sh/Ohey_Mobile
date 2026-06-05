@@ -221,7 +221,7 @@ class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
     final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
     return OheyBottomSheetShell(
       title: 'グループ編集',
-      showHandle: true,
+      showHandle: false,
       radius: 32,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -489,19 +489,6 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 44,
-              height: 5,
-              decoration: BoxDecoration(
-                color: isWhite
-                    ? AppColors.cFFD5DEE8
-                    : AppColors.white.withValues(alpha: .22),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
           Row(
             children: [
               OheyPopIcon(

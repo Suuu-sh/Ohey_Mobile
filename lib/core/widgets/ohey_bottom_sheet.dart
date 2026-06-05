@@ -37,7 +37,7 @@ class OheyBottomSheetShell extends StatelessWidget {
     required this.child,
     this.title,
     this.onClose,
-    this.showHandle = true,
+    this.showHandle = false,
     this.topSafeArea = false,
     this.margin = EdgeInsets.zero,
     this.padding = const EdgeInsets.fromLTRB(18, 14, 18, 18),

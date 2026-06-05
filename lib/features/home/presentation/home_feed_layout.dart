@@ -803,17 +803,6 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 44,
-              height: 5,
-              decoration: BoxDecoration(
-                color: sub.withValues(alpha: .34),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
           Text(
             'ゆるぼを編集',
             textAlign: TextAlign.center,

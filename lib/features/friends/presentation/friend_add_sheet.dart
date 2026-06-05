@@ -480,7 +480,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
     final qrPayload = myUserId.isEmpty ? null : _friendQrPayload(myUserId);
     return OheyBottomSheetShell(
       title: null,
-      showHandle: true,
+      showHandle: false,
       radius: 34,
       maxHeightFactor: .88,
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
@@ -1209,7 +1209,7 @@ class _FriendQrScannerSheetState extends State<_FriendQrScannerSheet> {
     final sub = isWhite ? AppColors.cFF6C7480 : AppColors.white70;
     return OheyBottomSheetShell(
       title: null,
-      showHandle: true,
+      showHandle: false,
       radius: 34,
       maxHeightFactor: .82,
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
