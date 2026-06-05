@@ -575,22 +575,22 @@ class _OheyAvatarPainter extends CustomPainter {
         );
       case 6:
         final bobFront = Path()
-          ..moveTo(43, 66)
-          ..cubicTo(43, 36, 63, 25, 90, 25)
-          ..cubicTo(117, 25, 137, 36, 137, 66)
-          ..cubicTo(137, 87, 135, 106, 132, 119)
+          ..moveTo(38, 62)
+          ..cubicTo(39, 35, 62, 25, 90, 25)
+          ..cubicTo(118, 25, 141, 35, 142, 62)
+          ..cubicTo(142, 87, 137, 108, 132, 119)
           ..cubicTo(129, 128, 118, 130, 114, 118)
-          ..cubicTo(108, 97, 110, 80, 106, 66)
-          ..quadraticBezierTo(100, 62, 91, 62)
-          ..quadraticBezierTo(80, 62, 74, 66)
-          ..cubicTo(70, 80, 72, 97, 66, 118)
+          ..cubicTo(102, 96, 104, 78, 102, 64)
+          ..quadraticBezierTo(99, 59, 91, 59)
+          ..quadraticBezierTo(81, 59, 78, 64)
+          ..cubicTo(76, 78, 78, 96, 66, 118)
           ..cubicTo(60, 130, 49, 128, 46, 119)
-          ..cubicTo(44, 106, 43, 87, 43, 66)
+          ..cubicTo(39, 108, 38, 87, 38, 62)
           ..close();
         _drawHairShape(
           canvas,
           bobFront,
-          const Rect.fromLTWH(43, 25, 94, 105),
+          const Rect.fromLTWH(38, 25, 104, 105),
           color,
           shadowAlpha: .18,
           outlineAlpha: .26,
@@ -598,23 +598,23 @@ class _OheyAvatarPainter extends CustomPainter {
         _drawHairlineShadow(
           canvas,
           Path()
-            ..moveTo(74, 66)
-            ..quadraticBezierTo(80, 62, 91, 62)
-            ..quadraticBezierTo(100, 62, 106, 66),
+            ..moveTo(78, 64)
+            ..quadraticBezierTo(81, 59, 91, 59)
+            ..quadraticBezierTo(99, 59, 102, 64),
           color,
         );
         _drawHairStrand(
           canvas,
           Path()
-            ..moveTo(72, 70)
-            ..cubicTo(66, 84, 66, 103, 59, 116),
+            ..moveTo(77, 68)
+            ..cubicTo(70, 84, 68, 103, 59, 116),
           color,
         );
         _drawHairStrand(
           canvas,
           Path()
-            ..moveTo(108, 70)
-            ..cubicTo(114, 84, 114, 103, 121, 116),
+            ..moveTo(103, 68)
+            ..cubicTo(110, 84, 112, 103, 121, 116),
           color,
         );
         _drawHairHighlight(
