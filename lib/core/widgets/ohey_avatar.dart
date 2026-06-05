@@ -580,10 +580,10 @@ class _OheyAvatarPainter extends CustomPainter {
           ..cubicTo(117, 25, 137, 36, 137, 66)
           ..cubicTo(137, 87, 135, 106, 132, 119)
           ..cubicTo(129, 128, 118, 130, 114, 118)
-          ..cubicTo(112, 97, 115, 80, 110, 66)
-          ..quadraticBezierTo(101, 62, 91, 62)
-          ..quadraticBezierTo(80, 62, 69, 66)
-          ..cubicTo(64, 80, 67, 97, 64, 118)
+          ..cubicTo(108, 97, 110, 80, 106, 66)
+          ..quadraticBezierTo(100, 62, 91, 62)
+          ..quadraticBezierTo(80, 62, 74, 66)
+          ..cubicTo(70, 80, 72, 97, 66, 118)
           ..cubicTo(60, 130, 49, 128, 46, 119)
           ..cubicTo(44, 106, 43, 87, 43, 66)
           ..close();
@@ -598,23 +598,23 @@ class _OheyAvatarPainter extends CustomPainter {
         _drawHairlineShadow(
           canvas,
           Path()
-            ..moveTo(69, 66)
+            ..moveTo(74, 66)
             ..quadraticBezierTo(80, 62, 91, 62)
-            ..quadraticBezierTo(101, 62, 110, 66),
+            ..quadraticBezierTo(100, 62, 106, 66),
           color,
         );
         _drawHairStrand(
           canvas,
           Path()
-            ..moveTo(66, 70)
-            ..cubicTo(61, 84, 62, 103, 58, 116),
+            ..moveTo(72, 70)
+            ..cubicTo(66, 84, 66, 103, 59, 116),
           color,
         );
         _drawHairStrand(
           canvas,
           Path()
-            ..moveTo(114, 70)
-            ..cubicTo(119, 84, 118, 103, 122, 116),
+            ..moveTo(108, 70)
+            ..cubicTo(114, 84, 114, 103, 121, 116),
           color,
         );
         _drawHairHighlight(
