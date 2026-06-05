@@ -53,6 +53,8 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   static const _profileAccentColor = AppColors.cFFFF75B5;
 
   int _selectedIndex = 0;
+  int _previousSelectedIndex = 0;
+  int _tabTransitionTick = 0;
   bool _didScheduleProfileRestore = false;
   bool _didAttemptProfileRestore = false;
   bool _isOnboardingSeen = false;
@@ -225,7 +227,11 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       _refreshCurrentTabByIndex(index, showToast: true);
       return;
     }
-    setState(() => _selectedIndex = index);
+    setState(() {
+      _previousSelectedIndex = _selectedIndex;
+      _selectedIndex = index;
+      _tabTransitionTick++;
+    });
     if (index == 0) {
       _refreshFeedOnOpen();
     } else if (index == 1) {
@@ -574,7 +580,12 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBody: true,
-      body: IndexedStack(index: _selectedIndex, children: _pages),
+      body: _AnimatedTabPageStack(
+        selectedIndex: _selectedIndex,
+        previousIndex: _previousSelectedIndex,
+        transitionTick: _tabTransitionTick,
+        children: _pages,
+      ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.only(top: 7),
         decoration: BoxDecoration(
@@ -636,6 +647,112 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
                   onTap: () => _selectTab(3),
                 ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedTabPageStack extends StatefulWidget {
+  const _AnimatedTabPageStack({
+    required this.selectedIndex,
+    required this.previousIndex,
+    required this.transitionTick,
+    required this.children,
+  });
+
+  final int selectedIndex;
+  final int previousIndex;
+  final int transitionTick;
+  final List<Widget> children;
+
+  @override
+  State<_AnimatedTabPageStack> createState() => _AnimatedTabPageStackState();
+}
+
+class _AnimatedTabPageStackState extends State<_AnimatedTabPageStack> {
+  static const _duration = Duration(milliseconds: 360);
+  static const _curve = Curves.easeOutCubic;
+
+  int? _outgoingIndex;
+  int _animationGeneration = 0;
+
+  @override
+  void didUpdateWidget(covariant _AnimatedTabPageStack oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.transitionTick == widget.transitionTick) return;
+    _outgoingIndex = widget.previousIndex;
+    final generation = ++_animationGeneration;
+    Future<void>.delayed(_duration, () {
+      if (!mounted || generation != _animationGeneration) return;
+      setState(() => _outgoingIndex = null);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final direction = widget.selectedIndex >= widget.previousIndex ? 1.0 : -1.0;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        for (var index = 0; index < widget.children.length; index++)
+          _AnimatedTabPage(
+            key: ValueKey('tab-page-$index'),
+            active: index == widget.selectedIndex,
+            outgoing: index == _outgoingIndex && index != widget.selectedIndex,
+            direction: direction,
+            duration: _duration,
+            curve: _curve,
+            child: widget.children[index],
+          ),
+      ],
+    );
+  }
+}
+
+class _AnimatedTabPage extends StatelessWidget {
+  const _AnimatedTabPage({
+    super.key,
+    required this.active,
+    required this.outgoing,
+    required this.direction,
+    required this.duration,
+    required this.curve,
+    required this.child,
+  });
+
+  final bool active;
+  final bool outgoing;
+  final double direction;
+  final Duration duration;
+  final Curve curve;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final hidden = !active && !outgoing;
+    final x = active
+        ? 0.0
+        : outgoing
+        ? -0.08 * direction
+        : 0.08 * direction;
+    return Offstage(
+      offstage: hidden,
+      child: TickerMode(
+        enabled: !hidden,
+        child: IgnorePointer(
+          ignoring: !active,
+          child: AnimatedSlide(
+            offset: Offset(x, 0),
+            duration: duration,
+            curve: curve,
+            child: AnimatedOpacity(
+              opacity: active ? 1 : 0,
+              duration: duration,
+              curve: curve,
+              child: child,
             ),
           ),
         ),
