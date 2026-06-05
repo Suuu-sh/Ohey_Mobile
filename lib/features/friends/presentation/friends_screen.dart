@@ -901,7 +901,6 @@ enum _InviteWishListSource { mine, friend }
 
 class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
   late DateTime _selectedDate;
-  bool _isCustomDate = false;
   String? _activityLabel;
   _InviteWishListSource? _wishListSource;
 
@@ -919,22 +918,6 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
   @override
   void dispose() {
     super.dispose();
-  }
-
-  void _selectToday() {
-    setState(() {
-      _isCustomDate = false;
-      _selectedDate = _today;
-    });
-  }
-
-  void _selectCustomDate() {
-    setState(() {
-      _isCustomDate = true;
-      if (!_selectedDate.isAfter(_today)) {
-        _selectedDate = _today.add(const Duration(days: 1));
-      }
-    });
   }
 
   void _selectActivity(String label) {
@@ -987,45 +970,11 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
             const SizedBox(height: 18),
             _InviteSectionLabel(label: 'いつ誘う？', color: ink),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: _InviteOptionPill(
-                    label: '今日',
-                    icon: CupertinoIcons.sun_max_fill,
-                    selected: !_isCustomDate,
-                    onTap: _selectToday,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _InviteOptionPill(
-                    label: '日程を選択',
-                    icon: CupertinoIcons.calendar_badge_plus,
-                    selected: _isCustomDate,
-                    onTap: _selectCustomDate,
-                  ),
-                ),
-              ],
-            ),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 220),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              child: _isCustomDate
-                  ? Padding(
-                      key: const ValueKey('date-options'),
-                      padding: const EdgeInsets.only(top: 12),
-                      child: _InviteAvailableDateOptions(
-                        friendIds: widget.friendIds,
-                        selectedDate: _selectedDate,
-                        onSelected: (date) => setState(() {
-                          _selectedDate = date;
-                        }),
-                        emptyColor: sub,
-                      ),
-                    )
-                  : const SizedBox.shrink(),
+            _InviteWeeklyDatePicker(
+              friendIds: widget.friendIds,
+              selectedDate: _selectedDate,
+              onSelected: (date) => setState(() => _selectedDate = date),
+              emptyColor: sub,
             ),
             const SizedBox(height: 20),
             _InviteSectionLabel(label: 'なにをする？（任意）', color: ink),
@@ -1053,8 +1002,8 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
   }
 }
 
-class _InviteAvailableDateOptions extends ConsumerWidget {
-  const _InviteAvailableDateOptions({
+class _InviteWeeklyDatePicker extends ConsumerStatefulWidget {
+  const _InviteWeeklyDatePicker({
     required this.friendIds,
     required this.selectedDate,
     required this.onSelected,
@@ -1067,13 +1016,37 @@ class _InviteAvailableDateOptions extends ConsumerWidget {
   final Color emptyColor;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_InviteWeeklyDatePicker> createState() =>
+      _InviteWeeklyDatePickerState();
+}
+
+class _InviteWeeklyDatePickerState
+    extends ConsumerState<_InviteWeeklyDatePicker> {
+  static const _weekCount = 18;
+  late final PageController _pageController;
+  int _visibleWeekOffset = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final today = _dateOnly(DateTime.now());
+    final startOfThisWeek = _startOfWeek(today);
     final months = _monthsFrom(today, count: 5);
     final blockedKeys = <String>{};
     var isLoading = false;
 
-    for (final friendId in friendIds) {
+    for (final friendId in widget.friendIds) {
       for (final month in months) {
         final statuses = ref.watch(
           _friendMonthlyDailyStatusesProvider((
@@ -1092,51 +1065,96 @@ class _InviteAvailableDateOptions extends ConsumerWidget {
       }
     }
 
-    final candidates = [
-      for (var index = 1; index <= 120; index++)
-        today.add(Duration(days: index)),
-    ].where((date) => !blockedKeys.contains(_inviteDateKey(date))).toList();
-
-    if (candidates.isEmpty) {
-      return Text(
-        isLoading ? '相手の予定を確認中…' : '選べる日程がまだないよ。',
-        style: TextStyle(
-          color: emptyColor,
-          fontSize: 13,
-          fontWeight: FontWeight.w800,
-          height: 1.35,
-        ),
-      );
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (isLoading) ...[
-          Text(
-            '相手の予定ありの日を除いて表示中…',
-            style: TextStyle(
-              color: emptyColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 160),
+          child: isLoading
+              ? Padding(
+                  key: const ValueKey('loading'),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    '相手の予定ありの日を除いて表示中…',
+                    style: TextStyle(
+                      color: widget.emptyColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(key: ValueKey('idle')),
+        ),
+        Row(
+          children: [
+            Text(
+              _inviteWeekLabel(
+                startOfThisWeek.add(Duration(days: _visibleWeekOffset * 7)),
+              ),
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? AppColors.cFF667381
+                    : AppColors.white.withValues(alpha: .70),
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-        ],
+            const Spacer(),
+            Icon(
+              CupertinoIcons.chevron_right,
+              size: 14,
+              color: widget.emptyColor.withValues(alpha: .72),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '右スワイプで次の週',
+              style: TextStyle(
+                color: widget.emptyColor.withValues(alpha: .72),
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
         SizedBox(
-          height: 44,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
+          height: 76,
+          child: PageView.builder(
+            controller: _pageController,
+            reverse: true,
             physics: const BouncingScrollPhysics(),
-            itemCount: candidates.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              final date = candidates[index];
-              return _InviteOptionPill(
-                label: _inviteDateLabel(date, today: today),
-                compact: true,
-                selected: _isSameInviteDate(selectedDate, date),
-                onTap: () => onSelected(date),
+            itemCount: _weekCount,
+            onPageChanged: (page) => setState(() => _visibleWeekOffset = page),
+            itemBuilder: (context, page) {
+              final weekStart = startOfThisWeek.add(Duration(days: page * 7));
+              return Row(
+                children: [
+                  for (var index = 0; index < 7; index++) ...[
+                    if (index > 0) const SizedBox(width: 6),
+                    Expanded(
+                      child: _InviteWeekDateCell(
+                        date: weekStart.add(Duration(days: index)),
+                        today: today,
+                        selected: _isSameInviteDate(
+                          widget.selectedDate,
+                          weekStart.add(Duration(days: index)),
+                        ),
+                        disabled:
+                            weekStart
+                                .add(Duration(days: index))
+                                .isBefore(today) ||
+                            blockedKeys.contains(
+                              _inviteDateKey(
+                                weekStart.add(Duration(days: index)),
+                              ),
+                            ),
+                        onTap: () => widget.onSelected(
+                          weekStart.add(Duration(days: index)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               );
             },
           ),
@@ -1153,7 +1171,124 @@ class _InviteAvailableDateOptions extends ConsumerWidget {
   }
 }
 
+class _InviteWeekDateCell extends StatelessWidget {
+  const _InviteWeekDateCell({
+    required this.date,
+    required this.today,
+    required this.selected,
+    required this.disabled,
+    required this.onTap,
+  });
+
+  final DateTime date;
+  final DateTime today;
+  final bool selected;
+  final bool disabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final weekday = const ['日', '月', '火', '水', '木', '金', '土'][date.weekday % 7];
+    final isToday = _isSameInviteDate(date, today);
+    final weekdayColor = date.weekday == DateTime.sunday
+        ? AppColors.primaryAction
+        : date.weekday == DateTime.saturday
+        ? const Color(0xFF25C7FF)
+        : isWhite
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .72);
+    final background = selected
+        ? AppColors.primaryAction
+        : isWhite
+        ? AppColors.cFFF1F5EF
+        : AppColors.white.withValues(alpha: .06);
+    final borderColor = selected
+        ? AppColors.primaryAction
+        : isToday
+        ? AppColors.primaryAction.withValues(alpha: .74)
+        : isWhite
+        ? AppColors.cFFD7DEE7
+        : AppColors.white.withValues(alpha: .12);
+    final foreground = selected
+        ? AppColors.cFF101820
+        : isWhite
+        ? AppColors.cFF17212B
+        : AppColors.white;
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: !disabled,
+      label: _inviteDateLabel(date, today: today),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: disabled ? null : onTap,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 160),
+          opacity: disabled ? .34 : 1,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: background,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: borderColor, width: selected ? 1.5 : 1),
+              boxShadow: selected
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primaryAction.withValues(alpha: .22),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  isToday ? '今日' : weekday,
+                  style: TextStyle(
+                    color: selected ? AppColors.cFF101820 : weekdayColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  '${date.day}',
+                  style: TextStyle(
+                    color: foreground,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+
+DateTime _startOfWeek(DateTime date) {
+  final only = _dateOnly(date);
+  return only.subtract(Duration(days: only.weekday % 7));
+}
+
+String _inviteWeekLabel(DateTime weekStart) {
+  final weekEnd = weekStart.add(const Duration(days: 6));
+  if (weekStart.year == weekEnd.year && weekStart.month == weekEnd.month) {
+    return '${weekStart.year}/${weekStart.month.toString().padLeft(2, '0')}';
+  }
+  return '${weekStart.month}/${weekStart.day} - ${weekEnd.month}/${weekEnd.day}';
+}
 
 bool _isSameInviteDate(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
