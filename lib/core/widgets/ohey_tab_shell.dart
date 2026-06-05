@@ -801,7 +801,7 @@ class _DailyStatusRequiredSheetState
     return PopScope(
       canPop: false,
       child: OheyBottomSheetShell(
-        showHandle: true,
+        showHandle: false,
         showBottomCloseButton: false,
         maxHeightFactor: .88,
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
@@ -980,17 +980,6 @@ class _YuruboParticipationRequestSheetState
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: Container(
-                width: 44,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: .22),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
             Row(
               children: [
                 const OheyPopIcon(
@@ -1210,17 +1199,6 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Center(
-                  child: Container(
-                    width: 44,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: AppColors.white.withValues(alpha: .22),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
                 Row(
                   children: [
                     const OheyPopIcon(
