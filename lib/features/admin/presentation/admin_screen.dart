@@ -12,6 +12,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_confirm_sheet.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_empty_state.dart';
 import '../../../core/widgets/ohey_state_view.dart';
@@ -22,12 +23,12 @@ import '../data/admin_repository.dart';
 part 'admin_header_panes.dart';
 part 'admin_cards.dart';
 part 'admin_user_editor.dart';
-part 'admin_post_editor.dart';
+part 'admin_yurubo_editor.dart';
 part 'admin_form_widgets.dart';
 part 'admin_shared_widgets.dart';
 part 'admin_screen_body.dart';
 
-enum _AdminSection { users, posts, reports, notifications }
+enum _AdminSection { users, yurubos, reports, notifications }
 
 class AdminScreen extends ConsumerStatefulWidget {
   const AdminScreen({super.key});

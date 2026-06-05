@@ -35,6 +35,8 @@ class OheyApiPaths {
   static const homeFeed = '/v1/home/feed';
 
   static const wishItems = '/v1/wish-items';
+  static String wishItem(String wishItemId) =>
+      '$wishItems/${Uri.encodeComponent(wishItemId)}';
   static const wishItemsProfileBase = '/v1/wish-items/profile';
   static String profileWishItems(String profileId) =>
       '$wishItemsProfileBase/${Uri.encodeComponent(profileId)}';
@@ -76,11 +78,17 @@ class OheyApiPaths {
   static const adminUsers = '/v1/admin/users';
   static String adminUser(String userId) =>
       '$adminUsers/${Uri.encodeComponent(userId)}';
+  static const adminYurubos = '/v1/admin/yurubos';
+  static String adminYurubo(String yuruboId) =>
+      '$adminYurubos/${Uri.encodeComponent(yuruboId)}';
   static const adminMemories = '/v1/admin/memories';
   static String adminMemory(String memoryId) =>
       '$adminMemories/${Uri.encodeComponent(memoryId)}';
   static const adminMemoryReports = '/v1/admin/memory-reports';
   static String adminMemoryReport(String reportId) =>
       '$adminMemoryReports/${Uri.encodeComponent(reportId)}';
+  static const adminNotificationOutbox = '/v1/admin/notification-outbox';
+  static const adminNotificationOutboxProcess =
+      '/v1/admin/notification-outbox/process';
   static const adminNotifications = '/v1/admin/notifications';
 }

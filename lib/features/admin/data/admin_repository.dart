@@ -76,17 +76,108 @@ class AdminRepository {
     await _client.delete(OheyApiPaths.adminUser(id));
   }
 
+  Future<List<AdminYurubo>> listYurubos({
+    String status = OheyStatusKeys.open,
+  }) async {
+    final rows = await _getRowsWithLegacyYuruboFallback(
+      OheyApiPaths.adminYurubos,
+      query: {'status': status},
+      fallbackQuery: {'limit': '80'},
+    );
+    return rows.map(AdminYurubo.fromJson).toList(growable: false);
+  }
+
+  Future<void> createYurubo({
+    required String ownerUserId,
+    required String title,
+    required String body,
+    required String placeText,
+    required String timeLabel,
+    required String startsAt,
+    required String status,
+    required String visibility,
+  }) async {
+    final bodyMap = {
+      'owner_user_id': ownerUserId,
+      'title': title,
+      'body': body,
+      'category': OheyCategoryKeys.other,
+      'place_text': placeText,
+      'time_label': timeLabel,
+      'starts_at': startsAt,
+      'status': status,
+      'visibility': visibility,
+    };
+    try {
+      await _client.post(OheyApiPaths.adminYurubos, bodyMap);
+    } on BackendApiException catch (error) {
+      if (error.statusCode != 404) rethrow;
+      await _client.post(OheyApiPaths.yurubos, bodyMap);
+    }
+  }
+
+  Future<void> updateYurubo({
+    required String id,
+    required String ownerUserId,
+    required String title,
+    required String body,
+    required String placeText,
+    required String timeLabel,
+    required String startsAt,
+    required String status,
+    required String visibility,
+  }) async {
+    final bodyMap = {
+      'owner_user_id': ownerUserId,
+      'title': title,
+      'body': body,
+      'place_text': placeText,
+      'time_label': timeLabel,
+      'starts_at': startsAt,
+      'status': status,
+      'visibility': visibility,
+    };
+    try {
+      await _client.patch(OheyApiPaths.adminYurubo(id), bodyMap);
+    } on BackendApiException catch (error) {
+      if (error.statusCode != 404) rethrow;
+      await _client.patch(OheyApiPaths.yurubo(id), bodyMap);
+    }
+  }
+
+  Future<void> deleteYurubo(String id) async {
+    try {
+      await _client.delete(OheyApiPaths.adminYurubo(id));
+    } on BackendApiException catch (error) {
+      if (error.statusCode != 404) rethrow;
+      await _client.delete(OheyApiPaths.yurubo(id));
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _getRowsWithLegacyYuruboFallback(
+    String path, {
+    required Map<String, String> query,
+    required Map<String, String> fallbackQuery,
+  }) async {
+    try {
+      return await _client.getRows(path, query: query);
+    } on BackendApiException catch (error) {
+      if (error.statusCode != 404) rethrow;
+      return _client.getRows(OheyApiPaths.yurubos, query: fallbackQuery);
+    }
+  }
+
   Future<List<AdminMemory>> listMemorys() async {
     final rows = await _client.getRows(OheyApiPaths.adminMemories);
     return rows.map(AdminMemory.fromJson).toList(growable: false);
   }
 
   Future<List<AdminMemoryReport>> listMemoryReports({
-    OheyModerationStatus status = OheyModerationStatus.pending,
+    String status = OheyStatusKeys.pending,
   }) async {
     final rows = await _client.getRows(
       OheyApiPaths.adminMemoryReports,
-      query: {'status': status.key},
+      query: {'status': status},
     );
     return rows.map(AdminMemoryReport.fromJson).toList(growable: false);
   }
@@ -163,6 +254,30 @@ class AdminRepository {
     });
     return AdminNotificationResult.fromJson(row);
   }
+
+  Future<List<AdminNotificationOutboxItem>> listNotificationOutbox({
+    String status = OheyStatusKeys.failed,
+  }) async {
+    final rows = await _client.getRows(
+      OheyApiPaths.adminNotificationOutbox,
+      query: {'status': status},
+    );
+    return rows
+        .map(AdminNotificationOutboxItem.fromJson)
+        .toList(growable: false);
+  }
+
+  Future<AdminNotificationOutboxProcessResult> processNotificationOutbox({
+    int limit = 50,
+  }) async {
+    final row = BackendApiClient.mapFrom(
+      await _client.postNoBody(
+        OheyApiPaths.adminNotificationOutboxProcess,
+        query: {'limit': limit.clamp(1, 100).toString()},
+      ),
+    );
+    return AdminNotificationOutboxProcessResult.fromJson(row);
+  }
 }
 
 String _todayIsoDate() {
@@ -203,6 +318,62 @@ class AdminUserProfile {
       status: json['status'] as String? ?? OheyStatusKeys.unselected,
       isPlus: json['is_plus'] as bool? ?? false,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? ''),
+    );
+  }
+}
+
+class AdminYurubo {
+  const AdminYurubo({
+    required this.id,
+    required this.ownerUserId,
+    required this.ownerDisplayName,
+    required this.ownerHandle,
+    required this.title,
+    required this.body,
+    required this.category,
+    required this.placeText,
+    required this.timeLabel,
+    required this.status,
+    required this.visibility,
+    required this.reactionCount,
+    this.startsAt,
+    this.createdAt,
+  });
+
+  final String id;
+  final String ownerUserId;
+  final String ownerDisplayName;
+  final String ownerHandle;
+  final String title;
+  final String body;
+  final String category;
+  final String placeText;
+  final String timeLabel;
+  final String status;
+  final String visibility;
+  final int reactionCount;
+  final DateTime? startsAt;
+  final DateTime? createdAt;
+
+  factory AdminYurubo.fromJson(Map<String, dynamic> json) {
+    final owner = json['owner'] is Map
+        ? Map<String, dynamic>.from(json['owner'] as Map)
+        : const <String, dynamic>{};
+    return AdminYurubo(
+      id: json['id'] as String? ?? '',
+      ownerUserId: json['owner_user_id'] as String? ?? '',
+      ownerDisplayName: owner['display_name'] as String? ?? 'Ohey user',
+      ownerHandle: owner['user_id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      body: json['body'] as String? ?? '',
+      category: json['category'] as String? ?? OheyCategoryKeys.other,
+      placeText: json['place_text'] as String? ?? '',
+      timeLabel: json['time_label'] as String? ?? '',
+      status: json['status'] as String? ?? OheyStatusKeys.open,
+      visibility: json['visibility'] as String? ?? OheyVisibilityKeys.friends,
+      reactionCount: _intFromJson(json['reaction_count']),
+      startsAt: _dateFromJson(json['starts_at']),
+      createdAt: _dateFromJson(json['created_at']),
     );
   }
 }
@@ -267,6 +438,78 @@ class AdminNotificationResult {
   }
 }
 
+class AdminNotificationOutboxItem {
+  const AdminNotificationOutboxItem({
+    required this.id,
+    required this.eventKind,
+    required this.aggregateType,
+    required this.aggregateId,
+    required this.actorUserId,
+    required this.recipientUserId,
+    required this.status,
+    required this.attempts,
+    required this.payload,
+    this.lastError,
+    this.nextAttemptAt,
+    this.processedAt,
+    this.createdAt,
+  });
+
+  final String id;
+  final String eventKind;
+  final String aggregateType;
+  final String aggregateId;
+  final String actorUserId;
+  final String recipientUserId;
+  final String status;
+  final int attempts;
+  final String? lastError;
+  final DateTime? nextAttemptAt;
+  final DateTime? processedAt;
+  final DateTime? createdAt;
+  final Map<String, dynamic> payload;
+
+  factory AdminNotificationOutboxItem.fromJson(Map<String, dynamic> json) {
+    return AdminNotificationOutboxItem(
+      id: json['id'] as String? ?? '',
+      eventKind: json['event_kind'] as String? ?? '',
+      aggregateType: json['aggregate_type'] as String? ?? '',
+      aggregateId: json['aggregate_id'] as String? ?? '',
+      actorUserId: json['actor_user_id'] as String? ?? '',
+      recipientUserId: json['recipient_user_id'] as String? ?? '',
+      status: json['status'] as String? ?? OheyStatusKeys.pending,
+      attempts: _intFromJson(json['attempts']),
+      lastError: json['last_error'] as String?,
+      nextAttemptAt: _dateFromJson(json['next_attempt_at']),
+      processedAt: _dateFromJson(json['processed_at']),
+      createdAt: _dateFromJson(json['created_at']),
+      payload: _mapFromJson(json['payload']),
+    );
+  }
+}
+
+class AdminNotificationOutboxProcessResult {
+  const AdminNotificationOutboxProcessResult({
+    required this.processedCount,
+    required this.failedCount,
+    required this.skippedCount,
+  });
+
+  final int processedCount;
+  final int failedCount;
+  final int skippedCount;
+
+  factory AdminNotificationOutboxProcessResult.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return AdminNotificationOutboxProcessResult(
+      processedCount: _intFromJson(json['processed_count']),
+      failedCount: _intFromJson(json['failed_count']),
+      skippedCount: _intFromJson(json['skipped_count']),
+    );
+  }
+}
+
 class AdminMemoryReport {
   const AdminMemoryReport({
     required this.id,
@@ -324,4 +567,22 @@ class AdminMemoryReport {
       moderationNote: json['moderation_note'] as String?,
     );
   }
+}
+
+int _intFromJson(dynamic value) {
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? 0;
+  return 0;
+}
+
+DateTime? _dateFromJson(dynamic value) {
+  if (value is! String || value.trim().isEmpty) return null;
+  return DateTime.tryParse(value);
+}
+
+Map<String, dynamic> _mapFromJson(dynamic value) {
+  if (value is Map) {
+    return Map<String, dynamic>.from(value);
+  }
+  return const <String, dynamic>{};
 }

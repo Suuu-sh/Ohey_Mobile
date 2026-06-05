@@ -17,6 +17,8 @@ abstract interface class WishItemRepository {
     int limit = 30,
   });
   Future<WishItem> createWishItem(WishItemCreateDraft draft);
+  Future<WishItem> updateWishItem(String wishItemId, WishItemCreateDraft draft);
+  Future<void> deleteWishItem(String wishItemId);
 }
 
 class WishItemCreateDraft {
@@ -74,6 +76,29 @@ class BackendWishItemRepository implements WishItemRepository {
       'visibility': draft.visibility,
     });
     return _wishItemFromRow(row);
+  }
+
+  @override
+  Future<WishItem> updateWishItem(
+    String wishItemId,
+    WishItemCreateDraft draft,
+  ) async {
+    final row = BackendApiClient.mapFrom(
+      await _client.patch(OheyApiPaths.wishItem(wishItemId), {
+        'title': draft.title,
+        'note': draft.note,
+        'category': draft.category,
+        'place_text': draft.placeText,
+        'place_url': draft.placeUrl,
+        'visibility': draft.visibility,
+      }),
+    );
+    return _wishItemFromRow(row);
+  }
+
+  @override
+  Future<void> deleteWishItem(String wishItemId) async {
+    await _client.delete(OheyApiPaths.wishItem(wishItemId));
   }
 }
 

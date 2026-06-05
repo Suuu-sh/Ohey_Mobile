@@ -6,9 +6,8 @@ import 'package:flutter/material.dart';
 import '../models/ohey_avatar.dart';
 import '../models/ohey_friend.dart';
 import '../theme/app_colors.dart';
-import 'ohey_3d_button.dart';
 import 'ohey_avatar.dart';
-import 'ohey_invite_success_burst.dart';
+import 'ohey_compact_action_button.dart';
 import 'ohey_themed_panel.dart';
 
 class OheyFriendUserBlock extends StatelessWidget {
@@ -28,6 +27,14 @@ class OheyFriendUserBlock extends StatelessWidget {
     this.inviteAvailable = true,
     this.inviteSent = false,
     this.invitePressed = false,
+    this.inviteLabel = '招待する',
+    this.inviteSentLabel = '招待済み',
+    this.invitePressedLabel,
+    this.inviteButtonColor,
+    this.inviteForegroundColor,
+    this.inviteShadowColor,
+    this.inviteBurstIcon = CupertinoIcons.paperplane_fill,
+    this.inviteBurstColor,
     this.onInviteAnimationComplete,
     this.compact = false,
   });
@@ -46,6 +53,14 @@ class OheyFriendUserBlock extends StatelessWidget {
   final bool inviteAvailable;
   final bool inviteSent;
   final bool invitePressed;
+  final String inviteLabel;
+  final String inviteSentLabel;
+  final String? invitePressedLabel;
+  final Color? inviteButtonColor;
+  final Color? inviteForegroundColor;
+  final Color? inviteShadowColor;
+  final IconData inviteBurstIcon;
+  final Color? inviteBurstColor;
   final VoidCallback? onInviteAnimationComplete;
   final bool compact;
 
@@ -53,6 +68,12 @@ class OheyFriendUserBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final accent = statusEnabled ? statusColor : AppColors.cFF2B3441;
+    final borderAlpha = statusEnabled
+        ? (isWhite ? .34 : .42)
+        : (isWhite ? .34 : .58);
+    final glowAlpha = statusEnabled
+        ? (isWhite ? .09 : .18)
+        : (isWhite ? .055 : .11);
     final ink = statusEnabled
         ? (isWhite ? AppColors.cFF101820 : AppColors.white)
         : (isWhite ? AppColors.cFF667381 : AppColors.cFF8792A3);
@@ -72,16 +93,22 @@ class OheyFriendUserBlock extends StatelessWidget {
     final favoriteIconSize = longName ? 20.0 : 22.0;
     final inviteEnabled =
         statusEnabled && inviteAvailable && !inviteSent && onInvite != null;
-    final inviteButtonColor = inviteSent || !inviteAvailable
+    final activeInviteButtonColor = inviteButtonColor ?? accent;
+    final effectiveInviteButtonColor = inviteSent || !inviteAvailable
         ? AppColors.cFF3C4652
-        : accent;
+        : activeInviteButtonColor;
     final inviteForeground = inviteSent
         ? AppColors.cFFC3CAD3
         : !inviteAvailable
         ? AppColors.cFF9AA4B2
         : statusEnabled
-        ? AppColors.cFF071320
+        ? inviteForegroundColor ?? AppColors.cFF071320
         : AppColors.cFF738092;
+    final inviteButtonLabel = inviteSent
+        ? inviteSentLabel
+        : invitePressed && invitePressedLabel != null
+        ? invitePressedLabel!
+        : inviteLabel;
     const inviteButtonPadding = EdgeInsets.symmetric(horizontal: 9);
 
     final block = ConstrainedBox(
@@ -98,12 +125,9 @@ class OheyFriendUserBlock extends StatelessWidget {
             ? AppColors.white
             : AppColors.darkBackgroundBottom,
         borderRadius: 20,
-        borderAlpha: statusEnabled
-            ? (isWhite ? .34 : .42)
-            : (isWhite ? .20 : .24),
-        glowAlpha: statusEnabled
-            ? (isWhite ? .09 : .18)
-            : (isWhite ? .035 : .06),
+        borderWidth: statusEnabled ? 1 : 1.25,
+        borderAlpha: borderAlpha,
+        glowAlpha: glowAlpha,
         glowBlur: 24,
         glowOffset: Offset.zero,
         child: Row(
@@ -160,38 +184,41 @@ class OheyFriendUserBlock extends StatelessWidget {
               const SizedBox(width: 10),
               SizedBox(
                 width: 76,
-                child: OheyInviteSuccessBurst(
-                  builder: (context, runWithBurst, flightAnimation) =>
-                      Ohey3DButton(
-                        label: inviteSent ? '招待済み' : '招待する',
-                        icon: null,
-                        customIcon: null,
-                        onTap: inviteEnabled
-                            ? () => runWithBurst(
-                                onInvite,
-                                afterAnimation: onInviteAnimationComplete,
-                              )
-                            : null,
-                        enabled: inviteEnabled,
-                        forcePressed: inviteSent || invitePressed,
-                        height: 40,
-                        radius: 20,
-                        color: inviteButtonColor,
-                        foregroundColor: inviteForeground,
-                        shadowColor: inviteSent
-                            ? AppColors.cFF1A222C
-                            : !inviteAvailable
-                            ? AppColors.cFF1A222C
-                            : statusEnabled
-                            ? Color.lerp(accent, AppColors.black, .32)
-                            : AppColors.cFF111923,
-                        disabledColor: inviteSent
-                            ? AppColors.cFF3C4652
-                            : AppColors.cFF2B3441,
-                        disabledOpacity: 1,
-                        padding: inviteButtonPadding,
-                        fontSize: 14,
-                      ),
+                child: OheyCompactActionButton(
+                  label: inviteButtonLabel,
+                  semanticLabel: inviteButtonLabel,
+                  onTap: inviteEnabled ? onInvite : null,
+                  enabled: inviteEnabled,
+                  forcePressed: inviteSent || invitePressed,
+                  height: 40,
+                  radius: 20,
+                  color: effectiveInviteButtonColor,
+                  foregroundColor: inviteForeground,
+                  shadowColor: inviteSent
+                      ? AppColors.cFF1A222C
+                      : !inviteAvailable
+                      ? AppColors.cFF1A222C
+                      : statusEnabled
+                      ? inviteShadowColor ??
+                            Color.lerp(
+                              activeInviteButtonColor,
+                              AppColors.black,
+                              .32,
+                            )
+                      : AppColors.cFF111923,
+                  disabledColor: inviteSent
+                      ? AppColors.cFF3C4652
+                      : AppColors.cFF2B3441,
+                  disabledOpacity: 1,
+                  padding: inviteButtonPadding,
+                  fontSize: 14,
+                  outerShadowAlpha: 0,
+                  innerShadowAlpha: 0,
+                  borderColor: null,
+                  burstOnTap: true,
+                  burstIcon: inviteBurstIcon,
+                  burstColor: inviteBurstColor ?? activeInviteButtonColor,
+                  onBurstComplete: onInviteAnimationComplete,
                 ),
               ),
             ],

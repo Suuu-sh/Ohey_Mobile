@@ -2,7 +2,6 @@ part of 'admin_screen.dart';
 
 class _AdminOwnerField extends StatelessWidget {
   const _AdminOwnerField({
-    super.key,
     required this.users,
     required this.ownerUserId,
     required this.ownerController,
@@ -155,6 +154,7 @@ Future<void> _showNotificationSheet(BuildContext context, WidgetRef ref) async {
     keyController.dispose();
   }
   if (didSave && context.mounted) {
+    _invalidateAdminOutboxProviders(ref);
     OheyToast.show(context, 'System通知を送信しました。');
   }
 }
@@ -232,28 +232,28 @@ Future<void> _confirmDeleteUser(
   try {
     await ref.read(adminControllerProvider).deleteUser(user.id);
     ref.invalidate(adminUsersProvider);
-    ref.invalidate(adminMemorysProvider);
+    _invalidateAdminYuruboProviders(ref);
     if (context.mounted) OheyToast.show(context, 'ユーザーを削除しました。');
   } catch (e) {
     if (context.mounted) OheyToast.show(context, '削除できませんでした: $e');
   }
 }
 
-Future<void> _confirmDeletePost(
+Future<void> _confirmDeleteYurubo(
   BuildContext context,
   WidgetRef ref,
-  AdminMemory memory,
+  AdminYurubo yurubo,
 ) async {
   final ok = await _confirmDestructive(
     context,
-    title: '思い出を削除しますか？',
-    message: memory.placeName.isEmpty ? memory.id : memory.placeName,
+    title: 'ゆるぼを削除しますか？',
+    message: yurubo.title.isEmpty ? yurubo.id : yurubo.title,
   );
   if (ok != true) return;
   try {
-    await ref.read(adminControllerProvider).deleteMemory(memory.id);
-    ref.invalidate(adminMemorysProvider);
-    if (context.mounted) OheyToast.show(context, '思い出を削除しました。');
+    await ref.read(adminControllerProvider).deleteYurubo(yurubo.id);
+    _invalidateAdminYuruboProviders(ref);
+    if (context.mounted) OheyToast.show(context, 'ゆるぼを削除しました。');
   } catch (e) {
     if (context.mounted) OheyToast.show(context, '削除できませんでした: $e');
   }
@@ -309,7 +309,9 @@ Future<void> _showReportStatusSheet(
           status: status,
           moderationNote: moderationNote,
         );
-    ref.invalidate(adminMemoryReportsProvider);
+    for (final option in _adminReportStatusFilters) {
+      ref.invalidate(adminMemoryReportsProvider(option.key));
+    }
     if (context.mounted) {
       OheyToast.show(context, '通報を${status.label}にしました。');
     }
@@ -338,7 +340,9 @@ Future<void> _confirmDeleteReportedPost(
           status: OheyModerationStatus.resolved,
           moderationNote: 'Deleted reported post from admin app',
         );
-    ref.invalidate(adminMemoryReportsProvider);
+    for (final option in _adminReportStatusFilters) {
+      ref.invalidate(adminMemoryReportsProvider(option.key));
+    }
     ref.invalidate(adminMemorysProvider);
     if (context.mounted) OheyToast.show(context, '投稿を削除し、通報を解決済みにしました。');
   } catch (e) {
@@ -351,43 +355,13 @@ Future<bool?> _confirmDestructive(
   required String title,
   required String message,
 }) {
-  return showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      backgroundColor: AppColors.cFF101B28,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-      title: Text(title, style: const TextStyle(color: AppColors.white)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(message, style: const TextStyle(color: _AdminColors.sub)),
-          const SizedBox(height: 18),
-          Ohey3DButton.secondary(
-            label: 'キャンセル',
-            icon: CupertinoIcons.xmark_circle_fill,
-            onTap: () => Navigator.of(context).pop(false),
-            height: 46,
-            radius: 20,
-            color: AppColors.white.withValues(alpha: .07),
-            foregroundColor: _AdminColors.sub,
-            shadowColor: AppColors.cFF324860.withValues(alpha: .78),
-            fontSize: 13,
-            useGradient: false,
-          ),
-          const SizedBox(height: 10),
-          Ohey3DButton.destructive(
-            label: '削除',
-            icon: CupertinoIcons.trash_fill,
-            onTap: () => Navigator.of(context).pop(true),
-            height: 48,
-            radius: 20,
-            color: _AdminColors.pink,
-            shadowColor: AppColors.cFF8E2F50,
-            fontSize: 14,
-          ),
-        ],
-      ),
-    ),
+  return showOheyConfirmSheet(
+    context,
+    title: title,
+    message: message,
+    confirmLabel: '削除',
+    destructive: true,
+    icon: CupertinoIcons.trash_fill,
+    accent: _AdminColors.pink,
   );
 }

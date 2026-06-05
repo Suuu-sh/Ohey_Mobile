@@ -309,7 +309,7 @@ double _friendInviteCardGlowAlpha({
   required bool isWhite,
   required _FriendStatus status,
 }) {
-  if (!status.enabled) return isWhite ? .03 : .05;
+  if (!status.enabled) return isWhite ? .055 : .10;
   return isWhite ? .075 : .15;
 }
 
@@ -317,7 +317,7 @@ double _friendBlockBorderAlpha({
   required bool isWhite,
   required _FriendStatus status,
 }) {
-  if (!status.enabled) return isWhite ? .20 : .24;
+  if (!status.enabled) return isWhite ? .34 : .58;
   return isWhite ? .34 : .42;
 }
 

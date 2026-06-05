@@ -18,6 +18,21 @@ class WishItemController extends AsyncNotifier<List<WishItem>> {
     await ref.read(wishItemRepositoryProvider).createWishItem(draft);
     ref.invalidateSelf();
   }
+
+  Future<void> updateWishItem(
+    String wishItemId,
+    WishItemCreateDraft draft,
+  ) async {
+    await ref
+        .read(wishItemRepositoryProvider)
+        .updateWishItem(wishItemId, draft);
+    ref.invalidateSelf();
+  }
+
+  Future<void> deleteWishItem(String wishItemId) async {
+    await ref.read(wishItemRepositoryProvider).deleteWishItem(wishItemId);
+    ref.invalidateSelf();
+  }
 }
 
 final profileWishItemsProvider = FutureProvider.autoDispose

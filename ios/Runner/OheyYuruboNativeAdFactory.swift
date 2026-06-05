@@ -8,9 +8,12 @@ final class OheyYuruboNativeAdFactory: NSObject, FLTNativeAdFactory {
     _ nativeAd: NativeAd,
     customOptions: [AnyHashable: Any]? = nil
   ) -> NativeAdView? {
+    let style = customOptions?["style"] as? String
+    let isFeedBlock = style == "feed_block"
+
     let adView = NativeAdView()
     adView.backgroundColor = UIColor(red: 0.05, green: 0.09, blue: 0.14, alpha: 0.94)
-    adView.layer.cornerRadius = 30
+    adView.layer.cornerRadius = isFeedBlock ? 0 : 30
     adView.layer.masksToBounds = true
 
     let prLabel = UILabel()

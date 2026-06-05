@@ -37,8 +37,16 @@ class BackendApiClient {
     return _send('GET', path, query: query);
   }
 
-  Future<dynamic> post(String path, Map<String, dynamic> body) {
-    return _send('POST', path, body: body);
+  Future<dynamic> post(
+    String path,
+    Map<String, dynamic> body, {
+    Map<String, String>? query,
+  }) {
+    return _send('POST', path, query: query, body: body);
+  }
+
+  Future<dynamic> postNoBody(String path, {Map<String, String>? query}) {
+    return _send('POST', path, query: query);
   }
 
   Future<dynamic> patch(String path, Map<String, dynamic> body) {

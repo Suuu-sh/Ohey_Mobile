@@ -570,41 +570,6 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (_wishItemId != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _feedPrimaryActionColor.withValues(alpha: .18),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: _feedPrimaryActionColor.withValues(alpha: .42),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        CupertinoIcons.sparkles,
-                        color: _feedPrimaryActionColor,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'やりたいことリストから作成中',
-                          style: TextStyle(
-                            color: ink,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-              ],
               Text(
                 '誰に募集する？',
                 textAlign: TextAlign.center,

@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 
 import '../theme/app_colors.dart';
-import 'ohey_pop_icon.dart';
 
 typedef OheyInviteBurstBuilder =
     Widget Function(
@@ -105,40 +104,6 @@ class _OheyInviteSuccessBurstState extends State<OheyInviteSuccessBurst>
           ),
         ),
       ],
-    );
-  }
-}
-
-class OheyInviteFlyingIcon extends StatelessWidget {
-  const OheyInviteFlyingIcon({
-    super.key,
-    required this.animation,
-    this.icon = CupertinoIcons.paperplane_fill,
-    required this.color,
-    required this.size,
-  });
-
-  final Animation<double> animation;
-  final IconData icon;
-  final Color color;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) {
-        final t = Curves.easeOutCubic.transform(animation.value);
-        final opacity = (1 - animation.value).clamp(0.0, 1.0);
-        return Opacity(
-          opacity: opacity,
-          child: Transform.translate(
-            offset: Offset(36 * t, -34 * t),
-            child: Transform.rotate(angle: -.45 * t, child: child),
-          ),
-        );
-      },
-      child: OheyGeneratedIcon(icon, color: color, size: size),
     );
   }
 }

@@ -24,6 +24,7 @@ import '../application/ohey_user_controller.dart';
 import '../data/ohey_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
 import '../models/ohey_invite.dart';
+import '../models/ohey_friend.dart';
 import '../models/yurubo.dart';
 import '../models/ohey_user.dart';
 import '../theme/app_colors.dart';
@@ -34,7 +35,7 @@ import 'ohey_bottom_sheet.dart';
 import 'ohey_daily_status_3d_option.dart';
 import 'ohey_pop_icon.dart';
 import 'ohey_toast.dart';
-import 'ohey_avatar.dart';
+import 'ohey_friend_user_block.dart';
 
 class OheyTabShell extends ConsumerStatefulWidget {
   const OheyTabShell({super.key});
@@ -973,79 +974,44 @@ class _YuruboParticipationRequestRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 82),
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      decoration: BoxDecoration(
-        color: Color.lerp(
-          AppColors.darkBackgroundBottom,
-          AppColors.cFF20B9FF,
-          .22,
-        ),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: AppColors.cFF54D7FF.withValues(alpha: .42),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cFF20B9FF.withValues(alpha: .18),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          OheyAvatarView(avatar: participant.avatar, size: 52),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  participant.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.35,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  '申請先: ${yuruboTitle.trim().isEmpty ? 'ゆるぼ' : yuruboTitle}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppColors.cFFC08BFF.withValues(alpha: .90),
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Ohey3DButton(
-            label: isBusy ? '承認中' : '承認',
-            onTap: disabled ? null : onApprove,
-            isLoading: isBusy,
-            height: 48,
-            radius: 22,
-            color: AppColors.cFF9AF21A,
-            foregroundColor: AppColors.cFF101820,
-            shadowColor: Color.lerp(AppColors.cFF9AF21A, AppColors.black, .36)!,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            fontSize: 14,
-          ),
-        ],
-      ),
+    final friend = _friendFromYuruboParticipant(participant);
+    return OheyFriendUserBlock(
+      friend: friend,
+      statusLabel: '申請先: ${yuruboTitle.trim().isEmpty ? 'ゆるぼ' : yuruboTitle}',
+      statusReason: '参加申請を承認すると参加者に追加されます。',
+      statusColor: AppColors.cFFC08BFF,
+      statusEnabled: true,
+      fallbackAvatar: participant.avatar,
+      showInvite: true,
+      inviteAvailable: !disabled || isBusy,
+      invitePressed: isBusy,
+      inviteLabel: '承認',
+      invitePressedLabel: '承認中',
+      inviteButtonColor: AppColors.cFF9AF21A,
+      inviteForegroundColor: AppColors.cFF101820,
+      inviteShadowColor: Color.lerp(AppColors.cFF9AF21A, AppColors.black, .36)!,
+      inviteBurstIcon: CupertinoIcons.checkmark_circle_fill,
+      inviteBurstColor: AppColors.cFF9AF21A,
+      compact: true,
+      onInvite: disabled ? null : onApprove,
     );
   }
+}
+
+OheyFriend _friendFromYuruboParticipant(YuruboParticipant participant) {
+  final hash = participant.userId.hashCode.abs();
+  return OheyFriend(
+    id: participant.userId,
+    name: participant.name,
+    avatarEmoji: '👥',
+    vibe: participant.handle.trim().isEmpty ? '参加申請' : participant.handle,
+    characterAssetPath: '',
+    kind: OheyFriendKind.values[hash % OheyFriendKind.values.length],
+    palette:
+        OheyFriendPalette.values[(hash ~/ 5) % OheyFriendPalette.values.length],
+    avatar: participant.avatar,
+    statusKey: participant.reactionType,
+  );
 }
 
 class _IncomingInviteSheet extends StatefulWidget {

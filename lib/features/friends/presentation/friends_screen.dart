@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -26,10 +27,11 @@ import '../../../core/widgets/ohey_friend_user_block.dart';
 import '../../../core/widgets/ohey_invite_success_burst.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_confirm_sheet.dart';
 import '../../../core/widgets/ohey_daily_status_3d_option.dart';
+import '../../../core/widgets/ohey_manage_list_row.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
-import '../../../core/widgets/ohey_primary_button.dart';
 import '../../../core/widgets/ohey_scene_header_backdrop.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
@@ -51,23 +53,13 @@ Future<bool?> _confirmDeleteCustomFilter(
   BuildContext context,
   _CustomFriendFilter filter,
 ) {
-  return showCupertinoDialog<bool>(
-    context: context,
-    builder: (dialogContext) => CupertinoAlertDialog(
-      title: const Text('グループを削除しますか？'),
-      content: Text('「${filter.name}」を削除します。この操作は元に戻せません。'),
-      actions: [
-        CupertinoDialogAction(
-          onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('キャンセル'),
-        ),
-        CupertinoDialogAction(
-          isDestructiveAction: true,
-          onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: const Text('削除する'),
-        ),
-      ],
-    ),
+  return showOheyConfirmSheet(
+    context,
+    title: 'グループを削除しますか？',
+    message: '「${filter.name}」を削除します。この操作は元に戻せません。',
+    confirmLabel: '削除する',
+    destructive: true,
+    icon: CupertinoIcons.trash_fill,
   );
 }
 
@@ -191,6 +183,12 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     }
   }
 
+  Future<void> _saveCustomFilterOrder(List<_CustomFriendFilter> filters) async {
+    if (!mounted) return;
+    setState(() => _customFilters = filters);
+    await _persistCustomFilters();
+  }
+
   Future<void> _deleteCustomFilter(_CustomFriendFilter filter) async {
     HapticFeedback.mediumImpact();
     final confirmed = await _confirmDeleteCustomFilter(context, filter);
@@ -215,7 +213,10 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       context: context,
       useSafeArea: true,
       barrierColor: AppColors.black.withValues(alpha: .58),
-      builder: (_) => _CustomFilterManageSheet(filters: _customFilters),
+      builder: (_) => _CustomFilterManageSheet(
+        filters: _customFilters,
+        onReorder: (filters) => unawaited(_saveCustomFilterOrder(filters)),
+      ),
     );
     if (!mounted || result == null) return;
 
@@ -236,13 +237,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           }
         }
         if (filter != null) await _deleteCustomFilter(filter);
-        break;
-      case _CustomFilterManageAction.reorder:
-        final filters = result.filters;
-        if (filters == null) return;
-        setState(() => _customFilters = filters);
-        await _persistCustomFilters();
-        if (mounted) OheyToast.show(context, 'グループの順番を保存したよ');
         break;
     }
   }

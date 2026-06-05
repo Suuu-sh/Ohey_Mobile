@@ -101,6 +101,84 @@ class _OheyAvatarPainter extends CustomPainter {
           stops: const [0, .54, 1],
         ).createShader(rect);
 
+  Paint _hairGradient(Rect rect, Color color, {double top = .18}) =>
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [_lighten(color, top), color, _darken(color, .20)],
+          stops: const [0, .54, 1],
+        ).createShader(rect);
+
+  void _drawHairShape(
+    Canvas canvas,
+    Path path,
+    Rect rect,
+    Color color, {
+    double shadowAlpha = .20,
+    double outlineAlpha = .30,
+  }) {
+    canvas.drawPath(
+      path.shift(const Offset(0, 2)),
+      Paint()..color = _darken(color, .46).withValues(alpha: shadowAlpha),
+    );
+    canvas.drawPath(path, _hairGradient(rect, color));
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = _darken(color, .34).withValues(alpha: outlineAlpha)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeJoin = StrokeJoin.round
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = AppColors.white.withValues(alpha: .08)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.1
+        ..strokeJoin = StrokeJoin.round
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  void _drawHairlineShadow(Canvas canvas, Path path, Color color) {
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = _darken(color, .42).withValues(alpha: .28)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  void _drawHairHighlight(Canvas canvas, Path path) {
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = AppColors.white.withValues(alpha: .22)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  void _drawHairStrand(Canvas canvas, Path path, Color color) {
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = _darken(color, .30).withValues(alpha: .30)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.1
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
   void _drawBody(Canvas canvas, Color skin, Color shirt) {
     final neckRect = Rect.fromLTWH(75, 104, 30, 43);
     final neck = RRect.fromRectAndRadius(neckRect, const Radius.circular(12));
@@ -334,6 +412,8 @@ class _OheyAvatarPainter extends CustomPainter {
   }
 
   void _drawHairFront(Canvas canvas, Color color, Color shirt) {
+    if (avatar.hair == 0) return;
+
     final paint = _verticalGradient(
       const Rect.fromLTWH(34, 20, 112, 68),
       color,
@@ -344,9 +424,17 @@ class _OheyAvatarPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
+
+    canvas.save();
+    // The front hair silhouettes were a touch narrower than the head, which
+    // made the temples look slightly sparse. Widen only the hair layer by a
+    // few pixels while keeping the existing character proportions intact.
+    canvas
+      ..translate(90, 0)
+      ..scale(1.045, 1)
+      ..translate(-90, 0);
+
     switch (avatar.hair) {
-      case 0:
-        return;
       case 1:
         for (var i = 0; i < 8; i++) {
           canvas.drawCircle(
@@ -377,12 +465,27 @@ class _OheyAvatarPainter extends CustomPainter {
           ..quadraticBezierTo(84, 38, 62, 58)
           ..quadraticBezierTo(52, 53, 43, 58)
           ..close();
-        canvas.drawPath(short, paint);
-        canvas.drawPath(
+        _drawHairShape(
+          canvas,
+          short,
+          const Rect.fromLTWH(42, 22, 97, 42),
+          color,
+          shadowAlpha: .15,
+        );
+        _drawHairlineShadow(
+          canvas,
+          Path()
+            ..moveTo(45, 58)
+            ..quadraticBezierTo(55, 54, 62, 58)
+            ..quadraticBezierTo(84, 38, 105, 55)
+            ..quadraticBezierTo(121, 49, 136, 58),
+          color,
+        );
+        _drawHairHighlight(
+          canvas,
           Path()
             ..moveTo(64, 43)
             ..quadraticBezierTo(82, 34, 105, 43),
-          shine,
         );
       case 3:
         final side = Path()
@@ -392,12 +495,26 @@ class _OheyAvatarPainter extends CustomPainter {
           ..cubicTo(120, 54, 100, 50, 77, 59)
           ..quadraticBezierTo(60, 66, 43, 75)
           ..close();
-        canvas.drawPath(side, paint);
-        canvas.drawPath(
+        _drawHairShape(
+          canvas,
+          side,
+          const Rect.fromLTWH(40, 20, 100, 56),
+          color,
+          shadowAlpha: .17,
+        );
+        _drawHairlineShadow(
+          canvas,
+          Path()
+            ..moveTo(43, 74)
+            ..quadraticBezierTo(60, 66, 77, 59)
+            ..cubicTo(100, 50, 120, 54, 139, 69),
+          color,
+        );
+        _drawHairHighlight(
+          canvas,
           Path()
             ..moveTo(76, 37)
             ..cubicTo(94, 30, 115, 36, 127, 48),
-          shine,
         );
       case 4:
         canvas.drawRRect(
@@ -412,6 +529,13 @@ class _OheyAvatarPainter extends CustomPainter {
             ..moveTo(62, 47)
             ..quadraticBezierTo(88, 32, 119, 46),
           shine,
+        );
+        _drawHairlineShadow(
+          canvas,
+          Path()
+            ..moveTo(49, 63)
+            ..quadraticBezierTo(90, 68, 132, 63),
+          color,
         );
       case 5:
         final capColor = shirt;
@@ -450,62 +574,155 @@ class _OheyAvatarPainter extends CustomPainter {
             ..strokeCap = StrokeCap.round,
         );
       case 6:
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            const Rect.fromLTWH(43, 35, 94, 37),
-            const Radius.circular(28),
-          ),
-          paint,
+        final bobFront = Path()
+          ..moveTo(43, 66)
+          ..cubicTo(43, 36, 63, 25, 90, 25)
+          ..cubicTo(117, 25, 137, 36, 137, 66)
+          ..cubicTo(137, 87, 135, 106, 132, 119)
+          ..cubicTo(129, 128, 118, 130, 114, 118)
+          ..cubicTo(112, 97, 115, 80, 110, 66)
+          ..quadraticBezierTo(101, 62, 91, 62)
+          ..quadraticBezierTo(80, 62, 69, 66)
+          ..cubicTo(64, 80, 67, 97, 64, 118)
+          ..cubicTo(60, 130, 49, 128, 46, 119)
+          ..cubicTo(44, 106, 43, 87, 43, 66)
+          ..close();
+        _drawHairShape(
+          canvas,
+          bobFront,
+          const Rect.fromLTWH(43, 25, 94, 105),
+          color,
+          shadowAlpha: .18,
+          outlineAlpha: .26,
         );
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            const Rect.fromLTWH(43, 61, 20, 64),
-            const Radius.circular(14),
-          ),
-          paint,
+        _drawHairlineShadow(
+          canvas,
+          Path()
+            ..moveTo(69, 66)
+            ..quadraticBezierTo(80, 62, 91, 62)
+            ..quadraticBezierTo(101, 62, 110, 66),
+          color,
         );
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            const Rect.fromLTWH(117, 61, 20, 64),
-            const Radius.circular(14),
-          ),
-          paint,
+        _drawHairStrand(
+          canvas,
+          Path()
+            ..moveTo(66, 70)
+            ..cubicTo(61, 84, 62, 103, 58, 116),
+          color,
         );
-        canvas.drawPath(
+        _drawHairStrand(
+          canvas,
+          Path()
+            ..moveTo(114, 70)
+            ..cubicTo(119, 84, 118, 103, 122, 116),
+          color,
+        );
+        _drawHairHighlight(
+          canvas,
           Path()
             ..moveTo(61, 48)
             ..quadraticBezierTo(90, 35, 121, 49),
-          shine,
         );
       case 7:
-        canvas.drawPath(
+        final longFront = Path()
+          ..moveTo(42, 65)
+          ..cubicTo(46, 33, 69, 24, 91, 24)
+          ..cubicTo(117, 24, 138, 35, 140, 65)
+          ..cubicTo(143, 92, 147, 124, 140, 144)
+          ..cubicTo(129, 140, 122, 126, 119, 108)
+          ..cubicTo(116, 88, 118, 73, 111, 62)
+          ..quadraticBezierTo(101, 58, 92, 59)
+          ..quadraticBezierTo(82, 48, 67, 62)
+          ..cubicTo(61, 73, 63, 88, 60, 108)
+          ..cubicTo(57, 126, 50, 140, 39, 144)
+          ..cubicTo(33, 124, 39, 92, 42, 65)
+          ..close();
+        _drawHairShape(
+          canvas,
+          longFront,
+          const Rect.fromLTWH(36, 24, 108, 122),
+          color,
+          shadowAlpha: .18,
+          outlineAlpha: .26,
+        );
+        _drawHairlineShadow(
+          canvas,
           Path()
             ..moveTo(43, 64)
-            ..cubicTo(47, 34, 69, 25, 91, 25)
-            ..cubicTo(116, 25, 136, 35, 139, 64)
-            ..quadraticBezierTo(122, 52, 103, 59)
-            ..quadraticBezierTo(86, 42, 66, 61)
-            ..quadraticBezierTo(54, 55, 43, 64)
-            ..close(),
-          paint,
+            ..quadraticBezierTo(54, 55, 67, 62)
+            ..quadraticBezierTo(82, 48, 92, 59)
+            ..quadraticBezierTo(101, 58, 111, 62)
+            ..quadraticBezierTo(122, 54, 139, 64),
+          color,
         );
-        canvas.drawPath(
+        _drawHairStrand(
+          canvas,
+          Path()
+            ..moveTo(61, 70)
+            ..cubicTo(55, 92, 56, 121, 45, 139),
+          color,
+        );
+        _drawHairStrand(
+          canvas,
+          Path()
+            ..moveTo(119, 70)
+            ..cubicTo(125, 92, 124, 121, 135, 139),
+          color,
+        );
+        _drawHairHighlight(
+          canvas,
           Path()
             ..moveTo(61, 43)
             ..cubicTo(79, 33, 105, 34, 124, 47),
-          shine,
+        );
+      case 8:
+        final twinCap = Path()
+          ..moveTo(42, 63)
+          ..cubicTo(47, 34, 68, 25, 90, 24)
+          ..cubicTo(116, 24, 136, 36, 139, 63)
+          ..quadraticBezierTo(124, 54, 110, 60)
+          ..quadraticBezierTo(97, 47, 85, 60)
+          ..quadraticBezierTo(70, 51, 55, 66)
+          ..quadraticBezierTo(47, 66, 42, 63)
+          ..close();
+        _drawHairShape(
+          canvas,
+          twinCap,
+          const Rect.fromLTWH(42, 24, 97, 44),
+          color,
+          shadowAlpha: .16,
+        );
+        _drawHairlineShadow(
+          canvas,
+          Path()
+            ..moveTo(44, 63)
+            ..quadraticBezierTo(54, 66, 55, 66)
+            ..quadraticBezierTo(70, 51, 85, 60)
+            ..quadraticBezierTo(97, 47, 110, 60)
+            ..quadraticBezierTo(124, 54, 138, 63),
+          color,
+        );
+        _drawHairHighlight(
+          canvas,
+          Path()
+            ..moveTo(62, 43)
+            ..cubicTo(80, 34, 106, 36, 125, 49),
         );
       case 9:
-        canvas.drawPath(
-          Path()
-            ..moveTo(42, 62)
-            ..cubicTo(48, 31, 72, 22, 91, 24)
-            ..cubicTo(116, 26, 136, 40, 138, 64)
-            ..quadraticBezierTo(122, 51, 106, 59)
-            ..quadraticBezierTo(96, 44, 83, 59)
-            ..quadraticBezierTo(68, 49, 52, 66)
-            ..close(),
-          paint,
+        final fluffyShort = Path()
+          ..moveTo(42, 62)
+          ..cubicTo(48, 31, 72, 22, 91, 24)
+          ..cubicTo(116, 26, 136, 40, 138, 64)
+          ..quadraticBezierTo(122, 51, 106, 59)
+          ..quadraticBezierTo(96, 44, 83, 59)
+          ..quadraticBezierTo(68, 49, 52, 66)
+          ..close();
+        _drawHairShape(
+          canvas,
+          fluffyShort,
+          const Rect.fromLTWH(42, 22, 96, 45),
+          color,
+          shadowAlpha: .16,
         );
         for (final curl in const [
           Rect.fromLTWH(44, 63, 19, 29),
@@ -523,11 +740,20 @@ class _OheyAvatarPainter extends CustomPainter {
               ..strokeCap = StrokeCap.round,
           );
         }
-        canvas.drawPath(
+        _drawHairlineShadow(
+          canvas,
+          Path()
+            ..moveTo(52, 66)
+            ..quadraticBezierTo(68, 49, 83, 59)
+            ..quadraticBezierTo(96, 44, 106, 59)
+            ..quadraticBezierTo(122, 51, 138, 64),
+          color,
+        );
+        _drawHairHighlight(
+          canvas,
           Path()
             ..moveTo(62, 44)
             ..cubicTo(78, 35, 106, 36, 124, 49),
-          shine,
         );
       case 10:
         final mash = Path()
@@ -540,48 +766,87 @@ class _OheyAvatarPainter extends CustomPainter {
           ..quadraticBezierTo(68, 69, 58, 61)
           ..quadraticBezierTo(49, 66, 42, 63)
           ..close();
-        canvas.drawPath(mash, paint);
-        canvas.drawPath(
+        _drawHairShape(
+          canvas,
+          mash,
+          const Rect.fromLTWH(42, 23, 97, 47),
+          color,
+          shadowAlpha: .16,
+        );
+        _drawHairlineShadow(
+          canvas,
+          Path()
+            ..moveTo(43, 63)
+            ..quadraticBezierTo(49, 66, 58, 61)
+            ..quadraticBezierTo(68, 69, 80, 60)
+            ..quadraticBezierTo(91, 70, 102, 61)
+            ..quadraticBezierTo(112, 69, 121, 62)
+            ..quadraticBezierTo(130, 66, 138, 64),
+          color,
+        );
+        _drawHairHighlight(
+          canvas,
           Path()
             ..moveTo(60, 42)
             ..quadraticBezierTo(90, 30, 121, 44),
-          shine,
         );
       case 11:
-        canvas.drawPath(
+        final ponyFront = Path()
+          ..moveTo(43, 62)
+          ..cubicTo(48, 32, 70, 24, 91, 24)
+          ..cubicTo(114, 24, 135, 35, 139, 62)
+          ..quadraticBezierTo(122, 55, 107, 60)
+          ..quadraticBezierTo(91, 45, 73, 61)
+          ..quadraticBezierTo(59, 56, 43, 62)
+          ..close();
+        _drawHairShape(
+          canvas,
+          ponyFront,
+          const Rect.fromLTWH(43, 24, 96, 40),
+          color,
+          shadowAlpha: .16,
+        );
+        _drawHairlineShadow(
+          canvas,
           Path()
             ..moveTo(43, 62)
-            ..cubicTo(48, 32, 70, 24, 91, 24)
-            ..cubicTo(114, 24, 135, 35, 139, 62)
-            ..quadraticBezierTo(122, 55, 107, 60)
-            ..quadraticBezierTo(91, 45, 73, 61)
-            ..quadraticBezierTo(59, 56, 43, 62)
-            ..close(),
-          paint,
+            ..quadraticBezierTo(59, 56, 73, 61)
+            ..quadraticBezierTo(91, 45, 107, 60)
+            ..quadraticBezierTo(122, 55, 139, 62),
+          color,
         );
-        canvas.drawPath(
+        _drawHairHighlight(
+          canvas,
           Path()
             ..moveTo(66, 42)
             ..cubicTo(86, 33, 109, 35, 126, 49),
-          shine,
         );
       default:
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            const Rect.fromLTWH(45, 34, 90, 34),
-            const Radius.circular(24),
-          ),
-          paint,
+        final rounded = Path()
+          ..addRRect(
+            RRect.fromRectAndRadius(
+              const Rect.fromLTWH(45, 34, 90, 34),
+              const Radius.circular(24),
+            ),
+          );
+        _drawHairShape(
+          canvas,
+          rounded,
+          const Rect.fromLTWH(45, 34, 90, 34),
+          color,
+          shadowAlpha: .14,
         );
         canvas.drawCircle(const Offset(56, 44), 16, paint);
         canvas.drawCircle(const Offset(124, 44), 16, paint);
-        canvas.drawPath(
+        _drawHairHighlight(
+          canvas,
           Path()
             ..moveTo(63, 47)
             ..quadraticBezierTo(90, 32, 117, 47),
-          shine,
         );
     }
+
+    canvas.restore();
   }
 
   void _drawEyes(Canvas canvas) {

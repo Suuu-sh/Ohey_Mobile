@@ -4,9 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../models/ohey_avatar.dart';
-import 'ohey_3d_button.dart';
 import 'ohey_avatar.dart';
-import 'ohey_invite_success_burst.dart';
+import 'ohey_compact_action_button.dart';
 import 'ohey_pop_icon.dart';
 import 'package:ohey/core/theme/app_colors.dart';
 
@@ -67,26 +66,26 @@ class OheyPostActionPill extends StatelessWidget {
     Widget buildButton(
       VoidCallback? effectiveTap, {
       Animation<double>? iconAnimation,
-    }) => Ohey3DButtonSurface(
+      bool useBurst = false,
+    }) => OheyCompactActionButton(
+      semanticLabel: semanticLabel,
       onTap: effectiveTap,
       height: 38,
       radius: 19,
       color: color,
-      bottomColor: shadowColor,
+      foregroundColor: textColor,
+      shadowColor: shadowColor,
       padding: const EdgeInsets.symmetric(horizontal: 13),
-      borderColor: AppColors.white.withValues(alpha: .18),
-      outerShadows: [
-        BoxShadow(
-          color: color.withValues(alpha: isWhite ? .18 : .30),
-          blurRadius: 20,
-          offset: const Offset(0, 9),
-        ),
-      ],
-      innerShadows: [
-        BoxShadow(
-          color: AppColors.white.withValues(alpha: .14),
-          blurRadius: 14,
-        ),
+      outerShadowAlpha: isWhite ? .18 : .30,
+      burstOnTap: useBurst,
+      burstIcon: burstIcon,
+      burstColor: burstColor ?? color,
+      confettiColors: [
+        color,
+        AppColors.cFFFF75B5,
+        AppColors.cFFC08BFF,
+        AppColors.cFFFFD166,
+        AppColors.white,
       ],
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -116,23 +115,9 @@ class OheyPostActionPill extends StatelessWidget {
               return buildButton(effectiveTap, iconAnimation: iconAnimation);
             },
           )
-        : burstOnTap
-        ? OheyInviteSuccessBurst(
-            burstIcon: burstIcon,
-            burstColor: burstColor ?? color,
-            confettiColors: [
-              color,
-              AppColors.cFFFF75B5,
-              AppColors.cFFC08BFF,
-              AppColors.cFFFFD166,
-              AppColors.white,
-            ],
-            builder: (context, runWithBurst, flightAnimation) =>
-                buildButton(onTap == null ? null : () => runWithBurst(onTap)),
-          )
-        : buildButton(onTap);
+        : buildButton(onTap, useBurst: burstOnTap);
 
-    return Semantics(button: true, label: semanticLabel, child: child);
+    return child;
   }
 }
 
@@ -633,49 +618,35 @@ class OheyPostCompanionPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final textColor = oheyPostActionForeground(color);
 
-    return Semantics(
-      button: onTap != null,
-      label: semanticLabel,
-      child: Ohey3DButtonSurface(
-        onTap: onTap,
-        height: 38,
-        radius: 19,
-        color: color,
-        bottomColor: Color.lerp(color, AppColors.black, .34),
-        padding: const EdgeInsets.fromLTRB(13, 0, 8, 0),
-        borderColor: AppColors.white.withValues(alpha: .18),
-        outerShadows: [
-          BoxShadow(
-            color: color.withValues(alpha: isWhite ? .18 : .30),
-            blurRadius: 20,
-            offset: const Offset(0, 9),
-          ),
-        ],
-        innerShadows: [
-          BoxShadow(
-            color: AppColors.white.withValues(alpha: .14),
-            blurRadius: 14,
-          ),
-        ],
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 182),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.w900,
-                  height: 1.05,
-                ),
+    return OheyCompactActionButton(
+      semanticLabel: semanticLabel,
+      semanticButton: onTap != null,
+      onTap: onTap,
+      height: 38,
+      radius: 19,
+      color: color,
+      foregroundColor: textColor,
+      shadowColor: Color.lerp(color, AppColors.black, .34),
+      padding: const EdgeInsets.fromLTRB(13, 0, 8, 0),
+      outerShadowAlpha: isWhite ? .18 : .30,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 182),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: textColor,
+                fontWeight: FontWeight.w900,
+                height: 1.05,
               ),
-              const SizedBox(width: 7),
-              _OheyPostCompanionAvatarStack(avatars: avatars),
-            ],
-          ),
+            ),
+            const SizedBox(width: 7),
+            _OheyPostCompanionAvatarStack(avatars: avatars),
+          ],
         ),
       ),
     );

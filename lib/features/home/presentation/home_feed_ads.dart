@@ -84,6 +84,7 @@ class _YuruboNativeAdListItemState extends State<_YuruboNativeAdListItem> {
       adUnitId: adUnitId,
       factoryId: _oheyYuruboAdNativeFactoryId,
       request: const AdRequest(),
+      customOptions: const {'style': 'feed_block'},
       listener: NativeAdListener(
         onAdLoaded: (ad) {
           if (!mounted) {
@@ -122,33 +123,66 @@ class _YuruboNativeAdListItemState extends State<_YuruboNativeAdListItem> {
     }
     return Semantics(
       label: '広告',
-      child: _YuruboAdCardFrame(child: AdWidget(ad: _ad!)),
+      child: _YuruboAdCardFrame(
+        isWhite: widget.isWhite,
+        child: AdWidget(ad: _ad!),
+      ),
     );
   }
 }
 
 class _YuruboAdCardFrame extends StatelessWidget {
-  const _YuruboAdCardFrame({required this.child, this.padding});
+  const _YuruboAdCardFrame({
+    required this.child,
+    required this.isWhite,
+    this.padding,
+  });
 
   final Widget child;
+  final bool isWhite;
   final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          height: 156,
-          margin: const EdgeInsets.symmetric(horizontal: 18),
-          clipBehavior: Clip.antiAlias,
-          padding: padding,
-          decoration: _feedCardDecoration(radius: 30),
-          child: child,
+    final surfaceColor = OheyThemedPanel.surfaceColor(isWhite: isWhite);
+    final radius = BorderRadius.circular(30);
+    final frameColor = _FeedColors.teal.withValues(alpha: isWhite ? .28 : .46);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: surfaceColor,
+          borderRadius: radius,
+          boxShadow: [
+            BoxShadow(
+              color: _FeedColors.teal.withValues(alpha: isWhite ? .06 : .13),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
+          ],
         ),
-        const SizedBox(height: 18),
-        const _YuruboAdGlowBlock(),
-      ],
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            SizedBox(
+              height: 156,
+              child: Padding(padding: padding ?? EdgeInsets.zero, child: child),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: radius,
+                    border: Border.all(color: frameColor, width: 1.2),
+                  ),
+                ),
+              ),
+            ),
+            const _YuruboBlockGlowUnderline(),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -161,6 +195,7 @@ class _YuruboAdPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _YuruboAdCardFrame(
+      isWhite: isWhite,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,30 +237,6 @@ class _YuruboAdPlaceholder extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _YuruboAdGlowBlock extends StatelessWidget {
-  const _YuruboAdGlowBlock();
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        height: 1,
-        margin: const EdgeInsets.symmetric(horizontal: 18),
-        decoration: BoxDecoration(
-          color: AppColors.cFFC08BFF.withValues(alpha: .82),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.cFFC08BFF.withValues(alpha: .58),
-              blurRadius: 9,
-              spreadRadius: .4,
-            ),
-          ],
-        ),
       ),
     );
   }

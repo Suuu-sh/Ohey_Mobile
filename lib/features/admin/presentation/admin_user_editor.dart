@@ -216,21 +216,21 @@ class _AdminUserEditorScreenState
   }
 }
 
-Future<void> _showPostSheet(
+Future<void> _showYuruboSheet(
   BuildContext context,
   WidgetRef ref, {
-  AdminMemory? memory,
+  AdminYurubo? yurubo,
 }) async {
   final users =
       ref.read(adminUsersProvider).asData?.value ?? const <AdminUserProfile>[];
   final didSave = await showOheyBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
-    builder: (_) => _AdminPostEditorSheet(memory: memory, users: users),
+    builder: (_) => _AdminYuruboEditorSheet(yurubo: yurubo, users: users),
   );
 
   if (didSave == true && context.mounted) {
-    ref.invalidate(adminMemorysProvider);
-    OheyToast.show(context, '思い出を保存しました。');
+    _invalidateAdminYuruboProviders(ref);
+    OheyToast.show(context, 'ゆるぼを保存しました。');
   }
 }

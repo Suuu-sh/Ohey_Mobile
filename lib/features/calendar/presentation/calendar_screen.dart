@@ -1507,19 +1507,19 @@ class _CalendarFriendGroupChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = selected ? AppColors.primaryAction : AppColors.cFF94A3B8;
+    final accent = selected ? AppColors.cFFB8FF00 : AppColors.cFF94A3B8;
     final surface = selected
-        ? accent.withValues(alpha: isWhite ? .32 : .42)
+        ? Color.lerp(accent, AppColors.white, .22)!
         : isWhite
         ? AppColors.cFFF6F8FA
         : AppColors.cFF26323C;
     final bottom = selected
-        ? Color.lerp(accent, AppColors.black, .34)!
+        ? Color.lerp(accent, AppColors.darkBackgroundBottom, .36)!
         : isWhite
         ? AppColors.cFFD3DBE3
         : AppColors.cFF151D25;
     final foreground = selected
-        ? AppColors.cFFFF86B7
+        ? AppColors.cFF071320
         : isWhite
         ? AppColors.cFF667381
         : AppColors.white.withValues(alpha: .78);
@@ -1533,14 +1533,14 @@ class _CalendarFriendGroupChip extends StatelessWidget {
       useGradient: true,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       borderColor: selected
-          ? foreground.withValues(alpha: .48)
+          ? AppColors.white.withValues(alpha: .18)
           : isWhite
           ? AppColors.cFFE0E6ED
           : AppColors.white.withValues(alpha: .14),
       outerShadows: [
         BoxShadow(
-          color: (selected ? foreground : AppColors.black).withValues(
-            alpha: selected ? .20 : .12,
+          color: (selected ? accent : AppColors.black).withValues(
+            alpha: selected ? .30 : .12,
           ),
           blurRadius: selected ? 16 : 10,
           offset: const Offset(0, 6),
