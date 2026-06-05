@@ -1041,7 +1041,6 @@ class _InviteWeeklyDatePickerState
   @override
   Widget build(BuildContext context) {
     final today = _dateOnly(DateTime.now());
-    final startOfThisWeek = _startOfWeek(today);
     final months = _monthsFrom(today, count: 5);
     final blockedKeys = <String>{};
     var isLoading = false;
@@ -1089,7 +1088,7 @@ class _InviteWeeklyDatePickerState
           children: [
             Text(
               _inviteWeekLabel(
-                startOfThisWeek.add(Duration(days: _visibleWeekOffset * 7)),
+                today.add(Duration(days: _visibleWeekOffset * 7)),
               ),
               style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.light
@@ -1107,7 +1106,7 @@ class _InviteWeeklyDatePickerState
             ),
             const SizedBox(width: 4),
             Text(
-              '右スワイプで次の週',
+              '左スワイプで次の週',
               style: TextStyle(
                 color: widget.emptyColor.withValues(alpha: .72),
                 fontSize: 11,
@@ -1118,19 +1117,18 @@ class _InviteWeeklyDatePickerState
         ),
         const SizedBox(height: 8),
         SizedBox(
-          height: 76,
+          height: 58,
           child: PageView.builder(
             controller: _pageController,
-            reverse: true,
             physics: const BouncingScrollPhysics(),
             itemCount: _weekCount,
             onPageChanged: (page) => setState(() => _visibleWeekOffset = page),
             itemBuilder: (context, page) {
-              final weekStart = startOfThisWeek.add(Duration(days: page * 7));
+              final weekStart = today.add(Duration(days: page * 7));
               return Row(
                 children: [
                   for (var index = 0; index < 7; index++) ...[
-                    if (index > 0) const SizedBox(width: 6),
+                    if (index > 0) const SizedBox(width: 4),
                     Expanded(
                       child: _InviteWeekDateCell(
                         date: weekStart.add(Duration(days: index)),
@@ -1139,15 +1137,9 @@ class _InviteWeeklyDatePickerState
                           widget.selectedDate,
                           weekStart.add(Duration(days: index)),
                         ),
-                        disabled:
-                            weekStart
-                                .add(Duration(days: index))
-                                .isBefore(today) ||
-                            blockedKeys.contains(
-                              _inviteDateKey(
-                                weekStart.add(Duration(days: index)),
-                              ),
-                            ),
+                        disabled: blockedKeys.contains(
+                          _inviteDateKey(weekStart.add(Duration(days: index))),
+                        ),
                         onTap: () => widget.onSelected(
                           weekStart.add(Duration(days: index)),
                         ),
@@ -1230,10 +1222,10 @@ class _InviteWeekDateCell extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: 6),
             decoration: BoxDecoration(
               color: background,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(color: borderColor, width: selected ? 1.5 : 1),
               boxShadow: selected
                   ? [
@@ -1256,12 +1248,12 @@ class _InviteWeekDateCell extends StatelessWidget {
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 3),
                 Text(
                   '${date.day}',
                   style: TextStyle(
                     color: foreground,
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w900,
                     height: 1,
                   ),
@@ -1276,11 +1268,6 @@ class _InviteWeekDateCell extends StatelessWidget {
 }
 
 DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
-
-DateTime _startOfWeek(DateTime date) {
-  final only = _dateOnly(date);
-  return only.subtract(Duration(days: only.weekday % 7));
-}
 
 String _inviteWeekLabel(DateTime weekStart) {
   final weekEnd = weekStart.add(const Duration(days: 6));
