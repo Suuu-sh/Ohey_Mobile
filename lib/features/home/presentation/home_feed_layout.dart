@@ -556,6 +556,7 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 32,
+      showBottomCloseButton: false,
       child: FutureBuilder<List<Map<String, dynamic>>>(
         future: _groupsFuture,
         builder: (context, snapshot) {
@@ -797,6 +798,7 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 32,
+      showBottomCloseButton: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

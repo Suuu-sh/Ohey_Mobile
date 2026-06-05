@@ -532,6 +532,7 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 32,
+      showBottomCloseButton: false,
       child: FutureBuilder<List<Map<String, dynamic>>>(
         future: _groupsFuture,
         builder: (context, snapshot) {
