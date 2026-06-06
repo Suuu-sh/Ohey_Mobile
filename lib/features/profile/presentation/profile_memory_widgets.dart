@@ -347,8 +347,10 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
   await showOheyBottomSheet<void>(
     context: context,
     builder: (sheetContext) => Consumer(
-      builder: (context, ref, _) {
-        final pendingRequestsAsync = ref.watch(pendingFriendRequestsProvider);
+      builder: (context, sheetRef, _) {
+        final pendingRequestsAsync = sheetRef.watch(
+          pendingFriendRequestsProvider,
+        );
         final pendingRequestBadgeCount = pendingRequestsAsync.maybeWhen(
           data: (requests) =>
               requests.where((request) => request.isIncoming).length,
@@ -403,6 +405,8 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
                 await _showNotificationSettingsSheet(rootContext);
+                if (!rootContext.mounted) return;
+                await _showSettingsSheet(rootContext, ref);
               },
             ),
             _SettingsTile(
@@ -440,6 +444,7 @@ Future<void> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
       margin: const EdgeInsets.all(14),
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
       radius: 28,
+      bottomCloseLabel: '戻る',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -526,6 +531,7 @@ Future<void> _showSupportSettingsSheet(BuildContext context) {
       margin: const EdgeInsets.all(14),
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
       radius: 28,
+      bottomCloseLabel: '戻る',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -632,6 +638,7 @@ class _SupportLegalSheet extends StatelessWidget {
       margin: const EdgeInsets.all(14),
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
       radius: 28,
+      bottomCloseLabel: '戻る',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -840,6 +847,7 @@ Future<void> _showProfileManagementSheet(BuildContext context) {
           margin: const EdgeInsets.all(14),
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
           radius: 28,
+          bottomCloseLabel: '戻る',
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -985,6 +993,7 @@ class _FriendRequestManagementSheetState
       margin: const EdgeInsets.all(14),
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
       radius: 28,
+      bottomCloseLabel: '戻る',
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.sizeOf(context).height * .72,
@@ -1421,6 +1430,7 @@ class _SafetyCenterSheetState extends ConsumerState<_SafetyCenterSheet> {
       margin: const EdgeInsets.all(14),
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
       radius: 28,
+      bottomCloseLabel: '戻る',
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.sizeOf(context).height * .72,
@@ -1699,6 +1709,8 @@ Future<void> _showNotificationSettingsSheet(BuildContext context) async {
           margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
           padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
           radius: 32,
+          showBottomCloseButton: false,
+          bottomCloseLabel: '戻る',
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1725,7 +1737,7 @@ Future<void> _showNotificationSettingsSheet(BuildContext context) async {
               ),
               const SizedBox(height: 8),
               _SheetPrimaryButton(
-                label: '閉じる',
+                label: '戻る',
                 busy: false,
                 onTap: () => Navigator.of(sheetContext).pop(),
               ),
