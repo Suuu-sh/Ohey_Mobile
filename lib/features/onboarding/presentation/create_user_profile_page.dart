@@ -12,10 +12,11 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final compact = constraints.maxHeight < 700;
+        final compact = constraints.maxHeight < 820;
+        final extraCompact = constraints.maxHeight < 700;
         final fieldHeight = compact ? 50.0 : 64.0;
         final buttonHeight = compact ? 54.0 : 64.0;
-        final avatarSize = compact ? 74.0 : 144.0;
+        final avatarSize = extraCompact ? 74.0 : (compact ? 104.0 : 144.0);
         return _fixedAuthPage(
           constraints: constraints,
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
@@ -31,7 +32,10 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.only(top: compact ? 8 : 34, bottom: 14),
+                  padding: EdgeInsets.only(
+                    top: extraCompact ? 8 : (compact ? 14 : 34),
+                    bottom: compact ? 8 : 14,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -55,7 +59,7 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                           height: 1.45,
                         ),
                       ),
-                      SizedBox(height: compact ? 8 : 26),
+                      SizedBox(height: extraCompact ? 8 : (compact ? 12 : 26)),
                       Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -92,6 +96,14 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                             ),
                             SizedBox(height: compact ? 2 : 12),
                             TextButton.icon(
+                              style: TextButton.styleFrom(
+                                minimumSize: Size(0, compact ? 36 : 44),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: compact ? 8 : 12,
+                                  vertical: 0,
+                                ),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
                               onPressed: _isBusy ? null : _openAvatarBuilder,
                               icon: const OheyGeneratedIcon(
                                 CupertinoIcons.pencil,
@@ -110,7 +122,7 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                           ],
                         ),
                       ),
-                      SizedBox(height: compact ? 4 : 22),
+                      SizedBox(height: extraCompact ? 4 : (compact ? 10 : 22)),
                       _SignupInputBox(
                         child: _SignupProfileTextField(
                           controller: _nameController,
@@ -122,7 +134,7 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                           onChanged: (_) => setState(() {}),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: compact ? 10 : 12),
                       _SignupInputBox(
                         child: _SignupProfileTextField(
                           controller: _userIdController,
@@ -137,7 +149,7 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                           },
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: compact ? 10 : 12),
                       _SignupGenderSelector(
                         selectedGender: _gender,
                         enabled: !_isBusy,
@@ -152,11 +164,11 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                         },
                       ),
                       if (_error != null) ...[
-                        const SizedBox(height: 10),
+                        SizedBox(height: compact ? 8 : 10),
                         _DarkMessageText(_error!, isError: true),
                       ],
                       if (_notice != null) ...[
-                        const SizedBox(height: 10),
+                        SizedBox(height: compact ? 8 : 10),
                         _DarkMessageText(_notice!),
                       ],
                     ],
