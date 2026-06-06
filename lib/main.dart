@@ -12,6 +12,7 @@ import 'core/application/ohey_user_controller.dart';
 import 'core/data/auth_session_guard.dart';
 import 'core/data/supabase_client_provider.dart';
 import 'core/services/ohey_ads_consent_service.dart';
+import 'core/services/ohey_plus_service.dart';
 import 'core/services/ohey_push_notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/ohey_theme_mode.dart';
@@ -73,6 +74,11 @@ final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
     ).timeout(const Duration(seconds: 4), onTimeout: () {});
 
     await _preloadBackendProfileIfSessionExists(ref);
+    await ref
+        .read(oheyPlusServiceProvider)
+        .configureForCurrentUser()
+        .timeout(const Duration(seconds: 4), onTimeout: () => false);
+    ref.invalidate(oheyPlusCustomerInfoProvider);
 
     await ref
         .read(oheyPushNotificationServiceProvider)

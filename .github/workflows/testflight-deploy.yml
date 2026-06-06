@@ -55,9 +55,18 @@ jobs:
       - name: Prepare production dart defines
         env:
           DOTENV_PRODUCTION: ${{ secrets.DOTENV_PRODUCTION }}
+          OHEY_REVENUECAT_IOS_API_KEY: ${{ secrets.OHEY_REVENUECAT_IOS_API_KEY }}
         run: |
           set -euo pipefail
           printf '%s\n' "$DOTENV_PRODUCTION" > .env.production
+          {
+            echo "OHEY_REVENUECAT_ENTITLEMENT_ID=plus"
+            echo "OHEY_REVENUECAT_OFFERING_ID=default"
+            echo "OHEY_REVENUECAT_PRODUCT_ID=ohey_plus_monthly"
+            if [ -n "${OHEY_REVENUECAT_IOS_API_KEY:-}" ]; then
+              echo "OHEY_REVENUECAT_IOS_API_KEY=$OHEY_REVENUECAT_IOS_API_KEY"
+            fi
+          } >> .env.production
 
           dart_define_args=()
           while IFS= read -r line || [ -n "$line" ]; do

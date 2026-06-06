@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:purchases_flutter/purchases_flutter.dart' as rc;
 import 'package:flutter/services.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
@@ -14,7 +15,9 @@ import '../../../core/models/yurubo.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_user.dart';
 import '../../../core/services/ohey_ads_consent_service.dart';
+import '../../../core/services/ohey_plus_service.dart';
 import '../../../core/config/ohey_ads_config.dart';
+import '../../../core/config/ohey_revenuecat_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_action_tile.dart';
@@ -79,6 +82,7 @@ class ProfileScreen extends ConsumerWidget {
         ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
     const headerIsWhite = true;
     const bodyIsWhite = false;
+    final isPlusActive = ref.watch(oheyPlusActiveProvider);
     final hasAdminEmail = OheyAvatar.isAdminEmail(currentAuthUser?.email);
     final hasAdminAccess = ref
         .watch(adminAccessProvider)
@@ -178,7 +182,7 @@ class ProfileScreen extends ConsumerWidget {
                                 isYuruboLoading: yurubosAsync.isLoading,
                                 wishItems: wishItems,
                                 isWishLoading: wishItemsAsync.isLoading,
-                                isPlus: user?.isPlus ?? false,
+                                isPlus: isPlusActive,
                                 onCreateYuruboTap: () =>
                                     _showProfileCreateYuruboSheet(context, ref),
                                 onOpenYuruboTap: onOpenYurubo,

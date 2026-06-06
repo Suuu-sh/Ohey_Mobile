@@ -12,6 +12,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/config/ohey_ads_config.dart';
 import '../../../core/services/ohey_ads_consent_service.dart';
+import '../../../core/services/ohey_plus_service.dart';
 import '../../../core/config/backend_config.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/supabase_client_provider.dart';
@@ -156,7 +157,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.watch(todayReservationsProvider).asData?.value ??
         const <OheyInvite>[];
     final isWhite = ref.watch(oheyThemeModeProvider).isWhite;
-    final currentUser = ref.watch(oheyUserProvider);
+    final isPlusActive = ref.watch(oheyPlusActiveProvider);
     final currentUserId = ref
         .watch(supabaseClientProvider)
         .auth
@@ -178,7 +179,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               items: feedItems,
               isWhite: isWhite,
               isLoading: yurubosAsync.isLoading,
-              isPlus: currentUser?.isPlus ?? false,
+              isPlus: isPlusActive,
               onPageChanged: _handleFeedPageChanged,
               onCreateYuruboPressed: () => _showCreateYuruboSheet(context, ref),
               onRefresh: () async {

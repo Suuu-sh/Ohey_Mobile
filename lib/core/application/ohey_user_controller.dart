@@ -6,6 +6,7 @@ import '../data/ohey_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
 import '../models/ohey_avatar.dart';
 import '../models/ohey_user.dart';
+import '../services/ohey_plus_service.dart';
 import '../services/ohey_push_notification_service.dart';
 
 final oheyUserProvider = NotifierProvider<OheyUserController, OheyUser?>(
@@ -22,6 +23,8 @@ class OheyUserController extends Notifier<OheyUser?> {
         .fetchCurrentUserProfile();
     if (user == null) return false;
     state = user;
+    await ref.read(oheyPlusServiceProvider).configureForCurrentUser();
+    ref.invalidate(oheyPlusCustomerInfoProvider);
     return true;
   }
 
@@ -64,6 +67,8 @@ class OheyUserController extends Notifier<OheyUser?> {
       avatar: profileAvatar,
       userId: normalizedUserId,
     );
+    await ref.read(oheyPlusServiceProvider).configureForCurrentUser();
+    ref.invalidate(oheyPlusCustomerInfoProvider);
   }
 
   Future<void> updateProfile({
@@ -150,6 +155,7 @@ class OheyUserController extends Notifier<OheyUser?> {
       await ref
           .read(oheyPushNotificationServiceProvider)
           .unregisterCurrentToken();
+      await ref.read(oheyPlusServiceProvider).logOutIfConfigured();
       await supabase.auth.signOut(scope: SignOutScope.local);
     } finally {
       // ローカルセッション削除が例外になっても、UI上は必ず未ログイン状態へ戻す。
