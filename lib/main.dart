@@ -12,7 +12,6 @@ import 'core/application/ohey_user_controller.dart';
 import 'core/data/auth_session_guard.dart';
 import 'core/data/supabase_client_provider.dart';
 import 'core/services/ohey_push_notification_service.dart';
-import 'core/services/ohey_widget_sync.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/ohey_theme_mode.dart';
 import 'core/widgets/ohey_tab_shell.dart';
@@ -177,7 +176,6 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
           fit: StackFit.expand,
           children: [
             const OheyTabShell(),
-            const OheyWidgetSnapshotSync(),
             if (!_openingExitCompleted)
               FadeTransition(
                 opacity: _openingExitFade,
