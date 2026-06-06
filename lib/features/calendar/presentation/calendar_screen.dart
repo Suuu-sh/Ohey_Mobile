@@ -2034,7 +2034,6 @@ bool _isPastCalendarDate(DateTime day) =>
 int _calendarFriendStatusRank(String? statusKey) =>
     oheyDailyStatusFromKey(statusKey).availabilityRank;
 
-
 class _CalendarStatusPickerResult {
   const _CalendarStatusPickerResult.status(this.status) : openMethods = false;
   const _CalendarStatusPickerResult.methods()
@@ -2098,6 +2097,8 @@ class _CalendarStatusSheet extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
     final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final isToday = _isSameDate(day, DateTime.now());
+    final title = isToday ? '今日の予定' : '${day.month}/${day.day}の予定';
     return OheyBottomSheetShell(
       showHandle: true,
       radius: 32,
@@ -2109,7 +2110,7 @@ class _CalendarStatusSheet extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '今日の予定',
+                  title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: titleColor,
                     fontWeight: FontWeight.w900,
@@ -2149,10 +2150,7 @@ class _CalendarStatusSheet extends StatelessWidget {
 }
 
 class _CalendarStatusMethodSheet extends StatefulWidget {
-  const _CalendarStatusMethodSheet({
-    required this.day,
-    required this.selected,
-  });
+  const _CalendarStatusMethodSheet({required this.day, required this.selected});
 
   final DateTime day;
   final OheyDailyStatus selected;
@@ -2162,7 +2160,8 @@ class _CalendarStatusMethodSheet extends StatefulWidget {
       _CalendarStatusMethodSheetState();
 }
 
-class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> {
+class _CalendarStatusMethodSheetState
+    extends State<_CalendarStatusMethodSheet> {
   late OheyDailyStatus _selected = widget.selected == OheyDailyStatus.unselected
       ? OheyDailyStatus.selectable.first
       : widget.selected;
@@ -2172,11 +2171,7 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
   late int _weekday = widget.day.weekday;
 
   List<DateTime> get _targetDays => _weeklyRepeat
-      ? _calendarWeeklyRepeatDays(
-          widget.day,
-          _repeatCount,
-          weekday: _weekday,
-        )
+      ? _calendarWeeklyRepeatDays(widget.day, _repeatCount, weekday: _weekday)
       : _calendarNextDays(widget.day, _dayCount);
 
   String get _summaryText {
@@ -2189,9 +2184,9 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
   }
 
   void _submit() {
-    Navigator.of(context).pop(
-      _CalendarStatusUpdateRequest(status: _selected, days: _targetDays),
-    );
+    Navigator.of(
+      context,
+    ).pop(_CalendarStatusUpdateRequest(status: _selected, days: _targetDays));
   }
 
   void _setDayCount(int value) {
@@ -2293,16 +2288,11 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
               decoration: BoxDecoration(
                 color: accent.withValues(alpha: .12),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: accent.withValues(alpha: .28),
-                ),
+                border: Border.all(color: accent.withValues(alpha: .28)),
               ),
               child: Row(
                 children: [
-                  Icon(
-                    CupertinoIcons.calendar,
-                    color: accent,
-                  ),
+                  Icon(CupertinoIcons.calendar, color: accent),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -2411,7 +2401,10 @@ class _CalendarWeekdaySelector extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('曜日', style: TextStyle(color: sub, fontWeight: FontWeight.w800)),
+          Text(
+            '曜日',
+            style: TextStyle(color: sub, fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
