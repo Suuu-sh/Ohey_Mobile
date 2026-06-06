@@ -801,7 +801,7 @@ class _DailyStatusRequiredSheetState
     return PopScope(
       canPop: false,
       child: OheyBottomSheetShell(
-        showHandle: false,
+        showHandle: true,
         showBottomCloseButton: false,
         maxHeightFactor: .88,
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
@@ -972,7 +972,7 @@ class _YuruboParticipationRequestSheetState
         );
       },
       child: OheyBottomSheetShell(
-        showHandle: false,
+        showHandle: true,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
         radius: 34,

@@ -29,7 +29,7 @@ class OheyUserProfileSheet extends StatelessWidget {
         media.size.height - media.padding.top - media.padding.bottom;
 
     return OheyBottomSheetShell(
-      showHandle: false,
+      showHandle: true,
       bottomCloseHorizontalPadding: bottomCloseHorizontalPadding,
       padding: EdgeInsets.zero,
       radius: 0,
