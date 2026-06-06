@@ -2082,14 +2082,33 @@ class _CalendarStatusSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
     return OheyBottomSheetShell(
-      title: '今日の予定',
       showHandle: true,
       radius: 32,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '今日の予定',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: titleColor,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              _CalendarStatusHeaderActionButton(
+                onTap: () => Navigator.of(
+                  context,
+                ).pop(const _CalendarStatusPickerResult.methods()),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           Text(
             showLockedExplanation
                 ? '先に自分の予定を設定すると見られるよ。'
@@ -2108,15 +2127,6 @@ class _CalendarStatusSheet extends StatelessWidget {
             ),
             const SizedBox(height: 8),
           ],
-          const SizedBox(height: 2),
-          _CalendarStatusActionButton(
-            icon: CupertinoIcons.rectangle_stack_badge_plus,
-            title: '一括・繰り返し設定',
-            subtitle: '複数日まとめて予定を設定します',
-            onTap: () => Navigator.of(
-              context,
-            ).pop(const _CalendarStatusPickerResult.methods()),
-          ),
         ],
       ),
     );
@@ -2493,6 +2503,53 @@ class _CalendarStatusActionButton extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CalendarStatusHeaderActionButton extends StatelessWidget {
+  const _CalendarStatusHeaderActionButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return CupertinoButton(
+      minSize: 0,
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(999),
+      onPressed: onTap,
+      child: Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: AppColors.cFF54D7FF.withValues(alpha: isWhite ? .14 : .18),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: AppColors.cFF54D7FF.withValues(alpha: isWhite ? .34 : .42),
+          ),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              CupertinoIcons.rectangle_stack_badge_plus,
+              color: AppColors.cFF54D7FF,
+              size: 18,
+            ),
+            SizedBox(width: 6),
+            Text(
+              '一括',
+              style: TextStyle(
+                color: AppColors.cFF54D7FF,
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
               ),
             ),
           ],
