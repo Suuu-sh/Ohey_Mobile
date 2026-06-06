@@ -2057,13 +2057,28 @@ class _CalendarStatusUpdateRequest {
 
 String _formatCalendarDay(DateTime day) => '${day.month}/${day.day}';
 
+DateTime _calendarFirstWeekdayOnOrAfter(DateTime day, int weekday) {
+  final start = _dateOnly(day);
+  final offset = (weekday - start.weekday + 7) % 7;
+  return start.add(Duration(days: offset));
+}
+
+String _calendarWeekdayLabelByIndex(int weekday) =>
+    const ['月', '火', '水', '木', '金', '土', '日'][weekday - 1];
+
 List<DateTime> _calendarNextDays(DateTime day, int count) {
   final start = _dateOnly(day);
   return [for (var i = 0; i < count; i++) start.add(Duration(days: i))];
 }
 
-List<DateTime> _calendarWeeklyRepeatDays(DateTime day, int count) {
-  final start = _dateOnly(day);
+List<DateTime> _calendarWeeklyRepeatDays(
+  DateTime day,
+  int count, {
+  int? weekday,
+}) {
+  final start = weekday == null
+      ? _dateOnly(day)
+      : _calendarFirstWeekdayOnOrAfter(day, weekday);
   return [for (var i = 0; i < count; i++) start.add(Duration(days: i * 7))];
 }
 
@@ -2154,16 +2169,21 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
   bool _weeklyRepeat = false;
   int _dayCount = 7;
   int _repeatCount = 4;
+  late int _weekday = widget.day.weekday;
 
   List<DateTime> get _targetDays => _weeklyRepeat
-      ? _calendarWeeklyRepeatDays(widget.day, _repeatCount)
+      ? _calendarWeeklyRepeatDays(
+          widget.day,
+          _repeatCount,
+          weekday: _weekday,
+        )
       : _calendarNextDays(widget.day, _dayCount);
 
   String get _summaryText {
     final days = _targetDays;
     if (days.isEmpty) return '';
     if (_weeklyRepeat) {
-      return '${_calendarWeekdayLabel(widget.day)}曜に$_repeatCount回（${_formatCalendarDay(days.first)}〜${_formatCalendarDay(days.last)}）';
+      return '${_calendarWeekdayLabelByIndex(_weekday)}曜に$_repeatCount回（${_formatCalendarDay(days.first)}〜${_formatCalendarDay(days.last)}）';
     }
     return '${_formatCalendarDay(days.first)}〜${_formatCalendarDay(days.last)} の$_dayCount日分';
   }
@@ -2200,35 +2220,30 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
               style: TextStyle(color: sub, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 14),
-            Text('予定', style: TextStyle(color: sub, fontWeight: FontWeight.w900)),
+            Text(
+              '予定',
+              style: TextStyle(color: sub, fontWeight: FontWeight.w900),
+            ),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            Row(
               children: [
-                for (final status in OheyDailyStatus.selectable)
-                  ChoiceChip(
-                    selected: status == _selected,
-                    label: Text(status.label),
-                    onSelected: (_) => setState(() => _selected = status),
-                    selectedColor: oheyDailyStatusColor(status),
-                    labelStyle: TextStyle(
-                      color: status == _selected ? AppColors.cFF06111D : sub,
-                      fontWeight: FontWeight.w900,
-                    ),
-                    backgroundColor: isWhite
-                        ? AppColors.white.withValues(alpha: .88)
-                        : AppColors.white.withValues(alpha: .08),
-                    side: BorderSide(
-                      color: status == _selected
-                          ? AppColors.transparent
-                          : AppColors.white.withValues(alpha: .12),
+                for (final entry in OheyDailyStatus.selectable.indexed) ...[
+                  if (entry.$1 > 0) const SizedBox(width: 6),
+                  Expanded(
+                    child: _CalendarStatusCompactChoice(
+                      status: entry.$2,
+                      selected: entry.$2 == _selected,
+                      onTap: () => setState(() => _selected = entry.$2),
                     ),
                   ),
+                ],
               ],
             ),
             const SizedBox(height: 16),
-            Text('設定タイプ', style: TextStyle(color: sub, fontWeight: FontWeight.w900)),
+            Text(
+              '設定タイプ',
+              style: TextStyle(color: sub, fontWeight: FontWeight.w900),
+            ),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -2251,6 +2266,13 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
                 ),
               ],
             ),
+            if (_weeklyRepeat) ...[
+              const SizedBox(height: 12),
+              _CalendarWeekdaySelector(
+                selectedWeekday: _weekday,
+                onChanged: (weekday) => setState(() => _weekday = weekday),
+              ),
+            ],
             const SizedBox(height: 12),
             _CalendarStatusStepper(
               title: _weeklyRepeat ? '繰り返し回数' : 'まとめる日数',
@@ -2266,11 +2288,16 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
               decoration: BoxDecoration(
                 color: AppColors.cFF54D7FF.withValues(alpha: .12),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.cFF54D7FF.withValues(alpha: .28)),
+                border: Border.all(
+                  color: AppColors.cFF54D7FF.withValues(alpha: .28),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(CupertinoIcons.calendar, color: AppColors.cFF54D7FF),
+                  const Icon(
+                    CupertinoIcons.calendar,
+                    color: AppColors.cFF54D7FF,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -2285,14 +2312,214 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
               ),
             ),
             const SizedBox(height: 14),
-            _CalendarStatusActionButton(
-              icon: CupertinoIcons.check_mark_circled_solid,
+            _CalendarStatusSubmit3DButton(
               title: 'この内容で設定する',
               subtitle: '$_summaryText を${_selected.label}にします',
               onTap: _submit,
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CalendarStatusCompactChoice extends StatelessWidget {
+  const _CalendarStatusCompactChoice({
+    required this.status,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final OheyDailyStatus status;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final foreground = selected
+        ? AppColors.cFF06111D
+        : isWhite
+        ? AppColors.cFF101820
+        : AppColors.white.withValues(alpha: .82);
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        height: 40,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 3),
+        decoration: BoxDecoration(
+          color: selected
+              ? oheyDailyStatusColor(status)
+              : isWhite
+              ? AppColors.white.withValues(alpha: .88)
+              : AppColors.white.withValues(alpha: .08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected
+                ? AppColors.transparent
+                : AppColors.white.withValues(alpha: .14),
+          ),
+        ),
+        child: Text(
+          status.label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: foreground,
+            fontSize: status == OheyDailyStatus.maybeAvailable ? 11 : 12,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CalendarWeekdaySelector extends StatelessWidget {
+  const _CalendarWeekdaySelector({
+    required this.selectedWeekday,
+    required this.onChanged,
+  });
+
+  final int selectedWeekday;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isWhite
+            ? AppColors.white.withValues(alpha: .88)
+            : AppColors.white.withValues(alpha: .08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.white.withValues(alpha: .12)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('曜日', style: TextStyle(color: sub, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              for (var weekday = 1; weekday <= 7; weekday++) ...[
+                if (weekday > 1) const SizedBox(width: 5),
+                Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () => onChanged(weekday),
+                    child: Container(
+                      height: 34,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: weekday == selectedWeekday
+                            ? AppColors.cFF54D7FF
+                            : AppColors.white.withValues(alpha: .07),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: weekday == selectedWeekday
+                              ? AppColors.transparent
+                              : AppColors.white.withValues(alpha: .10),
+                        ),
+                      ),
+                      child: Text(
+                        _calendarWeekdayLabelByIndex(weekday),
+                        style: TextStyle(
+                          color: weekday == selectedWeekday
+                              ? AppColors.cFF06111D
+                              : isWhite
+                              ? AppColors.cFF101820
+                              : AppColors.white,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CalendarStatusSubmit3DButton extends StatelessWidget {
+  const _CalendarStatusSubmit3DButton({
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Ohey3DButtonSurface(
+      onTap: onTap,
+      height: 76,
+      radius: 20,
+      color: AppColors.cFF54D7FF,
+      bottomColor: const Color(0xFF138FC8),
+      useGradient: true,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      borderColor: AppColors.white.withValues(alpha: .20),
+      outerShadows: [
+        BoxShadow(
+          color: AppColors.cFF54D7FF.withValues(alpha: .32),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
+      innerShadows: [
+        BoxShadow(
+          color: AppColors.white.withValues(alpha: .14),
+          blurRadius: 10,
+          offset: const Offset(-2, -2),
+        ),
+      ],
+      child: Row(
+        children: [
+          const Icon(
+            CupertinoIcons.check_mark_circled_solid,
+            color: AppColors.cFF06111D,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.cFF06111D,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.cFF06111D.withValues(alpha: .68),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2340,7 +2567,10 @@ class _CalendarStatusModeButton extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: TextStyle(color: foreground, fontWeight: FontWeight.w900)),
+            Text(
+              title,
+              style: TextStyle(color: foreground, fontWeight: FontWeight.w900),
+            ),
             const SizedBox(height: 3),
             Text(
               subtitle,
@@ -2393,7 +2623,10 @@ class _CalendarStatusStepper extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(color: sub, fontWeight: FontWeight.w800)),
+                Text(
+                  title,
+                  style: TextStyle(color: sub, fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   '$value$unit',
@@ -2453,65 +2686,6 @@ class _CalendarStatusRoundButton extends StatelessWidget {
   }
 }
 
-class _CalendarStatusActionButton extends StatelessWidget {
-  const _CalendarStatusActionButton({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isWhite
-              ? AppColors.white.withValues(alpha: .88)
-              : AppColors.white.withValues(alpha: .08),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.white.withValues(alpha: .12)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: AppColors.cFF54D7FF),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontWeight: FontWeight.w900),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: isWhite ? AppColors.cFF657282 : AppColors.white70,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _CalendarStatusHeaderActionButton extends StatelessWidget {
   const _CalendarStatusHeaderActionButton({required this.onTap});
 
@@ -2521,7 +2695,7 @@ class _CalendarStatusHeaderActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     return CupertinoButton(
-      minSize: 0,
+      minimumSize: Size.zero,
       padding: EdgeInsets.zero,
       borderRadius: BorderRadius.circular(999),
       onPressed: onTap,
