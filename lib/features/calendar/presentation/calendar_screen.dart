@@ -2033,7 +2033,6 @@ class _CalendarStatusSheet extends StatelessWidget {
             OheyDailyStatus3DOption(
               status: status,
               title: status.label,
-              subtitle: status.description,
               selected: status == selected,
               onTap: () => Navigator.of(context).pop(status),
             ),

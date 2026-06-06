@@ -851,7 +851,6 @@ class _DailyStatusRequiredSheetState
               OheyDailyStatus3DOption(
                 status: status,
                 title: status.label,
-                subtitle: status.shortCopy,
                 onTap: () => _select(status),
                 enabled: _savingStatus == null,
                 isLoading: _savingStatus == status,

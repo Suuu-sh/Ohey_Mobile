@@ -49,7 +49,6 @@ class _ProfileStatusSheetContentState
           OheyDailyStatus3DOption(
             status: status,
             title: status.label,
-            subtitle: status.description,
             selected: status == widget.selected,
             enabled: _savingStatus == null || _savingStatus == status,
             isLoading: _savingStatus == status,
