@@ -109,10 +109,8 @@ class _ProfileWishListEmptyState extends StatelessWidget {
         size: 46,
       ),
       title: 'やりたいことを保存しておこう',
-      message: 'あとで誰かと行きたいことを保存できます。',
       titleColor: AppColors.white,
       messageColor: _ProfileColors.sub,
-      hints: const ['焼肉', 'カフェ', '勉強'],
     );
   }
 }
@@ -141,17 +139,6 @@ class _ProfileWishListHeader extends StatelessWidget {
                     height: 1,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -1,
-                  ),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  'あとで誘いたいことをためておく場所',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: _ProfileColors.sub,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],

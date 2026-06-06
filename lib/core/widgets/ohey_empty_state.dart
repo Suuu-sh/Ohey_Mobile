@@ -6,7 +6,7 @@ class OheyEmptyState extends StatelessWidget {
     super.key,
     required this.visual,
     required this.title,
-    required this.message,
+    this.message,
     this.titleColor,
     this.messageColor,
     this.padding = const EdgeInsets.all(30),
@@ -17,7 +17,7 @@ class OheyEmptyState extends StatelessWidget {
 
   final Widget visual;
   final String title;
-  final String message;
+  final String? message;
   final Color? titleColor;
   final Color? messageColor;
   final EdgeInsetsGeometry padding;
@@ -47,20 +47,22 @@ class OheyEmptyState extends StatelessWidget {
                 fontWeight: FontWeight.w900,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color:
-                    messageColor ??
-                    (isWhite
-                        ? AppColors.cFF6E7783
-                        : AppColors.white.withValues(alpha: .55)),
-                fontWeight: FontWeight.w800,
-                height: 1.45,
+            if (message?.trim().isNotEmpty == true) ...[
+              const SizedBox(height: 8),
+              Text(
+                message!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color:
+                      messageColor ??
+                      (isWhite
+                          ? AppColors.cFF6E7783
+                          : AppColors.white.withValues(alpha: .55)),
+                  fontWeight: FontWeight.w800,
+                  height: 1.45,
+                ),
               ),
-            ),
+            ],
             if (hints.isNotEmpty) ...[
               const SizedBox(height: 14),
               Wrap(
