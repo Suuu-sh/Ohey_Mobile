@@ -1043,7 +1043,6 @@ class _InviteWeeklyDatePickerState
     final today = _dateOnly(DateTime.now());
     final months = _monthsFrom(today, count: 5);
     final statusByDateKey = <String, OheyDailyStatus>{};
-    var isLoading = false;
 
     for (final friendId in widget.friendIds) {
       for (final month in months) {
@@ -1053,7 +1052,6 @@ class _InviteWeeklyDatePickerState
             month: month,
           )),
         );
-        isLoading = isLoading || statuses.isLoading;
         final values =
             statuses.asData?.value ?? const <String, OheyDailyStatus>{};
         for (final entry in values.entries) {
@@ -1070,23 +1068,6 @@ class _InviteWeeklyDatePickerState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 160),
-          child: isLoading
-              ? Padding(
-                  key: const ValueKey('loading'),
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    '相手の予定ありの日を除いて表示中…',
-                    style: TextStyle(
-                      color: widget.emptyColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                )
-              : const SizedBox.shrink(key: ValueKey('idle')),
-        ),
         Row(
           children: [
             Text(
