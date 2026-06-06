@@ -655,36 +655,15 @@ class _SaveAvatarButton extends StatelessWidget {
     radius: 21,
     color: AppColors.primaryAction,
     bottomColor: AppColors.primaryActionShadow,
-    padding: const EdgeInsets.fromLTRB(13, 0, 15, 0),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 22,
-          height: 22,
-          decoration: BoxDecoration(
-            color: AppColors.white.withValues(alpha: .24),
-            shape: BoxShape.circle,
-          ),
-          child: const Center(
-            child: OheyGeneratedIcon(
-              CupertinoIcons.checkmark,
-              color: AppColors.white,
-              size: 16,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        const Text(
-          '保存',
-          style: TextStyle(
-            color: AppColors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w900,
-            letterSpacing: .1,
-          ),
-        ),
-      ],
+    padding: const EdgeInsets.symmetric(horizontal: 22),
+    child: const Text(
+      '保存',
+      style: TextStyle(
+        color: AppColors.white,
+        fontSize: 14,
+        fontWeight: FontWeight.w900,
+        letterSpacing: .1,
+      ),
     ),
   );
 }
