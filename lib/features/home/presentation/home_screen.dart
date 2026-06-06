@@ -69,17 +69,6 @@ Future<void> _holdRefreshIndicatorUntilDone(DateTime startedAt) async {
   }
 }
 
-Future<void> _showOheyPlusSheet(BuildContext context) async {
-  HapticFeedback.selectionClick();
-  await showOheyBottomSheet<void>(
-    context: context,
-    useSafeArea: true,
-    isScrollControlled: true,
-    barrierColor: AppColors.black.withValues(alpha: .62),
-    builder: (context) => const _OheyPlusPurchaseSheet(),
-  );
-}
-
 class _FeedCreateYuruboFab extends StatelessWidget {
   const _FeedCreateYuruboFab({required this.onTap});
 
@@ -252,11 +241,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   builder: (_) => const _FeedNotificationsScreen(),
                 ),
               ),
-            )
-          else
-            _FeedPlusBanner(
-              isWhite: isWhite,
-              onTap: () => _showOheyPlusSheet(context),
             ),
         ],
       ),

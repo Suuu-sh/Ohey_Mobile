@@ -440,11 +440,13 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.isYuruboLoading,
     required this.wishItems,
     required this.isWishLoading,
+    required this.isPlus,
     required this.onCreateYuruboTap,
     required this.onOpenYuruboTap,
     required this.onOpenWishListTap,
     required this.onAddFriendsTap,
     required this.onChangeStatusTap,
+    required this.onPlusTap,
   });
 
   final int friendsCount;
@@ -452,11 +454,13 @@ class _ProfileActivityHome extends StatelessWidget {
   final bool isYuruboLoading;
   final List<WishItem> wishItems;
   final bool isWishLoading;
+  final bool isPlus;
   final VoidCallback onCreateYuruboTap;
   final VoidCallback? onOpenYuruboTap;
   final VoidCallback onOpenWishListTap;
   final VoidCallback onAddFriendsTap;
   final VoidCallback onChangeStatusTap;
+  final VoidCallback onPlusTap;
 
   @override
   Widget build(BuildContext context) {
@@ -477,7 +481,9 @@ class _ProfileActivityHome extends StatelessWidget {
           _ProfileTodayScheduleSection(
             joinedYurubos: joinedYurubos,
             isLoading: isYuruboLoading,
+            isPlus: isPlus,
             onFindTap: onOpenYuruboTap ?? onCreateYuruboTap,
+            onPlusTap: onPlusTap,
           ),
           const SizedBox(height: 22),
           Padding(
@@ -525,19 +531,24 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
   const _ProfileTodayScheduleSection({
     required this.joinedYurubos,
     required this.isLoading,
+    required this.isPlus,
     required this.onFindTap,
+    required this.onPlusTap,
   });
 
   final List<Yurubo> joinedYurubos;
   final bool isLoading;
+  final bool isPlus;
   final VoidCallback onFindTap;
+  final VoidCallback onPlusTap;
 
   @override
   Widget build(BuildContext context) {
     final event = joinedYurubos.isEmpty ? null : joinedYurubos.first;
     const accent = AppColors.cFFFF75B5;
+    final showPlus = event == null && !isLoading && !isPlus;
     final title = event == null
-        ? (isLoading ? '読み込み中' : '本日の予定はありません')
+        ? (isLoading ? '読み込み中' : (showPlus ? 'Ohey Plus' : '本日の予定はありません'))
         : event.title;
     final details = event == null
         ? ''
@@ -575,11 +586,11 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 7),
-                        const Text(
-                          '本日の予定',
+                        Text(
+                          showPlus ? '広告なしで使える' : '本日の予定',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: AppColors.white,
                             fontSize: 15,
                             fontWeight: FontWeight.w900,
@@ -636,8 +647,10 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                 SizedBox(
                   width: 82,
                   child: Ohey3DButton(
-                    label: '探す',
-                    onTap: isLoading ? null : onFindTap,
+                    label: showPlus ? '見る' : '探す',
+                    onTap: isLoading
+                        ? null
+                        : (showPlus ? onPlusTap : onFindTap),
                     height: 42,
                     radius: 21,
                     color: AppColors.cFFFF75B5,
@@ -1075,6 +1088,137 @@ class _ProfileFriendActionRow extends StatelessWidget {
             CupertinoIcons.plus,
             color: AppColors.cFF101820,
             size: 18,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileOheyPlusPurchaseSheet extends StatelessWidget {
+  const _ProfileOheyPlusPurchaseSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 10, 22, 28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 42,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.white.withValues(alpha: .18),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          const SizedBox(height: 22),
+          const OheyPopIcon(
+            icon: CupertinoIcons.sparkles,
+            color: AppColors.cFFFF75B5,
+            size: 58,
+            iconSize: 30,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Ohey Plus',
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'まずは広告を消せるプランとして準備中です。購入機能が有効になったら、ここから申し込めます。',
+            style: TextStyle(
+              color: AppColors.white.withValues(alpha: .68),
+              fontSize: 14,
+              height: 1.55,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 18),
+          _ProfileOheyPlusBenefitRow(
+            icon: CupertinoIcons.eye_slash_fill,
+            title: '広告を非表示',
+            message: 'ゆるぼ一覧の広告ブロックを消して、投稿だけに集中できます。',
+          ),
+          const SizedBox(height: 20),
+          Ohey3DButton(
+            label: '購入準備中',
+            icon: CupertinoIcons.lock_fill,
+            onTap: () => Navigator.of(context).pop(),
+            height: 54,
+            radius: 24,
+            color: AppColors.cFFFF75B5,
+            foregroundColor: AppColors.cFF101820,
+            shadowColor: AppColors.cFFE05F83,
+            fontSize: 15,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileOheyPlusBenefitRow extends StatelessWidget {
+  const _ProfileOheyPlusBenefitRow({
+    required this.icon,
+    required this.title,
+    required this.message,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: .07),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.white.withValues(alpha: .10)),
+      ),
+      child: Row(
+        children: [
+          OheyPopIcon(
+            icon: icon,
+            color: AppColors.cFFFF75B5,
+            size: 42,
+            iconSize: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  message,
+                  style: TextStyle(
+                    color: AppColors.white.withValues(alpha: .62),
+                    fontSize: 12,
+                    height: 1.35,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

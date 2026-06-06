@@ -178,6 +178,7 @@ class ProfileScreen extends ConsumerWidget {
                                 isYuruboLoading: yurubosAsync.isLoading,
                                 wishItems: wishItems,
                                 isWishLoading: wishItemsAsync.isLoading,
+                                isPlus: user?.isPlus ?? false,
                                 onCreateYuruboTap: () =>
                                     _showProfileCreateYuruboSheet(context, ref),
                                 onOpenYuruboTap: onOpenYurubo,
@@ -187,6 +188,8 @@ class ProfileScreen extends ConsumerWidget {
                                     showFriendAddSheet(context, ref),
                                 onChangeStatusTap: () =>
                                     _showProfileStatusSheet(context, ref, user),
+                                onPlusTap: () =>
+                                    _showProfileOheyPlusSheet(context),
                               ),
                             ),
                           ],
@@ -210,6 +213,17 @@ class _ProfileColors {
   static const sub = AppColors.cFF8F9BAB;
   static const lime = AppColors.cFF9AF21A;
   static const pink = AppColors.cFFFF5EA8;
+}
+
+Future<void> _showProfileOheyPlusSheet(BuildContext context) async {
+  HapticFeedback.selectionClick();
+  await showOheyBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: AppColors.black.withValues(alpha: .62),
+    builder: (context) => const _ProfileOheyPlusPurchaseSheet(),
+  );
 }
 
 Future<void> _respondInvite(
