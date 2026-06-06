@@ -13,7 +13,7 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
       builder: (context, constraints) {
         final compact = constraints.maxHeight < 820;
         final extraCompact = constraints.maxHeight < 700;
-        final fieldHeight = compact ? 50.0 : 64.0;
+        final fieldHeight = constraints.maxHeight < 640 ? 56.0 : 64.0;
         final buttonHeight = compact ? 54.0 : 64.0;
         final avatarSize = extraCompact ? 74.0 : (compact ? 104.0 : 144.0);
         return _fixedAuthPage(
