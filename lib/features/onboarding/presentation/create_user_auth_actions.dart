@@ -28,7 +28,6 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _userIdController.clear();
       _nameController.clear();
       _avatar = OheyAvatar.defaultAvatar;
-      _gender = OheyGender.unspecified;
       _error = null;
       _notice = null;
     });
@@ -123,7 +122,6 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _userIdController.clear();
       _nameController.clear();
       _avatar = OheyAvatar.defaultAvatar;
-      _gender = OheyGender.unspecified;
       _step = _OnboardingStep.profile;
       _error = null;
       _notice = null;

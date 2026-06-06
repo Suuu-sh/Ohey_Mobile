@@ -92,24 +92,23 @@ on conflict (provider, provider_id) do update set
   identity_data = excluded.identity_data,
   updated_at = now();
 
-insert into public.profiles (id, display_name, user_id, gender, character_key, avatar_url, is_plus)
+insert into public.profiles (id, display_name, user_id, character_key, avatar_url, is_plus)
 values
-  ('00000000-0000-4000-8000-000000000101', 'ユウタ', 'dev_yuta',   'male', 'avatar', 'ohey_avatar:v1:0:1:2:0:0:3', true),
-  ('00000000-0000-4000-8000-000000000102', 'ケン',   'dev_ken',    'male', 'avatar', 'ohey_avatar:v1:5:2:5:2:1:0', false),
-  ('00000000-0000-4000-8000-000000000103', 'リョウ', 'dev_ryo',    'male', 'avatar', 'ohey_avatar:v1:2:6:0:3:0:1', false),
-  ('00000000-0000-4000-8000-000000000104', 'ハル',   'dev_haru',   'female', 'avatar', 'ohey_avatar:v1:1:4:3:1:2:3', false),
-  ('00000000-0000-4000-8000-000000000105', 'タクミ', 'dev_takumi', 'male', 'avatar', 'ohey_avatar:v1:3:5:6:0:1:0', false),
-  ('00000000-0000-4000-8000-000000000106', 'ミカ',   'dev_mika',   'female', 'avatar', 'ohey_avatar:v1:4:3:1:4:2:2', false),
-  ('00000000-0000-4000-8000-000000000107', 'レン',   'dev_ren',    'male', 'avatar', 'ohey_avatar:v1:6:0:4:5:3:1', false),
-  ('00000000-0000-4000-8000-000000000108', 'サキ',   'dev_saki',   'female', 'avatar', 'ohey_avatar:v1:7:7:3:6:4:0', false),
-  ('00000000-0000-4000-8000-000000000109', 'Ana',    'dev_ana',    'female', 'avatar', 'ohey_avatar:v1:8:8:7:1:1:3', false),
-  ('00000000-0000-4000-8000-000000000110', 'Kai',    'dev_kai',    'male', 'avatar', 'ohey_avatar:v1:9:9:8:2:2:2', false)
+  ('00000000-0000-4000-8000-000000000101', 'ユウタ', 'dev_yuta',   'avatar', 'ohey_avatar:v1:0:1:2:0:0:3', true),
+  ('00000000-0000-4000-8000-000000000102', 'ケン',   'dev_ken',    'avatar', 'ohey_avatar:v1:5:2:5:2:1:0', false),
+  ('00000000-0000-4000-8000-000000000103', 'リョウ', 'dev_ryo',    'avatar', 'ohey_avatar:v1:2:6:0:3:0:1', false),
+  ('00000000-0000-4000-8000-000000000104', 'ハル',   'dev_haru',   'avatar', 'ohey_avatar:v1:1:4:3:1:2:3', false),
+  ('00000000-0000-4000-8000-000000000105', 'タクミ', 'dev_takumi', 'avatar', 'ohey_avatar:v1:3:5:6:0:1:0', false),
+  ('00000000-0000-4000-8000-000000000106', 'ミカ',   'dev_mika',   'avatar', 'ohey_avatar:v1:4:3:1:4:2:2', false),
+  ('00000000-0000-4000-8000-000000000107', 'レン',   'dev_ren',    'avatar', 'ohey_avatar:v1:6:0:4:5:3:1', false),
+  ('00000000-0000-4000-8000-000000000108', 'サキ',   'dev_saki',   'avatar', 'ohey_avatar:v1:7:7:3:6:4:0', false),
+  ('00000000-0000-4000-8000-000000000109', 'Ana',    'dev_ana',    'avatar', 'ohey_avatar:v1:8:8:7:1:1:3', false),
+  ('00000000-0000-4000-8000-000000000110', 'Kai',    'dev_kai',    'avatar', 'ohey_avatar:v1:9:9:8:2:2:2', false)
 on conflict (id) do update set
   display_name = excluded.display_name,
   user_id = excluded.user_id,
   character_key = excluded.character_key,
   avatar_url = excluded.avatar_url,
-  gender = excluded.gender,
   is_plus = excluded.is_plus,
   updated_at = now();
 

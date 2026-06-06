@@ -6,7 +6,6 @@ import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/memory.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
-import '../../../core/models/ohey_gender.dart';
 
 final memoryRepositoryProvider = Provider<MemoryRepository>((ref) {
   return BackendMemoryRepository(ref.watch(backendApiClientProvider));
@@ -229,7 +228,6 @@ OheyFriend _friendFromProfileRow(
     characterAssetPath: '',
     kind: OheyFriendKind.cloud,
     palette: _paletteFromKey(profile['palette'] as String?),
-    gender: oheyGenderFromKey(profile['gender'] as String?),
     avatar: OheyAvatar.decode(profile['avatar_url'] as String?),
     isFavorite: isFavorite,
     statusKey: statusKey,

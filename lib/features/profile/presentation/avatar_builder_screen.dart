@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/models/ohey_avatar.dart';
-import '../../../core/models/ohey_gender.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
@@ -12,23 +11,16 @@ import '../../../core/widgets/ohey_bottom_sheet.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
 
 class AvatarBuilderScreen extends StatefulWidget {
-  const AvatarBuilderScreen({
-    super.key,
-    required this.initialAvatar,
-    this.gender = OheyGender.unspecified,
-  });
+  const AvatarBuilderScreen({super.key, required this.initialAvatar});
 
   final OheyAvatar initialAvatar;
-  final OheyGender gender;
 
   @override
   State<AvatarBuilderScreen> createState() => _AvatarBuilderScreenState();
 }
 
 class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
-  late OheyAvatar _avatar = widget.initialAvatar.normalizedForGender(
-    widget.gender,
-  );
+  late OheyAvatar _avatar = widget.initialAvatar;
   _AvatarTab _tab = _AvatarTab.face;
 
   bool get _hasChanges => _avatar.encode() != widget.initialAvatar.encode();
@@ -92,11 +84,8 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
                       Expanded(
                         child: _AvatarPreviewStage(
                           avatar: _avatar,
-                          onRandom: () => setState(
-                            () => _avatar = OheyAvatar.random(
-                              gender: widget.gender,
-                            ),
-                          ),
+                          onRandom: () =>
+                              setState(() => _avatar = OheyAvatar.random()),
                         ),
                       ),
                       _TabBar(
@@ -117,7 +106,6 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
                           child: _OptionsPanel(
                             tab: _tab,
                             avatar: _avatar,
-                            gender: widget.gender,
                             onChanged: (avatar) =>
                                 setState(() => _avatar = avatar),
                           ),
@@ -816,13 +804,11 @@ class _OptionsPanel extends StatelessWidget {
   const _OptionsPanel({
     required this.tab,
     required this.avatar,
-    required this.gender,
     required this.onChanged,
   });
 
   final _AvatarTab tab;
   final OheyAvatar avatar;
-  final OheyGender gender;
   final ValueChanged<OheyAvatar> onChanged;
 
   @override
@@ -872,7 +858,7 @@ class _OptionsPanel extends StatelessWidget {
         children: [
           _Title('髪型'),
           _ChoiceGrid(
-            indices: OheyAvatar.selectableHairIndicesForGender(gender),
+            count: OheyAvatar.hairStyles.length,
             selected: avatar.hair,
             label: (i) => OheyAvatar.hairStyles[i],
             builder: (i) => OheyAvatarView(
@@ -997,12 +983,10 @@ class _ChoiceGrid extends StatelessWidget {
     required this.label,
     required this.builder,
     required this.onTap,
-    this.count,
-    this.indices,
+    required this.count,
   });
 
-  final int? count;
-  final List<int>? indices;
+  final int count;
   final int selected;
   final String Function(int) label;
   final Widget Function(int) builder;
@@ -1010,7 +994,7 @@ class _ChoiceGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = indices ?? [for (var i = 0; i < (count ?? 0); i++) i];
+    final items = [for (var i = 0; i < count; i++) i];
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),

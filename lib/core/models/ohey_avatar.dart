@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import '../config/admin_config.dart';
-import 'ohey_gender.dart';
 import 'package:ohey/core/theme/app_colors.dart';
 
 class OheyAvatar {
@@ -54,12 +53,11 @@ class OheyAvatar {
 
   static bool isAdminEmail(String? email) => AdminConfig.isAdminEmail(email);
 
-  static OheyAvatar random({OheyGender gender = OheyGender.unspecified}) {
+  static OheyAvatar random() {
     final random = Random();
-    final hairOptions = selectableHairIndicesForGender(gender);
     return OheyAvatar(
       skin: random.nextInt(skinColors.length),
-      hair: hairOptions[random.nextInt(hairOptions.length)],
+      hair: random.nextInt(hairStyles.length),
       shirt: random.nextInt(shirtColors.length),
       eyes: random.nextInt(eyeStyles.length),
       mouth: random.nextInt(mouthStyles.length),
@@ -118,13 +116,6 @@ class OheyAvatar {
       background: background ?? this.background,
       isAdmin: isAdmin,
     );
-  }
-
-  OheyAvatar normalizedForGender(OheyGender gender) {
-    if (isAdmin) return this;
-    final hairOptions = selectableHairIndicesForGender(gender);
-    if (hairOptions.contains(hair)) return this;
-    return copyWith(hair: hairOptions.first);
   }
 
   static const backgroundStyles = ['Ohey pink', 'おへとも・もも'];
@@ -206,16 +197,4 @@ class OheyAvatar {
     'ヘッドホン',
     'ヘアピン',
   ];
-
-  static const maleHairIndices = [0, 1, 2, 3, 5, 9, 10];
-  static const femaleHairIndices = [1, 4, 6, 7, 8, 9, 11];
-
-  static List<int> selectableHairIndicesForGender(OheyGender gender) =>
-      switch (gender) {
-        OheyGender.male => maleHairIndices,
-        OheyGender.female => femaleHairIndices,
-        OheyGender.unspecified => [
-          for (var i = 0; i < hairStyles.length; i++) i,
-        ],
-      };
 }

@@ -11,7 +11,6 @@ import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/ohey_visibility.dart';
 import '../../../core/models/wish_item.dart';
 import '../../../core/models/yurubo.dart';
-import '../../../core/models/ohey_gender.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_user.dart';
 import '../../../core/services/ohey_ads_consent_service.dart';

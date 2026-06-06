@@ -273,95 +273,6 @@ class _AdminStatusDropdown extends StatelessWidget {
   }
 }
 
-class _AdminGenderDropdown extends StatelessWidget {
-  const _AdminGenderDropdown({
-    required this.label,
-    required this.value,
-    required this.onChanged,
-  });
-
-  final String label;
-  final String value;
-  final ValueChanged<String?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final selected = _adminNormalizeGender(value);
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: .06),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: _AdminColors.line),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: _AdminColors.sub,
-              fontWeight: FontWeight.w800,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final gender in _adminSelectableGenders)
-                _AdminStatusChip(
-                  label: gender.label,
-                  selected: gender.key == selected,
-                  onTap: () => onChanged(gender.key),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AdminReadOnlyInfoRow extends StatelessWidget {
-  const _AdminReadOnlyInfoRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-    decoration: BoxDecoration(
-      color: AppColors.white.withValues(alpha: .06),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: _AdminColors.line),
-    ),
-    child: Row(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: _AdminColors.sub,
-            fontWeight: FontWeight.w800,
-            fontSize: 12,
-          ),
-        ),
-        const Spacer(),
-        Text(
-          value,
-          style: const TextStyle(
-            color: AppColors.white,
-            fontWeight: FontWeight.w900,
-            fontSize: 14,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
 class _AdminStatusChip extends StatelessWidget {
   const _AdminStatusChip({
     required this.label,
@@ -492,18 +403,8 @@ void _invalidateAdminYuruboProviders(WidgetRef ref) {
   }
 }
 
-const _adminSelectableGenders = <OheyGender>[
-  OheyGender.unspecified,
-  OheyGender.male,
-  OheyGender.female,
-];
-
 String _adminStatusLabel(String status) {
   return oheyDailyStatusFromKey(status).label;
-}
-
-String _adminGenderLabel(String gender) {
-  return oheyGenderFromKey(gender).label;
 }
 
 String _adminReportReasonLabel(String reason) {
@@ -587,10 +488,6 @@ String _shortAdminId(String id) {
 
 String _adminNormalizeStatus(String status) {
   return oheyDailyStatusFromKey(status).key;
-}
-
-String _adminNormalizeGender(String gender) {
-  return oheyGenderFromKey(gender).key;
 }
 
 String _adminNormalizeYuruboStatus(String status) {

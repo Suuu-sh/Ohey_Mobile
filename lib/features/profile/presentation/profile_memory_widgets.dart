@@ -12,7 +12,6 @@ Future<void> _showEditProfileSheet(
   final initialUserId = user?.userId ?? '';
   final initialAvatar = user?.avatar ?? OheyAvatar.defaultAvatar;
   var avatar = user?.avatar ?? OheyAvatar.defaultAvatar;
-  final gender = user?.gender ?? OheyGender.unspecified;
   var saving = false;
   var closing = false;
   var didUpdateProfile = false;
@@ -173,7 +172,6 @@ Future<void> _showEditProfileSheet(
                                     fullscreenDialog: true,
                                     builder: (_) => AvatarBuilderScreen(
                                       initialAvatar: avatar,
-                                      gender: gender,
                                     ),
                                   ),
                                 );

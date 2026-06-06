@@ -5,7 +5,6 @@ import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/ohey_friend.dart';
-import '../../../core/models/ohey_gender.dart';
 
 final inviteRepositoryProvider = Provider<InviteRepository>((ref) {
   return InviteRepository(ref.watch(backendApiClientProvider));
@@ -130,7 +129,6 @@ class InviteRepository {
       characterAssetPath: '',
       kind: OheyFriendKind.cloud,
       palette: OheyFriendPalette.mint,
-      gender: oheyGenderFromKey(profile['gender'] as String?),
       avatar: OheyAvatar.decode(profile['avatar_url'] as String?),
     );
   }

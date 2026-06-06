@@ -17,7 +17,6 @@ class _AdminUserEditorScreenState
   late final TextEditingController _userIdController;
   late final TextEditingController _displayNameController;
   late bool _isPlus;
-  late String _gender;
   late String _status;
   bool _saving = false;
   String? _error;
@@ -35,7 +34,6 @@ class _AdminUserEditorScreenState
       text: user?.displayName ?? '',
     );
     _isPlus = user?.isPlus ?? false;
-    _gender = _adminNormalizeGender(user?.gender ?? OheyGender.unspecified.key);
     _status = _adminNormalizeStatus(
       user?.status ?? OheyDailyStatus.unselected.key,
     );
@@ -66,7 +64,6 @@ class _AdminUserEditorScreenState
               password: _passwordController.text.trim(),
               userId: _userIdController.text.trim(),
               displayName: _displayNameController.text.trim(),
-              gender: _gender,
               status: _status,
               isPlus: _isPlus,
             );
@@ -164,20 +161,6 @@ class _AdminUserEditorScreenState
               _AdminInput(controller: _userIdController, label: 'ユーザーID'),
               const SizedBox(height: 10),
               _AdminInput(controller: _displayNameController, label: '表示名'),
-              const SizedBox(height: 10),
-              if (user == null)
-                _AdminGenderDropdown(
-                  label: '性別',
-                  value: _gender,
-                  onChanged: (value) {
-                    if (value != null) setState(() => _gender = value);
-                  },
-                )
-              else
-                _AdminReadOnlyInfoRow(
-                  label: '性別',
-                  value: _adminGenderLabel(user.gender),
-                ),
               const SizedBox(height: 10),
               _AdminStatusDropdown(
                 label: 'ステータス',

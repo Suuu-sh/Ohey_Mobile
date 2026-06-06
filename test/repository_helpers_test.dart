@@ -4,7 +4,6 @@ import 'package:ohey/core/data/auth_repository.dart';
 import 'package:ohey/core/data/push_token_repository.dart';
 import 'package:ohey/core/data/user_repository.dart';
 import 'package:ohey/core/models/ohey_avatar.dart';
-import 'package:ohey/core/models/ohey_gender.dart';
 import 'package:ohey/features/friends/data/friend_repository.dart';
 
 void main() {
@@ -17,16 +16,14 @@ void main() {
     final payload = authProfileMetadata(
       userId: 'ohey_user',
       displayName: 'Ohey User',
-      gender: OheyGender.female,
       avatar: OheyAvatar.defaultAvatar,
     );
 
     expect(payload['user_id'], 'ohey_user');
     expect(payload['display_name'], 'Ohey User');
-    expect(payload['gender'], 'female');
     expect(payload['character_key'], 'avatar');
     expect(payload['avatar_url'], isA<String>());
-    expect(payload.keys, hasLength(5));
+    expect(payload.keys, hasLength(4));
   });
 
   test('Ohey user id helpers validate and derive stable defaults', () {
@@ -41,15 +38,10 @@ void main() {
 
   test('profile payload helpers keep create and update scopes explicit', () {
     expect(
-      createProfilePayload(
-        name: 'Ohey User',
-        userId: 'ohey_user',
-        gender: OheyGender.male,
-      ),
+      createProfilePayload(name: 'Ohey User', userId: 'ohey_user'),
       <String, dynamic>{
         'user_id': 'ohey_user',
         'display_name': 'Ohey User',
-        'gender': 'male',
         'character_key': 'avatar',
         'avatar_url': '',
       },

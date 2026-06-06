@@ -49,7 +49,7 @@ class _AdminUserCard extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               Text(
-                '${_adminGenderLabel(user.gender)} / ${_adminStatusLabel(user.status)}',
+                _adminStatusLabel(user.status),
                 style: const TextStyle(
                   color: _AdminColors.sub,
                   fontWeight: FontWeight.w800,

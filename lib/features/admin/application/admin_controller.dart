@@ -61,7 +61,6 @@ class AdminController {
     required String password,
     required String userId,
     required String displayName,
-    required String gender,
     required String status,
     required bool isPlus,
   }) {
@@ -70,7 +69,6 @@ class AdminController {
       password: password,
       userId: userId,
       displayName: displayName,
-      gender: gender,
       status: status,
       isPlus: isPlus,
     );

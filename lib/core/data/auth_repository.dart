@@ -8,7 +8,6 @@ import '../config/backend_config.dart';
 import '../config/supabase_config.dart';
 import '../contracts/ohey_api_paths.dart';
 import '../models/ohey_avatar.dart';
-import '../models/ohey_gender.dart';
 import 'supabase_client_provider.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -53,13 +52,11 @@ class AuthRepository {
     required String password,
     required String userId,
     required String displayName,
-    required OheyGender gender,
     required OheyAvatar avatar,
   }) async {
     final metadata = authProfileMetadata(
       userId: userId,
       displayName: displayName,
-      gender: gender,
       avatar: avatar,
     );
     await _createConfirmedAuthUser(
@@ -91,7 +88,6 @@ class AuthRepository {
           'password': password,
           'user_id': metadata['user_id'],
           'display_name': metadata['display_name'],
-          'gender': metadata['gender'],
           'avatar_url': metadata['avatar_url'],
         }),
       );
@@ -112,7 +108,6 @@ class AuthRepository {
     required String password,
     required String userId,
     required String displayName,
-    required OheyGender gender,
     required OheyAvatar avatar,
   }) {
     return _supabase.auth.signUp(
@@ -122,7 +117,6 @@ class AuthRepository {
       data: authProfileMetadata(
         userId: userId,
         displayName: displayName,
-        gender: gender,
         avatar: avatar,
       ),
     );
@@ -160,13 +154,11 @@ String authOAuthScopes(OAuthProvider provider) {
 Map<String, dynamic> authProfileMetadata({
   required String userId,
   required String displayName,
-  required OheyGender gender,
   required OheyAvatar avatar,
 }) {
   return {
     'user_id': userId,
     'display_name': displayName,
-    'gender': gender.key,
     'character_key': 'avatar',
     'avatar_url': avatar.encode(),
   };

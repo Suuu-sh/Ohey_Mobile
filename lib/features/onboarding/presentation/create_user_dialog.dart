@@ -10,7 +10,6 @@ import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/data/ohey_last_account_store.dart';
 import '../../../core/data/auth_repository.dart';
 import '../../../core/models/ohey_avatar.dart';
-import '../../../core/models/ohey_gender.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
@@ -67,7 +66,6 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   final _nameController = TextEditingController();
   final _demoController = PageController();
   OheyAvatar _avatar = OheyAvatar.defaultAvatar;
-  OheyGender _gender = OheyGender.unspecified;
   _OnboardingStep _step = _OnboardingStep.intro;
   int _demoPage = 0;
   bool _isLogin = true;

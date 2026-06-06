@@ -7,7 +7,6 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
     final canSubmit =
         _userIdController.text.trim().isNotEmpty &&
         _nameController.text.trim().isNotEmpty &&
-        _gender != OheyGender.unspecified &&
         !_isBusy;
 
     return LayoutBuilder(
@@ -148,20 +147,6 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                             if (canSubmit) _submitProfile();
                           },
                         ),
-                      ),
-                      SizedBox(height: compact ? 10 : 12),
-                      _SignupGenderSelector(
-                        selectedGender: _gender,
-                        enabled: !_isBusy,
-                        compact: compact,
-                        onChanged: (gender) {
-                          setState(() {
-                            _gender = gender;
-                            _avatar = _avatar.normalizedForGender(gender);
-                            _error = null;
-                            _notice = null;
-                          });
-                        },
                       ),
                       if (_error != null) ...[
                         SizedBox(height: compact ? 8 : 10),

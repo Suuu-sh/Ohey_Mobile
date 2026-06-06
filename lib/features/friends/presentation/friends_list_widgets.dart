@@ -1651,7 +1651,6 @@ OheyFriend _friendWithFavorite(OheyFriend friend, bool isFavorite) {
     characterAssetPath: friend.characterAssetPath,
     kind: friend.kind,
     palette: friend.palette,
-    gender: friend.gender,
     avatar: friend.avatar,
     monthlyCount: friend.monthlyCount,
     totalMemoryCount: friend.totalMemoryCount,
