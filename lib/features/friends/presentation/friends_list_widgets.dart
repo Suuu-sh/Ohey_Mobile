@@ -266,37 +266,16 @@ class _FriendsList extends StatelessWidget {
 }
 
 const _friendsAdNativeFactoryId = 'ohey_yurubo_native_ad';
-const _friendsFirstAdAfter = 4;
-const _friendsAdFrequency = 10;
-
-String get _friendsNativeAdUnitId {
-  if (defaultTargetPlatform == TargetPlatform.iOS) {
-    return 'ca-app-pub-3940256099942544/3986624511';
-  }
-  if (defaultTargetPlatform == TargetPlatform.android) {
-    return 'ca-app-pub-3940256099942544/2247696110';
-  }
-  return '';
-}
+String get _friendsNativeAdUnitId => OheyAdsConfig.nativeAdUnitId;
 
 List<_FriendListEntry> _friendListEntriesFromFriends(
   List<_DecoratedFriend> friends,
 ) {
-  if (friends.length < _friendsFirstAdAfter) {
-    return [for (final item in friends) _FriendBlockEntry(item)];
-  }
-  final entries = <_FriendListEntry>[];
-  var adIndex = 0;
-  for (var index = 0; index < friends.length; index++) {
-    entries.add(_FriendBlockEntry(friends[index]));
-    final position = index + 1;
-    final shouldInsertAd =
-        position == _friendsFirstAdAfter ||
-        (position > _friendsFirstAdAfter &&
-            (position - _friendsFirstAdAfter) % _friendsAdFrequency == 0);
-    if (shouldInsertAd) entries.add(_FriendAdBlockEntry(adIndex++));
-  }
-  return entries;
+  return buildOheyAdEntries<_DecoratedFriend, _FriendListEntry>(
+    items: friends,
+    itemEntryBuilder: _FriendBlockEntry.new,
+    adEntryBuilder: _FriendAdBlockEntry.new,
+  );
 }
 
 sealed class _FriendListEntry {
@@ -335,10 +314,16 @@ class _FriendNativeAdBlockState extends State<_FriendNativeAdBlock> {
     _loadAd();
   }
 
-  void _loadAd() {
+  Future<void> _loadAd() async {
     final adUnitId = _friendsNativeAdUnitId;
     if (adUnitId.isEmpty) {
       _didFail = true;
+      return;
+    }
+    final canRequestAds = await OheyAdsConsentService.prepareToRequestAds();
+    if (!mounted) return;
+    if (!canRequestAds) {
+      setState(() => _didFail = true);
       return;
     }
     final ad = NativeAd(
@@ -379,13 +364,26 @@ class _FriendNativeAdBlockState extends State<_FriendNativeAdBlock> {
   Widget build(BuildContext context) {
     if (_didFail) return const SizedBox.shrink();
     if (!_isLoaded || _ad == null) return const _FriendAdPlaceholderBlock();
+    final isWhite = Theme.of(context).brightness == Brightness.light;
     return Semantics(
       label: '広告',
-      child: SizedBox(
-        height: 156,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: AdWidget(ad: _ad!),
+      child: OheyThemedPanel(
+        padding: EdgeInsets.zero,
+        accentColor: _FriendsColors.lime,
+        backgroundColor: isWhite
+            ? AppColors.white
+            : AppColors.darkBackgroundBottom,
+        borderRadius: 20,
+        borderAlpha: isWhite ? .28 : .36,
+        glowAlpha: isWhite ? .08 : .14,
+        glowBlur: 22,
+        glowOffset: Offset.zero,
+        child: SizedBox(
+          height: 156,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(19),
+            child: AdWidget(ad: _ad!),
+          ),
         ),
       ),
     );
@@ -1653,7 +1651,6 @@ OheyFriend _friendWithFavorite(OheyFriend friend, bool isFavorite) {
     characterAssetPath: friend.characterAssetPath,
     kind: friend.kind,
     palette: friend.palette,
-    gender: friend.gender,
     avatar: friend.avatar,
     monthlyCount: friend.monthlyCount,
     totalMemoryCount: friend.totalMemoryCount,

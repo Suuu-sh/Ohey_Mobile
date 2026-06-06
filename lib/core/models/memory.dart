@@ -11,8 +11,6 @@ class Memory {
     this.linkUrl,
     this.placeLatitude,
     this.placeLongitude,
-    this.likeCount = 0,
-    this.likedByMe = false,
     this.ownerUserId = '',
     this.ownerDisplayName = '',
     this.ownerAvatar,
@@ -34,8 +32,6 @@ class Memory {
   final String? linkUrl;
   final double? placeLatitude;
   final double? placeLongitude;
-  final int likeCount;
-  final bool likedByMe;
   final String ownerUserId;
   final String ownerDisplayName;
   final OheyAvatar? ownerAvatar;
@@ -47,30 +43,6 @@ class Memory {
   final bool feedCanDelete;
   final double? feedTilt;
   final String feedCursor;
-
-  Memory copyWith({int? likeCount, bool? likedByMe}) => Memory(
-    id: id,
-    date: date,
-    friends: friends,
-    place: place,
-    memo: memo,
-    linkUrl: linkUrl,
-    placeLatitude: placeLatitude,
-    placeLongitude: placeLongitude,
-    likeCount: likeCount ?? this.likeCount,
-    likedByMe: likedByMe ?? this.likedByMe,
-    ownerUserId: ownerUserId,
-    ownerDisplayName: ownerDisplayName,
-    ownerAvatar: ownerAvatar,
-    isOfficial: isOfficial,
-    feedAuthorName: feedAuthorName,
-    feedPostKind: feedPostKind,
-    feedDisplayable: feedDisplayable,
-    feedCanReport: feedCanReport,
-    feedCanDelete: feedCanDelete,
-    feedTilt: feedTilt,
-    feedCursor: feedCursor,
-  );
 
   bool isInMonth(DateTime month) =>
       date.year == month.year && date.month == month.month;

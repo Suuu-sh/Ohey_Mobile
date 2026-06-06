@@ -8,6 +8,7 @@ import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/yurubo.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
+import 'notification_preferences.dart';
 import '../data/notification_repository.dart';
 
 final osNotificationServiceProvider = Provider<OsNotificationService>((ref) {
@@ -24,10 +25,15 @@ class _NotificationDeliveryPolicy {
     OheyNotificationKindKeys.inviteReceived,
     OheyNotificationKindKeys.inviteAccepted,
     OheyNotificationKindKeys.todayReservationReminder,
+    OheyNotificationKindKeys.yuruboCreated,
   };
 
-  static bool shouldShowOsNotification(OheyNotification notification) {
+  static bool shouldShowOsNotification(
+    OheyNotification notification,
+    NotificationPreferences preferences,
+  ) {
     if (!_osAllowedKinds.contains(notification.kind)) return false;
+    if (!preferences.allowsKind(notification.kind)) return false;
     if (notification.kind == OheyNotificationKindKeys.friendRequestReceived) {
       return oheyFriendRequestStatusFromKey(
         notification.friendRequestStatus,
@@ -71,8 +77,9 @@ class OsNotificationService {
   bool _initialized = false;
 
   Future<void> showNewNotifications(
-    List<OheyNotification> notifications,
-  ) async {
+    List<OheyNotification> notifications, {
+    required NotificationPreferences preferences,
+  }) async {
     if (notifications.isEmpty) return;
     await _initialize();
 
@@ -97,6 +104,7 @@ class OsNotificationService {
                   notification.createdAt.isAfter(lastNotifiedAt) &&
                   _NotificationDeliveryPolicy.shouldShowOsNotification(
                     notification,
+                    preferences,
                   ),
             )
             .toList(growable: false)

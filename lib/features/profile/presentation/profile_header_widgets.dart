@@ -440,11 +440,13 @@ class _ProfileActivityHome extends StatelessWidget {
     required this.isYuruboLoading,
     required this.wishItems,
     required this.isWishLoading,
+    required this.isPlus,
     required this.onCreateYuruboTap,
     required this.onOpenYuruboTap,
     required this.onOpenWishListTap,
     required this.onAddFriendsTap,
     required this.onChangeStatusTap,
+    required this.onPlusTap,
   });
 
   final int friendsCount;
@@ -452,11 +454,13 @@ class _ProfileActivityHome extends StatelessWidget {
   final bool isYuruboLoading;
   final List<WishItem> wishItems;
   final bool isWishLoading;
+  final bool isPlus;
   final VoidCallback onCreateYuruboTap;
   final VoidCallback? onOpenYuruboTap;
   final VoidCallback onOpenWishListTap;
   final VoidCallback onAddFriendsTap;
   final VoidCallback onChangeStatusTap;
+  final VoidCallback onPlusTap;
 
   @override
   Widget build(BuildContext context) {
@@ -468,13 +472,18 @@ class _ProfileActivityHome extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _ProfileSummaryStats(friendsCount: friendsCount),
+            child: _ProfileSummaryStats(
+              wishItemsCount: wishItems.length,
+              friendsCount: friendsCount,
+            ),
           ),
           const SizedBox(height: 12),
           _ProfileTodayScheduleSection(
             joinedYurubos: joinedYurubos,
             isLoading: isYuruboLoading,
+            isPlus: isPlus,
             onFindTap: onOpenYuruboTap ?? onCreateYuruboTap,
+            onPlusTap: onPlusTap,
           ),
           const SizedBox(height: 22),
           Padding(
@@ -522,19 +531,24 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
   const _ProfileTodayScheduleSection({
     required this.joinedYurubos,
     required this.isLoading,
+    required this.isPlus,
     required this.onFindTap,
+    required this.onPlusTap,
   });
 
   final List<Yurubo> joinedYurubos;
   final bool isLoading;
+  final bool isPlus;
   final VoidCallback onFindTap;
+  final VoidCallback onPlusTap;
 
   @override
   Widget build(BuildContext context) {
     final event = joinedYurubos.isEmpty ? null : joinedYurubos.first;
     const accent = AppColors.cFFFF75B5;
+    final showPlus = event == null && !isLoading && !isPlus;
     final title = event == null
-        ? (isLoading ? '読み込み中' : '本日の予定はありません')
+        ? (isLoading ? '読み込み中' : (showPlus ? 'Ohey Plus' : '本日の予定はありません'))
         : event.title;
     final details = event == null
         ? ''
@@ -546,108 +560,153 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
+        clipBehavior: Clip.antiAlias,
+        foregroundDecoration: showPlus
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: accent.withValues(alpha: .48),
+                  width: 1.1,
+                ),
+              )
+            : null,
         decoration: BoxDecoration(
           color: AppColors.darkBackgroundBottom,
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: accent.withValues(alpha: .58), width: 1.2),
+          border: showPlus
+              ? null
+              : Border.all(color: accent.withValues(alpha: .58), width: 1.2),
         ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 17, 18, 17),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 7,
-                          height: 7,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: accent,
-                          ),
-                        ),
-                        const SizedBox(width: 7),
-                        const Text(
-                          '本日の予定',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: AppColors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
-                            height: 1.08,
-                            letterSpacing: .2,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 7),
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                        height: 1.1,
-                      ),
-                    ),
-                    if (event != null) ...[
-                      const SizedBox(height: 5),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 9,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withValues(alpha: .08),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: AppColors.white.withValues(alpha: .08),
-                          ),
-                        ),
-                        child: Text(
-                          'Today · $subtitle',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: _ProfileColors.sub.withValues(alpha: .82),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            height: 1,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
+        child: Stack(
+          children: [
+            if (showPlus) ...[
+              Positioned.fill(
+                child: Image.asset(
+                  'assets/images/ohey_plus_momo_card.png',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
                 ),
               ),
-              const SizedBox(width: 14),
-              if (event == null)
-                SizedBox(
-                  width: 82,
-                  child: Ohey3DButton(
-                    label: '探す',
-                    onTap: isLoading ? null : onFindTap,
-                    height: 42,
-                    radius: 21,
-                    color: AppColors.cFFFF75B5,
-                    foregroundColor: AppColors.cFF101820,
-                    shadowColor: AppColors.cFFE05F83,
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    fontSize: 14,
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        AppColors.black.withValues(alpha: .48),
+                        AppColors.black.withValues(alpha: .16),
+                        AppColors.black.withValues(alpha: .06),
+                      ],
+                      stops: const [0, .48, 1],
+                    ),
                   ),
-                )
-              else
-                _TodayScheduleParticipants(event: event, accent: accent),
+                ),
+              ),
             ],
-          ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 17, 18, 17),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: accent,
+                              ),
+                            ),
+                            const SizedBox(width: 7),
+                            Text(
+                              showPlus ? '広告を非表示' : '本日の予定',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                height: 1.08,
+                                letterSpacing: .2,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 7),
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            height: 1.1,
+                          ),
+                        ),
+                        if (event != null) ...[
+                          const SizedBox(height: 5),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.white.withValues(alpha: .08),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: AppColors.white.withValues(alpha: .08),
+                              ),
+                            ),
+                            child: Text(
+                              'Today · $subtitle',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: _ProfileColors.sub.withValues(
+                                  alpha: .82,
+                                ),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                height: 1,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  if (event == null)
+                    SizedBox(
+                      width: 82,
+                      child: Ohey3DButton(
+                        label: showPlus ? '詳細' : '探す',
+                        onTap: isLoading
+                            ? null
+                            : (showPlus ? onPlusTap : onFindTap),
+                        height: 42,
+                        radius: 21,
+                        color: AppColors.cFFFF75B5,
+                        foregroundColor: AppColors.cFF101820,
+                        shadowColor: AppColors.cFFE05F83,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        fontSize: 14,
+                      ),
+                    )
+                  else
+                    _TodayScheduleParticipants(event: event, accent: accent),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -727,8 +786,12 @@ class _TodayScheduleParticipants extends StatelessWidget {
 }
 
 class _ProfileSummaryStats extends StatelessWidget {
-  const _ProfileSummaryStats({required this.friendsCount});
+  const _ProfileSummaryStats({
+    required this.wishItemsCount,
+    required this.friendsCount,
+  });
 
+  final int wishItemsCount;
   final int friendsCount;
 
   @override
@@ -739,11 +802,11 @@ class _ProfileSummaryStats extends StatelessWidget {
       decoration: const BoxDecoration(color: AppColors.darkBackground),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: _ProfileSummaryStat(
               icon: CupertinoIcons.house_fill,
               iconColor: AppColors.cFFC08BFF,
-              value: '1',
+              value: '$wishItemsCount',
               label: 'やりたいこと',
             ),
           ),
@@ -1068,6 +1131,278 @@ class _ProfileFriendActionRow extends StatelessWidget {
             CupertinoIcons.plus,
             color: AppColors.cFF101820,
             size: 18,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileOheyPlusPurchaseSheet extends ConsumerStatefulWidget {
+  const _ProfileOheyPlusPurchaseSheet();
+
+  @override
+  ConsumerState<_ProfileOheyPlusPurchaseSheet> createState() =>
+      _ProfileOheyPlusPurchaseSheetState();
+}
+
+class _ProfileOheyPlusPurchaseSheetState
+    extends ConsumerState<_ProfileOheyPlusPurchaseSheet> {
+  bool _isPurchasing = false;
+  bool _isRestoring = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final offeringAsync = ref.watch(oheyPlusOfferingProvider);
+    final isPlusActive = ref.watch(oheyPlusActiveProvider);
+    final service = ref.watch(oheyPlusServiceProvider);
+    final offering = offeringAsync.asData?.value;
+    final package = service.preferredPackage(offering);
+    final product = package?.storeProduct;
+    final priceLabel = product?.priceString.trim();
+    final purchaseLabel = isPlusActive
+        ? 'Plus利用中'
+        : _isPurchasing
+        ? '購入中...'
+        : priceLabel == null || priceLabel.isEmpty
+        ? '購入する'
+        : '$priceLabelで購入';
+    final isRevenueCatReady = OheyRevenueCatConfig.isConfigured;
+    final canPurchase = isRevenueCatReady && !isPlusActive && package != null;
+
+    return OheyBottomSheetShell(
+      padding: const EdgeInsets.fromLTRB(22, 14, 22, 28),
+      radius: 30,
+      showHandle: false,
+      showBottomCloseButton: false,
+      blurSigma: 0,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 42,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.white.withValues(alpha: .18),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          const SizedBox(height: 22),
+          const OheyPopIcon(
+            icon: CupertinoIcons.sparkles,
+            color: AppColors.cFFFF75B5,
+            size: 58,
+            iconSize: 30,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Ohey Plus',
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isPlusActive
+                ? 'Ohey Plusが有効です。ゆるぼ一覧の広告は非表示になります。'
+                : '広告なしでOheyを使えるPlusプランです。まずは広告非表示から始めます。',
+            style: TextStyle(
+              color: AppColors.white.withValues(alpha: .68),
+              fontSize: 14,
+              height: 1.55,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 18),
+          _ProfileOheyPlusBenefitRow(
+            icon: CupertinoIcons.eye_slash_fill,
+            title: '広告を非表示',
+            message: 'ゆるぼ一覧の広告ブロックを消して、投稿だけに集中できます。',
+          ),
+          if (!isRevenueCatReady) ...[
+            const SizedBox(height: 14),
+            _ProfileOheyPlusStatusBox(
+              message:
+                  'RevenueCat APIキーが未設定です。本番ビルドでは OHEY_REVENUECAT_IOS_API_KEY を設定すると購入できます。',
+            ),
+          ] else if (offeringAsync.isLoading) ...[
+            const SizedBox(height: 14),
+            const _ProfileOheyPlusStatusBox(message: '購入プランを読み込み中...'),
+          ] else if (offeringAsync.hasError || package == null) ...[
+            const SizedBox(height: 14),
+            const _ProfileOheyPlusStatusBox(
+              message:
+                  '購入プランを取得できませんでした。RevenueCat / App Store Connect の商品設定を確認してください。',
+            ),
+          ] else if (product != null) ...[
+            const SizedBox(height: 14),
+            _ProfileOheyPlusStatusBox(
+              message: '${product.title} · ${product.priceString}',
+            ),
+          ],
+          const SizedBox(height: 20),
+          Ohey3DButton(
+            label: purchaseLabel,
+            icon: isPlusActive
+                ? CupertinoIcons.checkmark_seal_fill
+                : CupertinoIcons.creditcard_fill,
+            onTap: canPurchase && !_isPurchasing
+                ? () => _purchase(package)
+                : null,
+            height: 54,
+            radius: 24,
+            color: AppColors.cFFFF75B5,
+            foregroundColor: AppColors.cFF101820,
+            shadowColor: AppColors.cFFE05F83,
+            fontSize: 15,
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: CupertinoButton(
+              minimumSize: const Size(0, 28),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              onPressed: _isRestoring ? null : _restore,
+              child: Text(
+                _isRestoring ? '復元中...' : '購入を復元',
+                style: TextStyle(
+                  color: AppColors.white.withValues(alpha: .72),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _purchase(rc.Package package) async {
+    setState(() => _isPurchasing = true);
+    try {
+      final info = await ref.read(oheyPlusServiceProvider).purchase(package);
+      if (!mounted) return;
+      if (OheyPlusService.hasPlusEntitlement(info)) {
+        OheyToast.show(context, 'Ohey Plusが有効になりました');
+        Navigator.of(context).pop();
+      } else {
+        OheyToast.show(context, '購入状態を確認できませんでした。少し待ってから復元を試してください。');
+      }
+    } catch (error) {
+      if (!mounted) return;
+      if (ref.read(oheyPlusServiceProvider).isCancellation(error)) return;
+      OheyToast.show(context, '購入を開始できませんでした。あとでもう一度試してください。');
+    } finally {
+      if (mounted) setState(() => _isPurchasing = false);
+    }
+  }
+
+  Future<void> _restore() async {
+    setState(() => _isRestoring = true);
+    try {
+      final info = await ref.read(oheyPlusServiceProvider).restore();
+      if (!mounted) return;
+      if (OheyPlusService.hasPlusEntitlement(info)) {
+        OheyToast.show(context, '購入を復元しました');
+        Navigator.of(context).pop();
+      } else {
+        OheyToast.show(context, '復元できるOhey Plus購入が見つかりませんでした');
+      }
+    } catch (_) {
+      if (!mounted) return;
+      OheyToast.show(context, '購入を復元できませんでした。あとでもう一度試してください。');
+    } finally {
+      if (mounted) setState(() => _isRestoring = false);
+    }
+  }
+}
+
+class _ProfileOheyPlusStatusBox extends StatelessWidget {
+  const _ProfileOheyPlusStatusBox({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: .06),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.white.withValues(alpha: .08)),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          color: AppColors.white.withValues(alpha: .62),
+          fontSize: 12,
+          height: 1.35,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileOheyPlusBenefitRow extends StatelessWidget {
+  const _ProfileOheyPlusBenefitRow({
+    required this.icon,
+    required this.title,
+    required this.message,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: .07),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.white.withValues(alpha: .10)),
+      ),
+      child: Row(
+        children: [
+          OheyPopIcon(
+            icon: icon,
+            color: AppColors.cFFFF75B5,
+            size: 42,
+            iconSize: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  message,
+                  style: TextStyle(
+                    color: AppColors.white.withValues(alpha: .62),
+                    fontSize: 12,
+                    height: 1.35,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

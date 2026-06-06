@@ -1,5 +1,4 @@
 import 'ohey_avatar.dart';
-import 'ohey_gender.dart';
 import '../contracts/ohey_api_values.dart';
 
 enum OheyDailyStatus {
@@ -110,7 +109,6 @@ class OheyUser {
   const OheyUser({
     required this.name,
     required this.userId,
-    this.gender = OheyGender.unspecified,
     this.dailyStatus = OheyDailyStatus.unselected,
     this.isPlus = false,
     this.avatar,
@@ -118,7 +116,6 @@ class OheyUser {
 
   final String name;
   final String userId;
-  final OheyGender gender;
   final OheyDailyStatus dailyStatus;
   final bool isPlus;
   final OheyAvatar? avatar;
@@ -126,7 +123,6 @@ class OheyUser {
   OheyUser copyWith({
     String? name,
     String? userId,
-    OheyGender? gender,
     OheyDailyStatus? dailyStatus,
     bool? isPlus,
     OheyAvatar? avatar,
@@ -134,7 +130,6 @@ class OheyUser {
     return OheyUser(
       name: name ?? this.name,
       userId: userId ?? this.userId,
-      gender: gender ?? this.gender,
       dailyStatus: dailyStatus ?? this.dailyStatus,
       isPlus: isPlus ?? this.isPlus,
       avatar: avatar ?? this.avatar,

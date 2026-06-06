@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:app_links/app_links.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/calendar/presentation/calendar_screen.dart';
@@ -46,13 +47,14 @@ class OheyTabShell extends ConsumerStatefulWidget {
 
 class _OheyTabShellState extends ConsumerState<OheyTabShell>
     with WidgetsBindingObserver {
-  static const _invitePollInterval = Duration(seconds: 15);
   static const _feedAccentColor = AppColors.cFFC08BFF;
   static const _friendsAccentColor = AppColors.cFF9AF21A;
   static const _calendarAccentColor = AppColors.cFF20B9FF;
   static const _profileAccentColor = AppColors.cFFFF75B5;
 
   int _selectedIndex = 0;
+  int _previousSelectedIndex = 0;
+  int _tabTransitionTick = 0;
   bool _didScheduleProfileRestore = false;
   bool _didAttemptProfileRestore = false;
   bool _isOnboardingSeen = false;
@@ -63,7 +65,9 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   String? _lastDailyStatusPromptKey;
   String? _lastPresentedInviteId;
   String? _lastPresentedYuruboRequestKey;
-  Timer? _invitePollTimer;
+  Timer? _realtimeRefreshDebounce;
+  RealtimeChannel? _inviteNotificationChannel;
+  String? _realtimeUserId;
   StreamSubscription<Uri>? _appLinkSubscription;
   String? _pendingSharedYuruboId;
   bool _isHandlingSharedYurubo = false;
@@ -80,7 +84,8 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
 
   @override
   void dispose() {
-    _invitePollTimer?.cancel();
+    _realtimeRefreshDebounce?.cancel();
+    _stopInviteNotificationRealtime();
     _appLinkSubscription?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -89,10 +94,9 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _startInvitePolling();
+      _startInviteNotificationRealtime();
     } else {
-      _invitePollTimer?.cancel();
-      _invitePollTimer = null;
+      _stopInviteNotificationRealtime();
     }
     if (state != AppLifecycleState.resumed) return;
     _lastPresentedInviteId = null;
@@ -225,7 +229,11 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       _refreshCurrentTabByIndex(index, showToast: true);
       return;
     }
-    setState(() => _selectedIndex = index);
+    setState(() {
+      _previousSelectedIndex = _selectedIndex;
+      _selectedIndex = index;
+      _tabTransitionTick++;
+    });
     if (index == 0) {
       _refreshFeedOnOpen();
     } else if (index == 1) {
@@ -378,18 +386,71 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     });
   }
 
-  void _startInvitePolling() {
+  void _startInviteNotificationRealtime() {
     if (!mounted || ref.read(oheyUserProvider) == null) return;
-    if (_invitePollTimer?.isActive ?? false) return;
-    _invitePollTimer = Timer.periodic(_invitePollInterval, (_) {
-      if (!mounted || ref.read(oheyUserProvider) == null) {
-        _invitePollTimer?.cancel();
-        _invitePollTimer = null;
-        return;
-      }
-      ref.invalidate(incomingInvitesProvider);
-      ref.invalidate(notificationControllerProvider);
-    });
+    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    if (userId == null || userId.isEmpty) return;
+    if (_inviteNotificationChannel != null && _realtimeUserId == userId) {
+      return;
+    }
+    _stopInviteNotificationRealtime();
+    _realtimeUserId = userId;
+    _inviteNotificationChannel = ref
+        .read(supabaseClientProvider)
+        .channel('ohey-invite-notifications:$userId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'invites',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'invitee_user_id',
+            value: userId,
+          ),
+          callback: (_) => _scheduleRealtimeRefresh(),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'notifications',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'recipient_user_id',
+            value: userId,
+          ),
+          callback: (_) => _scheduleRealtimeRefresh(),
+        )
+        .subscribe();
+  }
+
+  void _stopInviteNotificationRealtime() {
+    final channel = _inviteNotificationChannel;
+    _inviteNotificationChannel = null;
+    _realtimeUserId = null;
+    if (channel != null) {
+      unawaited(
+        ref
+            .read(supabaseClientProvider)
+            .removeChannel(channel)
+            .catchError((_) => ''),
+      );
+    }
+  }
+
+  void _scheduleRealtimeRefresh() {
+    if (!mounted || ref.read(oheyUserProvider) == null) return;
+    _realtimeRefreshDebounce?.cancel();
+    _realtimeRefreshDebounce = Timer(
+      const Duration(milliseconds: 350),
+      _refreshInviteNotificationData,
+    );
+  }
+
+  void _refreshInviteNotificationData() {
+    if (!mounted || ref.read(oheyUserProvider) == null) return;
+    ref.invalidate(incomingInvitesProvider);
+    ref.invalidate(todayReservationsProvider);
+    ref.invalidate(notificationControllerProvider);
   }
 
   Future<void> _showIncomingInviteModal(OheyInvite invite) async {
@@ -504,9 +565,13 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       (previous, next) => next.whenData(_handlePendingYuruboRequests),
     );
 
+    if (user == null) {
+      _stopInviteNotificationRealtime();
+    }
+
     if (user != null) {
       _maybeShowDailyStatusPrompt(user);
-      _startInvitePolling();
+      _startInviteNotificationRealtime();
       incomingInvitesAsync.whenData(_handleIncomingInvites);
       yurubosAsync.whenData(_handlePendingYuruboRequests);
       _didAttemptProfileRestore = false;
@@ -548,14 +613,10 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     }
 
     if (user == null && hasSession && !_didAttemptProfileRestore) {
-      _invitePollTimer?.cancel();
-      _invitePollTimer = null;
       return const OheyBackendBusyScreen();
     }
 
     if (user == null && !_onboardingPrefLoaded) {
-      _invitePollTimer?.cancel();
-      _invitePollTimer = null;
       return Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: isWhite
@@ -566,15 +627,18 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     }
 
     if (user == null) {
-      _invitePollTimer?.cancel();
-      _invitePollTimer = null;
       return CreateUserDialog(startAtLogin: _isOnboardingSeen);
     }
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBody: true,
-      body: IndexedStack(index: _selectedIndex, children: _pages),
+      body: _AnimatedTabPageStack(
+        selectedIndex: _selectedIndex,
+        previousIndex: _previousSelectedIndex,
+        transitionTick: _tabTransitionTick,
+        children: _pages,
+      ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.only(top: 7),
         decoration: BoxDecoration(
@@ -636,6 +700,112 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
                   onTap: () => _selectTab(3),
                 ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedTabPageStack extends StatefulWidget {
+  const _AnimatedTabPageStack({
+    required this.selectedIndex,
+    required this.previousIndex,
+    required this.transitionTick,
+    required this.children,
+  });
+
+  final int selectedIndex;
+  final int previousIndex;
+  final int transitionTick;
+  final List<Widget> children;
+
+  @override
+  State<_AnimatedTabPageStack> createState() => _AnimatedTabPageStackState();
+}
+
+class _AnimatedTabPageStackState extends State<_AnimatedTabPageStack> {
+  static const _duration = Duration(milliseconds: 360);
+  static const _curve = Curves.easeOutCubic;
+
+  int? _outgoingIndex;
+  int _animationGeneration = 0;
+
+  @override
+  void didUpdateWidget(covariant _AnimatedTabPageStack oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.transitionTick == widget.transitionTick) return;
+    _outgoingIndex = widget.previousIndex;
+    final generation = ++_animationGeneration;
+    Future<void>.delayed(_duration, () {
+      if (!mounted || generation != _animationGeneration) return;
+      setState(() => _outgoingIndex = null);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final direction = widget.selectedIndex >= widget.previousIndex ? 1.0 : -1.0;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        for (var index = 0; index < widget.children.length; index++)
+          _AnimatedTabPage(
+            key: ValueKey('tab-page-$index'),
+            active: index == widget.selectedIndex,
+            outgoing: index == _outgoingIndex && index != widget.selectedIndex,
+            direction: direction,
+            duration: _duration,
+            curve: _curve,
+            child: widget.children[index],
+          ),
+      ],
+    );
+  }
+}
+
+class _AnimatedTabPage extends StatelessWidget {
+  const _AnimatedTabPage({
+    super.key,
+    required this.active,
+    required this.outgoing,
+    required this.direction,
+    required this.duration,
+    required this.curve,
+    required this.child,
+  });
+
+  final bool active;
+  final bool outgoing;
+  final double direction;
+  final Duration duration;
+  final Curve curve;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final hidden = !active && !outgoing;
+    final x = active
+        ? 0.0
+        : outgoing
+        ? -0.08 * direction
+        : 0.08 * direction;
+    return Offstage(
+      offstage: hidden,
+      child: TickerMode(
+        enabled: !hidden,
+        child: IgnorePointer(
+          ignoring: !active,
+          child: AnimatedSlide(
+            offset: Offset(x, 0),
+            duration: duration,
+            curve: curve,
+            child: AnimatedOpacity(
+              opacity: active ? 1 : 0,
+              duration: duration,
+              curve: curve,
+              child: child,
             ),
           ),
         ),
@@ -734,7 +904,6 @@ class _DailyStatusRequiredSheetState
               OheyDailyStatus3DOption(
                 status: status,
                 title: status.label,
-                subtitle: status.shortCopy,
                 onTap: () => _select(status),
                 enabled: _savingStatus == null,
                 isLoading: _savingStatus == status,
@@ -855,7 +1024,7 @@ class _YuruboParticipationRequestSheetState
         );
       },
       child: OheyBottomSheetShell(
-        showHandle: false,
+        showHandle: true,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
         radius: 34,
@@ -863,17 +1032,6 @@ class _YuruboParticipationRequestSheetState
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: Container(
-                width: 44,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: .22),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
             Row(
               children: [
                 const OheyPopIcon(
@@ -1093,17 +1251,6 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Center(
-                  child: Container(
-                    width: 44,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: AppColors.white.withValues(alpha: .22),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
                 Row(
                   children: [
                     const OheyPopIcon(

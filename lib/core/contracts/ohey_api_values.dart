@@ -85,13 +85,13 @@ class OheyReportReasonKeys {
 class OheyNotificationKindKeys {
   const OheyNotificationKindKeys._();
 
-  static const memoryLike = 'memory_like';
   static const friendRequestReceived = 'friend_request_received';
   static const friendRequestAccepted = 'friend_request_accepted';
   static const inviteReceived = 'invite_received';
   static const inviteAccepted = 'invite_accepted';
   static const todayReservationReminder = 'today_reservation_reminder';
   static const memoryTagged = 'memory_tagged';
+  static const yuruboCreated = 'yurubo_created';
   static const system = 'system';
 }
 

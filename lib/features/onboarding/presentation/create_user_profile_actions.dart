@@ -57,7 +57,6 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
     if (!_validateRegistrationProfile()) return;
     final userId = _userIdController.text.trim();
     final name = _nameController.text.trim();
-    final gender = _gender;
 
     setState(() {
       _isBusy = true;
@@ -75,12 +74,17 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
         if (!_hasValidPassword(password)) {
           throw const AuthException(_emailPasswordRequirementMessage);
         }
+        if (!_hasMatchingPasswords(
+          password,
+          _passwordConfirmationController.text,
+        )) {
+          throw const AuthException(_passwordConfirmationRequirementMessage);
+        }
         final res = await authRepository.signUpWithProfileMetadata(
           email: email,
           password: password,
           userId: userId,
           displayName: name,
-          gender: gender,
           avatar: _avatar,
         );
         if (res.session == null) {
@@ -94,12 +98,7 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
       }
       await ref
           .read(oheyUserProvider.notifier)
-          .createUser(
-            name: name,
-            userId: userId,
-            gender: gender,
-            avatar: _avatar,
-          );
+          .createUser(name: name, userId: userId, avatar: _avatar);
       await _saveLastAccount(_emailController.text.trim());
     } on AuthException catch (e) {
       if (mounted) {
@@ -131,13 +130,6 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
       });
       return false;
     }
-    if (_gender == OheyGender.unspecified) {
-      setState(() {
-        _error = '性別を選択してください。';
-        _notice = null;
-      });
-      return false;
-    }
     return true;
   }
 
@@ -147,7 +139,6 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
     final userId = metadata['user_id'] as String?;
     final displayName = metadata['display_name'] as String?;
     final avatarUrl = metadata['avatar_url'] as String?;
-    final gender = oheyGenderFromKey(metadata['gender'] as String?);
     if (userId != null && _userIdController.text.trim().isEmpty) {
       _userIdController.text = userId;
     }
@@ -156,7 +147,6 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
     }
     final avatar = OheyAvatar.decode(avatarUrl);
     if (avatar != null) _avatar = avatar;
-    if (gender != OheyGender.unspecified) _gender = gender;
   }
 
   Future<void> _saveLastAccount(String email) async {
@@ -174,18 +164,10 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
   }
 
   Future<void> _openAvatarBuilder() async {
-    if (_gender == OheyGender.unspecified) {
-      setState(() {
-        _error = '先に性別を選択してください。';
-        _notice = null;
-      });
-      return;
-    }
     final result = await Navigator.of(context).push<OheyAvatar>(
       CupertinoPageRoute(
         fullscreenDialog: true,
-        builder: (_) =>
-            AvatarBuilderScreen(initialAvatar: _avatar, gender: _gender),
+        builder: (_) => AvatarBuilderScreen(initialAvatar: _avatar),
       ),
     );
     if (result != null && mounted) {

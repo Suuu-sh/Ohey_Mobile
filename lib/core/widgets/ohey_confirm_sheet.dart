@@ -70,7 +70,7 @@ class OheyConfirmSheet extends StatelessWidget {
 
     return OheyBottomSheetShell(
       showBottomCloseButton: false,
-      showHandle: false,
+      showHandle: true,
       maxHeightFactor: .72,
       padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
       child: Column(

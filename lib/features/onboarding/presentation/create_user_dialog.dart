@@ -10,7 +10,6 @@ import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/data/ohey_last_account_store.dart';
 import '../../../core/data/auth_repository.dart';
 import '../../../core/models/ohey_avatar.dart';
-import '../../../core/models/ohey_gender.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
@@ -62,11 +61,11 @@ class CreateUserDialog extends ConsumerStatefulWidget {
 class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _passwordConfirmationController = TextEditingController();
   final _userIdController = TextEditingController();
   final _nameController = TextEditingController();
   final _demoController = PageController();
   OheyAvatar _avatar = OheyAvatar.defaultAvatar;
-  OheyGender _gender = OheyGender.unspecified;
   _OnboardingStep _step = _OnboardingStep.intro;
   int _demoPage = 0;
   bool _isLogin = true;
@@ -75,6 +74,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _showAuthForm = false;
   bool _obscurePlainLoginPassword = true;
   bool _obscureSignupPassword = true;
+  bool _obscureSignupPasswordConfirmation = true;
   _RegistrationStep _loginStep = _RegistrationStep.email;
   _RegistrationStep _registrationStep = _RegistrationStep.email;
   List<OheyLastAccount> _lastAccounts = const <OheyLastAccount>[];
@@ -126,6 +126,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _passwordConfirmationController.dispose();
     _userIdController.dispose();
     _nameController.dispose();
     _authSubscription?.cancel();

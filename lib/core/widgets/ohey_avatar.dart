@@ -179,6 +179,29 @@ class _OheyAvatarPainter extends CustomPainter {
     );
   }
 
+  void _drawTempleCoverage(Canvas canvas, Color color, double bottom) {
+    final rect = Rect.fromLTWH(35, 30, 110, bottom - 28);
+    final paint = _hairGradient(rect, color, top: .12);
+
+    final left = Path()
+      ..moveTo(39, 56)
+      ..cubicTo(43, 42, 56, 33, 76, 31)
+      ..cubicTo(67, 43, 63, 56, 62, 71)
+      ..cubicTo(60, 88, 57, bottom - 5, 50, bottom)
+      ..cubicTo(42, bottom - 7, 37, 82, 39, 56)
+      ..close();
+    final right = Path()
+      ..moveTo(141, 56)
+      ..cubicTo(137, 42, 124, 33, 104, 31)
+      ..cubicTo(113, 43, 117, 56, 118, 71)
+      ..cubicTo(120, 88, 123, bottom - 5, 130, bottom)
+      ..cubicTo(138, bottom - 7, 143, 82, 141, 56)
+      ..close();
+
+    canvas.drawPath(left, paint);
+    canvas.drawPath(right, paint);
+  }
+
   void _drawBody(Canvas canvas, Color skin, Color shirt) {
     final neckRect = Rect.fromLTWH(75, 104, 30, 43);
     final neck = RRect.fromRectAndRadius(neckRect, const Radius.circular(12));
@@ -275,13 +298,6 @@ class _OheyAvatarPainter extends CustomPainter {
         ..color = AppColors.white.withValues(alpha: .24)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.2,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        const Rect.fromLTWH(42, 40, 42, 72),
-        const Radius.circular(24),
-      ),
-      Paint()..color = AppColors.white.withValues(alpha: .10),
     );
     canvas.drawOval(
       const Rect.fromLTWH(56, 113, 68, 18),
@@ -434,6 +450,18 @@ class _OheyAvatarPainter extends CustomPainter {
       ..scale(1.045, 1)
       ..translate(-90, 0);
 
+    final templeBottom = switch (avatar.hair) {
+      1 => 76.0,
+      2 || 3 || 4 || 10 => 88.0,
+      5 => 0.0,
+      9 => 102.0,
+      6 || 7 || 8 || 11 => 124.0,
+      _ => 92.0,
+    };
+    if (templeBottom > 0) {
+      _drawTempleCoverage(canvas, color, templeBottom);
+    }
+
     switch (avatar.hair) {
       case 1:
         for (var i = 0; i < 8; i++) {
@@ -489,24 +517,24 @@ class _OheyAvatarPainter extends CustomPainter {
         );
       case 3:
         final side = Path()
-          ..moveTo(40, 61)
-          ..cubicTo(49, 27, 83, 15, 120, 33)
+          ..moveTo(36, 58)
+          ..cubicTo(45, 27, 83, 15, 120, 33)
           ..quadraticBezierTo(143, 44, 139, 69)
           ..cubicTo(120, 54, 100, 50, 77, 59)
-          ..quadraticBezierTo(60, 66, 43, 75)
+          ..quadraticBezierTo(58, 67, 40, 78)
           ..close();
         _drawHairShape(
           canvas,
           side,
-          const Rect.fromLTWH(40, 20, 100, 56),
+          const Rect.fromLTWH(36, 20, 104, 59),
           color,
           shadowAlpha: .17,
         );
         _drawHairlineShadow(
           canvas,
           Path()
-            ..moveTo(43, 74)
-            ..quadraticBezierTo(60, 66, 77, 59)
+            ..moveTo(40, 77)
+            ..quadraticBezierTo(58, 67, 77, 59)
             ..cubicTo(100, 50, 120, 54, 139, 69),
           color,
         );
@@ -575,22 +603,22 @@ class _OheyAvatarPainter extends CustomPainter {
         );
       case 6:
         final bobFront = Path()
-          ..moveTo(43, 66)
-          ..cubicTo(43, 36, 63, 25, 90, 25)
-          ..cubicTo(117, 25, 137, 36, 137, 66)
-          ..cubicTo(137, 87, 135, 106, 132, 119)
+          ..moveTo(38, 62)
+          ..cubicTo(39, 35, 62, 25, 90, 25)
+          ..cubicTo(118, 25, 141, 35, 142, 62)
+          ..cubicTo(142, 87, 137, 108, 132, 119)
           ..cubicTo(129, 128, 118, 130, 114, 118)
-          ..cubicTo(112, 97, 115, 80, 110, 66)
-          ..quadraticBezierTo(101, 62, 91, 62)
-          ..quadraticBezierTo(80, 62, 69, 66)
-          ..cubicTo(64, 80, 67, 97, 64, 118)
+          ..cubicTo(102, 96, 104, 78, 102, 64)
+          ..quadraticBezierTo(99, 59, 91, 59)
+          ..quadraticBezierTo(81, 59, 78, 64)
+          ..cubicTo(76, 78, 78, 96, 66, 118)
           ..cubicTo(60, 130, 49, 128, 46, 119)
-          ..cubicTo(44, 106, 43, 87, 43, 66)
+          ..cubicTo(39, 108, 38, 87, 38, 62)
           ..close();
         _drawHairShape(
           canvas,
           bobFront,
-          const Rect.fromLTWH(43, 25, 94, 105),
+          const Rect.fromLTWH(38, 25, 104, 105),
           color,
           shadowAlpha: .18,
           outlineAlpha: .26,
@@ -598,23 +626,23 @@ class _OheyAvatarPainter extends CustomPainter {
         _drawHairlineShadow(
           canvas,
           Path()
-            ..moveTo(69, 66)
-            ..quadraticBezierTo(80, 62, 91, 62)
-            ..quadraticBezierTo(101, 62, 110, 66),
+            ..moveTo(78, 64)
+            ..quadraticBezierTo(81, 59, 91, 59)
+            ..quadraticBezierTo(99, 59, 102, 64),
           color,
         );
         _drawHairStrand(
           canvas,
           Path()
-            ..moveTo(66, 70)
-            ..cubicTo(61, 84, 62, 103, 58, 116),
+            ..moveTo(77, 68)
+            ..cubicTo(70, 84, 68, 103, 59, 116),
           color,
         );
         _drawHairStrand(
           canvas,
           Path()
-            ..moveTo(114, 70)
-            ..cubicTo(119, 84, 118, 103, 122, 116),
+            ..moveTo(103, 68)
+            ..cubicTo(110, 84, 112, 103, 121, 116),
           color,
         );
         _drawHairHighlight(
@@ -885,17 +913,6 @@ class _OheyAvatarPainter extends CustomPainter {
         Offset(x - 4 + pupilDx * .25, 72),
         3.3,
         Paint()..color = AppColors.white.withValues(alpha: .92),
-      );
-      canvas.drawArc(
-        rect.inflate(1.2),
-        math.pi * 1.04,
-        math.pi * .92,
-        false,
-        Paint()
-          ..color = darkColor.withValues(alpha: .14)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.4
-          ..strokeCap = StrokeCap.round,
       );
     }
 

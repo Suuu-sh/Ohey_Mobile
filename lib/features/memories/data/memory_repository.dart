@@ -6,7 +6,6 @@ import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/memory.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
-import '../../../core/models/ohey_gender.dart';
 
 final memoryRepositoryProvider = Provider<MemoryRepository>((ref) {
   return BackendMemoryRepository(ref.watch(backendApiClientProvider));
@@ -23,7 +22,6 @@ abstract interface class MemoryRepository {
   Future<void> hideMemoryFromFeed(String memoryId);
   Future<void> muteUser(String userId);
   Future<void> blockUser(String userId);
-  Future<MemoryLikeState> setLike(String memoryId, {required bool liked});
   Future<void> setFriendFavorite(String friendId, {required bool isFavorite});
 }
 
@@ -34,13 +32,6 @@ class MemoryPage {
   final String? nextCursor;
 
   bool get hasMore => nextCursor != null && nextCursor!.trim().isNotEmpty;
-}
-
-class MemoryLikeState {
-  const MemoryLikeState({required this.likeCount, required this.likedByMe});
-
-  final int likeCount;
-  final bool likedByMe;
 }
 
 class BackendMemoryRepository implements MemoryRepository {
@@ -89,21 +80,6 @@ class BackendMemoryRepository implements MemoryRepository {
     String reason = OheyReportReasonKeys.other,
   }) async {
     await _client.post(OheyApiPaths.memoryReport(memoryId), {'reason': reason});
-  }
-
-  @override
-  Future<MemoryLikeState> setLike(
-    String memoryId, {
-    required bool liked,
-  }) async {
-    final response = liked
-        ? await _client.put(OheyApiPaths.memoryLike(memoryId), const {})
-        : await _client.delete(OheyApiPaths.memoryLike(memoryId));
-    final row = BackendApiClient.mapFrom(response);
-    return MemoryLikeState(
-      likeCount: (row['like_count'] as num?)?.toInt() ?? 0,
-      likedByMe: (row['liked_by_me'] as bool?) ?? liked,
-    );
   }
 
   @override
@@ -169,8 +145,6 @@ class BackendMemoryRepository implements MemoryRepository {
       placeLongitude: (row['place_lng'] as num?)?.toDouble(),
       memo: (row['memo'] as String?) ?? '',
       linkUrl: row['link_url'] as String?,
-      likeCount: (row['like_count'] as num?)?.toInt() ?? 0,
-      likedByMe: (row['liked_by_me'] as bool?) ?? false,
       ownerUserId: (row['owner_user_id'] as String?) ?? '',
       ownerDisplayName: (owner['display_name'] as String?) ?? '',
       ownerAvatar: OheyAvatar.decode(owner['avatar_url'] as String?),
@@ -229,7 +203,6 @@ OheyFriend _friendFromProfileRow(
     characterAssetPath: '',
     kind: OheyFriendKind.cloud,
     palette: _paletteFromKey(profile['palette'] as String?),
-    gender: oheyGenderFromKey(profile['gender'] as String?),
     avatar: OheyAvatar.decode(profile['avatar_url'] as String?),
     isFavorite: isFavorite,
     statusKey: statusKey,

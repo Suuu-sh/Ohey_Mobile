@@ -148,15 +148,13 @@ create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   user_id text not null unique,
   display_name text not null,
-  gender text not null default 'unspecified',
   character_key text not null default 'icon_smile',
   avatar_url text,
   is_plus boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint profiles_user_id_format check (user_id ~ '^[a-zA-Z0-9_]{3,24}$'),
-  constraint profiles_display_name_length check (char_length(display_name) between 1 and 40),
-  constraint profiles_gender_check check (gender in ('unspecified', 'male', 'female'))
+  constraint profiles_display_name_length check (char_length(display_name) between 1 and 40)
 );
 
 create or replace function private.profile_is_plus_unchanged(

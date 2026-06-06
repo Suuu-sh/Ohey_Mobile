@@ -26,6 +26,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["adMobApplicationId"] = "ca-app-pub-3940256099942544~3347511713"
     }
 
     flavorDimensions += "env"
@@ -38,6 +39,8 @@ android {
         create("prod") {
             dimension = "env"
             resValue("string", "app_name", "Ohey")
+            manifestPlaceholders["adMobApplicationId"] =
+                (project.findProperty("OHEY_ADMOB_ANDROID_APP_ID") as String?) ?: ""
         }
     }
 

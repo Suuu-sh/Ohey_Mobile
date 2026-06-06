@@ -23,6 +23,7 @@ Widget _buildFeedPage({
   required bool showSwipeTutorial,
   required VoidCallback onSwipeTutorialDismissed,
   required ValueChanged<int> onPageChanged,
+  required bool isPlus,
   required VoidCallback onCreateYuruboPressed,
   required Future<void> Function() onRefresh,
   required ValueChanged<_FeedItem> onLikePressed,
@@ -84,7 +85,7 @@ Widget _buildFeedPage({
     );
   }
 
-  final entries = _feedEntriesFromItems(items);
+  final entries = _feedEntriesFromItems(items, includeAds: !isPlus);
   return withRefresh(
     SliverPadding(
       padding: EdgeInsets.fromLTRB(0, topPadding + 10, 0, _feedBottomPageInset),
@@ -233,7 +234,8 @@ class _FeedSectionEmptyState extends StatelessWidget {
         icon: CupertinoIcons.plus_bubble_fill,
         isWhite: isWhite,
         title: '最初のゆるぼを出そう',
-        message: 'ホームが静かな時は、Oheyが小さな募集ボードになります。ご飯・作業・サウナなどを軽く置いてみよう。',
+        message:
+            'ホームが静かな時は、Oheyが小さな募集ボードになります。ゆるぼは予定日を過ぎると消えます。いつでもは30日後まで表示されます。',
         accent: _feedPrimaryActionColor,
         hints: const ['今ひま？', '今度ここ行こ', '一緒に作業しよ'],
         action: SizedBox(
@@ -556,6 +558,7 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 32,
+      showBottomCloseButton: false,
       child: FutureBuilder<List<Map<String, dynamic>>>(
         future: _groupsFuture,
         builder: (context, snapshot) {
@@ -797,6 +800,7 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 32,
+      showBottomCloseButton: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

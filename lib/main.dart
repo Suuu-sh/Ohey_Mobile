@@ -4,15 +4,16 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/config/ohey_ads_config.dart';
 import 'core/config/supabase_config.dart';
 import 'core/application/ohey_user_controller.dart';
 import 'core/data/auth_session_guard.dart';
 import 'core/data/supabase_client_provider.dart';
+import 'core/services/ohey_ads_consent_service.dart';
+import 'core/services/ohey_plus_service.dart';
 import 'core/services/ohey_push_notification_service.dart';
-import 'core/services/ohey_widget_sync.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/ohey_theme_mode.dart';
 import 'core/widgets/ohey_tab_shell.dart';
@@ -64,13 +65,20 @@ final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
       ).timeout(const Duration(seconds: 12));
     }
 
-    unawaited(MobileAds.instance.initialize());
+    if (OheyAdsConfig.isEnabled) {
+      unawaited(OheyAdsConsentService.prepareToRequestAds());
+    }
 
     await AuthSessionGuard.clearIfProjectMismatch(
       Supabase.instance.client,
     ).timeout(const Duration(seconds: 4), onTimeout: () {});
 
     await _preloadBackendProfileIfSessionExists(ref);
+    await ref
+        .read(oheyPlusServiceProvider)
+        .configureForCurrentUser()
+        .timeout(const Duration(seconds: 4), onTimeout: () => false);
+    ref.invalidate(oheyPlusCustomerInfoProvider);
 
     await ref
         .read(oheyPushNotificationServiceProvider)
@@ -177,7 +185,6 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
           fit: StackFit.expand,
           children: [
             const OheyTabShell(),
-            const OheyWidgetSnapshotSync(),
             if (!_openingExitCompleted)
               FadeTransition(
                 opacity: _openingExitFade,

@@ -46,6 +46,14 @@ class OheyNotification {
   String get displayTitle => _legacyNotificationTextToOhey(title);
   String get displayMessage => _legacyNotificationTextToOhey(message);
 
+  bool isExpiredTodayReservationReminder(DateTime now) {
+    if (kind != OheyNotificationKindKeys.todayReservationReminder) {
+      return false;
+    }
+    final targetDate = _localDateOnly(notificationDate ?? createdAt);
+    return targetDate.isBefore(_localDateOnly(now));
+  }
+
   OheyNotification markRead() => OheyNotification(
     id: id,
     kind: kind,
@@ -73,7 +81,7 @@ class OheyNotification {
     final inviteMap = invite is Map ? Map<String, dynamic>.from(invite) : null;
     return OheyNotification(
       id: json['id'] as String,
-      kind: (json['kind'] as String?) ?? OheyNotificationKindKeys.memoryLike,
+      kind: (json['kind'] as String?) ?? OheyNotificationKindKeys.system,
       title: (json['title'] as String?) ?? 'お知らせ',
       message: (json['message'] as String?) ?? '',
       createdAt: createdAtText == null
@@ -116,7 +124,13 @@ class BackendNotificationRepository implements NotificationRepository {
       OheyApiPaths.notifications,
       query: {'date': _todayIsoDate()},
     );
-    return rows.map(OheyNotification.fromJson).toList(growable: false);
+    return rows
+        .map(OheyNotification.fromJson)
+        .where(
+          (notification) =>
+              !notification.isExpiredTodayReservationReminder(DateTime.now()),
+        )
+        .toList(growable: false);
   }
 
   @override
@@ -145,7 +159,13 @@ class BackendNotificationRepository implements NotificationRepository {
 
 DateTime? _dateOnly(String? value) {
   if (value == null || value.isEmpty) return null;
-  return DateTime.tryParse(value);
+  final parsed = DateTime.tryParse(value);
+  return parsed == null ? null : _localDateOnly(parsed);
+}
+
+DateTime _localDateOnly(DateTime value) {
+  final local = value.toLocal();
+  return DateTime(local.year, local.month, local.day);
 }
 
 String _todayIsoDate() {

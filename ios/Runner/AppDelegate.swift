@@ -3,20 +3,17 @@ import CoreLocation
 import MapKit
 import Photos
 import UIKit
-import WidgetKit
 import google_mobile_ads
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate, CLLocationManagerDelegate {
   private var qrSaverChannel: FlutterMethodChannel?
-  private var widgetSyncChannel: FlutterMethodChannel?
   private var placeSearchChannel: FlutterMethodChannel?
   private var instagramShareChannel: FlutterMethodChannel?
   private var didRegisterArchiveMapViewFactory = false
   private var placeSearchLocationManager: CLLocationManager?
   private var placeSearchLocationCompletion: ((CLLocation?, FlutterError?) -> Void)?
   private var didRequestPlaceSearchLocation = false
-  private let widgetAppGroupIdentifier = "group.app.ohey.com"
   private let yuruboNativeAdFactory = OheyYuruboNativeAdFactory()
 
   override func application(
@@ -27,7 +24,6 @@ import google_mobile_ads
     registerArchiveMapViewFactory()
     if let controller = window?.rootViewController as? FlutterViewController {
       registerQrSaverChannel(on: controller.binaryMessenger)
-      registerWidgetSyncChannel(on: controller.binaryMessenger)
       registerPlaceSearchChannel(on: controller.binaryMessenger)
       registerInstagramShareChannel(on: controller.binaryMessenger)
     }
@@ -39,9 +35,6 @@ import google_mobile_ads
     registerYuruboNativeAdFactory(in: engineBridge.pluginRegistry)
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "OheyQrSaver") {
       registerQrSaverChannel(on: registrar.messenger())
-    }
-    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "OheyWidgetSync") {
-      registerWidgetSyncChannel(on: registrar.messenger())
     }
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "OheyPlaceSearch") {
       registerPlaceSearchChannel(on: registrar.messenger())
@@ -89,23 +82,6 @@ import google_mobile_ads
     }
   }
 
-  private func registerWidgetSyncChannel(on messenger: FlutterBinaryMessenger) {
-    widgetSyncChannel = FlutterMethodChannel(name: "ohey/widget_sync", binaryMessenger: messenger)
-    widgetSyncChannel?.setMethodCallHandler { [weak self] call, result in
-      switch call.method {
-      case "updateSnapshot":
-        self?.updateWidgetSnapshot(call.arguments, result: result)
-      case "reloadAllTimelines":
-        if #available(iOS 14.0, *) {
-          WidgetCenter.shared.reloadAllTimelines()
-        }
-        result(nil)
-      default:
-        result(FlutterMethodNotImplemented)
-      }
-    }
-  }
-
   private func registerPlaceSearchChannel(on messenger: FlutterBinaryMessenger) {
     placeSearchChannel = FlutterMethodChannel(name: "ohey/place_search", binaryMessenger: messenger)
     placeSearchChannel?.setMethodCallHandler { [weak self] call, result in
@@ -128,36 +104,6 @@ import google_mobile_ads
         result(FlutterMethodNotImplemented)
       }
     }
-  }
-
-  private func updateWidgetSnapshot(_ arguments: Any?, result: @escaping FlutterResult) {
-    guard let payload = arguments as? [String: Any] else {
-      result(FlutterError(code: "invalid_payload", message: "Invalid widget snapshot payload.", details: nil))
-      return
-    }
-
-    let defaults = UserDefaults(suiteName: widgetAppGroupIdentifier) ?? .standard
-    defaults.set(payload["statusKey"] as? String, forKey: "statusKey")
-    defaults.set(payload["statusLabel"] as? String, forKey: "statusLabel")
-    defaults.set(payload["statusDescription"] as? String, forKey: "statusDescription")
-    defaults.set(payload["availableFriendsCount"] as? Int, forKey: "availableFriendsCount")
-    defaults.set(payload["availableFriendNames"] as? [String] ?? [], forKey: "availableFriendNames")
-    defaults.set(
-      payload["availableFriendStatusLabels"] as? [String] ?? [],
-      forKey: "availableFriendStatusLabels"
-    )
-
-    if let updatedAtMillis = payload["updatedAtMillis"] as? Double {
-      defaults.set(updatedAtMillis, forKey: "updatedAtMillis")
-    } else if let updatedAtMillis = payload["updatedAtMillis"] as? Int {
-      defaults.set(Double(updatedAtMillis), forKey: "updatedAtMillis")
-    }
-    defaults.synchronize()
-
-    if #available(iOS 14.0, *) {
-      WidgetCenter.shared.reloadAllTimelines()
-    }
-    result(nil)
   }
 
   private func searchNearbyPlaces(_ arguments: Any?, result: @escaping FlutterResult) {

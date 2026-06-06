@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import 'ohey_avatar.dart';
-import 'ohey_gender.dart';
 
 enum OheyFriendKind { bunny, cat, bear, penguin, puppy, cloud }
 
@@ -17,7 +16,6 @@ class OheyFriend {
     required this.characterAssetPath,
     required this.kind,
     required this.palette,
-    this.gender = OheyGender.unspecified,
     this.avatar,
     this.monthlyCount,
     this.totalMemoryCount,
@@ -34,7 +32,6 @@ class OheyFriend {
   final String characterAssetPath;
   final OheyFriendKind kind;
   final OheyFriendPalette palette;
-  final OheyGender gender;
   final OheyAvatar? avatar;
   final int? monthlyCount;
   final int? totalMemoryCount;

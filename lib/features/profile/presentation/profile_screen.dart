@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:purchases_flutter/purchases_flutter.dart' as rc;
 import 'package:flutter/services.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
@@ -11,9 +12,12 @@ import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/ohey_visibility.dart';
 import '../../../core/models/wish_item.dart';
 import '../../../core/models/yurubo.dart';
-import '../../../core/models/ohey_gender.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_user.dart';
+import '../../../core/services/ohey_ads_consent_service.dart';
+import '../../../core/services/ohey_plus_service.dart';
+import '../../../core/config/ohey_ads_config.dart';
+import '../../../core/config/ohey_revenuecat_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_action_tile.dart';
@@ -21,7 +25,6 @@ import '../../../core/widgets/ohey_bottom_sheet.dart';
 import '../../../core/widgets/ohey_confirm_sheet.dart';
 import '../../../core/widgets/ohey_daily_status_3d_option.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
-import '../../../core/widgets/ohey_empty_state.dart';
 import '../../../core/widgets/ohey_manage_list_row.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_toast.dart';
@@ -33,6 +36,7 @@ import '../../friends/data/friend_repository.dart';
 import '../../friends/presentation/friend_add_sheet.dart';
 import '../../memories/application/memory_controller.dart';
 import '../../notifications/application/notification_controller.dart';
+import '../../notifications/application/notification_preferences.dart';
 import '../../yurubos/application/yurubo_controller.dart';
 import '../../yurubos/data/yurubo_repository.dart';
 import '../../wish_items/application/wish_item_controller.dart';
@@ -78,6 +82,7 @@ class ProfileScreen extends ConsumerWidget {
         ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
     const headerIsWhite = true;
     const bodyIsWhite = false;
+    final isPlusActive = ref.watch(oheyPlusActiveProvider);
     final hasAdminEmail = OheyAvatar.isAdminEmail(currentAuthUser?.email);
     final hasAdminAccess = ref
         .watch(adminAccessProvider)
@@ -177,6 +182,7 @@ class ProfileScreen extends ConsumerWidget {
                                 isYuruboLoading: yurubosAsync.isLoading,
                                 wishItems: wishItems,
                                 isWishLoading: wishItemsAsync.isLoading,
+                                isPlus: isPlusActive,
                                 onCreateYuruboTap: () =>
                                     _showProfileCreateYuruboSheet(context, ref),
                                 onOpenYuruboTap: onOpenYurubo,
@@ -186,6 +192,8 @@ class ProfileScreen extends ConsumerWidget {
                                     showFriendAddSheet(context, ref),
                                 onChangeStatusTap: () =>
                                     _showProfileStatusSheet(context, ref, user),
+                                onPlusTap: () =>
+                                    _showProfileOheyPlusSheet(context),
                               ),
                             ),
                           ],
@@ -209,6 +217,17 @@ class _ProfileColors {
   static const sub = AppColors.cFF8F9BAB;
   static const lime = AppColors.cFF9AF21A;
   static const pink = AppColors.cFFFF5EA8;
+}
+
+Future<void> _showProfileOheyPlusSheet(BuildContext context) async {
+  HapticFeedback.selectionClick();
+  await showOheyBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: AppColors.black.withValues(alpha: .62),
+    builder: (context) => const _ProfileOheyPlusPurchaseSheet(),
+  );
 }
 
 Future<void> _respondInvite(
@@ -532,6 +551,7 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 32,
+      showBottomCloseButton: false,
       child: FutureBuilder<List<Map<String, dynamic>>>(
         future: _groupsFuture,
         builder: (context, snapshot) {

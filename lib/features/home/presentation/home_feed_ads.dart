@@ -1,38 +1,21 @@
 part of 'home_screen.dart';
 
 const _oheyYuruboAdNativeFactoryId = 'ohey_yurubo_native_ad';
-const _oheyYuruboAdFrequency = 8;
-const _oheyYuruboFirstAdAfter = 3;
+String get _oheyYuruboNativeAdUnitId => OheyAdsConfig.nativeAdUnitId;
 
-String get _oheyYuruboNativeAdUnitId {
-  if (defaultTargetPlatform == TargetPlatform.iOS) {
-    return 'ca-app-pub-3940256099942544/3986624511';
-  }
-  if (defaultTargetPlatform == TargetPlatform.android) {
-    return 'ca-app-pub-3940256099942544/2247696110';
-  }
-  return '';
-}
-
-List<_FeedEntry> _feedEntriesFromItems(List<_FeedItem> items) {
-  if (items.length < _oheyYuruboFirstAdAfter) {
+List<_FeedEntry> _feedEntriesFromItems(
+  List<_FeedItem> items, {
+  required bool includeAds,
+}) {
+  if (!includeAds) {
     return [for (final item in items) _YuruboFeedEntry(item)];
   }
 
-  final entries = <_FeedEntry>[];
-  var adIndex = 0;
-  for (var index = 0; index < items.length; index++) {
-    entries.add(_YuruboFeedEntry(items[index]));
-    final position = index + 1;
-    final shouldInsertAd =
-        position == _oheyYuruboFirstAdAfter ||
-        (position > _oheyYuruboFirstAdAfter &&
-            (position - _oheyYuruboFirstAdAfter) % _oheyYuruboAdFrequency == 0);
-    if (shouldInsertAd) {
-      entries.add(_YuruboAdFeedEntry(adIndex++));
-    }
-  }
-  return entries;
+  return buildOheyAdEntries<_FeedItem, _FeedEntry>(
+    items: items,
+    itemEntryBuilder: _YuruboFeedEntry.new,
+    adEntryBuilder: _YuruboAdFeedEntry.new,
+  );
 }
 
 sealed class _FeedEntry {
@@ -73,10 +56,17 @@ class _YuruboNativeAdListItemState extends State<_YuruboNativeAdListItem> {
     _loadAd();
   }
 
-  void _loadAd() {
+  Future<void> _loadAd() async {
     final adUnitId = _oheyYuruboNativeAdUnitId;
     if (adUnitId.isEmpty) {
       _didFail = true;
+      return;
+    }
+
+    final canRequestAds = await OheyAdsConsentService.prepareToRequestAds();
+    if (!mounted) return;
+    if (!canRequestAds) {
+      setState(() => _didFail = true);
       return;
     }
 

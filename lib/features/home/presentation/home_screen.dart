@@ -4,15 +4,18 @@ import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
+import '../../../core/config/ohey_ads_config.dart';
+import '../../../core/services/ohey_ads_consent_service.dart';
+import '../../../core/services/ohey_plus_service.dart';
 import '../../../core/config/backend_config.dart';
 import '../../../core/contracts/ohey_api_values.dart';
+import '../../../core/data/ohey_ad_entry_builder.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
@@ -155,6 +158,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.watch(todayReservationsProvider).asData?.value ??
         const <OheyInvite>[];
     final isWhite = ref.watch(oheyThemeModeProvider).isWhite;
+    final isPlusActive = ref.watch(oheyPlusActiveProvider);
     final currentUserId = ref
         .watch(supabaseClientProvider)
         .auth
@@ -176,6 +180,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               items: feedItems,
               isWhite: isWhite,
               isLoading: yurubosAsync.isLoading,
+              isPlus: isPlusActive,
               onPageChanged: _handleFeedPageChanged,
               onCreateYuruboPressed: () => _showCreateYuruboSheet(context, ref),
               onRefresh: () async {

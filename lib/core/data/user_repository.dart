@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../contracts/ohey_api_paths.dart';
 import '../models/ohey_avatar.dart';
-import '../models/ohey_gender.dart';
 import '../models/ohey_user.dart';
 import 'backend_api_client.dart';
 
@@ -55,17 +54,11 @@ class UserRepository {
   Future<void> createProfile({
     required String name,
     required String userId,
-    required OheyGender gender,
     OheyAvatar? avatar,
   }) async {
     await _client.put(
       OheyApiPaths.meProfile,
-      createProfilePayload(
-        name: name,
-        userId: userId,
-        gender: gender,
-        avatar: avatar,
-      ),
+      createProfilePayload(name: name, userId: userId, avatar: avatar),
     );
   }
 
@@ -146,7 +139,6 @@ class UserRepository {
           ? row['display_name'] as String
           : 'mi-mu',
       userId: (row['user_id'] as String?) ?? defaultOheyUserId(authUserId),
-      gender: oheyGenderFromKey(row['gender'] as String?),
       avatar: OheyAvatar.decode(row['avatar_url'] as String?),
       dailyStatus: oheyDailyStatusFromKey(statusRow?['status'] as String?),
       isPlus: (row['is_plus'] as bool?) ?? false,
@@ -176,13 +168,11 @@ String _isoMonth(DateTime date) {
 Map<String, dynamic> createProfilePayload({
   required String name,
   required String userId,
-  required OheyGender gender,
   OheyAvatar? avatar,
 }) {
   return {
     'user_id': userId,
     'display_name': name,
-    'gender': gender.key,
     'character_key': 'avatar',
     'avatar_url': avatar?.encode() ?? '',
   };

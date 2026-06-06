@@ -10,6 +10,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _showAuthForm = true;
       _loginStep = _RegistrationStep.email;
       _registrationStep = _RegistrationStep.email;
+      _passwordConfirmationController.clear();
       _error = null;
       _notice = null;
     });
@@ -23,10 +24,10 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _loginStep = _RegistrationStep.email;
       _registrationStep = _RegistrationStep.email;
       _passwordController.clear();
+      _passwordConfirmationController.clear();
       _userIdController.clear();
       _nameController.clear();
       _avatar = OheyAvatar.defaultAvatar;
-      _gender = OheyGender.unspecified;
       _error = null;
       _notice = null;
     });
@@ -52,6 +53,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       if (_loginStep == _RegistrationStep.password) {
         _loginStep = _RegistrationStep.email;
         _passwordController.clear();
+        _passwordConfirmationController.clear();
         _error = null;
         _notice = null;
         return;
@@ -107,15 +109,19 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
   void _goToSignupProfileStep() {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
+    final passwordConfirmation = _passwordConfirmationController.text;
     if (email.isEmpty || !_hasValidPassword(password)) {
       setState(() => _error = _emailPasswordRequirementMessage);
+      return;
+    }
+    if (!_hasMatchingPasswords(password, passwordConfirmation)) {
+      setState(() => _error = _passwordConfirmationRequirementMessage);
       return;
     }
     setState(() {
       _userIdController.clear();
       _nameController.clear();
       _avatar = OheyAvatar.defaultAvatar;
-      _gender = OheyGender.unspecified;
       _step = _OnboardingStep.profile;
       _error = null;
       _notice = null;

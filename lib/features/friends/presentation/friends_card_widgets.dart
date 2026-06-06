@@ -132,7 +132,7 @@ class _FriendProfileConfirmSheet extends StatelessWidget {
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showBottomCloseButton: false,
-      showHandle: false,
+      showHandle: true,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

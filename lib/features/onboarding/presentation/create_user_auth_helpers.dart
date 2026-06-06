@@ -3,7 +3,15 @@ part of 'create_user_dialog.dart';
 bool _hasValidPassword(String password) =>
     password.length >= _minPasswordLength;
 
+bool _hasMatchingPasswords(String password, String confirmation) =>
+    password == confirmation;
+
+bool _hasValidSignupPasswords(String password, String confirmation) =>
+    _hasValidPassword(password) &&
+    _hasMatchingPasswords(password, confirmation);
+
 const _emailInputRequirementMessage = '半角のメールアドレスを入力してね。';
+const _passwordConfirmationRequirementMessage = 'パスワードが一致していません。';
 
 bool _hasValidEmailAddress(String email) {
   final normalized = email.trim();

@@ -92,32 +92,28 @@ on conflict (provider, provider_id) do update set
   identity_data = excluded.identity_data,
   updated_at = now();
 
-insert into public.profiles (id, display_name, user_id, gender, character_key, avatar_url, is_plus)
+insert into public.profiles (id, display_name, user_id, character_key, avatar_url, is_plus)
 values
-  ('00000000-0000-4000-8000-000000000101', 'ユウタ', 'dev_yuta',   'male', 'avatar', 'ohey_avatar:v1:0:1:2:0:0:3', true),
-  ('00000000-0000-4000-8000-000000000102', 'ケン',   'dev_ken',    'male', 'avatar', 'ohey_avatar:v1:5:2:5:2:1:0', false),
-  ('00000000-0000-4000-8000-000000000103', 'リョウ', 'dev_ryo',    'male', 'avatar', 'ohey_avatar:v1:2:6:0:3:0:1', false),
-  ('00000000-0000-4000-8000-000000000104', 'ハル',   'dev_haru',   'female', 'avatar', 'ohey_avatar:v1:1:4:3:1:2:3', false),
-  ('00000000-0000-4000-8000-000000000105', 'タクミ', 'dev_takumi', 'male', 'avatar', 'ohey_avatar:v1:3:5:6:0:1:0', false),
-  ('00000000-0000-4000-8000-000000000106', 'ミカ',   'dev_mika',   'female', 'avatar', 'ohey_avatar:v1:4:3:1:4:2:2', false),
-  ('00000000-0000-4000-8000-000000000107', 'レン',   'dev_ren',    'male', 'avatar', 'ohey_avatar:v1:6:0:4:5:3:1', false),
-  ('00000000-0000-4000-8000-000000000108', 'サキ',   'dev_saki',   'female', 'avatar', 'ohey_avatar:v1:7:7:3:6:4:0', false),
-  ('00000000-0000-4000-8000-000000000109', 'Ana',    'dev_ana',    'female', 'avatar', 'ohey_avatar:v1:8:8:7:1:1:3', false),
-  ('00000000-0000-4000-8000-000000000110', 'Kai',    'dev_kai',    'male', 'avatar', 'ohey_avatar:v1:9:9:8:2:2:2', false)
+  ('00000000-0000-4000-8000-000000000101', 'ユウタ', 'dev_yuta',   'avatar', 'ohey_avatar:v1:0:1:2:0:0:3', true),
+  ('00000000-0000-4000-8000-000000000102', 'ケン',   'dev_ken',    'avatar', 'ohey_avatar:v1:5:2:5:2:1:0', false),
+  ('00000000-0000-4000-8000-000000000103', 'リョウ', 'dev_ryo',    'avatar', 'ohey_avatar:v1:2:6:0:3:0:1', false),
+  ('00000000-0000-4000-8000-000000000104', 'ハル',   'dev_haru',   'avatar', 'ohey_avatar:v1:1:4:3:1:2:3', false),
+  ('00000000-0000-4000-8000-000000000105', 'タクミ', 'dev_takumi', 'avatar', 'ohey_avatar:v1:3:5:6:0:1:0', false),
+  ('00000000-0000-4000-8000-000000000106', 'ミカ',   'dev_mika',   'avatar', 'ohey_avatar:v1:4:3:1:4:2:2', false),
+  ('00000000-0000-4000-8000-000000000107', 'レン',   'dev_ren',    'avatar', 'ohey_avatar:v1:6:0:4:5:3:1', false),
+  ('00000000-0000-4000-8000-000000000108', 'サキ',   'dev_saki',   'avatar', 'ohey_avatar:v1:7:7:3:6:4:0', false),
+  ('00000000-0000-4000-8000-000000000109', 'Ana',    'dev_ana',    'avatar', 'ohey_avatar:v1:8:8:7:1:1:3', false),
+  ('00000000-0000-4000-8000-000000000110', 'Kai',    'dev_kai',    'avatar', 'ohey_avatar:v1:9:9:8:2:2:2', false)
 on conflict (id) do update set
   display_name = excluded.display_name,
   user_id = excluded.user_id,
   character_key = excluded.character_key,
   avatar_url = excluded.avatar_url,
-  gender = excluded.gender,
   is_plus = excluded.is_plus,
   updated_at = now();
 
 -- Reset deterministic seed-only social data without touching real dev users.
 delete from public.memory_reports
-where memory_id in (select id from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
-
-delete from public.memory_likes
 where memory_id in (select id from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
 
 delete from public.memory_tagged_users
@@ -243,17 +239,6 @@ values
   ('10000000-0000-4000-8000-000000000018', '00000000-0000-4000-8000-000000000102')
 on conflict (memory_id, tagged_user_id) do nothing;
 
-insert into public.memory_likes (memory_id, user_id)
-values
-  ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000102'),
-  ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000103'),
-  ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000104'),
-  ('10000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000101'),
-  ('10000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000101'),
-  ('10000000-0000-4000-8000-000000000010', '00000000-0000-4000-8000-000000000101'),
-  ('10000000-0000-4000-8000-000000000013', '00000000-0000-4000-8000-000000000102')
-on conflict (memory_id, user_id) do nothing;
-
 insert into public.memory_reports (id, memory_id, reporter_user_id, reason, created_at)
 values
   ('30000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000017', '00000000-0000-4000-8000-000000000101', 'other', now() - interval '1 day')
@@ -264,5 +249,4 @@ select
   (select count(*) from public.friendships where user_a_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_friendships,
   (select count(*) from public.daily_statuses where user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_statuses,
   (select count(*) from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_memories,
-  (select count(*) from public.memory_tagged_users where memory_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_memory_tagged_users,
-  (select count(*) from public.memory_likes where memory_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_likes;
+  (select count(*) from public.memory_tagged_users where memory_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_memory_tagged_users;

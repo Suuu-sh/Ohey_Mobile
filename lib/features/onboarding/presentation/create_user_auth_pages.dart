@@ -22,8 +22,16 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
 
   Widget _buildSignupStep(BuildContext context) {
     final isEmailStep = _registrationStep == _RegistrationStep.email;
+    final password = _passwordController.text;
+    final passwordConfirmation = _passwordConfirmationController.text;
     final canContinue = _emailController.text.trim().isNotEmpty && !_isBusy;
-    final canRegister = _hasValidPassword(_passwordController.text) && !_isBusy;
+    final canRegister =
+        _hasValidSignupPasswords(password, passwordConfirmation) && !_isBusy;
+    final showPasswordMismatch =
+        !isEmailStep &&
+        _hasValidPassword(password) &&
+        passwordConfirmation.isNotEmpty &&
+        !_hasMatchingPasswords(password, passwordConfirmation);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -53,54 +61,76 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                 ),
               ),
               SizedBox(height: compact ? 28 : 42),
-              _SignupInputBox(
-                child: _PlainLoginTextField(
-                  controller: isEmailStep
-                      ? _emailController
-                      : _passwordController,
-                  enabled: !_isBusy,
-                  hintText: isEmailStep ? 'メールアドレス' : 'パスワード',
-                  height: textFieldHeight,
-                  keyboardType: isEmailStep
-                      ? TextInputType.emailAddress
-                      : TextInputType.visiblePassword,
-                  textInputAction: isEmailStep
-                      ? TextInputAction.next
-                      : TextInputAction.done,
-                  autofillHints: isEmailStep
-                      ? const [AutofillHints.email]
-                      : const [AutofillHints.newPassword],
-                  obscureText: !isEmailStep && _obscureSignupPassword,
-                  onChanged: (_) => setState(() {}),
-                  onSubmitted: (_) {
-                    if (isEmailStep && canContinue) {
-                      _goToSignupPasswordStep();
-                    } else if (!isEmailStep && canRegister) {
-                      _goToSignupProfileStep();
-                    }
-                  },
-                  trailing: isEmailStep
-                      ? null
-                      : IconButton(
-                          onPressed: _isBusy
-                              ? null
-                              : () => setState(
-                                  () => _obscureSignupPassword =
-                                      !_obscureSignupPassword,
-                                ),
-                          icon: Icon(
-                            _obscureSignupPassword
-                                ? CupertinoIcons.eye_slash_fill
-                                : CupertinoIcons.eye_fill,
-                            color: _authPink.withValues(alpha: .78),
-                            size: 28,
-                          ),
-                        ),
+              if (isEmailStep)
+                _SignupInputBox(
+                  child: _PlainLoginTextField(
+                    controller: _emailController,
+                    enabled: !_isBusy,
+                    hintText: 'メールアドレス',
+                    height: textFieldHeight,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.email],
+                    onChanged: (_) => setState(() {}),
+                    onSubmitted: (_) {
+                      if (canContinue) _goToSignupPasswordStep();
+                    },
+                  ),
+                )
+              else ...[
+                _SignupInputBox(
+                  child: _PlainLoginTextField(
+                    controller: _passwordController,
+                    enabled: !_isBusy,
+                    hintText: 'パスワード',
+                    height: textFieldHeight,
+                    keyboardType: TextInputType.visiblePassword,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.newPassword],
+                    obscureText: _obscureSignupPassword,
+                    onChanged: (_) => setState(() {}),
+                    trailing: _signupPasswordVisibilityButton(
+                      obscureText: _obscureSignupPassword,
+                      onTap: () => setState(
+                        () => _obscureSignupPassword = !_obscureSignupPassword,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                SizedBox(height: compact ? 10 : 14),
+                _SignupInputBox(
+                  child: _PlainLoginTextField(
+                    controller: _passwordConfirmationController,
+                    enabled: !_isBusy,
+                    hintText: 'パスワード（確認）',
+                    height: textFieldHeight,
+                    keyboardType: TextInputType.visiblePassword,
+                    textInputAction: TextInputAction.done,
+                    autofillHints: const [AutofillHints.newPassword],
+                    obscureText: _obscureSignupPasswordConfirmation,
+                    onChanged: (_) => setState(() {}),
+                    onSubmitted: (_) {
+                      if (canRegister) _goToSignupProfileStep();
+                    },
+                    trailing: _signupPasswordVisibilityButton(
+                      obscureText: _obscureSignupPasswordConfirmation,
+                      onTap: () => setState(
+                        () => _obscureSignupPasswordConfirmation =
+                            !_obscureSignupPasswordConfirmation,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               if (_error != null) ...[
                 const SizedBox(height: 10),
                 _DarkMessageText(_error!, isError: true),
+              ] else if (showPasswordMismatch) ...[
+                const SizedBox(height: 10),
+                const _DarkMessageText(
+                  _passwordConfirmationRequirementMessage,
+                  isError: true,
+                ),
               ],
               if (_notice != null) ...[
                 const SizedBox(height: 10),
@@ -143,6 +173,20 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
           ),
         );
       },
+    );
+  }
+
+  Widget _signupPasswordVisibilityButton({
+    required bool obscureText,
+    required VoidCallback onTap,
+  }) {
+    return IconButton(
+      onPressed: _isBusy ? null : onTap,
+      icon: Icon(
+        obscureText ? CupertinoIcons.eye_slash_fill : CupertinoIcons.eye_fill,
+        color: _authPink.withValues(alpha: .78),
+        size: 28,
+      ),
     );
   }
 
@@ -321,6 +365,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                 onAccountTap: (account) {
                   _emailController.text = account.email;
                   _passwordController.clear();
+                  _passwordConfirmationController.clear();
                   setState(() {
                     _showAuthForm = true;
                     _isLogin = true;
@@ -332,6 +377,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                 onAddAccount: () {
                   _emailController.clear();
                   _passwordController.clear();
+                  _passwordConfirmationController.clear();
                   setState(() {
                     _step = _OnboardingStep.accountChoice;
                     _showAuthForm = false;

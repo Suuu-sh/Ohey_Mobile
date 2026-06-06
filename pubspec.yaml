@@ -47,6 +47,7 @@ dependencies:
   firebase_core: ^4.9.0
   firebase_messaging: ^16.2.2
   google_mobile_ads: ^8.0.0
+  purchases_flutter: ^10.2.2
 
 dev_dependencies:
   flutter_test:
@@ -100,6 +101,8 @@ flutter:
     - assets/images/profile_header_scene.png
     - assets/images/profile_mascot_backdrop_scene.png
     - assets/images/profile_ohetomo_momo_backdrop_scene.png
+    - assets/images/ohey_plus_momo.png
+    - assets/images/ohey_plus_momo_card.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

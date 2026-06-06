@@ -19,19 +19,19 @@ class OheyDailyStatus3DOption extends StatelessWidget {
     super.key,
     required this.status,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     required this.onTap,
     this.selected = false,
     this.enabled = true,
     this.isLoading = false,
     this.showChevron = false,
-    this.height = 84,
+    this.height = 72,
     this.radius = 28,
   });
 
   final OheyDailyStatus status;
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final VoidCallback? onTap;
   final bool selected;
   final bool enabled;
@@ -100,19 +100,21 @@ class OheyDailyStatus3DOption extends StatelessWidget {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: foreground.withValues(
-                        alpha: status == OheyDailyStatus.hasPlans ? .70 : .72,
+                  if (subtitle?.trim().isNotEmpty == true) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: foreground.withValues(
+                          alpha: status == OheyDailyStatus.hasPlans ? .70 : .72,
+                        ),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w800,
                       ),
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w800,
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),

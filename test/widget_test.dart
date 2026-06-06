@@ -51,9 +51,17 @@ void main() {
 
     expect(find.text('パスワードを入力してください'), findsOneWidget);
     expect(find.text('次へ'), findsOneWidget);
+    expect(find.byType(TextField), findsNWidgets(2));
     expect(find.byType(SingleChildScrollView), findsNothing);
 
     await tester.enterText(find.byType(TextField).first, 'password123');
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).at(1), 'password456');
+    await tester.pumpAndSettle();
+
+    expect(find.text('パスワードが一致していません。'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).at(1), 'password123');
     await tester.pumpAndSettle();
     await tester.tap(find.text('次へ'));
     await tester.pumpAndSettle();
