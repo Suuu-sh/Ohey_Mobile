@@ -66,6 +66,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   String? _lastPresentedInviteId;
   String? _lastPresentedYuruboRequestKey;
   Timer? _realtimeRefreshDebounce;
+  DateTime? _lastFriendsRefreshAt;
   RealtimeChannel? _inviteNotificationChannel;
   String? _realtimeUserId;
   StreamSubscription<Uri>? _appLinkSubscription;
@@ -256,7 +257,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
         break;
       case 1:
         HapticFeedback.selectionClick();
-        _refreshFriendsOnOpen();
+        _refreshFriendsOnOpen(force: true);
         if (showToast) {
           OheyToast.show(
             context,
@@ -277,7 +278,15 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     ref.invalidate(notificationControllerProvider);
   }
 
-  void _refreshFriendsOnOpen() {
+  void _refreshFriendsOnOpen({bool force = false}) {
+    final now = DateTime.now();
+    final lastRefreshAt = _lastFriendsRefreshAt;
+    if (!force &&
+        lastRefreshAt != null &&
+        now.difference(lastRefreshAt) < const Duration(seconds: 2)) {
+      return;
+    }
+    _lastFriendsRefreshAt = now;
     ref.invalidate(friendsProvider);
     ref.invalidate(friendsForDateProvider);
     ref.invalidate(pendingFriendRequestsProvider);
