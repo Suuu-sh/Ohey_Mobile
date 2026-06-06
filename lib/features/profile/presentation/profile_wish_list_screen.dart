@@ -17,24 +17,24 @@ class _ProfileWishListSheet extends ConsumerWidget {
     final listMaxHeight = MediaQuery.sizeOf(context).height * .42;
 
     return OheyBottomSheetShell(
-      padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
+      title: 'やりたいこと',
+      showHandle: true,
+      radius: 32,
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _ProfileWishListHeader(),
-          const SizedBox(height: 14),
           _ProfileWishListAddButton(
             onCreate: () => _showProfileCreateWishItemSheet(context, ref),
           ),
-          const SizedBox(height: 10),
-          if (wishItemsAsync.isLoading && wishItems.isEmpty)
+          if (wishItemsAsync.isLoading && wishItems.isEmpty) ...[
+            const SizedBox(height: 10),
             const SizedBox(
-              height: 180,
+              height: 54,
               child: Center(child: CupertinoActivityIndicator()),
-            )
-          else if (wishItems.isEmpty)
-            const _ProfileWishListEmptyState()
-          else
+            ),
+          ] else if (wishItems.isNotEmpty) ...[
+            const SizedBox(height: 10),
             ConstrainedBox(
               constraints: BoxConstraints(
                 maxHeight: listMaxHeight > 360 ? 360 : listMaxHeight,
@@ -62,6 +62,7 @@ class _ProfileWishListSheet extends ConsumerWidget {
                 },
               ),
             ),
+          ],
         ],
       ),
     );
@@ -95,59 +96,6 @@ Future<bool?> _confirmDeleteWishItem(BuildContext context, WishItem wish) {
     destructive: true,
     icon: CupertinoIcons.trash_fill,
   );
-}
-
-class _ProfileWishListEmptyState extends StatelessWidget {
-  const _ProfileWishListEmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    return OheyEmptyState(
-      visual: const Icon(
-        CupertinoIcons.sparkles,
-        color: AppColors.cFF20B9FF,
-        size: 46,
-      ),
-      title: 'やりたいことを保存しておこう',
-      titleColor: AppColors.white,
-      messageColor: _ProfileColors.sub,
-    );
-  }
-}
-
-class _ProfileWishListHeader extends StatelessWidget {
-  const _ProfileWishListHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 56,
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'やりたいこと',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppColors.cFF20B9FF,
-                    fontSize: 30,
-                    height: 1,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _ProfileWishListAddButton extends StatelessWidget {
