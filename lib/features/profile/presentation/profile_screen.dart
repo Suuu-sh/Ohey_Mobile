@@ -73,8 +73,9 @@ class ProfileScreen extends ConsumerWidget {
     final wishItemsAsync = ref.watch(wishItemControllerProvider);
     final wishItems = wishItemsAsync.asData?.value ?? const <WishItem>[];
     final yurubosAsync = ref.watch(yuruboControllerProvider);
+    final yurubos = yurubosAsync.asData?.value ?? const <Yurubo>[];
     final today = _dateOnly(DateTime.now());
-    final joinedYurubos = (yurubosAsync.asData?.value ?? const <Yurubo>[])
+    final joinedYurubos = yurubos
         .where((yurubo) => yurubo.reactedByMe && yurubo.startsAt != null)
         .where((yurubo) => _dateOnly(yurubo.startsAt!) == today)
         .toList(growable: false);
@@ -184,7 +185,7 @@ class ProfileScreen extends ConsumerWidget {
                                 isWishLoading: wishItemsAsync.isLoading,
                                 isPlus: isPlusActive,
                                 onCreateYuruboTap: () =>
-                                    _showProfileCreateYuruboSheet(context, ref),
+                                    _openProfileYuruboListScreen(context, ref),
                                 onOpenYuruboTap: onOpenYurubo,
                                 onOpenWishListTap: () =>
                                     _openProfileWishListScreen(context),
@@ -265,7 +266,7 @@ Future<void> _showProfileStatusSheet(
     isScrollControlled: true,
     barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => OheyBottomSheetShell(
-      title: 'この日の気分',
+      title: '今日の予定',
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 32,
