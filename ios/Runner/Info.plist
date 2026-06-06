@@ -53,6 +53,8 @@
 	<string>現在地周辺のお店を検索してログに場所を追加するために使用します。</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>QR画像を写真に保存するために使用します。</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>広告を最適化し、広告の効果測定を行うために使用します。</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
