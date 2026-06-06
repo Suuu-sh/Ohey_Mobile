@@ -494,11 +494,13 @@ const _oheySupportEmail = String.fromEnvironment(
 );
 const _oheyTermsUrl = String.fromEnvironment(
   'OHEY_TERMS_URL',
-  defaultValue: 'https://ohey.app/terms',
+  defaultValue:
+      'https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/terms.txt',
 );
 const _oheyPrivacyUrl = String.fromEnvironment(
   'OHEY_PRIVACY_URL',
-  defaultValue: 'https://ohey.app/privacy',
+  defaultValue:
+      'https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/privacy-policy.txt',
 );
 
 Future<void> _showSupportLegalSheet(BuildContext context) {
