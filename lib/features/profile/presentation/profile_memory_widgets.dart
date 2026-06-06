@@ -477,7 +477,14 @@ Future<bool?> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
               if (!rootContext.mounted) return;
               await _showEditProfileSheet(rootContext, ref, currentUser);
               if (!rootContext.mounted) return;
-              await _showUserSettingsSheet(rootContext, ref);
+              final shouldReopenSettings = await _showUserSettingsSheet(
+                rootContext,
+                ref,
+              );
+              if (!rootContext.mounted || shouldReopenSettings == false) {
+                return;
+              }
+              await _showSettingsSheet(rootContext, ref);
             },
           ),
           _SettingsTile(
@@ -493,7 +500,14 @@ Future<bool?> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
               if (!rootContext.mounted) return;
               await _showProfileOheyPlusSheet(rootContext);
               if (!rootContext.mounted) return;
-              await _showUserSettingsSheet(rootContext, ref);
+              final shouldReopenSettings = await _showUserSettingsSheet(
+                rootContext,
+                ref,
+              );
+              if (!rootContext.mounted || shouldReopenSettings == false) {
+                return;
+              }
+              await _showSettingsSheet(rootContext, ref);
             },
           ),
           _SettingsTile(
@@ -510,7 +524,14 @@ Future<bool?> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
               if (!rootContext.mounted) return;
               final didDelete = await _confirmDeleteAccount(rootContext, ref);
               if (!rootContext.mounted || didDelete) return;
-              await _showUserSettingsSheet(rootContext, ref);
+              final shouldReopenSettings = await _showUserSettingsSheet(
+                rootContext,
+                ref,
+              );
+              if (!rootContext.mounted || shouldReopenSettings == false) {
+                return;
+              }
+              await _showSettingsSheet(rootContext, ref);
             },
           ),
           _SettingsTile(
