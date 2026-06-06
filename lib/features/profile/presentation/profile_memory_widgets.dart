@@ -409,6 +409,22 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               },
             ),
             _SettingsTile(
+              icon: CupertinoIcons.bell_fill,
+              label: '通知設定',
+              subtitle: '機能ごとに通知音をオン/オフ',
+              accent: AppColors.primaryAction,
+              onTap: () async {
+                if (sheetContext.mounted) {
+                  Navigator.of(sheetContext).pop();
+                }
+                await Future<void>.delayed(const Duration(milliseconds: 180));
+                if (!rootContext.mounted) return;
+                await _showNotificationSettingsSheet(rootContext);
+                if (!rootContext.mounted) return;
+                await _showSettingsSheet(rootContext, ref);
+              },
+            ),
+            _SettingsTile(
               icon: CupertinoIcons.doc_text_fill,
               label: 'サポート・法務',
               subtitle: '問い合わせ・利用規約・プライバシー',
@@ -1577,4 +1593,127 @@ class _SheetShell extends StatelessWidget {
     radius: 28,
     child: child,
   );
+}
+
+Future<void> _showNotificationSettingsSheet(BuildContext context) async {
+  await showOheyBottomSheet<void>(
+    context: context,
+    builder: (sheetContext) => Consumer(
+      builder: (context, ref, _) {
+        final preferencesAsync = ref.watch(notificationPreferencesProvider);
+        final preferences =
+            preferencesAsync.asData?.value ?? const NotificationPreferences();
+        final controller = ref.read(notificationPreferencesProvider.notifier);
+        return OheyBottomSheetShell(
+          title: '通知設定',
+          margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+          padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+          radius: 32,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _NotificationToggleRow(
+                icon: CupertinoIcons.person_crop_circle_badge_plus,
+                title: 'フレンズ申請',
+                subtitle: '申請・承認の通知を鳴らす',
+                value: preferences.friendRequests,
+                onChanged: controller.setFriendRequests,
+              ),
+              _NotificationToggleRow(
+                icon: CupertinoIcons.calendar_badge_plus,
+                title: 'お誘い',
+                subtitle: 'お誘い・今日の予定の通知を鳴らす',
+                value: preferences.invites,
+                onChanged: controller.setInvites,
+              ),
+              _NotificationToggleRow(
+                icon: CupertinoIcons.sparkles,
+                title: 'フレンズのゆるぼ',
+                subtitle: 'フレンズがゆるぼ投稿したら鳴らす',
+                value: preferences.yurubos,
+                onChanged: controller.setYurubos,
+              ),
+              const SizedBox(height: 8),
+              _SheetPrimaryButton(
+                label: '閉じる',
+                busy: false,
+                onTap: () => Navigator.of(sheetContext).pop(),
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
+}
+
+class _NotificationToggleRow extends StatelessWidget {
+  const _NotificationToggleRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: OheyThemedPanel.surfaceColor(isWhite: isWhite),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isWhite
+                ? AppColors.cFFE1E8EF
+                : AppColors.white.withValues(alpha: .12),
+            width: 1.4,
+          ),
+        ),
+        child: Row(
+          children: [
+            OheyPopIcon(icon: icon, color: AppColors.primaryAction, size: 28),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: ink,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: isWhite
+                          ? AppColors.cFF71808E
+                          : AppColors.white.withValues(alpha: .58),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            CupertinoSwitch(value: value, onChanged: onChanged),
+          ],
+        ),
+      ),
+    );
+  }
 }

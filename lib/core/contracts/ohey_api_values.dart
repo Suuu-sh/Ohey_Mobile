@@ -92,6 +92,7 @@ class OheyNotificationKindKeys {
   static const inviteAccepted = 'invite_accepted';
   static const todayReservationReminder = 'today_reservation_reminder';
   static const memoryTagged = 'memory_tagged';
+  static const yuruboCreated = 'yurubo_created';
   static const system = 'system';
 }
 

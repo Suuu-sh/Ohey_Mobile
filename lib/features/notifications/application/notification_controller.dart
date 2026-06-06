@@ -4,6 +4,7 @@ import '../../../core/application/optimistic_update.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_invite.dart';
 
+import 'notification_preferences.dart';
 import 'os_notification_service.dart';
 import '../data/notification_repository.dart';
 
@@ -23,9 +24,10 @@ class NotificationController extends AsyncNotifier<List<OheyNotification>> {
     final notifications = await ref
         .watch(notificationRepositoryProvider)
         .fetchNotifications();
+    final preferences = await ref.watch(notificationPreferencesProvider.future);
     await ref
         .read(osNotificationServiceProvider)
-        .showNewNotifications(notifications);
+        .showNewNotifications(notifications, preferences: preferences);
     return notifications;
   }
 

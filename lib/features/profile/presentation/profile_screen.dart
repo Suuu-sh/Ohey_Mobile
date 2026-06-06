@@ -34,6 +34,7 @@ import '../../friends/data/friend_repository.dart';
 import '../../friends/presentation/friend_add_sheet.dart';
 import '../../memories/application/memory_controller.dart';
 import '../../notifications/application/notification_controller.dart';
+import '../../notifications/application/notification_preferences.dart';
 import '../../yurubos/application/yurubo_controller.dart';
 import '../../yurubos/data/yurubo_repository.dart';
 import '../../wish_items/application/wish_item_controller.dart';
