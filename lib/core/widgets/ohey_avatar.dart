@@ -276,13 +276,6 @@ class _OheyAvatarPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.2,
     );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        const Rect.fromLTWH(42, 40, 42, 72),
-        const Radius.circular(24),
-      ),
-      Paint()..color = AppColors.white.withValues(alpha: .10),
-    );
     canvas.drawOval(
       const Rect.fromLTWH(56, 113, 68, 18),
       Paint()..color = _darken(skin, .18).withValues(alpha: .12),
