@@ -593,16 +593,6 @@ class _SupportLegalSheet extends StatelessWidget {
                 );
               },
             ),
-          const SizedBox(height: 14),
-          Text(
-            'URLやメールはビルド時の dart-define で差し替え可能です。',
-            style: TextStyle(
-              color: sub,
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              height: 1.35,
-            ),
-          ),
         ],
       ),
     );
