@@ -561,6 +561,15 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         clipBehavior: Clip.antiAlias,
+        foregroundDecoration: showPlus
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: accent.withValues(alpha: .48),
+                  width: 1.1,
+                ),
+              )
+            : null,
         decoration: BoxDecoration(
           color: AppColors.darkBackgroundBottom,
           borderRadius: BorderRadius.circular(30),
