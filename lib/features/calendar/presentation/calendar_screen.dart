@@ -33,8 +33,8 @@ import '../../memories/application/memory_controller.dart';
 const _calendarPrimaryActionColor = AppColors.cFF20B9FF;
 const _calendarPrimaryActionForegroundColor = AppColors.cFF06111D;
 const _calendarFriendStatusAdNativeFactoryId = 'ohey_yurubo_native_ad';
-const _calendarFriendStatusFirstAdAfter = 4;
-const _calendarFriendStatusAdFrequency = 10;
+const _calendarFriendStatusFirstAdAfter = 2;
+const _calendarFriendStatusAdFrequency = 3;
 
 String get _calendarFriendStatusNativeAdUnitId => OheyAdsConfig.nativeAdUnitId;
 
