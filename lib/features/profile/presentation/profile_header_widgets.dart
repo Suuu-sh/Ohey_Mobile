@@ -615,7 +615,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                             ),
                             const SizedBox(width: 7),
                             Text(
-                              showPlus ? '広告なしで使える' : '本日の予定',
+                              showPlus ? '広告を非表示' : '本日の予定',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -677,7 +677,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                     SizedBox(
                       width: 82,
                       child: Ohey3DButton(
-                        label: showPlus ? '見る' : '探す',
+                        label: showPlus ? '詳細' : '探す',
                         onTap: isLoading
                             ? null
                             : (showPlus ? onPlusTap : onFindTap),
