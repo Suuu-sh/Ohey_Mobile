@@ -569,7 +569,7 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                '誰に募集する？',
+                'ゆるぼする',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: ink,
@@ -578,56 +578,6 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
                   letterSpacing: -.6,
                 ),
               ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: _ProfileYuruboChoice(
-                      label: '全フレンズ',
-                      selected: _visibility == OheyVisibility.friends.key,
-                      onTap: () => setState(
-                        () => _visibility = OheyVisibility.friends.key,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _ProfileYuruboChoice(
-                      label: 'グループ',
-                      selected: _visibility == OheyVisibility.group.key,
-                      onTap: () => setState(
-                        () => _visibility = OheyVisibility.group.key,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (_visibility.requiresVisibilityGroup) ...[
-                const SizedBox(height: 12),
-                if (groups.isEmpty)
-                  Text(
-                    '先にフレンズ画面でグループを作ってね',
-                    style: TextStyle(color: sub, fontWeight: FontWeight.w800),
-                  )
-                else
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final group in groups)
-                        _ProfileYuruboGroupChip(
-                          label: (group['name'] as String?) ?? 'グループ',
-                          selected:
-                              _groupId ==
-                              ((group['row_id'] ?? group['id']) as String?),
-                          onTap: () => setState(
-                            () => _groupId =
-                                (group['row_id'] ?? group['id']) as String?,
-                          ),
-                        ),
-                    ],
-                  ),
-              ],
               const SizedBox(height: 14),
               if (wishItems.isNotEmpty) ...[
                 Align(
@@ -692,6 +642,56 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
                     ? null
                     : () => setState(() => _selectedDate = null),
               ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: _ProfileYuruboChoice(
+                      label: '全フレンズ',
+                      selected: _visibility == OheyVisibility.friends.key,
+                      onTap: () => setState(
+                        () => _visibility = OheyVisibility.friends.key,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _ProfileYuruboChoice(
+                      label: 'グループ',
+                      selected: _visibility == OheyVisibility.group.key,
+                      onTap: () => setState(
+                        () => _visibility = OheyVisibility.group.key,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (_visibility.requiresVisibilityGroup) ...[
+                const SizedBox(height: 12),
+                if (groups.isEmpty)
+                  Text(
+                    '先にフレンズ画面でグループを作ってね',
+                    style: TextStyle(color: sub, fontWeight: FontWeight.w800),
+                  )
+                else
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final group in groups)
+                        _ProfileYuruboGroupChip(
+                          label: (group['name'] as String?) ?? 'グループ',
+                          selected:
+                              _groupId ==
+                              ((group['row_id'] ?? group['id']) as String?),
+                          onTap: () => setState(
+                            () => _groupId =
+                                (group['row_id'] ?? group['id']) as String?,
+                          ),
+                        ),
+                    ],
+                  ),
+              ],
               const SizedBox(height: 16),
               Ohey3DButton(
                 label: _saving ? '送信中...' : 'ゆるぼする',
