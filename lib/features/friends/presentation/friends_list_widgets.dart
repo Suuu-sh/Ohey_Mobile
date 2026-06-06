@@ -377,13 +377,26 @@ class _FriendNativeAdBlockState extends State<_FriendNativeAdBlock> {
   Widget build(BuildContext context) {
     if (_didFail) return const SizedBox.shrink();
     if (!_isLoaded || _ad == null) return const _FriendAdPlaceholderBlock();
+    final isWhite = Theme.of(context).brightness == Brightness.light;
     return Semantics(
       label: '広告',
-      child: SizedBox(
-        height: 156,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: AdWidget(ad: _ad!),
+      child: OheyThemedPanel(
+        padding: EdgeInsets.zero,
+        accentColor: _FriendsColors.lime,
+        backgroundColor: isWhite
+            ? AppColors.white
+            : AppColors.darkBackgroundBottom,
+        borderRadius: 20,
+        borderAlpha: isWhite ? .28 : .36,
+        glowAlpha: isWhite ? .08 : .14,
+        glowBlur: 22,
+        glowOffset: Offset.zero,
+        child: SizedBox(
+          height: 156,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(19),
+            child: AdWidget(ad: _ad!),
+          ),
         ),
       ),
     );
