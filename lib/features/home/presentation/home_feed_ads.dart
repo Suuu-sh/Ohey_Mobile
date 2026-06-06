@@ -65,10 +65,17 @@ class _YuruboNativeAdListItemState extends State<_YuruboNativeAdListItem> {
     _loadAd();
   }
 
-  void _loadAd() {
+  Future<void> _loadAd() async {
     final adUnitId = _oheyYuruboNativeAdUnitId;
     if (adUnitId.isEmpty) {
       _didFail = true;
+      return;
+    }
+
+    final canRequestAds = await OheyAdsConsentService.prepareToRequestAds();
+    if (!mounted) return;
+    if (!canRequestAds) {
+      setState(() => _didFail = true);
       return;
     }
 

@@ -533,7 +533,7 @@ class _SupportLegalSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            '問い合わせ先と、公開前に確認しておきたいポリシーへの導線です。タップすると値をコピーできます。',
+            '問い合わせ先とポリシーへの導線です。タップすると値をコピーできます。',
             style: TextStyle(
               color: sub,
               fontSize: 13,
@@ -565,9 +565,39 @@ class _SupportLegalSheet extends StatelessWidget {
             value: _oheyPrivacyUrl,
             accent: AppColors.cFFFF7AB8,
           ),
+          if (OheyAdsConfig.isEnabled)
+            FutureBuilder<bool>(
+              future:
+                  OheyAdsConsentService.shouldShowPrivacyOptionsEntryPoint(),
+              builder: (context, snapshot) {
+                if (snapshot.data != true) return const SizedBox.shrink();
+
+                return Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    _SupportLegalRow(
+                      icon: CupertinoIcons.hand_raised_fill,
+                      title: '広告プライバシー設定',
+                      subtitle: 'Ad privacy choices',
+                      value: '必要に応じて同意設定を表示',
+                      accent: AppColors.cFFB7F15B,
+                      onTap: (context) async {
+                        final shown =
+                            await OheyAdsConsentService.showPrivacyOptionsForm();
+                        if (!context.mounted) return;
+                        OheyToast.show(
+                          context,
+                          shown ? '広告プライバシー設定を表示しました' : '現在表示できる広告設定はありません',
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
           const SizedBox(height: 14),
           Text(
-            '正式なURLやメールはビルド時の dart-define で差し替え可能です。',
+            'URLやメールはビルド時の dart-define で差し替え可能です。',
             style: TextStyle(
               color: sub,
               fontSize: 12,
@@ -588,6 +618,7 @@ class _SupportLegalRow extends StatelessWidget {
     required this.subtitle,
     required this.value,
     required this.accent,
+    this.onTap,
   });
 
   final IconData icon;
@@ -595,6 +626,7 @@ class _SupportLegalRow extends StatelessWidget {
   final String subtitle;
   final String value;
   final Color accent;
+  final Future<void> Function(BuildContext context)? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -606,6 +638,12 @@ class _SupportLegalRow extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () async {
+        final customTap = onTap;
+        if (customTap != null) {
+          await customTap(context);
+          return;
+        }
+
         await Clipboard.setData(ClipboardData(text: value));
         if (context.mounted) {
           OheyToast.show(context, '$titleをコピーしました');

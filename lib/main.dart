@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/ohey_ads_config.dart';
@@ -12,6 +11,7 @@ import 'core/config/supabase_config.dart';
 import 'core/application/ohey_user_controller.dart';
 import 'core/data/auth_session_guard.dart';
 import 'core/data/supabase_client_provider.dart';
+import 'core/services/ohey_ads_consent_service.dart';
 import 'core/services/ohey_push_notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/ohey_theme_mode.dart';
@@ -65,7 +65,7 @@ final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
     }
 
     if (OheyAdsConfig.isEnabled) {
-      unawaited(MobileAds.instance.initialize());
+      unawaited(OheyAdsConsentService.prepareToRequestAds());
     }
 
     await AuthSessionGuard.clearIfProjectMismatch(

@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/config/ohey_ads_config.dart';
+import '../../../core/services/ohey_ads_consent_service.dart';
 import '../../../core/data/user_repository.dart';
 import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/ohey_avatar.dart';
@@ -1867,10 +1868,16 @@ class _CalendarFriendStatusNativeAdBlockState
     _loadAd();
   }
 
-  void _loadAd() {
+  Future<void> _loadAd() async {
     final adUnitId = _calendarFriendStatusNativeAdUnitId;
     if (adUnitId.isEmpty) {
       _didFail = true;
+      return;
+    }
+    final canRequestAds = await OheyAdsConsentService.prepareToRequestAds();
+    if (!mounted) return;
+    if (!canRequestAds) {
+      setState(() => _didFail = true);
       return;
     }
     final ad = NativeAd(

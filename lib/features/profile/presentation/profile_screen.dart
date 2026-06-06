@@ -14,6 +14,8 @@ import '../../../core/models/yurubo.dart';
 import '../../../core/models/ohey_gender.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_user.dart';
+import '../../../core/services/ohey_ads_consent_service.dart';
+import '../../../core/config/ohey_ads_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_action_tile.dart';

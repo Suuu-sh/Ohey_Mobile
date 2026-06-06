@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/config/ohey_ads_config.dart';
+import '../../../core/services/ohey_ads_consent_service.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/data/user_repository.dart';

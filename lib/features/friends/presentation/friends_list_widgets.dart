@@ -327,10 +327,16 @@ class _FriendNativeAdBlockState extends State<_FriendNativeAdBlock> {
     _loadAd();
   }
 
-  void _loadAd() {
+  Future<void> _loadAd() async {
     final adUnitId = _friendsNativeAdUnitId;
     if (adUnitId.isEmpty) {
       _didFail = true;
+      return;
+    }
+    final canRequestAds = await OheyAdsConsentService.prepareToRequestAds();
+    if (!mounted) return;
+    if (!canRequestAds) {
+      setState(() => _didFail = true);
       return;
     }
     final ad = NativeAd(
