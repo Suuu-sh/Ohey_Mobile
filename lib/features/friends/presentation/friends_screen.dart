@@ -1042,7 +1042,7 @@ class _InviteWeeklyDatePickerState
   Widget build(BuildContext context) {
     final today = _dateOnly(DateTime.now());
     final months = _monthsFrom(today, count: 5);
-    final blockedKeys = <String>{};
+    final statusByDateKey = <String, OheyDailyStatus>{};
     var isLoading = false;
 
     for (final friendId in widget.friendIds) {
@@ -1057,8 +1057,11 @@ class _InviteWeeklyDatePickerState
         final values =
             statuses.asData?.value ?? const <String, OheyDailyStatus>{};
         for (final entry in values.entries) {
-          if (entry.value == OheyDailyStatus.hasPlans) {
-            blockedKeys.add(entry.key);
+          final status = entry.value;
+          final existing = statusByDateKey[entry.key];
+          if (existing == null ||
+              status.availabilityRank > existing.availabilityRank) {
+            statusByDateKey[entry.key] = status;
           }
         }
       }
@@ -1130,19 +1133,24 @@ class _InviteWeeklyDatePickerState
                   for (var index = 0; index < 7; index++) ...[
                     if (index > 0) const SizedBox(width: 4),
                     Expanded(
-                      child: _InviteWeekDateCell(
-                        date: weekStart.add(Duration(days: index)),
-                        today: today,
-                        selected: _isSameInviteDate(
-                          widget.selectedDate,
-                          weekStart.add(Duration(days: index)),
-                        ),
-                        disabled: blockedKeys.contains(
-                          _inviteDateKey(weekStart.add(Duration(days: index))),
-                        ),
-                        onTap: () => widget.onSelected(
-                          weekStart.add(Duration(days: index)),
-                        ),
+                      child: Builder(
+                        builder: (context) {
+                          final date = weekStart.add(Duration(days: index));
+                          final dailyStatus =
+                              statusByDateKey[_inviteDateKey(date)] ??
+                              OheyDailyStatus.unselected;
+                          return _InviteWeekDateCell(
+                            date: date,
+                            today: today,
+                            dailyStatus: dailyStatus,
+                            selected: _isSameInviteDate(
+                              widget.selectedDate,
+                              date,
+                            ),
+                            disabled: dailyStatus == OheyDailyStatus.hasPlans,
+                            onTap: () => widget.onSelected(date),
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -1167,6 +1175,7 @@ class _InviteWeekDateCell extends StatelessWidget {
   const _InviteWeekDateCell({
     required this.date,
     required this.today,
+    required this.dailyStatus,
     required this.selected,
     required this.disabled,
     required this.onTap,
@@ -1174,6 +1183,7 @@ class _InviteWeekDateCell extends StatelessWidget {
 
   final DateTime date;
   final DateTime today;
+  final OheyDailyStatus dailyStatus;
   final bool selected;
   final bool disabled;
   final VoidCallback onTap;
@@ -1190,19 +1200,31 @@ class _InviteWeekDateCell extends StatelessWidget {
         : isWhite
         ? AppColors.cFF667381
         : AppColors.white.withValues(alpha: .72);
-    final background = selected
+    final hasDailyStatus = dailyStatus != OheyDailyStatus.unselected;
+    final statusAccent = oheyDailyStatusBlockAccent(dailyStatus);
+    final background = hasDailyStatus
+        ? oheyDailyStatusTileBackground(
+            dailyStatus,
+            isWhite: isWhite,
+            selected: selected,
+          )
+        : selected
         ? AppColors.primaryAction
         : isWhite
         ? AppColors.cFFF1F5EF
         : AppColors.white.withValues(alpha: .06);
-    final borderColor = selected
+    final borderColor = hasDailyStatus
+        ? statusAccent.withValues(alpha: selected ? .86 : .54)
+        : selected
         ? AppColors.primaryAction
         : isToday
         ? AppColors.primaryAction.withValues(alpha: .74)
         : isWhite
         ? AppColors.cFFD7DEE7
         : AppColors.white.withValues(alpha: .12);
-    final foreground = selected
+    final foreground = hasDailyStatus
+        ? oheyDailyStatusTileForeground(dailyStatus, isWhite: isWhite)
+        : selected
         ? AppColors.cFF101820
         : isWhite
         ? AppColors.cFF17212B
@@ -1230,7 +1252,11 @@ class _InviteWeekDateCell extends StatelessWidget {
               boxShadow: selected
                   ? [
                       BoxShadow(
-                        color: AppColors.primaryAction.withValues(alpha: .22),
+                        color:
+                            (hasDailyStatus
+                                    ? statusAccent
+                                    : AppColors.primaryAction)
+                                .withValues(alpha: .22),
                         blurRadius: 18,
                         offset: const Offset(0, 8),
                       ),
@@ -1243,7 +1269,11 @@ class _InviteWeekDateCell extends StatelessWidget {
                 Text(
                   isToday ? '今日' : weekday,
                   style: TextStyle(
-                    color: selected ? AppColors.cFF101820 : weekdayColor,
+                    color: hasDailyStatus
+                        ? foreground.withValues(alpha: .82)
+                        : selected
+                        ? AppColors.cFF101820
+                        : weekdayColor,
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
                   ),

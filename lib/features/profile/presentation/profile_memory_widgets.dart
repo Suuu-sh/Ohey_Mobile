@@ -490,17 +490,17 @@ String _friendRequestSettingsSubtitle(
 
 const _oheySupportEmail = String.fromEnvironment(
   'OHEY_SUPPORT_EMAIL',
-  defaultValue: 'support@ohey.app',
+  defaultValue: 'yisshiki39@gmail.com',
 );
 const _oheyTermsUrl = String.fromEnvironment(
   'OHEY_TERMS_URL',
   defaultValue:
-      'https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/terms.txt?v=20260606-utf8',
+      'https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/terms.txt?v=20260606-codebase',
 );
 const _oheyPrivacyUrl = String.fromEnvironment(
   'OHEY_PRIVACY_URL',
   defaultValue:
-      'https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/privacy-policy.txt?v=20260606-utf8',
+      'https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/privacy-policy.txt?v=20260606-codebase',
 );
 
 Future<void> _showSupportLegalSheet(BuildContext context) {

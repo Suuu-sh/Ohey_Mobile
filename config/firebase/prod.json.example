@@ -1,6 +1,7 @@
 {
   "OHEY_ENV": "production",
   "OHEY_ADMIN_PORTAL_PASSWORD": "set_via_secret_not_in_git",
+  "OHEY_SUPPORT_EMAIL": "yisshiki39@gmail.com",
   "OHEY_ADMIN_EMAILS": "set_via_secret_not_in_git",
   "OHEY_BACKEND_URL": "https://ohey-backend.onrender.com",
   "SUPABASE_URL": "replace_with_prod_supabase_url",
@@ -18,6 +19,6 @@
   "OHEY_ADMOB_ANDROID_APP_ID": "replace_with_android_admob_app_id",
   "OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID": "replace_with_ios_native_ad_unit_id",
   "OHEY_ADMOB_ANDROID_NATIVE_AD_UNIT_ID": "replace_with_android_native_ad_unit_id",
-  "OHEY_TERMS_URL": "https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/terms.txt?v=20260606-utf8",
-  "OHEY_PRIVACY_URL": "https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/privacy-policy.txt?v=20260606-utf8"
+  "OHEY_TERMS_URL": "https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/terms.txt?v=20260606-codebase",
+  "OHEY_PRIVACY_URL": "https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/privacy-policy.txt?v=20260606-codebase"
 }
