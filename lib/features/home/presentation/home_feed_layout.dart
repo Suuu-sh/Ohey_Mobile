@@ -50,7 +50,7 @@ Widget _buildFeedPage({
     ),
     slivers: [
       CupertinoSliverRefreshControl(
-        refreshTriggerPullDistance: 104,
+        refreshTriggerPullDistance: 72,
         refreshIndicatorExtent: 64,
         onRefresh: onRefresh,
         builder:
@@ -132,8 +132,10 @@ class _YuruboRefreshIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = switch (state) {
-      RefreshIndicatorMode.inactive || RefreshIndicatorMode.drag => '',
-      RefreshIndicatorMode.armed || RefreshIndicatorMode.refresh => '更新中...',
+      RefreshIndicatorMode.inactive => '',
+      RefreshIndicatorMode.drag ||
+      RefreshIndicatorMode.armed ||
+      RefreshIndicatorMode.refresh => '更新中...',
       RefreshIndicatorMode.done => '更新しました',
     };
 
