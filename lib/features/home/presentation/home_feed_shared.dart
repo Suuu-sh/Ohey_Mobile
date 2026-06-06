@@ -289,7 +289,6 @@ class _FeedNotification {
       message: notification.displayMessage,
       timeAgo: _relativeTimeText(notification.createdAt),
       icon: switch (notification.kind) {
-        OheyNotificationKindKeys.memoryLike => CupertinoIcons.heart_fill,
         OheyNotificationKindKeys.friendRequestReceived =>
           CupertinoIcons.person_badge_plus_fill,
         OheyNotificationKindKeys.friendRequestAccepted =>
@@ -305,7 +304,6 @@ class _FeedNotification {
         _ => CupertinoIcons.bell_fill,
       },
       accent: switch (notification.kind) {
-        OheyNotificationKindKeys.memoryLike => AppColors.cFFFF75B5,
         OheyNotificationKindKeys.friendRequestReceived => AppColors.cFF58D6FF,
         OheyNotificationKindKeys.friendRequestAccepted => AppColors.cFF9AF21A,
         OheyNotificationKindKeys.inviteReceived => AppColors.cFFC08BFF,

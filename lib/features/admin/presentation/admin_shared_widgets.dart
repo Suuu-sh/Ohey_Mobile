@@ -458,7 +458,6 @@ String _adminOutboxEventLabel(String eventKind) {
     'friend_request.created' => 'フレンド申請',
     'friend_request.accepted' => 'フレンド承認',
     'memory.tagged' => '思い出タグ付け',
-    'memory.liked' => '思い出いいね',
     'memory.reported' => '思い出通報',
     'system_notification.created' => 'System通知',
     _ => eventKind.trim().isEmpty ? '通知イベント' : eventKind.trim(),

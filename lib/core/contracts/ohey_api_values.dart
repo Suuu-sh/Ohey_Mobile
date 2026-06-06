@@ -85,7 +85,6 @@ class OheyReportReasonKeys {
 class OheyNotificationKindKeys {
   const OheyNotificationKindKeys._();
 
-  static const memoryLike = 'memory_like';
   static const friendRequestReceived = 'friend_request_received';
   static const friendRequestAccepted = 'friend_request_accepted';
   static const inviteReceived = 'invite_received';
