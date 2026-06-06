@@ -468,7 +468,10 @@ class _ProfileActivityHome extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _ProfileSummaryStats(friendsCount: friendsCount),
+            child: _ProfileSummaryStats(
+              wishItemsCount: wishItems.length,
+              friendsCount: friendsCount,
+            ),
           ),
           const SizedBox(height: 12),
           _ProfileTodayScheduleSection(
@@ -727,8 +730,12 @@ class _TodayScheduleParticipants extends StatelessWidget {
 }
 
 class _ProfileSummaryStats extends StatelessWidget {
-  const _ProfileSummaryStats({required this.friendsCount});
+  const _ProfileSummaryStats({
+    required this.wishItemsCount,
+    required this.friendsCount,
+  });
 
+  final int wishItemsCount;
   final int friendsCount;
 
   @override
@@ -739,11 +746,11 @@ class _ProfileSummaryStats extends StatelessWidget {
       decoration: const BoxDecoration(color: AppColors.darkBackground),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: _ProfileSummaryStat(
               icon: CupertinoIcons.house_fill,
               iconColor: AppColors.cFFC08BFF,
-              value: '1',
+              value: '$wishItemsCount',
               label: 'やりたいこと',
             ),
           ),
