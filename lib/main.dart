@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/config/ohey_ads_config.dart';
 import 'core/config/supabase_config.dart';
 import 'core/application/ohey_user_controller.dart';
 import 'core/data/auth_session_guard.dart';
@@ -63,7 +64,9 @@ final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
       ).timeout(const Duration(seconds: 12));
     }
 
-    unawaited(MobileAds.instance.initialize());
+    if (OheyAdsConfig.isEnabled) {
+      unawaited(MobileAds.instance.initialize());
+    }
 
     await AuthSessionGuard.clearIfProjectMismatch(
       Supabase.instance.client,

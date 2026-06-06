@@ -269,15 +269,7 @@ const _friendsAdNativeFactoryId = 'ohey_yurubo_native_ad';
 const _friendsFirstAdAfter = 4;
 const _friendsAdFrequency = 10;
 
-String get _friendsNativeAdUnitId {
-  if (defaultTargetPlatform == TargetPlatform.iOS) {
-    return 'ca-app-pub-3940256099942544/3986624511';
-  }
-  if (defaultTargetPlatform == TargetPlatform.android) {
-    return 'ca-app-pub-3940256099942544/2247696110';
-  }
-  return '';
-}
+String get _friendsNativeAdUnitId => OheyAdsConfig.nativeAdUnitId;
 
 List<_FriendListEntry> _friendListEntriesFromFriends(
   List<_DecoratedFriend> friends,

@@ -4,15 +4,7 @@ const _oheyYuruboAdNativeFactoryId = 'ohey_yurubo_native_ad';
 const _oheyYuruboAdFrequency = 8;
 const _oheyYuruboFirstAdAfter = 3;
 
-String get _oheyYuruboNativeAdUnitId {
-  if (defaultTargetPlatform == TargetPlatform.iOS) {
-    return 'ca-app-pub-3940256099942544/3986624511';
-  }
-  if (defaultTargetPlatform == TargetPlatform.android) {
-    return 'ca-app-pub-3940256099942544/2247696110';
-  }
-  return '';
-}
+String get _oheyYuruboNativeAdUnitId => OheyAdsConfig.nativeAdUnitId;
 
 List<_FeedEntry> _feedEntriesFromItems(List<_FeedItem> items) {
   if (items.length < _oheyYuruboFirstAdAfter) {

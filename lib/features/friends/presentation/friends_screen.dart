@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +9,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
+import '../../../core/config/ohey_ads_config.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/data/user_repository.dart';
@@ -1426,14 +1426,12 @@ class _InviteOptionPill extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
-    this.icon,
     this.compact = false,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  final IconData? icon;
   final bool compact;
 
   @override
@@ -1486,10 +1484,6 @@ class _InviteOptionPill extends StatelessWidget {
             mainAxisSize: compact ? MainAxisSize.min : MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (icon != null) ...[
-                OheyGeneratedIcon(icon!, color: foreground, size: 17),
-                const SizedBox(width: 7),
-              ],
               Text(
                 label,
                 maxLines: 1,

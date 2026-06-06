@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +8,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
+import '../../../core/config/ohey_ads_config.dart';
 import '../../../core/data/user_repository.dart';
 import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/ohey_avatar.dart';
@@ -37,15 +37,7 @@ const _calendarFriendStatusAdNativeFactoryId = 'ohey_yurubo_native_ad';
 const _calendarFriendStatusFirstAdAfter = 4;
 const _calendarFriendStatusAdFrequency = 10;
 
-String get _calendarFriendStatusNativeAdUnitId {
-  if (defaultTargetPlatform == TargetPlatform.iOS) {
-    return 'ca-app-pub-3940256099942544/3986624511';
-  }
-  if (defaultTargetPlatform == TargetPlatform.android) {
-    return 'ca-app-pub-3940256099942544/2247696110';
-  }
-  return '';
-}
+String get _calendarFriendStatusNativeAdUnitId => OheyAdsConfig.nativeAdUnitId;
 
 String _calendarGroupStorageKey(String userId) =>
     'ohey_custom_friend_filters_v1_$userId';

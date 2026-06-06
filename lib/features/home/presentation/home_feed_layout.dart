@@ -791,9 +791,6 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? AppColors.cFF17212B : AppColors.white;
-    final sub = isWhite
-        ? AppColors.cFF667381
-        : AppColors.white.withValues(alpha: .62);
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),

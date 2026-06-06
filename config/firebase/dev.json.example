@@ -13,5 +13,9 @@
   "FIREBASE_IOS_API_KEY": "replace_with_dev_ios_firebase_api_key",
   "FIREBASE_ANDROID_API_KEY": "replace_with_dev_android_firebase_api_key",
   "FIREBASE_IOS_APP_ID": "replace_with_dev_ios_firebase_app_id",
-  "FIREBASE_ANDROID_APP_ID": "replace_with_dev_android_firebase_app_id"
+  "FIREBASE_ANDROID_APP_ID": "replace_with_dev_android_firebase_app_id",
+  "OHEY_ADMOB_IOS_APP_ID": "replace_with_ios_admob_app_id",
+  "OHEY_ADMOB_ANDROID_APP_ID": "replace_with_android_admob_app_id",
+  "OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID": "replace_with_ios_native_ad_unit_id",
+  "OHEY_ADMOB_ANDROID_NATIVE_AD_UNIT_ID": "replace_with_android_native_ad_unit_id"
 }
