@@ -40,8 +40,9 @@ final class OheyYuruboNativeAdFactory: NSObject, FLTNativeAdFactory {
 
     let bodyLabel = UILabel()
     bodyLabel.textColor = UIColor.white.withAlphaComponent(0.70)
-    bodyLabel.font = UIFont.systemFont(ofSize: 13, weight: .bold)
-    bodyLabel.numberOfLines = 2
+    bodyLabel.font = UIFont.systemFont(ofSize: 12, weight: .bold)
+    bodyLabel.numberOfLines = 1
+    bodyLabel.lineBreakMode = .byTruncatingTail
     bodyLabel.translatesAutoresizingMaskIntoConstraints = false
 
     let advertiserLabel = UILabel()
@@ -54,7 +55,7 @@ final class OheyYuruboNativeAdFactory: NSObject, FLTNativeAdFactory {
     ctaButton.setTitleColor(UIColor(red: 0.06, green: 0.09, blue: 0.13, alpha: 1), for: .normal)
     ctaButton.backgroundColor = UIColor(red: 0.75, green: 0.55, blue: 1.0, alpha: 1)
     ctaButton.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .black)
-    ctaButton.layer.cornerRadius = 18
+    ctaButton.layer.cornerRadius = 16
     ctaButton.translatesAutoresizingMaskIntoConstraints = false
     ctaButton.isUserInteractionEnabled = false
 
@@ -82,16 +83,17 @@ final class OheyYuruboNativeAdFactory: NSObject, FLTNativeAdFactory {
 
       bodyLabel.leadingAnchor.constraint(equalTo: headlineLabel.leadingAnchor),
       bodyLabel.trailingAnchor.constraint(equalTo: headlineLabel.trailingAnchor),
-      bodyLabel.topAnchor.constraint(equalTo: headlineLabel.bottomAnchor, constant: 5),
+      bodyLabel.topAnchor.constraint(equalTo: headlineLabel.bottomAnchor, constant: 4),
+      bodyLabel.bottomAnchor.constraint(lessThanOrEqualTo: ctaButton.topAnchor, constant: -8),
 
       advertiserLabel.leadingAnchor.constraint(equalTo: adView.leadingAnchor, constant: 16),
-      advertiserLabel.trailingAnchor.constraint(equalTo: ctaButton.leadingAnchor, constant: -12),
+      advertiserLabel.trailingAnchor.constraint(lessThanOrEqualTo: iconView.trailingAnchor),
       advertiserLabel.bottomAnchor.constraint(equalTo: adView.bottomAnchor, constant: -18),
 
+      ctaButton.leadingAnchor.constraint(equalTo: headlineLabel.leadingAnchor),
       ctaButton.trailingAnchor.constraint(equalTo: adView.trailingAnchor, constant: -16),
-      ctaButton.bottomAnchor.constraint(equalTo: adView.bottomAnchor, constant: -14),
-      ctaButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 96),
-      ctaButton.heightAnchor.constraint(equalToConstant: 36),
+      ctaButton.bottomAnchor.constraint(equalTo: adView.bottomAnchor, constant: -12),
+      ctaButton.heightAnchor.constraint(equalToConstant: 32),
     ])
 
     headlineLabel.text = nativeAd.headline
