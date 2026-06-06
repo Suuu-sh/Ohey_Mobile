@@ -226,10 +226,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   ];
 
   void _selectTab(int index) {
-    if (_selectedIndex == index) {
-      _refreshCurrentTabByIndex(index, showToast: true);
-      return;
-    }
+    if (_selectedIndex == index) return;
     setState(() {
       _previousSelectedIndex = _selectedIndex;
       _selectedIndex = index;
@@ -242,35 +239,6 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     }
   }
 
-  void _refreshCurrentTabByIndex(int index, {required bool showToast}) {
-    switch (index) {
-      case 0:
-        HapticFeedback.selectionClick();
-        _refreshFeedOnOpen();
-        if (showToast) {
-          OheyToast.show(
-            context,
-            'ゆるぼを更新しました',
-            icon: CupertinoIcons.arrow_clockwise,
-          );
-        }
-        break;
-      case 1:
-        HapticFeedback.selectionClick();
-        _refreshFriendsOnOpen(force: true);
-        if (showToast) {
-          OheyToast.show(
-            context,
-            'フレンズを更新しました',
-            icon: CupertinoIcons.arrow_clockwise,
-          );
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
   void _refreshFeedOnOpen() {
     ref.invalidate(homeFeedControllerProvider);
     ref.invalidate(friendsProvider);
@@ -278,11 +246,10 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     ref.invalidate(notificationControllerProvider);
   }
 
-  void _refreshFriendsOnOpen({bool force = false}) {
+  void _refreshFriendsOnOpen() {
     final now = DateTime.now();
     final lastRefreshAt = _lastFriendsRefreshAt;
-    if (!force &&
-        lastRefreshAt != null &&
+    if (lastRefreshAt != null &&
         now.difference(lastRefreshAt) < const Duration(seconds: 2)) {
       return;
     }
