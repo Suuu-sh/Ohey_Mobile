@@ -1,6 +1,7 @@
 # App Store Connect App Privacy answers
 
 Last verified against the Ohey codebase: 2026-06-06
+App Store Connect App Privacy published: 2026-06-06 JST
 
 This file is the source-of-truth checklist for App Store Connect's **App
 Privacy** screen for the current v1 production build.
