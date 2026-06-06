@@ -560,158 +560,143 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: AppColors.darkBackgroundBottom,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(color: accent.withValues(alpha: .58), width: 1.2),
         ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 17, 18, 17),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
+        child: Stack(
+          children: [
+            if (showPlus) ...[
+              Positioned.fill(
+                child: Image.asset(
+                  'assets/images/ohey_plus_momo_card.png',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                ),
+              ),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        AppColors.black.withValues(alpha: .48),
+                        AppColors.black.withValues(alpha: .16),
+                        AppColors.black.withValues(alpha: .06),
+                      ],
+                      stops: const [0, .48, 1],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 17, 18, 17),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 7,
-                          height: 7,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: accent,
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: accent,
+                              ),
+                            ),
+                            const SizedBox(width: 7),
+                            Text(
+                              showPlus ? '広告なしで使える' : '本日の予定',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                height: 1.08,
+                                letterSpacing: .2,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 7),
+                        const SizedBox(height: 7),
                         Text(
-                          showPlus ? '広告なしで使える' : '本日の予定',
+                          title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: AppColors.white,
-                            fontSize: 15,
+                            fontSize: 13,
                             fontWeight: FontWeight.w900,
-                            height: 1.08,
-                            letterSpacing: .2,
+                            height: 1.1,
                           ),
                         ),
+                        if (event != null) ...[
+                          const SizedBox(height: 5),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.white.withValues(alpha: .08),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: AppColors.white.withValues(alpha: .08),
+                              ),
+                            ),
+                            child: Text(
+                              'Today · $subtitle',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: _ProfileColors.sub.withValues(
+                                  alpha: .82,
+                                ),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                height: 1,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: 7),
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                        height: 1.1,
-                      ),
-                    ),
-                    if (event != null) ...[
-                      const SizedBox(height: 5),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 9,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withValues(alpha: .08),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: AppColors.white.withValues(alpha: .08),
-                          ),
-                        ),
-                        child: Text(
-                          'Today · $subtitle',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: _ProfileColors.sub.withValues(alpha: .82),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            height: 1,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              if (showPlus) ...[
-                const _ProfileOheyPlusMomoImage(),
-                const SizedBox(width: 8),
-              ],
-              if (event == null)
-                SizedBox(
-                  width: 82,
-                  child: Ohey3DButton(
-                    label: showPlus ? '見る' : '探す',
-                    onTap: isLoading
-                        ? null
-                        : (showPlus ? onPlusTap : onFindTap),
-                    height: 42,
-                    radius: 21,
-                    color: AppColors.cFFFF75B5,
-                    foregroundColor: AppColors.cFF101820,
-                    shadowColor: AppColors.cFFE05F83,
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    fontSize: 14,
                   ),
-                )
-              else
-                _TodayScheduleParticipants(event: event, accent: accent),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileOheyPlusMomoImage extends StatelessWidget {
-  const _ProfileOheyPlusMomoImage();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 66,
-      height: 66,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.cFFFF75B5.withValues(alpha: .32),
-                  blurRadius: 22,
-                  spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: AppColors.cFF9AF21A.withValues(alpha: .18),
-                  blurRadius: 18,
-                  offset: const Offset(-8, 6),
-                ),
-              ],
+                  const SizedBox(width: 10),
+                  if (event == null)
+                    SizedBox(
+                      width: 82,
+                      child: Ohey3DButton(
+                        label: showPlus ? '見る' : '探す',
+                        onTap: isLoading
+                            ? null
+                            : (showPlus ? onPlusTap : onFindTap),
+                        height: 42,
+                        radius: 21,
+                        color: AppColors.cFFFF75B5,
+                        foregroundColor: AppColors.cFF101820,
+                        shadowColor: AppColors.cFFE05F83,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        fontSize: 14,
+                      ),
+                    )
+                  else
+                    _TodayScheduleParticipants(event: event, accent: accent),
+                ],
+              ),
             ),
-          ),
-          Image.asset(
-            'assets/images/ohey_plus_momo.png',
-            width: 66,
-            height: 66,
-            fit: BoxFit.contain,
-            semanticLabel: 'Ohey Plusのモモちゃん',
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1142,11 +1127,38 @@ class _ProfileFriendActionRow extends StatelessWidget {
   }
 }
 
-class _ProfileOheyPlusPurchaseSheet extends StatelessWidget {
+class _ProfileOheyPlusPurchaseSheet extends ConsumerStatefulWidget {
   const _ProfileOheyPlusPurchaseSheet();
 
   @override
+  ConsumerState<_ProfileOheyPlusPurchaseSheet> createState() =>
+      _ProfileOheyPlusPurchaseSheetState();
+}
+
+class _ProfileOheyPlusPurchaseSheetState
+    extends ConsumerState<_ProfileOheyPlusPurchaseSheet> {
+  bool _isPurchasing = false;
+  bool _isRestoring = false;
+
+  @override
   Widget build(BuildContext context) {
+    final offeringAsync = ref.watch(oheyPlusOfferingProvider);
+    final isPlusActive = ref.watch(oheyPlusActiveProvider);
+    final service = ref.watch(oheyPlusServiceProvider);
+    final offering = offeringAsync.asData?.value;
+    final package = service.preferredPackage(offering);
+    final product = package?.storeProduct;
+    final priceLabel = product?.priceString.trim();
+    final purchaseLabel = isPlusActive
+        ? 'Plus利用中'
+        : _isPurchasing
+        ? '購入中...'
+        : priceLabel == null || priceLabel.isEmpty
+        ? '購入する'
+        : '$priceLabelで購入';
+    final isRevenueCatReady = OheyRevenueCatConfig.isConfigured;
+    final canPurchase = isRevenueCatReady && !isPlusActive && package != null;
+
     return OheyBottomSheetShell(
       padding: const EdgeInsets.fromLTRB(22, 14, 22, 28),
       radius: 30,
@@ -1185,7 +1197,9 @@ class _ProfileOheyPlusPurchaseSheet extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'まずは広告を消せるプランとして準備中です。購入機能が有効になったら、ここから申し込めます。',
+            isPlusActive
+                ? 'Ohey Plusが有効です。ゆるぼ一覧の広告は非表示になります。'
+                : '広告なしでOheyを使えるPlusプランです。まずは広告非表示から始めます。',
             style: TextStyle(
               color: AppColors.white.withValues(alpha: .68),
               fontSize: 14,
@@ -1199,11 +1213,36 @@ class _ProfileOheyPlusPurchaseSheet extends StatelessWidget {
             title: '広告を非表示',
             message: 'ゆるぼ一覧の広告ブロックを消して、投稿だけに集中できます。',
           ),
+          if (!isRevenueCatReady) ...[
+            const SizedBox(height: 14),
+            _ProfileOheyPlusStatusBox(
+              message:
+                  'RevenueCat APIキーが未設定です。本番ビルドでは OHEY_REVENUECAT_IOS_API_KEY を設定すると購入できます。',
+            ),
+          ] else if (offeringAsync.isLoading) ...[
+            const SizedBox(height: 14),
+            const _ProfileOheyPlusStatusBox(message: '購入プランを読み込み中...'),
+          ] else if (offeringAsync.hasError || package == null) ...[
+            const SizedBox(height: 14),
+            const _ProfileOheyPlusStatusBox(
+              message:
+                  '購入プランを取得できませんでした。RevenueCat / App Store Connect の商品設定を確認してください。',
+            ),
+          ] else if (product != null) ...[
+            const SizedBox(height: 14),
+            _ProfileOheyPlusStatusBox(
+              message: '${product.title} · ${product.priceString}',
+            ),
+          ],
           const SizedBox(height: 20),
           Ohey3DButton(
-            label: '購入準備中',
-            icon: CupertinoIcons.lock_fill,
-            onTap: () => Navigator.of(context).pop(),
+            label: purchaseLabel,
+            icon: isPlusActive
+                ? CupertinoIcons.checkmark_seal_fill
+                : CupertinoIcons.creditcard_fill,
+            onTap: canPurchase && !_isPurchasing
+                ? () => _purchase(package)
+                : null,
             height: 54,
             radius: 24,
             color: AppColors.cFFFF75B5,
@@ -1211,7 +1250,90 @@ class _ProfileOheyPlusPurchaseSheet extends StatelessWidget {
             shadowColor: AppColors.cFFE05F83,
             fontSize: 15,
           ),
+          const SizedBox(height: 12),
+          Center(
+            child: CupertinoButton(
+              minimumSize: const Size(0, 28),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              onPressed: _isRestoring ? null : _restore,
+              child: Text(
+                _isRestoring ? '復元中...' : '購入を復元',
+                style: TextStyle(
+                  color: AppColors.white.withValues(alpha: .72),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _purchase(rc.Package package) async {
+    setState(() => _isPurchasing = true);
+    try {
+      final info = await ref.read(oheyPlusServiceProvider).purchase(package);
+      if (!mounted) return;
+      if (OheyPlusService.hasPlusEntitlement(info)) {
+        OheyToast.show(context, 'Ohey Plusが有効になりました');
+        Navigator.of(context).pop();
+      } else {
+        OheyToast.show(context, '購入状態を確認できませんでした。少し待ってから復元を試してください。');
+      }
+    } catch (error) {
+      if (!mounted) return;
+      if (ref.read(oheyPlusServiceProvider).isCancellation(error)) return;
+      OheyToast.show(context, '購入を開始できませんでした。あとでもう一度試してください。');
+    } finally {
+      if (mounted) setState(() => _isPurchasing = false);
+    }
+  }
+
+  Future<void> _restore() async {
+    setState(() => _isRestoring = true);
+    try {
+      final info = await ref.read(oheyPlusServiceProvider).restore();
+      if (!mounted) return;
+      if (OheyPlusService.hasPlusEntitlement(info)) {
+        OheyToast.show(context, '購入を復元しました');
+        Navigator.of(context).pop();
+      } else {
+        OheyToast.show(context, '復元できるOhey Plus購入が見つかりませんでした');
+      }
+    } catch (_) {
+      if (!mounted) return;
+      OheyToast.show(context, '購入を復元できませんでした。あとでもう一度試してください。');
+    } finally {
+      if (mounted) setState(() => _isRestoring = false);
+    }
+  }
+}
+
+class _ProfileOheyPlusStatusBox extends StatelessWidget {
+  const _ProfileOheyPlusStatusBox({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: .06),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.white.withValues(alpha: .08)),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          color: AppColors.white.withValues(alpha: .62),
+          fontSize: 12,
+          height: 1.35,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }
