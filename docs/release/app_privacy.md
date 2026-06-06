@@ -1,25 +1,26 @@
 # App Store Connect App Privacy answers
 
-Last verified against the Ohey codebase: 2026-06-06
-App Store Connect App Privacy published: 2026-06-06 JST
+Last verified against the Ohey codebase: 2026-06-07
+App Store Connect App Privacy published: 2026-06-07 JST
 
 This file is the source-of-truth checklist for App Store Connect's **App
 Privacy** screen for the current v1 production build.
 
 ## Current v1 production state
 
-- Production AdMob IDs in `config/firebase/prod.json` are blank, so
-  `OheyAdsConfig.isEnabled` is `false` for release builds.
-- `NSUserTrackingUsageDescription` is not present.
-- App Store Connect `usesIdfa` is set to `false`.
-- If production AdMob IDs are added later, update the "AdMob enabled" section
-  below before submitting the build.
+- Production AdMob IDs are configured through the production CI/TestFlight
+  environment. Release builds can display AdMob native ads.
+- `NSUserTrackingUsageDescription` is present and the app requests ATT before
+  loading the Google Mobile Ads SDK on iOS.
+- App Store Connect `usesIdfa` is set to `true`.
+- App Store Connect App Privacy declares Device ID as used for tracking,
+  Third-Party Advertising, Analytics, and App Functionality.
 
 ## Data Collection
 
 Answer: **Yes, we collect data from this app.**
 
-## Data Types to select for the current no-ads v1 build
+## Data Types to select for the current AdMob-enabled v1 build
 
 | Category | Data type | Linked to user | Tracking | Purposes |
 | --- | --- | --- | --- | --- |
@@ -30,7 +31,7 @@ Answer: **Yes, we collect data from this app.**
 | Contacts | Contacts | Yes | No | App Functionality |
 | User Content | Other User Content | Yes | No | App Functionality |
 | Identifiers | User ID | Yes | No | App Functionality |
-| Identifiers | Device ID | Yes | No | App Functionality |
+| Identifiers | Device ID | Yes | Yes | Third-Party Advertising, Analytics, App Functionality |
 
 ## Why these are selected
 
@@ -46,7 +47,7 @@ Answer: **Yes, we collect data from this app.**
 - **Device ID**: APNs/FCM push token associated with the account for
   notifications.
 
-## Do not select for the current no-ads v1 build
+## Do not select for the current AdMob-enabled v1 build
 
 - Financial Info / Purchases
 - Health & Fitness
@@ -58,25 +59,13 @@ Answer: **Yes, we collect data from this app.**
 - Usage Data
 - Diagnostics
 - Other Data Types
-- Data Used to Track You
 
-## If production AdMob is enabled later
+## AdMob / ATT release checklist
 
-Before submitting a build that displays AdMob ads:
-
-1. Set real production values for:
-   - `OHEY_ADMOB_IOS_APP_ID`
-   - `OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID`
-   - Android equivalents if shipping Android
-2. Keep the UMP consent flow enabled via `OheyAdsConsentService`.
-3. Configure the required AdMob **Privacy & messaging** messages in the AdMob
-   dashboard.
-4. Update App Store Connect App Privacy to include AdMob-related data:
-   - Identifiers: Device ID
-   - Usage Data: Advertising Data, Product Interaction
-   - Diagnostics: Crash Data, Performance Data
-   - Purposes: Third-Party Advertising, Analytics, and App Functionality as
-     applicable
-5. If ads are personalized or IDFA/tracking is used, set **Data Used to Track
-   You** appropriately and add an ATT prompt with
-   `NSUserTrackingUsageDescription` before release.
+- Keep the UMP consent flow enabled via `OheyAdsConsentService`.
+- Keep `NSUserTrackingUsageDescription` in `ios/Runner/Info.plist`.
+- Keep App Store Connect `usesIdfa` set to `true` while requesting IDFA/ATT.
+- Keep App Privacy **Data Used to Track You** enabled for Identifiers / Device
+  ID while AdMob can use IDFA for tracking.
+- Do not use `OHEY_ADMOB_FORCE_TEST_ADS=true` for App Review or production
+  release builds.
