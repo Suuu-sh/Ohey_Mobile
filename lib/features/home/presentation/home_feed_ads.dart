@@ -109,13 +109,67 @@ class _YuruboNativeAdListItemState extends State<_YuruboNativeAdListItem> {
   Widget build(BuildContext context) {
     if (_didFail) return const SizedBox.shrink();
     if (!_isLoaded || _ad == null) {
-      return _YuruboAdPlaceholder(isWhite: widget.isWhite);
-    }
-    return Semantics(
-      label: '広告',
-      child: _YuruboAdCardFrame(
+      return _YuruboAdListBlock(
         isWhite: widget.isWhite,
-        child: AdWidget(ad: _ad!),
+        child: _YuruboAdPlaceholder(isWhite: widget.isWhite),
+      );
+    }
+    return _YuruboAdListBlock(
+      isWhite: widget.isWhite,
+      child: Semantics(
+        label: '広告',
+        child: _YuruboAdCardFrame(
+          isWhite: widget.isWhite,
+          child: AdWidget(ad: _ad!),
+        ),
+      ),
+    );
+  }
+}
+
+class _YuruboAdListBlock extends StatelessWidget {
+  const _YuruboAdListBlock({required this.child, required this.isWhite});
+
+  final Widget child;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        child,
+        const SizedBox(height: 16),
+        _YuruboAdPostSeparator(isWhite: isWhite),
+      ],
+    );
+  }
+}
+
+class _YuruboAdPostSeparator extends StatelessWidget {
+  const _YuruboAdPostSeparator({required this.isWhite});
+
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final alpha = isWhite ? .42 : .76;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: IgnorePointer(
+        child: Container(
+          height: 1,
+          decoration: BoxDecoration(
+            color: AppColors.cFFC08BFF.withValues(alpha: alpha),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.cFFC08BFF.withValues(alpha: alpha * .62),
+                blurRadius: 9,
+                spreadRadius: .35,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
