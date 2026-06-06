@@ -2206,6 +2206,7 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
+    final accent = oheyDailyStatusColor(_selected);
     return OheyBottomSheetShell(
       title: '設定方法',
       showHandle: true,
@@ -2252,6 +2253,7 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
                     title: '連続',
                     subtitle: '何日分かまとめる',
                     selected: !_weeklyRepeat,
+                    accent: accent,
                     onTap: () => setState(() => _weeklyRepeat = false),
                   ),
                 ),
@@ -2261,6 +2263,7 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
                     title: '毎週',
                     subtitle: '同じ曜日で繰り返す',
                     selected: _weeklyRepeat,
+                    accent: accent,
                     onTap: () => setState(() => _weeklyRepeat = true),
                   ),
                 ),
@@ -2270,6 +2273,7 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
               const SizedBox(height: 12),
               _CalendarWeekdaySelector(
                 selectedWeekday: _weekday,
+                accent: accent,
                 onChanged: (weekday) => setState(() => _weekday = weekday),
               ),
             ],
@@ -2280,23 +2284,24 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
               unit: _weeklyRepeat ? '回' : '日',
               min: 1,
               max: _weeklyRepeat ? 12 : 31,
+              accent: accent,
               onChanged: _weeklyRepeat ? _setRepeatCount : _setDayCount,
             ),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.cFF54D7FF.withValues(alpha: .12),
+                color: accent.withValues(alpha: .12),
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
-                  color: AppColors.cFF54D7FF.withValues(alpha: .28),
+                  color: accent.withValues(alpha: .28),
                 ),
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     CupertinoIcons.calendar,
-                    color: AppColors.cFF54D7FF,
+                    color: accent,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -2315,6 +2320,7 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
             _CalendarStatusSubmit3DButton(
               title: 'この内容で設定する',
               subtitle: '$_summaryText を${_selected.label}にします',
+              accent: accent,
               onTap: _submit,
             ),
           ],
@@ -2381,10 +2387,12 @@ class _CalendarStatusCompactChoice extends StatelessWidget {
 class _CalendarWeekdaySelector extends StatelessWidget {
   const _CalendarWeekdaySelector({
     required this.selectedWeekday,
+    required this.accent,
     required this.onChanged,
   });
 
   final int selectedWeekday;
+  final Color accent;
   final ValueChanged<int> onChanged;
 
   @override
@@ -2418,7 +2426,7 @@ class _CalendarWeekdaySelector extends StatelessWidget {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: weekday == selectedWeekday
-                            ? AppColors.cFF54D7FF
+                            ? accent
                             : AppColors.white.withValues(alpha: .07),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
@@ -2454,11 +2462,13 @@ class _CalendarStatusSubmit3DButton extends StatelessWidget {
   const _CalendarStatusSubmit3DButton({
     required this.title,
     required this.subtitle,
+    required this.accent,
     required this.onTap,
   });
 
   final String title;
   final String subtitle;
+  final Color accent;
   final VoidCallback onTap;
 
   @override
@@ -2467,14 +2477,14 @@ class _CalendarStatusSubmit3DButton extends StatelessWidget {
       onTap: onTap,
       height: 76,
       radius: 20,
-      color: AppColors.cFF54D7FF,
-      bottomColor: const Color(0xFF138FC8),
+      color: accent,
+      bottomColor: Color.lerp(accent, AppColors.black, .28)!,
       useGradient: true,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       borderColor: AppColors.white.withValues(alpha: .20),
       outerShadows: [
         BoxShadow(
-          color: AppColors.cFF54D7FF.withValues(alpha: .32),
+          color: accent.withValues(alpha: .32),
           blurRadius: 18,
           offset: const Offset(0, 8),
         ),
@@ -2530,12 +2540,14 @@ class _CalendarStatusModeButton extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.selected,
+    required this.accent,
     required this.onTap,
   });
 
   final String title;
   final String subtitle;
   final bool selected;
+  final Color accent;
   final VoidCallback onTap;
 
   @override
@@ -2553,7 +2565,7 @@ class _CalendarStatusModeButton extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: selected
-              ? AppColors.cFF54D7FF
+              ? accent
               : isWhite
               ? AppColors.white.withValues(alpha: .88)
               : AppColors.white.withValues(alpha: .08),
@@ -2594,6 +2606,7 @@ class _CalendarStatusStepper extends StatelessWidget {
     required this.unit,
     required this.min,
     required this.max,
+    required this.accent,
     required this.onChanged,
   });
 
@@ -2602,6 +2615,7 @@ class _CalendarStatusStepper extends StatelessWidget {
   final String unit;
   final int min;
   final int max;
+  final Color accent;
   final ValueChanged<int> onChanged;
 
   @override
@@ -2642,12 +2656,14 @@ class _CalendarStatusStepper extends StatelessWidget {
           _CalendarStatusRoundButton(
             icon: CupertinoIcons.minus,
             enabled: value > min,
+            accent: accent,
             onTap: () => onChanged(value - 1),
           ),
           const SizedBox(width: 8),
           _CalendarStatusRoundButton(
             icon: CupertinoIcons.plus,
             enabled: value < max,
+            accent: accent,
             onTap: () => onChanged(value + 1),
           ),
         ],
@@ -2660,11 +2676,13 @@ class _CalendarStatusRoundButton extends StatelessWidget {
   const _CalendarStatusRoundButton({
     required this.icon,
     required this.enabled,
+    required this.accent,
     required this.onTap,
   });
 
   final IconData icon;
   final bool enabled;
+  final Color accent;
   final VoidCallback onTap;
 
   @override
@@ -2677,7 +2695,7 @@ class _CalendarStatusRoundButton extends StatelessWidget {
         height: 36,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.cFF54D7FF.withValues(alpha: enabled ? .95 : .22),
+          color: accent.withValues(alpha: enabled ? .95 : .22),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: AppColors.cFF06111D, size: 18),
