@@ -1147,8 +1147,12 @@ class _ProfileOheyPlusPurchaseSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(22, 10, 22, 28),
+    return OheyBottomSheetShell(
+      padding: const EdgeInsets.fromLTRB(22, 14, 22, 28),
+      radius: 30,
+      showHandle: false,
+      showBottomCloseButton: false,
+      blurSigma: 0,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
