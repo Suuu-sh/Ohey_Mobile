@@ -12,7 +12,7 @@ double _feedHeaderScrollInset(BuildContext context) {
 }
 
 const _feedBottomPageInset = 124.0;
-const _feedHeaderContentGap = 34.0;
+const _feedHeaderContentGap = 72.0;
 const _feedPrimaryActionColor = AppColors.cFFC08BFF;
 const _feedPrimaryActionShadowColor = AppColors.cFF7F51C9;
 
@@ -152,17 +152,14 @@ class _YuruboRefreshIndicator extends StatelessWidget {
     };
 
     final headerBottom = _feedHeaderScrollInset(context);
-    final visibleOffset = (headerBottom - pulledExtent + 12).clamp(
-      0.0,
-      headerBottom,
-    );
+    final visibleOffset = headerBottom + 24;
 
     return SizedBox(
       height: pulledExtent,
       child: OverflowBox(
         alignment: Alignment.bottomCenter,
         minHeight: 0,
-        maxHeight: headerBottom + 60,
+        maxHeight: headerBottom + 96,
         child: Transform.translate(
           offset: Offset(0, visibleOffset),
           child: Padding(
