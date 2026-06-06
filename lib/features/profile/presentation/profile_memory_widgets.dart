@@ -551,7 +551,7 @@ class _SupportLegalSheet extends StatelessWidget {
           _SupportLegalRow(
             icon: CupertinoIcons.doc_text_fill,
             title: '利用規約',
-            subtitle: 'Terms of Service URL',
+            subtitle: '利用規約を確認する',
             value: _oheyTermsUrl,
             accent: AppColors.cFF65D6FF,
           ),
@@ -559,7 +559,7 @@ class _SupportLegalSheet extends StatelessWidget {
           _SupportLegalRow(
             icon: CupertinoIcons.lock_shield_fill,
             title: 'プライバシーポリシー',
-            subtitle: 'Privacy Policy URL',
+            subtitle: '個人情報の取り扱いを確認する',
             value: _oheyPrivacyUrl,
             accent: AppColors.cFFFF7AB8,
           ),
