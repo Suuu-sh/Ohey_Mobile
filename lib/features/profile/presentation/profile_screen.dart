@@ -22,8 +22,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_action_tile.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
+import '../../../core/widgets/ohey_calendar_status_sheets.dart';
 import '../../../core/widgets/ohey_confirm_sheet.dart';
-import '../../../core/widgets/ohey_daily_status_3d_option.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
 import '../../../core/widgets/ohey_manage_list_row.dart';
 import '../../../core/widgets/ohey_page_header.dart';
@@ -50,7 +50,6 @@ import '../../../core/widgets/ohey_yurubo_create_sheet_layout.dart';
 
 part 'profile_header_widgets.dart';
 part 'profile_memory_widgets.dart';
-part 'profile_status_sheet.dart';
 part 'profile_settings_sheet.dart';
 part 'profile_form_helpers.dart';
 part 'profile_wish_list_screen.dart';
@@ -261,23 +260,79 @@ Future<void> _showProfileStatusSheet(
   WidgetRef ref,
   OheyUser? user,
 ) async {
-  await showOheyBottomSheet<void>(
+  final day = _dateOnly(DateTime.now());
+  final selectedStatus = user?.dailyStatus ?? OheyDailyStatus.unselected;
+  final picked = await showOheyBottomSheet<OheyCalendarStatusPickerResult>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
     barrierColor: AppColors.black.withValues(alpha: .58),
-    builder: (_) => OheyBottomSheetShell(
-      title: '今日の予定',
-      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-      radius: 32,
-      maxHeightFactor: .86,
-      child: _ProfileStatusSheetContent(
-        selected: user?.dailyStatus ?? OheyDailyStatus.unselected,
-        ref: ref,
-      ),
+    builder: (_) => OheyCalendarStatusSheet(
+      day: day,
+      selected: selectedStatus,
+      showLockedExplanation: false,
     ),
   );
+  if (picked == null) return;
+  if (picked.openMethods) {
+    await Future<void>.delayed(const Duration(milliseconds: 180));
+    if (!context.mounted) return;
+    await _showProfileStatusMethodSheet(
+      context: context,
+      ref: ref,
+      selected: selectedStatus,
+      day: day,
+    );
+    return;
+  }
+  final status = picked.status;
+  if (status == null || !context.mounted) return;
+  await _setProfileStatusesForDays(context, ref, status, [day]);
+}
+
+Future<void> _showProfileStatusMethodSheet({
+  required BuildContext context,
+  required WidgetRef ref,
+  required OheyDailyStatus selected,
+  required DateTime day,
+}) async {
+  final request = await showOheyBottomSheet<OheyCalendarStatusUpdateRequest>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: AppColors.black.withValues(alpha: .58),
+    builder: (_) => OheyCalendarStatusMethodSheet(day: day, selected: selected),
+  );
+  if (request == null || !context.mounted) return;
+  await _setProfileStatusesForDays(context, ref, request.status, request.days);
+}
+
+Future<void> _setProfileStatusesForDays(
+  BuildContext context,
+  WidgetRef ref,
+  OheyDailyStatus status,
+  List<DateTime> days,
+) async {
+  if (days.isEmpty) return;
+  final uniqueDays = <String, DateTime>{
+    for (final day in days) _profileDateKey(day): _dateOnly(day),
+  }.values.toList(growable: false);
+  try {
+    final controller = ref.read(oheyUserProvider.notifier);
+    for (final day in uniqueDays) {
+      await controller.updateDailyStatus(status, date: day);
+    }
+    if (!context.mounted) return;
+    OheyToast.show(
+      context,
+      uniqueDays.length == 1
+          ? '${oheyFormatCalendarDay(uniqueDays.first)} を${status.label}にしました'
+          : '${uniqueDays.length}日分を${status.label}にしました',
+    );
+  } catch (_) {
+    if (!context.mounted) return;
+    OheyToast.show(context, '予定を設定できませんでした。時間をおいて再度お試しください。');
+  }
 }
 
 Future<void> _showProfileCreateWishItemSheet(
@@ -1164,6 +1219,9 @@ class _ProfileYuruboChoice extends StatelessWidget {
 
 DateTime _dateOnly(DateTime value) =>
     DateTime(value.year, value.month, value.day);
+
+String _profileDateKey(DateTime date) =>
+    '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
 class _ProfileYuruboGroupChip extends StatelessWidget {
   const _ProfileYuruboGroupChip({
