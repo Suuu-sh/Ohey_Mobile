@@ -52,7 +52,6 @@ class OheyApiPaths {
   static const memories = '/v1/memories';
   static String memory(String memoryId) =>
       '$memories/${Uri.encodeComponent(memoryId)}';
-  static String memoryLike(String memoryId) => '${memory(memoryId)}/like';
   static String memoryReport(String memoryId) => '${memory(memoryId)}/report';
   static const memoryHides = '/v1/memory-hides';
 

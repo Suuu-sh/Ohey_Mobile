@@ -70,46 +70,6 @@ class HomeFeedController extends AsyncNotifier<List<Memory>> {
     }
   }
 
-  Future<void> toggleLike(String memoryId) async {
-    final previous = state.asData?.value ?? const <Memory>[];
-    final index = previous.indexWhere((memory) => memory.id == memoryId);
-    if (index == -1) return;
-
-    final current = previous[index];
-    final nextLiked = !current.likedByMe;
-    final optimistic = current.copyWith(
-      likedByMe: nextLiked,
-      likeCount: (current.likeCount + (nextLiked ? 1 : -1)).clamp(0, 1 << 31),
-    );
-    try {
-      await runOptimistic<MemoryLikeState>(
-        apply: () => state = AsyncValue.data([
-          for (var i = 0; i < previous.length; i++)
-            i == index ? optimistic : previous[i],
-        ]),
-        rollback: () => state = AsyncValue.data(previous),
-        commit: () => ref
-            .read(memoryRepositoryProvider)
-            .setLike(memoryId, liked: nextLiked),
-        confirm: (likeState) {
-          final latest = state.asData?.value ?? previous;
-          state = AsyncValue.data([
-            for (final memory in latest)
-              if (memory.id == memoryId)
-                memory.copyWith(
-                  likeCount: likeState.likeCount,
-                  likedByMe: likeState.likedByMe,
-                )
-              else
-                memory,
-          ]);
-        },
-      );
-    } catch (error, stackTrace) {
-      Error.throwWithStackTrace(error, stackTrace);
-    }
-  }
-
   Future<void> deleteMemory(String memoryId) async {
     final previous = state.asData?.value ?? const <Memory>[];
     state = AsyncValue.data([
