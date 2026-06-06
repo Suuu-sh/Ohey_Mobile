@@ -234,7 +234,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
         isWhite: isWhite,
         title: '最初のゆるぼを出そう',
         message:
-            'ホームが静かな時は、Oheyが小さな募集ボードになります。ゆるぼは1日で消えるので、ご飯・作業・サウナなどを軽く置いてみよう。',
+            'ホームが静かな時は、Oheyが小さな募集ボードになります。ゆるぼは予定日を過ぎると消えます。いつでもは30日後まで表示されます。',
         accent: _feedPrimaryActionColor,
         hints: const ['今ひま？', '今度ここ行こ', '一緒に作業しよ'],
         action: SizedBox(
