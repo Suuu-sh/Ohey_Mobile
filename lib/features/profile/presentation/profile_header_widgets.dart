@@ -944,7 +944,7 @@ class _ProfileYuruboActionRow extends StatelessWidget {
         children: [
           const Expanded(
             child: Text(
-              'ゆるぼを追加',
+              'ゆるぼ',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
