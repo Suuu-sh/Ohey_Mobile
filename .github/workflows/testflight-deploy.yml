@@ -388,7 +388,9 @@ jobs:
               print(f'Normalized {path}')
           PY
           plutil -p ios/Runner/RunnerRelease.entitlements
-          plutil -p ios/OheyWidgets/OheyWidgetsRelease.entitlements
+          if [ -f ios/OheyWidgets/OheyWidgetsRelease.entitlements ]; then
+            plutil -p ios/OheyWidgets/OheyWidgetsRelease.entitlements
+          fi
 
       - name: Archive release build
         run: |
