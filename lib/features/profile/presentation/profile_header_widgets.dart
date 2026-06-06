@@ -642,7 +642,11 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 10),
+              if (showPlus) ...[
+                const _ProfileOheyPlusMomoImage(),
+                const SizedBox(width: 8),
+              ],
               if (event == null)
                 SizedBox(
                   width: 82,
@@ -665,6 +669,49 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ProfileOheyPlusMomoImage extends StatelessWidget {
+  const _ProfileOheyPlusMomoImage();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 66,
+      height: 66,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.cFFFF75B5.withValues(alpha: .32),
+                  blurRadius: 22,
+                  spreadRadius: 2,
+                ),
+                BoxShadow(
+                  color: AppColors.cFF9AF21A.withValues(alpha: .18),
+                  blurRadius: 18,
+                  offset: const Offset(-8, 6),
+                ),
+              ],
+            ),
+          ),
+          Image.asset(
+            'assets/images/ohey_plus_momo.png',
+            width: 66,
+            height: 66,
+            fit: BoxFit.contain,
+            semanticLabel: 'Ohey Plusのモモちゃん',
+          ),
+        ],
       ),
     );
   }
