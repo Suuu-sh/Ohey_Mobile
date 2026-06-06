@@ -564,7 +564,9 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.darkBackgroundBottom,
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: accent.withValues(alpha: .58), width: 1.2),
+          border: showPlus
+              ? null
+              : Border.all(color: accent.withValues(alpha: .58), width: 1.2),
         ),
         child: Stack(
           children: [
