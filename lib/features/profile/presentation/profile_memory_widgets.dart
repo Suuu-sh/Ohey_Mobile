@@ -111,6 +111,8 @@ Future<void> _showEditProfileSheet(
           child: _SheetShell(
             title: 'プロフィール編集',
             onClose: requestClose,
+            bottomCloseLabel: '戻る',
+            onBottomClose: requestClose,
             child: Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(sheetBuildContext).viewInsets.bottom,
@@ -371,8 +373,13 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 }
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
-                await _showUserSettingsSheet(rootContext, ref);
-                if (!rootContext.mounted) return;
+                final shouldReopenSettings = await _showUserSettingsSheet(
+                  rootContext,
+                  ref,
+                );
+                if (!rootContext.mounted || shouldReopenSettings == false) {
+                  return;
+                }
                 await _showSettingsSheet(rootContext, ref);
               },
             ),
@@ -388,8 +395,11 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 }
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
-                await _showFriendsYuruboSettingsSheet(rootContext);
-                if (!rootContext.mounted) return;
+                final shouldReopenSettings =
+                    await _showFriendsYuruboSettingsSheet(rootContext);
+                if (!rootContext.mounted || shouldReopenSettings == false) {
+                  return;
+                }
                 await _showSettingsSheet(rootContext, ref);
               },
             ),
@@ -420,8 +430,12 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 }
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
-                await _showSupportSettingsSheet(rootContext);
-                if (!rootContext.mounted) return;
+                final shouldReopenSettings = await _showSupportSettingsSheet(
+                  rootContext,
+                );
+                if (!rootContext.mounted || shouldReopenSettings == false) {
+                  return;
+                }
                 await _showSettingsSheet(rootContext, ref);
               },
             ),
@@ -432,9 +446,9 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
   );
 }
 
-Future<void> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
+Future<bool?> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
   final rootContext = context;
-  return showOheyBottomSheet<void>(
+  return showOheyBottomSheet<bool>(
     context: context,
     useSafeArea: true,
     barrierColor: AppColors.black.withValues(alpha: .58),
@@ -457,11 +471,20 @@ Future<void> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
             onTap: () async {
               final currentUser = ref.read(oheyUserProvider);
               if (sheetContext.mounted) {
-                Navigator.of(sheetContext).pop();
+                Navigator.of(sheetContext).pop(false);
               }
               await Future<void>.delayed(const Duration(milliseconds: 180));
               if (!rootContext.mounted) return;
               await _showEditProfileSheet(rootContext, ref, currentUser);
+              if (!rootContext.mounted) return;
+              final shouldReopenSettings = await _showUserSettingsSheet(
+                rootContext,
+                ref,
+              );
+              if (!rootContext.mounted || shouldReopenSettings == false) {
+                return;
+              }
+              await _showSettingsSheet(rootContext, ref);
             },
           ),
           _SettingsTile(
@@ -471,11 +494,20 @@ Future<void> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
             accent: AppColors.cFFB7F15B,
             onTap: () async {
               if (sheetContext.mounted) {
-                Navigator.of(sheetContext).pop();
+                Navigator.of(sheetContext).pop(false);
               }
               await Future<void>.delayed(const Duration(milliseconds: 180));
               if (!rootContext.mounted) return;
               await _showProfileOheyPlusSheet(rootContext);
+              if (!rootContext.mounted) return;
+              final shouldReopenSettings = await _showUserSettingsSheet(
+                rootContext,
+                ref,
+              );
+              if (!rootContext.mounted || shouldReopenSettings == false) {
+                return;
+              }
+              await _showSettingsSheet(rootContext, ref);
             },
           ),
           _SettingsTile(
@@ -486,11 +518,20 @@ Future<void> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
             destructive: true,
             onTap: () async {
               if (sheetContext.mounted) {
-                Navigator.of(sheetContext).pop();
+                Navigator.of(sheetContext).pop(false);
               }
               await Future<void>.delayed(const Duration(milliseconds: 180));
               if (!rootContext.mounted) return;
-              await _confirmDeleteAccount(rootContext, ref);
+              final didDelete = await _confirmDeleteAccount(rootContext, ref);
+              if (!rootContext.mounted || didDelete) return;
+              final shouldReopenSettings = await _showUserSettingsSheet(
+                rootContext,
+                ref,
+              );
+              if (!rootContext.mounted || shouldReopenSettings == false) {
+                return;
+              }
+              await _showSettingsSheet(rootContext, ref);
             },
           ),
           _SettingsTile(
@@ -508,7 +549,7 @@ Future<void> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
                 }
               } finally {
                 if (sheetContext.mounted) {
-                  Navigator.of(sheetContext).pop();
+                  Navigator.of(sheetContext).pop(false);
                 }
               }
             },
@@ -519,9 +560,9 @@ Future<void> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
   );
 }
 
-Future<void> _showSupportSettingsSheet(BuildContext context) {
+Future<bool?> _showSupportSettingsSheet(BuildContext context) {
   final rootContext = context;
-  return showOheyBottomSheet<void>(
+  return showOheyBottomSheet<bool>(
     context: context,
     useSafeArea: true,
     barrierColor: AppColors.black.withValues(alpha: .58),
@@ -543,7 +584,7 @@ Future<void> _showSupportSettingsSheet(BuildContext context) {
             accent: AppColors.cFF9AF21A,
             onTap: () async {
               if (sheetContext.mounted) {
-                Navigator.of(sheetContext).pop();
+                Navigator.of(sheetContext).pop(false);
               }
               if (!rootContext.mounted) return;
               await Navigator.of(rootContext).push<void>(
@@ -561,7 +602,7 @@ Future<void> _showSupportSettingsSheet(BuildContext context) {
             accent: AppColors.cFFFFD166,
             onTap: () async {
               if (sheetContext.mounted) {
-                Navigator.of(sheetContext).pop();
+                Navigator.of(sheetContext).pop(false);
               }
               await Future<void>.delayed(const Duration(milliseconds: 180));
               if (!rootContext.mounted) return;
@@ -574,7 +615,7 @@ Future<void> _showSupportSettingsSheet(BuildContext context) {
   );
 }
 
-Future<void> _showFriendsYuruboSettingsSheet(BuildContext context) {
+Future<bool?> _showFriendsYuruboSettingsSheet(BuildContext context) {
   return _showProfileManagementSheet(context);
 }
 
@@ -826,9 +867,9 @@ Future<void> _showFriendRequestManagementSheet(BuildContext context) {
   );
 }
 
-Future<void> _showProfileManagementSheet(BuildContext context) {
+Future<bool?> _showProfileManagementSheet(BuildContext context) {
   final rootContext = context;
-  return showOheyBottomSheet<void>(
+  return showOheyBottomSheet<bool>(
     context: context,
     useSafeArea: true,
     barrierColor: AppColors.black.withValues(alpha: .58),
@@ -860,7 +901,7 @@ Future<void> _showProfileManagementSheet(BuildContext context) {
                 badgeCount: pendingRequestBadgeCount,
                 onTap: () async {
                   if (sheetContext.mounted) {
-                    Navigator.of(sheetContext).pop();
+                    Navigator.of(sheetContext).pop(false);
                   }
                   await Future<void>.delayed(const Duration(milliseconds: 180));
                   if (!rootContext.mounted) return;
@@ -876,7 +917,7 @@ Future<void> _showProfileManagementSheet(BuildContext context) {
                 accent: AppColors.cFF65D6FF,
                 onTap: () async {
                   if (sheetContext.mounted) {
-                    Navigator.of(sheetContext).pop();
+                    Navigator.of(sheetContext).pop(false);
                   }
                   await Future<void>.delayed(const Duration(milliseconds: 180));
                   if (!rootContext.mounted) return;
@@ -1347,7 +1388,7 @@ Future<void> _showSafetyCenterSheet(BuildContext context) {
   );
 }
 
-Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
+Future<bool> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
   final confirmed = await showOheyConfirmSheet(
     context,
     title: 'アカウントを削除しますか？',
@@ -1356,19 +1397,21 @@ Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
     destructive: true,
     icon: CupertinoIcons.trash_fill,
   );
-  if (confirmed != true) return;
+  if (confirmed != true) return false;
 
   try {
     await ref.read(oheyUserProvider.notifier).deleteAccount();
-    if (!context.mounted) return;
+    if (!context.mounted) return true;
     OheyToast.show(
       context,
       'アカウントを削除しました',
       icon: CupertinoIcons.checkmark_circle_fill,
     );
+    return true;
   } catch (_) {
-    if (!context.mounted) return;
+    if (!context.mounted) return false;
     _showSnack(context, 'アカウントを削除できませんでした。あとでもう一度試してね');
+    return false;
   }
 }
 
@@ -1677,16 +1720,26 @@ class _SafetyUserRow extends StatelessWidget {
 }
 
 class _SheetShell extends StatelessWidget {
-  const _SheetShell({required this.title, required this.child, this.onClose});
+  const _SheetShell({
+    required this.title,
+    required this.child,
+    this.onClose,
+    this.bottomCloseLabel = '閉じる',
+    this.onBottomClose,
+  });
 
   final String title;
   final Widget child;
   final VoidCallback? onClose;
+  final String bottomCloseLabel;
+  final VoidCallback? onBottomClose;
 
   @override
   Widget build(BuildContext context) => OheyBottomSheetShell(
     title: title,
     onClose: onClose,
+    bottomCloseLabel: bottomCloseLabel,
+    onBottomClose: onBottomClose,
     topSafeArea: true,
     margin: const EdgeInsets.all(14),
     padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),

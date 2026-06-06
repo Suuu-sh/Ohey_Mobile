@@ -14,6 +14,7 @@ class OheyActionTile extends StatelessWidget {
     required this.onTap,
     this.destructive = false,
     this.destructiveColor = AppColors.cFFFF5F8F,
+    this.showShadow = true,
   });
 
   final IconData icon;
@@ -23,6 +24,7 @@ class OheyActionTile extends StatelessWidget {
   final VoidCallback onTap;
   final bool destructive;
   final Color destructiveColor;
+  final bool showShadow;
 
   @override
   Widget build(BuildContext context) {
@@ -54,15 +56,17 @@ class OheyActionTile extends StatelessWidget {
                 ? AppColors.cFFE1E8F1
                 : AppColors.white.withValues(alpha: .12),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: (destructive ? destructiveColor : accent).withValues(
-                alpha: isWhite ? .08 : .14,
-              ),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          boxShadow: showShadow
+              ? [
+                  BoxShadow(
+                    color: (destructive ? destructiveColor : accent).withValues(
+                      alpha: isWhite ? .08 : .14,
+                    ),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [

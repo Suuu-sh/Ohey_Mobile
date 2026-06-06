@@ -119,6 +119,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               subtitle: 'ゆるぼ・申請・お誘いを制限する',
               accent: AppColors.cFFFF5F8F,
               destructive: true,
+              showShadow: false,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.blockUser),
             ),
             if (item.canReport) ...[

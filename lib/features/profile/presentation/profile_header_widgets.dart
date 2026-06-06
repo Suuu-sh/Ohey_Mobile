@@ -1171,10 +1171,10 @@ class _ProfileOheyPlusPurchaseSheetState
     final canPurchase = isRevenueCatReady && !isPlusActive && package != null;
 
     return OheyBottomSheetShell(
-      padding: const EdgeInsets.fromLTRB(22, 14, 22, 28),
+      padding: const EdgeInsets.fromLTRB(22, 14, 22, 22),
       radius: 30,
       showHandle: false,
-      showBottomCloseButton: false,
+      bottomCloseLabel: '戻る',
       blurSigma: 0,
       child: Column(
         mainAxisSize: MainAxisSize.min,

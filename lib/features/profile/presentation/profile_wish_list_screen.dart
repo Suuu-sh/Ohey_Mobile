@@ -489,7 +489,7 @@ class _ProfileEditYuruboSheet extends StatefulWidget {
 class _ProfileEditYuruboSheetState extends State<_ProfileEditYuruboSheet> {
   late final TextEditingController _titleController;
   late final TextEditingController _placeController;
-  late final TextEditingController _timeController;
+  DateTime? _selectedDate;
   bool _saving = false;
 
   @override
@@ -497,14 +497,13 @@ class _ProfileEditYuruboSheetState extends State<_ProfileEditYuruboSheet> {
     super.initState();
     _titleController = TextEditingController(text: widget.yurubo.title);
     _placeController = TextEditingController(text: widget.yurubo.placeText);
-    _timeController = TextEditingController(text: widget.yurubo.timeLabel);
+    _selectedDate = widget.yurubo.startsAt;
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _placeController.dispose();
-    _timeController.dispose();
     super.dispose();
   }
 
@@ -521,8 +520,10 @@ class _ProfileEditYuruboSheetState extends State<_ProfileEditYuruboSheet> {
               title: title,
               body: widget.yurubo.body,
               placeText: _profileYuruboPlaceOrDefault(_placeController.text),
-              timeLabel: _profileYuruboTimeOrDefault(_timeController.text),
-              startsAt: widget.yurubo.startsAt,
+              timeLabel: _profileYuruboTimeLabel(_selectedDate),
+              startsAt: _selectedDate == null
+                  ? null
+                  : _dateOnly(_selectedDate!),
             ),
           );
       if (!mounted) return;
@@ -544,7 +545,6 @@ class _ProfileEditYuruboSheetState extends State<_ProfileEditYuruboSheet> {
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 32,
-      showBottomCloseButton: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -570,9 +570,20 @@ class _ProfileEditYuruboSheetState extends State<_ProfileEditYuruboSheet> {
             placeholder: '場所（未入力ならどこでも）',
           ),
           const SizedBox(height: 10),
-          _ProfileYuruboInput(
-            controller: _timeController,
-            placeholder: 'いつ（未入力ならいつでも）',
+          _ProfileYuruboDateOption(
+            selectedDate: _selectedDate,
+            onTap: () async {
+              final picked = await _showProfileYuruboDatePicker(
+                context,
+                _selectedDate,
+              );
+              if (picked != null && mounted) {
+                setState(() => _selectedDate = picked);
+              }
+            },
+            onClear: _selectedDate == null
+                ? null
+                : () => setState(() => _selectedDate = null),
           ),
           const SizedBox(height: 16),
           Ohey3DButton(

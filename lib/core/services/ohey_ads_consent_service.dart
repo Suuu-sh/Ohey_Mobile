@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -70,6 +72,8 @@ class OheyAdsConsentService {
   }
 
   static Future<bool> _prepareToRequestAds() async {
+    await _requestAppTrackingAuthorizationIfNeeded();
+
     try {
       await _requestConsentInfoUpdate();
     } catch (error, stackTrace) {
@@ -133,5 +137,37 @@ class OheyAdsConsentService {
 
   static Future<InitializationStatus> _initializeMobileAds() {
     return _mobileAdsInitializationFuture ??= MobileAds.instance.initialize();
+  }
+
+  static Future<void> _requestAppTrackingAuthorizationIfNeeded() async {
+    if (!Platform.isIOS) return;
+
+    try {
+      final status =
+          await AppTrackingTransparency.trackingAuthorizationStatus;
+      if (status == TrackingStatus.notDetermined) {
+        // iOS requires the app to ask explicitly before the system ATT prompt
+        // can appear. Waiting briefly avoids presenting it during launch
+        // transition animations.
+        await Future<void>.delayed(const Duration(milliseconds: 600));
+        final updatedStatus =
+            await AppTrackingTransparency.requestTrackingAuthorization();
+        debugPrint(
+          'OheyAdsConsentService: ATT status after request: $updatedStatus',
+        );
+      } else {
+        debugPrint('OheyAdsConsentService: ATT status: $status');
+      }
+
+      final advertisingIdentifier =
+          await AppTrackingTransparency.getAdvertisingIdentifier();
+      debugPrint(
+        'OheyAdsConsentService: iOS IDFA for AdMob test device registration: '
+        '$advertisingIdentifier',
+      );
+    } catch (error, stackTrace) {
+      debugPrint('OheyAdsConsentService: ATT request failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
   }
 }
