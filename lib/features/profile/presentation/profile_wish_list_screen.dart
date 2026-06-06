@@ -316,14 +316,11 @@ Future<void> _deleteProfileYurubo(
   WidgetRef ref,
   Yurubo yurubo,
 ) async {
-  final title = yurubo.title.trim().isEmpty ? 'ゆるぼ' : yurubo.title.trim();
-  final confirmed = await showOheyConfirmSheet(
-    context,
-    title: 'ゆるぼを削除しますか？',
-    message: '「$title」を削除します。この操作は元に戻せません。',
-    confirmLabel: '削除する',
-    destructive: true,
-    icon: CupertinoIcons.trash_fill,
+  final confirmed = await showOheyBottomSheet<bool>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: AppColors.black.withValues(alpha: .58),
+    builder: (_) => const _ProfileYuruboDeleteConfirmSheet(),
   );
   if (confirmed != true) return;
   try {
@@ -334,6 +331,133 @@ Future<void> _deleteProfileYurubo(
     if (context.mounted) {
       OheyToast.show(context, '削除できなかったよ。あとでもう一度試してね');
     }
+  }
+}
+
+class _ProfileYuruboDeleteConfirmSheet extends StatelessWidget {
+  const _ProfileYuruboDeleteConfirmSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final subtitleColor = isWhite
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .58);
+    return OheyBottomSheetShell(
+      showBottomCloseButton: false,
+      showHandle: true,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Center(
+            child: OheyPopIcon(
+              icon: CupertinoIcons.trash_fill,
+              color: AppColors.cFFFF5F8F,
+              size: 64,
+              iconSize: 34,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'ゆるぼを削除しますか？',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: titleColor,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.7,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '削除したゆるぼは元に戻せません。',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: subtitleColor,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _ProfileModalTextButton(
+                  label: 'やめる',
+                  onTap: () => Navigator.of(context).pop(false),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ProfileModalTextButton(
+                  label: '削除する',
+                  color: AppColors.cFFFF5F8F,
+                  onTap: () => Navigator.of(context).pop(true),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileModalTextButton extends StatelessWidget {
+  const _ProfileModalTextButton({
+    required this.label,
+    required this.onTap,
+    this.color = AppColors.cFFC08BFF,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final surfaceColor = isWhite
+        ? Color.lerp(AppColors.white, color, .24)!
+        : AppColors.darkBackground;
+    return CupertinoButton(
+      onPressed: onTap,
+      minimumSize: Size.zero,
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        height: 52,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: surfaceColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isWhite
+                ? color.withValues(alpha: .34)
+                : AppColors.white.withValues(alpha: .12),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: isWhite ? .10 : .16),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.35,
+          ),
+        ),
+      ),
+    );
   }
 }
 
