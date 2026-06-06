@@ -12,7 +12,7 @@ double _feedHeaderScrollInset(BuildContext context) {
 }
 
 const _feedBottomPageInset = 124.0;
-const _feedHeaderContentGap = 48.0;
+const _feedHeaderContentGap = 40.0;
 const _feedPrimaryActionColor = AppColors.cFFC08BFF;
 const _feedPrimaryActionShadowColor = AppColors.cFF7F51C9;
 
