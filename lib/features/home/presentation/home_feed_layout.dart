@@ -152,7 +152,7 @@ class _YuruboRefreshIndicator extends StatelessWidget {
     };
 
     final headerBottom = _feedHeaderScrollInset(context);
-    final visibleOffset = headerBottom + 24;
+    final visibleOffset = headerBottom + 6;
 
     return SizedBox(
       height: pulledExtent,
