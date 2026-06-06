@@ -1189,8 +1189,6 @@ class _InviteWeekDateCell extends StatelessWidget {
             isWhite: isWhite,
             selected: selected,
           )
-        : selected
-        ? AppColors.primaryAction
         : isWhite
         ? AppColors.cFFF1F5EF
         : AppColors.white.withValues(alpha: .06);
@@ -1205,8 +1203,6 @@ class _InviteWeekDateCell extends StatelessWidget {
         : AppColors.white.withValues(alpha: .12);
     final foreground = hasDailyStatus
         ? oheyDailyStatusTileForeground(dailyStatus, isWhite: isWhite)
-        : selected
-        ? AppColors.cFF101820
         : isWhite
         ? AppColors.cFF17212B
         : AppColors.white;
@@ -1229,7 +1225,7 @@ class _InviteWeekDateCell extends StatelessWidget {
             decoration: BoxDecoration(
               color: background,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: borderColor, width: selected ? 1.5 : 1),
+              border: Border.all(color: borderColor, width: selected ? 2.4 : 1),
               boxShadow: selected
                   ? [
                       BoxShadow(
@@ -1237,9 +1233,15 @@ class _InviteWeekDateCell extends StatelessWidget {
                             (hasDailyStatus
                                     ? statusAccent
                                     : AppColors.primaryAction)
-                                .withValues(alpha: .22),
-                        blurRadius: 18,
-                        offset: const Offset(0, 8),
+                                .withValues(alpha: .34),
+                        blurRadius: 16,
+                        spreadRadius: 1.2,
+                        offset: const Offset(0, 0),
+                      ),
+                      BoxShadow(
+                        color: AppColors.black.withValues(alpha: .18),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
                       ),
                     ]
                   : null,
@@ -1253,7 +1255,7 @@ class _InviteWeekDateCell extends StatelessWidget {
                     color: hasDailyStatus
                         ? foreground.withValues(alpha: .82)
                         : selected
-                        ? AppColors.cFF101820
+                        ? AppColors.primaryAction
                         : weekdayColor,
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
