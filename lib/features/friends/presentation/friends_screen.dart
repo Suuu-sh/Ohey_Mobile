@@ -1187,17 +1187,15 @@ class _InviteWeekDateCell extends StatelessWidget {
         ? oheyDailyStatusTileBackground(
             dailyStatus,
             isWhite: isWhite,
-            selected: selected,
+            selected: false,
           )
         : isWhite
         ? AppColors.cFFF1F5EF
         : AppColors.white.withValues(alpha: .06);
-    final borderColor = hasDailyStatus
-        ? statusAccent.withValues(alpha: selected ? .86 : .54)
-        : selected
+    final borderColor = selected
         ? AppColors.primaryAction
-        : isToday
-        ? AppColors.primaryAction.withValues(alpha: .74)
+        : hasDailyStatus
+        ? statusAccent.withValues(alpha: .54)
         : isWhite
         ? AppColors.cFFD7DEE7
         : AppColors.white.withValues(alpha: .12);
@@ -1254,8 +1252,6 @@ class _InviteWeekDateCell extends StatelessWidget {
                   style: TextStyle(
                     color: hasDailyStatus
                         ? foreground.withValues(alpha: .82)
-                        : selected
-                        ? AppColors.primaryAction
                         : weekdayColor,
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
