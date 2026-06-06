@@ -32,7 +32,6 @@ import '../../memories/application/memory_controller.dart';
 
 const _calendarPrimaryActionColor = AppColors.cFF20B9FF;
 const _calendarPrimaryActionForegroundColor = AppColors.cFF06111D;
-const _calendarPrimaryActionShadowColor = AppColors.cFF0B78B7;
 const _calendarFriendStatusAdNativeFactoryId = 'ohey_yurubo_native_ad';
 const _calendarFriendStatusFirstAdAfter = 4;
 const _calendarFriendStatusAdFrequency = 10;
@@ -869,48 +868,98 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _CalendarSectionSurface(
-      label: 'フレンズの空き状況',
-      accent: AppColors.primaryAction,
+    return _CalendarFriendStatusActionBlock(
       isWhite: isWhite,
       compact: compact,
+      accent: AppColors.primaryAction,
+      icon: CupertinoIcons.lock_fill,
+      iconColor: AppColors.cFF94A3B8,
+      title: '自分の予定を設定すると見られるよ',
+      subtitle: '先にこの日の空き状況を設定してね',
+      buttonLabel: '設定',
+      buttonColor: oheyDailyStatusPink,
       onTap: onTap,
-      child: Center(
+    );
+  }
+}
+
+class _CalendarFriendStatusActionBlock extends StatelessWidget {
+  const _CalendarFriendStatusActionBlock({
+    required this.isWhite,
+    required this.compact,
+    required this.accent,
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.buttonLabel,
+    required this.buttonColor,
+    required this.onTap,
+  });
+
+  final bool isWhite;
+  final bool compact;
+  final Color accent;
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final String buttonLabel;
+  final Color buttonColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 98),
+      child: OheyThemedPanel(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+        accentColor: accent,
+        backgroundColor: isWhite
+            ? AppColors.white
+            : AppColors.darkBackgroundBottom,
+        borderRadius: 20,
+        borderAlpha: .42,
+        glowAlpha: .18,
+        glowBlur: 24,
+        glowOffset: Offset.zero,
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             OheyPopIcon(
-              icon: CupertinoIcons.lock_fill,
-              color: AppColors.cFF94A3B8,
-              size: compact ? 30 : 38,
-              iconSize: compact ? 13 : 17,
+              icon: icon,
+              color: iconColor,
+              size: compact ? 44 : 52,
+              iconSize: compact ? 22 : 26,
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '自分の予定を設定すると見られるよ',
+                    title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: isWhite ? AppColors.cFF101820 : AppColors.white,
-                      fontSize: compact ? 12.5 : 13.5,
+                      fontSize: compact ? 17 : 19,
                       fontWeight: FontWeight.w900,
                       height: 1.1,
+                      letterSpacing: -.5,
                     ),
                   ),
-                  SizedBox(height: compact ? 2 : 3),
+                  const SizedBox(height: 7),
                   Text(
-                    '先にこの日の空き状況を設定してね',
+                    subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: isWhite
                           ? AppColors.cFF667381
                           : AppColors.white.withValues(alpha: .62),
-                      fontSize: compact ? 10.5 : 11.5,
+                      fontSize: compact ? 11.5 : 13,
                       fontWeight: FontWeight.w800,
                       height: 1.1,
                     ),
@@ -918,23 +967,19 @@ class _CalendarFriendStatusLocked extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 9),
+            const SizedBox(width: 10),
             SizedBox(
-              width: compact ? 56 : 62,
+              width: 76,
               child: Ohey3DButton(
-                label: '設定',
+                label: buttonLabel,
                 onTap: onTap,
-                height: compact ? 28 : 30,
-                radius: compact ? 14 : 15,
-                color: oheyDailyStatusPink,
+                height: 40,
+                radius: 20,
+                color: buttonColor,
                 foregroundColor: _calendarPrimaryActionForegroundColor,
-                shadowColor: Color.lerp(
-                  oheyDailyStatusPink,
-                  AppColors.black,
-                  .32,
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                fontSize: compact ? 11 : 12,
+                shadowColor: Color.lerp(buttonColor, AppColors.black, .32),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                fontSize: 14,
               ),
             ),
           ],
@@ -1024,83 +1069,17 @@ class _CalendarFriendStatusList extends StatelessWidget {
         final accent = availableCount > 0
             ? _calendarPrimaryActionColor
             : AppColors.cFF94A3B8;
-        return ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 98),
-          child: OheyThemedPanel(
-            padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-            accentColor: accent,
-            backgroundColor: isWhite
-                ? AppColors.white
-                : AppColors.darkBackgroundBottom,
-            borderRadius: 20,
-            borderAlpha: .42,
-            glowAlpha: .18,
-            glowBlur: 24,
-            glowOffset: Offset.zero,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                OheyPopIcon(
-                  icon: CupertinoIcons.person_2_fill,
-                  color: accent,
-                  size: compact ? 44 : 52,
-                  iconSize: compact ? 22 : 26,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$availableCount/${friends.length}人が空いてそう',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: isWhite
-                              ? AppColors.cFF101820
-                              : AppColors.white,
-                          fontSize: compact ? 17 : 19,
-                          fontWeight: FontWeight.w900,
-                          height: 1.1,
-                          letterSpacing: -.5,
-                        ),
-                      ),
-                      const SizedBox(height: 7),
-                      Text(
-                        availableCount > 0 ? '誘えそうな人を見る' : '予定あり・未定が多そう',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: isWhite
-                              ? AppColors.cFF667381
-                              : AppColors.white.withValues(alpha: .62),
-                          fontSize: compact ? 11.5 : 13,
-                          fontWeight: FontWeight.w800,
-                          height: 1.1,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SizedBox(
-                  width: 76,
-                  child: Ohey3DButton(
-                    label: '見る',
-                    onTap: openStatusSheet,
-                    height: 40,
-                    radius: 20,
-                    color: _calendarPrimaryActionColor,
-                    foregroundColor: _calendarPrimaryActionForegroundColor,
-                    shadowColor: _calendarPrimaryActionShadowColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
+        return _CalendarFriendStatusActionBlock(
+          isWhite: isWhite,
+          compact: compact,
+          accent: accent,
+          icon: CupertinoIcons.person_2_fill,
+          iconColor: accent,
+          title: '$availableCount/${friends.length}人が空いてそう',
+          subtitle: availableCount > 0 ? '誘えそうな人を見る' : '予定あり・未定が多そう',
+          buttonLabel: '見る',
+          buttonColor: _calendarPrimaryActionColor,
+          onTap: openStatusSheet,
         );
       },
     );
@@ -1200,7 +1179,6 @@ class _CalendarSectionSurface extends StatelessWidget {
     required this.isWhite,
     required this.compact,
     required this.child,
-    this.onTap,
   });
 
   final String label;
@@ -1208,8 +1186,6 @@ class _CalendarSectionSurface extends StatelessWidget {
   final bool isWhite;
   final bool compact;
   final Widget child;
-  final VoidCallback? onTap;
-
   @override
   Widget build(BuildContext context) {
     final fillColors = isWhite
@@ -1281,13 +1257,7 @@ class _CalendarSectionSurface extends StatelessWidget {
         ],
       ),
     );
-    final handler = onTap;
-    if (handler == null) return content;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: handler,
-      child: content,
-    );
+    return content;
   }
 }
 
