@@ -489,24 +489,24 @@ class _OheyAvatarPainter extends CustomPainter {
         );
       case 3:
         final side = Path()
-          ..moveTo(40, 61)
-          ..cubicTo(49, 27, 83, 15, 120, 33)
+          ..moveTo(36, 58)
+          ..cubicTo(45, 27, 83, 15, 120, 33)
           ..quadraticBezierTo(143, 44, 139, 69)
           ..cubicTo(120, 54, 100, 50, 77, 59)
-          ..quadraticBezierTo(60, 66, 43, 75)
+          ..quadraticBezierTo(58, 67, 40, 78)
           ..close();
         _drawHairShape(
           canvas,
           side,
-          const Rect.fromLTWH(40, 20, 100, 56),
+          const Rect.fromLTWH(36, 20, 104, 59),
           color,
           shadowAlpha: .17,
         );
         _drawHairlineShadow(
           canvas,
           Path()
-            ..moveTo(43, 74)
-            ..quadraticBezierTo(60, 66, 77, 59)
+            ..moveTo(40, 77)
+            ..quadraticBezierTo(58, 67, 77, 59)
             ..cubicTo(100, 50, 120, 54, 139, 69),
           color,
         );
