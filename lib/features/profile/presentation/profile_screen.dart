@@ -266,7 +266,7 @@ Future<void> _showProfileStatusSheet(
     isScrollControlled: true,
     barrierColor: AppColors.black.withValues(alpha: .58),
     builder: (_) => OheyBottomSheetShell(
-      title: 'この日の気分',
+      title: '今日の予定',
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
       radius: 32,

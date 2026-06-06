@@ -992,7 +992,7 @@ class _ProfileStatusActionRow extends StatelessWidget {
         children: [
           const Expanded(
             child: Text(
-              'ステータス変更',
+              '今日の予定',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
