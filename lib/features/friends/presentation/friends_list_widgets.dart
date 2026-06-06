@@ -266,8 +266,8 @@ class _FriendsList extends StatelessWidget {
 }
 
 const _friendsAdNativeFactoryId = 'ohey_yurubo_native_ad';
-const _friendsFirstAdAfter = 4;
-const _friendsAdFrequency = 10;
+const _friendsFirstAdAfter = 1;
+const _friendsAdFrequency = 3;
 
 String get _friendsNativeAdUnitId => OheyAdsConfig.nativeAdUnitId;
 

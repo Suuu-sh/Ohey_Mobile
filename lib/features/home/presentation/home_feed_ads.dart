@@ -1,8 +1,8 @@
 part of 'home_screen.dart';
 
 const _oheyYuruboAdNativeFactoryId = 'ohey_yurubo_native_ad';
-const _oheyYuruboAdFrequency = 8;
-const _oheyYuruboFirstAdAfter = 3;
+const _oheyYuruboAdFrequency = 3;
+const _oheyYuruboFirstAdAfter = 1;
 
 String get _oheyYuruboNativeAdUnitId => OheyAdsConfig.nativeAdUnitId;
 
