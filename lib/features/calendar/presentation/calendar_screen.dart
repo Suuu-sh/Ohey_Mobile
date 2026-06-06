@@ -896,6 +896,11 @@ class _CalendarFriendStatusActionBlock extends StatelessWidget {
     required this.buttonLabel,
     required this.buttonColor,
     required this.onTap,
+    this.buttonIcon,
+    this.buttonWidth = 76,
+    this.buttonForegroundColor,
+    this.buttonShadowColor,
+    this.buttonPadding = const EdgeInsets.symmetric(horizontal: 14),
   });
 
   final bool isWhite;
@@ -908,6 +913,11 @@ class _CalendarFriendStatusActionBlock extends StatelessWidget {
   final String buttonLabel;
   final Color buttonColor;
   final VoidCallback onTap;
+  final IconData? buttonIcon;
+  final double buttonWidth;
+  final Color? buttonForegroundColor;
+  final Color? buttonShadowColor;
+  final EdgeInsetsGeometry buttonPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -970,16 +980,21 @@ class _CalendarFriendStatusActionBlock extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             SizedBox(
-              width: 76,
+              width: buttonWidth,
               child: Ohey3DButton(
                 label: buttonLabel,
+                icon: buttonIcon,
                 onTap: onTap,
                 height: 40,
                 radius: 20,
                 color: buttonColor,
-                foregroundColor: _calendarPrimaryActionForegroundColor,
-                shadowColor: Color.lerp(buttonColor, AppColors.black, .32),
-                padding: const EdgeInsets.symmetric(horizontal: 14),
+                foregroundColor:
+                    buttonForegroundColor ??
+                    _calendarPrimaryActionForegroundColor,
+                shadowColor:
+                    buttonShadowColor ??
+                    Color.lerp(buttonColor, AppColors.black, .32),
+                padding: buttonPadding,
                 fontSize: 14,
               ),
             ),
@@ -1100,75 +1115,22 @@ class _CalendarNoFriendsState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
-    final subtitleColor = isWhite
-        ? AppColors.cFF667381
-        : AppColors.white.withValues(alpha: .66);
-    return _CalendarSectionSurface(
-      label: 'フレンズの空き状況',
-      accent: _calendarPrimaryActionColor,
+    return _CalendarFriendStatusActionBlock(
       isWhite: isWhite,
       compact: compact,
-      child: Center(
-        child: Row(
-          children: [
-            OheyPopIcon(
-              icon: CupertinoIcons.person_badge_plus_fill,
-              color: _calendarPrimaryActionColor,
-              size: compact ? 38 : 46,
-              iconSize: compact ? 19 : 23,
-            ),
-            const SizedBox(width: 11),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'まだフレンズがいません',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: titleColor,
-                      fontSize: compact ? 13 : 15,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
-                    ),
-                  ),
-                  SizedBox(height: compact ? 3 : 5),
-                  Text(
-                    '追加すると空き状況とゆるぼを見られるよ',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: subtitleColor,
-                      fontSize: compact ? 10.5 : 12,
-                      fontWeight: FontWeight.w800,
-                      height: 1.1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 9),
-            SizedBox(
-              width: compact ? 118 : 132,
-              child: Ohey3DButton(
-                label: 'QR・IDで探す',
-                icon: CupertinoIcons.qrcode_viewfinder,
-                onTap: onAddFriend,
-                height: compact ? 34 : 38,
-                radius: compact ? 17 : 19,
-                color: AppColors.cFF9AF21A,
-                foregroundColor: AppColors.cFF101820,
-                shadowColor: AppColors.cFF5DC86C,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                fontSize: compact ? 11 : 12,
-              ),
-            ),
-          ],
-        ),
-      ),
+      accent: _calendarPrimaryActionColor,
+      icon: CupertinoIcons.person_badge_plus_fill,
+      iconColor: _calendarPrimaryActionColor,
+      title: 'まだフレンズがいません',
+      subtitle: '追加すると空き状況とゆるぼを見られるよ',
+      buttonLabel: 'QR・IDで探す',
+      buttonIcon: CupertinoIcons.qrcode_viewfinder,
+      buttonWidth: compact ? 124 : 136,
+      buttonColor: AppColors.cFF9AF21A,
+      buttonForegroundColor: AppColors.cFF101820,
+      buttonShadowColor: AppColors.cFF5DC86C,
+      buttonPadding: const EdgeInsets.symmetric(horizontal: 10),
+      onTap: onAddFriend,
     );
   }
 }
