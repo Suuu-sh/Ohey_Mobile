@@ -495,12 +495,12 @@ const _oheySupportEmail = String.fromEnvironment(
 const _oheyTermsUrl = String.fromEnvironment(
   'OHEY_TERMS_URL',
   defaultValue:
-      'https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/terms.txt',
+      'https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/terms.txt?v=20260606-utf8',
 );
 const _oheyPrivacyUrl = String.fromEnvironment(
   'OHEY_PRIVACY_URL',
   defaultValue:
-      'https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/privacy-policy.txt',
+      'https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/privacy-policy.txt?v=20260606-utf8',
 );
 
 Future<void> _showSupportLegalSheet(BuildContext context) {
