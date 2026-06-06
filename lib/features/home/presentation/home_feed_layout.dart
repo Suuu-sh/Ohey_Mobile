@@ -12,6 +12,7 @@ double _feedHeaderScrollInset(BuildContext context) {
 }
 
 const _feedBottomPageInset = 124.0;
+const _feedHeaderContentGap = 34.0;
 const _feedPrimaryActionColor = AppColors.cFFC08BFF;
 const _feedPrimaryActionShadowColor = AppColors.cFF7F51C9;
 
@@ -34,7 +35,10 @@ Widget _buildFeedPage({
   if (isLoading && items.isEmpty) {
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.only(top: topPadding, bottom: _feedBottomPageInset),
+      padding: EdgeInsets.only(
+        top: topPadding + _feedHeaderContentGap,
+        bottom: _feedBottomPageInset,
+      ),
       children: const [
         Padding(
           padding: EdgeInsets.all(36),
@@ -72,7 +76,10 @@ Widget _buildFeedPage({
   if (items.isEmpty) {
     return withRefresh(
       SliverPadding(
-        padding: EdgeInsets.only(top: topPadding, bottom: _feedBottomPageInset),
+        padding: EdgeInsets.only(
+          top: topPadding + _feedHeaderContentGap,
+          bottom: _feedBottomPageInset,
+        ),
         sliver: SliverList.list(
           children: [
             _FeedSectionEmptyState(
@@ -88,7 +95,12 @@ Widget _buildFeedPage({
   final entries = _feedEntriesFromItems(items, includeAds: !isPlus);
   return withRefresh(
     SliverPadding(
-      padding: EdgeInsets.fromLTRB(0, topPadding + 10, 0, _feedBottomPageInset),
+      padding: EdgeInsets.fromLTRB(
+        0,
+        topPadding + _feedHeaderContentGap,
+        0,
+        _feedBottomPageInset,
+      ),
       sliver: SliverList.separated(
         itemCount: entries.length + (isLoading ? 1 : 0),
         separatorBuilder: (context, index) => const SizedBox(height: 12),
