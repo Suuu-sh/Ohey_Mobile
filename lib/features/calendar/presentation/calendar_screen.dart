@@ -293,7 +293,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   Future<void> _openStatusPicker({bool showLockedExplanation = false}) async {
-    final picked = await showOheyBottomSheet<OheyDailyStatus>(
+    final picked = await showOheyBottomSheet<_CalendarStatusPickerResult>(
       context: context,
       useSafeArea: true,
       barrierColor: AppColors.black.withValues(alpha: .58),
@@ -305,7 +305,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       ),
     );
     if (picked == null) return;
-    await _setStatusesForDays(picked, [_selectedDay]);
+    if (picked.openMethods) {
+      await Future<void>.delayed(const Duration(milliseconds: 180));
+      if (!mounted) return;
+      await _openStatusSettingMethodPicker();
+      return;
+    }
+    final status = picked.status;
+    if (status == null) return;
+    await _setStatusesForDays(status, [_selectedDay]);
   }
 
   Future<void> _openStatusSettingMethodPicker() async {
@@ -480,8 +488,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                           selectedStatus ==
                                           OheyDailyStatus.unselected,
                                     ),
-                                    onOpenSettingMethods:
-                                        _openStatusSettingMethodPicker,
                                   ),
                                 ),
                               ),
@@ -695,7 +701,6 @@ class _SelectedDayPanel extends StatelessWidget {
     required this.status,
     required this.isStatusSaving,
     required this.onChangeStatus,
-    required this.onOpenSettingMethods,
   });
 
   final DateTime day;
@@ -705,7 +710,6 @@ class _SelectedDayPanel extends StatelessWidget {
   final OheyDailyStatus status;
   final bool isStatusSaving;
   final VoidCallback onChangeStatus;
-  final VoidCallback onOpenSettingMethods;
 
   @override
   Widget build(BuildContext context) {
@@ -753,12 +757,6 @@ class _SelectedDayPanel extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    _CalendarStatusMethodButton(
-                      isSaving: isStatusSaving,
-                      isWhite: isWhite,
-                      onTap: onOpenSettingMethods,
-                    ),
-                    const SizedBox(width: 8),
                     _CalendarStatusChangeButton(
                       status: status,
                       isSaving: isStatusSaving,
@@ -804,62 +802,6 @@ bool _useCompactCalendarDetailLayout(double availableHeight) {
 
 String _calendarSelectedDayTitle(DateTime day) =>
     '${day.month}/${day.day}(${_calendarWeekdayLabel(day)}) の空き状況とゆるぼ';
-
-class _CalendarStatusMethodButton extends StatelessWidget {
-  const _CalendarStatusMethodButton({
-    required this.isSaving,
-    required this.isWhite,
-    required this.onTap,
-  });
-
-  final bool isSaving;
-  final bool isWhite;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 64,
-      child: Ohey3DButtonSurface(
-        onTap: isSaving ? null : onTap,
-        enabled: !isSaving,
-        height: 28,
-        radius: 14,
-        color: isWhite ? AppColors.white : const Color(0xFF192432),
-        bottomColor: isWhite ? const Color(0xFFD9E6F2) : const Color(0xFF0B121C),
-        borderColor: AppColors.cFF54D7FF.withValues(alpha: .45),
-        borderWidth: 1.1,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        outerShadows: [
-          BoxShadow(
-            color: AppColors.cFF54D7FF.withValues(alpha: .18),
-            blurRadius: 14,
-            offset: const Offset(0, 7),
-          ),
-        ],
-        innerShadows: [
-          BoxShadow(
-            color: AppColors.white.withValues(alpha: .12),
-            blurRadius: 10,
-          ),
-        ],
-        child: Center(
-          child: Text(
-            '一括',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: isWhite ? AppColors.cFF101820 : AppColors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              height: 1,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _CalendarStatusChangeButton extends StatelessWidget {
   const _CalendarStatusChangeButton({
@@ -2093,6 +2035,16 @@ int _calendarFriendStatusRank(String? statusKey) =>
     oheyDailyStatusFromKey(statusKey).availabilityRank;
 
 
+class _CalendarStatusPickerResult {
+  const _CalendarStatusPickerResult.status(this.status) : openMethods = false;
+  const _CalendarStatusPickerResult.methods()
+    : status = null,
+      openMethods = true;
+
+  final OheyDailyStatus? status;
+  final bool openMethods;
+}
+
 class _CalendarStatusUpdateRequest {
   const _CalendarStatusUpdateRequest({
     required this.status,
@@ -2156,10 +2108,21 @@ class _CalendarStatusSheet extends StatelessWidget {
               status: status,
               title: status.label,
               selected: status == selected,
-              onTap: () => Navigator.of(context).pop(status),
+              onTap: () => Navigator.of(
+                context,
+              ).pop(_CalendarStatusPickerResult.status(status)),
             ),
             const SizedBox(height: 8),
           ],
+          const SizedBox(height: 2),
+          _CalendarStatusActionButton(
+            icon: CupertinoIcons.rectangle_stack_badge_plus,
+            title: '一括・繰り返し設定',
+            subtitle: '複数日まとめて予定を設定します',
+            onTap: () => Navigator.of(
+              context,
+            ).pop(const _CalendarStatusPickerResult.methods()),
+          ),
         ],
       ),
     );
