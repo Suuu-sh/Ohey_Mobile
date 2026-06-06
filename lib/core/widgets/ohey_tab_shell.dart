@@ -47,7 +47,6 @@ class OheyTabShell extends ConsumerStatefulWidget {
 
 class _OheyTabShellState extends ConsumerState<OheyTabShell>
     with WidgetsBindingObserver {
-  static const _invitePollInterval = Duration(seconds: 60);
   static const _feedAccentColor = AppColors.cFFC08BFF;
   static const _friendsAccentColor = AppColors.cFF9AF21A;
   static const _calendarAccentColor = AppColors.cFF20B9FF;
@@ -66,7 +65,6 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   String? _lastDailyStatusPromptKey;
   String? _lastPresentedInviteId;
   String? _lastPresentedYuruboRequestKey;
-  Timer? _invitePollTimer;
   Timer? _realtimeRefreshDebounce;
   RealtimeChannel? _inviteNotificationChannel;
   String? _realtimeUserId;
@@ -86,7 +84,6 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
 
   @override
   void dispose() {
-    _invitePollTimer?.cancel();
     _realtimeRefreshDebounce?.cancel();
     _stopInviteNotificationRealtime();
     _appLinkSubscription?.cancel();
@@ -97,11 +94,8 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _startInvitePolling();
       _startInviteNotificationRealtime();
     } else {
-      _invitePollTimer?.cancel();
-      _invitePollTimer = null;
       _stopInviteNotificationRealtime();
     }
     if (state != AppLifecycleState.resumed) return;
@@ -392,19 +386,6 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     });
   }
 
-  void _startInvitePolling() {
-    if (!mounted || ref.read(oheyUserProvider) == null) return;
-    if (_invitePollTimer?.isActive ?? false) return;
-    _invitePollTimer = Timer.periodic(_invitePollInterval, (_) {
-      if (!mounted || ref.read(oheyUserProvider) == null) {
-        _invitePollTimer?.cancel();
-        _invitePollTimer = null;
-        return;
-      }
-      _refreshInviteNotificationData();
-    });
-  }
-
   void _startInviteNotificationRealtime() {
     if (!mounted || ref.read(oheyUserProvider) == null) return;
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
@@ -590,7 +571,6 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
 
     if (user != null) {
       _maybeShowDailyStatusPrompt(user);
-      _startInvitePolling();
       _startInviteNotificationRealtime();
       incomingInvitesAsync.whenData(_handleIncomingInvites);
       yurubosAsync.whenData(_handlePendingYuruboRequests);
@@ -633,14 +613,10 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     }
 
     if (user == null && hasSession && !_didAttemptProfileRestore) {
-      _invitePollTimer?.cancel();
-      _invitePollTimer = null;
       return const OheyBackendBusyScreen();
     }
 
     if (user == null && !_onboardingPrefLoaded) {
-      _invitePollTimer?.cancel();
-      _invitePollTimer = null;
       return Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: isWhite
@@ -651,8 +627,6 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     }
 
     if (user == null) {
-      _invitePollTimer?.cancel();
-      _invitePollTimer = null;
       return CreateUserDialog(startAtLogin: _isOnboardingSeen);
     }
 
