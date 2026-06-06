@@ -14,6 +14,7 @@ class OheyAdsConfig {
   static const iosNativeAdUnitIdDefineKey = 'OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID';
   static const androidNativeAdUnitIdDefineKey =
       'OHEY_ADMOB_ANDROID_NATIVE_AD_UNIT_ID';
+  static const forceTestAdsDefineKey = 'OHEY_ADMOB_FORCE_TEST_ADS';
 
   static const googleTestIosAppId = 'ca-app-pub-3940256099942544~1458002511';
   static const googleTestAndroidAppId =
@@ -29,6 +30,7 @@ class OheyAdsConfig {
   static const _definedAndroidNativeAdUnitId = String.fromEnvironment(
     androidNativeAdUnitIdDefineKey,
   );
+  static const _forceTestAds = bool.fromEnvironment(forceTestAdsDefineKey);
 
   static bool get isEnabled => nativeAdUnitId.isNotEmpty;
 
@@ -52,7 +54,7 @@ class OheyAdsConfig {
     required String defined,
     required String testId,
   }) {
-    if (!kReleaseMode) return testId;
+    if (!kReleaseMode || _forceTestAds) return testId;
 
     final normalized = defined.trim();
     if (normalized.isEmpty || _isGoogleSampleId(normalized)) return '';
