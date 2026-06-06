@@ -179,6 +179,29 @@ class _OheyAvatarPainter extends CustomPainter {
     );
   }
 
+  void _drawTempleCoverage(Canvas canvas, Color color, double bottom) {
+    final rect = Rect.fromLTWH(35, 30, 110, bottom - 28);
+    final paint = _hairGradient(rect, color, top: .12);
+
+    final left = Path()
+      ..moveTo(39, 56)
+      ..cubicTo(43, 42, 56, 33, 76, 31)
+      ..cubicTo(67, 43, 63, 56, 62, 71)
+      ..cubicTo(60, 88, 57, bottom - 5, 50, bottom)
+      ..cubicTo(42, bottom - 7, 37, 82, 39, 56)
+      ..close();
+    final right = Path()
+      ..moveTo(141, 56)
+      ..cubicTo(137, 42, 124, 33, 104, 31)
+      ..cubicTo(113, 43, 117, 56, 118, 71)
+      ..cubicTo(120, 88, 123, bottom - 5, 130, bottom)
+      ..cubicTo(138, bottom - 7, 143, 82, 141, 56)
+      ..close();
+
+    canvas.drawPath(left, paint);
+    canvas.drawPath(right, paint);
+  }
+
   void _drawBody(Canvas canvas, Color skin, Color shirt) {
     final neckRect = Rect.fromLTWH(75, 104, 30, 43);
     final neck = RRect.fromRectAndRadius(neckRect, const Radius.circular(12));
@@ -426,6 +449,18 @@ class _OheyAvatarPainter extends CustomPainter {
       ..translate(90, 0)
       ..scale(1.045, 1)
       ..translate(-90, 0);
+
+    final templeBottom = switch (avatar.hair) {
+      1 => 76.0,
+      2 || 3 || 4 || 10 => 88.0,
+      5 => 0.0,
+      9 => 102.0,
+      6 || 7 || 8 || 11 => 124.0,
+      _ => 92.0,
+    };
+    if (templeBottom > 0) {
+      _drawTempleCoverage(canvas, color, templeBottom);
+    }
 
     switch (avatar.hair) {
       case 1:
