@@ -15,6 +15,7 @@ import '../../../core/services/ohey_ads_consent_service.dart';
 import '../../../core/services/ohey_plus_service.dart';
 import '../../../core/config/backend_config.dart';
 import '../../../core/contracts/ohey_api_values.dart';
+import '../../../core/data/ohey_ad_entry_builder.dart';
 import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';

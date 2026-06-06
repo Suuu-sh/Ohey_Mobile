@@ -1,33 +1,21 @@
 part of 'home_screen.dart';
 
 const _oheyYuruboAdNativeFactoryId = 'ohey_yurubo_native_ad';
-const _oheyYuruboAdFrequency = 3;
-const _oheyYuruboFirstAdAfter = 2;
-
 String get _oheyYuruboNativeAdUnitId => OheyAdsConfig.nativeAdUnitId;
 
 List<_FeedEntry> _feedEntriesFromItems(
   List<_FeedItem> items, {
   required bool includeAds,
 }) {
-  if (!includeAds || items.length < _oheyYuruboFirstAdAfter) {
+  if (!includeAds) {
     return [for (final item in items) _YuruboFeedEntry(item)];
   }
 
-  final entries = <_FeedEntry>[];
-  var adIndex = 0;
-  for (var index = 0; index < items.length; index++) {
-    entries.add(_YuruboFeedEntry(items[index]));
-    final position = index + 1;
-    final shouldInsertAd =
-        position == _oheyYuruboFirstAdAfter ||
-        (position > _oheyYuruboFirstAdAfter &&
-            (position - _oheyYuruboFirstAdAfter) % _oheyYuruboAdFrequency == 0);
-    if (shouldInsertAd) {
-      entries.add(_YuruboAdFeedEntry(adIndex++));
-    }
-  }
-  return entries;
+  return buildOheyAdEntries<_FeedItem, _FeedEntry>(
+    items: items,
+    itemEntryBuilder: _YuruboFeedEntry.new,
+    adEntryBuilder: _YuruboAdFeedEntry.new,
+  );
 }
 
 sealed class _FeedEntry {
