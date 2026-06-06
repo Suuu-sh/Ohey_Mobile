@@ -116,9 +116,6 @@ on conflict (id) do update set
 delete from public.memory_reports
 where memory_id in (select id from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
 
-delete from public.memory_likes
-where memory_id in (select id from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
-
 delete from public.memory_tagged_users
 where memory_id in (select id from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
 
@@ -242,17 +239,6 @@ values
   ('10000000-0000-4000-8000-000000000018', '00000000-0000-4000-8000-000000000102')
 on conflict (memory_id, tagged_user_id) do nothing;
 
-insert into public.memory_likes (memory_id, user_id)
-values
-  ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000102'),
-  ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000103'),
-  ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000104'),
-  ('10000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000101'),
-  ('10000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000101'),
-  ('10000000-0000-4000-8000-000000000010', '00000000-0000-4000-8000-000000000101'),
-  ('10000000-0000-4000-8000-000000000013', '00000000-0000-4000-8000-000000000102')
-on conflict (memory_id, user_id) do nothing;
-
 insert into public.memory_reports (id, memory_id, reporter_user_id, reason, created_at)
 values
   ('30000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000017', '00000000-0000-4000-8000-000000000101', 'other', now() - interval '1 day')
@@ -263,5 +249,4 @@ select
   (select count(*) from public.friendships where user_a_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_friendships,
   (select count(*) from public.daily_statuses where user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_statuses,
   (select count(*) from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_memories,
-  (select count(*) from public.memory_tagged_users where memory_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_memory_tagged_users,
-  (select count(*) from public.memory_likes where memory_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_likes;
+  (select count(*) from public.memory_tagged_users where memory_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_memory_tagged_users;
