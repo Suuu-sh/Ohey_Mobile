@@ -266,29 +266,16 @@ class _FriendsList extends StatelessWidget {
 }
 
 const _friendsAdNativeFactoryId = 'ohey_yurubo_native_ad';
-const _friendsFirstAdAfter = 2;
-const _friendsAdFrequency = 3;
-
 String get _friendsNativeAdUnitId => OheyAdsConfig.nativeAdUnitId;
 
 List<_FriendListEntry> _friendListEntriesFromFriends(
   List<_DecoratedFriend> friends,
 ) {
-  if (friends.length < _friendsFirstAdAfter) {
-    return [for (final item in friends) _FriendBlockEntry(item)];
-  }
-  final entries = <_FriendListEntry>[];
-  var adIndex = 0;
-  for (var index = 0; index < friends.length; index++) {
-    entries.add(_FriendBlockEntry(friends[index]));
-    final position = index + 1;
-    final shouldInsertAd =
-        position == _friendsFirstAdAfter ||
-        (position > _friendsFirstAdAfter &&
-            (position - _friendsFirstAdAfter) % _friendsAdFrequency == 0);
-    if (shouldInsertAd) entries.add(_FriendAdBlockEntry(adIndex++));
-  }
-  return entries;
+  return buildOheyAdEntries<_DecoratedFriend, _FriendListEntry>(
+    items: friends,
+    itemEntryBuilder: _FriendBlockEntry.new,
+    adEntryBuilder: _FriendAdBlockEntry.new,
+  );
 }
 
 sealed class _FriendListEntry {

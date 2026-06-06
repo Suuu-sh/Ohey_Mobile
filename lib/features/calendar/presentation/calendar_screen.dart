@@ -11,6 +11,7 @@ import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/config/ohey_ads_config.dart';
 import '../../../core/services/ohey_ads_consent_service.dart';
 import '../../../core/data/user_repository.dart';
+import '../../../core/data/ohey_ad_entry_builder.dart';
 import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
@@ -33,8 +34,6 @@ import '../../memories/application/memory_controller.dart';
 const _calendarPrimaryActionColor = AppColors.cFF20B9FF;
 const _calendarPrimaryActionForegroundColor = AppColors.cFF06111D;
 const _calendarFriendStatusAdNativeFactoryId = 'ohey_yurubo_native_ad';
-const _calendarFriendStatusFirstAdAfter = 2;
-const _calendarFriendStatusAdFrequency = 3;
 
 String get _calendarFriendStatusNativeAdUnitId => OheyAdsConfig.nativeAdUnitId;
 
@@ -1729,26 +1728,11 @@ class _CalendarFriendStatusFriendListItem extends StatelessWidget {
 List<_CalendarFriendStatusListEntry> _calendarFriendStatusEntriesFromFriends(
   List<OheyFriend> friends,
 ) {
-  if (friends.length < _calendarFriendStatusFirstAdAfter) {
-    return [
-      for (final friend in friends) _CalendarFriendStatusFriendEntry(friend),
-    ];
-  }
-
-  final entries = <_CalendarFriendStatusListEntry>[];
-  var adIndex = 0;
-  for (var index = 0; index < friends.length; index++) {
-    entries.add(_CalendarFriendStatusFriendEntry(friends[index]));
-    final position = index + 1;
-    final shouldInsertAd =
-        position == _calendarFriendStatusFirstAdAfter ||
-        (position > _calendarFriendStatusFirstAdAfter &&
-            (position - _calendarFriendStatusFirstAdAfter) %
-                    _calendarFriendStatusAdFrequency ==
-                0);
-    if (shouldInsertAd) entries.add(_CalendarFriendStatusAdEntry(adIndex++));
-  }
-  return entries;
+  return buildOheyAdEntries<OheyFriend, _CalendarFriendStatusListEntry>(
+    items: friends,
+    itemEntryBuilder: _CalendarFriendStatusFriendEntry.new,
+    adEntryBuilder: _CalendarFriendStatusAdEntry.new,
+  );
 }
 
 sealed class _CalendarFriendStatusListEntry {
