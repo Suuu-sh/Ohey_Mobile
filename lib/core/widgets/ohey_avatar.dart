@@ -886,17 +886,6 @@ class _OheyAvatarPainter extends CustomPainter {
         3.3,
         Paint()..color = AppColors.white.withValues(alpha: .92),
       );
-      canvas.drawArc(
-        rect.inflate(1.2),
-        math.pi * 1.04,
-        math.pi * .92,
-        false,
-        Paint()
-          ..color = darkColor.withValues(alpha: .14)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.4
-          ..strokeCap = StrokeCap.round,
-      );
     }
 
     switch (avatar.eyes) {
