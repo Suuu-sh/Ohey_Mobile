@@ -27,6 +27,7 @@ import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../friends/application/invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
+import '../../friends/presentation/friend_add_sheet.dart';
 import '../../memories/application/memory_controller.dart';
 
 const _calendarPrimaryActionColor = AppColors.cFF20B9FF;
@@ -124,6 +125,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   final Set<String> _loadingStatusKeys = {};
   String? _calendarGroupUserId;
   List<_CalendarFriendGroup> _calendarGroups = const [];
+
+  Future<void> _openAddFriend() async {
+    await showFriendAddSheet(context, ref);
+    ref.invalidate(friendsProvider);
+  }
 
   @override
   void initState() {
@@ -458,6 +464,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                           selectedStatus ==
                                           OheyDailyStatus.unselected,
                                     ),
+                                    onAddFriend: _openAddFriend,
                                   ),
                                 ),
                               ),
@@ -671,6 +678,7 @@ class _SelectedDayPanel extends StatelessWidget {
     required this.status,
     required this.isStatusSaving,
     required this.onChangeStatus,
+    required this.onAddFriend,
   });
 
   final DateTime day;
@@ -680,6 +688,7 @@ class _SelectedDayPanel extends StatelessWidget {
   final OheyDailyStatus status;
   final bool isStatusSaving;
   final VoidCallback onChangeStatus;
+  final VoidCallback onAddFriend;
 
   @override
   Widget build(BuildContext context) {
@@ -753,6 +762,7 @@ class _SelectedDayPanel extends StatelessWidget {
                           groups: groups,
                           isWhite: isWhite,
                           compact: compact,
+                          onAddFriend: onAddFriend,
                         ),
                 ),
               ),
@@ -949,6 +959,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
     required this.groups,
     required this.isWhite,
     required this.compact,
+    required this.onAddFriend,
   });
 
   final DateTime day;
@@ -956,6 +967,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
   final List<_CalendarFriendGroup> groups;
   final bool isWhite;
   final bool compact;
+  final VoidCallback onAddFriend;
 
   @override
   Widget build(BuildContext context) {
@@ -989,7 +1001,11 @@ class _CalendarFriendStatusList extends StatelessWidget {
       ),
       data: (friends) {
         if (friends.isEmpty) {
-          return const SizedBox.shrink();
+          return _CalendarNoFriendsState(
+            isWhite: isWhite,
+            compact: compact,
+            onAddFriend: onAddFriend,
+          );
         }
 
         final sorted = [...friends]
@@ -1095,6 +1111,91 @@ class _CalendarFriendStatusList extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _CalendarNoFriendsState extends StatelessWidget {
+  const _CalendarNoFriendsState({
+    required this.isWhite,
+    required this.compact,
+    required this.onAddFriend,
+  });
+
+  final bool isWhite;
+  final bool compact;
+  final VoidCallback onAddFriend;
+
+  @override
+  Widget build(BuildContext context) {
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final subtitleColor = isWhite
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .66);
+    return _CalendarSectionSurface(
+      label: 'フレンズの空き状況',
+      accent: _calendarPrimaryActionColor,
+      isWhite: isWhite,
+      compact: compact,
+      child: Center(
+        child: Row(
+          children: [
+            OheyPopIcon(
+              icon: CupertinoIcons.person_badge_plus_fill,
+              color: _calendarPrimaryActionColor,
+              size: compact ? 38 : 46,
+              iconSize: compact ? 19 : 23,
+            ),
+            const SizedBox(width: 11),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'まだフレンズがいません',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: titleColor,
+                      fontSize: compact ? 13 : 15,
+                      fontWeight: FontWeight.w900,
+                      height: 1.1,
+                    ),
+                  ),
+                  SizedBox(height: compact ? 3 : 5),
+                  Text(
+                    '追加すると空き状況とゆるぼを見られるよ',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: subtitleColor,
+                      fontSize: compact ? 10.5 : 12,
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 9),
+            SizedBox(
+              width: compact ? 86 : 96,
+              child: Ohey3DButton(
+                label: '追加する',
+                onTap: onAddFriend,
+                height: compact ? 30 : 34,
+                radius: compact ? 15 : 17,
+                color: _calendarPrimaryActionColor,
+                foregroundColor: _calendarPrimaryActionForegroundColor,
+                shadowColor: _calendarPrimaryActionShadowColor,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                fontSize: compact ? 11 : 12,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
