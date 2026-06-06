@@ -81,7 +81,7 @@ class OheyNotification {
     final inviteMap = invite is Map ? Map<String, dynamic>.from(invite) : null;
     return OheyNotification(
       id: json['id'] as String,
-      kind: (json['kind'] as String?) ?? OheyNotificationKindKeys.memoryLike,
+      kind: (json['kind'] as String?) ?? OheyNotificationKindKeys.system,
       title: (json['title'] as String?) ?? 'お知らせ',
       message: (json['message'] as String?) ?? '',
       createdAt: createdAtText == null
