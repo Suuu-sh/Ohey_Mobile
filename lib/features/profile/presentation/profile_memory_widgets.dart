@@ -359,42 +359,25 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
           onClose: () => Navigator.of(sheetContext).pop(),
           children: [
             _SettingsTile(
-              icon: CupertinoIcons.pencil_circle_fill,
-              label: 'プロフィール編集',
-              subtitle: '名前・ユーザーID・アバターを変更',
+              icon: CupertinoIcons.person_crop_circle_fill,
+              label: 'ユーザー設定',
+              subtitle: 'プロフィール編集・Ohey Plus・ログアウト',
               accent: AppColors.primaryAction,
               onTap: () async {
-                final currentUser = ref.read(oheyUserProvider);
                 if (sheetContext.mounted) {
                   Navigator.of(sheetContext).pop();
                 }
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
-                await _showEditProfileSheet(rootContext, ref, currentUser);
-              },
-            ),
-            _SettingsTile(
-              icon: CupertinoIcons.play_circle_fill,
-              label: 'はじめてのデモ',
-              subtitle: 'Oheyの使い方をもう一度見る',
-              accent: AppColors.cFF9AF21A,
-              onTap: () async {
-                if (sheetContext.mounted) {
-                  Navigator.of(sheetContext).pop();
-                }
-                if (!context.mounted) return;
-                await Navigator.of(context).push<void>(
-                  CupertinoPageRoute(
-                    fullscreenDialog: true,
-                    builder: (_) => const OheyDemoScreen(),
-                  ),
-                );
+                await _showUserSettingsSheet(rootContext, ref);
+                if (!rootContext.mounted) return;
+                await _showSettingsSheet(rootContext, ref);
               },
             ),
             _SettingsTile(
               icon: CupertinoIcons.person_2_fill,
-              label: '管理',
-              subtitle: '申請・ブロック・ミュートを確認',
+              label: 'フレンズ・ゆるぼ設定',
+              subtitle: '申請管理・ブロック管理',
               accent: AppColors.cFF65D6FF,
               badgeCount: pendingRequestBadgeCount,
               onTap: () async {
@@ -403,7 +386,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 }
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
-                await _showProfileManagementSheet(rootContext);
+                await _showFriendsYuruboSettingsSheet(rootContext);
                 if (!rootContext.mounted) return;
                 await _showSettingsSheet(rootContext, ref);
               },
@@ -420,14 +403,12 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
                 await _showNotificationSettingsSheet(rootContext);
-                if (!rootContext.mounted) return;
-                await _showSettingsSheet(rootContext, ref);
               },
             ),
             _SettingsTile(
-              icon: CupertinoIcons.doc_text_fill,
-              label: 'サポート・法務',
-              subtitle: '問い合わせ・利用規約・プライバシー',
+              icon: CupertinoIcons.question_circle_fill,
+              label: 'サポート',
+              subtitle: 'はじめてのデモ・問い合わせ・法務',
               accent: AppColors.cFFFFD166,
               onTap: () async {
                 if (sheetContext.mounted) {
@@ -435,44 +416,9 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 }
                 await Future<void>.delayed(const Duration(milliseconds: 180));
                 if (!rootContext.mounted) return;
-                await _showSupportLegalSheet(rootContext);
+                await _showSupportSettingsSheet(rootContext);
                 if (!rootContext.mounted) return;
                 await _showSettingsSheet(rootContext, ref);
-              },
-            ),
-            _SettingsTile(
-              icon: CupertinoIcons.delete_solid,
-              label: 'アカウント削除',
-              subtitle: '退会してデータを削除します',
-              accent: AppColors.cFFFF5C7A,
-              destructive: true,
-              onTap: () async {
-                if (sheetContext.mounted) {
-                  Navigator.of(sheetContext).pop();
-                }
-                await Future<void>.delayed(const Duration(milliseconds: 180));
-                if (!rootContext.mounted) return;
-                await _confirmDeleteAccount(rootContext, ref);
-              },
-            ),
-            _SettingsTile(
-              icon: CupertinoIcons.square_arrow_right,
-              label: 'ログアウト',
-              subtitle: 'この端末からログアウトします',
-              accent: _ProfileColors.pink,
-              destructive: true,
-              onTap: () async {
-                try {
-                  await ref.read(oheyUserProvider.notifier).signOut();
-                } catch (e) {
-                  if (context.mounted) {
-                    _showSnack(context, 'ログアウト処理を完了しました。再度ログインしてください。');
-                  }
-                } finally {
-                  if (sheetContext.mounted) {
-                    Navigator.of(sheetContext).pop();
-                  }
-                }
               },
             ),
           ],
@@ -480,6 +426,150 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
       },
     ),
   );
+}
+
+Future<void> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
+  final rootContext = context;
+  return showOheyBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: AppColors.black.withValues(alpha: .58),
+    builder: (sheetContext) => OheyBottomSheetShell(
+      title: 'ユーザー設定',
+      topSafeArea: true,
+      margin: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      radius: 28,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SettingsTile(
+            icon: CupertinoIcons.pencil_circle_fill,
+            label: 'プロフィール編集',
+            subtitle: '名前・ユーザーID・アバターを変更',
+            accent: AppColors.primaryAction,
+            onTap: () async {
+              final currentUser = ref.read(oheyUserProvider);
+              if (sheetContext.mounted) {
+                Navigator.of(sheetContext).pop();
+              }
+              await Future<void>.delayed(const Duration(milliseconds: 180));
+              if (!rootContext.mounted) return;
+              await _showEditProfileSheet(rootContext, ref, currentUser);
+            },
+          ),
+          _SettingsTile(
+            icon: CupertinoIcons.sparkles,
+            label: 'Ohey Plus',
+            subtitle: '広告なしで使えるPlus設定',
+            accent: AppColors.cFFB7F15B,
+            onTap: () async {
+              if (sheetContext.mounted) {
+                Navigator.of(sheetContext).pop();
+              }
+              await Future<void>.delayed(const Duration(milliseconds: 180));
+              if (!rootContext.mounted) return;
+              await _showProfileOheyPlusSheet(rootContext);
+            },
+          ),
+          _SettingsTile(
+            icon: CupertinoIcons.delete_solid,
+            label: 'アカウント削除',
+            subtitle: '退会してデータを削除します',
+            accent: AppColors.cFFFF5C7A,
+            destructive: true,
+            onTap: () async {
+              if (sheetContext.mounted) {
+                Navigator.of(sheetContext).pop();
+              }
+              await Future<void>.delayed(const Duration(milliseconds: 180));
+              if (!rootContext.mounted) return;
+              await _confirmDeleteAccount(rootContext, ref);
+            },
+          ),
+          _SettingsTile(
+            icon: CupertinoIcons.square_arrow_right,
+            label: 'ログアウト',
+            subtitle: 'この端末からログアウトします',
+            accent: _ProfileColors.pink,
+            destructive: true,
+            onTap: () async {
+              try {
+                await ref.read(oheyUserProvider.notifier).signOut();
+              } catch (e) {
+                if (rootContext.mounted) {
+                  _showSnack(rootContext, 'ログアウト処理を完了しました。再度ログインしてください。');
+                }
+              } finally {
+                if (sheetContext.mounted) {
+                  Navigator.of(sheetContext).pop();
+                }
+              }
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Future<void> _showSupportSettingsSheet(BuildContext context) {
+  final rootContext = context;
+  return showOheyBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: AppColors.black.withValues(alpha: .58),
+    builder: (sheetContext) => OheyBottomSheetShell(
+      title: 'サポート',
+      topSafeArea: true,
+      margin: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      radius: 28,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SettingsTile(
+            icon: CupertinoIcons.play_circle_fill,
+            label: 'はじめてのデモ',
+            subtitle: 'Oheyの使い方をもう一度見る',
+            accent: AppColors.cFF9AF21A,
+            onTap: () async {
+              if (sheetContext.mounted) {
+                Navigator.of(sheetContext).pop();
+              }
+              if (!rootContext.mounted) return;
+              await Navigator.of(rootContext).push<void>(
+                CupertinoPageRoute(
+                  fullscreenDialog: true,
+                  builder: (_) => const OheyDemoScreen(),
+                ),
+              );
+            },
+          ),
+          _SettingsTile(
+            icon: CupertinoIcons.doc_text_fill,
+            label: '問い合わせ・法務',
+            subtitle: '問い合わせ・利用規約・プライバシー',
+            accent: AppColors.cFFFFD166,
+            onTap: () async {
+              if (sheetContext.mounted) {
+                Navigator.of(sheetContext).pop();
+              }
+              await Future<void>.delayed(const Duration(milliseconds: 180));
+              if (!rootContext.mounted) return;
+              await _showSupportLegalSheet(rootContext);
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Future<void> _showFriendsYuruboSettingsSheet(BuildContext context) {
+  return _showProfileManagementSheet(context);
 }
 
 String _friendRequestSettingsSubtitle(
@@ -745,7 +835,7 @@ Future<void> _showProfileManagementSheet(BuildContext context) {
         );
 
         return OheyBottomSheetShell(
-          title: '管理',
+          title: 'フレンズ・ゆるぼ設定',
           topSafeArea: true,
           margin: const EdgeInsets.all(14),
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
@@ -773,8 +863,8 @@ Future<void> _showProfileManagementSheet(BuildContext context) {
               ),
               _SettingsTile(
                 icon: CupertinoIcons.shield_lefthalf_fill,
-                label: 'ブロック・ミュート管理',
-                subtitle: '解除したい相手を確認',
+                label: 'ブロック管理',
+                subtitle: 'ブロック・ミュートした相手を確認',
                 accent: AppColors.cFF65D6FF,
                 onTap: () async {
                   if (sheetContext.mounted) {
