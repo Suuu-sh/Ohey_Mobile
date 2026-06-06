@@ -137,41 +137,50 @@ class _YuruboRefreshIndicator extends StatelessWidget {
       RefreshIndicatorMode.done => '更新しました',
     };
 
+    final headerBottom = _feedHeaderScrollInset(context);
+    final visibleOffset = (headerBottom - pulledExtent + 12).clamp(
+      0.0,
+      headerBottom,
+    );
+
     return SizedBox(
       height: pulledExtent,
       child: OverflowBox(
         alignment: Alignment.bottomCenter,
         minHeight: 0,
-        maxHeight: 60,
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 120),
-            opacity: label.isEmpty ? 0 : 1,
-            child: Container(
-              height: 34,
-              padding: const EdgeInsets.symmetric(horizontal: 13),
-              decoration: BoxDecoration(
-                color: AppColors.cFF101C2B.withValues(alpha: .82),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: _feedPrimaryActionColor.withValues(alpha: .22),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: _feedPrimaryActionColor.withValues(alpha: .18),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
+        maxHeight: headerBottom + 60,
+        child: Transform.translate(
+          offset: Offset(0, visibleOffset),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 120),
+              opacity: label.isEmpty ? 0 : 1,
+              child: Container(
+                height: 34,
+                padding: const EdgeInsets.symmetric(horizontal: 13),
+                decoration: BoxDecoration(
+                  color: AppColors.cFF101C2B.withValues(alpha: .82),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: _feedPrimaryActionColor.withValues(alpha: .22),
                   ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
+                  boxShadow: [
+                    BoxShadow(
+                      color: _feedPrimaryActionColor.withValues(alpha: .18),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ),
