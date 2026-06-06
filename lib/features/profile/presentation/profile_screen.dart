@@ -46,6 +46,7 @@ import '../data/user_safety_repository.dart';
 import 'avatar_builder_screen.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
 import '../../../core/widgets/ohey_profile_hero_header.dart';
+import '../../../core/widgets/ohey_yurubo_create_sheet_layout.dart';
 
 part 'profile_header_widgets.dart';
 part 'profile_memory_widgets.dart';
@@ -543,169 +544,203 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF17212B : AppColors.white;
     final sub = isWhite
         ? AppColors.cFF667381
         : AppColors.white.withValues(alpha: .62);
     final wishItems =
         widget.ref.watch(wishItemControllerProvider).asData?.value ??
         const <WishItem>[];
-    return OheyBottomSheetShell(
-      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-      radius: 32,
-      child: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _groupsFuture,
-        builder: (context, snapshot) {
-          final groups = snapshot.data ?? const <Map<String, dynamic>>[];
-          if (_visibility.requiresVisibilityGroup &&
-              _groupId == null &&
-              groups.isNotEmpty) {
-            _groupId =
-                (groups.first['row_id'] ?? groups.first['id']) as String?;
-          }
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'ゆるぼする',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: ink,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.6,
-                ),
-              ),
-              const SizedBox(height: 14),
-              if (wishItems.isNotEmpty) ...[
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'やりたいことリストから選ぶ',
-                    style: TextStyle(
-                      color: sub,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 42,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: wishItems.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final wish = wishItems[index];
-                      final selected = _wishItemId == wish.id;
-                      return _ProfileYuruboGroupChip(
-                        label: wish.title,
-                        selected: selected,
-                        onTap: () => setState(() {
-                          _wishItemId = wish.id;
-                          _titleController.text = wish.title;
-                          _placeController.text = wish.placeText;
-                        }),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 14),
-              ],
-              _ProfileYuruboInput(
-                controller: _titleController,
-                placeholder: '今日夜、ご飯いける人いる？',
-              ),
-              const SizedBox(height: 10),
-              _ProfileYuruboInput(
-                controller: _placeController,
-                placeholder: '場所（未入力ならどこでも）',
-              ),
-              const SizedBox(height: 10),
-              _ProfileYuruboDateOption(
-                selectedDate: _selectedDate,
-                onTap: () async {
-                  final picked = await _showProfileYuruboDatePicker(
-                    context,
-                    _selectedDate,
-                  );
-                  if (picked != null && mounted) {
-                    setState(() => _selectedDate = picked);
-                  }
-                },
-                onClear: _selectedDate == null
-                    ? null
-                    : () => setState(() => _selectedDate = null),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: _ProfileYuruboChoice(
-                      label: '全フレンズ',
-                      selected: _visibility == OheyVisibility.friends.key,
-                      onTap: () => setState(
-                        () => _visibility = OheyVisibility.friends.key,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _ProfileYuruboChoice(
-                      label: 'グループ',
-                      selected: _visibility == OheyVisibility.group.key,
-                      onTap: () => setState(
-                        () => _visibility = OheyVisibility.group.key,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (_visibility.requiresVisibilityGroup) ...[
-                const SizedBox(height: 12),
-                if (groups.isEmpty)
-                  Text(
-                    '先にフレンズ画面でグループを作ってね',
-                    style: TextStyle(color: sub, fontWeight: FontWeight.w800),
-                  )
-                else
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final group in groups)
-                        _ProfileYuruboGroupChip(
-                          label: (group['name'] as String?) ?? 'グループ',
-                          selected:
-                              _groupId ==
-                              ((group['row_id'] ?? group['id']) as String?),
-                          onTap: () => setState(
-                            () => _groupId =
-                                (group['row_id'] ?? group['id']) as String?,
-                          ),
-                        ),
-                    ],
-                  ),
-              ],
-              const SizedBox(height: 16),
-              Ohey3DButton(
-                label: _saving ? '送信中...' : 'ゆるぼする',
-                onTap: _saving ? null : _submit,
-                height: 50,
-                radius: 22,
-                color: AppColors.cFFC08BFF,
-                foregroundColor: AppColors.cFF101820,
-                shadowColor: AppColors.cFF7F51C9,
-              ),
-            ],
-          );
-        },
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _groupsFuture,
+      builder: (context, snapshot) {
+        final groups = snapshot.data ?? const <Map<String, dynamic>>[];
+        if (_visibility.requiresVisibilityGroup &&
+            _groupId == null &&
+            groups.isNotEmpty) {
+          _groupId = (groups.first['row_id'] ?? groups.first['id']) as String?;
+        }
+        return OheyYuruboCreateSheetLayout(
+          wishSection: _ProfileYuruboCreateWishSection(
+            wishItems: wishItems,
+            selectedWishItemId: _wishItemId,
+            subtitleColor: sub,
+            onSelected: (wish) => setState(() {
+              _wishItemId = wish.id;
+              _titleController.text = wish.title;
+              _placeController.text = wish.placeText;
+            }),
+          ),
+          titleInput: _ProfileYuruboInput(
+            controller: _titleController,
+            placeholder: '今日夜、ご飯いける人いる？',
+          ),
+          placeInput: _ProfileYuruboInput(
+            controller: _placeController,
+            placeholder: '場所（未入力ならどこでも）',
+          ),
+          dateOption: _ProfileYuruboDateOption(
+            selectedDate: _selectedDate,
+            onTap: () async {
+              final picked = await _showProfileYuruboDatePicker(
+                context,
+                _selectedDate,
+              );
+              if (picked != null && mounted) {
+                setState(() => _selectedDate = picked);
+              }
+            },
+            onClear: _selectedDate == null
+                ? null
+                : () => setState(() => _selectedDate = null),
+          ),
+          visibilitySelector: _ProfileYuruboCreateVisibilitySelector(
+            visibility: _visibility,
+            onChanged: (visibility) => setState(() => _visibility = visibility),
+          ),
+          groupSelector: _ProfileYuruboCreateGroupSelector(
+            visibility: _visibility,
+            groups: groups,
+            groupId: _groupId,
+            subtitleColor: sub,
+            onChanged: (groupId) => setState(() => _groupId = groupId),
+          ),
+          submitLabel: _saving ? '送信中...' : 'ゆるぼする',
+          submitEnabled: !_saving,
+          onSubmit: _submit,
+        );
+      },
+    );
+  }
+}
+
+class _ProfileYuruboCreateWishSection extends StatelessWidget {
+  const _ProfileYuruboCreateWishSection({
+    required this.wishItems,
+    required this.selectedWishItemId,
+    required this.subtitleColor,
+    required this.onSelected,
+  });
+
+  final List<WishItem> wishItems;
+  final String? selectedWishItemId;
+  final Color subtitleColor;
+  final ValueChanged<WishItem> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    if (wishItems.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'やりたいことリストから選ぶ',
+            style: TextStyle(
+              color: subtitleColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 42,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: wishItems.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final wish = wishItems[index];
+              return _ProfileYuruboGroupChip(
+                label: wish.title,
+                selected: selectedWishItemId == wish.id,
+                onTap: () => onSelected(wish),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 14),
+      ],
+    );
+  }
+}
+
+class _ProfileYuruboCreateVisibilitySelector extends StatelessWidget {
+  const _ProfileYuruboCreateVisibilitySelector({
+    required this.visibility,
+    required this.onChanged,
+  });
+
+  final String visibility;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: _ProfileYuruboChoice(
+          label: '全フレンズ',
+          selected: visibility == OheyVisibility.friends.key,
+          onTap: () => onChanged(OheyVisibility.friends.key),
+        ),
       ),
+      const SizedBox(width: 10),
+      Expanded(
+        child: _ProfileYuruboChoice(
+          label: 'グループ',
+          selected: visibility == OheyVisibility.group.key,
+          onTap: () => onChanged(OheyVisibility.group.key),
+        ),
+      ),
+    ],
+  );
+}
+
+class _ProfileYuruboCreateGroupSelector extends StatelessWidget {
+  const _ProfileYuruboCreateGroupSelector({
+    required this.visibility,
+    required this.groups,
+    required this.groupId,
+    required this.subtitleColor,
+    required this.onChanged,
+  });
+
+  final String visibility;
+  final List<Map<String, dynamic>> groups;
+  final String? groupId;
+  final Color subtitleColor;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!visibility.requiresVisibilityGroup) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: groups.isEmpty
+          ? Text(
+              '先にフレンズ画面でグループを作ってね',
+              style: TextStyle(
+                color: subtitleColor,
+                fontWeight: FontWeight.w800,
+              ),
+            )
+          : Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final group in groups)
+                  _ProfileYuruboGroupChip(
+                    label: (group['name'] as String?) ?? 'グループ',
+                    selected:
+                        groupId ==
+                        ((group['row_id'] ?? group['id']) as String?),
+                    onTap: () =>
+                        onChanged((group['row_id'] ?? group['id']) as String?),
+                  ),
+              ],
+            ),
     );
   }
 }
