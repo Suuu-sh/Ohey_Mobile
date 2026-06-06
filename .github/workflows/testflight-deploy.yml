@@ -91,12 +91,15 @@ jobs:
           admob_ios_app_id="$(grep -E '^OHEY_ADMOB_IOS_APP_ID=' .env.production | tail -1 | cut -d= -f2- || true)"
           admob_ios_native_ad_unit_id="$(grep -E '^OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID=' .env.production | tail -1 | cut -d= -f2- || true)"
           if [ -z "$admob_ios_app_id" ] || [[ "$admob_ios_app_id" == ca-app-pub-3940256099942544~* ]]; then
-            echo "::error::OHEY_ADMOB_IOS_APP_ID must be a production AdMob app ID for TestFlight builds."
-            exit 1
+            echo "::warning::OHEY_ADMOB_IOS_APP_ID is not a production AdMob app ID. Using Google's sample app ID for SDK metadata and disabling ad requests for this TestFlight build."
+            admob_ios_app_id="ca-app-pub-3940256099942544~1458002511"
           fi
           if [ -z "$admob_ios_native_ad_unit_id" ] || [[ "$admob_ios_native_ad_unit_id" == ca-app-pub-3940256099942544/* ]]; then
-            echo "::error::OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID must be a production AdMob native ad unit ID for TestFlight builds."
-            exit 1
+            echo "::warning::OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID is not a production AdMob ad unit ID. Ads will be disabled for this TestFlight build."
+            # Keep this after DOTENV_PRODUCTION so release code sees an empty ad
+            # unit and skips Google Mobile Ads initialization/ad requests.
+            echo "OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID=" >> .env.production
+            echo "--dart-define=OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID=" >> "$RUNNER_TEMP/ohey_dart_defines.args"
           fi
           echo "GAD_APPLICATION_IDENTIFIER=$admob_ios_app_id" >> "$GITHUB_ENV"
 
