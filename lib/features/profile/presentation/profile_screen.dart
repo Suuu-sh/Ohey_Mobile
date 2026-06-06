@@ -715,11 +715,6 @@ String _profileYuruboPlaceOrDefault(String value) {
   return trimmed.isEmpty ? 'どこでも' : trimmed;
 }
 
-String _profileYuruboTimeOrDefault(String value) {
-  final trimmed = value.trim();
-  return trimmed.isEmpty ? 'いつでも' : trimmed;
-}
-
 String _profileYuruboTimeLabel(DateTime? value) {
   if (value == null) return 'いつでも';
   final date = _dateOnly(value);
