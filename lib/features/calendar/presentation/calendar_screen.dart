@@ -1831,11 +1831,23 @@ class _CalendarFriendStatusNativeAdBlockState
     }
     return Semantics(
       label: '広告',
-      child: SizedBox(
-        height: 156,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: AdWidget(ad: _ad!),
+      child: OheyThemedPanel(
+        padding: EdgeInsets.zero,
+        accentColor: _calendarPrimaryActionColor,
+        backgroundColor: widget.isWhite
+            ? AppColors.white
+            : AppColors.darkBackgroundBottom,
+        borderRadius: 20,
+        borderAlpha: widget.isWhite ? .28 : .36,
+        glowAlpha: widget.isWhite ? .08 : .14,
+        glowBlur: 22,
+        glowOffset: Offset.zero,
+        child: SizedBox(
+          height: 156,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(19),
+            child: AdWidget(ad: _ad!),
+          ),
         ),
       ),
     );
