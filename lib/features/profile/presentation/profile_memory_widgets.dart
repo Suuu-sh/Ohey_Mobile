@@ -1709,7 +1709,6 @@ Future<void> _showNotificationSettingsSheet(BuildContext context) async {
           margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
           padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
           radius: 32,
-          showBottomCloseButton: false,
           bottomCloseLabel: '戻る',
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1734,12 +1733,6 @@ Future<void> _showNotificationSettingsSheet(BuildContext context) async {
                 subtitle: 'フレンズがゆるぼ投稿したら鳴らす',
                 value: preferences.yurubos,
                 onChanged: controller.setYurubos,
-              ),
-              const SizedBox(height: 8),
-              _SheetPrimaryButton(
-                label: '戻る',
-                busy: false,
-                onTap: () => Navigator.of(sheetContext).pop(),
               ),
             ],
           ),
