@@ -28,7 +28,6 @@ import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../friends/application/invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
-import '../../friends/presentation/friend_add_sheet.dart';
 import '../../memories/application/memory_controller.dart';
 
 const _calendarPrimaryActionColor = AppColors.cFF20B9FF;
@@ -117,11 +116,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   final Set<String> _loadingStatusKeys = {};
   String? _calendarGroupUserId;
   List<_CalendarFriendGroup> _calendarGroups = const [];
-
-  Future<void> _openAddFriend() async {
-    await showFriendAddSheet(context, ref);
-    ref.invalidate(friendsProvider);
-  }
 
   @override
   void initState() {
@@ -456,7 +450,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                           selectedStatus ==
                                           OheyDailyStatus.unselected,
                                     ),
-                                    onAddFriend: _openAddFriend,
                                   ),
                                 ),
                               ),
@@ -670,7 +663,6 @@ class _SelectedDayPanel extends StatelessWidget {
     required this.status,
     required this.isStatusSaving,
     required this.onChangeStatus,
-    required this.onAddFriend,
   });
 
   final DateTime day;
@@ -680,7 +672,6 @@ class _SelectedDayPanel extends StatelessWidget {
   final OheyDailyStatus status;
   final bool isStatusSaving;
   final VoidCallback onChangeStatus;
-  final VoidCallback onAddFriend;
 
   @override
   Widget build(BuildContext context) {
@@ -754,7 +745,6 @@ class _SelectedDayPanel extends StatelessWidget {
                           groups: groups,
                           isWhite: isWhite,
                           compact: compact,
-                          onAddFriend: onAddFriend,
                         ),
                 ),
               ),
@@ -893,14 +883,9 @@ class _CalendarFriendStatusActionBlock extends StatelessWidget {
     required this.iconColor,
     required this.title,
     required this.subtitle,
-    required this.buttonLabel,
-    required this.buttonColor,
-    required this.onTap,
-    this.buttonIcon,
-    this.buttonWidth = 76,
-    this.buttonForegroundColor,
-    this.buttonShadowColor,
-    this.buttonPadding = const EdgeInsets.symmetric(horizontal: 14),
+    this.buttonLabel,
+    this.buttonColor,
+    this.onTap,
   });
 
   final bool isWhite;
@@ -910,17 +895,17 @@ class _CalendarFriendStatusActionBlock extends StatelessWidget {
   final Color iconColor;
   final String title;
   final String subtitle;
-  final String buttonLabel;
-  final Color buttonColor;
-  final VoidCallback onTap;
-  final IconData? buttonIcon;
-  final double buttonWidth;
-  final Color? buttonForegroundColor;
-  final Color? buttonShadowColor;
-  final EdgeInsetsGeometry buttonPadding;
+  final String? buttonLabel;
+  final Color? buttonColor;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final buttonLabel = this.buttonLabel;
+    final buttonColor = this.buttonColor;
+    final onTap = this.onTap;
+    final hasButton =
+        buttonLabel != null && buttonColor != null && onTap != null;
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 98),
       child: OheyThemedPanel(
@@ -978,26 +963,23 @@ class _CalendarFriendStatusActionBlock extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 10),
-            SizedBox(
-              width: buttonWidth,
-              child: Ohey3DButton(
-                label: buttonLabel,
-                icon: buttonIcon,
-                onTap: onTap,
-                height: 40,
-                radius: 20,
-                color: buttonColor,
-                foregroundColor:
-                    buttonForegroundColor ??
-                    _calendarPrimaryActionForegroundColor,
-                shadowColor:
-                    buttonShadowColor ??
-                    Color.lerp(buttonColor, AppColors.black, .32),
-                padding: buttonPadding,
-                fontSize: 14,
+            if (hasButton) ...[
+              const SizedBox(width: 10),
+              SizedBox(
+                width: 76,
+                child: Ohey3DButton(
+                  label: buttonLabel,
+                  onTap: onTap,
+                  height: 40,
+                  radius: 20,
+                  color: buttonColor,
+                  foregroundColor: _calendarPrimaryActionForegroundColor,
+                  shadowColor: Color.lerp(buttonColor, AppColors.black, .32),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  fontSize: 14,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -1012,7 +994,6 @@ class _CalendarFriendStatusList extends StatelessWidget {
     required this.groups,
     required this.isWhite,
     required this.compact,
-    required this.onAddFriend,
   });
 
   final DateTime day;
@@ -1020,7 +1001,6 @@ class _CalendarFriendStatusList extends StatelessWidget {
   final List<_CalendarFriendGroup> groups;
   final bool isWhite;
   final bool compact;
-  final VoidCallback onAddFriend;
 
   @override
   Widget build(BuildContext context) {
@@ -1054,11 +1034,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
       ),
       data: (friends) {
         if (friends.isEmpty) {
-          return _CalendarNoFriendsState(
-            isWhite: isWhite,
-            compact: compact,
-            onAddFriend: onAddFriend,
-          );
+          return _CalendarNoFriendsState(isWhite: isWhite, compact: compact);
         }
 
         final sorted = [...friends]
@@ -1103,15 +1079,10 @@ class _CalendarFriendStatusList extends StatelessWidget {
 }
 
 class _CalendarNoFriendsState extends StatelessWidget {
-  const _CalendarNoFriendsState({
-    required this.isWhite,
-    required this.compact,
-    required this.onAddFriend,
-  });
+  const _CalendarNoFriendsState({required this.isWhite, required this.compact});
 
   final bool isWhite;
   final bool compact;
-  final VoidCallback onAddFriend;
 
   @override
   Widget build(BuildContext context) {
@@ -1123,14 +1094,6 @@ class _CalendarNoFriendsState extends StatelessWidget {
       iconColor: _calendarPrimaryActionColor,
       title: 'まだフレンズがいません',
       subtitle: '追加すると空き状況とゆるぼを見られるよ',
-      buttonLabel: 'QR・IDで探す',
-      buttonIcon: CupertinoIcons.qrcode_viewfinder,
-      buttonWidth: compact ? 124 : 136,
-      buttonColor: AppColors.cFF9AF21A,
-      buttonForegroundColor: AppColors.cFF101820,
-      buttonShadowColor: AppColors.cFF5DC86C,
-      buttonPadding: const EdgeInsets.symmetric(horizontal: 10),
-      onTap: onAddFriend,
     );
   }
 }
