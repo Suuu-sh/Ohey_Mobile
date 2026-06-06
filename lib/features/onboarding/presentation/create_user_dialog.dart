@@ -62,6 +62,7 @@ class CreateUserDialog extends ConsumerStatefulWidget {
 class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _passwordConfirmationController = TextEditingController();
   final _userIdController = TextEditingController();
   final _nameController = TextEditingController();
   final _demoController = PageController();
@@ -75,6 +76,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _showAuthForm = false;
   bool _obscurePlainLoginPassword = true;
   bool _obscureSignupPassword = true;
+  bool _obscureSignupPasswordConfirmation = true;
   _RegistrationStep _loginStep = _RegistrationStep.email;
   _RegistrationStep _registrationStep = _RegistrationStep.email;
   List<OheyLastAccount> _lastAccounts = const <OheyLastAccount>[];
@@ -126,6 +128,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _passwordConfirmationController.dispose();
     _userIdController.dispose();
     _nameController.dispose();
     _authSubscription?.cancel();

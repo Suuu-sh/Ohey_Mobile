@@ -75,6 +75,12 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
         if (!_hasValidPassword(password)) {
           throw const AuthException(_emailPasswordRequirementMessage);
         }
+        if (!_hasMatchingPasswords(
+          password,
+          _passwordConfirmationController.text,
+        )) {
+          throw const AuthException(_passwordConfirmationRequirementMessage);
+        }
         final res = await authRepository.signUpWithProfileMetadata(
           email: email,
           password: password,
