@@ -2057,12 +2057,6 @@ class _CalendarStatusUpdateRequest {
 
 String _formatCalendarDay(DateTime day) => '${day.month}/${day.day}';
 
-List<DateTime> _calendarDaysUntilSunday(DateTime day) {
-  final start = _dateOnly(day);
-  final count = DateTime.sunday - start.weekday + 1;
-  return [for (var i = 0; i < count; i++) start.add(Duration(days: i))];
-}
-
 List<DateTime> _calendarNextDays(DateTime day, int count) {
   final start = _dateOnly(day);
   return [for (var i = 0; i < count; i++) start.add(Duration(days: i))];
@@ -2147,11 +2141,35 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
   late OheyDailyStatus _selected = widget.selected == OheyDailyStatus.unselected
       ? OheyDailyStatus.selectable.first
       : widget.selected;
+  bool _weeklyRepeat = false;
+  int _dayCount = 7;
+  int _repeatCount = 4;
 
-  void _submit(List<DateTime> days) {
+  List<DateTime> get _targetDays => _weeklyRepeat
+      ? _calendarWeeklyRepeatDays(widget.day, _repeatCount)
+      : _calendarNextDays(widget.day, _dayCount);
+
+  String get _summaryText {
+    final days = _targetDays;
+    if (days.isEmpty) return '';
+    if (_weeklyRepeat) {
+      return '${_calendarWeekdayLabel(widget.day)}曜に$_repeatCount回（${_formatCalendarDay(days.first)}〜${_formatCalendarDay(days.last)}）';
+    }
+    return '${_formatCalendarDay(days.first)}〜${_formatCalendarDay(days.last)} の$_dayCount日分';
+  }
+
+  void _submit() {
     Navigator.of(context).pop(
-      _CalendarStatusUpdateRequest(status: _selected, days: days),
+      _CalendarStatusUpdateRequest(status: _selected, days: _targetDays),
     );
+  }
+
+  void _setDayCount(int value) {
+    setState(() => _dayCount = value.clamp(1, 31));
+  }
+
+  void _setRepeatCount(int value) {
+    setState(() => _repeatCount = value.clamp(1, 12));
   }
 
   @override
@@ -2168,10 +2186,12 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'まとめて設定する予定を選んでから、設定方法を選んでください。',
+              'まとめて設定する予定・範囲・繰り返しをカスタムできます。',
               style: TextStyle(color: sub, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 14),
+            Text('予定', style: TextStyle(color: sub, fontWeight: FontWeight.w900)),
+            const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -2198,28 +2218,226 @@ class _CalendarStatusMethodSheetState extends State<_CalendarStatusMethodSheet> 
               ],
             ),
             const SizedBox(height: 16),
-            _CalendarStatusActionButton(
-              icon: CupertinoIcons.rectangle_stack_badge_plus,
-              title: '今週末まで一括設定',
-              subtitle: '${_formatCalendarDay(widget.day)}〜日曜までまとめて変更',
-              onTap: () => _submit(_calendarDaysUntilSunday(widget.day)),
-            ),
+            Text('設定タイプ', style: TextStyle(color: sub, fontWeight: FontWeight.w900)),
             const SizedBox(height: 8),
-            _CalendarStatusActionButton(
-              icon: CupertinoIcons.calendar_badge_plus,
-              title: '7日分を一括設定',
-              subtitle: '選択日から7日間をまとめて変更',
-              onTap: () => _submit(_calendarNextDays(widget.day, 7)),
+            Row(
+              children: [
+                Expanded(
+                  child: _CalendarStatusModeButton(
+                    title: '連続',
+                    subtitle: '何日分かまとめる',
+                    selected: !_weeklyRepeat,
+                    onTap: () => setState(() => _weeklyRepeat = false),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _CalendarStatusModeButton(
+                    title: '毎週',
+                    subtitle: '同じ曜日で繰り返す',
+                    selected: _weeklyRepeat,
+                    onTap: () => setState(() => _weeklyRepeat = true),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+            _CalendarStatusStepper(
+              title: _weeklyRepeat ? '繰り返し回数' : 'まとめる日数',
+              value: _weeklyRepeat ? _repeatCount : _dayCount,
+              unit: _weeklyRepeat ? '回' : '日',
+              min: 1,
+              max: _weeklyRepeat ? 12 : 31,
+              onChanged: _weeklyRepeat ? _setRepeatCount : _setDayCount,
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.cFF54D7FF.withValues(alpha: .12),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppColors.cFF54D7FF.withValues(alpha: .28)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(CupertinoIcons.calendar, color: AppColors.cFF54D7FF),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      _summaryText,
+                      style: TextStyle(
+                        color: isWhite ? AppColors.cFF101820 : AppColors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
             _CalendarStatusActionButton(
-              icon: CupertinoIcons.repeat,
-              title: '毎週同じ曜日に繰り返し',
-              subtitle: '選択日を含めて4週間分を変更',
-              onTap: () => _submit(_calendarWeeklyRepeatDays(widget.day, 4)),
+              icon: CupertinoIcons.check_mark_circled_solid,
+              title: 'この内容で設定する',
+              subtitle: '$_summaryText を${_selected.label}にします',
+              onTap: _submit,
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CalendarStatusModeButton extends StatelessWidget {
+  const _CalendarStatusModeButton({
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final foreground = selected
+        ? AppColors.cFF06111D
+        : isWhite
+        ? AppColors.cFF101820
+        : AppColors.white;
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.cFF54D7FF
+              : isWhite
+              ? AppColors.white.withValues(alpha: .88)
+              : AppColors.white.withValues(alpha: .08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected
+                ? AppColors.transparent
+                : AppColors.white.withValues(alpha: .12),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: TextStyle(color: foreground, fontWeight: FontWeight.w900)),
+            const SizedBox(height: 3),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: foreground.withValues(alpha: .72),
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CalendarStatusStepper extends StatelessWidget {
+  const _CalendarStatusStepper({
+    required this.title,
+    required this.value,
+    required this.unit,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
+
+  final String title;
+  final int value;
+  final String unit;
+  final int min;
+  final int max;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isWhite
+            ? AppColors.white.withValues(alpha: .88)
+            : AppColors.white.withValues(alpha: .08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.white.withValues(alpha: .12)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(color: sub, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 4),
+                Text(
+                  '$value$unit',
+                  style: TextStyle(
+                    color: isWhite ? AppColors.cFF101820 : AppColors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _CalendarStatusRoundButton(
+            icon: CupertinoIcons.minus,
+            enabled: value > min,
+            onTap: () => onChanged(value - 1),
+          ),
+          const SizedBox(width: 8),
+          _CalendarStatusRoundButton(
+            icon: CupertinoIcons.plus,
+            enabled: value < max,
+            onTap: () => onChanged(value + 1),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CalendarStatusRoundButton extends StatelessWidget {
+  const _CalendarStatusRoundButton({
+    required this.icon,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: enabled ? onTap : null,
+      child: Container(
+        width: 36,
+        height: 36,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.cFF54D7FF.withValues(alpha: enabled ? .95 : .22),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: AppColors.cFF06111D, size: 18),
       ),
     );
   }
