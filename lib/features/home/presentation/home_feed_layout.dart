@@ -791,6 +791,9 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final ink = isWhite ? AppColors.cFF17212B : AppColors.white;
+    final sub = isWhite
+        ? AppColors.cFF667381
+        : AppColors.white.withValues(alpha: .62);
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
@@ -800,6 +803,17 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Center(
+            child: Container(
+              width: 44,
+              height: 5,
+              decoration: BoxDecoration(
+                color: sub.withValues(alpha: .34),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           Text(
             'ゆるぼを編集',
             textAlign: TextAlign.center,

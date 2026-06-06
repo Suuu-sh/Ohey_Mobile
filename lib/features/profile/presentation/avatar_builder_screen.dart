@@ -497,7 +497,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
   Widget build(BuildContext context) => Theme(
     data: AppTheme.dark,
     child: OheyBottomSheetShell(
-      showHandle: false,
+      showHandle: true,
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
       radius: 34,

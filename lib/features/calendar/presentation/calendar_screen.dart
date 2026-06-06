@@ -2114,7 +2114,7 @@ class _CalendarStatusSheet extends StatelessWidget {
     final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
     return OheyBottomSheetShell(
       title: 'この日の気分',
-      showHandle: false,
+      showHandle: true,
       radius: 32,
       child: Column(
         mainAxisSize: MainAxisSize.min,
