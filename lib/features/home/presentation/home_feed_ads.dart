@@ -2,12 +2,15 @@ part of 'home_screen.dart';
 
 const _oheyYuruboAdNativeFactoryId = 'ohey_yurubo_native_ad';
 const _oheyYuruboAdFrequency = 3;
-const _oheyYuruboFirstAdAfter = 1;
+const _oheyYuruboFirstAdAfter = 2;
 
 String get _oheyYuruboNativeAdUnitId => OheyAdsConfig.nativeAdUnitId;
 
-List<_FeedEntry> _feedEntriesFromItems(List<_FeedItem> items) {
-  if (items.length < _oheyYuruboFirstAdAfter) {
+List<_FeedEntry> _feedEntriesFromItems(
+  List<_FeedItem> items, {
+  required bool includeAds,
+}) {
+  if (!includeAds || items.length < _oheyYuruboFirstAdAfter) {
     return [for (final item in items) _YuruboFeedEntry(item)];
   }
 

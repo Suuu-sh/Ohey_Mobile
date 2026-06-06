@@ -23,6 +23,7 @@ Widget _buildFeedPage({
   required bool showSwipeTutorial,
   required VoidCallback onSwipeTutorialDismissed,
   required ValueChanged<int> onPageChanged,
+  required bool isPlus,
   required VoidCallback onCreateYuruboPressed,
   required Future<void> Function() onRefresh,
   required ValueChanged<_FeedItem> onLikePressed,
@@ -84,7 +85,7 @@ Widget _buildFeedPage({
     );
   }
 
-  final entries = _feedEntriesFromItems(items);
+  final entries = _feedEntriesFromItems(items, includeAds: !isPlus);
   return withRefresh(
     SliverPadding(
       padding: EdgeInsets.fromLTRB(0, topPadding + 10, 0, _feedBottomPageInset),

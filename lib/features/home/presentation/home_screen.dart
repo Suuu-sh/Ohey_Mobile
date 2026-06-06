@@ -69,6 +69,17 @@ Future<void> _holdRefreshIndicatorUntilDone(DateTime startedAt) async {
   }
 }
 
+Future<void> _showOheyPlusSheet(BuildContext context) async {
+  HapticFeedback.selectionClick();
+  await showOheyBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    barrierColor: AppColors.black.withValues(alpha: .62),
+    builder: (context) => const _OheyPlusPurchaseSheet(),
+  );
+}
+
 class _FeedCreateYuruboFab extends StatelessWidget {
   const _FeedCreateYuruboFab({required this.onTap});
 
@@ -156,6 +167,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.watch(todayReservationsProvider).asData?.value ??
         const <OheyInvite>[];
     final isWhite = ref.watch(oheyThemeModeProvider).isWhite;
+    final currentUser = ref.watch(oheyUserProvider);
     final currentUserId = ref
         .watch(supabaseClientProvider)
         .auth
@@ -177,6 +189,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               items: feedItems,
               isWhite: isWhite,
               isLoading: yurubosAsync.isLoading,
+              isPlus: currentUser?.isPlus ?? false,
               onPageChanged: _handleFeedPageChanged,
               onCreateYuruboPressed: () => _showCreateYuruboSheet(context, ref),
               onRefresh: () async {
@@ -239,6 +252,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   builder: (_) => const _FeedNotificationsScreen(),
                 ),
               ),
+            )
+          else
+            _FeedPlusBanner(
+              isWhite: isWhite,
+              onTap: () => _showOheyPlusSheet(context),
             ),
         ],
       ),
