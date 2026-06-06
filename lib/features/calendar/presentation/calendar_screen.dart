@@ -258,27 +258,42 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     });
   }
 
-  Future<void> _setStatusForSelectedDay(OheyDailyStatus status) async {
-    if (_isStatusSaving) return;
-    final day = _selectedDay;
+  Future<void> _setStatusesForDays(
+    OheyDailyStatus status,
+    List<DateTime> days,
+  ) async {
+    if (_isStatusSaving || days.isEmpty) return;
+    final uniqueDays = <String, DateTime>{
+      for (final day in days) _dateKey(day): _dateOnly(day),
+    }.values.toList(growable: false);
     setState(() => _isStatusSaving = true);
     try {
-      await ref
-          .read(oheyUserProvider.notifier)
-          .updateDailyStatus(status, date: day);
+      final controller = ref.read(oheyUserProvider.notifier);
+      for (final day in uniqueDays) {
+        await controller.updateDailyStatus(status, date: day);
+      }
       if (!mounted) return;
       setState(() {
-        _statusByDate[_dateKey(day)] = status;
+        for (final day in uniqueDays) {
+          _statusByDate[_dateKey(day)] = status;
+        }
         _isStatusSaving = false;
       });
+      OheyToast.show(
+        context,
+        uniqueDays.length == 1
+            ? '${_formatCalendarDay(uniqueDays.first)} を${status.label}にしました'
+            : '${uniqueDays.length}日分を${status.label}にしました',
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isStatusSaving = false);
+      OheyToast.show(context, '予定を設定できませんでした。時間をおいて再度お試しください。');
     }
   }
 
   Future<void> _openStatusPicker({bool showLockedExplanation = false}) async {
-    final picked = await showOheyBottomSheet<OheyDailyStatus>(
+    final request = await showOheyBottomSheet<_CalendarStatusUpdateRequest>(
       context: context,
       useSafeArea: true,
       barrierColor: AppColors.black.withValues(alpha: .58),
@@ -289,8 +304,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         showLockedExplanation: showLockedExplanation,
       ),
     );
-    if (picked == null) return;
-    await _setStatusForSelectedDay(picked);
+    if (request == null) return;
+    await _setStatusesForDays(request.status, request.days);
   }
 
   void _handleMonthDragStart(DragStartDetails details) {
@@ -1995,7 +2010,36 @@ bool _isPastCalendarDate(DateTime day) =>
 int _calendarFriendStatusRank(String? statusKey) =>
     oheyDailyStatusFromKey(statusKey).availabilityRank;
 
-class _CalendarStatusSheet extends StatelessWidget {
+
+class _CalendarStatusUpdateRequest {
+  const _CalendarStatusUpdateRequest({
+    required this.status,
+    required this.days,
+  });
+
+  final OheyDailyStatus status;
+  final List<DateTime> days;
+}
+
+String _formatCalendarDay(DateTime day) => '${day.month}/${day.day}';
+
+List<DateTime> _calendarDaysUntilSunday(DateTime day) {
+  final start = _dateOnly(day);
+  final count = DateTime.sunday - start.weekday + 1;
+  return [for (var i = 0; i < count; i++) start.add(Duration(days: i))];
+}
+
+List<DateTime> _calendarNextDays(DateTime day, int count) {
+  final start = _dateOnly(day);
+  return [for (var i = 0; i < count; i++) start.add(Duration(days: i))];
+}
+
+List<DateTime> _calendarWeeklyRepeatDays(DateTime day, int count) {
+  final start = _dateOnly(day);
+  return [for (var i = 0; i < count; i++) start.add(Duration(days: i * 7))];
+}
+
+class _CalendarStatusSheet extends StatefulWidget {
   const _CalendarStatusSheet({
     required this.day,
     required this.selected,
@@ -2005,6 +2049,21 @@ class _CalendarStatusSheet extends StatelessWidget {
   final DateTime day;
   final OheyDailyStatus selected;
   final bool showLockedExplanation;
+
+  @override
+  State<_CalendarStatusSheet> createState() => _CalendarStatusSheetState();
+}
+
+class _CalendarStatusSheetState extends State<_CalendarStatusSheet> {
+  late OheyDailyStatus _selected = widget.selected == OheyDailyStatus.unselected
+      ? OheyDailyStatus.selectable.first
+      : widget.selected;
+
+  void _submit(List<DateTime> days) {
+    Navigator.of(context).pop(
+      _CalendarStatusUpdateRequest(status: _selected, days: days),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2019,9 +2078,9 @@ class _CalendarStatusSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            showLockedExplanation
+            widget.showLockedExplanation
                 ? '先に自分の予定を設定すると見られるよ。'
-                : '${day.month}/${day.day} の予定決めに使えるよ。',
+                : '${widget.day.month}/${widget.day.day} の予定決めに使えるよ。',
             style: TextStyle(color: sub, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 14),
@@ -2029,12 +2088,104 @@ class _CalendarStatusSheet extends StatelessWidget {
             OheyDailyStatus3DOption(
               status: status,
               title: status.label,
-              selected: status == selected,
-              onTap: () => Navigator.of(context).pop(status),
+              selected: status == _selected,
+              onTap: () => setState(() => _selected = status),
             ),
             const SizedBox(height: 8),
           ],
+          const SizedBox(height: 8),
+          Text(
+            '設定方法',
+            style: TextStyle(color: sub, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 8),
+          _CalendarStatusActionButton(
+            icon: CupertinoIcons.calendar_today,
+            title: '${_formatCalendarDay(widget.day)} だけ設定',
+            subtitle: '選択中の日付だけ変更します',
+            onTap: () => _submit([widget.day]),
+          ),
+          const SizedBox(height: 8),
+          _CalendarStatusActionButton(
+            icon: CupertinoIcons.rectangle_stack_badge_plus,
+            title: '今週末まで一括設定',
+            subtitle: '${_formatCalendarDay(widget.day)}〜日曜までまとめて変更',
+            onTap: () => _submit(_calendarDaysUntilSunday(widget.day)),
+          ),
+          const SizedBox(height: 8),
+          _CalendarStatusActionButton(
+            icon: CupertinoIcons.calendar_badge_plus,
+            title: '7日分を一括設定',
+            subtitle: '選択日から7日間をまとめて変更',
+            onTap: () => _submit(_calendarNextDays(widget.day, 7)),
+          ),
+          const SizedBox(height: 8),
+          _CalendarStatusActionButton(
+            icon: CupertinoIcons.repeat,
+            title: '毎週同じ曜日に繰り返し',
+            subtitle: '選択日を含めて4週間分を変更',
+            onTap: () => _submit(_calendarWeeklyRepeatDays(widget.day, 4)),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _CalendarStatusActionButton extends StatelessWidget {
+  const _CalendarStatusActionButton({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? AppColors.white.withValues(alpha: .88)
+              : AppColors.white.withValues(alpha: .08),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.white.withValues(alpha: .12)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.cFF54D7FF),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: isWhite ? AppColors.cFF657282 : AppColors.white70,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
