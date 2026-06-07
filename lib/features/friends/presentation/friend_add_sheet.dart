@@ -14,7 +14,6 @@ import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
 import '../../../core/widgets/ohey_toast.dart';
-import '../../memories/application/memory_controller.dart';
 import '../data/friend_repository.dart';
 import 'package:ohey/core/theme/app_colors.dart';
 

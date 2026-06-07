@@ -48,10 +48,7 @@ class _FeedPostCard extends StatelessWidget {
                   onMore: onMore,
                   onAuthorTap: onAuthorTap,
                 ),
-                if (compactYurubo)
-                  _YuruboCardBody(item: item, isWhite: isWhite)
-                else
-                  _FeedMemoryBody(item: item, isWhite: isWhite, onLike: onLike),
+                _YuruboCardBody(item: item, isWhite: isWhite),
                 _FeedCardFooter(
                   item: item,
                   isWhite: isWhite,
@@ -221,101 +218,6 @@ class _YuruboMetaChip extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _FeedMemoryBody extends StatelessWidget {
-  const _FeedMemoryBody({
-    required this.item,
-    required this.isWhite,
-    this.onLike,
-  });
-
-  final _FeedItem item;
-  final bool isWhite;
-  final VoidCallback? onLike;
-
-  @override
-  Widget build(BuildContext context) {
-    final primaryText = isWhite ? AppColors.cFF17202B : AppColors.white;
-    final secondaryText = isWhite
-        ? AppColors.cFF667381
-        : AppColors.white.withValues(alpha: .66);
-    final body = _duoStyleBody(item).trim();
-    final title = body.isNotEmpty
-        ? body
-        : (item.place.trim().isNotEmpty ? item.place.trim() : '思い出を記録しました');
-    final metadata = [
-      item.timeAgo,
-      if (item.place.trim().isNotEmpty) item.place.trim(),
-    ].join(' ・ ');
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onDoubleTap: onLike,
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(14, 0, 14, 4),
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 15),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              item.accent.withValues(alpha: isWhite ? .12 : .20),
-              isWhite
-                  ? AppColors.cFFF8FAFD
-                  : AppColors.cFF0A1521.withValues(alpha: .78),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: item.accent.withValues(alpha: isWhite ? .24 : .30),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                OheyPopIcon(
-                  icon: CupertinoIcons.text_bubble_fill,
-                  color: item.accent,
-                  size: 34,
-                  iconSize: 18,
-                  shadow: false,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    metadata,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: secondaryText,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: primaryText,
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                height: 1.18,
-                letterSpacing: -.6,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

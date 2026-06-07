@@ -1,21 +1,6 @@
 part of 'home_screen.dart';
 
-enum _FeedPostAction { edit, delete, report, hide, muteUser, blockUser }
-
-enum _FeedReportReason {
-  spam(OheyReportReasonKeys.spam, 'スパム・宣伝', '宣伝、詐欺、迷惑な勧誘'),
-  harassment(OheyReportReasonKeys.harassment, '不快・いやがらせ', '攻撃的、差別的、嫌がらせに感じる内容'),
-  inappropriate(OheyReportReasonKeys.inappropriate, '不適切な内容', '性的・過度に不快な表現'),
-  violence(OheyReportReasonKeys.violence, '暴力・危険行為', '暴力、危険行為、自傷を助長する内容'),
-  minorSafety(OheyReportReasonKeys.minorSafety, '未成年・危険', '未成年の安全に関わる懸念'),
-  other(OheyReportReasonKeys.other, 'その他', '上記に当てはまらない問題');
-
-  const _FeedReportReason(this.value, this.label, this.description);
-
-  final String value;
-  final String label;
-  final String description;
-}
+enum _FeedPostAction { edit, delete, muteUser, blockUser }
 
 class _FeedPostActionsSheet extends StatelessWidget {
   const _FeedPostActionsSheet({required this.item, required this.body});
@@ -98,14 +83,6 @@ class _FeedPostActionsSheet extends StatelessWidget {
             )
           else if (!item.isOfficial) ...[
             OheyActionTile(
-              icon: CupertinoIcons.eye_slash_fill,
-              title: 'このゆるぼを非表示',
-              subtitle: '自分のゆるぼ一覧からだけ消す',
-              accent: _FeedColors.teal,
-              onTap: () => Navigator.of(context).pop(_FeedPostAction.hide),
-            ),
-            const SizedBox(height: 10),
-            OheyActionTile(
               icon: CupertinoIcons.bell_slash_fill,
               title: '${item.userName}さんをミュート',
               subtitle: 'ゆるぼを一覧に出さない',
@@ -122,16 +99,6 @@ class _FeedPostActionsSheet extends StatelessWidget {
               showShadow: false,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.blockUser),
             ),
-            if (item.canReport) ...[
-              const SizedBox(height: 10),
-              OheyActionTile(
-                icon: CupertinoIcons.exclamationmark_bubble_fill,
-                title: 'ゆるぼを報告',
-                subtitle: '問題のあるゆるぼを運営に送る',
-                accent: AppColors.cFFFFD166,
-                onTap: () => Navigator.of(context).pop(_FeedPostAction.report),
-              ),
-            ],
           ],
         ],
       ),
@@ -288,148 +255,6 @@ class _FeedUserSafetyConfirmSheet extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _FeedReportReasonSheet extends StatelessWidget {
-  const _FeedReportReasonSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
-    final subtitleColor = isWhite
-        ? AppColors.cFF697684
-        : AppColors.white.withValues(alpha: .58);
-    return OheyBottomSheetShell(
-      showBottomCloseButton: false,
-      showHandle: true,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: OheyPopIcon(
-              icon: CupertinoIcons.exclamationmark_bubble_fill,
-              color: AppColors.cFFFFD166,
-              size: 60,
-              iconSize: 31,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            '報告理由を選んでください',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: titleColor,
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.7,
-            ),
-          ),
-          const SizedBox(height: 7),
-          Text(
-            'ゆるぼはあなたの一覧から非表示になり、運営確認用に送信されます。',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: subtitleColor,
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              height: 1.38,
-            ),
-          ),
-          const SizedBox(height: 18),
-          for (final reason in _FeedReportReason.values) ...[
-            _FeedReportReasonTile(reason: reason),
-            if (reason != _FeedReportReason.values.last)
-              const SizedBox(height: 9),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _FeedReportReasonTile extends StatelessWidget {
-  const _FeedReportReasonTile({required this.reason});
-
-  final _FeedReportReason reason;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
-    final sub = isWhite
-        ? AppColors.cFF697684
-        : AppColors.white.withValues(alpha: .58);
-    const accent = AppColors.cFFFFD166;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => Navigator.of(context).pop(reason),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(13, 11, 12, 11),
-        decoration: BoxDecoration(
-          color: isWhite
-              ? AppColors.cFFF6F8FA
-              : AppColors.white.withValues(alpha: .055),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: accent.withValues(alpha: .26)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: .16),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: const Center(
-                child: OheyGeneratedIcon(
-                  CupertinoIcons.exclamationmark_triangle_fill,
-                  color: accent,
-                  size: 21,
-                ),
-              ),
-            ),
-            const SizedBox(width: 11),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    reason.label,
-                    style: TextStyle(
-                      color: ink,
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    reason.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: sub,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w800,
-                      height: 1.24,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            OheyGeneratedIcon(
-              CupertinoIcons.chevron_right,
-              color: sub,
-              size: 19,
-            ),
-          ],
-        ),
       ),
     );
   }

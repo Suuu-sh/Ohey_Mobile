@@ -1,7 +1,7 @@
 # Ohey
 
-Ohey（オーヘイ）is a Flutter prototype for a cozy, overseas-app-inspired social memory app.
-It focuses on cute memories, friend availability, invites, and lightweight photo sharing.
+Ohey（オーヘイ）is a Flutter prototype for a cozy, overseas-app-inspired social planning app.
+It focuses on cute friend availability, invites, and lightweight photo sharing.
 
 ## Highlights
 
@@ -27,7 +27,7 @@ lib/
     widgets/
   features/
     home/
-    memories/
+    yurubos/
     friends/
     calendar/
 assets/

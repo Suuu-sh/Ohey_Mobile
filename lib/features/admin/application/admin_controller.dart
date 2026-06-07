@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/data/backend_api_client.dart';
-import '../../../core/models/ohey_moderation_status.dart';
 import '../data/admin_repository.dart';
 
 final adminControllerProvider = Provider<AdminController>((ref) {
@@ -29,17 +28,6 @@ final adminUsersProvider = FutureProvider.autoDispose<List<AdminUserProfile>>((
 final adminYurubosProvider = FutureProvider.autoDispose
     .family<List<AdminYurubo>, String>((ref, status) async {
       return ref.watch(adminControllerProvider).listYurubos(status);
-    });
-
-final adminMemorysProvider = FutureProvider.autoDispose<List<AdminMemory>>((
-  ref,
-) async {
-  return ref.watch(adminControllerProvider).listMemorys();
-});
-
-final adminMemoryReportsProvider = FutureProvider.autoDispose
-    .family<List<AdminMemoryReport>, String>((ref, status) async {
-      return ref.watch(adminControllerProvider).listMemoryReports(status);
     });
 
 final adminNotificationOutboxProvider = FutureProvider.autoDispose
@@ -147,60 +135,6 @@ class AdminController {
   }
 
   Future<void> deleteYurubo(String id) => _repository.deleteYurubo(id);
-
-  Future<List<AdminMemory>> listMemorys() => _repository.listMemorys();
-
-  Future<List<AdminMemoryReport>> listMemoryReports(String status) {
-    return _repository.listMemoryReports(status: status);
-  }
-
-  Future<void> updateMemoryReport({
-    required String id,
-    required OheyModerationStatus status,
-    String? moderationNote,
-  }) {
-    return _repository.updateMemoryReport(
-      id: id,
-      status: status,
-      moderationNote: moderationNote,
-    );
-  }
-
-  Future<void> createMemory({
-    String? ownerUserId,
-    required String placeName,
-    required String memo,
-    required String linkUrl,
-    required bool isOfficial,
-  }) {
-    return _repository.createMemory(
-      ownerUserId: ownerUserId,
-      placeName: placeName,
-      memo: memo,
-      linkUrl: linkUrl,
-      isOfficial: isOfficial,
-    );
-  }
-
-  Future<void> updateMemory({
-    required String id,
-    String? ownerUserId,
-    required String placeName,
-    required String memo,
-    required String linkUrl,
-    required bool isOfficial,
-  }) {
-    return _repository.updateMemory(
-      id: id,
-      ownerUserId: ownerUserId,
-      placeName: placeName,
-      memo: memo,
-      linkUrl: linkUrl,
-      isOfficial: isOfficial,
-    );
-  }
-
-  Future<void> deleteMemory(String id) => _repository.deleteMemory(id);
 
   Future<AdminNotificationResult> createSystemNotification({
     required String title,

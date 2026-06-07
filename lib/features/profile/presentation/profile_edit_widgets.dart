@@ -1437,7 +1437,7 @@ class _SafetyCenterSheetState extends ConsumerState<_SafetyCenterSheet> {
         await repository.unmuteUser(user.id);
         ref.invalidate(mutedUsersProvider);
       }
-      ref.invalidate(homeFeedControllerProvider);
+      ref.invalidate(yuruboControllerProvider);
       ref.invalidate(friendsProvider);
       if (!mounted) return;
       OheyToast.show(

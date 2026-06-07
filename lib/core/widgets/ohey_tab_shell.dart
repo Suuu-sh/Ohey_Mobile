@@ -15,7 +15,6 @@ import '../../features/friends/application/invite_controller.dart';
 import '../../features/friends/data/friend_repository.dart';
 import '../../features/friends/presentation/friends_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
-import '../../features/memories/application/memory_controller.dart';
 import '../../features/notifications/application/notification_controller.dart';
 import '../../features/notifications/application/os_notification_service.dart';
 import '../../features/profile/presentation/profile_screen.dart';
@@ -109,7 +108,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
           .loadFromBackendProfile()
           .catchError((_) => false),
     );
-    ref.invalidate(homeFeedControllerProvider);
+    ref.invalidate(yuruboControllerProvider);
     ref.invalidate(incomingInvitesProvider);
     ref.invalidate(yuruboControllerProvider);
     ref.invalidate(notificationControllerProvider);
@@ -240,7 +239,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   }
 
   void _refreshFeedOnOpen() {
-    ref.invalidate(homeFeedControllerProvider);
+    ref.invalidate(yuruboControllerProvider);
     ref.invalidate(friendsProvider);
     ref.invalidate(friendsForDateProvider);
     ref.invalidate(notificationControllerProvider);

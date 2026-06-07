@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/optimistic_update.dart';
 import '../../../core/contracts/ohey_api_paths.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/ohey_avatar.dart';
+import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 
 final friendRepositoryProvider = Provider<FriendRepository>((ref) {
@@ -14,6 +16,39 @@ final pendingFriendRequestsProvider =
     FutureProvider<List<OheyFriendRequestItem>>((ref) {
       return ref.watch(friendRepositoryProvider).fetchPendingFriendRequests();
     });
+
+final friendsControllerProvider = Provider<FriendsController>((ref) {
+  return FriendsController(ref);
+});
+
+final friendsProvider = FutureProvider<List<OheyFriend>>((ref) async {
+  return ref.watch(friendRepositoryProvider).fetchFriends();
+});
+
+final friendsForDateProvider =
+    FutureProvider.family<List<OheyFriend>, DateTime>((ref, date) async {
+      return ref.watch(friendRepositoryProvider).fetchFriends(date: date);
+    });
+
+class FriendsController {
+  FriendsController(this._ref);
+
+  final Ref _ref;
+
+  Future<void> toggleFavorite({
+    required String friendId,
+    required bool isFavorite,
+  }) async {
+    await runOptimistic<void>(
+      apply: () => _ref.invalidate(friendsProvider),
+      rollback: () => _ref.invalidate(friendsProvider),
+      commit: () => _ref
+          .read(friendRepositoryProvider)
+          .setFriendFavorite(friendId, isFavorite: isFavorite),
+      confirm: (_) => _ref.invalidate(friendsProvider),
+    );
+  }
+}
 
 class FriendRepository {
   const FriendRepository(this._client);
@@ -96,6 +131,81 @@ class FriendRepository {
   Future<void> cancelFriendRequest(String requestId) async {
     await updateFriendRequest(requestId, OheyFriendRequestStatus.cancelled);
   }
+
+  Future<List<OheyFriend>> fetchFriends({DateTime? date}) async {
+    final userId = _client.currentUserId;
+    if (userId == null || userId.isEmpty) {
+      throw StateError('フレンズを読み込むにはログインが必要です。');
+    }
+
+    final rows = await _client.getRows(
+      OheyApiPaths.friends,
+      query: {'date': _isoDate(date ?? DateTime.now())},
+    );
+
+    return rows
+        .map<OheyFriend>((row) {
+          final other = row['user_a_id'] == userId
+              ? row['user_b']
+              : row['user_a'];
+          if (other is! Map) {
+            throw const FormatException('フレンズデータの形式が不正です。');
+          }
+          return _friendFromProfileRow(
+            Map<String, dynamic>.from(other),
+            isFavorite: (row['is_favorite'] as bool?) ?? false,
+          );
+        })
+        .toList(growable: false);
+  }
+
+  Future<void> setFriendFavorite(
+    String friendId, {
+    required bool isFavorite,
+  }) async {
+    await _client.put(OheyApiPaths.friendFavorite(friendId), {
+      'is_favorite': isFavorite,
+    });
+  }
+}
+
+OheyFriend _friendFromProfileRow(
+  Map<String, dynamic> profile, {
+  bool isFavorite = false,
+}) {
+  final statusKey = switch (profile['status_key']) {
+    String value when value.trim().isNotEmpty => value,
+    _ => profile['status'] as String?,
+  };
+  return OheyFriend(
+    id: profile['id'] as String,
+    name: (profile['display_name'] as String?) ?? 'Ohey friend',
+    avatarEmoji: '👤',
+    vibe: (profile['user_id'] as String?) ?? '',
+    characterAssetPath: '',
+    kind: OheyFriendKind.cloud,
+    palette: _paletteFromKey(profile['palette'] as String?),
+    avatar: OheyAvatar.decode(profile['avatar_url'] as String?),
+    isFavorite: isFavorite,
+    statusKey: statusKey,
+  );
+}
+
+OheyFriendPalette _paletteFromKey(String? key) {
+  return switch (key) {
+    'sky' => OheyFriendPalette.sky,
+    'lavender' => OheyFriendPalette.lavender,
+    'mint' => OheyFriendPalette.mint,
+    'peach' => OheyFriendPalette.peach,
+    'blush' => OheyFriendPalette.blush,
+    _ => OheyFriendPalette.lemon,
+  };
+}
+
+String _isoDate(DateTime date) {
+  return '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
 }
 
 class OheyFriendProfile {

@@ -19,7 +19,6 @@ class OheyNotification {
     required this.createdAt,
     required this.isUnread,
     this.actorUserId,
-    this.memoryId,
     this.friendRequestId,
     this.friendRequestStatus,
     this.inviteId,
@@ -35,7 +34,6 @@ class OheyNotification {
   final DateTime createdAt;
   final bool isUnread;
   final String? actorUserId;
-  final String? memoryId;
   final String? friendRequestId;
   final String? friendRequestStatus;
   final String? inviteId;
@@ -62,7 +60,6 @@ class OheyNotification {
     createdAt: createdAt,
     isUnread: false,
     actorUserId: actorUserId,
-    memoryId: memoryId,
     friendRequestId: friendRequestId,
     friendRequestStatus: friendRequestStatus,
     inviteId: inviteId,
@@ -89,7 +86,6 @@ class OheyNotification {
           : DateTime.parse(createdAtText).toLocal(),
       isUnread: json['read_at'] == null,
       actorUserId: json['actor_user_id'] as String?,
-      memoryId: json['memory_id'] as String?,
       friendRequestId: json['friend_request_id'] as String?,
       friendRequestStatus: friendRequestMap?['status'] as String?,
       inviteId: json['invite_id'] as String?,

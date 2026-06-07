@@ -341,7 +341,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
       final toastContext = Navigator.of(context, rootNavigator: true).context;
       await ref.read(userSafetyRepositoryProvider).muteUser(widget.friend.id);
       ref.invalidate(mutedUsersProvider);
-      ref.invalidate(homeFeedControllerProvider);
+      ref.invalidate(yuruboControllerProvider);
       if (!mounted || !toastContext.mounted) return;
       Navigator.of(context).pop();
       _showFriendSafetyUndoToast(
@@ -352,7 +352,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
               .read(userSafetyRepositoryProvider)
               .unmuteUser(widget.friend.id);
           container.invalidate(mutedUsersProvider);
-          container.invalidate(homeFeedControllerProvider);
+          container.invalidate(yuruboControllerProvider);
         },
       );
     } catch (_) {
@@ -391,7 +391,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
       await ref.read(userSafetyRepositoryProvider).blockUser(widget.friend.id);
       ref.invalidate(blockedUsersProvider);
       ref.invalidate(friendsProvider);
-      ref.invalidate(homeFeedControllerProvider);
+      ref.invalidate(yuruboControllerProvider);
       if (!mounted || !toastContext.mounted) return;
       Navigator.of(context).pop();
       _showFriendSafetyUndoToast(
@@ -406,7 +406,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
               .addFriend(widget.friend.id);
           container.invalidate(blockedUsersProvider);
           container.invalidate(friendsProvider);
-          container.invalidate(homeFeedControllerProvider);
+          container.invalidate(yuruboControllerProvider);
         },
       );
     } catch (_) {

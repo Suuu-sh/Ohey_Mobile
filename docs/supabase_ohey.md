@@ -49,7 +49,7 @@ Both `ohey` and `dev-ohey` are kept on the same app schema:
 - `friend_requests`
 - `friendships`
 - `daily_statuses`
-- `memories`
+- `yurubos`
 - `memory_tagged_users`
 - `memory_likes`
 - `memory_reports`

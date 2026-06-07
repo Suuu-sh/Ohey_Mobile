@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/contracts/ohey_api_paths.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
-import '../../../core/models/ohey_moderation_status.dart';
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
   return AdminRepository(ref.watch(backendApiClientProvider));
@@ -165,76 +164,6 @@ class AdminRepository {
     }
   }
 
-  Future<List<AdminMemory>> listMemorys() async {
-    final rows = await _client.getRows(OheyApiPaths.adminMemories);
-    return rows.map(AdminMemory.fromJson).toList(growable: false);
-  }
-
-  Future<List<AdminMemoryReport>> listMemoryReports({
-    String status = OheyStatusKeys.pending,
-  }) async {
-    final rows = await _client.getRows(
-      OheyApiPaths.adminMemoryReports,
-      query: {'status': status},
-    );
-    return rows.map(AdminMemoryReport.fromJson).toList(growable: false);
-  }
-
-  Future<void> updateMemoryReport({
-    required String id,
-    required OheyModerationStatus status,
-    String? moderationNote,
-  }) async {
-    await _client.patch(OheyApiPaths.adminMemoryReport(id), {
-      'status': status.key,
-      'moderation_note': moderationNote?.trim() ?? '',
-    });
-  }
-
-  Future<void> createMemory({
-    String? ownerUserId,
-    required String placeName,
-    required String memo,
-    required String linkUrl,
-    required bool isOfficial,
-  }) async {
-    final body = <String, dynamic>{
-      'happened_at': DateTime.now().toUtc().toIso8601String(),
-      'place_name': placeName,
-      'memo': memo,
-      'link_url': linkUrl,
-      'is_official': isOfficial,
-    };
-    if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
-      body['owner_user_id'] = ownerUserId.trim();
-    }
-    await _client.post(OheyApiPaths.adminMemories, body);
-  }
-
-  Future<void> updateMemory({
-    required String id,
-    String? ownerUserId,
-    required String placeName,
-    required String memo,
-    required String linkUrl,
-    required bool isOfficial,
-  }) async {
-    final body = <String, dynamic>{
-      'place_name': placeName,
-      'memo': memo,
-      'link_url': linkUrl,
-      'is_official': isOfficial,
-    };
-    if (ownerUserId != null && ownerUserId.trim().isNotEmpty) {
-      body['owner_user_id'] = ownerUserId.trim();
-    }
-    await _client.patch(OheyApiPaths.adminMemory(id), body);
-  }
-
-  Future<void> deleteMemory(String id) async {
-    await _client.delete(OheyApiPaths.adminMemory(id));
-  }
-
   Future<AdminNotificationResult> createSystemNotification({
     required String title,
     required String message,
@@ -373,49 +302,6 @@ class AdminYurubo {
   }
 }
 
-class AdminMemory {
-  const AdminMemory({
-    required this.id,
-    required this.ownerUserId,
-    required this.ownerDisplayName,
-    required this.ownerHandle,
-    required this.happenedAt,
-    required this.placeName,
-    required this.memo,
-    required this.linkUrl,
-    required this.isOfficial,
-  });
-
-  final String id;
-  final String ownerUserId;
-  final String ownerDisplayName;
-  final String ownerHandle;
-  final DateTime happenedAt;
-  final String placeName;
-  final String memo;
-  final String linkUrl;
-  final bool isOfficial;
-
-  factory AdminMemory.fromJson(Map<String, dynamic> json) {
-    final owner = json['owner'] is Map
-        ? Map<String, dynamic>.from(json['owner'] as Map)
-        : const <String, dynamic>{};
-    return AdminMemory(
-      id: json['id'] as String? ?? '',
-      ownerUserId: json['owner_user_id'] as String? ?? '',
-      ownerDisplayName: owner['display_name'] as String? ?? 'Ohey user',
-      ownerHandle: owner['user_id'] as String? ?? '',
-      happenedAt:
-          DateTime.tryParse(json['happened_at'] as String? ?? '') ??
-          DateTime.fromMillisecondsSinceEpoch(0),
-      placeName: json['place_name'] as String? ?? '',
-      memo: json['memo'] as String? ?? '',
-      linkUrl: json['link_url'] as String? ?? '',
-      isOfficial: json['is_official'] as bool? ?? false,
-    );
-  }
-}
-
 class AdminNotificationResult {
   const AdminNotificationResult({
     required this.recipientCount,
@@ -501,65 +387,6 @@ class AdminNotificationOutboxProcessResult {
       processedCount: _intFromJson(json['processed_count']),
       failedCount: _intFromJson(json['failed_count']),
       skippedCount: _intFromJson(json['skipped_count']),
-    );
-  }
-}
-
-class AdminMemoryReport {
-  const AdminMemoryReport({
-    required this.id,
-    required this.memoryId,
-    required this.reason,
-    required this.status,
-    required this.reporterDisplayName,
-    required this.reporterHandle,
-    required this.ownerDisplayName,
-    required this.ownerHandle,
-    required this.memo,
-    required this.isOfficial,
-    this.createdAt,
-    this.reviewedAt,
-    this.moderationNote,
-  });
-
-  final String id;
-  final String memoryId;
-  final String reason;
-  final String status;
-  final String reporterDisplayName;
-  final String reporterHandle;
-  final String ownerDisplayName;
-  final String ownerHandle;
-  final String memo;
-  final bool isOfficial;
-  final DateTime? createdAt;
-  final DateTime? reviewedAt;
-  final String? moderationNote;
-
-  factory AdminMemoryReport.fromJson(Map<String, dynamic> json) {
-    final memory = json['memory'] is Map
-        ? Map<String, dynamic>.from(json['memory'] as Map)
-        : const <String, dynamic>{};
-    final owner = memory['owner'] is Map
-        ? Map<String, dynamic>.from(memory['owner'] as Map)
-        : const <String, dynamic>{};
-    final reporter = json['reporter'] is Map
-        ? Map<String, dynamic>.from(json['reporter'] as Map)
-        : const <String, dynamic>{};
-    return AdminMemoryReport(
-      id: json['id'] as String? ?? '',
-      memoryId: json['memory_id'] as String? ?? '',
-      reason: json['reason'] as String? ?? OheyReportReasonKeys.other,
-      status: json['status'] as String? ?? oheyModerationPendingKey,
-      reporterDisplayName: reporter['display_name'] as String? ?? 'Reporter',
-      reporterHandle: reporter['user_id'] as String? ?? '',
-      ownerDisplayName: owner['display_name'] as String? ?? 'Ohey user',
-      ownerHandle: owner['user_id'] as String? ?? '',
-      memo: memory['memo'] as String? ?? '',
-      isOfficial: memory['is_official'] as bool? ?? false,
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? ''),
-      reviewedAt: DateTime.tryParse(json['reviewed_at'] as String? ?? ''),
-      moderationNote: json['moderation_note'] as String?,
     );
   }
 }

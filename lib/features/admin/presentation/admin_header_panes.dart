@@ -91,11 +91,6 @@ class _AdminSegmentedControl extends StatelessWidget {
             onTap: () => onChanged(_AdminSection.yurubos),
           ),
           _AdminSegmentButton(
-            label: '通報',
-            selected: section == _AdminSection.reports,
-            onTap: () => onChanged(_AdminSection.reports),
-          ),
-          _AdminSegmentButton(
             label: '通知',
             selected: section == _AdminSection.notifications,
             onTap: () => onChanged(_AdminSection.notifications),
@@ -106,221 +101,30 @@ class _AdminSegmentedControl extends StatelessWidget {
   }
 }
 
-class _AdminReportsPane extends ConsumerStatefulWidget {
-  const _AdminReportsPane();
-
-  @override
-  ConsumerState<_AdminReportsPane> createState() => _AdminReportsPaneState();
-}
-
-class _AdminReportsPaneState extends ConsumerState<_AdminReportsPane> {
-  String _status = OheyStatusKeys.pending;
-
-  @override
-  Widget build(BuildContext context) {
-    final reportsAsync = ref.watch(adminMemoryReportsProvider(_status));
-    return Column(
-      children: [
-        _AdminPaneToolbar(
-          title: '通報・モデレーション',
-          actionLabel: '更新',
-          onAction: () => ref.invalidate(adminMemoryReportsProvider(_status)),
-          onRefresh: () => ref.invalidate(adminMemoryReportsProvider(_status)),
-        ),
-        _AdminFilterChips(
-          options: _adminReportStatusFilters,
-          value: _status,
-          onChanged: (value) => setState(() => _status = value),
-        ),
-        const SizedBox(height: 12),
-        Expanded(
-          child: reportsAsync.when(
-            data: (reports) {
-              if (reports.isEmpty) {
-                return _AdminEmptyState(
-                  message: _status == OheyStatusKeys.pending
-                      ? '未対応の通報はありません。'
-                      : 'この条件の通報はありません。',
-                );
-              }
-              return ListView.separated(
-                padding: const EdgeInsets.only(bottom: 120),
-                itemBuilder: (context, index) => _AdminReportCard(
-                  ref: ref,
-                  report: reports[index],
-                  onStatus: (status) => _showReportStatusSheet(
-                    context,
-                    ref,
-                    reports[index],
-                    status,
-                  ),
-                  onDeletePost: () =>
-                      _confirmDeleteReportedPost(context, ref, reports[index]),
-                ),
-                separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemCount: reports.length,
-              );
-            },
-            loading: () => const Center(
-              child: CupertinoActivityIndicator(color: _AdminColors.lime),
-            ),
-            error: (error, _) => _AdminErrorState(
-              message: '$error',
-              onRetry: () =>
-                  ref.invalidate(adminMemoryReportsProvider(_status)),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AdminReportCard extends StatelessWidget {
-  const _AdminReportCard({
-    required this.ref,
-    required this.report,
-    required this.onStatus,
-    required this.onDeletePost,
-  });
-
-  final WidgetRef ref;
-  final AdminMemoryReport report;
-  final ValueChanged<OheyModerationStatus> onStatus;
-  final VoidCallback onDeletePost;
-
-  @override
-  Widget build(BuildContext context) => _AdminCard(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: _AdminColors.lime.withValues(alpha: .16),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                _adminReportReasonLabel(report.reason),
-                style: const TextStyle(
-                  color: _AdminColors.lime,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              _adminReportStatusLabel(report.status),
-              style: const TextStyle(
-                color: _AdminColors.sub,
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Text(
-          report.memo.isEmpty ? 'メモなし' : report.memo,
-          maxLines: 3,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: AppColors.white,
-            fontWeight: FontWeight.w900,
-            fontSize: 16,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '投稿者: ${report.ownerDisplayName} @${report.ownerHandle}',
-          style: const TextStyle(
-            color: _AdminColors.sub,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '通報者: ${report.reporterDisplayName} @${report.reporterHandle}',
-          style: const TextStyle(
-            color: _AdminColors.sub,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        if ((report.moderationNote ?? '').trim().isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Text(
-            'メモ: ${report.moderationNote!.trim()}',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.white70,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-        const SizedBox(height: 14),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final status in OheyModerationStatus.actions)
-              _AdminSmallActionButton(
-                label: status.actionLabel,
-                destructive: status.isDestructiveAction,
-                onTap: () => onStatus(status),
-              ),
-            _AdminSmallActionButton(
-              label: '投稿削除',
-              destructive: true,
-              onTap: onDeletePost,
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
 
 class _AdminSmallActionButton extends StatelessWidget {
-  const _AdminSmallActionButton({
-    required this.label,
-    required this.onTap,
-    this.destructive = false,
-  });
+  const _AdminSmallActionButton({required this.label, required this.onTap});
 
   final String label;
   final VoidCallback onTap;
-  final bool destructive;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-      decoration: BoxDecoration(
-        color: destructive
-            ? AppColors.cFFFF5A72.withValues(alpha: .16)
-            : _AdminColors.lime.withValues(alpha: .16),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: destructive
-              ? AppColors.cFFFF5A72.withValues(alpha: .35)
-              : _AdminColors.lime.withValues(alpha: .35),
-        ),
-      ),
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      color: _AdminColors.lime.withValues(alpha: .18),
+      borderRadius: BorderRadius.circular(14),
+      onPressed: onTap,
       child: Text(
         label,
-        style: TextStyle(
-          color: destructive ? AppColors.cFFFF8EA0 : _AdminColors.lime,
+        style: const TextStyle(
+          color: _AdminColors.lime,
           fontWeight: FontWeight.w900,
           fontSize: 12,
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _AdminSegmentButton extends StatelessWidget {

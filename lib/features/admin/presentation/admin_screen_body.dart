@@ -50,7 +50,6 @@ class _AdminAccessContent extends ConsumerWidget {
         return switch (section) {
           _AdminSection.users => _AdminUsersPane(ref: ref),
           _AdminSection.yurubos => const _AdminYurubosPane(),
-          _AdminSection.reports => const _AdminReportsPane(),
           _AdminSection.notifications => const _AdminNotificationsPane(),
         };
       },

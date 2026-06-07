@@ -44,7 +44,6 @@ import '../../../core/widgets/ohey_yurubo_create_sheet_layout.dart';
 import '../../friends/application/invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
 import '../../friends/presentation/friends_screen.dart';
-import '../../memories/application/memory_controller.dart';
 import '../../yurubos/application/yurubo_controller.dart';
 import '../../yurubos/data/yurubo_repository.dart';
 import '../../wish_items/application/wish_item_controller.dart';

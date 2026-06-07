@@ -71,7 +71,7 @@ python3 scripts/ohey_supabase_runtime_check.py
 期待値:
 
 - `anon` は `profiles` を読めない。
-- authenticated user は `profiles` / `memories` / `invites` / safety tables を Data API 経由で読める。
+- authenticated user は `profiles` / `yurubos` / `invites` / safety tables を Data API 経由で読める。
 - authenticated user は `notification_outbox` を読めない。
 - service role は required tables に到達できる。
 - removed legacy tables (`drink_logs`, `drink_invites`, `drink_log_reports`, `feed_hidden_drink_logs`) は Data API で missing になる。
