@@ -14,7 +14,7 @@ void main() {
       anonKey: 'test_publishable_key',
       authOptions: const FlutterAuthClientOptions(
         localStorage: EmptyLocalStorage(),
-        pkceAsyncStorage: _MemoryAsyncStorage(),
+        pkceAsyncStorage: _VolatileAsyncStorage(),
       ),
     );
   });
@@ -170,8 +170,8 @@ void main() {
   });
 }
 
-class _MemoryAsyncStorage extends GotrueAsyncStorage {
-  const _MemoryAsyncStorage();
+class _VolatileAsyncStorage extends GotrueAsyncStorage {
+  const _VolatileAsyncStorage();
 
   static final Map<String, String> _values = {};
 
