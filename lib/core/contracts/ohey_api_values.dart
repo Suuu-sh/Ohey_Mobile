@@ -90,7 +90,6 @@ class OheyNotificationKindKeys {
   static const inviteReceived = 'invite_received';
   static const inviteAccepted = 'invite_accepted';
   static const todayReservationReminder = 'today_reservation_reminder';
-  static const memoryTagged = 'memory_tagged';
   static const yuruboCreated = 'yurubo_created';
   static const system = 'system';
 }
@@ -98,11 +97,9 @@ class OheyNotificationKindKeys {
 class OheyFeedKeys {
   const OheyFeedKeys._();
 
-  static const typeMemory = 'memory';
   static const postMine = 'mine';
   static const postFriend = 'friend';
   static const postOfficial = 'official';
-  static const propMemory = 'memory';
 }
 
 class OheyPushPlatformKeys {

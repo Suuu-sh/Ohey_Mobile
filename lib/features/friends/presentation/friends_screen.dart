@@ -39,9 +39,9 @@ import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../../core/widgets/ohey_user_profile_sheet.dart';
 import '../application/invite_controller.dart';
+import '../../yurubos/application/yurubo_controller.dart';
 import '../data/friend_repository.dart';
 import 'friend_add_sheet.dart';
-import '../../memories/application/memory_controller.dart';
 import '../../profile/data/user_safety_repository.dart';
 import '../../wish_items/application/wish_item_controller.dart';
 

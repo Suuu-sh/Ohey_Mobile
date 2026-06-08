@@ -38,11 +38,11 @@ Answer: **Yes, we collect data from this app.**
 - **Name / Email Address**: Supabase Auth, OAuth login, profile display, and
   support/account operations.
 - **Precise / Coarse Location**: place search and user-selected place
-  coordinates/text on memories and availability posts.
+  coordinates/text on yurubos and availability posts.
 - **Contacts**: the app stores in-app friendships, friend requests, groups,
   blocks, and mutes. It does not read the device address book.
 - **Other User Content**: profile text, status, invitations, yurubo posts,
-  wish items, memories, comments/memos, reports, and moderation signals.
+  wish items, comments/memos, reports, and moderation signals.
 - **User ID**: Supabase auth UUID, Ohey ID, and related account identifiers.
 - **Device ID**: APNs/FCM push token associated with the account for
   notifications.

@@ -32,11 +32,11 @@ REQUIRED_TABLES = [
     "user_blocks",
     "user_mutes",
     "user_reports",
-    "memories",
-    "memory_tagged_users",
-    "memory_likes",
-    "memory_reports",
-    "memory_hides",
+    
+    
+    
+    
+    
     "invites",
     "notifications",
     "push_tokens",
@@ -124,7 +124,7 @@ def main() -> int:
     record("anon.profiles.denied", anon_profiles.status in {401, 403, 404}, f"http={anon_profiles.status}")
 
     if token:
-        for table in ["profiles", "memories", "invites", "friend_groups", "user_blocks", "memory_hides"]:
+        for table in ["profiles",  "invites", "friend_groups", "user_blocks", ]:
             result = request("GET", rest_url(supabase_url, table, "*"), api_key=publishable_key, bearer=token)
             record(f"authenticated.{table}.reachable", 200 <= result.status < 300, f"http={result.status}")
         outbox = request("GET", rest_url(supabase_url, "notification_outbox", "id"), api_key=publishable_key, bearer=token)

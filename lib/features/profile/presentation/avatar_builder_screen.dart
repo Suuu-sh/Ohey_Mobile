@@ -609,24 +609,60 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+    padding: const EdgeInsets.fromLTRB(8, 8, 14, 10),
     child: Row(
       children: [
-        const SizedBox(width: 48),
+        _BackAvatarButton(onTap: onClose),
+        const SizedBox(width: 6),
         const Expanded(
           child: Text(
             'アバターを作成する',
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: _AvatarColors.ink,
-              fontSize: 24,
+              fontSize: 23,
               fontWeight: FontWeight.w900,
               letterSpacing: -.8,
             ),
           ),
         ),
+        const SizedBox(width: 6),
         _SaveAvatarButton(onTap: onDone),
       ],
+    ),
+  );
+}
+
+class _BackAvatarButton extends StatelessWidget {
+  const _BackAvatarButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: '戻る',
+    child: CupertinoButton(
+      onPressed: onTap,
+      minimumSize: const Size(42, 42),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(CupertinoIcons.chevron_left, color: _AvatarColors.ink, size: 20),
+          SizedBox(width: 2),
+          Text(
+            '戻る',
+            style: TextStyle(
+              color: _AvatarColors.ink,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }

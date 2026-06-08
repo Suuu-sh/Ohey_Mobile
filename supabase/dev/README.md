@@ -5,7 +5,7 @@ These files are for the `dev-ohey` Supabase project only. Do not apply them to p
 ## Files
 
 - `seed_dev_auth_users.sql`: creates 5 confirmed auth users, profiles, and baseline friendship rows.
-- `seed_dev_rich_data.sql`: creates 10 confirmed users plus richer memories/invites/friends/calendar/safety data for UI checks.
+- `seed_dev_rich_data.sql`: creates 10 confirmed users plus richer yurubos/invites/friends/calendar/safety data for UI checks.
 
 Both seed files assume the clean baseline schema is already applied. They must not create tables, policies, grants, or compatibility schema.
 

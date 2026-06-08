@@ -1383,25 +1383,16 @@ bool _isRecommendedFriend(_DecoratedFriend item) {
   final status = oheyDailyStatusFromKey(friend.statusKey);
   if (status.blocksRecommendations) return false;
 
-  return friend.totalMemoryCount == 0 ||
-      (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) ||
-      status.recommendationBonus > 0;
+  return friend.isFavorite || status.recommendationBonus > 0;
 }
 
 int _recommendationScoreFor(_DecoratedFriend item) {
   final friend = item.friend;
   final status = oheyDailyStatusFromKey(friend.statusKey);
   var score = 0;
-  if (friend.totalMemoryCount == 0) score += 100;
-  if (friend.isFavorite && _daysSinceLastMemory(friend) >= 30) score += 80;
+  if (friend.isFavorite) score += 80;
   score += status.recommendationBonus;
   return score;
-}
-
-int _daysSinceLastMemory(OheyFriend friend) {
-  final lastMemoryAt = friend.lastMemoryAt;
-  if (lastMemoryAt == null) return 1 << 30;
-  return DateTime.now().difference(lastMemoryAt).inDays;
 }
 
 class _AddFriendsPromoCard extends StatelessWidget {
@@ -1653,8 +1644,6 @@ OheyFriend _friendWithFavorite(OheyFriend friend, bool isFavorite) {
     palette: friend.palette,
     avatar: friend.avatar,
     monthlyCount: friend.monthlyCount,
-    totalMemoryCount: friend.totalMemoryCount,
-    lastMemoryAt: friend.lastMemoryAt,
     statusKey: friend.statusKey,
     isOnline: friend.isOnline,
     isFavorite: isFavorite,

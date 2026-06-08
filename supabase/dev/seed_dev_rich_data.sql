@@ -113,13 +113,8 @@ on conflict (id) do update set
   updated_at = now();
 
 -- Reset deterministic seed-only social data without touching real dev users.
-delete from public.memory_reports
-where memory_id in (select id from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
 
-delete from public.memory_tagged_users
-where memory_id in (select id from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110');
 
-delete from public.memories
 where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110';
 
 delete from public.daily_statuses
@@ -178,7 +173,6 @@ on conflict (user_id, status_date) do update set
   status = excluded.status,
   updated_at = excluded.updated_at;
 
-with seed_memories(id, owner_user_id, days_ago, hour_text, place_name, memo, photo_path, place_lat, place_lng) as (
   values
     ('10000000-0000-4000-8000-000000000001'::uuid, '00000000-0000-4000-8000-000000000101'::uuid, 0,  '20:30', '渋谷・のものも横丁',   'カレンダー確認用のタグ',       'seed/feed_shibuya.png', 35.6595, 139.7005),
     ('10000000-0000-4000-8000-000000000002'::uuid, '00000000-0000-4000-8000-000000000101'::uuid, 2,  '19:45', '恵比寿・泡酒場',       '軽めに一杯だけ',               null, 35.6467, 139.7101),
@@ -197,9 +191,7 @@ with seed_memories(id, owner_user_id, days_ago, hour_text, place_name, memo, pho
     ('10000000-0000-4000-8000-000000000015'::uuid, '00000000-0000-4000-8000-000000000106'::uuid, 14, '18:30', '品川・駅前ビア',       '予定が合って参加',           null, 35.6285, 139.7388),
     ('10000000-0000-4000-8000-000000000016'::uuid, '00000000-0000-4000-8000-000000000107'::uuid, 18, '20:45', '上野・路地裏',         '予定ありの日',                 null, 35.7138, 139.7770),
     ('10000000-0000-4000-8000-000000000017'::uuid, '00000000-0000-4000-8000-000000000108'::uuid, 33, '19:20', '浅草・ホッピー通り',   '先月の記録も表示確認',         null, 35.7148, 139.7967),
-    ('10000000-0000-4000-8000-000000000018'::uuid, '00000000-0000-4000-8000-000000000101'::uuid, 42, '20:00', '銀座・ワインバー',     '前月比較用の思い出',           null, 35.6719, 139.7648)
 )
-insert into public.memories (id, owner_user_id, happened_at, place_name, memo, photo_path, place_lat, place_lng, created_at, updated_at)
 select
   id,
   owner_user_id,
@@ -211,9 +203,7 @@ select
   place_lng,
   now() - make_interval(days => days_ago),
   now() - make_interval(days => days_ago)
-from seed_memories;
 
-insert into public.memory_tagged_users (memory_id, tagged_user_id)
 values
   ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000102'),
   ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000103'),
@@ -237,16 +227,11 @@ values
   ('10000000-0000-4000-8000-000000000016', '00000000-0000-4000-8000-000000000104'),
   ('10000000-0000-4000-8000-000000000017', '00000000-0000-4000-8000-000000000105'),
   ('10000000-0000-4000-8000-000000000018', '00000000-0000-4000-8000-000000000102')
-on conflict (memory_id, tagged_user_id) do nothing;
 
-insert into public.memory_reports (id, memory_id, reporter_user_id, reason, created_at)
 values
   ('30000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000017', '00000000-0000-4000-8000-000000000101', 'other', now() - interval '1 day')
-on conflict (memory_id, reporter_user_id) do update set reason = excluded.reason;
 
 select
   (select count(*) from public.profiles where user_id like 'dev_%') as dev_profiles,
   (select count(*) from public.friendships where user_a_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_friendships,
   (select count(*) from public.daily_statuses where user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_statuses,
-  (select count(*) from public.memories where owner_user_id between '00000000-0000-4000-8000-000000000101' and '00000000-0000-4000-8000-000000000110') as dev_memories,
-  (select count(*) from public.memory_tagged_users where memory_id between '10000000-0000-4000-8000-000000000001' and '10000000-0000-4000-8000-000000000018') as dev_memory_tagged_users;

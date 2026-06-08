@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/supabase_config.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
-import '../../../core/models/ohey_moderation_status.dart';
 import '../../../core/models/ohey_user.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
@@ -15,9 +14,9 @@ import '../../../core/widgets/ohey_confirm_sheet.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_empty_state.dart';
 import '../../../core/widgets/ohey_state_view.dart';
-import '../../memories/application/memory_controller.dart';
 import '../application/admin_controller.dart';
 import '../data/admin_repository.dart';
+import '../../friends/data/friend_repository.dart';
 
 part 'admin_header_panes.dart';
 part 'admin_cards.dart';
@@ -27,7 +26,7 @@ part 'admin_form_widgets.dart';
 part 'admin_shared_widgets.dart';
 part 'admin_screen_body.dart';
 
-enum _AdminSection { users, yurubos, reports, notifications }
+enum _AdminSection { users, yurubos, notifications }
 
 class AdminScreen extends ConsumerStatefulWidget {
   const AdminScreen({super.key});

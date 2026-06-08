@@ -148,7 +148,7 @@ class _FeedItem {
       myReactionType: yurubo.myReactionType,
       saved: false,
       liked: isOwnedByCurrentUser || yurubo.reactedByMe,
-      prop: _PostProp.memory,
+      prop: _PostProp.yurubo,
       tilt: 0,
       ownerUserId: yurubo.ownerUserId,
       ownedByMe: isOwnedByCurrentUser,
@@ -207,7 +207,7 @@ class _FeedItem {
   final bool canDelete;
 }
 
-enum _PostProp { memory, ticket, spark }
+enum _PostProp { yurubo, ticket, spark }
 
 enum _FeedPostKind { mine, friend, official }
 
@@ -299,7 +299,6 @@ class _FeedNotification {
           CupertinoIcons.checkmark_circle_fill,
         OheyNotificationKindKeys.todayReservationReminder =>
           CupertinoIcons.calendar_today,
-        OheyNotificationKindKeys.memoryTagged => CupertinoIcons.person_2_fill,
         OheyNotificationKindKeys.system => CupertinoIcons.bell_fill,
         _ => CupertinoIcons.bell_fill,
       },
@@ -310,7 +309,6 @@ class _FeedNotification {
         OheyNotificationKindKeys.inviteAccepted => _FeedColors.teal,
         OheyNotificationKindKeys.todayReservationReminder =>
           AppColors.cFFFFD166,
-        OheyNotificationKindKeys.memoryTagged => AppColors.cFF58D6FF,
         OheyNotificationKindKeys.system => AppColors.cFFFFD166,
         _ => _FeedColors.teal,
       },

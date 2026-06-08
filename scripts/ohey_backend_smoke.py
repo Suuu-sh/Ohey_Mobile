@@ -111,8 +111,7 @@ def main() -> int:
         "/v1/friends",
         "/v1/friend-groups",
         "/v1/home/feed?limit=10",
-        "/v1/memories",
-        "/v1/notifications",
+                "/v1/notifications",
         f"/v1/invites/today-reservations?date={today}",
         f"/v1/invites/incoming-pending?date={today}",
         f"/v1/invites/outgoing-active?date={today}",
@@ -120,7 +119,6 @@ def main() -> int:
     for path in readonly_paths:
         expect(checks, f"GET {path}", request("GET", f"{backend_url}{path}", headers=auth_headers), {200})
 
-    created_memory_id = ""
     if args.mutating:
         expect(
             checks,
@@ -135,32 +133,10 @@ def main() -> int:
                 "POST",
                 f"{backend_url}/v1/media/upload-url",
                 headers=auth_headers,
-                body={"kind": "memory_photo", "content_type": "image/jpeg", "file_extension": ".jpg"},
+                body={"kind": "yurubo_attachment", "content_type": "image/jpeg", "file_extension": ".jpg"},
             ),
             {201},
         )
-        memory = expect(
-            checks,
-            "POST /v1/memories",
-            request(
-                "POST",
-                f"{backend_url}/v1/memories",
-                headers=auth_headers,
-                body={"happened_at": dt.datetime.now(dt.timezone.utc).isoformat(), "memo": "Ohey smoke test"},
-            ),
-            {201, 409},
-        )
-        if isinstance(memory, dict):
-            created_memory_id = str(memory.get("id") or "")
-        if not created_memory_id:
-            print("SKIP memory like/hide/report/delete: create returned no id, likely daily-limit conflict")
-        if created_memory_id:
-            expect(checks, "PUT /v1/memories/{id}/like", request("PUT", f"{backend_url}/v1/memories/{created_memory_id}/like", headers=auth_headers), {200})
-            expect(checks, "DELETE /v1/memories/{id}/like", request("DELETE", f"{backend_url}/v1/memories/{created_memory_id}/like", headers=auth_headers), {200})
-            expect(checks, "POST /v1/memory-hides", request("POST", f"{backend_url}/v1/memory-hides", headers=auth_headers, body={"memory_id": created_memory_id}), {200, 201})
-            expect(checks, "DELETE /v1/memory-hides/{id}", request("DELETE", f"{backend_url}/v1/memory-hides/{created_memory_id}", headers=auth_headers), {200, 204})
-            expect(checks, "POST /v1/memories/{id}/report", request("POST", f"{backend_url}/v1/memories/{created_memory_id}/report", headers=auth_headers, body={"reason": "other"}), {200, 201})
-            expect(checks, "DELETE /v1/memories/{id}", request("DELETE", f"{backend_url}/v1/memories/{created_memory_id}", headers=auth_headers), {200})
 
     if args.invite:
         other_email = env("OHEY_SMOKE_OTHER_EMAIL")

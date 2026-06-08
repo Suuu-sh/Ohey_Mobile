@@ -303,43 +303,19 @@ Future<void> _showFeedPostActions(
       if (!confirmed || !context.mounted) return;
       try {
         await ref.read(yuruboControllerProvider.notifier).deleteYurubo(item.id);
-        ref.invalidate(homeFeedControllerProvider);
+        ref.invalidate(yuruboControllerProvider);
         if (context.mounted) OheyToast.show(context, 'ゆるぼを削除しました');
       } catch (error) {
         if (context.mounted) {
           OheyToast.show(context, '削除できなかったよ。あとでもう一度試してね');
         }
       }
-    case _FeedPostAction.report:
-      final reason = await _selectReportReason(context);
-      if (!context.mounted || reason == null) return;
-      try {
-        await ref
-            .read(homeFeedControllerProvider.notifier)
-            .reportMemory(item.id, reason: reason.value);
-        if (context.mounted) {
-          OheyToast.show(context, '「${reason.label}」として報告しました');
-        }
-      } catch (error) {
-        if (context.mounted) {
-          OheyToast.show(context, '報告できなかったよ。あとでもう一度試してね');
-        }
-      }
-    case _FeedPostAction.hide:
-      try {
-        await ref.read(homeFeedControllerProvider.notifier).hideMemory(item.id);
-        if (context.mounted) OheyToast.show(context, 'フィードから非表示にしました');
-      } catch (_) {
-        if (context.mounted) {
-          OheyToast.show(context, '非表示にできなかったよ。あとでもう一度試してね');
-        }
-      }
     case _FeedPostAction.muteUser:
       if (item.ownerUserId.trim().isEmpty) return;
       try {
-        await ref
-            .read(homeFeedControllerProvider.notifier)
-            .muteUser(item.ownerUserId);
+        await ref.read(userSafetyRepositoryProvider).muteUser(item.ownerUserId);
+        ref.invalidate(mutedUsersProvider);
+        ref.invalidate(yuruboControllerProvider);
         if (context.mounted) {
           _showUserSafetyUndoToast(
             context,
@@ -350,7 +326,7 @@ Future<void> _showFeedPostActions(
                   .read(userSafetyRepositoryProvider)
                   .unmuteUser(item.ownerUserId);
               ref.invalidate(mutedUsersProvider);
-              ref.invalidate(homeFeedControllerProvider);
+              ref.invalidate(yuruboControllerProvider);
             },
           );
         }
@@ -370,9 +346,10 @@ Future<void> _showFeedPostActions(
       );
       if (!confirmed || !context.mounted) return;
       try {
-        await ref
-            .read(homeFeedControllerProvider.notifier)
-            .blockUser(item.ownerUserId);
+        await ref.read(userSafetyRepositoryProvider).blockUser(item.ownerUserId);
+        ref.invalidate(blockedUsersProvider);
+        ref.invalidate(friendsProvider);
+        ref.invalidate(yuruboControllerProvider);
         if (context.mounted) {
           _showUserSafetyUndoToast(
             context,
@@ -384,7 +361,7 @@ Future<void> _showFeedPostActions(
                   .unblockUser(item.ownerUserId);
               ref.invalidate(blockedUsersProvider);
               ref.invalidate(friendsProvider);
-              ref.invalidate(homeFeedControllerProvider);
+              ref.invalidate(yuruboControllerProvider);
             },
           );
         }
@@ -440,16 +417,6 @@ Future<bool> _confirmDeleteFeedPost(BuildContext context) async {
     builder: (context) => const _FeedDeleteConfirmSheet(),
   );
   return result ?? false;
-}
-
-Future<_FeedReportReason?> _selectReportReason(BuildContext context) async {
-  return showOheyBottomSheet<_FeedReportReason>(
-    context: context,
-    useSafeArea: true,
-    isScrollControlled: true,
-    barrierColor: AppColors.black.withValues(alpha: .62),
-    builder: (context) => const _FeedReportReasonSheet(),
-  );
 }
 
 Future<bool> _confirmUserSafetyAction(

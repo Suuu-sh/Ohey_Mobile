@@ -18,8 +18,6 @@ class OheyFriend {
     required this.palette,
     this.avatar,
     this.monthlyCount,
-    this.totalMemoryCount,
-    this.lastMemoryAt,
     this.statusKey,
     this.isOnline,
     this.isFavorite = false,
@@ -34,8 +32,6 @@ class OheyFriend {
   final OheyFriendPalette palette;
   final OheyAvatar? avatar;
   final int? monthlyCount;
-  final int? totalMemoryCount;
-  final DateTime? lastMemoryAt;
   final String? statusKey;
   final bool? isOnline;
   final bool isFavorite;
@@ -61,7 +57,7 @@ class OheyFriend {
 
 String oheyFriendStatusLabel(int count) {
   if (count == 0) return 'まだ静かなおなか';
-  if (count <= 2) return 'にこにこメモリー';
+  if (count <= 2) return 'にこにこゆるぼ';
   if (count <= 5) return '盛り上がり中';
   return '今月の主役級！';
 }

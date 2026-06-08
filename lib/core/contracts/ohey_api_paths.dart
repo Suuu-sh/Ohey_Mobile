@@ -49,11 +49,6 @@ class OheyApiPaths {
   static String yuruboReactionApproval(String yuruboId, String userId) =>
       '${yurubo(yuruboId)}/reactions/${Uri.encodeComponent(userId)}';
 
-  static const memories = '/v1/memories';
-  static String memory(String memoryId) =>
-      '$memories/${Uri.encodeComponent(memoryId)}';
-  static String memoryReport(String memoryId) => '${memory(memoryId)}/report';
-  static const memoryHides = '/v1/memory-hides';
 
   static const userBlocks = '/v1/user-blocks';
   static String userBlock(String userId) =>
@@ -80,12 +75,6 @@ class OheyApiPaths {
   static const adminYurubos = '/v1/admin/yurubos';
   static String adminYurubo(String yuruboId) =>
       '$adminYurubos/${Uri.encodeComponent(yuruboId)}';
-  static const adminMemories = '/v1/admin/memories';
-  static String adminMemory(String memoryId) =>
-      '$adminMemories/${Uri.encodeComponent(memoryId)}';
-  static const adminMemoryReports = '/v1/admin/memory-reports';
-  static String adminMemoryReport(String reportId) =>
-      '$adminMemoryReports/${Uri.encodeComponent(reportId)}';
   static const adminNotificationOutbox = '/v1/admin/notification-outbox';
   static const adminNotificationOutboxProcess =
       '/v1/admin/notification-outbox/process';

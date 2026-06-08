@@ -49,11 +49,7 @@ Both `ohey` and `dev-ohey` are kept on the same app schema:
 - `friend_requests`
 - `friendships`
 - `daily_statuses`
-- `memories`
-- `memory_tagged_users`
-- `memory_likes`
-- `memory_reports`
-- `memory_hides`
+- `yurubos`
 - `invites`
 - RLS policies for authenticated users
 - private Storage bucket: `ohey-photos`

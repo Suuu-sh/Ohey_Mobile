@@ -355,14 +355,6 @@ class _AdminFilterChips extends StatelessWidget {
   );
 }
 
-const _adminReportStatusFilters = <_AdminFilterOption>[
-  _AdminFilterOption(key: OheyStatusKeys.pending, label: '未対応'),
-  _AdminFilterOption(key: OheyStatusKeys.reviewing, label: '対応中'),
-  _AdminFilterOption(key: OheyStatusKeys.resolved, label: '解決済み'),
-  _AdminFilterOption(key: OheyStatusKeys.dismissed, label: '却下'),
-  _AdminFilterOption(key: OheyStatusKeys.all, label: 'すべて'),
-];
-
 const _adminYuruboStatusFilters = <_AdminFilterOption>[
   _AdminFilterOption(key: OheyStatusKeys.open, label: '募集中'),
   _AdminFilterOption(key: OheyStatusKeys.closed, label: '終了'),
@@ -407,21 +399,6 @@ String _adminStatusLabel(String status) {
   return oheyDailyStatusFromKey(status).label;
 }
 
-String _adminReportReasonLabel(String reason) {
-  return switch (reason) {
-    OheyReportReasonKeys.spam => 'スパム',
-    OheyReportReasonKeys.harassment => '嫌がらせ',
-    OheyReportReasonKeys.inappropriate => '不適切',
-    OheyReportReasonKeys.violence => '暴力・危険',
-    OheyReportReasonKeys.minorSafety => '未成年安全',
-    _ => 'その他',
-  };
-}
-
-String _adminReportStatusLabel(String status) {
-  return oheyModerationStatusFromKey(status).label;
-}
-
 String _adminYuruboStatusLabel(String status) {
   return switch (status.trim()) {
     OheyStatusKeys.open => '募集中',
@@ -457,8 +434,6 @@ String _adminOutboxEventLabel(String eventKind) {
     'invite.accepted' => 'お誘い承認',
     'friend_request.created' => 'フレンド申請',
     'friend_request.accepted' => 'フレンド承認',
-    'memory.tagged' => '思い出タグ付け',
-    'memory.reported' => '思い出通報',
     'system_notification.created' => 'System通知',
     _ => eventKind.trim().isEmpty ? '通知イベント' : eventKind.trim(),
   };

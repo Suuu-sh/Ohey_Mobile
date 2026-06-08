@@ -10,7 +10,6 @@ import google_mobile_ads
   private var qrSaverChannel: FlutterMethodChannel?
   private var placeSearchChannel: FlutterMethodChannel?
   private var instagramShareChannel: FlutterMethodChannel?
-  private var didRegisterArchiveMapViewFactory = false
   private var placeSearchLocationManager: CLLocationManager?
   private var placeSearchLocationCompletion: ((CLLocation?, FlutterError?) -> Void)?
   private var didRequestPlaceSearchLocation = false
@@ -21,7 +20,6 @@ import google_mobile_ads
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     registerYuruboNativeAdFactory(in: self)
-    registerArchiveMapViewFactory()
     if let controller = window?.rootViewController as? FlutterViewController {
       registerQrSaverChannel(on: controller.binaryMessenger)
       registerPlaceSearchChannel(on: controller.binaryMessenger)
@@ -42,10 +40,6 @@ import google_mobile_ads
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "OheyInstagramShare") {
       registerInstagramShareChannel(on: registrar.messenger())
     }
-    if !didRegisterArchiveMapViewFactory,
-       let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "OheyArchiveMap") {
-      registerArchiveMapViewFactory(with: registrar)
-    }
   }
 
   private func registerYuruboNativeAdFactory(in registry: FlutterPluginRegistry) {
@@ -53,21 +47,6 @@ import google_mobile_ads
       registry,
       factoryId: "ohey_yurubo_native_ad",
       nativeAdFactory: yuruboNativeAdFactory
-    )
-  }
-
-  private func registerArchiveMapViewFactory() {
-    guard !didRegisterArchiveMapViewFactory else { return }
-    guard let registrar = registrar(forPlugin: "OheyArchiveMap") else { return }
-    registerArchiveMapViewFactory(with: registrar)
-  }
-
-  private func registerArchiveMapViewFactory(with registrar: FlutterPluginRegistrar) {
-    guard !didRegisterArchiveMapViewFactory else { return }
-    didRegisterArchiveMapViewFactory = true
-    registrar.register(
-      OheyArchiveMapFactory(messenger: registrar.messenger()),
-      withId: "ohey/archive_map"
     )
   }
 

@@ -34,7 +34,6 @@ import '../../admin/presentation/admin_screen.dart';
 import '../../friends/application/invite_controller.dart';
 import '../../friends/data/friend_repository.dart';
 import '../../friends/presentation/friend_add_sheet.dart';
-import '../../memories/application/memory_controller.dart';
 import '../../notifications/application/notification_controller.dart';
 import '../../notifications/application/notification_preferences.dart';
 import '../../yurubos/application/yurubo_controller.dart';
@@ -49,7 +48,7 @@ import '../../../core/widgets/ohey_profile_hero_header.dart';
 import '../../../core/widgets/ohey_yurubo_create_sheet_layout.dart';
 
 part 'profile_header_widgets.dart';
-part 'profile_memory_widgets.dart';
+part 'profile_edit_widgets.dart';
 part 'profile_settings_sheet.dart';
 part 'profile_form_helpers.dart';
 part 'profile_wish_list_screen.dart';

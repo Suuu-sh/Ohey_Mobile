@@ -1,18 +1,14 @@
 # Ohey
 
-Ohey（オーヘイ）is a Flutter prototype for a cozy, overseas-app-inspired social memory app.
-It focuses on cute memories, friend availability, invites, and lightweight photo sharing.
+Ohey（オーヘイ）is a Flutter prototype for a cozy, overseas-app-inspired social planning app.
+It focuses on cute friend availability, invites, and lightweight photo sharing.
 
 ## Highlights
 
 - Pastel, iOS-native-feeling UI with soft cards, rounded corners, and gentle shadows
 - Original placeholder character assets: **Ohey Friends**
-- Character mood changes from the current month memory count
-  - 0: さみしい
-  - 1–2: にこにこ
-  - 3–5: たのしい
-  - 6+: ハイテンション
-- Home feed, friends, calendar, profile, invites, yurubo, and wish list screens
+- Friend availability, invites, yurubo, and wish list flows
+- Home, friends, calendar, profile, invites, yurubo, and wish list screens
 - Riverpod state management
 - Repository Pattern with Flutter → Go Backend → Supabase for app data
 - Feature First Architecture under `lib/features/*`
@@ -27,7 +23,7 @@ lib/
     widgets/
   features/
     home/
-    memories/
+    yurubos/
     friends/
     calendar/
 assets/
@@ -36,7 +32,7 @@ assets/
 
 ## Backend
 
-Auth stays in Flutter via Supabase Auth. Memories, invites, and friend reads go through the Go backend.
+Auth stays in Flutter via Supabase Auth. Invites, yurubo, and friend reads go through the Go backend.
 
 Dev / iOS Simulator builds must use the shared dev environment:
 

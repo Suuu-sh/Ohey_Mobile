@@ -1,7 +1,6 @@
 -- Ohey clean destructive baseline.
 -- Pre-release reset: dev/prod data are test data and may be removed.
 -- This baseline replaces the historical drink_* migrations with the final
--- generic memories/invites domain schema.
 -- Storage objects must be deleted via the Supabase Storage API, not SQL.
 
 begin;
@@ -33,12 +32,7 @@ drop policy if exists ohey_photos_delete_own on storage.objects;
 -- Drop all app-owned tables. This intentionally removes pre-release test data.
 drop table if exists public.notification_outbox cascade;
 drop table if exists public.notifications cascade;
-drop table if exists public.memory_hides cascade;
-drop table if exists public.memory_reports cascade;
-drop table if exists public.memory_likes cascade;
-drop table if exists public.memory_tagged_users cascade;
 drop table if exists public.invites cascade;
-drop table if exists public.memories cascade;
 drop table if exists public.user_reports cascade;
 drop table if exists public.user_mutes cascade;
 drop table if exists public.user_blocks cascade;
@@ -318,7 +312,6 @@ create table public.user_reports (
 create index user_reports_status_created_at_idx on public.user_reports(status, created_at desc);
 create index user_reports_reported_created_at_idx on public.user_reports(reported_user_id, created_at desc);
 
-create table public.memories (
   id uuid primary key default gen_random_uuid(),
   owner_user_id uuid not null references public.profiles(id) on delete cascade,
   happened_at timestamptz not null default now(),
@@ -333,35 +326,21 @@ create table public.memories (
   is_official boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint memories_marker_rarity_check
     check (marker_rarity in ('normal', 'uncommon', 'rare', 'super_rare', 'ultra_rare', 'secret')),
-  constraint memories_caption_y_check check (caption_y >= 0 and caption_y <= 1)
 );
 
-create index memories_owner_happened_at_idx on public.memories(owner_user_id, happened_at desc);
-create index memories_official_happened_at_idx on public.memories(happened_at desc) where is_official = true;
 
-create table public.memory_tagged_users (
-  memory_id uuid not null references public.memories(id) on delete cascade,
   tagged_user_id uuid not null references public.profiles(id) on delete cascade,
   created_at timestamptz not null default now(),
-  primary key (memory_id, tagged_user_id)
 );
 
-create index memory_tagged_users_user_idx on public.memory_tagged_users(tagged_user_id);
 
-create table public.memory_likes (
-  memory_id uuid not null references public.memories(id) on delete cascade,
   user_id uuid not null references public.profiles(id) on delete cascade,
   created_at timestamptz not null default now(),
-  primary key (memory_id, user_id)
 );
 
-create index memory_likes_user_id_idx on public.memory_likes(user_id);
 
-create table public.memory_reports (
   id uuid primary key default gen_random_uuid(),
-  memory_id uuid not null references public.memories(id) on delete cascade,
   reporter_user_id uuid not null references public.profiles(id) on delete cascade,
   reason text not null default 'other',
   status text not null default 'pending',
@@ -370,24 +349,15 @@ create table public.memory_reports (
   reviewed_by_user_id uuid references public.profiles(id) on delete set null,
   moderation_note text not null default '',
   created_at timestamptz not null default now(),
-  unique (memory_id, reporter_user_id),
-  constraint memory_reports_reason_check
     check (reason in ('spam', 'harassment', 'inappropriate', 'violence', 'minor_safety', 'other')),
-  constraint memory_reports_status_check
     check (status in ('pending', 'reviewing', 'resolved', 'dismissed'))
 );
 
-create index memory_reports_status_created_at_idx on public.memory_reports(status, created_at desc);
-create index memory_reports_reporter_hidden_idx on public.memory_reports(reporter_user_id, hidden_at desc);
 
-create table public.memory_hides (
   user_id uuid not null references public.profiles(id) on delete cascade,
-  memory_id uuid not null references public.memories(id) on delete cascade,
   created_at timestamptz not null default now(),
-  primary key (user_id, memory_id)
 );
 
-create index memory_hides_memory_idx on public.memory_hides(memory_id, created_at desc);
 
 create table public.invites (
   id uuid primary key default gen_random_uuid(),
@@ -419,7 +389,6 @@ create table public.notifications (
   title text not null,
   message text not null,
   friend_request_id uuid references public.friend_requests(id) on delete cascade,
-  memory_id uuid references public.memories(id) on delete cascade,
   invite_id uuid references public.invites(id) on delete cascade,
   notification_date date,
   system_key text,
@@ -428,13 +397,11 @@ create table public.notifications (
   constraint notifications_no_self_actor check (actor_user_id is null or actor_user_id <> recipient_user_id),
   constraint notifications_kind_check check (
     kind in (
-      'memory_like',
       'friend_request_received',
       'friend_request_accepted',
       'invite_received',
       'invite_accepted',
       'today_reservation_reminder',
-      'memory_tagged',
       'system'
     )
   )
@@ -446,12 +413,6 @@ create unique index notifications_unique_friend_request_event
   on public.notifications(recipient_user_id, friend_request_id, kind)
   where friend_request_id is not null
     and kind in ('friend_request_received', 'friend_request_accepted');
-create unique index notifications_unique_memory_like
-  on public.notifications(recipient_user_id, actor_user_id, memory_id, kind)
-  where memory_id is not null and kind = 'memory_like';
-create unique index notifications_unique_memory_tagged
-  on public.notifications(recipient_user_id, memory_id, kind)
-  where memory_id is not null and kind = 'memory_tagged';
 create unique index notifications_unique_invite_event
   on public.notifications(recipient_user_id, invite_id, kind)
   where invite_id is not null
@@ -508,11 +469,6 @@ alter table public.friend_group_members enable row level security;
 alter table public.user_blocks enable row level security;
 alter table public.user_mutes enable row level security;
 alter table public.user_reports enable row level security;
-alter table public.memories enable row level security;
-alter table public.memory_tagged_users enable row level security;
-alter table public.memory_likes enable row level security;
-alter table public.memory_reports enable row level security;
-alter table public.memory_hides enable row level security;
 alter table public.invites enable row level security;
 alter table public.notifications enable row level security;
 alter table public.push_tokens enable row level security;
@@ -759,8 +715,6 @@ create policy user_reports_update_reporter
     and status = 'pending'
   );
 
-create policy memories_select_feed_visible
-  on public.memories
   for select
   to authenticated
   using (
@@ -769,54 +723,38 @@ create policy memories_select_feed_visible
     or exists (
       select 1
       from public.friendships f
-      where (f.user_a_id = auth.uid() and f.user_b_id = memories.owner_user_id)
-         or (f.user_b_id = auth.uid() and f.user_a_id = memories.owner_user_id)
     )
   );
 
-create policy memories_insert_own
-  on public.memories
   for insert
   to authenticated
   with check (owner_user_id = auth.uid());
 
-create policy memories_insert_non_official_only
-  on public.memories
   as restrictive
   for insert
   to authenticated
   with check (is_official = false);
 
-create policy memories_update_own
-  on public.memories
   for update
   to authenticated
   using (owner_user_id = auth.uid())
   with check (owner_user_id = auth.uid());
 
-create policy memories_update_non_official_only
-  on public.memories
   as restrictive
   for update
   to authenticated
   using (is_official = false)
   with check (is_official = false);
 
-create policy memories_delete_own
-  on public.memories
   for delete
   to authenticated
   using (owner_user_id = auth.uid() and is_official = false);
 
-create policy memory_tagged_users_select_visible
-  on public.memory_tagged_users
   for select
   to authenticated
   using (
     exists (
       select 1
-      from public.memories m
-      where m.id = memory_tagged_users.memory_id
         and (
           m.is_official = true
           or m.owner_user_id = auth.uid()
@@ -830,55 +768,39 @@ create policy memory_tagged_users_select_visible
     )
   );
 
-create policy memory_tagged_users_insert_owner_friend
-  on public.memory_tagged_users
   for insert
   to authenticated
   with check (
     exists (
       select 1
-      from public.memories m
-      where m.id = memory_tagged_users.memory_id
         and m.owner_user_id = auth.uid()
         and m.is_official = false
     )
     and exists (
       select 1
       from public.friendships f
-      where (f.user_a_id = auth.uid() and f.user_b_id = memory_tagged_users.tagged_user_id)
-         or (f.user_b_id = auth.uid() and f.user_a_id = memory_tagged_users.tagged_user_id)
     )
     and not exists (
       select 1
       from public.user_blocks b
-      where (b.blocker_user_id = auth.uid() and b.blocked_user_id = memory_tagged_users.tagged_user_id)
-         or (b.blocker_user_id = memory_tagged_users.tagged_user_id and b.blocked_user_id = auth.uid())
     )
   );
 
-create policy memory_tagged_users_delete_owner
-  on public.memory_tagged_users
   for delete
   to authenticated
   using (
     exists (
       select 1
-      from public.memories m
-      where m.id = memory_tagged_users.memory_id
         and m.owner_user_id = auth.uid()
         and m.is_official = false
     )
   );
 
-create policy memory_likes_select_visible
-  on public.memory_likes
   for select
   to authenticated
   using (
     exists (
       select 1
-      from public.memories m
-      where m.id = memory_likes.memory_id
         and (
           m.is_official = true
           or m.owner_user_id = auth.uid()
@@ -892,20 +814,14 @@ create policy memory_likes_select_visible
     )
   );
 
-create policy memory_likes_insert_own
-  on public.memory_likes
   for insert
   to authenticated
   with check (auth.uid() = user_id);
 
-create policy memory_likes_delete_own
-  on public.memory_likes
   for delete
   to authenticated
   using (auth.uid() = user_id);
 
-create policy memory_reports_insert_own
-  on public.memory_reports
   for insert
   to authenticated
   with check (
@@ -913,26 +829,18 @@ create policy memory_reports_insert_own
     and status = 'pending'
   );
 
-create policy memory_reports_select_own
-  on public.memory_reports
   for select
   to authenticated
   using (auth.uid() = reporter_user_id);
 
-create policy memory_hides_select_owner
-  on public.memory_hides
   for select
   to authenticated
   using (user_id = auth.uid());
 
-create policy memory_hides_insert_owner
-  on public.memory_hides
   for insert
   to authenticated
   with check (user_id = auth.uid());
 
-create policy memory_hides_delete_owner
-  on public.memory_hides
   for delete
   to authenticated
   using (user_id = auth.uid());
@@ -1013,11 +921,6 @@ revoke all on table
   public.user_blocks,
   public.user_mutes,
   public.user_reports,
-  public.memories,
-  public.memory_tagged_users,
-  public.memory_likes,
-  public.memory_reports,
-  public.memory_hides,
   public.invites,
   public.notifications,
   public.push_tokens,
@@ -1033,11 +936,6 @@ grant select, insert, delete on public.friend_group_members to authenticated;
 grant select, insert, delete on public.user_blocks to authenticated;
 grant select, insert, delete on public.user_mutes to authenticated;
 grant select, insert, update on public.user_reports to authenticated;
-grant select, insert, update, delete on public.memories to authenticated;
-grant select, insert, delete on public.memory_tagged_users to authenticated;
-grant select, insert, delete on public.memory_likes to authenticated;
-grant select, insert on public.memory_reports to authenticated;
-grant select, insert, delete on public.memory_hides to authenticated;
 grant select, insert, update on public.invites to authenticated;
 grant select on public.notifications to authenticated;
 grant update (read_at) on public.notifications to authenticated;
@@ -1053,11 +951,6 @@ grant all on table
   public.user_blocks,
   public.user_mutes,
   public.user_reports,
-  public.memories,
-  public.memory_tagged_users,
-  public.memory_likes,
-  public.memory_reports,
-  public.memory_hides,
   public.invites,
   public.notifications,
   public.push_tokens,
@@ -1105,7 +998,6 @@ create policy ohey_photos_select_visible
       name like ('users/' || auth.uid()::text || '/%')
       or exists (
         select 1
-        from public.memories m
         where m.photo_path = storage.objects.name
           and (
             m.is_official = true

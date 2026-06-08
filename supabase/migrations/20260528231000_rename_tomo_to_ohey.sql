@@ -131,7 +131,6 @@ create policy ohey_photos_select_visible
       name like ('users/' || auth.uid()::text || '/%')
       or exists (
         select 1
-        from public.memories m
         where m.photo_path = storage.objects.name
           and (
             m.is_official = true
