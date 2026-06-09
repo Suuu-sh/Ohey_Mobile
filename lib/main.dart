@@ -6,10 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/config/auth_provider_config.dart';
 import 'core/config/ohey_ads_config.dart';
 import 'core/config/supabase_config.dart';
 import 'core/application/ohey_user_controller.dart';
+import 'core/data/auth_identity_provider.dart';
 import 'core/data/auth_session_guard.dart';
+import 'core/data/clerk_auth_service.dart';
 import 'core/data/supabase_client_provider.dart';
 import 'core/services/ohey_ads_consent_service.dart';
 import 'core/services/ohey_plus_service.dart';
@@ -54,7 +57,14 @@ final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
       ? Future<void>.value()
       : Future<void>.delayed(_minimumOpeningDuration);
   try {
-    if (!alreadyInitialized) {
+    if (AuthProviderConfig.isClerkEnabled) {
+      await ref
+          .read(clerkAuthServiceProvider)
+          .initialize()
+          .timeout(const Duration(seconds: 12));
+    }
+
+    if (!alreadyInitialized && AuthProviderConfig.shouldInitializeSupabase) {
       await Supabase.initialize(
         url: SupabaseConfig.url,
         anonKey: SupabaseConfig.publishableKey,
@@ -69,9 +79,11 @@ final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
       unawaited(OheyAdsConsentService.prepareToRequestAds());
     }
 
-    await AuthSessionGuard.clearIfProjectMismatch(
-      Supabase.instance.client,
-    ).timeout(const Duration(seconds: 4), onTimeout: () {});
+    if (Supabase.instance.isInitialized) {
+      await AuthSessionGuard.clearIfProjectMismatch(
+        Supabase.instance.client,
+      ).timeout(const Duration(seconds: 4), onTimeout: () {});
+    }
 
     await _preloadBackendProfileIfSessionExists(ref);
     await ref
@@ -90,8 +102,10 @@ final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
 });
 
 Future<void> _preloadBackendProfileIfSessionExists(Ref ref) async {
-  final session = Supabase.instance.client.auth.currentSession;
-  if (session == null) return;
+  final identity = ref.read(authIdentityProvider);
+  if (identity.currentAccessToken == null || identity.currentUserId == null) {
+    return;
+  }
 
   try {
     await ref

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../config/auth_provider_config.dart';
 import 'auth_session_guard.dart';
+import 'clerk_auth_service.dart';
 import 'supabase_client_provider.dart';
 
 /// Auth identity/session boundary used by backend-facing code.
@@ -10,6 +12,15 @@ import 'supabase_client_provider.dart';
 /// migration this is the seam that will switch to Clerk session tokens and
 /// Clerk user ids.
 final authIdentityProvider = Provider<AuthIdentity>((ref) {
+  if (AuthProviderConfig.isClerkEnabled) {
+    final clerk = ref.watch(clerkAuthServiceProvider);
+    return AuthIdentity(
+      accessTokenProvider: () => clerk.currentAccessToken,
+      userIdProvider: () => clerk.currentUserId,
+      tokenValidator: (_) => true,
+    );
+  }
+
   final supabase = ref.watch(supabaseClientProvider);
   return AuthIdentity(
     accessTokenProvider: () => supabase.auth.currentSession?.accessToken,

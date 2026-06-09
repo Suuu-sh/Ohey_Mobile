@@ -11,6 +11,8 @@ class OheyEnvironmentValues {
   static const supabaseUrlDefineKey = 'SUPABASE_URL';
   static const supabasePublishableKeyDefineKey = 'SUPABASE_PUBLISHABLE_KEY';
   static const supabaseAuthRedirectUrlDefineKey = 'SUPABASE_AUTH_REDIRECT_URL';
+  static const authProviderDefineKey = 'AUTH_PROVIDER';
+  static const clerkPublishableKeyDefineKey = 'CLERK_PUBLISHABLE_KEY';
 
   static const devEnvironment = 'dev';
   static const productionEnvironment = 'production';

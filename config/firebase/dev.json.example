@@ -3,6 +3,8 @@
   "OHEY_ADMIN_PORTAL_PASSWORD": "set_via_secret_not_in_git",
   "OHEY_SUPPORT_EMAIL": "yisshiki39@gmail.com",
   "OHEY_ADMIN_EMAILS": "set_via_secret_not_in_git",
+  "AUTH_PROVIDER": "supabase",
+  "CLERK_PUBLISHABLE_KEY": "",
   "OHEY_BACKEND_URL": "https://dev-ohey-backend.onrender.com",
   "SUPABASE_URL": "https://wwyaftonswgxnjcceyfb.supabase.co",
   "SUPABASE_PUBLISHABLE_KEY": "replace_with_dev_publishable_key",

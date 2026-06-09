@@ -4,20 +4,26 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../config/auth_provider_config.dart';
 import '../config/backend_config.dart';
 import '../config/supabase_config.dart';
 import '../contracts/ohey_api_paths.dart';
 import '../models/ohey_avatar.dart';
+import 'clerk_auth_service.dart';
 import 'supabase_client_provider.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(ref.watch(supabaseClientProvider));
+  return AuthRepository(
+    ref.watch(supabaseClientProvider),
+    ref.watch(clerkAuthServiceProvider),
+  );
 });
 
 class AuthRepository {
-  const AuthRepository(this._supabase);
+  const AuthRepository(this._supabase, this._clerk);
 
   final SupabaseClient _supabase;
+  final ClerkAuthService _clerk;
 
   Session? get currentSession => _supabase.auth.currentSession;
 
@@ -47,10 +53,13 @@ class AuthRepository {
     );
   }
 
-  Future<AuthResponse> signInWithPassword({
+  Future<void> signInWithPassword({
     required String email,
     required String password,
   }) {
+    if (AuthProviderConfig.isClerkEnabled) {
+      return _clerk.signInWithPassword(email: email, password: password);
+    }
     return _supabase.auth.signInWithPassword(email: email, password: password);
   }
 
