@@ -32,7 +32,9 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
           await _saveLastAccount(email);
           return;
         }
-        _hydrateProfileFromAuthMetadata(authRepository.currentUser);
+        if (!AuthProviderConfig.isClerkEnabled) {
+          _hydrateProfileFromAuthMetadata(authRepository.currentUser);
+        }
       } else {
         _goToSignupProfileStep();
         return;

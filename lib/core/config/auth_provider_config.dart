@@ -18,8 +18,7 @@ class AuthProviderConfig {
 
   static bool get isSupabaseEnabled => !isClerkEnabled;
 
-  // Temporary during the migration: several non-auth services still read
-  // Supabase directly. Keep initialization on until those dependencies move
-  // behind backend APIs / replacement services.
-  static bool get shouldInitializeSupabase => true;
+  // Clerk mode should not initialize or access Supabase from Mobile.
+  // Supabase mode is kept only as the migration fallback.
+  static bool get shouldInitializeSupabase => isSupabaseEnabled;
 }

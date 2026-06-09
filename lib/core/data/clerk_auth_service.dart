@@ -167,7 +167,13 @@ class ClerkAuthService {
   void dispose() {
     _tokenSubscription?.cancel();
     _authChanges.close();
-    _auth?.terminate();
+    try {
+      if (_auth != null && _initializeFuture != null) {
+        _auth?.terminate();
+      }
+    } catch (_) {
+      // clerk_auth can throw if the Auth instance did not finish initializing.
+    }
   }
 }
 

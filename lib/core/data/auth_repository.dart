@@ -16,7 +16,9 @@ import 'supabase_client_provider.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
-    ref.watch(supabaseClientProvider),
+    AuthProviderConfig.isClerkEnabled
+        ? null
+        : ref.watch(supabaseClientProvider),
     ref.watch(clerkAuthServiceProvider),
   );
 });
@@ -24,25 +26,33 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 class AuthRepository {
   const AuthRepository(this._supabase, this._clerk);
 
-  final SupabaseClient _supabase;
+  final SupabaseClient? _supabase;
   final ClerkAuthService _clerk;
 
-  Session? get currentSession => _supabase.auth.currentSession;
+  Session? get currentSession => AuthProviderConfig.isClerkEnabled
+      ? null
+      : _requireSupabase().auth.currentSession;
 
   bool get isSignedIn => AuthProviderConfig.isClerkEnabled
       ? _clerk.isSignedIn
-      : _supabase.auth.currentSession != null;
+      : _requireSupabase().auth.currentSession != null;
 
   String? get currentEmail => AuthProviderConfig.isClerkEnabled
       ? _clerk.currentUserEmail
-      : _supabase.auth.currentUser?.email;
+      : _requireSupabase().auth.currentUser?.email;
 
-  User? get currentUser => _supabase.auth.currentUser;
+  User? get currentUser => AuthProviderConfig.isClerkEnabled
+      ? null
+      : _requireSupabase().auth.currentUser;
 
-  Stream<AuthState> get onAuthStateChange => _supabase.auth.onAuthStateChange;
+  Stream<AuthState> get onAuthStateChange =>
+      _requireSupabase().auth.onAuthStateChange;
 
   Future<void> resetPasswordForEmail(String email) {
-    return _supabase.auth.resetPasswordForEmail(
+    if (AuthProviderConfig.isClerkEnabled) {
+      throw const AuthException('パスワード再設定は現在準備中です。');
+    }
+    return _requireSupabase().auth.resetPasswordForEmail(
       email,
       redirectTo: SupabaseConfig.authRedirectUrl,
     );
@@ -65,7 +75,7 @@ class AuthRepository {
       }
       return;
     }
-    await _supabase.auth.signInWithOAuth(
+    await _requireSupabase().auth.signInWithOAuth(
       provider,
       redirectTo: SupabaseConfig.authRedirectUrl,
       scopes: authOAuthScopes(provider),
@@ -86,7 +96,10 @@ class AuthRepository {
     if (AuthProviderConfig.isClerkEnabled) {
       return _clerk.signInWithPassword(email: email, password: password);
     }
-    return _supabase.auth.signInWithPassword(email: email, password: password);
+    return _requireSupabase().auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
   }
 
   Future<AuthResponse?> signUpWithProfileMetadata({
@@ -116,7 +129,10 @@ class AuthRepository {
       password: password,
       metadata: metadata,
     );
-    return _supabase.auth.signInWithPassword(email: email, password: password);
+    return _requireSupabase().auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
   }
 
   Future<void> completeOAuthCallback(Uri uri) {
@@ -130,7 +146,7 @@ class AuthRepository {
     if (AuthProviderConfig.isClerkEnabled) {
       return _clerk.signOut();
     }
-    return _supabase.auth.signOut(scope: SignOutScope.local);
+    return _requireSupabase().auth.signOut(scope: SignOutScope.local);
   }
 
   Future<void> _createConfirmedAuthUser({
@@ -168,6 +184,14 @@ class AuthRepository {
     }
   }
 
+  SupabaseClient _requireSupabase() {
+    final supabase = _supabase;
+    if (supabase == null) {
+      throw StateError('Supabase auth is disabled in Clerk mode.');
+    }
+    return supabase;
+  }
+
   @Deprecated('Use signUpWithProfileMetadata for confirmed signup.')
   Future<AuthResponse> signUpWithProfileMetadataDirect({
     required String email,
@@ -176,7 +200,7 @@ class AuthRepository {
     required String displayName,
     required OheyAvatar avatar,
   }) {
-    return _supabase.auth.signUp(
+    return _requireSupabase().auth.signUp(
       email: email,
       password: password,
       emailRedirectTo: SupabaseConfig.authRedirectUrl,
