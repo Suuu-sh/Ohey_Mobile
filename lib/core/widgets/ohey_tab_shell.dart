@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:app_links/app_links.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/calendar/presentation/calendar_screen.dart';
@@ -21,8 +20,9 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/yurubos/application/yurubo_controller.dart';
 import '../../features/onboarding/presentation/create_user_dialog.dart';
 import '../application/ohey_user_controller.dart';
+import '../data/auth_identity_provider.dart';
+import '../data/auth_state_provider.dart';
 import '../data/ohey_last_account_store.dart';
-import '../data/supabase_client_provider.dart';
 import '../models/ohey_invite.dart';
 import '../models/ohey_friend.dart';
 import '../models/yurubo.dart';
@@ -64,10 +64,10 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   String? _lastDailyStatusPromptKey;
   String? _lastPresentedInviteId;
   String? _lastPresentedYuruboRequestKey;
-  Timer? _realtimeRefreshDebounce;
+  Timer? _inviteNotificationRefreshDebounce;
+  Timer? _inviteNotificationPollingTimer;
   DateTime? _lastFriendsRefreshAt;
-  RealtimeChannel? _inviteNotificationChannel;
-  String? _realtimeUserId;
+  String? _inviteNotificationPollingUserId;
   StreamSubscription<Uri>? _appLinkSubscription;
   String? _pendingSharedYuruboId;
   bool _isHandlingSharedYurubo = false;
@@ -84,8 +84,8 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
 
   @override
   void dispose() {
-    _realtimeRefreshDebounce?.cancel();
-    _stopInviteNotificationRealtime();
+    _inviteNotificationRefreshDebounce?.cancel();
+    _stopInviteNotificationPolling();
     _appLinkSubscription?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -94,9 +94,9 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _startInviteNotificationRealtime();
+      _startInviteNotificationPolling();
     } else {
-      _stopInviteNotificationRealtime();
+      _stopInviteNotificationPolling();
     }
     if (state != AppLifecycleState.resumed) return;
     _lastPresentedInviteId = null;
@@ -148,11 +148,24 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   }
 
   void _handleIncomingAppLink(Uri uri) {
+    unawaited(_handleClerkOAuthCallback(uri));
     final yuruboId = _sharedYuruboIdFromUri(uri);
     if (yuruboId == null || yuruboId.isEmpty) return;
     _pendingSharedYuruboId = yuruboId;
     if (ref.read(oheyUserProvider) != null) {
       _consumePendingSharedYurubo();
+    }
+  }
+
+  Future<void> _handleClerkOAuthCallback(Uri uri) async {
+    final handled = await ref.read(clerkOAuthCallbackProvider).handle(uri);
+    if (!handled || !mounted) return;
+    final loaded = await ref
+        .read(oheyUserProvider.notifier)
+        .loadFromBackendProfile();
+    if (!loaded && mounted) {
+      // The onboarding dialog will ask for the remaining Ohey profile fields.
+      setState(() => _isOnboardingSeen = false);
     }
   }
 
@@ -270,8 +283,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       return;
     }
     for (final yurubo in yurubos) {
-      if (yurubo.ownerUserId !=
-          ref.read(supabaseClientProvider).auth.currentUser?.id) {
+      if (yurubo.ownerUserId != ref.read(authIdentityProvider).currentUserId) {
         continue;
       }
       final pending = yurubo.participants
@@ -361,61 +373,33 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     });
   }
 
-  void _startInviteNotificationRealtime() {
+  void _startInviteNotificationPolling() {
     if (!mounted || ref.read(oheyUserProvider) == null) return;
-    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    final userId = ref.read(authIdentityProvider).currentUserId;
     if (userId == null || userId.isEmpty) return;
-    if (_inviteNotificationChannel != null && _realtimeUserId == userId) {
+    if (_inviteNotificationPollingTimer != null &&
+        _inviteNotificationPollingUserId == userId) {
       return;
     }
-    _stopInviteNotificationRealtime();
-    _realtimeUserId = userId;
-    _inviteNotificationChannel = ref
-        .read(supabaseClientProvider)
-        .channel('ohey-invite-notifications:$userId')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'invites',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'invitee_user_id',
-            value: userId,
-          ),
-          callback: (_) => _scheduleRealtimeRefresh(),
-        )
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'notifications',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'recipient_user_id',
-            value: userId,
-          ),
-          callback: (_) => _scheduleRealtimeRefresh(),
-        )
-        .subscribe();
+    _stopInviteNotificationPolling();
+    _inviteNotificationPollingUserId = userId;
+    _inviteNotificationPollingTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _schedulePollingRefresh(),
+    );
+    _schedulePollingRefresh();
   }
 
-  void _stopInviteNotificationRealtime() {
-    final channel = _inviteNotificationChannel;
-    _inviteNotificationChannel = null;
-    _realtimeUserId = null;
-    if (channel != null) {
-      unawaited(
-        ref
-            .read(supabaseClientProvider)
-            .removeChannel(channel)
-            .catchError((_) => ''),
-      );
-    }
+  void _stopInviteNotificationPolling() {
+    _inviteNotificationPollingTimer?.cancel();
+    _inviteNotificationPollingTimer = null;
+    _inviteNotificationPollingUserId = null;
   }
 
-  void _scheduleRealtimeRefresh() {
+  void _schedulePollingRefresh() {
     if (!mounted || ref.read(oheyUserProvider) == null) return;
-    _realtimeRefreshDebounce?.cancel();
-    _realtimeRefreshDebounce = Timer(
+    _inviteNotificationRefreshDebounce?.cancel();
+    _inviteNotificationRefreshDebounce = Timer(
       const Duration(milliseconds: 350),
       _refreshInviteNotificationData,
     );
@@ -514,9 +498,8 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   Widget build(BuildContext context) {
     final user = ref.watch(oheyUserProvider);
     final isWhite = ref.watch(oheyThemeModeProvider).isWhite;
-    ref.watch(supabaseAuthStateProvider);
-    final hasSession =
-        ref.watch(supabaseClientProvider).auth.currentSession != null;
+    ref.watch(authStateProvider);
+    final hasSession = ref.watch(hasAuthSessionProvider);
     final incomingInvitesAsync = ref.watch(incomingInvitesProvider);
     final yurubosAsync = user == null
         ? const AsyncValue<List<Yurubo>>.data(<Yurubo>[])
@@ -541,12 +524,12 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     );
 
     if (user == null) {
-      _stopInviteNotificationRealtime();
+      _stopInviteNotificationPolling();
     }
 
     if (user != null) {
       _maybeShowDailyStatusPrompt(user);
-      _startInviteNotificationRealtime();
+      _startInviteNotificationPolling();
       incomingInvitesAsync.whenData(_handleIncomingInvites);
       yurubosAsync.whenData(_handlePendingYuruboRequests);
       _didAttemptProfileRestore = false;

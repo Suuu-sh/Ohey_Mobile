@@ -32,7 +32,6 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
           await _saveLastAccount(email);
           return;
         }
-        _hydrateProfileFromAuthMetadata(authRepository.currentUser);
       } else {
         _goToSignupProfileStep();
         return;
@@ -65,7 +64,7 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
     });
     try {
       final authRepository = ref.read(authRepositoryProvider);
-      if (authRepository.currentSession == null) {
+      if (!authRepository.isSignedIn) {
         final email = _emailController.text.trim();
         final password = _passwordController.text;
         if (!_hasValidEmailAddress(email)) {
@@ -80,21 +79,13 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
         )) {
           throw const AuthException(_passwordConfirmationRequirementMessage);
         }
-        final res = await authRepository.signUpWithProfileMetadata(
+        await authRepository.signUpWithProfileMetadata(
           email: email,
           password: password,
           userId: userId,
           displayName: name,
           avatar: _avatar,
         );
-        if (res.session == null) {
-          if (mounted) {
-            setState(() {
-              _notice = '確認メールを送ったよ。リンクを開いてね。';
-            });
-          }
-          return;
-        }
       }
       await ref
           .read(oheyUserProvider.notifier)
@@ -131,22 +122,6 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
       return false;
     }
     return true;
-  }
-
-  void _hydrateProfileFromAuthMetadata(User? user) {
-    final metadata = user?.userMetadata;
-    if (metadata == null) return;
-    final userId = metadata['user_id'] as String?;
-    final displayName = metadata['display_name'] as String?;
-    final avatarUrl = metadata['avatar_url'] as String?;
-    if (userId != null && _userIdController.text.trim().isEmpty) {
-      _userIdController.text = userId;
-    }
-    if (displayName != null && _nameController.text.trim().isEmpty) {
-      _nameController.text = displayName;
-    }
-    final avatar = OheyAvatar.decode(avatarUrl);
-    if (avatar != null) _avatar = avatar;
   }
 
   Future<void> _saveLastAccount(String email) async {

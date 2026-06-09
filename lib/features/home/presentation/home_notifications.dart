@@ -235,7 +235,7 @@ class _FeedNotificationsScreenState
     List<Yurubo>? yurubos,
   ) {
     if (yurubos == null) return null;
-    final authUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    final authUserId = ref.read(authIdentityProvider).currentUserId;
     if (authUserId == null || authUserId.isEmpty) return const [];
     return [
       for (final yurubo in yurubos)
@@ -272,7 +272,7 @@ class _FeedNotificationsScreenState
       builder: (context) => _FeedCompanionListSheet(
         item: _FeedItem.fromYurubo(
           yurubo,
-          currentUserId: ref.read(supabaseClientProvider).auth.currentUser?.id,
+          currentUserId: ref.read(authIdentityProvider).currentUserId,
         ),
       ),
     );

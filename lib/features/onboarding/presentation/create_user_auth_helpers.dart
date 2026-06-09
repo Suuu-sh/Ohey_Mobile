@@ -23,21 +23,6 @@ bool _hasValidEmailAddress(String email) {
   return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(normalized);
 }
 
-String? _displayNameFromOAuth(User user) {
-  final metadata = user.userMetadata;
-  final candidates = [
-    metadata?['display_name'],
-    metadata?['full_name'],
-    metadata?['name'],
-    user.email?.split('@').first,
-  ];
-  for (final candidate in candidates) {
-    final value = candidate?.toString().trim();
-    if (value != null && value.isNotEmpty) return value;
-  }
-  return null;
-}
-
 String _friendlyAuthError(String message) {
   final lower = message.toLowerCase();
   if (_isNetworkAuthError(lower)) {

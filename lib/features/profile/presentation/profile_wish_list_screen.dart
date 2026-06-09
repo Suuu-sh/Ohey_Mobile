@@ -185,11 +185,7 @@ class _ProfileYuruboListSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final yurubosAsync = ref.watch(yuruboControllerProvider);
-    final currentUserId = ref
-        .watch(supabaseClientProvider)
-        .auth
-        .currentUser
-        ?.id;
+    final currentUserId = ref.watch(authIdentityProvider).currentUserId;
     final yurubos = (yurubosAsync.asData?.value ?? const <Yurubo>[])
         .where((item) => item.ownerUserId == currentUserId)
         .toList(growable: false);

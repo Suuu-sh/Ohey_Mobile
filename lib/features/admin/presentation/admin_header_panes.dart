@@ -37,7 +37,7 @@ class _AdminHeader extends StatelessWidget {
                 ),
               ),
               Text(
-                'Ohey ${SupabaseConfig.environment} admin',
+                'Ohey ${OheyEnvironmentValues.environment} admin',
                 style: const TextStyle(
                   color: _AdminColors.sub,
                   fontWeight: FontWeight.w800,
@@ -100,7 +100,6 @@ class _AdminSegmentedControl extends StatelessWidget {
     );
   }
 }
-
 
 class _AdminSmallActionButton extends StatelessWidget {
   const _AdminSmallActionButton({required this.label, required this.onTap});

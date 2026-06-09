@@ -35,7 +35,7 @@ Answer: **Yes, we collect data from this app.**
 
 ## Why these are selected
 
-- **Name / Email Address**: Supabase Auth, OAuth login, profile display, and
+- **Name / Email Address**: Clerk Auth, OAuth login, profile display, and
   support/account operations.
 - **Precise / Coarse Location**: place search and user-selected place
   coordinates/text on yurubos and availability posts.
@@ -43,7 +43,7 @@ Answer: **Yes, we collect data from this app.**
   blocks, and mutes. It does not read the device address book.
 - **Other User Content**: profile text, status, invitations, yurubo posts,
   wish items, comments/memos, reports, and moderation signals.
-- **User ID**: Supabase auth UUID, Ohey ID, and related account identifiers.
+- **User ID**: Clerk/Neon auth UUID, Ohey ID, and related account identifiers.
 - **Device ID**: APNs/FCM push token associated with the account for
   notifications.
 

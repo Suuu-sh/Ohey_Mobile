@@ -49,7 +49,6 @@ class OheyApiPaths {
   static String yuruboReactionApproval(String yuruboId, String userId) =>
       '${yurubo(yuruboId)}/reactions/${Uri.encodeComponent(userId)}';
 
-
   static const userBlocks = '/v1/user-blocks';
   static String userBlock(String userId) =>
       '$userBlocks/${Uri.encodeComponent(userId)}';

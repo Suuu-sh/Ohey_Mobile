@@ -185,8 +185,8 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     }
   }
 
-  Future<void> _handleOAuthSession(Session session) async {
-    if (_isBusy) return;
+  Future<void> _handleClerkAuthSession() async {
+    if (_isBusy || !ref.read(authRepositoryProvider).isSignedIn) return;
     setState(() {
       _isBusy = true;
       _error = null;
@@ -196,14 +196,13 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       final loaded = await ref
           .read(oheyUserProvider.notifier)
           .loadFromBackendProfile();
+      final email = ref.read(authRepositoryProvider).currentEmail ?? '';
       if (loaded) {
-        await _saveLastAccount(session.user.email ?? '');
+        await _saveLastAccount(email);
         return;
       }
-      _emailController.text = session.user.email ?? _emailController.text;
-      _hydrateProfileFromAuthMetadata(session.user);
-      if (_nameController.text.trim().isEmpty) {
-        _nameController.text = _displayNameFromOAuth(session.user) ?? '';
+      if (email.isNotEmpty) {
+        _emailController.text = email;
       }
       if (mounted) {
         setState(() {

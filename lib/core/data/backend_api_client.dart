@@ -5,15 +5,15 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/backend_config.dart';
-import 'auth_session_guard.dart';
-import 'supabase_client_provider.dart';
+import 'auth_identity_provider.dart';
 
 final backendApiClientProvider = Provider<BackendApiClient>((ref) {
-  final supabase = ref.watch(supabaseClientProvider);
+  final authIdentity = ref.watch(authIdentityProvider);
   return BackendApiClient(
     baseUrl: BackendConfig.baseUrl,
-    accessTokenProvider: () => supabase.auth.currentSession?.accessToken,
-    userIdProvider: () => supabase.auth.currentUser?.id,
+    accessTokenProvider: () => authIdentity.currentAccessToken,
+    userIdProvider: () => authIdentity.currentUserId,
+    tokenValidator: authIdentity.isTokenValidForEnvironment,
   );
 });
 
@@ -22,6 +22,7 @@ class BackendApiClient {
     required String baseUrl,
     required this.accessTokenProvider,
     required this.userIdProvider,
+    required this.tokenValidator,
     HttpClient? httpClient,
   }) : _baseUri = Uri.parse(baseUrl),
        _httpClient = httpClient ?? HttpClient();
@@ -30,6 +31,7 @@ class BackendApiClient {
   final HttpClient _httpClient;
   final String? Function() accessTokenProvider;
   final String? Function() userIdProvider;
+  final bool Function(String token) tokenValidator;
 
   String? get currentUserId => userIdProvider();
 
@@ -111,7 +113,7 @@ class BackendApiClient {
     if (token == null || token.isEmpty || userId == null || userId.isEmpty) {
       throw const BackendApiException('ログインが必要です。');
     }
-    if (!AuthSessionGuard.isTokenForCurrentProject(token)) {
+    if (!tokenValidator(token)) {
       throw const BackendApiException('もう一度ログインしてね。');
     }
 

@@ -4,13 +4,12 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/ohey_ads_config.dart';
-import 'core/config/supabase_config.dart';
 import 'core/application/ohey_user_controller.dart';
-import 'core/data/auth_session_guard.dart';
-import 'core/data/supabase_client_provider.dart';
+import 'core/data/auth_identity_provider.dart';
+import 'core/data/auth_state_provider.dart';
+import 'core/data/clerk_auth_service.dart';
 import 'core/services/ohey_ads_consent_service.dart';
 import 'core/services/ohey_plus_service.dart';
 import 'core/services/ohey_push_notification_service.dart';
@@ -49,29 +48,16 @@ Future<void> _loadOpeningOheyImage() async {
 }
 
 final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
-  final alreadyInitialized = _isSupabaseInitialized();
-  final minimumOpening = alreadyInitialized
-      ? Future<void>.value()
-      : Future<void>.delayed(_minimumOpeningDuration);
+  final minimumOpening = Future<void>.delayed(_minimumOpeningDuration);
   try {
-    if (!alreadyInitialized) {
-      await Supabase.initialize(
-        url: SupabaseConfig.url,
-        anonKey: SupabaseConfig.publishableKey,
-        authOptions: const FlutterAuthClientOptions(
-          authFlowType: AuthFlowType.pkce,
-          detectSessionInUri: true,
-        ),
-      ).timeout(const Duration(seconds: 12));
-    }
+    await ref
+        .read(clerkAuthServiceProvider)
+        .initialize()
+        .timeout(const Duration(seconds: 12));
 
     if (OheyAdsConfig.isEnabled) {
       unawaited(OheyAdsConsentService.prepareToRequestAds());
     }
-
-    await AuthSessionGuard.clearIfProjectMismatch(
-      Supabase.instance.client,
-    ).timeout(const Duration(seconds: 4), onTimeout: () {});
 
     await _preloadBackendProfileIfSessionExists(ref);
     await ref
@@ -90,8 +76,10 @@ final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
 });
 
 Future<void> _preloadBackendProfileIfSessionExists(Ref ref) async {
-  final session = Supabase.instance.client.auth.currentSession;
-  if (session == null) return;
+  final identity = ref.read(authIdentityProvider);
+  if (identity.currentAccessToken == null || identity.currentUserId == null) {
+    return;
+  }
 
   try {
     await ref
@@ -101,14 +89,6 @@ Future<void> _preloadBackendProfileIfSessionExists(Ref ref) async {
   } catch (_) {
     // If the backend is cold-starting or unavailable, let OheyTabShell show the
     // friendly waiting screen and retry instead of blocking the opening screen.
-  }
-}
-
-bool _isSupabaseInitialized() {
-  try {
-    return Supabase.instance.isInitialized;
-  } catch (_) {
-    return false;
   }
 }
 
@@ -177,8 +157,8 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
     final bootstrap = ref.watch(_oheyBootstrapProvider);
     return bootstrap.when(
       data: (_) {
-        ref.watch(supabaseAuthStateProvider);
-        ref.watch(supabaseClientProvider).auth.currentSession;
+        ref.watch(authStateProvider);
+        ref.watch(hasAuthSessionProvider);
         _startOpeningExit();
 
         return Stack(

@@ -37,7 +37,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^3.3.1
   shared_preferences: ^2.5.3
-  supabase_flutter: ^2.12.4
   qr_flutter: ^4.1.0
   mobile_scanner: ^7.2.0
   share_plus: ^13.1.0
@@ -49,6 +48,7 @@ dependencies:
   google_mobile_ads: ^8.0.0
   purchases_flutter: ^10.2.2
   app_tracking_transparency: ^2.0.7
+  clerk_auth: ^0.0.15-beta
 
 dev_dependencies:
   flutter_test:

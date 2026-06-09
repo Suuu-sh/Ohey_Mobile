@@ -1,172 +1,85 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:clerk_auth/clerk_auth.dart' as clerk;
+import 'package:url_launcher/url_launcher.dart';
 
-import '../config/backend_config.dart';
-import '../config/supabase_config.dart';
-import '../contracts/ohey_api_paths.dart';
 import '../models/ohey_avatar.dart';
-import 'supabase_client_provider.dart';
+import 'clerk_auth_service.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(ref.watch(supabaseClientProvider));
+  return AuthRepository(ref.watch(clerkAuthServiceProvider));
 });
 
+class AuthException implements Exception {
+  const AuthException(this.message);
+  final String message;
+  @override
+  String toString() => message;
+}
+
+enum OAuthProvider { google, apple }
+
 class AuthRepository {
-  const AuthRepository(this._supabase);
+  const AuthRepository(this._clerk);
 
-  final SupabaseClient _supabase;
+  final ClerkAuthService _clerk;
 
-  Session? get currentSession => _supabase.auth.currentSession;
+  bool get isSignedIn => _clerk.isSignedIn;
 
-  User? get currentUser => _supabase.auth.currentUser;
-
-  Stream<AuthState> get onAuthStateChange => _supabase.auth.onAuthStateChange;
+  String? get currentEmail => _clerk.currentUserEmail;
 
   Future<void> resetPasswordForEmail(String email) {
-    return _supabase.auth.resetPasswordForEmail(
-      email,
-      redirectTo: SupabaseConfig.authRedirectUrl,
-    );
+    throw const AuthException('パスワード再設定は現在準備中です。');
   }
 
-  Future<void> signInWithOAuth(OAuthProvider provider) {
-    return _supabase.auth.signInWithOAuth(
-      provider,
-      redirectTo: SupabaseConfig.authRedirectUrl,
-      scopes: authOAuthScopes(provider),
-      // On iOS, Apple sign-in can leave SFSafariViewController on a blank
-      // appleid.apple.com page after the deep link succeeds. Opening Apple
-      // OAuth externally lets iOS return to Ohey via the redirect without
-      // keeping that stale in-app browser over the already-authenticated app.
-      authScreenLaunchMode: provider == OAuthProvider.apple
-          ? LaunchMode.externalApplication
-          : LaunchMode.platformDefault,
+  Future<void> signInWithOAuth(OAuthProvider provider) async {
+    final redirect = await _clerk.startOAuthSignIn(_clerkStrategyFor(provider));
+    if (redirect == null) {
+      throw const AuthException('OAuth redirect URL is unavailable.');
+    }
+    final launched = await launchUrl(
+      redirect,
+      mode: LaunchMode.externalApplication,
     );
+    if (!launched) {
+      throw const AuthException('OAuth provider could not be opened.');
+    }
   }
 
-  Future<AuthResponse> signInWithPassword({
+  Future<void> signInWithPassword({
     required String email,
     required String password,
   }) {
-    return _supabase.auth.signInWithPassword(email: email, password: password);
+    return _clerk.signInWithPassword(email: email, password: password);
   }
 
-  Future<AuthResponse> signUpWithProfileMetadata({
+  Future<void> signUpWithProfileMetadata({
     required String email,
     required String password,
     required String userId,
     required String displayName,
     required OheyAvatar avatar,
   }) async {
-    final metadata = authProfileMetadata(
+    await _clerk.signUpWithPassword(
+      email: email,
+      password: password,
       userId: userId,
       displayName: displayName,
-      avatar: avatar,
+      avatarUrl: avatar.encode(),
     );
-    await _createConfirmedAuthUser(
-      email: email,
-      password: password,
-      metadata: metadata,
-    );
-    return _supabase.auth.signInWithPassword(email: email, password: password);
   }
 
-  Future<void> _createConfirmedAuthUser({
-    required String email,
-    required String password,
-    required Map<String, dynamic> metadata,
-  }) async {
-    final client = HttpClient();
-    try {
-      final baseUri = Uri.parse(BackendConfig.baseUrl);
-      final uri = baseUri.replace(
-        path: _joinPath(baseUri.path, OheyApiPaths.authSignup),
-      );
-      final request = await client
-          .postUrl(uri)
-          .timeout(const Duration(seconds: 12));
-      request.headers.contentType = ContentType.json;
-      request.write(
-        jsonEncode({
-          'email': email,
-          'password': password,
-          'user_id': metadata['user_id'],
-          'display_name': metadata['display_name'],
-          'avatar_url': metadata['avatar_url'],
-        }),
-      );
-      final response = await request.close().timeout(
-        const Duration(seconds: 20),
-      );
-      if (response.statusCode >= 200 && response.statusCode < 300) return;
-      final text = await utf8.decoder.bind(response).join();
-      throw AuthException(_authSignupErrorMessage(text));
-    } finally {
-      client.close(force: true);
-    }
+  Future<void> completeOAuthCallback(Uri uri) {
+    return _clerk.completeOAuthCallback(uri);
   }
 
-  @Deprecated('Use signUpWithProfileMetadata for confirmed signup.')
-  Future<AuthResponse> signUpWithProfileMetadataDirect({
-    required String email,
-    required String password,
-    required String userId,
-    required String displayName,
-    required OheyAvatar avatar,
-  }) {
-    return _supabase.auth.signUp(
-      email: email,
-      password: password,
-      emailRedirectTo: SupabaseConfig.authRedirectUrl,
-      data: authProfileMetadata(
-        userId: userId,
-        displayName: displayName,
-        avatar: avatar,
-      ),
-    );
+  Future<void> signOut() {
+    return _clerk.signOut();
   }
 }
 
-String _joinPath(String basePath, String path) {
-  final left = basePath.endsWith('/')
-      ? basePath.substring(0, basePath.length - 1)
-      : basePath;
-  final right = path.startsWith('/') ? path : '/$path';
-  return '$left$right';
-}
-
-String _authSignupErrorMessage(String text) {
-  try {
-    final decoded = jsonDecode(text);
-    if (decoded is Map && decoded['error'] is String) {
-      return decoded['error'] as String;
-    }
-  } catch (_) {
-    // Use fallback below.
-  }
-  return '登録できなかったよ。あとでもう一度試してね。';
-}
-
-String authOAuthScopes(OAuthProvider provider) {
+clerk.Strategy _clerkStrategyFor(OAuthProvider provider) {
   return switch (provider) {
-    OAuthProvider.google => 'email profile',
-    OAuthProvider.apple => 'name email',
-    _ => 'email profile',
-  };
-}
-
-Map<String, dynamic> authProfileMetadata({
-  required String userId,
-  required String displayName,
-  required OheyAvatar avatar,
-}) {
-  return {
-    'user_id': userId,
-    'display_name': displayName,
-    'character_key': 'avatar',
-    'avatar_url': avatar.encode(),
+    OAuthProvider.google => clerk.Strategy.oauthGoogle,
+    OAuthProvider.apple => clerk.Strategy.oauthApple,
   };
 }

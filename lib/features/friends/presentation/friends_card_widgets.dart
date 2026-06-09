@@ -979,7 +979,7 @@ class _FriendProfileCalendarState
   }
 
   Future<void> _loadStatusesForMonth(DateTime month) async {
-    final authUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    final authUserId = ref.read(authIdentityProvider).currentUserId;
     if (authUserId != null && authUserId == widget.friend.id) {
       try {
         final statuses = await ref

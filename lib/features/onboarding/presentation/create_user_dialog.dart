@@ -4,9 +4,9 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
+import '../../../core/data/clerk_auth_service.dart';
 import '../../../core/data/ohey_last_account_store.dart';
 import '../../../core/data/auth_repository.dart';
 import '../../../core/models/ohey_avatar.dart';
@@ -80,33 +80,23 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   List<OheyLastAccount> _lastAccounts = const <OheyLastAccount>[];
   String? _error;
   String? _notice;
-  StreamSubscription<AuthState>? _authSubscription;
+  StreamSubscription<void>? _clerkAuthSubscription;
 
   @override
   void initState() {
     super.initState();
-    final session = ref.read(authRepositoryProvider).currentSession;
-    if (session != null) {
+    final authRepository = ref.read(authRepositoryProvider);
+    if (authRepository.isSignedIn) {
       _step = _OnboardingStep.profile;
-      _emailController.text = session.user.email ?? '';
-      _hydrateProfileFromAuthMetadata(session.user);
+      _emailController.text = authRepository.currentEmail ?? '';
     } else if (widget.startAtLogin) {
       _step = _OnboardingStep.auth;
     }
     _showAuthForm = !widget.startAtLogin;
-    _authSubscription = ref
-        .read(authRepositoryProvider)
-        .onAuthStateChange
-        .listen((event) {
-          if (!mounted) return;
-          final session = event.session;
-          if (session != null &&
-              (event.event == AuthChangeEvent.signedIn ||
-                  event.event == AuthChangeEvent.tokenRefreshed ||
-                  event.event == AuthChangeEvent.initialSession)) {
-            unawaited(_handleOAuthSession(session));
-          }
-        });
+    _clerkAuthSubscription = ref
+        .read(clerkAuthServiceProvider)
+        .authChanges
+        .listen((_) => unawaited(_handleClerkAuthSession()));
     _loadLastAccount();
   }
 
@@ -129,7 +119,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     _passwordConfirmationController.dispose();
     _userIdController.dispose();
     _nameController.dispose();
-    _authSubscription?.cancel();
+    _clerkAuthSubscription?.cancel();
     _demoController.dispose();
     super.dispose();
   }
