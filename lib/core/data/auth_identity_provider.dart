@@ -1,31 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../config/auth_provider_config.dart';
-import 'auth_session_guard.dart';
 import 'clerk_auth_service.dart';
-import 'supabase_client_provider.dart';
 
 /// Auth identity/session boundary used by backend-facing code.
-///
-/// The current implementation still reads Supabase Auth, but callers should use
-/// this provider instead of depending on Supabase directly. During the Clerk
-/// migration this is the seam that will switch to Clerk session tokens and
-/// Clerk user ids.
 final authIdentityProvider = Provider<AuthIdentity>((ref) {
-  if (AuthProviderConfig.isClerkEnabled) {
-    final clerk = ref.watch(clerkAuthServiceProvider);
-    return AuthIdentity(
-      accessTokenProvider: () => clerk.currentAccessToken,
-      userIdProvider: () => clerk.currentUserId,
-      tokenValidator: (_) => true,
-    );
-  }
-
-  final supabase = ref.watch(supabaseClientProvider);
+  final clerk = ref.watch(clerkAuthServiceProvider);
   return AuthIdentity(
-    accessTokenProvider: () => supabase.auth.currentSession?.accessToken,
-    userIdProvider: () => supabase.auth.currentUser?.id,
-    tokenValidator: AuthSessionGuard.isTokenForCurrentProject,
+    accessTokenProvider: () => clerk.currentAccessToken,
+    userIdProvider: () => clerk.currentUserId,
+    tokenValidator: (_) => true,
   );
 });
 

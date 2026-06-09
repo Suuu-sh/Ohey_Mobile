@@ -3,22 +3,21 @@ import 'ohey_environment.dart';
 class AuthProviderConfig {
   const AuthProviderConfig._();
 
-  static const provider = String.fromEnvironment(
-    OheyEnvironmentValues.authProviderDefineKey,
-    defaultValue: 'supabase',
-  );
-
   static const clerkPublishableKey = String.fromEnvironment(
     OheyEnvironmentValues.clerkPublishableKeyDefineKey,
   );
 
-  static bool get isClerkEnabled =>
-      provider.toLowerCase() == 'clerk' &&
-      clerkPublishableKey.trim().isNotEmpty;
+  static const authRedirectUrl = String.fromEnvironment(
+    OheyEnvironmentValues.authRedirectUrlDefineKey,
+  );
 
-  static bool get isSupabaseEnabled => !isClerkEnabled;
+  static bool get isClerkEnabled => clerkPublishableKey.trim().isNotEmpty;
 
-  // Clerk mode should not initialize or access Supabase from Mobile.
-  // Supabase mode is kept only as the migration fallback.
-  static bool get shouldInitializeSupabase => isSupabaseEnabled;
+  static String get redirectUrl {
+    if (authRedirectUrl.trim().isNotEmpty) return authRedirectUrl;
+    return OheyEnvironmentValues.environment ==
+            OheyEnvironmentValues.devEnvironment
+        ? OheyEnvironmentValues.devAuthRedirectUrl
+        : OheyEnvironmentValues.productionAuthRedirectUrl;
+  }
 }

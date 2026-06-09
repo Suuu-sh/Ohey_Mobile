@@ -346,7 +346,9 @@ Future<void> _showFeedPostActions(
       );
       if (!confirmed || !context.mounted) return;
       try {
-        await ref.read(userSafetyRepositoryProvider).blockUser(item.ownerUserId);
+        await ref
+            .read(userSafetyRepositoryProvider)
+            .blockUser(item.ownerUserId);
         ref.invalidate(blockedUsersProvider);
         ref.invalidate(friendsProvider);
         ref.invalidate(yuruboControllerProvider);

@@ -1,31 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ohey/core/data/auth_repository.dart';
 import 'package:ohey/core/data/push_token_repository.dart';
 import 'package:ohey/core/data/user_repository.dart';
 import 'package:ohey/core/models/ohey_avatar.dart';
 import 'package:ohey/features/friends/data/friend_repository.dart';
 
 void main() {
-  test('authOAuthScopes returns provider-specific safe scopes', () {
-    expect(authOAuthScopes(OAuthProvider.google), 'email profile');
-    expect(authOAuthScopes(OAuthProvider.apple), 'name email');
-  });
-
-  test('authProfileMetadata uses only profile fields accepted by backend', () {
-    final payload = authProfileMetadata(
-      userId: 'ohey_user',
-      displayName: 'Ohey User',
-      avatar: OheyAvatar.defaultAvatar,
-    );
-
-    expect(payload['user_id'], 'ohey_user');
-    expect(payload['display_name'], 'Ohey User');
-    expect(payload['character_key'], 'avatar');
-    expect(payload['avatar_url'], isA<String>());
-    expect(payload.keys, hasLength(4));
-  });
-
   test('Ohey user id helpers validate and derive stable defaults', () {
     expect(isValidOheyUserId('ohey_user_2026'), isTrue);
     expect(isValidOheyUserId('ab'), isFalse);

@@ -218,40 +218,6 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     }
   }
 
-  Future<void> _handleOAuthSession(Session session) async {
-    if (_isBusy) return;
-    setState(() {
-      _isBusy = true;
-      _error = null;
-      _notice = null;
-    });
-    try {
-      final loaded = await ref
-          .read(oheyUserProvider.notifier)
-          .loadFromBackendProfile();
-      if (loaded) {
-        await _saveLastAccount(session.user.email ?? '');
-        return;
-      }
-      _emailController.text = session.user.email ?? _emailController.text;
-      _hydrateProfileFromAuthMetadata(session.user);
-      if (_nameController.text.trim().isEmpty) {
-        _nameController.text = _displayNameFromOAuth(session.user) ?? '';
-      }
-      if (mounted) {
-        setState(() {
-          _step = _OnboardingStep.profile;
-          _showAuthForm = true;
-          _notice = 'プロフィールを作成すると登録が完了します。';
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _error = _friendlyUnexpectedAuthError(e));
-    } finally {
-      if (mounted) setState(() => _isBusy = false);
-    }
-  }
-
   Future<void> _showAccountManagementSheet() async {
     final accounts = await OheyLastAccountStore.loadAccounts();
     if (!mounted) return;

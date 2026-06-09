@@ -143,8 +143,7 @@ class OheyAdsConsentService {
     if (!Platform.isIOS) return;
 
     try {
-      final status =
-          await AppTrackingTransparency.trackingAuthorizationStatus;
+      final status = await AppTrackingTransparency.trackingAuthorizationStatus;
       if (status == TrackingStatus.notDetermined) {
         // iOS requires the app to ask explicitly before the system ATT prompt
         // can appear. Waiting briefly avoids presenting it during launch

@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/auth_provider_config.dart';
-import '../config/supabase_config.dart';
 
 final clerkAuthServiceProvider = Provider<ClerkAuthService>((ref) {
   final service = ClerkAuthService();
@@ -91,7 +90,7 @@ class ClerkAuthService {
     final auth = _requireAuth();
     await auth.oauthSignIn(
       strategy: strategy,
-      redirect: Uri.parse(SupabaseConfig.authRedirectUrl),
+      redirect: Uri.parse(AuthProviderConfig.redirectUrl),
     );
     return Uri.tryParse(
       auth.signIn?.verification?.externalVerificationRedirectUrl ??

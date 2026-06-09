@@ -13,23 +13,21 @@ if [[ -f .env.local ]]; then
   set +a
 fi
 
-# Run Ohey against dev-ohey Supabase and the dev Render backend.
+# Run Ohey against Clerk auth and the dev Render backend.
 # Public defaults are shared with lib/core/config/ohey_environment.dart.
-SUPABASE_URL="${SUPABASE_URL:-$OHEY_DEV_SUPABASE_URL}"
-SUPABASE_PUBLISHABLE_KEY="${SUPABASE_PUBLISHABLE_KEY:-$OHEY_DEV_SUPABASE_PUBLISHABLE_KEY}"
-SUPABASE_AUTH_REDIRECT_URL="${SUPABASE_AUTH_REDIRECT_URL:-$OHEY_DEV_AUTH_REDIRECT_URL}"
+OHEY_AUTH_REDIRECT_URL="${OHEY_AUTH_REDIRECT_URL:-$OHEY_DEV_AUTH_REDIRECT_URL}"
 DEV_OHEY_BACKEND_URL="${DEV_OHEY_BACKEND_URL:-$OHEY_DEV_BACKEND_URL}"
 OHEY_ADMIN_EMAILS="${OHEY_ADMIN_EMAILS:-}"
-AUTH_PROVIDER="${AUTH_PROVIDER:-supabase}"
 CLERK_PUBLISHABLE_KEY="${CLERK_PUBLISHABLE_KEY:-}"
+if [[ -z "$CLERK_PUBLISHABLE_KEY" ]]; then
+  echo "CLERK_PUBLISHABLE_KEY is required for Ohey Clerk auth" >&2
+  exit 1
+fi
 
 flutter run \
   --dart-define=OHEY_ENV="$OHEY_DEV_ENV" \
-  --dart-define=SUPABASE_URL="$SUPABASE_URL" \
-  --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
-  --dart-define=SUPABASE_AUTH_REDIRECT_URL="$SUPABASE_AUTH_REDIRECT_URL" \
+  --dart-define=OHEY_AUTH_REDIRECT_URL="$OHEY_AUTH_REDIRECT_URL" \
   --dart-define=OHEY_BACKEND_URL="$DEV_OHEY_BACKEND_URL" \
   --dart-define=OHEY_ADMIN_EMAILS="$OHEY_ADMIN_EMAILS" \
-  --dart-define=AUTH_PROVIDER="$AUTH_PROVIDER" \
   --dart-define=CLERK_PUBLISHABLE_KEY="$CLERK_PUBLISHABLE_KEY" \
   "$@"

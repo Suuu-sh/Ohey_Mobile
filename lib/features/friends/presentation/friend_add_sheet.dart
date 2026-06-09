@@ -7,7 +7,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
-import '../../../core/config/supabase_config.dart';
+import '../../../core/config/auth_provider_config.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
 import '../../../core/widgets/ohey_avatar.dart';
@@ -18,7 +18,7 @@ import '../data/friend_repository.dart';
 import 'package:ohey/core/theme/app_colors.dart';
 
 String _friendQrPayload(String userId) {
-  final scheme = SupabaseConfig.authRedirectUrl.split('://').first;
+  final scheme = AuthProviderConfig.redirectUrl.split('://').first;
   return '$scheme://friend/${Uri.encodeComponent(userId)}';
 }
 
