@@ -1,8 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ohey/core/data/ohey_last_account_store.dart';
-import 'package:ohey/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

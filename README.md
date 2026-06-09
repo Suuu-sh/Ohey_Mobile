@@ -10,7 +10,7 @@ It focuses on cute friend availability, invites, and lightweight photo sharing.
 - Friend availability, invites, yurubo, and wish list flows
 - Home, friends, calendar, profile, invites, yurubo, and wish list screens
 - Riverpod state management
-- Repository Pattern with Flutter → Go Backend → Supabase for app data
+- Repository Pattern with Flutter → Go Backend → Clerk + Neon-backed APIs
 - Feature First Architecture under `lib/features/*`
 
 ## Structure
@@ -32,11 +32,10 @@ assets/
 
 ## Backend
 
-Auth stays in Flutter via Supabase Auth. Invites, yurubo, and friend reads go through the Go backend.
+Auth uses Clerk in Flutter. App data goes through the Go backend backed by Neon/Postgres.
 
 Dev / iOS Simulator builds must use the shared dev environment:
 
-- Supabase: `dev-ohey`
 - Backend: `https://dev-ohey-backend.onrender.com`
 - Auth redirect scheme: `app.ohey.com.dev://login-callback/`
 
@@ -64,13 +63,6 @@ dart format lib test
 flutter analyze
 flutter test
 ```
-## Supabase
-
-The app initializes `supabase_flutter` on startup. Local debug runs default to the `dev-ohey` Supabase project through `/Users/yota/Projects/Products/Ohey/Mobile/lib/core/config/supabase_config.dart`.
-
-Override environment values with `--dart-define` for production/release builds. See `/Users/yota/Projects/Products/Ohey/Mobile/docs/supabase_ohey.md`.
-
-
 ## Firebase/FCM dev and prod setup
 
 Ohey supports separate Firebase values for dev and prod. Keep filled config files out of git.
@@ -87,7 +79,7 @@ Prepare local dart-define files:
 ```sh
 cp config/firebase/dev.json.example config/firebase/dev.json
 cp config/firebase/prod.json.example config/firebase/prod.json
-# Fill FIREBASE_* / SUPABASE_* / OHEY_* values from Firebase, Supabase, and secrets.
+# Fill FIREBASE_* / CLERK_* / OHEY_* values from Firebase, Clerk, backend, and secrets.
 dart scripts/check_dart_define_keys.dart config/firebase/dev.json config/firebase/prod.json
 ```
 
