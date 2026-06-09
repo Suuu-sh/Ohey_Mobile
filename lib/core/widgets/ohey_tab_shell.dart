@@ -150,11 +150,24 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   }
 
   void _handleIncomingAppLink(Uri uri) {
+    unawaited(_handleClerkOAuthCallback(uri));
     final yuruboId = _sharedYuruboIdFromUri(uri);
     if (yuruboId == null || yuruboId.isEmpty) return;
     _pendingSharedYuruboId = yuruboId;
     if (ref.read(oheyUserProvider) != null) {
       _consumePendingSharedYurubo();
+    }
+  }
+
+  Future<void> _handleClerkOAuthCallback(Uri uri) async {
+    final handled = await ref.read(clerkOAuthCallbackProvider).handle(uri);
+    if (!handled || !mounted) return;
+    final loaded = await ref
+        .read(oheyUserProvider.notifier)
+        .loadFromBackendProfile();
+    if (!loaded && mounted) {
+      // The onboarding dialog will ask for the remaining Ohey profile fields.
+      setState(() => _isOnboardingSeen = false);
     }
   }
 

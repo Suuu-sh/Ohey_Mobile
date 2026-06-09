@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/auth_provider_config.dart';
+import '../config/supabase_config.dart';
 
 final clerkAuthServiceProvider = Provider<ClerkAuthService>((ref) {
   final service = ClerkAuthService();
@@ -81,6 +82,38 @@ class ClerkAuthService {
       identifier: email,
       password: password,
     );
+    await _refreshCachedSessionToken();
+    _authChanges.add(null);
+  }
+
+  Future<Uri?> startOAuthSignIn(clerk.Strategy strategy) async {
+    await initialize();
+    final auth = _requireAuth();
+    await auth.oauthSignIn(
+      strategy: strategy,
+      redirect: Uri.parse(SupabaseConfig.authRedirectUrl),
+    );
+    return Uri.tryParse(
+      auth.signIn?.verification?.externalVerificationRedirectUrl ??
+          auth
+              .signUp
+              ?.verifications
+              .values
+              .firstOrNull
+              ?.externalVerificationRedirectUrl ??
+          '',
+    );
+  }
+
+  Future<void> completeOAuthCallback(Uri uri) async {
+    if (!isEnabled) return;
+    await initialize();
+    final token =
+        uri.queryParameters['token'] ??
+        uri.queryParameters['code'] ??
+        uri.queryParameters['ticket'];
+    if (token == null || token.trim().isEmpty) return;
+    await _requireAuth().completeOAuthSignIn(token: token);
     await _refreshCachedSessionToken();
     _authChanges.add(null);
   }

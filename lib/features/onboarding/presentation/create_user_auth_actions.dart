@@ -185,6 +185,39 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     }
   }
 
+  Future<void> _handleClerkAuthSession() async {
+    if (_isBusy || !ref.read(authRepositoryProvider).isSignedIn) return;
+    setState(() {
+      _isBusy = true;
+      _error = null;
+      _notice = null;
+    });
+    try {
+      final loaded = await ref
+          .read(oheyUserProvider.notifier)
+          .loadFromBackendProfile();
+      final email = ref.read(authRepositoryProvider).currentEmail ?? '';
+      if (loaded) {
+        await _saveLastAccount(email);
+        return;
+      }
+      if (email.isNotEmpty) {
+        _emailController.text = email;
+      }
+      if (mounted) {
+        setState(() {
+          _step = _OnboardingStep.profile;
+          _showAuthForm = true;
+          _notice = 'プロフィールを作成すると登録が完了します。';
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = _friendlyUnexpectedAuthError(e));
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
+  }
+
   Future<void> _handleOAuthSession(Session session) async {
     if (_isBusy) return;
     setState(() {

@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:clerk_auth/clerk_auth.dart' as clerk;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../config/auth_provider_config.dart';
 import '../config/backend_config.dart';
@@ -46,8 +48,24 @@ class AuthRepository {
     );
   }
 
-  Future<void> signInWithOAuth(OAuthProvider provider) {
-    return _supabase.auth.signInWithOAuth(
+  Future<void> signInWithOAuth(OAuthProvider provider) async {
+    if (AuthProviderConfig.isClerkEnabled) {
+      final redirect = await _clerk.startOAuthSignIn(
+        _clerkStrategyFor(provider),
+      );
+      if (redirect == null) {
+        throw const AuthException('OAuth redirect URL is unavailable.');
+      }
+      final launched = await launchUrl(
+        redirect,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        throw const AuthException('OAuth provider could not be opened.');
+      }
+      return;
+    }
+    await _supabase.auth.signInWithOAuth(
       provider,
       redirectTo: SupabaseConfig.authRedirectUrl,
       scopes: authOAuthScopes(provider),
@@ -99,6 +117,13 @@ class AuthRepository {
       metadata: metadata,
     );
     return _supabase.auth.signInWithPassword(email: email, password: password);
+  }
+
+  Future<void> completeOAuthCallback(Uri uri) {
+    if (AuthProviderConfig.isClerkEnabled) {
+      return _clerk.completeOAuthCallback(uri);
+    }
+    return Future<void>.value();
   }
 
   Future<void> signOut() {
@@ -202,5 +227,13 @@ Map<String, dynamic> authProfileMetadata({
     'display_name': displayName,
     'character_key': 'avatar',
     'avatar_url': avatar.encode(),
+  };
+}
+
+clerk.Strategy _clerkStrategyFor(OAuthProvider provider) {
+  return switch (provider) {
+    OAuthProvider.google => clerk.Strategy.oauthGoogle,
+    OAuthProvider.apple => clerk.Strategy.oauthApple,
+    _ => clerk.Strategy.oauthGoogle,
   };
 }
