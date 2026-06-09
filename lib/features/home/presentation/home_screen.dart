@@ -17,7 +17,6 @@ import '../../../core/config/backend_config.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/auth_identity_provider.dart';
 import '../../../core/data/ohey_ad_entry_builder.dart';
-import '../../../core/data/supabase_client_provider.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_invite.dart';
@@ -160,11 +159,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const <OheyInvite>[];
     final isWhite = ref.watch(oheyThemeModeProvider).isWhite;
     final isPlusActive = ref.watch(oheyPlusActiveProvider);
-    final currentUserId = ref
-        .watch(supabaseClientProvider)
-        .auth
-        .currentUser
-        ?.id;
+    final currentUserId = ref.watch(authIdentityProvider).currentUserId;
     final yurubos = yurubosAsync.value ?? const <Yurubo>[];
     final feedItems = _feedItemsFromYurubos(
       yurubos,
