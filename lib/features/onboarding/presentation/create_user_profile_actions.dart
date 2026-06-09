@@ -65,7 +65,7 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
     });
     try {
       final authRepository = ref.read(authRepositoryProvider);
-      if (authRepository.currentSession == null) {
+      if (!authRepository.isSignedIn) {
         final email = _emailController.text.trim();
         final password = _passwordController.text;
         if (!_hasValidEmailAddress(email)) {
@@ -87,7 +87,7 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
           displayName: name,
           avatar: _avatar,
         );
-        if (res.session == null) {
+        if (!authRepository.isSignedIn && res?.session == null) {
           if (mounted) {
             setState(() {
               _notice = '確認メールを送ったよ。リンクを開いてね。';

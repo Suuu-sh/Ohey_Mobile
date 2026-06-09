@@ -5,7 +5,8 @@ import 'package:purchases_flutter/purchases_flutter.dart' as rc;
 import 'package:flutter/services.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
-import '../../../core/data/supabase_client_provider.dart';
+import '../../../core/data/auth_identity_provider.dart';
+import '../../../core/data/auth_repository.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_invite.dart';
@@ -61,8 +62,7 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(oheyUserProvider);
-    final currentAuthUser = ref.watch(supabaseClientProvider).auth.currentUser;
-    final currentAuthUserId = currentAuthUser?.id;
+    final currentAuthUserId = ref.watch(authIdentityProvider).currentUserId;
     final reservationsAsync = ref.watch(todayReservationsProvider);
     final incomingInvitesAsync = ref.watch(incomingInvitesProvider);
     final reservations =
@@ -83,7 +83,9 @@ class ProfileScreen extends ConsumerWidget {
     const headerIsWhite = true;
     const bodyIsWhite = false;
     final isPlusActive = ref.watch(oheyPlusActiveProvider);
-    final hasAdminEmail = OheyAvatar.isAdminEmail(currentAuthUser?.email);
+    final hasAdminEmail = OheyAvatar.isAdminEmail(
+      ref.watch(authRepositoryProvider).currentEmail,
+    );
     final hasAdminAccess = ref
         .watch(adminAccessProvider)
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);

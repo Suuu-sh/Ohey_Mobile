@@ -11,9 +11,9 @@ import 'core/config/ohey_ads_config.dart';
 import 'core/config/supabase_config.dart';
 import 'core/application/ohey_user_controller.dart';
 import 'core/data/auth_identity_provider.dart';
+import 'core/data/auth_state_provider.dart';
 import 'core/data/auth_session_guard.dart';
 import 'core/data/clerk_auth_service.dart';
-import 'core/data/supabase_client_provider.dart';
 import 'core/services/ohey_ads_consent_service.dart';
 import 'core/services/ohey_plus_service.dart';
 import 'core/services/ohey_push_notification_service.dart';
@@ -191,8 +191,8 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate>
     final bootstrap = ref.watch(_oheyBootstrapProvider);
     return bootstrap.when(
       data: (_) {
-        ref.watch(supabaseAuthStateProvider);
-        ref.watch(supabaseClientProvider).auth.currentSession;
+        ref.watch(authStateProvider);
+        ref.watch(hasAuthSessionProvider);
         _startOpeningExit();
 
         return Stack(

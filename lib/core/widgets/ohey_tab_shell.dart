@@ -21,6 +21,8 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/yurubos/application/yurubo_controller.dart';
 import '../../features/onboarding/presentation/create_user_dialog.dart';
 import '../application/ohey_user_controller.dart';
+import '../data/auth_identity_provider.dart';
+import '../data/auth_state_provider.dart';
 import '../data/ohey_last_account_store.dart';
 import '../data/supabase_client_provider.dart';
 import '../models/ohey_invite.dart';
@@ -270,8 +272,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       return;
     }
     for (final yurubo in yurubos) {
-      if (yurubo.ownerUserId !=
-          ref.read(supabaseClientProvider).auth.currentUser?.id) {
+      if (yurubo.ownerUserId != ref.read(authIdentityProvider).currentUserId) {
         continue;
       }
       final pending = yurubo.participants
@@ -363,7 +364,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
 
   void _startInviteNotificationRealtime() {
     if (!mounted || ref.read(oheyUserProvider) == null) return;
-    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    final userId = ref.read(authIdentityProvider).currentUserId;
     if (userId == null || userId.isEmpty) return;
     if (_inviteNotificationChannel != null && _realtimeUserId == userId) {
       return;
@@ -514,9 +515,8 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   Widget build(BuildContext context) {
     final user = ref.watch(oheyUserProvider);
     final isWhite = ref.watch(oheyThemeModeProvider).isWhite;
-    ref.watch(supabaseAuthStateProvider);
-    final hasSession =
-        ref.watch(supabaseClientProvider).auth.currentSession != null;
+    ref.watch(authStateProvider);
+    final hasSession = ref.watch(hasAuthSessionProvider);
     final incomingInvitesAsync = ref.watch(incomingInvitesProvider);
     final yurubosAsync = user == null
         ? const AsyncValue<List<Yurubo>>.data(<Yurubo>[])

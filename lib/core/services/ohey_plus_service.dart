@@ -7,7 +7,7 @@ import 'package:purchases_flutter/purchases_flutter.dart' as rc;
 
 import '../application/ohey_user_controller.dart';
 import '../config/ohey_revenuecat_config.dart';
-import '../data/supabase_client_provider.dart';
+import '../data/auth_identity_provider.dart';
 
 final oheyPlusServiceProvider = Provider<OheyPlusService>((ref) {
   return OheyPlusService(ref);
@@ -44,8 +44,7 @@ class OheyPlusService {
   Future<bool> configureForCurrentUser() async {
     if (!OheyRevenueCatConfig.isConfigured) return false;
 
-    final supabase = _ref.read(supabaseClientProvider);
-    final appUserId = supabase.auth.currentUser?.id;
+    final appUserId = _ref.read(authIdentityProvider).currentUserId;
     if (appUserId == null || appUserId.trim().isEmpty) return false;
 
     if (_configureStarted && _configuredAppUserId == appUserId) return true;

@@ -27,6 +27,14 @@ class AuthRepository {
 
   Session? get currentSession => _supabase.auth.currentSession;
 
+  bool get isSignedIn => AuthProviderConfig.isClerkEnabled
+      ? _clerk.isSignedIn
+      : _supabase.auth.currentSession != null;
+
+  String? get currentEmail => AuthProviderConfig.isClerkEnabled
+      ? _clerk.currentUserEmail
+      : _supabase.auth.currentUser?.email;
+
   User? get currentUser => _supabase.auth.currentUser;
 
   Stream<AuthState> get onAuthStateChange => _supabase.auth.onAuthStateChange;
@@ -63,7 +71,7 @@ class AuthRepository {
     return _supabase.auth.signInWithPassword(email: email, password: password);
   }
 
-  Future<AuthResponse> signUpWithProfileMetadata({
+  Future<AuthResponse?> signUpWithProfileMetadata({
     required String email,
     required String password,
     required String userId,
@@ -75,12 +83,29 @@ class AuthRepository {
       displayName: displayName,
       avatar: avatar,
     );
+    if (AuthProviderConfig.isClerkEnabled) {
+      await _clerk.signUpWithPassword(
+        email: email,
+        password: password,
+        userId: userId,
+        displayName: displayName,
+        avatarUrl: avatar.encode(),
+      );
+      return null;
+    }
     await _createConfirmedAuthUser(
       email: email,
       password: password,
       metadata: metadata,
     );
     return _supabase.auth.signInWithPassword(email: email, password: password);
+  }
+
+  Future<void> signOut() {
+    if (AuthProviderConfig.isClerkEnabled) {
+      return _clerk.signOut();
+    }
+    return _supabase.auth.signOut(scope: SignOutScope.local);
   }
 
   Future<void> _createConfirmedAuthUser({

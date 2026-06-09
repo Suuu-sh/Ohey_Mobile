@@ -1,9 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
+import '../data/auth_repository.dart';
 import '../data/user_repository.dart';
 import '../data/ohey_last_account_store.dart';
-import '../data/supabase_client_provider.dart';
 import '../models/ohey_avatar.dart';
 import '../models/ohey_user.dart';
 import '../services/ohey_plus_service.dart';
@@ -140,13 +138,13 @@ class OheyUserController extends Notifier<OheyUser?> {
 
   Future<void> signOut() async {
     final currentUser = state;
-    final supabase = ref.read(supabaseClientProvider);
-    final currentAuthUser = supabase.auth.currentUser;
+    final authRepository = ref.read(authRepositoryProvider);
+    final currentEmail = authRepository.currentEmail;
     try {
       try {
         await OheyLastAccountStore.save(
           name: currentUser?.name,
-          email: currentAuthUser?.email,
+          email: currentEmail,
           avatar: currentUser?.avatar,
         );
       } catch (_) {
@@ -156,7 +154,7 @@ class OheyUserController extends Notifier<OheyUser?> {
           .read(oheyPushNotificationServiceProvider)
           .unregisterCurrentToken();
       await ref.read(oheyPlusServiceProvider).logOutIfConfigured();
-      await supabase.auth.signOut(scope: SignOutScope.local);
+      await authRepository.signOut();
     } finally {
       // ローカルセッション削除が例外になっても、UI上は必ず未ログイン状態へ戻す。
       state = null;
@@ -164,8 +162,8 @@ class OheyUserController extends Notifier<OheyUser?> {
   }
 
   Future<void> deleteAccount() async {
-    final supabase = ref.read(supabaseClientProvider);
-    final currentAuthUser = supabase.auth.currentUser;
+    final authRepository = ref.read(authRepositoryProvider);
+    final currentEmail = authRepository.currentEmail;
     try {
       try {
         await ref
@@ -176,7 +174,7 @@ class OheyUserController extends Notifier<OheyUser?> {
       }
       await ref.read(userRepositoryProvider).deleteAccount();
       try {
-        final email = currentAuthUser?.email;
+        final email = currentEmail;
         if (email != null && email.trim().isNotEmpty) {
           await OheyLastAccountStore.remove(email);
         }
@@ -184,7 +182,7 @@ class OheyUserController extends Notifier<OheyUser?> {
         // A stale quick-login cache is less important than finishing deletion.
       }
       try {
-        await supabase.auth.signOut(scope: SignOutScope.local);
+        await authRepository.signOut();
       } catch (_) {
         // The auth user may already be deleted server-side.
       }

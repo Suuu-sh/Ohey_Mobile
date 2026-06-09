@@ -19,6 +19,7 @@ class ClerkAuthService {
   Future<void>? _initializeFuture;
   clerk.SessionToken? _sessionToken;
   StreamSubscription<clerk.SessionToken>? _tokenSubscription;
+  final _authChanges = StreamController<void>.broadcast();
 
   bool get isEnabled => AuthProviderConfig.isClerkEnabled;
 
@@ -31,6 +32,8 @@ class ClerkAuthService {
   String? get currentAccessToken => _sessionToken?.jwt;
 
   bool get isSignedIn => _auth?.isSignedIn == true;
+
+  Stream<void> get authChanges => _authChanges.stream;
 
   Future<void> initialize() {
     if (!isEnabled) return Future<void>.value();
@@ -49,6 +52,7 @@ class ClerkAuthService {
     await auth.initialize();
     _tokenSubscription = auth.sessionTokenStream.listen((token) {
       _sessionToken = token;
+      _authChanges.add(null);
     });
     await _refreshCachedSessionToken();
   }
@@ -78,6 +82,33 @@ class ClerkAuthService {
       password: password,
     );
     await _refreshCachedSessionToken();
+    _authChanges.add(null);
+  }
+
+  Future<void> signUpWithPassword({
+    required String email,
+    required String password,
+    required String displayName,
+    required String userId,
+    required String avatarUrl,
+  }) async {
+    await initialize();
+    final auth = _requireAuth();
+    await auth.attemptSignUp(
+      strategy: clerk.Strategy.password,
+      emailAddress: email,
+      password: password,
+      passwordConfirmation: password,
+      firstName: displayName,
+      metadata: {
+        'user_id': userId,
+        'display_name': displayName,
+        'character_key': 'avatar',
+        'avatar_url': avatarUrl,
+      },
+    );
+    await _refreshCachedSessionToken();
+    _authChanges.add(null);
   }
 
   Future<void> signOut() async {
@@ -86,6 +117,7 @@ class ClerkAuthService {
     if (auth == null) return;
     await auth.signOut();
     _sessionToken = null;
+    _authChanges.add(null);
   }
 
   ClerkOheyAuth _requireAuth() {
@@ -101,6 +133,7 @@ class ClerkAuthService {
 
   void dispose() {
     _tokenSubscription?.cancel();
+    _authChanges.close();
     _auth?.terminate();
   }
 }

@@ -4,26 +4,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../contracts/ohey_api_paths.dart';
 import '../contracts/ohey_api_values.dart';
+import 'auth_identity_provider.dart';
 import 'backend_api_client.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-import 'supabase_client_provider.dart';
 
 final pushTokenRepositoryProvider = Provider<PushTokenRepository>((ref) {
   return PushTokenRepository(
     ref.watch(backendApiClientProvider),
-    ref.watch(supabaseClientProvider),
+    ref.watch(authIdentityProvider),
   );
 });
 
 class PushTokenRepository {
-  const PushTokenRepository(this._client, this._supabase);
+  const PushTokenRepository(this._client, this._identity);
 
   final BackendApiClient _client;
-  final SupabaseClient _supabase;
+  final AuthIdentity _identity;
 
   bool get hasSignedInUser {
-    final userId = _supabase.auth.currentUser?.id;
+    final userId = _identity.currentUserId;
     return userId != null && userId.isNotEmpty;
   }
 
