@@ -37,6 +37,13 @@ class AuthRepository {
       provider,
       redirectTo: SupabaseConfig.authRedirectUrl,
       scopes: authOAuthScopes(provider),
+      // On iOS, Apple sign-in can leave SFSafariViewController on a blank
+      // appleid.apple.com page after the deep link succeeds. Opening Apple
+      // OAuth externally lets iOS return to Ohey via the redirect without
+      // keeping that stale in-app browser over the already-authenticated app.
+      authScreenLaunchMode: provider == OAuthProvider.apple
+          ? LaunchMode.externalApplication
+          : LaunchMode.platformDefault,
     );
   }
 
