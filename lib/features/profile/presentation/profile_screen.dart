@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,7 @@ import 'package:purchases_flutter/purchases_flutter.dart' as rc;
 import 'package:flutter/services.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
+import '../../../core/config/backend_config.dart';
 import '../../../core/data/auth_identity_provider.dart';
 import '../../../core/data/auth_repository.dart';
 import '../../../core/models/ohey_avatar.dart';

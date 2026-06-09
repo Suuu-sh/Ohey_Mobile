@@ -643,16 +643,16 @@ const _oheySupportEmail = String.fromEnvironment(
   'OHEY_SUPPORT_EMAIL',
   defaultValue: 'yisshiki39@gmail.com',
 );
-const _oheyTermsUrl = String.fromEnvironment(
-  'OHEY_TERMS_URL',
-  defaultValue:
-      'https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/terms.txt?v=20260606-codebase',
-);
-const _oheyPrivacyUrl = String.fromEnvironment(
-  'OHEY_PRIVACY_URL',
-  defaultValue:
-      'https://pwifgddolctqghygwxwj.supabase.co/storage/v1/object/public/legal/privacy-policy.txt?v=20260606-codebase',
-);
+const _definedOheyTermsUrl = String.fromEnvironment('OHEY_TERMS_URL');
+const _definedOheyPrivacyUrl = String.fromEnvironment('OHEY_PRIVACY_URL');
+
+String get _oheyTermsUrl => _definedOheyTermsUrl.isEmpty
+    ? '${BackendConfig.baseUrl}/legal/terms.txt'
+    : _definedOheyTermsUrl;
+
+String get _oheyPrivacyUrl => _definedOheyPrivacyUrl.isEmpty
+    ? '${BackendConfig.baseUrl}/legal/privacy-policy.txt'
+    : _definedOheyPrivacyUrl;
 
 Future<void> _showSupportLegalSheet(BuildContext context) {
   return showOheyBottomSheet<void>(
