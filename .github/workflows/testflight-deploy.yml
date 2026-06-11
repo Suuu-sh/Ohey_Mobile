@@ -115,8 +115,12 @@ jobs:
             echo "--dart-define=OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID=" >> "$RUNNER_TEMP/ohey_dart_defines.args"
           fi
           clerk_publishable_key="$(grep -E '^CLERK_PUBLISHABLE_KEY=' .env.production | tail -1 | cut -d= -f2- || true)"
-          if [ -z "$clerk_publishable_key" ] || [[ "$clerk_publishable_key" != pk_live_* ]]; then
-            echo "::error::CLERK_PUBLISHABLE_KEY must be set to the Clerk production publishable key for TestFlight builds."
+          if [ -z "$clerk_publishable_key" ]; then
+            echo "::error::CLERK_PUBLISHABLE_KEY must be set for TestFlight builds."
+            exit 1
+          fi
+          if [[ "$clerk_publishable_key" != pk_live_* && "$clerk_publishable_key" != pk_test_* ]]; then
+            echo "::error::CLERK_PUBLISHABLE_KEY must be a Clerk publishable key."
             exit 1
           fi
           echo "GAD_APPLICATION_IDENTIFIER=$admob_ios_app_id" >> "$GITHUB_ENV"
