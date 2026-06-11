@@ -1,0 +1,7 @@
+path,area
+lib/core/application/ohey_user_controller.dart,diff
+lib/core/config/auth_provider_config.dart,diff
+lib/core/widgets/ohey_tab_shell.dart,diff
+lib/features/onboarding/presentation/create_user_auth_actions.dart,diff
+lib/features/onboarding/presentation/create_user_dialog.dart,diff
+lib/features/onboarding/presentation/create_user_social_auth_widgets.dart,diff

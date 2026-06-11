@@ -11,6 +11,11 @@ class AuthProviderConfig {
     OheyEnvironmentValues.authRedirectUrlDefineKey,
   );
 
+  static const appleOAuthEnabled = bool.fromEnvironment(
+    'OHEY_ENABLE_APPLE_OAUTH',
+    defaultValue: false,
+  );
+
   static bool get isClerkEnabled => clerkPublishableKey.trim().isNotEmpty;
 
   static String get redirectUrl {

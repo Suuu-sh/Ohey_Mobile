@@ -67,13 +67,15 @@ class _SocialAuthButtons extends StatelessWidget {
         mark: const _GoogleMark(),
         onTap: () => onTap(OAuthProvider.google, 'Google'),
       ),
-      SizedBox(height: gap),
-      _SocialLoginButton(
-        label: 'APPLEで$_actionLabel',
-        height: height,
-        mark: const _AppleMark(),
-        onTap: () => onTap(OAuthProvider.apple, 'Apple'),
-      ),
+      if (AuthProviderConfig.appleOAuthEnabled) ...[
+        SizedBox(height: gap),
+        _SocialLoginButton(
+          label: 'APPLEで$_actionLabel',
+          height: height,
+          mark: const _AppleMark(),
+          onTap: () => onTap(OAuthProvider.apple, 'Apple'),
+        ),
+      ],
     ],
   );
 }
