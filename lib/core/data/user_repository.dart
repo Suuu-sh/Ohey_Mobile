@@ -28,11 +28,17 @@ class UserRepository {
       rethrow;
     }
 
-    final statusRows = await _client.getRows(
-      OheyApiPaths.dailyStatus,
-      query: {'date': _isoDate(DateTime.now())},
-    );
-    final statusRow = statusRows.isEmpty ? null : statusRows.first;
+    Map<String, dynamic>? statusRow;
+    try {
+      final statusRows = await _client.getRows(
+        OheyApiPaths.dailyStatus,
+        query: {'date': _isoDate(DateTime.now())},
+      );
+      statusRow = statusRows.isEmpty ? null : statusRows.first;
+    } catch (_) {
+      // Profile restoration must not fail just because optional status data is
+      // unavailable. The home screen can refresh daily status later.
+    }
 
     return _userFromProfileRow(row, authUserId, statusRow: statusRow);
   }

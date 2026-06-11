@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/auth_repository.dart';
+import '../data/backend_api_client.dart';
 import '../data/user_repository.dart';
 import '../data/ohey_last_account_store.dart';
 import '../models/ohey_avatar.dart';
@@ -36,10 +37,21 @@ class OheyUserController extends Notifier<OheyUser?> {
     final name = _defaultDisplayName();
     final userId = defaultOheyUserId(authUserId);
 
-    await repository.createProfile(name: name, userId: userId);
+    try {
+      await repository.createProfile(name: name, userId: userId);
+    } on BackendApiException catch (error) {
+      if (error.statusCode != 409) rethrow;
+    }
 
-    final created = await repository.fetchCurrentUserProfile();
-    await _activateUser(created ?? OheyUser(name: name, userId: userId));
+    try {
+      final created = await repository.fetchCurrentUserProfile();
+      await _activateUser(created ?? OheyUser(name: name, userId: userId));
+    } catch (_) {
+      // The authenticated session is valid and profile creation was attempted.
+      // Do not send OAuth users back to the login page because a follow-up
+      // profile read or optional data fetch is temporarily unavailable.
+      await _activateUser(OheyUser(name: name, userId: userId));
+    }
   }
 
   Future<void> _activateUser(OheyUser user) async {
