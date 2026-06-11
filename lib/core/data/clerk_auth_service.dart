@@ -124,7 +124,7 @@ class ClerkAuthService {
         uri.queryParameters['ticket'];
     if (token == null || token.trim().isEmpty) return;
     await _requireAuth().completeOAuthSignIn(token: token);
-    await _refreshCachedSessionToken();
+    await _refreshCachedSessionTokenWithRetry();
     _authChanges.add(null);
   }
 
