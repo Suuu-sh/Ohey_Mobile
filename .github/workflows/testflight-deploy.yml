@@ -61,6 +61,7 @@ jobs:
         env:
           DOTENV_PRODUCTION: ${{ secrets.DOTENV_PRODUCTION }}
           OHEY_REVENUECAT_IOS_API_KEY: ${{ secrets.OHEY_REVENUECAT_IOS_API_KEY }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
           FORCE_GOOGLE_TEST_ADS: ${{ github.event_name == 'workflow_dispatch' && inputs.force_google_test_ads || 'false' }}
         run: |
           set -euo pipefail
@@ -71,6 +72,9 @@ jobs:
             echo "OHEY_REVENUECAT_PRODUCT_ID=ohey_plus_monthly"
             if [ -n "${OHEY_REVENUECAT_IOS_API_KEY:-}" ]; then
               echo "OHEY_REVENUECAT_IOS_API_KEY=$OHEY_REVENUECAT_IOS_API_KEY"
+            fi
+            if [ -n "${CLERK_PUBLISHABLE_KEY:-}" ]; then
+              echo "CLERK_PUBLISHABLE_KEY=$CLERK_PUBLISHABLE_KEY"
             fi
             if [ "${FORCE_GOOGLE_TEST_ADS:-false}" = "true" ]; then
               echo "OHEY_ADMOB_FORCE_TEST_ADS=true"
@@ -109,6 +113,11 @@ jobs:
             # unit and skips Google Mobile Ads initialization/ad requests.
             echo "OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID=" >> .env.production
             echo "--dart-define=OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID=" >> "$RUNNER_TEMP/ohey_dart_defines.args"
+          fi
+          clerk_publishable_key="$(grep -E '^CLERK_PUBLISHABLE_KEY=' .env.production | tail -1 | cut -d= -f2- || true)"
+          if [ -z "$clerk_publishable_key" ] || [[ "$clerk_publishable_key" != pk_live_* ]]; then
+            echo "::error::CLERK_PUBLISHABLE_KEY must be set to the Clerk production publishable key for TestFlight builds."
+            exit 1
           fi
           echo "GAD_APPLICATION_IDENTIFIER=$admob_ios_app_id" >> "$GITHUB_ENV"
 
