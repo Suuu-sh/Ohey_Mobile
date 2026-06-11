@@ -64,7 +64,8 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
     });
     try {
       final authRepository = ref.read(authRepositoryProvider);
-      if (!authRepository.isSignedIn) {
+      final isBackendSignup = !authRepository.isSignedIn;
+      if (isBackendSignup) {
         final email = _emailController.text.trim();
         final password = _passwordController.text;
         if (!_hasValidEmailAddress(email)) {
@@ -87,9 +88,15 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
           avatar: _avatar,
         );
       }
-      await ref
-          .read(oheyUserProvider.notifier)
-          .createUser(name: name, userId: userId, avatar: _avatar);
+      if (isBackendSignup) {
+        await ref
+            .read(oheyUserProvider.notifier)
+            .useLocallyCreatedUser(name: name, userId: userId, avatar: _avatar);
+      } else {
+        await ref
+            .read(oheyUserProvider.notifier)
+            .createUser(name: name, userId: userId, avatar: _avatar);
+      }
       await _saveLastAccount(_emailController.text.trim());
     } on AuthException catch (e) {
       if (mounted) {
