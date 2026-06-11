@@ -30,6 +30,32 @@ class OheyUserController extends Notifier<OheyUser?> {
     return ref.read(userRepositoryProvider).latestDisplayName(fallback);
   }
 
+  Future<void> useLocallyCreatedUser({
+    required String name,
+    required String userId,
+    OheyAvatar? avatar,
+  }) async {
+    final trimmed = name.trim();
+    final normalizedUserId = userId.trim();
+    if (trimmed.isEmpty) {
+      throw ArgumentError.value(name, 'name', 'Profile name is required.');
+    }
+    if (!isValidOheyUserId(normalizedUserId)) {
+      throw ArgumentError.value(
+        userId,
+        'userId',
+        'User ID must be 3-24 letters, numbers, or underscores.',
+      );
+    }
+    state = OheyUser(
+      name: trimmed,
+      avatar: avatar,
+      userId: normalizedUserId,
+    );
+    await ref.read(oheyPlusServiceProvider).configureForCurrentUser();
+    ref.invalidate(oheyPlusCustomerInfoProvider);
+  }
+
   Future<void> createUser({
     required String name,
     required String userId,
