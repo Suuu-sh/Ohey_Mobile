@@ -193,24 +193,12 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _notice = null;
     });
     try {
-      final loaded = await ref
+      await ref
           .read(oheyUserProvider.notifier)
-          .loadFromBackendProfile();
-      final email = ref.read(authRepositoryProvider).currentEmail ?? '';
-      if (loaded) {
-        await _saveLastAccount(email);
-        return;
-      }
-      if (email.isNotEmpty) {
-        _emailController.text = email;
-      }
-      if (mounted) {
-        setState(() {
-          _step = _OnboardingStep.profile;
-          _showAuthForm = true;
-          _notice = 'プロフィールを作成すると登録が完了します。';
-        });
-      }
+          .ensureProfileForAuthenticatedUser();
+      await _saveLastAccount(
+        ref.read(authRepositoryProvider).currentEmail ?? '',
+      );
     } catch (e) {
       if (mounted) setState(() => _error = _friendlyUnexpectedAuthError(e));
     } finally {

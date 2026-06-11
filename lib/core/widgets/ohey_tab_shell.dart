@@ -32,7 +32,6 @@ import '../theme/ohey_theme_mode.dart';
 import 'ohey_3d_button.dart';
 import 'ohey_backend_busy_screen.dart';
 import 'ohey_bottom_sheet.dart';
-import 'ohey_daily_status_3d_option.dart';
 import 'ohey_pop_icon.dart';
 import 'ohey_toast.dart';
 import 'ohey_friend_user_block.dart';
@@ -60,8 +59,6 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   bool _onboardingPrefLoaded = false;
   bool _isInviteModalOpen = false;
   bool _isYuruboRequestModalOpen = false;
-  bool _isDailyStatusPromptOpen = false;
-  String? _lastDailyStatusPromptKey;
   String? _lastPresentedInviteId;
   String? _lastPresentedYuruboRequestKey;
   Timer? _inviteNotificationRefreshDebounce;
@@ -160,12 +157,12 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   Future<void> _handleClerkOAuthCallback(Uri uri) async {
     final handled = await ref.read(clerkOAuthCallbackProvider).handle(uri);
     if (!handled || !mounted) return;
-    final loaded = await ref
+    await ref
         .read(oheyUserProvider.notifier)
-        .loadFromBackendProfile();
-    if (!loaded && mounted) {
-      // The onboarding dialog will ask for the remaining Ohey profile fields.
-      setState(() => _isOnboardingSeen = false);
+        .ensureProfileForAuthenticatedUser();
+    if (mounted && !_isOnboardingSeen) {
+      await _setOnboardingSeen();
+      if (mounted) setState(() => _isOnboardingSeen = true);
     }
   }
 
@@ -278,8 +275,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     final currentUser = ref.read(oheyUserProvider);
     if (currentUser == null ||
         _isInviteModalOpen ||
-        _isYuruboRequestModalOpen ||
-        _isDailyStatusPromptOpen) {
+        _isYuruboRequestModalOpen) {
       return;
     }
     for (final yurubo in yurubos) {
@@ -303,10 +299,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       if (_lastPresentedYuruboRequestKey == requestKey) return;
       _lastPresentedYuruboRequestKey = requestKey;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted ||
-            _isInviteModalOpen ||
-            _isYuruboRequestModalOpen ||
-            _isDailyStatusPromptOpen) {
+        if (!mounted || _isInviteModalOpen || _isYuruboRequestModalOpen) {
           return;
         }
         _showYuruboParticipationRequestModal(yurubo, pending);
@@ -440,60 +433,6 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     }
   }
 
-  void _maybeShowDailyStatusPrompt(OheyUser user) {
-    if (user.dailyStatus != OheyDailyStatus.unselected ||
-        _isDailyStatusPromptOpen) {
-      return;
-    }
-    final promptKey = '${user.userId}-${_localDateKey(DateTime.now())}';
-    if (_lastDailyStatusPromptKey == promptKey) return;
-    _lastDailyStatusPromptKey = promptKey;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _isDailyStatusPromptOpen) return;
-      final currentUser = ref.read(oheyUserProvider);
-      if (currentUser == null ||
-          currentUser.dailyStatus != OheyDailyStatus.unselected) {
-        return;
-      }
-      _showDailyStatusPrompt();
-    });
-  }
-
-  Future<void> _showDailyStatusPrompt() async {
-    _isDailyStatusPromptOpen = true;
-    try {
-      await showOheyBottomSheet<void>(
-        context: context,
-        useSafeArea: true,
-        useRootNavigator: true,
-        isDismissible: false,
-        enableDrag: false,
-        barrierColor: AppColors.black.withValues(alpha: .72),
-        builder: (_) => OheyToastAccent(
-          color: AppColors.cFF20B9FF,
-          child: _DailyStatusRequiredSheet(
-            onSelect: (status) async {
-              await ref
-                  .read(oheyUserProvider.notifier)
-                  .updateDailyStatus(status);
-              ref.invalidate(friendsProvider);
-              ref.invalidate(friendsForDateProvider);
-              ref.invalidate(incomingInvitesProvider);
-              ref.invalidate(notificationControllerProvider);
-            },
-          ),
-        ),
-      );
-    } finally {
-      _isDailyStatusPromptOpen = false;
-      if (mounted &&
-          ref.read(oheyUserProvider)?.dailyStatus ==
-              OheyDailyStatus.unselected) {
-        _lastDailyStatusPromptKey = null;
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(oheyUserProvider);
@@ -528,7 +467,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     }
 
     if (user != null) {
-      _maybeShowDailyStatusPrompt(user);
+      // Do not block the first logged-in home view with the daily-status prompt.
       _startInviteNotificationPolling();
       incomingInvitesAsync.whenData(_handleIncomingInvites);
       yurubosAsync.whenData(_handlePendingYuruboRequests);
@@ -553,7 +492,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
         try {
           await ref
               .read(oheyUserProvider.notifier)
-              .loadFromBackendProfile()
+              .ensureProfileForAuthenticatedUser()
               .timeout(const Duration(seconds: 10));
         } catch (_) {
           // Backend can be waking up from a cold start. After the friendly
@@ -771,116 +710,6 @@ class _AnimatedTabPage extends StatelessWidget {
     );
   }
 }
-
-class _DailyStatusRequiredSheet extends ConsumerStatefulWidget {
-  const _DailyStatusRequiredSheet({required this.onSelect});
-
-  final Future<void> Function(OheyDailyStatus status) onSelect;
-
-  @override
-  ConsumerState<_DailyStatusRequiredSheet> createState() =>
-      _DailyStatusRequiredSheetState();
-}
-
-class _DailyStatusRequiredSheetState
-    extends ConsumerState<_DailyStatusRequiredSheet> {
-  OheyDailyStatus? _savingStatus;
-
-  Future<void> _select(OheyDailyStatus status) async {
-    if (_savingStatus != null) return;
-    HapticFeedback.selectionClick();
-    setState(() => _savingStatus = status);
-    try {
-      await widget.onSelect(status);
-      if (!mounted) return;
-      Navigator.of(context).pop();
-      OheyToast.show(context, '今日は「${status.label}」だね');
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _savingStatus = null);
-      OheyToast.show(context, '設定できなかったよ。もう一度ためしてね');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
-    final sub = isWhite
-        ? AppColors.cFF667381
-        : AppColors.white.withValues(alpha: .64);
-    return PopScope(
-      canPop: false,
-      child: OheyBottomSheetShell(
-        showHandle: true,
-        showBottomCloseButton: false,
-        maxHeightFactor: .88,
-        padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const OheyPopIcon(
-                  icon: CupertinoIcons.calendar_badge_plus,
-                  color: AppColors.cFF20B9FF,
-                  size: 48,
-                  iconSize: 25,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '今日の予定、先に教えて',
-                        style: TextStyle(
-                          color: ink,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -.6,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'みんなと予定を合わせやすいように、入室前に今日の気分をセットしてね',
-                        style: TextStyle(
-                          color: sub,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w800,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            for (final status in OheyDailyStatus.selectable) ...[
-              OheyDailyStatus3DOption(
-                status: status,
-                title: status.label,
-                onTap: () => _select(status),
-                enabled: _savingStatus == null,
-                isLoading: _savingStatus == status,
-                showChevron: _savingStatus == null,
-              ),
-              if (status != OheyDailyStatus.selectable.last)
-                const SizedBox(height: 10),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-String _localDateKey(DateTime date) =>
-    '${date.year.toString().padLeft(4, '0')}-'
-    '${date.month.toString().padLeft(2, '0')}-'
-    '${date.day.toString().padLeft(2, '0')}';
 
 class _SheetInlineError extends StatelessWidget {
   const _SheetInlineError({required this.message, required this.isWhite});

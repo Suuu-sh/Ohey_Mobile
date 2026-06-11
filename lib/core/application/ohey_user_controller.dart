@@ -20,10 +20,32 @@ class OheyUserController extends Notifier<OheyUser?> {
         .read(userRepositoryProvider)
         .fetchCurrentUserProfile();
     if (user == null) return false;
+    await _activateUser(user);
+    return true;
+  }
+
+  Future<void> ensureProfileForAuthenticatedUser() async {
+    final loaded = await loadFromBackendProfile();
+    if (loaded) return;
+
+    final repository = ref.read(userRepositoryProvider);
+    final authUserId = repository.currentUserId;
+    if (authUserId == null || authUserId.isEmpty) {
+      throw StateError('Login is required before creating a Ohey user.');
+    }
+    final name = _defaultDisplayName();
+    final userId = defaultOheyUserId(authUserId);
+
+    await repository.createProfile(name: name, userId: userId);
+
+    final created = await repository.fetchCurrentUserProfile();
+    await _activateUser(created ?? OheyUser(name: name, userId: userId));
+  }
+
+  Future<void> _activateUser(OheyUser user) async {
     state = user;
     await ref.read(oheyPlusServiceProvider).configureForCurrentUser();
     ref.invalidate(oheyPlusCustomerInfoProvider);
-    return true;
   }
 
   Future<String?> latestDisplayName(String? fallback) {
@@ -47,13 +69,9 @@ class OheyUserController extends Notifier<OheyUser?> {
         'User ID must be 3-24 letters, numbers, or underscores.',
       );
     }
-    state = OheyUser(
-      name: trimmed,
-      avatar: avatar,
-      userId: normalizedUserId,
+    await _activateUser(
+      OheyUser(name: trimmed, avatar: avatar, userId: normalizedUserId),
     );
-    await ref.read(oheyPlusServiceProvider).configureForCurrentUser();
-    ref.invalidate(oheyPlusCustomerInfoProvider);
   }
 
   Future<void> createUser({
@@ -86,13 +104,9 @@ class OheyUserController extends Notifier<OheyUser?> {
       avatar: profileAvatar,
     );
 
-    state = OheyUser(
-      name: trimmed,
-      avatar: profileAvatar,
-      userId: normalizedUserId,
+    await _activateUser(
+      OheyUser(name: trimmed, avatar: profileAvatar, userId: normalizedUserId),
     );
-    await ref.read(oheyPlusServiceProvider).configureForCurrentUser();
-    ref.invalidate(oheyPlusCustomerInfoProvider);
   }
 
   Future<void> updateProfile({
@@ -220,3 +234,5 @@ class OheyUserController extends Notifier<OheyUser?> {
 
 bool _isSameLocalDate(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
+
+String _defaultDisplayName() => 'Ohey user';
