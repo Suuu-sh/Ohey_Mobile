@@ -70,6 +70,17 @@ class ClerkAuthService {
     }
   }
 
+  Future<void> _refreshCachedSessionTokenWithRetry() async {
+    for (var attempt = 0; attempt < 10; attempt += 1) {
+      await _refreshCachedSessionToken();
+      if (_sessionToken?.jwt.trim().isNotEmpty == true &&
+          currentUserId != null) {
+        return;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+    }
+  }
+
   Future<void> signInWithPassword({
     required String email,
     required String password,
@@ -81,7 +92,7 @@ class ClerkAuthService {
       identifier: email,
       password: password,
     );
-    await _refreshCachedSessionToken();
+    await _refreshCachedSessionTokenWithRetry();
     _authChanges.add(null);
   }
 
