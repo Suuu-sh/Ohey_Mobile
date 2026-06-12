@@ -7,6 +7,7 @@ import 'package:clerk_auth/clerk_auth.dart' as clerk;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/backend_config.dart';
+import 'apple_auth_service.dart';
 import 'google_auth_service.dart';
 import '../contracts/ohey_api_paths.dart';
 import '../models/ohey_avatar.dart';
@@ -26,11 +27,16 @@ class AuthException implements Exception {
 enum OAuthProvider { google, apple }
 
 class AuthRepository {
-  AuthRepository(this._clerk, {GoogleAuthService? googleAuthService})
-    : _googleAuthService = googleAuthService ?? GoogleAuthService();
+  AuthRepository(
+    this._clerk, {
+    GoogleAuthService? googleAuthService,
+    AppleAuthService? appleAuthService,
+  }) : _googleAuthService = googleAuthService ?? GoogleAuthService(),
+       _appleAuthService = appleAuthService ?? AppleAuthService();
 
   final ClerkAuthService _clerk;
   final GoogleAuthService _googleAuthService;
+  final AppleAuthService _appleAuthService;
 
   bool get isSignedIn => _clerk.isSignedIn;
 
@@ -48,6 +54,17 @@ class AuthRepository {
         await _clerk.signInWithGoogleIdToken(tokens.idToken);
         return;
       } on GoogleAuthException catch (e) {
+        throw AuthException(e.message);
+      }
+    }
+
+    if (provider == OAuthProvider.apple) {
+      try {
+        final tokens = await _appleAuthService.signIn();
+        if (tokens == null) return;
+        await _clerk.signInWithAppleIdToken(tokens.idToken);
+        return;
+      } on AppleAuthException catch (e) {
         throw AuthException(e.message);
       }
     }

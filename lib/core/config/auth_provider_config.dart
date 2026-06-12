@@ -21,7 +21,7 @@ class AuthProviderConfig {
 
   static const appleOAuthEnabled = bool.fromEnvironment(
     'OHEY_ENABLE_APPLE_OAUTH',
-    defaultValue: false,
+    defaultValue: true,
   );
 
   static bool get isClerkEnabled => clerkPublishableKey.trim().isNotEmpty;
