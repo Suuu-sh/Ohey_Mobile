@@ -271,7 +271,7 @@ jobs:
 
           TOKEN = token_for(key_id, issuer_id, private_key)
 
-          def asc_request(method, path, params: {}, body: nil)
+          def asc_request(method, path, params: {}, body: nil, fail_on_error: true)
             uri = URI("https://api.appstoreconnect.apple.com#{path}")
             uri.query = URI.encode_www_form(params) unless params.empty?
             request = method.new(uri)
@@ -280,19 +280,23 @@ jobs:
             request.body = JSON.generate(body) if body
             response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |http| http.request(request) }
             parsed = response.body.nil? || response.body.empty? ? {} : JSON.parse(response.body)
-            unless response.is_a?(Net::HTTPSuccess)
+            if fail_on_error && !response.is_a?(Net::HTTPSuccess)
               warn JSON.pretty_generate(parsed)
               exit 1
             end
-            parsed
+            [response, parsed]
           end
 
           def get_json(path, params = {})
-            asc_request(Net::HTTP::Get, path, params: params)
+            asc_request(Net::HTTP::Get, path, params: params).last
           end
 
           def post_json(path, body)
-            asc_request(Net::HTTP::Post, path, body: body)
+            asc_request(Net::HTTP::Post, path, body: body).last
+          end
+
+          def try_post_json(path, body)
+            asc_request(Net::HTTP::Post, path, body: body, fail_on_error: false)
           end
 
           def first_data!(response, label)
@@ -307,29 +311,35 @@ jobs:
           }), 'App bundle ID app.ohey.com')
           app_bundle_id = app_bundle.fetch('id')
 
-          capabilities = get_json('/v1/bundleIdCapabilities', {
-            'filter[bundleId]' => app_bundle_id,
-            'limit' => '200',
-          }).fetch('data')
-          unless capabilities.any? { |item| item.dig('attributes', 'capabilityType') == 'SIGN_IN_WITH_APPLE' }
-            post_json('/v1/bundleIdCapabilities', {
-              data: {
-                type: 'bundleIdCapabilities',
-                attributes: {
-                  capabilityType: 'SIGN_IN_WITH_APPLE',
-                  settings: [],
-                },
-                relationships: {
-                  bundleId: {
-                    data: {
-                      type: 'bundleIds',
-                      id: app_bundle_id,
-                    },
+          capability_body = {
+            data: {
+              type: 'bundleIdCapabilities',
+              attributes: {
+                capabilityType: 'SIGN_IN_WITH_APPLE',
+                settings: [],
+              },
+              relationships: {
+                bundleId: {
+                  data: {
+                    type: 'bundleIds',
+                    id: app_bundle_id,
                   },
                 },
               },
-            })
+            },
+          }
+          capability_response, capability_result = try_post_json('/v1/bundleIdCapabilities', capability_body)
+          if capability_response.is_a?(Net::HTTPSuccess)
             puts 'Enabled Sign in with Apple for app.ohey.com'
+          else
+            capability_error = capability_result.fetch('errors', []).first || {}
+            capability_detail = capability_error.fetch('detail', '')
+            capability_code = capability_error.fetch('code', '')
+            unless capability_response.code == '409' || capability_code.include?('DUPLICATE') || capability_detail.match?(/already|existing/i)
+              warn JSON.pretty_generate(capability_result)
+              exit 1
+            end
+            puts 'Sign in with Apple capability is already enabled for app.ohey.com'
           end
 
           distribution_certificates = get_json('/v1/certificates', {
