@@ -175,9 +175,12 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
         if (!mounted) return;
         setState(() {
           _emailController.text = account.email;
-          _showAuthForm = false;
+          _showAuthForm = true;
           _isLogin = true;
-          _notice = 'この端末の保存済みセッションが切れています。GoogleまたはAppleで再認証してね。';
+          _loginStep = _RegistrationStep.email;
+          _passwordController.clear();
+          _passwordConfirmationController.clear();
+          _notice = 'この端末の保存済みセッションが切れています。メール、Google、またはAppleで再ログインしてね。';
         });
         return;
       }
