@@ -70,6 +70,7 @@ jobs:
             echo "OHEY_REVENUECAT_ENTITLEMENT_ID=plus"
             echo "OHEY_REVENUECAT_OFFERING_ID=default"
             echo "OHEY_REVENUECAT_PRODUCT_ID=ohey_plus_monthly"
+            echo "OHEY_BACKEND_URL=https://api.oheyapp.com"
             if [ -n "${OHEY_REVENUECAT_IOS_API_KEY:-}" ]; then
               echo "OHEY_REVENUECAT_IOS_API_KEY=$OHEY_REVENUECAT_IOS_API_KEY"
             fi

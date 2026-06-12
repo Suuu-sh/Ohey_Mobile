@@ -4,7 +4,7 @@
   "OHEY_SUPPORT_EMAIL": "yisshiki39@gmail.com",
   "OHEY_ADMIN_EMAILS": "set_via_secret_not_in_git",
   "CLERK_PUBLISHABLE_KEY": "replace_with_clerk_publishable_key",
-  "OHEY_BACKEND_URL": "https://ohey-backend.onrender.com",
+  "OHEY_BACKEND_URL": "https://api.oheyapp.com",
   "FIREBASE_MESSAGING_SENDER_ID": "replace_with_prod_sender_id",
   "FIREBASE_PROJECT_ID": "replace_with_prod_project_id",
   "FIREBASE_STORAGE_BUCKET": "replace_with_prod_storage_bucket",
