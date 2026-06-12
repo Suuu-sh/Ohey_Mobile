@@ -62,6 +62,9 @@ jobs:
           DOTENV_PRODUCTION: ${{ secrets.DOTENV_PRODUCTION }}
           OHEY_REVENUECAT_IOS_API_KEY: ${{ secrets.OHEY_REVENUECAT_IOS_API_KEY }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+          GOOGLE_IOS_CLIENT_ID: ${{ secrets.GOOGLE_IOS_CLIENT_ID }}
+          GOOGLE_IOS_REVERSED_CLIENT_ID: ${{ secrets.GOOGLE_IOS_REVERSED_CLIENT_ID }}
           FORCE_GOOGLE_TEST_ADS: ${{ github.event_name == 'workflow_dispatch' && inputs.force_google_test_ads || 'false' }}
         run: |
           set -euo pipefail
@@ -76,6 +79,15 @@ jobs:
             fi
             if [ -n "${CLERK_PUBLISHABLE_KEY:-}" ]; then
               echo "CLERK_PUBLISHABLE_KEY=$CLERK_PUBLISHABLE_KEY"
+            fi
+            if [ -n "${GOOGLE_WEB_CLIENT_ID:-}" ]; then
+              echo "GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
+            fi
+            if [ -n "${GOOGLE_IOS_CLIENT_ID:-}" ]; then
+              echo "GOOGLE_IOS_CLIENT_ID=$GOOGLE_IOS_CLIENT_ID"
+            fi
+            if [ -n "${GOOGLE_IOS_REVERSED_CLIENT_ID:-}" ]; then
+              echo "GOOGLE_IOS_REVERSED_CLIENT_ID=$GOOGLE_IOS_REVERSED_CLIENT_ID"
             fi
             if [ "${FORCE_GOOGLE_TEST_ADS:-false}" = "true" ]; then
               echo "OHEY_ADMOB_FORCE_TEST_ADS=true"
@@ -121,7 +133,15 @@ jobs:
             echo "::error::CLERK_PUBLISHABLE_KEY must be a Clerk publishable key."
             exit 1
           fi
+          google_web_client_id="$(grep -E '^GOOGLE_WEB_CLIENT_ID=' .env.production | tail -1 | cut -d= -f2- || true)"
+          google_ios_client_id="$(grep -E '^GOOGLE_IOS_CLIENT_ID=' .env.production | tail -1 | cut -d= -f2- || true)"
+          google_ios_reversed_client_id="$(grep -E '^GOOGLE_IOS_REVERSED_CLIENT_ID=' .env.production | tail -1 | cut -d= -f2- || true)"
+          if [ -z "$google_web_client_id" ] || [ -z "$google_ios_client_id" ] || [ -z "$google_ios_reversed_client_id" ]; then
+            echo "::error::GOOGLE_WEB_CLIENT_ID, GOOGLE_IOS_CLIENT_ID and GOOGLE_IOS_REVERSED_CLIENT_ID are required for native Google Sign-In."
+            exit 1
+          fi
           echo "GAD_APPLICATION_IDENTIFIER=$admob_ios_app_id" >> "$GITHUB_ENV"
+          echo "GOOGLE_IOS_REVERSED_CLIENT_ID=$google_ios_reversed_client_id" >> "$GITHUB_ENV"
 
       - name: Install Flutter dependencies
         run: flutter pub get
@@ -425,6 +445,7 @@ jobs:
             OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" \
             CURRENT_PROJECT_VERSION="${{ steps.build-number.outputs.build-number }}" \
             GAD_APPLICATION_IDENTIFIER="$GAD_APPLICATION_IDENTIFIER" \
+            GOOGLE_IOS_REVERSED_CLIENT_ID="$GOOGLE_IOS_REVERSED_CLIENT_ID" \
             archive
 
       - name: Upload to TestFlight

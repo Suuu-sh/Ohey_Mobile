@@ -11,6 +11,10 @@ class OheyEnvironmentValues {
   static const authRedirectUrlDefineKey = 'OHEY_AUTH_REDIRECT_URL';
   static const authProviderDefineKey = 'AUTH_PROVIDER';
   static const clerkPublishableKeyDefineKey = 'CLERK_PUBLISHABLE_KEY';
+  static const googleWebClientIdDefineKey = 'GOOGLE_WEB_CLIENT_ID';
+  static const googleIosClientIdDefineKey = 'GOOGLE_IOS_CLIENT_ID';
+  static const googleIosReversedClientIdDefineKey =
+      'GOOGLE_IOS_REVERSED_CLIENT_ID';
 
   static const devEnvironment = 'dev';
   static const productionEnvironment = 'production';

@@ -81,6 +81,18 @@ class ClerkAuthService {
     }
   }
 
+  Future<void> signInWithGoogleIdToken(String idToken) async {
+    await initialize();
+    final auth = _requireAuth();
+    await auth.resetClient();
+    await auth.idTokenSignIn(
+      provider: clerk.IdTokenProvider.google,
+      token: idToken.trim(),
+    );
+    await _refreshCachedSessionTokenWithRetry();
+    _authChanges.add(null);
+  }
+
   Future<void> signInWithPassword({
     required String email,
     required String password,
