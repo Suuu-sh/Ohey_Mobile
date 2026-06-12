@@ -271,14 +271,15 @@ jobs:
 
           TOKEN = token_for(key_id, issuer_id, private_key)
 
-          def get_json(path, params = {})
+          def asc_request(method, path, params: {}, body: nil)
             uri = URI("https://api.appstoreconnect.apple.com#{path}")
             uri.query = URI.encode_www_form(params) unless params.empty?
-            request = Net::HTTP::Get.new(uri)
+            request = method.new(uri)
             request['Authorization'] = "Bearer #{TOKEN}"
             request['Content-Type'] = 'application/json'
+            request.body = JSON.generate(body) if body
             response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |http| http.request(request) }
-            parsed = JSON.parse(response.body)
+            parsed = response.body.nil? || response.body.empty? ? {} : JSON.parse(response.body)
             unless response.is_a?(Net::HTTPSuccess)
               warn JSON.pretty_generate(parsed)
               exit 1
@@ -286,8 +287,82 @@ jobs:
             parsed
           end
 
+          def get_json(path, params = {})
+            asc_request(Net::HTTP::Get, path, params: params)
+          end
+
+          def post_json(path, body)
+            asc_request(Net::HTTP::Post, path, body: body)
+          end
+
+          def first_data!(response, label)
+            item = response.fetch('data').first
+            abort("#{label} not found") unless item
+            item
+          end
+
+          app_bundle = first_data!(get_json('/v1/bundleIds', {
+            'filter[identifier]' => 'app.ohey.com',
+            'limit' => '1',
+          }), 'App bundle ID app.ohey.com')
+          app_bundle_id = app_bundle.fetch('id')
+
+          capabilities = get_json('/v1/bundleIdCapabilities', {
+            'filter[bundleId]' => app_bundle_id,
+            'limit' => '200',
+          }).fetch('data')
+          unless capabilities.any? { |item| item.dig('attributes', 'capabilityType') == 'SIGN_IN_WITH_APPLE' }
+            post_json('/v1/bundleIdCapabilities', {
+              data: {
+                type: 'bundleIdCapabilities',
+                attributes: {
+                  capabilityType: 'SIGN_IN_WITH_APPLE',
+                  settings: [],
+                },
+                relationships: {
+                  bundleId: {
+                    data: {
+                      type: 'bundleIds',
+                      id: app_bundle_id,
+                    },
+                  },
+                },
+              },
+            })
+            puts 'Enabled Sign in with Apple for app.ohey.com'
+          end
+
+          distribution_certificates = get_json('/v1/certificates', {
+            'filter[certificateType]' => 'IOS_DISTRIBUTION',
+            'limit' => '200',
+          }).fetch('data')
+          abort('No active iOS distribution certificates found') if distribution_certificates.empty?
+
+          generated_app_profile_name = "Ohey App Store CI SignInWithApple #{Time.now.utc.strftime('%Y%m%d%H%M%S')}"
+          created_app_profile = post_json('/v1/profiles', {
+            data: {
+              type: 'profiles',
+              attributes: {
+                name: generated_app_profile_name,
+                profileType: 'IOS_APP_STORE',
+              },
+              relationships: {
+                bundleId: {
+                  data: {
+                    type: 'bundleIds',
+                    id: app_bundle_id,
+                  },
+                },
+                certificates: {
+                  data: distribution_certificates.map { |certificate| { type: 'certificates', id: certificate.fetch('id') } },
+                },
+              },
+            },
+          }).fetch('data')
+
           profiles = {
-            'APP_PROVISIONING_PROFILE_NAME' => 'Ohey App Store CI Push 20260529095238',
+            'APP_PROVISIONING_PROFILE_NAME' => generated_app_profile_name,
+            'WIDGET_PROVISIONING_PROFILE_NAME' => 'Ohey Widgets App Store CI 20260529095238',
           }
 
           profile_dir = File.expand_path('~/Library/MobileDevice/Provisioning Profiles')
