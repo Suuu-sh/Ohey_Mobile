@@ -156,6 +156,14 @@ class AuthRepository {
     return _clerk.completeOAuthCallback(uri);
   }
 
+  Future<bool> switchToSavedAccount(String email) {
+    return _clerk.switchToSavedAccount(email);
+  }
+
+  Future<void> suspendCurrentSessionLocally() {
+    return _clerk.suspendCurrentSessionLocally();
+  }
+
   Future<void> signOut() {
     return _clerk.signOut();
   }

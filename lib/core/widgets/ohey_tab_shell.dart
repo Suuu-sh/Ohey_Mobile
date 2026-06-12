@@ -56,6 +56,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   bool _didScheduleProfileRestore = false;
   bool _didAttemptProfileRestore = false;
   bool _isOnboardingSeen = false;
+  bool _isSessionRestoreSuppressed = false;
   bool _onboardingPrefLoaded = false;
   bool _isInviteModalOpen = false;
   bool _isYuruboRequestModalOpen = false;
@@ -118,6 +119,9 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       _onboardingPrefLoaded = true;
       _isOnboardingSeen =
           prefs.getBool(OheyLastAccountStore.onboardingSeenKey) ?? false;
+      _isSessionRestoreSuppressed =
+          prefs.getBool(OheyLastAccountStore.sessionRestoreSuppressedKey) ??
+          false;
     });
   }
 
@@ -485,11 +489,18 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
 
     if (user == null &&
         hasSession &&
+        !_isSessionRestoreSuppressed &&
         !_didAttemptProfileRestore &&
         !_didScheduleProfileRestore) {
       _didScheduleProfileRestore = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         try {
+          final suppressed =
+              await OheyLastAccountStore.isSessionRestoreSuppressed();
+          if (suppressed) {
+            if (mounted) setState(() => _isSessionRestoreSuppressed = true);
+            return;
+          }
           await ref
               .read(oheyUserProvider.notifier)
               .ensureProfileForAuthenticatedUser()
@@ -509,7 +520,10 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       });
     }
 
-    if (user == null && hasSession && !_didAttemptProfileRestore) {
+    if (user == null &&
+        hasSession &&
+        !_isSessionRestoreSuppressed &&
+        !_didAttemptProfileRestore) {
       return const OheyBackendBusyScreen();
     }
 
