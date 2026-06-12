@@ -312,7 +312,7 @@ jobs:
             data: {
               type: 'bundleIdCapabilities',
               attributes: {
-                capabilityType: 'SIGN_IN_WITH_APPLE',
+                capabilityType: 'APPLE_ID_AUTH',
                 settings: [],
               },
               relationships: {
@@ -345,6 +345,17 @@ jobs:
           }).fetch('data')
           abort('No active iOS distribution certificates found') if distribution_certificates.empty?
 
+          installed_certificate_pem = `security find-certificate -c "Apple Distribution: YOTA ISSHIKI (83J5SB3ZPX)" -p "#{ENV.fetch('KEYCHAIN_PATH')}"`
+          installed_certificate = OpenSSL::X509::Certificate.new(installed_certificate_pem)
+          installed_fingerprint = OpenSSL::Digest::SHA1.hexdigest(installed_certificate.to_der).upcase
+          matching_certificates = distribution_certificates.select do |certificate|
+            content = certificate.dig('attributes', 'certificateContent')
+            next false unless content
+            api_certificate = OpenSSL::X509::Certificate.new(Base64.decode64(content))
+            OpenSSL::Digest::SHA1.hexdigest(api_certificate.to_der).upcase == installed_fingerprint
+          end
+          abort('The installed Apple Distribution certificate was not found in App Store Connect') if matching_certificates.empty?
+
           generated_app_profile_name = "Ohey App Store CI SignInWithApple #{Time.now.utc.strftime('%Y%m%d%H%M%S')}"
           created_app_profile = post_json('/v1/profiles', {
             data: {
@@ -361,7 +372,7 @@ jobs:
                   },
                 },
                 certificates: {
-                  data: distribution_certificates.map { |certificate| { type: 'certificates', id: certificate.fetch('id') } },
+                  data: matching_certificates.map { |certificate| { type: 'certificates', id: certificate.fetch('id') } },
                 },
               },
             },
