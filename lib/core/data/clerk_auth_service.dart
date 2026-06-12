@@ -178,6 +178,28 @@ class ClerkAuthService {
     _authChanges.add(null);
   }
 
+  Future<bool> switchToSavedAccount(String email) async {
+    await initialize();
+    final normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.isEmpty) return false;
+    final auth = _requireAuth();
+    for (final session in auth.client.sessions) {
+      if (session.user.email?.trim().toLowerCase() == normalizedEmail) {
+        await auth.activate(session);
+        await _refreshCachedSessionTokenWithRetry();
+        _authChanges.add(null);
+        return _sessionToken?.jwt.trim().isNotEmpty == true;
+      }
+    }
+    return false;
+  }
+
+  Future<void> suspendCurrentSessionLocally() async {
+    await initialize();
+    _sessionToken = null;
+    _authChanges.add(null);
+  }
+
   Future<void> signOut() async {
     await initialize();
     final auth = _auth;

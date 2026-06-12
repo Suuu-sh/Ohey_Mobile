@@ -38,6 +38,7 @@ class OheyLastAccountStore {
   static const emailKey = 'ohey_last_account_email';
   static const avatarKey = 'ohey_last_account_avatar';
   static const accountsKey = 'ohey_last_accounts_v1';
+  static const sessionRestoreSuppressedKey = 'ohey_session_restore_suppressed';
   static const maxAccounts = 3;
 
   static Future<OheyLastAccount?> load() async {
@@ -101,6 +102,16 @@ class OheyLastAccountStore {
     } else {
       await prefs.setString(avatarKey, account.avatar!.encode());
     }
+  }
+
+  static Future<void> setSessionRestoreSuppressed(bool suppressed) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(sessionRestoreSuppressedKey, suppressed);
+  }
+
+  static Future<bool> isSessionRestoreSuppressed() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(sessionRestoreSuppressedKey) ?? false;
   }
 
   static Future<void> remove(String email) async {

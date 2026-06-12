@@ -363,16 +363,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                 accounts: accounts,
                 compact: compact,
                 onAccountTap: (account) {
-                  _emailController.text = account.email;
-                  _passwordController.clear();
-                  _passwordConfirmationController.clear();
-                  setState(() {
-                    _showAuthForm = true;
-                    _isLogin = true;
-                    _loginStep = _RegistrationStep.password;
-                    _error = null;
-                    _notice = null;
-                  });
+                  unawaited(_switchToSavedAccount(account));
                 },
                 onAddAccount: () {
                   _emailController.clear();

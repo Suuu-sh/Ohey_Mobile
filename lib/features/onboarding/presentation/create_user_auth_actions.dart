@@ -161,6 +161,40 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     }
   }
 
+  Future<void> _switchToSavedAccount(OheyLastAccount account) async {
+    setState(() {
+      _isBusy = true;
+      _error = null;
+      _notice = null;
+    });
+    try {
+      final switched = await ref
+          .read(authRepositoryProvider)
+          .switchToSavedAccount(account.email);
+      if (!switched) {
+        if (!mounted) return;
+        setState(() {
+          _emailController.text = account.email;
+          _showAuthForm = false;
+          _isLogin = true;
+          _notice = 'この端末の保存済みセッションが切れています。GoogleまたはAppleで再認証してね。';
+        });
+        return;
+      }
+      await OheyLastAccountStore.setSessionRestoreSuppressed(false);
+      await ref
+          .read(oheyUserProvider.notifier)
+          .ensureProfileForAuthenticatedUser();
+      if (mounted) {
+        await _saveLastAccount(account.email);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = _friendlyUnexpectedAuthError(e));
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
+  }
+
   Future<void> _startOAuthAuth(
     OAuthProvider provider,
     String providerLabel,

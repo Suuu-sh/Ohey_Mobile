@@ -206,7 +206,8 @@ class OheyUserController extends Notifier<OheyUser?> {
           .read(oheyPushNotificationServiceProvider)
           .unregisterCurrentToken();
       await ref.read(oheyPlusServiceProvider).logOutIfConfigured();
-      await authRepository.signOut();
+      await OheyLastAccountStore.setSessionRestoreSuppressed(true);
+      await authRepository.suspendCurrentSessionLocally();
     } finally {
       // ローカルセッション削除が例外になっても、UI上は必ず未ログイン状態へ戻す。
       state = null;
