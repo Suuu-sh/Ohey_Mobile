@@ -7,6 +7,7 @@ import 'package:clerk_auth/clerk_auth.dart' as clerk;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/backend_config.dart';
+import 'google_auth_service.dart';
 import '../contracts/ohey_api_paths.dart';
 import '../models/ohey_avatar.dart';
 import 'clerk_auth_service.dart';
@@ -25,9 +26,11 @@ class AuthException implements Exception {
 enum OAuthProvider { google, apple }
 
 class AuthRepository {
-  const AuthRepository(this._clerk);
+  AuthRepository(this._clerk, {GoogleAuthService? googleAuthService})
+    : _googleAuthService = googleAuthService ?? GoogleAuthService();
 
   final ClerkAuthService _clerk;
+  final GoogleAuthService _googleAuthService;
 
   bool get isSignedIn => _clerk.isSignedIn;
 
@@ -38,6 +41,17 @@ class AuthRepository {
   }
 
   Future<void> signInWithOAuth(OAuthProvider provider) async {
+    if (provider == OAuthProvider.google) {
+      try {
+        final tokens = await _googleAuthService.signIn();
+        if (tokens == null) return;
+        await _clerk.signInWithGoogleIdToken(tokens.idToken);
+        return;
+      } on GoogleAuthException catch (e) {
+        throw AuthException(e.message);
+      }
+    }
+
     final redirect = await _clerk.startOAuthSignIn(_clerkStrategyFor(provider));
     if (redirect == null) {
       throw const AuthException('OAuth redirect URL is unavailable.');

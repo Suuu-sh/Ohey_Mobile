@@ -11,6 +11,14 @@ class AuthProviderConfig {
     OheyEnvironmentValues.authRedirectUrlDefineKey,
   );
 
+  static const googleWebClientId = String.fromEnvironment(
+    OheyEnvironmentValues.googleWebClientIdDefineKey,
+  );
+
+  static const googleIosClientId = String.fromEnvironment(
+    OheyEnvironmentValues.googleIosClientIdDefineKey,
+  );
+
   static const appleOAuthEnabled = bool.fromEnvironment(
     'OHEY_ENABLE_APPLE_OAUTH',
     defaultValue: false,

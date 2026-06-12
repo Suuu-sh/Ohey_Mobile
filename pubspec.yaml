@@ -49,6 +49,7 @@ dependencies:
   purchases_flutter: ^10.2.2
   app_tracking_transparency: ^2.0.7
   clerk_auth: ^0.0.15-beta
+  google_sign_in: ^6.2.1
 
 dev_dependencies:
   flutter_test:
