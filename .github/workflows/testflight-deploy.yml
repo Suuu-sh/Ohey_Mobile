@@ -74,7 +74,7 @@ jobs:
             echo "OHEY_REVENUECAT_OFFERING_ID=default"
             echo "OHEY_REVENUECAT_PRODUCT_ID=ohey_plus_monthly"
             echo "OHEY_BACKEND_URL=https://api.oheyapp.com"
-            echo "OHEY_ENABLE_APPLE_OAUTH=true"
+            echo "OHEY_ENABLE_APPLE_OAUTH=false"
             if [ -n "${OHEY_REVENUECAT_IOS_API_KEY:-}" ]; then
               echo "OHEY_REVENUECAT_IOS_API_KEY=$OHEY_REVENUECAT_IOS_API_KEY"
             fi
@@ -499,8 +499,10 @@ jobs:
           from pathlib import Path
 
           # The App Store provisioning profiles used by CI intentionally do not
-          # include the App Group capability. Keep Release entitlements aligned
-          # with those profiles so TestFlight archives do not fail signing.
+          # include App Groups or Sign in with Apple yet. Keep Release
+          # entitlements aligned with those profiles so TestFlight archives do
+          # not fail signing; Apple OAuth remains disabled for this CI build
+          # until the Developer Portal capability/profile is updated manually.
           release_entitlements = [
               Path('ios/Runner/RunnerRelease.entitlements'),
               Path('ios/OheyWidgets/OheyWidgetsRelease.entitlements'),
@@ -511,6 +513,7 @@ jobs:
                   with path.open('rb') as handle:
                       data = plistlib.load(handle)
               data.pop('com.apple.security.application-groups', None)
+              data.pop('com.apple.developer.applesignin', None)
               if path.name == 'RunnerRelease.entitlements':
                   data['aps-environment'] = 'production'
               with path.open('wb') as handle:
