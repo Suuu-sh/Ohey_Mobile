@@ -20,5 +20,6 @@
   "OHEY_AUTH_REDIRECT_URL": "app.ohey.com://login-callback/",
   "GOOGLE_WEB_CLIENT_ID": "replace_with_google_web_client_id",
   "GOOGLE_IOS_CLIENT_ID": "replace_with_google_ios_client_id",
-  "GOOGLE_IOS_REVERSED_CLIENT_ID": "replace_with_google_ios_reversed_client_id"
+  "GOOGLE_IOS_REVERSED_CLIENT_ID": "replace_with_google_ios_reversed_client_id",
+  "OHEY_ENABLE_APPLE_OAUTH": true
 }
