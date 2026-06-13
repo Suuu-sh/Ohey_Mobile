@@ -17,6 +17,7 @@ import '../../../core/widgets/ohey_3d_button.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
+import '../application/ohey_auth_flow_policy.dart';
 import '../../profile/presentation/avatar_builder_screen.dart';
 
 part 'create_user_auth_helpers.dart';
@@ -73,6 +74,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _isBusy = false;
   bool _isLastAccountLoaded = false;
   bool _showAuthForm = false;
+  bool _isAwaitingExternalAuth = false;
   bool _obscurePlainLoginPassword = true;
   bool _obscureSignupPassword = true;
   bool _obscureSignupPasswordConfirmation = true;

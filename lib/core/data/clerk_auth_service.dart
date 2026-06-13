@@ -18,6 +18,7 @@ class ClerkAuthService {
   ClerkOheyAuth? _auth;
   Future<void>? _initializeFuture;
   clerk.SessionToken? _sessionToken;
+  bool _sessionSuspendedLocally = false;
   StreamSubscription<clerk.SessionToken>? _tokenSubscription;
   final _authChanges = StreamController<void>.broadcast();
 
@@ -25,13 +26,18 @@ class ClerkAuthService {
 
   bool get isInitialized => _auth != null;
 
-  String? get currentUserId => _auth?.user?.id;
+  String? get _rawCurrentUserId => _auth?.user?.id;
 
-  String? get currentUserEmail => _auth?.user?.email;
+  String? get currentUserId => isSignedIn ? _rawCurrentUserId : null;
 
-  String? get currentAccessToken => _sessionToken?.jwt;
+  String? get currentUserEmail => isSignedIn ? _auth?.user?.email : null;
 
-  bool get isSignedIn => _auth?.isSignedIn == true;
+  String? get currentAccessToken =>
+      _sessionSuspendedLocally ? null : _sessionToken?.jwt;
+
+  bool get isSignedIn =>
+      currentAccessToken?.trim().isNotEmpty == true &&
+      _rawCurrentUserId?.trim().isNotEmpty == true;
 
   Stream<void> get authChanges => _authChanges.stream;
 
@@ -59,12 +65,13 @@ class ClerkAuthService {
 
   Future<void> _refreshCachedSessionToken() async {
     final auth = _auth;
-    if (auth == null || !auth.isSignedIn) {
+    if (_sessionSuspendedLocally || auth == null || !auth.isSignedIn) {
       _sessionToken = null;
       return;
     }
     try {
-      _sessionToken = await auth.sessionToken();
+      final token = await auth.sessionToken();
+      _sessionToken = _sessionSuspendedLocally ? null : token;
     } catch (_) {
       _sessionToken = null;
     }
@@ -74,7 +81,7 @@ class ClerkAuthService {
     for (var attempt = 0; attempt < 10; attempt += 1) {
       await _refreshCachedSessionToken();
       if (_sessionToken?.jwt.trim().isNotEmpty == true &&
-          currentUserId != null) {
+          _rawCurrentUserId != null) {
         return;
       }
       await Future<void>.delayed(const Duration(milliseconds: 250));
@@ -84,6 +91,7 @@ class ClerkAuthService {
   Future<void> signInWithGoogleIdToken(String idToken) async {
     await initialize();
     final auth = _requireAuth();
+    _sessionSuspendedLocally = false;
     await auth.resetClient();
     await auth.idTokenSignIn(
       provider: clerk.IdTokenProvider.google,
@@ -96,6 +104,7 @@ class ClerkAuthService {
   Future<void> signInWithAppleIdToken(String idToken) async {
     await initialize();
     final auth = _requireAuth();
+    _sessionSuspendedLocally = false;
     await auth.resetClient();
     await auth.idTokenSignIn(
       provider: clerk.IdTokenProvider.apple,
@@ -111,6 +120,7 @@ class ClerkAuthService {
   }) async {
     await initialize();
     final auth = _requireAuth();
+    _sessionSuspendedLocally = false;
     await auth.resetClient();
     await auth.attemptSignIn(
       strategy: clerk.Strategy.password,
@@ -124,6 +134,8 @@ class ClerkAuthService {
   Future<Uri?> startOAuthSignIn(clerk.Strategy strategy) async {
     await initialize();
     final auth = _requireAuth();
+    _sessionSuspendedLocally = false;
+    await auth.resetClient();
     await auth.oauthSignIn(
       strategy: strategy,
       redirect: Uri.parse(AuthProviderConfig.redirectUrl),
@@ -148,6 +160,7 @@ class ClerkAuthService {
         uri.queryParameters['code'] ??
         uri.queryParameters['ticket'];
     if (token == null || token.trim().isEmpty) return;
+    _sessionSuspendedLocally = false;
     await _requireAuth().completeOAuthSignIn(token: token);
     await _refreshCachedSessionTokenWithRetry();
     _authChanges.add(null);
@@ -162,6 +175,8 @@ class ClerkAuthService {
   }) async {
     await initialize();
     final auth = _requireAuth();
+    _sessionSuspendedLocally = false;
+    await auth.resetClient();
     await auth.attemptSignUp(
       strategy: clerk.Strategy.password,
       emailAddress: email,
@@ -186,6 +201,7 @@ class ClerkAuthService {
     final auth = _requireAuth();
     for (final session in auth.client.sessions) {
       if (session.user.email?.trim().toLowerCase() == normalizedEmail) {
+        _sessionSuspendedLocally = false;
         await auth.activate(session);
         await _refreshCachedSessionTokenWithRetry();
         _authChanges.add(null);
@@ -197,6 +213,7 @@ class ClerkAuthService {
 
   Future<void> suspendCurrentSessionLocally() async {
     await initialize();
+    _sessionSuspendedLocally = true;
     _sessionToken = null;
     _authChanges.add(null);
   }
@@ -206,6 +223,7 @@ class ClerkAuthService {
     final auth = _auth;
     if (auth == null) return;
     await auth.signOut();
+    _sessionSuspendedLocally = false;
     _sessionToken = null;
     _authChanges.add(null);
   }

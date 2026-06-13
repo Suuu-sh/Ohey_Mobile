@@ -64,7 +64,10 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
     });
     try {
       final authRepository = ref.read(authRepositoryProvider);
-      final isBackendSignup = !_isLogin || !authRepository.isSignedIn;
+      final isBackendSignup = OheyAuthFlowPolicy.shouldUseBackendSignup(
+        isLoginFlow: _isLogin,
+        hasActiveSession: authRepository.isSignedIn,
+      );
       if (isBackendSignup) {
         final email = _emailController.text.trim();
         final password = _passwordController.text;

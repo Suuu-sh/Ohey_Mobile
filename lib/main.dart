@@ -10,12 +10,14 @@ import 'core/application/ohey_user_controller.dart';
 import 'core/data/auth_identity_provider.dart';
 import 'core/data/auth_state_provider.dart';
 import 'core/data/clerk_auth_service.dart';
+import 'core/data/ohey_last_account_store.dart';
 import 'core/services/ohey_ads_consent_service.dart';
 import 'core/services/ohey_plus_service.dart';
 import 'core/services/ohey_push_notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/ohey_theme_mode.dart';
 import 'core/widgets/ohey_tab_shell.dart';
+import 'features/onboarding/application/ohey_auth_flow_policy.dart';
 import 'package:ohey/core/theme/app_colors.dart';
 
 const _openingOheyAsset = 'assets/images/opening_ohey.png';
@@ -77,9 +79,13 @@ final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
 
 Future<void> _preloadBackendProfileIfSessionExists(Ref ref) async {
   final identity = ref.read(authIdentityProvider);
-  if (identity.currentAccessToken == null || identity.currentUserId == null) {
-    return;
-  }
+  final canPreload = OheyAuthFlowPolicy.shouldPreloadStoredSession(
+    hasActiveSession:
+        identity.currentAccessToken != null && identity.currentUserId != null,
+    isSessionRestoreSuppressed:
+        await OheyLastAccountStore.isSessionRestoreSuppressed(),
+  );
+  if (!canPreload) return;
 
   try {
     await ref
