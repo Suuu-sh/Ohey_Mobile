@@ -363,9 +363,29 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
           onClose: () => Navigator.of(sheetContext).pop(),
           children: [
             _SettingsTile(
+              icon: CupertinoIcons.square_arrow_right,
+              label: 'ログアウト',
+              subtitle: 'この端末からログアウトします',
+              accent: _ProfileColors.pink,
+              destructive: true,
+              onTap: () async {
+                try {
+                  await ref.read(oheyUserProvider.notifier).signOut();
+                } catch (e) {
+                  if (rootContext.mounted) {
+                    _showSnack(rootContext, 'ログアウト処理を完了しました。再度ログインしてください。');
+                  }
+                } finally {
+                  if (sheetContext.mounted) {
+                    Navigator.of(sheetContext).pop();
+                  }
+                }
+              },
+            ),
+            _SettingsTile(
               icon: CupertinoIcons.person_crop_circle_fill,
               label: 'ユーザー設定',
-              subtitle: 'プロフィール編集・Ohey Plus・ログアウト',
+              subtitle: 'プロフィール編集・Ohey Plus',
               accent: AppColors.primaryAction,
               onTap: () async {
                 if (sheetContext.mounted) {
@@ -532,26 +552,6 @@ Future<bool?> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
                 return;
               }
               await _showSettingsSheet(rootContext, ref);
-            },
-          ),
-          _SettingsTile(
-            icon: CupertinoIcons.square_arrow_right,
-            label: 'ログアウト',
-            subtitle: 'この端末からログアウトします',
-            accent: _ProfileColors.pink,
-            destructive: true,
-            onTap: () async {
-              try {
-                await ref.read(oheyUserProvider.notifier).signOut();
-              } catch (e) {
-                if (rootContext.mounted) {
-                  _showSnack(rootContext, 'ログアウト処理を完了しました。再度ログインしてください。');
-                }
-              } finally {
-                if (sheetContext.mounted) {
-                  Navigator.of(sheetContext).pop(false);
-                }
-              }
             },
           ),
         ],
