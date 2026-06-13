@@ -26,6 +26,8 @@ class AuthException implements Exception {
 
 enum OAuthProvider { google, apple }
 
+enum OAuthSignInResult { completed, pendingExternal, cancelled }
+
 class AuthRepository {
   AuthRepository(
     this._clerk, {
@@ -46,13 +48,13 @@ class AuthRepository {
     throw const AuthException('パスワード再設定は現在準備中です。');
   }
 
-  Future<void> signInWithOAuth(OAuthProvider provider) async {
+  Future<OAuthSignInResult> signInWithOAuth(OAuthProvider provider) async {
     if (provider == OAuthProvider.google) {
       try {
         final tokens = await _googleAuthService.signIn();
-        if (tokens == null) return;
+        if (tokens == null) return OAuthSignInResult.cancelled;
         await _clerk.signInWithGoogleIdToken(tokens.idToken);
-        return;
+        return OAuthSignInResult.completed;
       } on GoogleAuthException catch (e) {
         throw AuthException(e.message);
       }
@@ -61,9 +63,9 @@ class AuthRepository {
     if (provider == OAuthProvider.apple) {
       try {
         final tokens = await _appleAuthService.signIn();
-        if (tokens == null) return;
+        if (tokens == null) return OAuthSignInResult.cancelled;
         await _clerk.signInWithAppleIdToken(tokens.idToken);
-        return;
+        return OAuthSignInResult.completed;
       } on AppleAuthException catch (e) {
         throw AuthException(e.message);
       }
@@ -80,6 +82,7 @@ class AuthRepository {
     if (!launched) {
       throw const AuthException('OAuth provider could not be opened.');
     }
+    return OAuthSignInResult.pendingExternal;
   }
 
   Future<void> signInWithPassword({

@@ -8,6 +8,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _step = _OnboardingStep.auth;
       _isLogin = true;
       _showAuthForm = true;
+      _isAwaitingExternalAuth = false;
       _loginStep = _RegistrationStep.email;
       _registrationStep = _RegistrationStep.email;
       _passwordConfirmationController.clear();
@@ -21,6 +22,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _step = _OnboardingStep.auth;
       _isLogin = false;
       _showAuthForm = true;
+      _isAwaitingExternalAuth = false;
       _loginStep = _RegistrationStep.email;
       _registrationStep = _RegistrationStep.email;
       _passwordController.clear();
@@ -37,12 +39,14 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     setState(() {
       if (_registrationStep == _RegistrationStep.password) {
         _registrationStep = _RegistrationStep.email;
+        _isAwaitingExternalAuth = false;
         _error = null;
         _notice = null;
         return;
       }
       _step = _OnboardingStep.accountChoice;
       _isLogin = true;
+      _isAwaitingExternalAuth = false;
       _error = null;
       _notice = null;
     });
@@ -54,6 +58,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
         _loginStep = _RegistrationStep.email;
         _passwordController.clear();
         _passwordConfirmationController.clear();
+        _isAwaitingExternalAuth = false;
         _error = null;
         _notice = null;
         return;
@@ -61,12 +66,14 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       if (widget.startAtLogin && _lastAccounts.isNotEmpty) {
         _showAuthForm = false;
         _isLogin = true;
+        _isAwaitingExternalAuth = false;
         _error = null;
         _notice = null;
         return;
       }
       _step = _OnboardingStep.accountChoice;
       _isLogin = true;
+      _isAwaitingExternalAuth = false;
       _error = null;
       _notice = null;
     });
@@ -101,6 +108,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     }
     setState(() {
       _registrationStep = _RegistrationStep.password;
+      _isAwaitingExternalAuth = false;
       _error = null;
       _notice = null;
     });
@@ -123,6 +131,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _nameController.clear();
       _avatar = OheyAvatar.defaultAvatar;
       _step = _OnboardingStep.profile;
+      _isAwaitingExternalAuth = false;
       _error = null;
       _notice = null;
     });
@@ -204,27 +213,58 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
   ) async {
     setState(() {
       _isBusy = true;
+      _isAwaitingExternalAuth = true;
       _error = null;
       _notice = null;
     });
     try {
-      await ref.read(authRepositoryProvider).signInWithOAuth(provider);
+      final result = await ref
+          .read(authRepositoryProvider)
+          .signInWithOAuth(provider);
       if (!mounted) return;
+      if (result == OAuthSignInResult.completed ||
+          ref.read(authRepositoryProvider).isSignedIn) {
+        await _completeAuthenticatedSession();
+        return;
+      }
+      if (result == OAuthSignInResult.cancelled) {
+        setState(() => _isAwaitingExternalAuth = false);
+        return;
+      }
       setState(() {
         _notice = '$providerLabel認証を完了するとOheyに戻ります。';
       });
     } on AuthException catch (e) {
-      if (mounted) setState(() => _error = _friendlyAuthError(e.message));
+      if (mounted) {
+        setState(() {
+          _isAwaitingExternalAuth = false;
+          _error = _friendlyAuthError(e.message);
+        });
+      }
     } catch (e) {
-      if (mounted) setState(() => _error = _friendlyUnexpectedAuthError(e));
+      if (mounted) {
+        setState(() {
+          _isAwaitingExternalAuth = false;
+          _error = _friendlyUnexpectedAuthError(e);
+        });
+      }
     } finally {
       if (mounted) setState(() => _isBusy = false);
     }
   }
 
   Future<void> _handleClerkAuthSession() async {
-    if (_isBusy || !ref.read(authRepositoryProvider).isSignedIn) return;
-    if (widget.startAtLogin && !_showAuthForm && _isLogin) return;
+    if (!OheyAuthFlowPolicy.shouldHandleAuthChange(
+      awaitingExplicitExternalAuth: _isAwaitingExternalAuth,
+      isBusy: _isBusy,
+      hasActiveSession: ref.read(authRepositoryProvider).isSignedIn,
+    )) {
+      return;
+    }
+    await _completeAuthenticatedSession();
+  }
+
+  Future<void> _completeAuthenticatedSession() async {
     setState(() {
       _isBusy = true;
       _error = null;
@@ -237,6 +277,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       await _saveLastAccount(
         ref.read(authRepositoryProvider).currentEmail ?? '',
       );
+      if (mounted) setState(() => _isAwaitingExternalAuth = false);
     } catch (e) {
       if (mounted) setState(() => _error = _friendlyUnexpectedAuthError(e));
     } finally {

@@ -19,6 +19,7 @@ import '../../features/notifications/application/os_notification_service.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/yurubos/application/yurubo_controller.dart';
 import '../../features/onboarding/presentation/create_user_dialog.dart';
+import '../../features/onboarding/application/ohey_auth_flow_policy.dart';
 import '../application/ohey_user_controller.dart';
 import '../data/auth_identity_provider.dart';
 import '../data/auth_state_provider.dart';
@@ -498,9 +499,14 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       }
     }
 
+    final canRestoreStoredSession =
+        OheyAuthFlowPolicy.shouldPreloadStoredSession(
+          hasActiveSession: hasSession,
+          isSessionRestoreSuppressed: _isSessionRestoreSuppressed,
+        );
+
     if (user == null &&
-        hasSession &&
-        !_isSessionRestoreSuppressed &&
+        canRestoreStoredSession &&
         !_didAttemptProfileRestore &&
         !_didScheduleProfileRestore) {
       _didScheduleProfileRestore = true;
@@ -531,10 +537,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       });
     }
 
-    if (user == null &&
-        hasSession &&
-        !_isSessionRestoreSuppressed &&
-        !_didAttemptProfileRestore) {
+    if (user == null && canRestoreStoredSession && !_didAttemptProfileRestore) {
       return const OheyBackendBusyScreen();
     }
 
