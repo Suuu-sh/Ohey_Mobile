@@ -138,7 +138,7 @@ class AuthRepository {
         }),
       );
       final response = await request.close().timeout(
-        const Duration(seconds: 20),
+        const Duration(seconds: 30),
       );
       final text = await utf8.decoder.bind(response).join();
       if (response.statusCode < 200 || response.statusCode >= 300) {
