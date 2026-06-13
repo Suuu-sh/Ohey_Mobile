@@ -139,6 +139,7 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
       email: email,
       avatar: user?.avatar ?? _avatar,
     );
+    await OheyLastAccountStore.setSessionRestoreSuppressed(false);
   }
 
   Future<String?> _latestDisplayName(String? fallback) {

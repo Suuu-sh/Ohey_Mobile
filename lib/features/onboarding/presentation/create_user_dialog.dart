@@ -87,7 +87,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   void initState() {
     super.initState();
     final authRepository = ref.read(authRepositoryProvider);
-    if (authRepository.isSignedIn) {
+    if (authRepository.isSignedIn && !widget.startAtLogin) {
       _step = _OnboardingStep.profile;
       _emailController.text = authRepository.currentEmail ?? '';
     } else if (widget.startAtLogin) {

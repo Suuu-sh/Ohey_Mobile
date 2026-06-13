@@ -224,6 +224,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
 
   Future<void> _handleClerkAuthSession() async {
     if (_isBusy || !ref.read(authRepositoryProvider).isSignedIn) return;
+    if (widget.startAtLogin && !_showAuthForm && _isLogin) return;
     setState(() {
       _isBusy = true;
       _error = null;
@@ -248,76 +249,73 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     if (!mounted) return;
     await showOheyBottomSheet<void>(
       context: context,
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'アカウント管理',
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
+      builder: (context) => _AccountManagementSheet(
+        accounts: accounts,
+        onRemove: (account) async {
+          await OheyLastAccountStore.remove(account.email);
+          if (context.mounted) Navigator.of(context).pop();
+          await _loadLastAccount();
+        },
+      ),
+    );
+  }
+}
+
+class _AccountManagementSheet extends StatelessWidget {
+  const _AccountManagementSheet({
+    required this.accounts,
+    required this.onRemove,
+  });
+
+  final List<OheyLastAccount> accounts;
+  final Future<void> Function(OheyLastAccount account) onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final subtitleColor = titleColor.withValues(alpha: .58);
+    return OheyBottomSheetShell(
+      title: 'アカウント管理',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (accounts.isEmpty)
+            Text(
+              '保存済みアカウントはありません。',
+              style: TextStyle(
+                color: subtitleColor,
+                fontWeight: FontWeight.w800,
+              ),
+            )
+          else
+            for (final account in accounts)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  account.name,
+                  style: TextStyle(
+                    color: titleColor,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                subtitle: Text(
+                  account.email,
+                  style: TextStyle(
+                    color: subtitleColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                trailing: IconButton(
+                  icon: const Icon(
+                    CupertinoIcons.trash,
+                    color: AppColors.coral,
+                  ),
+                  onPressed: () => onRemove(account),
                 ),
               ),
-              const SizedBox(height: 12),
-              if (accounts.isEmpty)
-                Text(
-                  '保存済みアカウントはありません。',
-                  style: TextStyle(
-                    color: AppColors.white.withValues(alpha: .68),
-                    fontWeight: FontWeight.w800,
-                  ),
-                )
-              else
-                for (final account in accounts)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      account.name,
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    subtitle: Text(
-                      account.email,
-                      style: TextStyle(
-                        color: AppColors.white.withValues(alpha: .58),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(
-                        CupertinoIcons.trash,
-                        color: AppColors.coral,
-                      ),
-                      onPressed: () async {
-                        await OheyLastAccountStore.remove(account.email);
-                        if (context.mounted) Navigator.of(context).pop();
-                        await _loadLastAccount();
-                      },
-                    ),
-                  ),
-              const SizedBox(height: 8),
-              Ohey3DButton.secondary(
-                label: '閉じる',
-                icon: CupertinoIcons.xmark_circle_fill,
-                onTap: () => Navigator.of(context).pop(),
-                height: 48,
-                radius: 21,
-                color: AppColors.white.withValues(alpha: .07),
-                foregroundColor: AppColors.white.withValues(alpha: .76),
-                shadowColor: AppColors.cFF6E3E5D.withValues(alpha: .72),
-                fontSize: 14,
-                useGradient: false,
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }
