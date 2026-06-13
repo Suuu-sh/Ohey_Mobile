@@ -64,7 +64,7 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
     });
     try {
       final authRepository = ref.read(authRepositoryProvider);
-      final isBackendSignup = !authRepository.isSignedIn;
+      final isBackendSignup = !_isLogin || !authRepository.isSignedIn;
       if (isBackendSignup) {
         final email = _emailController.text.trim();
         final password = _passwordController.text;

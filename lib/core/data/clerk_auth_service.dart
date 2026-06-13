@@ -111,6 +111,7 @@ class ClerkAuthService {
   }) async {
     await initialize();
     final auth = _requireAuth();
+    await auth.resetClient();
     await auth.attemptSignIn(
       strategy: clerk.Strategy.password,
       identifier: email,

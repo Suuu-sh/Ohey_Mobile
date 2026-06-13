@@ -225,6 +225,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
   Future<void> _handleClerkAuthSession() async {
     if (_isBusy || !ref.read(authRepositoryProvider).isSignedIn) return;
     if (widget.startAtLogin && !_showAuthForm && _isLogin) return;
+    if (_step == _OnboardingStep.profile && !_isLogin) return;
     setState(() {
       _isBusy = true;
       _error = null;
