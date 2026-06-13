@@ -100,16 +100,21 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     _lastPresentedInviteId = null;
     _lastPresentedYuruboRequestKey = null;
     _notifiedYuruboRequestKeys.clear();
-    unawaited(
-      ref
-          .read(oheyUserProvider.notifier)
-          .loadFromBackendProfile()
-          .catchError((_) => false),
-    );
-    ref.invalidate(yuruboControllerProvider);
-    ref.invalidate(incomingInvitesProvider);
-    ref.invalidate(yuruboControllerProvider);
-    ref.invalidate(notificationControllerProvider);
+    final user = ref.read(oheyUserProvider);
+    if (user != null) {
+      unawaited(
+        ref
+            .read(oheyUserProvider.notifier)
+            .loadFromBackendProfile()
+            .catchError((_) => false),
+      );
+      ref.invalidate(yuruboControllerProvider);
+      ref.invalidate(incomingInvitesProvider);
+      ref.invalidate(yuruboControllerProvider);
+      ref.invalidate(notificationControllerProvider);
+    } else {
+      unawaited(_refreshSessionRestoreSuppression());
+    }
   }
 
   Future<void> _loadOnboardingPref() async {
@@ -130,6 +135,12 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     await SharedPreferences.getInstance().then(
       (prefs) => prefs.setBool(OheyLastAccountStore.onboardingSeenKey, true),
     );
+  }
+
+  Future<void> _refreshSessionRestoreSuppression() async {
+    final suppressed = await OheyLastAccountStore.isSessionRestoreSuppressed();
+    if (!mounted || suppressed == _isSessionRestoreSuppressed) return;
+    setState(() => _isSessionRestoreSuppressed = suppressed);
   }
 
   void _startAppLinkListener() {
