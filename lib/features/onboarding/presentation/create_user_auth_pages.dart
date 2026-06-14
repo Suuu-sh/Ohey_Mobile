@@ -197,6 +197,10 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
   }
 
   Widget _buildPlainLogin(BuildContext context) {
+    if (_passwordResetStep == _PasswordResetStep.code) {
+      return _buildPasswordResetCodePage(context);
+    }
+
     final isEmailStep = _loginStep == _RegistrationStep.email;
     final canContinue = _emailController.text.trim().isNotEmpty && !_isBusy;
     final canSubmit = _hasValidPassword(_passwordController.text) && !_isBusy;
@@ -334,6 +338,166 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                   height: 1.45,
                 ),
               ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPasswordResetCodePage(BuildContext context) {
+    final code = _passwordResetCodeController.text.trim();
+    final password = _resetPasswordController.text;
+    final confirmation = _resetPasswordConfirmationController.text;
+    final passwordError = password.isNotEmpty
+        ? _signupPasswordValidationMessage(password)
+        : null;
+    final showPasswordMismatch =
+        passwordError == null &&
+        confirmation.isNotEmpty &&
+        !_hasMatchingPasswords(password, confirmation);
+    final canSubmit =
+        code.length == 6 &&
+        password.isNotEmpty &&
+        confirmation.isNotEmpty &&
+        !_isBusy;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final hasMessage =
+            _error != null || _notice != null || passwordError != null;
+        final compact = constraints.maxHeight < 760 || hasMessage;
+        final fieldHeight = compact ? 54.0 : 60.0;
+        final buttonHeight = compact ? 56.0 : 64.0;
+        return _fixedAuthPage(
+          constraints: constraints,
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _SignupProgressHeader(
+                progress: .9,
+                onBack: _isBusy ? null : _handleLoginBack,
+              ),
+              SizedBox(height: compact ? 18 : 42),
+              Text(
+                'パスワードを再設定します',
+                style: TextStyle(
+                  color: AppColors.white,
+                  fontSize: compact ? 26 : 28,
+                  fontWeight: FontWeight.w900,
+                  height: 1.18,
+                  letterSpacing: -.8,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                '${_emailController.text.trim()} に届いたコードと新しいパスワードを入力してね。',
+                style: TextStyle(
+                  color: AppColors.white.withValues(alpha: .82),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  height: 1.45,
+                ),
+              ),
+              SizedBox(height: compact ? 18 : 28),
+              _SignupInputBox(
+                child: _PlainLoginTextField(
+                  controller: _passwordResetCodeController,
+                  enabled: !_isBusy,
+                  hintText: '6桁のコード',
+                  height: fieldHeight,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.oneTimeCode],
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+              SizedBox(height: compact ? 10 : 14),
+              _SignupInputBox(
+                child: _PlainLoginTextField(
+                  controller: _resetPasswordController,
+                  enabled: !_isBusy,
+                  hintText: '新しいパスワード',
+                  height: fieldHeight,
+                  keyboardType: TextInputType.visiblePassword,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.newPassword],
+                  obscureText: _obscureResetPassword,
+                  onChanged: (_) => setState(() {}),
+                  trailing: _signupPasswordVisibilityButton(
+                    obscureText: _obscureResetPassword,
+                    onTap: () => setState(
+                      () => _obscureResetPassword = !_obscureResetPassword,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: compact ? 10 : 14),
+              _SignupInputBox(
+                child: _PlainLoginTextField(
+                  controller: _resetPasswordConfirmationController,
+                  enabled: !_isBusy,
+                  hintText: '新しいパスワード（確認）',
+                  height: fieldHeight,
+                  keyboardType: TextInputType.visiblePassword,
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.newPassword],
+                  obscureText: _obscureResetPasswordConfirmation,
+                  onChanged: (_) => setState(() {}),
+                  onSubmitted: (_) {
+                    if (canSubmit) _completePasswordReset();
+                  },
+                  trailing: _signupPasswordVisibilityButton(
+                    obscureText: _obscureResetPasswordConfirmation,
+                    onTap: () => setState(
+                      () => _obscureResetPasswordConfirmation =
+                          !_obscureResetPasswordConfirmation,
+                    ),
+                  ),
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                _DarkMessageText(_error!, isError: true),
+              ] else if (passwordError != null) ...[
+                const SizedBox(height: 10),
+                _DarkMessageText(passwordError, isError: true),
+              ] else if (showPasswordMismatch) ...[
+                const SizedBox(height: 10),
+                const _DarkMessageText(
+                  _passwordConfirmationRequirementMessage,
+                  isError: true,
+                ),
+              ],
+              if (_notice != null) ...[
+                const SizedBox(height: 10),
+                _DarkMessageText(_notice!),
+              ],
+              SizedBox(height: compact ? 18 : 28),
+              _SignupStepButton(
+                label: '再設定してログイン',
+                height: buttonHeight,
+                busy: _isBusy,
+                enabled: canSubmit,
+                onTap: canSubmit ? _completePasswordReset : null,
+              ),
+              SizedBox(height: compact ? 8 : 16),
+              SizedBox(
+                height: compact ? 34 : 44,
+                child: TextButton(
+                  onPressed: _isBusy ? null : _sendPasswordResetEmail,
+                  child: const Text(
+                    'コードを再送する',
+                    style: TextStyle(
+                      color: _authPink,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+              const Spacer(),
             ],
           ),
         );

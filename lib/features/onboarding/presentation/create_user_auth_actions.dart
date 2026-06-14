@@ -12,6 +12,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _loginStep = _RegistrationStep.email;
       _registrationStep = _RegistrationStep.email;
       _passwordConfirmationController.clear();
+      _clearPasswordResetFields();
       _error = null;
       _notice = null;
     });
@@ -27,6 +28,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _registrationStep = _RegistrationStep.email;
       _passwordController.clear();
       _passwordConfirmationController.clear();
+      _clearPasswordResetFields();
       _userIdController.clear();
       _nameController.clear();
       _avatar = OheyAvatar.defaultAvatar;
@@ -54,10 +56,18 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
 
   void _handleLoginBack() {
     setState(() {
+      if (_passwordResetStep != _PasswordResetStep.none) {
+        _passwordResetStep = _PasswordResetStep.none;
+        _clearPasswordResetFields();
+        _error = null;
+        _notice = null;
+        return;
+      }
       if (_loginStep == _RegistrationStep.password) {
         _loginStep = _RegistrationStep.email;
         _passwordController.clear();
         _passwordConfirmationController.clear();
+        _clearPasswordResetFields();
         _isAwaitingExternalAuth = false;
         _error = null;
         _notice = null;
@@ -142,6 +152,15 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     });
   }
 
+  void _clearPasswordResetFields() {
+    _passwordResetStep = _PasswordResetStep.none;
+    _passwordResetCodeController.clear();
+    _resetPasswordController.clear();
+    _resetPasswordConfirmationController.clear();
+    _obscureResetPassword = true;
+    _obscureResetPasswordConfirmation = true;
+  }
+
   Future<void> _sendPasswordResetEmail() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
@@ -162,8 +181,58 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       await ref.read(authRepositoryProvider).resetPasswordForEmail(email);
       if (!mounted) return;
       setState(() {
-        _notice = '再設定メールを送ったよ。リンクを開いてね。';
+        _passwordResetStep = _PasswordResetStep.code;
+        _passwordResetCodeController.clear();
+        _resetPasswordController.clear();
+        _resetPasswordConfirmationController.clear();
+        _notice = '再設定メールを送ったよ。メール内のコードを入力してね。';
       });
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = _friendlyAuthError(e.message));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = _friendlyUnexpectedAuthError(e));
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
+  }
+
+  Future<void> _completePasswordReset() async {
+    final email = _emailController.text.trim();
+    final code = _passwordResetCodeController.text.trim();
+    final password = _resetPasswordController.text;
+    final confirmation = _resetPasswordConfirmationController.text;
+    if (code.length != 6) {
+      setState(() => _error = 'メールに届いた6桁のコードを入力してください。');
+      return;
+    }
+    final passwordError = _signupPasswordValidationMessage(password);
+    if (passwordError != null) {
+      setState(() => _error = passwordError);
+      return;
+    }
+    if (!_hasMatchingPasswords(password, confirmation)) {
+      setState(() => _error = _passwordConfirmationRequirementMessage);
+      return;
+    }
+
+    setState(() {
+      _isBusy = true;
+      _error = null;
+      _notice = null;
+    });
+
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .completePasswordReset(
+            email: email,
+            code: code,
+            newPassword: password,
+          );
+      if (!mounted) return;
+      await _completeAuthenticatedSession();
     } on AuthException catch (e) {
       if (!mounted) return;
       setState(() => _error = _friendlyAuthError(e.message));

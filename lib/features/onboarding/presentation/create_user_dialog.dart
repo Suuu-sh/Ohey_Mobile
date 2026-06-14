@@ -42,6 +42,8 @@ enum _OnboardingStep { intro, accountChoice, auth, profile }
 
 enum _RegistrationStep { email, password }
 
+enum _PasswordResetStep { none, code }
+
 enum _SocialAuthIntent { signup, login }
 
 const _authPink = AppColors.coral;
@@ -77,10 +79,16 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _showAuthForm = false;
   bool _isAwaitingExternalAuth = false;
   bool _obscurePlainLoginPassword = true;
+  bool _obscureResetPassword = true;
+  bool _obscureResetPasswordConfirmation = true;
   bool _obscureSignupPassword = true;
   bool _obscureSignupPasswordConfirmation = true;
   _RegistrationStep _loginStep = _RegistrationStep.email;
   _RegistrationStep _registrationStep = _RegistrationStep.email;
+  _PasswordResetStep _passwordResetStep = _PasswordResetStep.none;
+  final _passwordResetCodeController = TextEditingController();
+  final _resetPasswordController = TextEditingController();
+  final _resetPasswordConfirmationController = TextEditingController();
   List<OheyLastAccount> _lastAccounts = const <OheyLastAccount>[];
   String? _error;
   String? _notice;
@@ -121,6 +129,9 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     _emailController.dispose();
     _passwordController.dispose();
     _passwordConfirmationController.dispose();
+    _passwordResetCodeController.dispose();
+    _resetPasswordController.dispose();
+    _resetPasswordConfirmationController.dispose();
     _userIdController.dispose();
     _nameController.dispose();
     _clerkAuthSubscription?.cancel();
@@ -142,7 +153,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
             switchOutCurve: Curves.easeOutCubic,
             child: KeyedSubtree(
               key: ValueKey(
-                '$_step-$_showAuthForm-$_isLogin-$_loginStep-$_registrationStep',
+                '$_step-$_showAuthForm-$_isLogin-$_loginStep-$_registrationStep-$_passwordResetStep',
               ),
               child: switch (_step) {
                 _OnboardingStep.intro => _FullScreenStep(
