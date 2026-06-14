@@ -234,30 +234,32 @@ class ClerkAuthService {
     final normalizedEmail = email.trim().toLowerCase();
     if (normalizedEmail.isEmpty) return false;
     final auth = _requireAuth();
-    for (final session in auth.client.sessions) {
-      if (session.user.email?.trim().toLowerCase() == normalizedEmail) {
-        await auth.activate(session);
-        return true;
-      }
-    }
-    return false;
+    final matchingSessions =
+        auth.client.sessions
+            .where(
+              (session) =>
+                  session.user.email?.trim().toLowerCase() == normalizedEmail,
+            )
+            .toList()
+          ..sort((a, b) {
+            if (a.isActive != b.isActive) return a.isActive ? -1 : 1;
+            return b.lastActiveAt.compareTo(a.lastActiveAt);
+          });
+    if (matchingSessions.isEmpty) return false;
+    await auth.activate(matchingSessions.first);
+    return true;
   }
 
   Future<bool> switchToSavedAccount(String email) async {
     await initialize();
     final normalizedEmail = email.trim().toLowerCase();
     if (normalizedEmail.isEmpty) return false;
-    final auth = _requireAuth();
-    for (final session in auth.client.sessions) {
-      if (session.user.email?.trim().toLowerCase() == normalizedEmail) {
-        _sessionSuspendedLocally = false;
-        await auth.activate(session);
-        await _refreshCachedSessionTokenWithRetry();
-        _authChanges.add(null);
-        return _sessionToken?.jwt.trim().isNotEmpty == true;
-      }
-    }
-    return false;
+    final activated = await _activateSessionForEmail(normalizedEmail);
+    if (!activated) return false;
+    _sessionSuspendedLocally = false;
+    await _refreshCachedSessionTokenWithRetry();
+    _authChanges.add(null);
+    return _sessionToken?.jwt.trim().isNotEmpty == true;
   }
 
   Future<void> suspendCurrentSessionLocally() async {
