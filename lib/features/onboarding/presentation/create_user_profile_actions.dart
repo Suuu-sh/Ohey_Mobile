@@ -74,8 +74,9 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
         if (!_hasValidEmailAddress(email)) {
           throw const AuthException(_emailInputRequirementMessage);
         }
-        if (!_hasValidPassword(password)) {
-          throw const AuthException(_emailPasswordRequirementMessage);
+        final passwordError = _signupPasswordValidationMessage(password);
+        if (passwordError != null) {
+          throw AuthException(passwordError);
         }
         if (!_hasMatchingPasswords(
           password,

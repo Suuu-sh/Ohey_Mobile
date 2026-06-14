@@ -118,8 +118,13 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final passwordConfirmation = _passwordConfirmationController.text;
-    if (email.isEmpty || !_hasValidPassword(password)) {
-      setState(() => _error = _emailPasswordRequirementMessage);
+    if (email.isEmpty) {
+      setState(() => _error = _emailInputRequirementMessage);
+      return;
+    }
+    final passwordError = _signupPasswordValidationMessage(password);
+    if (passwordError != null) {
+      setState(() => _error = passwordError);
       return;
     }
     if (!_hasMatchingPasswords(password, passwordConfirmation)) {

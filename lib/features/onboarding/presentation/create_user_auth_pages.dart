@@ -25,11 +25,14 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
     final password = _passwordController.text;
     final passwordConfirmation = _passwordConfirmationController.text;
     final canContinue = _emailController.text.trim().isNotEmpty && !_isBusy;
-    final canRegister =
-        _hasValidSignupPasswords(password, passwordConfirmation) && !_isBusy;
+    final canTapPasswordContinue =
+        password.isNotEmpty && passwordConfirmation.isNotEmpty && !_isBusy;
+    final signupPasswordError = !isEmailStep && password.isNotEmpty
+        ? _signupPasswordValidationMessage(password)
+        : null;
     final showPasswordMismatch =
         !isEmailStep &&
-        _hasValidPassword(password) &&
+        signupPasswordError == null &&
         passwordConfirmation.isNotEmpty &&
         !_hasMatchingPasswords(password, passwordConfirmation);
 
@@ -110,7 +113,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                     obscureText: _obscureSignupPasswordConfirmation,
                     onChanged: (_) => setState(() {}),
                     onSubmitted: (_) {
-                      if (canRegister) _goToSignupProfileStep();
+                      if (canTapPasswordContinue) _goToSignupProfileStep();
                     },
                     trailing: _signupPasswordVisibilityButton(
                       obscureText: _obscureSignupPasswordConfirmation,
@@ -125,6 +128,9 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
               if (_error != null) ...[
                 const SizedBox(height: 10),
                 _DarkMessageText(_error!, isError: true),
+              ] else if (signupPasswordError != null) ...[
+                const SizedBox(height: 10),
+                _DarkMessageText(signupPasswordError, isError: true),
               ] else if (showPasswordMismatch) ...[
                 const SizedBox(height: 10),
                 const _DarkMessageText(
@@ -141,10 +147,10 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                 label: isEmailStep ? '次へ' : '次へ',
                 height: buttonHeight,
                 busy: _isBusy,
-                enabled: isEmailStep ? canContinue : canRegister,
+                enabled: isEmailStep ? canContinue : canTapPasswordContinue,
                 onTap: isEmailStep
                     ? (canContinue ? _goToSignupPasswordStep : null)
-                    : (canRegister ? _goToSignupProfileStep : null),
+                    : (canTapPasswordContinue ? _goToSignupProfileStep : null),
               ),
               if (!isEmailStep) ...[
                 const SizedBox(height: 20),
