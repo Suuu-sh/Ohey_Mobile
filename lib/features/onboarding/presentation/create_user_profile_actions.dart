@@ -21,6 +21,11 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
       }
 
       if (_isLogin) {
+        // Do not let a stale saved Clerk session carry the user past the
+        // password page. The password attempt below must be the only session
+        // that can advance the login flow.
+        await authRepository.suspendCurrentSessionLocally();
+        if (!mounted) return;
         await authRepository.signInWithPassword(
           email: email,
           password: password,
