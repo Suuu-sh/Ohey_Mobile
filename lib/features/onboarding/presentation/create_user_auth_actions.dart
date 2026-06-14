@@ -260,10 +260,10 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
           _emailController.text = account.email;
           _showAuthForm = true;
           _isLogin = true;
-          _loginStep = _RegistrationStep.email;
+          _loginStep = _RegistrationStep.password;
           _passwordController.clear();
           _passwordConfirmationController.clear();
-          _notice = 'この端末の保存済みセッションが切れています。メール、Google、またはAppleで再ログインしてね。';
+          _notice = '保存済みログインを確認できませんでした。パスワード、Google、またはAppleで再ログインしてね。';
         });
         return;
       }
