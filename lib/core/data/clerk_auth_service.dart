@@ -102,7 +102,6 @@ class ClerkAuthService {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.resetClient();
     await auth.idTokenSignIn(
       provider: clerk.IdTokenProvider.google,
       token: idToken.trim(),
@@ -115,7 +114,6 @@ class ClerkAuthService {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.resetClient();
     await auth.idTokenSignIn(
       provider: clerk.IdTokenProvider.apple,
       token: idToken.trim(),
@@ -128,7 +126,6 @@ class ClerkAuthService {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.resetClient();
     await auth.initiatePasswordReset(
       identifier: email.trim(),
       strategy: clerk.Strategy.resetPasswordEmailCode,
@@ -150,6 +147,7 @@ class ClerkAuthService {
       code: code.trim(),
       password: newPassword,
     );
+    await _activateSessionForEmail(email);
     await _refreshCachedSessionTokenWithRetry();
     _authChanges.add(null);
   }
@@ -161,12 +159,12 @@ class ClerkAuthService {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.resetClient();
     await auth.attemptSignIn(
       strategy: clerk.Strategy.password,
       identifier: email,
       password: password,
     );
+    await _activateSessionForEmail(email);
     await _refreshCachedSessionTokenWithRetry();
     _authChanges.add(null);
   }
@@ -175,7 +173,6 @@ class ClerkAuthService {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.resetClient();
     await auth.oauthSignIn(
       strategy: strategy,
       redirect: Uri.parse(AuthProviderConfig.redirectUrl),
@@ -216,7 +213,6 @@ class ClerkAuthService {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.resetClient();
     await auth.attemptSignUp(
       strategy: clerk.Strategy.password,
       emailAddress: email,
@@ -232,6 +228,19 @@ class ClerkAuthService {
     );
     await _refreshCachedSessionToken();
     _authChanges.add(null);
+  }
+
+  Future<bool> _activateSessionForEmail(String email) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.isEmpty) return false;
+    final auth = _requireAuth();
+    for (final session in auth.client.sessions) {
+      if (session.user.email?.trim().toLowerCase() == normalizedEmail) {
+        await auth.activate(session);
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<bool> switchToSavedAccount(String email) async {
