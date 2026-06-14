@@ -37,6 +37,9 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
           await _saveLastAccount(email);
           return;
         }
+        throw const AuthException(
+          'プロフィールが見つかりませんでした。別のログイン方法を試すか、サポートに連絡してください。',
+        );
       } else {
         _goToSignupProfileStep();
         return;
