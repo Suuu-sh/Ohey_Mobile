@@ -42,14 +42,17 @@ enum _OnboardingStep { intro, accountChoice, auth, profile }
 
 enum _RegistrationStep { email, password }
 
+enum _PasswordResetStep { none, code }
+
 enum _SocialAuthIntent { signup, login }
 
 const _authPink = AppColors.coral;
 const _authPinkShadow = AppColors.cFFE05F83;
 const _authPinkInk = AppColors.cFF2B1320;
-const _minPasswordLength = 6;
+const _loginMinPasswordLength = 6;
+const _signupMinPasswordLength = 8;
 const _emailPasswordRequirementMessage =
-    'メールアドレスと$_minPasswordLength文字以上のパスワードを入力してください。';
+    'メールアドレスと$_loginMinPasswordLength文字以上のパスワードを入力してください。';
 
 class CreateUserDialog extends ConsumerStatefulWidget {
   const CreateUserDialog({super.key, this.startAtLogin = false});
@@ -76,10 +79,16 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   bool _showAuthForm = false;
   bool _isAwaitingExternalAuth = false;
   bool _obscurePlainLoginPassword = true;
+  bool _obscureResetPassword = true;
+  bool _obscureResetPasswordConfirmation = true;
   bool _obscureSignupPassword = true;
   bool _obscureSignupPasswordConfirmation = true;
   _RegistrationStep _loginStep = _RegistrationStep.email;
   _RegistrationStep _registrationStep = _RegistrationStep.email;
+  _PasswordResetStep _passwordResetStep = _PasswordResetStep.none;
+  final _passwordResetCodeController = TextEditingController();
+  final _resetPasswordController = TextEditingController();
+  final _resetPasswordConfirmationController = TextEditingController();
   List<OheyLastAccount> _lastAccounts = const <OheyLastAccount>[];
   String? _error;
   String? _notice;
@@ -120,6 +129,9 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     _emailController.dispose();
     _passwordController.dispose();
     _passwordConfirmationController.dispose();
+    _passwordResetCodeController.dispose();
+    _resetPasswordController.dispose();
+    _resetPasswordConfirmationController.dispose();
     _userIdController.dispose();
     _nameController.dispose();
     _clerkAuthSubscription?.cancel();
@@ -141,7 +153,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
             switchOutCurve: Curves.easeOutCubic,
             child: KeyedSubtree(
               key: ValueKey(
-                '$_step-$_showAuthForm-$_isLogin-$_loginStep-$_registrationStep',
+                '$_step-$_showAuthForm-$_isLogin-$_loginStep-$_registrationStep-$_passwordResetStep',
               ),
               child: switch (_step) {
                 _OnboardingStep.intro => _FullScreenStep(

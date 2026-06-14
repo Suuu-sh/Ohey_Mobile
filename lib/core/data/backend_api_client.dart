@@ -12,6 +12,7 @@ final backendApiClientProvider = Provider<BackendApiClient>((ref) {
   return BackendApiClient(
     baseUrl: BackendConfig.baseUrl,
     accessTokenProvider: () => authIdentity.currentAccessToken,
+    accessTokenRefreshProvider: authIdentity.currentAccessTokenOrRefresh,
     userIdProvider: () => authIdentity.currentUserId,
     tokenValidator: authIdentity.isTokenValidForEnvironment,
   );
@@ -21,6 +22,7 @@ class BackendApiClient {
   BackendApiClient({
     required String baseUrl,
     required this.accessTokenProvider,
+    this.accessTokenRefreshProvider,
     required this.userIdProvider,
     required this.tokenValidator,
     HttpClient? httpClient,
@@ -30,6 +32,7 @@ class BackendApiClient {
   final Uri _baseUri;
   final HttpClient _httpClient;
   final String? Function() accessTokenProvider;
+  final Future<String?> Function()? accessTokenRefreshProvider;
   final String? Function() userIdProvider;
   final bool Function(String token) tokenValidator;
 
@@ -108,8 +111,11 @@ class BackendApiClient {
     Map<String, String>? query,
     Map<String, dynamic>? body,
   }) async {
-    final token = accessTokenProvider();
+    var token = accessTokenProvider();
     final userId = userIdProvider();
+    if (token == null || token.isEmpty) {
+      token = await accessTokenRefreshProvider?.call();
+    }
     if (token == null || token.isEmpty || userId == null || userId.isEmpty) {
       throw const BackendApiException('ログインが必要です。');
     }

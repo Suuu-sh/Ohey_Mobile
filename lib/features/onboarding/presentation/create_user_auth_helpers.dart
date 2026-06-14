@@ -1,16 +1,26 @@
 part of 'create_user_dialog.dart';
 
 bool _hasValidPassword(String password) =>
-    password.length >= _minPasswordLength;
+    password.length >= _loginMinPasswordLength;
+
+String? _signupPasswordValidationMessage(String password) {
+  if (password.length < _signupMinPasswordLength) {
+    return _signupPasswordRequirementMessage;
+  }
+  final hasLetter = RegExp(r'[A-Za-z]').hasMatch(password);
+  final hasDigit = RegExp(r'\d').hasMatch(password);
+  if (!hasLetter || !hasDigit) {
+    return _signupPasswordRequirementMessage;
+  }
+  return null;
+}
 
 bool _hasMatchingPasswords(String password, String confirmation) =>
     password == confirmation;
 
-bool _hasValidSignupPasswords(String password, String confirmation) =>
-    _hasValidPassword(password) &&
-    _hasMatchingPasswords(password, confirmation);
-
 const _emailInputRequirementMessage = '半角のメールアドレスを入力してね。';
+const _signupPasswordRequirementMessage =
+    'パスワードは$_signupMinPasswordLength文字以上で、英字と数字を含めてください。';
 const _passwordConfirmationRequirementMessage = 'パスワードが一致していません。';
 
 bool _hasValidEmailAddress(String email) {

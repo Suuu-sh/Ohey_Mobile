@@ -35,6 +35,16 @@ class ClerkAuthService {
   String? get currentAccessToken =>
       _sessionSuspendedLocally ? null : _sessionToken?.jwt;
 
+  Future<String?> currentAccessTokenOrRefresh() async {
+    if (_sessionSuspendedLocally) return null;
+    if (_sessionToken?.jwt.trim().isNotEmpty == true) {
+      return _sessionToken?.jwt;
+    }
+    await initialize();
+    await _refreshCachedSessionTokenWithRetry();
+    return _sessionSuspendedLocally ? null : _sessionToken?.jwt;
+  }
+
   bool get isSignedIn =>
       currentAccessToken?.trim().isNotEmpty == true &&
       _rawCurrentUserId?.trim().isNotEmpty == true;
@@ -109,6 +119,36 @@ class ClerkAuthService {
     await auth.idTokenSignIn(
       provider: clerk.IdTokenProvider.apple,
       token: idToken.trim(),
+    );
+    await _refreshCachedSessionTokenWithRetry();
+    _authChanges.add(null);
+  }
+
+  Future<void> sendPasswordResetCode(String email) async {
+    await initialize();
+    final auth = _requireAuth();
+    _sessionSuspendedLocally = false;
+    await auth.resetClient();
+    await auth.initiatePasswordReset(
+      identifier: email.trim(),
+      strategy: clerk.Strategy.resetPasswordEmailCode,
+    );
+    _authChanges.add(null);
+  }
+
+  Future<void> resetPasswordWithCode({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    await initialize();
+    final auth = _requireAuth();
+    _sessionSuspendedLocally = false;
+    await auth.attemptSignIn(
+      strategy: clerk.Strategy.resetPasswordEmailCode,
+      identifier: email.trim(),
+      code: code.trim(),
+      password: newPassword,
     );
     await _refreshCachedSessionTokenWithRetry();
     _authChanges.add(null);

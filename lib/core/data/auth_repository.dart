@@ -45,7 +45,19 @@ class AuthRepository {
   String? get currentEmail => _clerk.currentUserEmail;
 
   Future<void> resetPasswordForEmail(String email) {
-    throw const AuthException('パスワード再設定は現在準備中です。');
+    return _clerk.sendPasswordResetCode(email);
+  }
+
+  Future<void> completePasswordReset({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) {
+    return _clerk.resetPasswordWithCode(
+      email: email,
+      code: code,
+      newPassword: newPassword,
+    );
   }
 
   Future<OAuthSignInResult> signInWithOAuth(OAuthProvider provider) async {
@@ -138,7 +150,7 @@ class AuthRepository {
         }),
       );
       final response = await request.close().timeout(
-        const Duration(seconds: 20),
+        const Duration(seconds: 30),
       );
       final text = await utf8.decoder.bind(response).join();
       if (response.statusCode < 200 || response.statusCode >= 300) {
