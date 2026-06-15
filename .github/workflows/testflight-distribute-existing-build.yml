@@ -19,10 +19,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
 
       - name: Assign build and notify testers via Shared action
-        uses: Suuu-sh/Shared/actions/testflight-distribute-existing-build@main
+        uses: Suuu-sh/Shared/actions/testflight-distribute-existing-build@7f6f9dc12a0b3e34bee54aaf7c60f45dadfb6ba4
         with:
           app-bundle-id: app.ohey.com
           app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}

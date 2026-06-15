@@ -17,6 +17,7 @@ import '../../../core/data/ohey_ad_entry_builder.dart';
 import '../../../core/data/user_repository.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
+import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_user.dart';
 import '../../../core/models/wish_item.dart';
@@ -364,6 +365,32 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     }
   }
 
+  Future<void> _acceptInvite(OheyInvite invite) async {
+    try {
+      await ref.read(inviteControllerProvider).accept(invite.id);
+      if (!mounted) return;
+      HapticFeedback.lightImpact();
+      ref.invalidate(incomingInvitesProvider);
+      ref.invalidate(todayReservationsProvider);
+      OheyToast.show(
+        context,
+        '${invite.inviter.name}のお誘いを承認しました。',
+        icon: CupertinoIcons.checkmark_circle_fill,
+        placement: OheyToastPlacement.bottom,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      HapticFeedback.mediumImpact();
+      OheyToast.show(
+        context,
+        '承認できなかったよ。あとでもう一度試してね',
+        icon: CupertinoIcons.exclamationmark_triangle_fill,
+        placement: OheyToastPlacement.bottom,
+      );
+      rethrow;
+    }
+  }
+
   Future<void> _sendGroupInvites(List<OheyFriend> friends) async {
     if (_isSendingGroupInvite || friends.isEmpty) return;
     final draft = await _showInviteOptionsSheet(
@@ -440,11 +467,13 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     ref.invalidate(pendingFriendRequestsProvider);
     ref.invalidate(friendsForDateProvider);
     ref.invalidate(outgoingActiveInvitesProvider(null));
+    ref.invalidate(incomingInvitesProvider);
     ref.invalidate(todayReservationsProvider);
     await Future.wait([
       ref.refresh(friendsProvider.future),
       ref.refresh(pendingFriendRequestsProvider.future),
       ref.refresh(outgoingActiveInvitesProvider(null).future),
+      ref.refresh(incomingInvitesProvider.future),
       ref.refresh(todayReservationsProvider.future),
     ]);
     if (mounted) setState(() => _showRefreshDone = true);
@@ -462,6 +491,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             .toList(growable: false) ??
         const <OheyFriendRequestItem>[];
     final currentFriends = friendsAsync.value;
+    final incomingInvites =
+        ref.watch(incomingInvitesProvider).asData?.value ??
+        const <OheyInvite>[];
     final persistedInvitedFriendIds =
         ref
             .watch(outgoingActiveInvitesProvider(null))
@@ -587,6 +619,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                                 selectedCustomFilter: selectedCustomFilter,
                                 favoriteOverrides: _favoriteOverrides,
                                 invitedFriendIds: invitedFriendIds,
+                                incomingInvites: incomingInvites,
                                 isSendingGroupInvite: _isSendingGroupInvite,
                                 onFavoriteToggle: (friend, isFavorite) =>
                                     _onToggleFavorite(
@@ -596,6 +629,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                                     ),
                                 onAddFriend: _openAddFriend,
                                 onInvite: (friend) => _sendInvite(friend),
+                                onAcceptInvite: _acceptInvite,
                                 onGroupInvite: _sendGroupInvites,
                                 onInviteAnimationComplete: _markInviteSent,
                                 onProfile: (friend, status) =>
@@ -612,6 +646,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                               selectedCustomFilter: selectedCustomFilter,
                               favoriteOverrides: _favoriteOverrides,
                               invitedFriendIds: invitedFriendIds,
+                              incomingInvites: incomingInvites,
                               isSendingGroupInvite: _isSendingGroupInvite,
                               onFavoriteToggle: (friend, isFavorite) =>
                                   _onToggleFavorite(
@@ -621,6 +656,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                                   ),
                               onAddFriend: _openAddFriend,
                               onInvite: (friend) => _sendInvite(friend),
+                              onAcceptInvite: _acceptInvite,
                               onGroupInvite: _sendGroupInvites,
                               onInviteAnimationComplete: _markInviteSent,
                               onProfile: (friend, status) =>

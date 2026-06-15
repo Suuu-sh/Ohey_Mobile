@@ -641,7 +641,7 @@ String _friendRequestSettingsSubtitle(
 
 const _oheySupportEmail = String.fromEnvironment(
   'OHEY_SUPPORT_EMAIL',
-  defaultValue: 'yisshiki39@gmail.com',
+  defaultValue: 'support@oheyapp.com',
 );
 const _definedOheyTermsUrl = String.fromEnvironment('OHEY_TERMS_URL');
 const _definedOheyPrivacyUrl = String.fromEnvironment('OHEY_PRIVACY_URL');

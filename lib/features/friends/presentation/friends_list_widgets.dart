@@ -78,12 +78,14 @@ class _FriendsList extends StatelessWidget {
     required this.selectedCustomFilter,
     required this.favoriteOverrides,
     required this.invitedFriendIds,
+    required this.incomingInvites,
     required this.onRefresh,
     required this.showRefreshDone,
     required this.isSendingGroupInvite,
     required this.onFavoriteToggle,
     required this.onAddFriend,
     required this.onInvite,
+    required this.onAcceptInvite,
     required this.onGroupInvite,
     required this.onInviteAnimationComplete,
     required this.onProfile,
@@ -95,12 +97,14 @@ class _FriendsList extends StatelessWidget {
   final _CustomFriendFilter? selectedCustomFilter;
   final Map<String, bool> favoriteOverrides;
   final Set<String> invitedFriendIds;
+  final List<OheyInvite> incomingInvites;
   final Future<void> Function() onRefresh;
   final bool showRefreshDone;
   final bool isSendingGroupInvite;
   final void Function(OheyFriend friend, bool isFavorite) onFavoriteToggle;
   final VoidCallback onAddFriend;
   final Future<void> Function(OheyFriend friend) onInvite;
+  final Future<void> Function(OheyInvite invite) onAcceptInvite;
   final Future<void> Function(List<OheyFriend> friends) onGroupInvite;
   final void Function(OheyFriend friend) onInviteAnimationComplete;
   final void Function(OheyFriend friend, _FriendStatus status) onProfile;
@@ -126,11 +130,36 @@ class _FriendsList extends StatelessWidget {
         _FriendFilterType.all => true,
       };
     }).toList();
-    final recommendations = decorated.where(_isRecommendedFriend).toList()
+    final incomingInviteByFriendId = {
+      for (final invite in incomingInvites) invite.inviter.id: invite,
+    };
+    final decoratedByFriendId = {
+      for (final item in decorated) item.friend.id: item,
+    };
+    final recommendations = <_DecoratedFriend>[];
+    final addedRecommendationIds = <String>{};
+    for (final invite in incomingInvites) {
+      final item =
+          decoratedByFriendId[invite.inviter.id] ??
+          _DecoratedFriend(
+            friend: invite.inviter,
+            status: _statusForFriend(invite.inviter, 0),
+            originalIndex: -1,
+          );
+      if (addedRecommendationIds.add(item.friend.id)) {
+        recommendations.add(item);
+      }
+    }
+    final scoredRecommendations = decorated.where(_isRecommendedFriend).toList()
       ..sort(
         (a, b) =>
             _recommendationScoreFor(b).compareTo(_recommendationScoreFor(a)),
       );
+    for (final item in scoredRecommendations) {
+      if (addedRecommendationIds.add(item.friend.id)) {
+        recommendations.add(item);
+      }
+    }
     final isGroupView = selectedCustomFilter != null;
     final hasRecommendations = !isGroupView && recommendations.isNotEmpty;
     final hasGroupSchedule = isGroupView && filtered.isNotEmpty;
@@ -221,7 +250,9 @@ class _FriendsList extends StatelessWidget {
               return _TodayInviteSection(
                 friends: recommendations,
                 invitedFriendIds: invitedFriendIds,
+                incomingInviteByFriendId: incomingInviteByFriendId,
                 onInvite: onInvite,
+                onAcceptInvite: onAcceptInvite,
                 onInviteAnimationComplete: onInviteAnimationComplete,
               );
             }
@@ -469,13 +500,17 @@ class _TodayInviteSection extends StatelessWidget {
   const _TodayInviteSection({
     required this.friends,
     required this.invitedFriendIds,
+    required this.incomingInviteByFriendId,
     required this.onInvite,
+    required this.onAcceptInvite,
     required this.onInviteAnimationComplete,
   });
 
   final List<_DecoratedFriend> friends;
   final Set<String> invitedFriendIds;
+  final Map<String, OheyInvite> incomingInviteByFriendId;
   final Future<void> Function(OheyFriend friend) onInvite;
+  final Future<void> Function(OheyInvite invite) onAcceptInvite;
   final void Function(OheyFriend friend) onInviteAnimationComplete;
 
   @override
@@ -515,7 +550,9 @@ class _TodayInviteSection extends StatelessWidget {
                   ),
                   candidates: candidates,
                   invitedFriendIds: invitedFriendIds,
+                  incomingInviteByFriendId: incomingInviteByFriendId,
                   onInvite: onInvite,
+                  onAcceptInvite: onAcceptInvite,
                   onInviteAnimationComplete: onInviteAnimationComplete,
                 ),
               ),
@@ -550,13 +587,17 @@ class _TodayInviteCardsStrip extends StatelessWidget {
     super.key,
     required this.candidates,
     required this.invitedFriendIds,
+    required this.incomingInviteByFriendId,
     required this.onInvite,
+    required this.onAcceptInvite,
     required this.onInviteAnimationComplete,
   });
 
   final List<_DecoratedFriend> candidates;
   final Set<String> invitedFriendIds;
+  final Map<String, OheyInvite> incomingInviteByFriendId;
   final Future<void> Function(OheyFriend friend) onInvite;
+  final Future<void> Function(OheyInvite invite) onAcceptInvite;
   final void Function(OheyFriend friend) onInviteAnimationComplete;
 
   @override
@@ -593,7 +634,12 @@ class _TodayInviteCardsStrip extends StatelessWidget {
                 isInvited: invitedFriendIds.contains(
                   candidates[index].friend.id,
                 ),
+                incomingInvite:
+                    incomingInviteByFriendId[candidates[index].friend.id],
                 onInvite: () => onInvite(candidates[index].friend),
+                onAcceptInvite: () => onAcceptInvite(
+                  incomingInviteByFriendId[candidates[index].friend.id]!,
+                ),
                 onInviteAnimationComplete: () =>
                     onInviteAnimationComplete(candidates[index].friend),
               ),
@@ -944,13 +990,17 @@ class _TodayInviteCandidateCard extends StatelessWidget {
   const _TodayInviteCandidateCard({
     required this.item,
     required this.isInvited,
+    required this.incomingInvite,
     required this.onInvite,
+    required this.onAcceptInvite,
     required this.onInviteAnimationComplete,
   });
 
   final _DecoratedFriend item;
   final bool isInvited;
+  final OheyInvite? incomingInvite;
   final Future<void> Function() onInvite;
+  final Future<void> Function() onAcceptInvite;
   final VoidCallback onInviteAnimationComplete;
 
   @override
@@ -958,7 +1008,9 @@ class _TodayInviteCandidateCard extends StatelessWidget {
     final friend = item.friend;
     final frameAccent = _friendBlockFrameColor(item.status);
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final isInviteEnabled = item.status.enabled && !isInvited;
+    final hasIncomingInvite = incomingInvite != null;
+    final isInviteEnabled =
+        hasIncomingInvite || (item.status.enabled && !isInvited);
     final buttonColor = isInvited
         ? _FriendsColors.invitedButton
         : _friendInviteButtonColor(item.status);
@@ -1022,13 +1074,17 @@ class _TodayInviteCandidateCard extends StatelessWidget {
             width: double.infinity,
             child: OheyInviteSuccessBurst(
               builder: (context, runWithBurst, flightAnimation) => Ohey3DButton(
-                label: isInvited ? '招待済み' : '招待する',
+                label: hasIncomingInvite
+                    ? '承認する'
+                    : (isInvited ? '招待済み' : '招待する'),
                 icon: null,
                 customIcon: null,
                 onTap: isInviteEnabled
                     ? () => runWithBurst(
-                        onInvite,
-                        afterAnimation: onInviteAnimationComplete,
+                        hasIncomingInvite ? onAcceptInvite : onInvite,
+                        afterAnimation: hasIncomingInvite
+                            ? null
+                            : onInviteAnimationComplete,
                       )
                     : null,
                 enabled: isInviteEnabled,

@@ -161,7 +161,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
   }
 
   void _handleIncomingAppLink(Uri uri) {
-    unawaited(_handleClerkOAuthCallback(uri));
+    unawaited(_handleClerkOAuthCallback(uri).catchError((_) {}));
     final yuruboId = _sharedYuruboIdFromUri(uri);
     if (yuruboId == null || yuruboId.isEmpty) return;
     _pendingSharedYuruboId = yuruboId;

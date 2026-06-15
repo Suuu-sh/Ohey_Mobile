@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../config/auth_provider_config.dart';
 import 'clerk_auth_service.dart';
 
 final authStateProvider = StreamProvider<void>((ref) {
@@ -16,15 +17,20 @@ class ClerkOAuthCallbackHandler {
   final Ref _ref;
 
   Future<bool> handle(Uri uri) async {
-    final scheme = uri.scheme.toLowerCase();
-    final host = uri.host.toLowerCase();
-    if ((scheme != 'app.ohey.com' && scheme != 'app.ohey.com.dev') ||
-        host != 'login-callback') {
+    if (!AuthProviderConfig.isAllowedOAuthCallback(uri) ||
+        !_hasOAuthCallbackToken(uri)) {
       return false;
     }
     await _ref.read(clerkAuthServiceProvider).completeOAuthCallback(uri);
     return true;
   }
+}
+
+bool _hasOAuthCallbackToken(Uri uri) {
+  for (final key in const ['token', 'code', 'ticket']) {
+    if (uri.queryParameters[key]?.trim().isNotEmpty == true) return true;
+  }
+  return false;
 }
 
 final hasAuthSessionProvider = Provider<bool>((ref) {

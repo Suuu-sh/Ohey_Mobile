@@ -7,7 +7,10 @@ on:
     paths:
       - 'lib/**'
       - 'assets/**'
+      - 'config/firebase/**'
       - 'ios/**'
+      - 'scripts/**'
+      - '.env.example'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - '.github/workflows/testflight-deploy.yml'
@@ -39,10 +42,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
         with:
           channel: stable
           cache: true
@@ -73,7 +76,7 @@ jobs:
             echo "OHEY_REVENUECAT_ENTITLEMENT_ID=plus"
             echo "OHEY_REVENUECAT_OFFERING_ID=default"
             echo "OHEY_REVENUECAT_PRODUCT_ID=ohey_plus_monthly"
-            echo "OHEY_BACKEND_URL=https://api.oheyapp.com"
+            echo "OHEY_BACKEND_URL=https://ohey-backend.onrender.com"
             echo "OHEY_ENABLE_APPLE_OAUTH=false"
             if [ -n "${OHEY_REVENUECAT_IOS_API_KEY:-}" ]; then
               echo "OHEY_REVENUECAT_IOS_API_KEY=$OHEY_REVENUECAT_IOS_API_KEY"
@@ -95,6 +98,29 @@ jobs:
             fi
           } >> .env.production
 
+          is_public_dart_define_key() {
+            case "$1" in
+              OHEY_ENV|OHEY_AUTH_REDIRECT_URL|OHEY_BACKEND_URL|OHEY_SUPPORT_EMAIL|OHEY_ENABLE_APPLE_OAUTH|OHEY_ADMOB_FORCE_TEST_ADS)
+                return 0
+                ;;
+              CLERK_PUBLISHABLE_KEY|GOOGLE_WEB_CLIENT_ID|GOOGLE_IOS_CLIENT_ID|GOOGLE_IOS_REVERSED_CLIENT_ID)
+                return 0
+                ;;
+              FIREBASE_PROJECT_ID|FIREBASE_STORAGE_BUCKET|FIREBASE_MESSAGING_SENDER_ID|FIREBASE_ANDROID_API_KEY|FIREBASE_ANDROID_APP_ID|FIREBASE_IOS_API_KEY|FIREBASE_IOS_APP_ID|FIREBASE_IOS_BUNDLE_ID)
+                return 0
+                ;;
+              OHEY_ADMOB_ANDROID_APP_ID|OHEY_ADMOB_ANDROID_NATIVE_AD_UNIT_ID|OHEY_ADMOB_IOS_APP_ID|OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID)
+                return 0
+                ;;
+              OHEY_REVENUECAT_IOS_API_KEY|OHEY_REVENUECAT_ENTITLEMENT_ID|OHEY_REVENUECAT_OFFERING_ID|OHEY_REVENUECAT_PRODUCT_ID)
+                return 0
+                ;;
+              *)
+                return 1
+                ;;
+            esac
+          }
+
           dart_define_args=()
           while IFS= read -r line || [ -n "$line" ]; do
             case "$line" in
@@ -105,7 +131,17 @@ jobs:
             if [ -z "$key" ] || [ "$key" = "$line" ]; then
               continue
             fi
-            dart_define_args+=("--dart-define=$key=$value")
+            case "$key" in
+              *SECRET*|*PASSWORD*|*PRIVATE*|*SERVICE_ACCOUNT*|DATABASE_URL|*DATABASE_URL*|*DB_URL*|*TOKEN*)
+                echo "::error::$key must not be compiled into the TestFlight app binary."
+                exit 1
+                ;;
+            esac
+            if is_public_dart_define_key "$key"; then
+              dart_define_args+=("--dart-define=$key=$value")
+            else
+              echo "::notice::Skipping non-client dart define key: $key"
+            fi
           done < .env.production
 
           if [ ${#dart_define_args[@]} -eq 0 ]; then
@@ -133,8 +169,8 @@ jobs:
             echo "::error::CLERK_PUBLISHABLE_KEY must be set for TestFlight builds."
             exit 1
           fi
-          if [[ "$clerk_publishable_key" != pk_live_* && "$clerk_publishable_key" != pk_test_* ]]; then
-            echo "::error::CLERK_PUBLISHABLE_KEY must be a Clerk publishable key."
+          if [[ "$clerk_publishable_key" != pk_live_* ]]; then
+            echo "::error::CLERK_PUBLISHABLE_KEY must be a Clerk production publishable key (pk_live_*) for TestFlight builds."
             exit 1
           fi
           google_web_client_id="$(grep -E '^GOOGLE_WEB_CLIENT_ID=' .env.production | tail -1 | cut -d= -f2- || true)"
@@ -144,6 +180,10 @@ jobs:
             echo "::error::GOOGLE_WEB_CLIENT_ID, GOOGLE_IOS_CLIENT_ID and GOOGLE_IOS_REVERSED_CLIENT_ID are required for native Google Sign-In."
             exit 1
           fi
+          cat > ios/Flutter/OheyLocalOverrides.xcconfig <<EOF
+          GAD_APPLICATION_IDENTIFIER=$admob_ios_app_id
+          GOOGLE_IOS_REVERSED_CLIENT_ID=$google_ios_reversed_client_id
+          EOF
           echo "GAD_APPLICATION_IDENTIFIER=$admob_ios_app_id" >> "$GITHUB_ENV"
           echo "GOOGLE_IOS_REVERSED_CLIENT_ID=$google_ios_reversed_client_id" >> "$GITHUB_ENV"
 
@@ -153,6 +193,14 @@ jobs:
       - name: Install CocoaPods dependencies
         working-directory: ios
         run: pod install
+
+      - name: Verify committed CocoaPods lockfile
+        run: |
+          set -euo pipefail
+          if ! git diff --exit-code -- ios/Podfile.lock; then
+            echo "::error::ios/Podfile.lock changed after pod install. Commit the lockfile update with the matching dependency change."
+            exit 1
+          fi
 
       - name: Resolve TestFlight build number
         id: build-number
@@ -183,7 +231,7 @@ jobs:
           flutter build ios "${args[@]}"
 
       - name: Select Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90
         with:
           xcode-version: latest-stable
 
@@ -561,7 +609,7 @@ jobs:
             -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
 
       - name: Assign TestFlight build to internal testers
-        uses: Suuu-sh/Shared/actions/testflight-distribute-existing-build@main
+        uses: Suuu-sh/Shared/actions/testflight-distribute-existing-build@7f6f9dc12a0b3e34bee54aaf7c60f45dadfb6ba4
         with:
           app-bundle-id: app.ohey.com
           app-store-connect-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
@@ -574,7 +622,7 @@ jobs:
 
       - name: Upload export artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: testflight-deploy-logs
           path: |

@@ -94,10 +94,6 @@ class FriendRepository {
     return BackendApiClient.rowsFrom(response);
   }
 
-  Future<void> addFriend(String friendId) async {
-    await _client.post(OheyApiPaths.friends, {'friend_id': friendId});
-  }
-
   Future<void> deleteFriend(String friendId) async {
     await _client.delete(OheyApiPaths.friend(friendId));
   }

@@ -76,10 +76,9 @@ class AdminRepository {
   Future<List<AdminYurubo>> listYurubos({
     String status = OheyStatusKeys.open,
   }) async {
-    final rows = await _getRowsWithLegacyYuruboFallback(
+    final rows = await _client.getRows(
       OheyApiPaths.adminYurubos,
       query: {'status': status},
-      fallbackQuery: {'limit': '80'},
     );
     return rows.map(AdminYurubo.fromJson).toList(growable: false);
   }
@@ -105,12 +104,7 @@ class AdminRepository {
       'status': status,
       'visibility': visibility,
     };
-    try {
-      await _client.post(OheyApiPaths.adminYurubos, bodyMap);
-    } on BackendApiException catch (error) {
-      if (error.statusCode != 404) rethrow;
-      await _client.post(OheyApiPaths.yurubos, bodyMap);
-    }
+    await _client.post(OheyApiPaths.adminYurubos, bodyMap);
   }
 
   Future<void> updateYurubo({
@@ -134,34 +128,11 @@ class AdminRepository {
       'status': status,
       'visibility': visibility,
     };
-    try {
-      await _client.patch(OheyApiPaths.adminYurubo(id), bodyMap);
-    } on BackendApiException catch (error) {
-      if (error.statusCode != 404) rethrow;
-      await _client.patch(OheyApiPaths.yurubo(id), bodyMap);
-    }
+    await _client.patch(OheyApiPaths.adminYurubo(id), bodyMap);
   }
 
   Future<void> deleteYurubo(String id) async {
-    try {
-      await _client.delete(OheyApiPaths.adminYurubo(id));
-    } on BackendApiException catch (error) {
-      if (error.statusCode != 404) rethrow;
-      await _client.delete(OheyApiPaths.yurubo(id));
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> _getRowsWithLegacyYuruboFallback(
-    String path, {
-    required Map<String, String> query,
-    required Map<String, String> fallbackQuery,
-  }) async {
-    try {
-      return await _client.getRows(path, query: query);
-    } on BackendApiException catch (error) {
-      if (error.statusCode != 404) rethrow;
-      return _client.getRows(OheyApiPaths.yurubos, query: fallbackQuery);
-    }
+    await _client.delete(OheyApiPaths.adminYurubo(id));
   }
 
   Future<AdminNotificationResult> createSystemNotification({

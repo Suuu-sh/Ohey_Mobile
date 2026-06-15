@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:clerk_auth/clerk_auth.dart' as clerk;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,16 +34,19 @@ class ClerkAuthService {
   String? get currentUserEmail => isSignedIn ? _auth?.user?.email : null;
 
   String? get currentAccessToken =>
-      _sessionSuspendedLocally ? null : _sessionToken?.jwt;
+      _sessionSuspendedLocally ? null : _validSessionTokenJWT(_sessionToken);
 
   Future<String?> currentAccessTokenOrRefresh() async {
     if (_sessionSuspendedLocally) return null;
-    if (_sessionToken?.jwt.trim().isNotEmpty == true) {
-      return _sessionToken?.jwt;
+    final cached = _validSessionTokenJWT(_sessionToken);
+    if (cached != null) {
+      return cached;
     }
     await initialize();
     await _refreshCachedSessionTokenWithRetry();
-    return _sessionSuspendedLocally ? null : _sessionToken?.jwt;
+    return _sessionSuspendedLocally
+        ? null
+        : _validSessionTokenJWT(_sessionToken);
   }
 
   bool get isSignedIn =>
@@ -60,7 +64,7 @@ class ClerkAuthService {
     final auth = ClerkOheyAuth(
       config: clerk.AuthConfig(
         publishableKey: AuthProviderConfig.clerkPublishableKey,
-        persistor: SharedPreferencesClerkPersistor(),
+        persistor: SecureClerkPersistor(),
       ),
       onUpdated: _refreshCachedSessionToken,
     );
@@ -90,7 +94,7 @@ class ClerkAuthService {
   Future<void> _refreshCachedSessionTokenWithRetry() async {
     for (var attempt = 0; attempt < 10; attempt += 1) {
       await _refreshCachedSessionToken();
-      if (_sessionToken?.jwt.trim().isNotEmpty == true &&
+      if (_validSessionTokenJWT(_sessionToken) != null &&
           _rawCurrentUserId != null) {
         return;
       }
@@ -102,7 +106,6 @@ class ClerkAuthService {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.resetClient();
     await auth.idTokenSignIn(
       provider: clerk.IdTokenProvider.google,
       token: idToken.trim(),
@@ -115,7 +118,6 @@ class ClerkAuthService {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.resetClient();
     await auth.idTokenSignIn(
       provider: clerk.IdTokenProvider.apple,
       token: idToken.trim(),
@@ -128,7 +130,6 @@ class ClerkAuthService {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.resetClient();
     await auth.initiatePasswordReset(
       identifier: email.trim(),
       strategy: clerk.Strategy.resetPasswordEmailCode,
@@ -150,6 +151,7 @@ class ClerkAuthService {
       code: code.trim(),
       password: newPassword,
     );
+    await _activateSessionForEmail(email);
     await _refreshCachedSessionTokenWithRetry();
     _authChanges.add(null);
   }
@@ -161,12 +163,12 @@ class ClerkAuthService {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.resetClient();
     await auth.attemptSignIn(
       strategy: clerk.Strategy.password,
       identifier: email,
       password: password,
     );
+    await _activateSessionForEmail(email);
     await _refreshCachedSessionTokenWithRetry();
     _authChanges.add(null);
   }
@@ -175,7 +177,6 @@ class ClerkAuthService {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.resetClient();
     await auth.oauthSignIn(
       strategy: strategy,
       redirect: Uri.parse(AuthProviderConfig.redirectUrl),
@@ -194,6 +195,7 @@ class ClerkAuthService {
 
   Future<void> completeOAuthCallback(Uri uri) async {
     if (!isEnabled) return;
+    if (!AuthProviderConfig.isAllowedOAuthCallback(uri)) return;
     await initialize();
     final token =
         uri.queryParameters['token'] ??
@@ -216,7 +218,6 @@ class ClerkAuthService {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.resetClient();
     await auth.attemptSignUp(
       strategy: clerk.Strategy.password,
       emailAddress: email,
@@ -234,21 +235,36 @@ class ClerkAuthService {
     _authChanges.add(null);
   }
 
+  Future<bool> _activateSessionForEmail(String email) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.isEmpty) return false;
+    final auth = _requireAuth();
+    final matchingSessions =
+        auth.client.sessions
+            .where(
+              (session) =>
+                  session.user.email?.trim().toLowerCase() == normalizedEmail,
+            )
+            .toList()
+          ..sort((a, b) {
+            if (a.isActive != b.isActive) return a.isActive ? -1 : 1;
+            return b.lastActiveAt.compareTo(a.lastActiveAt);
+          });
+    if (matchingSessions.isEmpty) return false;
+    await auth.activate(matchingSessions.first);
+    return true;
+  }
+
   Future<bool> switchToSavedAccount(String email) async {
     await initialize();
     final normalizedEmail = email.trim().toLowerCase();
     if (normalizedEmail.isEmpty) return false;
-    final auth = _requireAuth();
-    for (final session in auth.client.sessions) {
-      if (session.user.email?.trim().toLowerCase() == normalizedEmail) {
-        _sessionSuspendedLocally = false;
-        await auth.activate(session);
-        await _refreshCachedSessionTokenWithRetry();
-        _authChanges.add(null);
-        return _sessionToken?.jwt.trim().isNotEmpty == true;
-      }
-    }
-    return false;
+    final activated = await _activateSessionForEmail(normalizedEmail);
+    if (!activated) return false;
+    _sessionSuspendedLocally = false;
+    await _refreshCachedSessionTokenWithRetry();
+    _authChanges.add(null);
+    return _validSessionTokenJWT(_sessionToken) != null;
   }
 
   Future<void> suspendCurrentSessionLocally() async {
@@ -292,6 +308,12 @@ class ClerkAuthService {
   }
 }
 
+String? _validSessionTokenJWT(clerk.SessionToken? token) {
+  if (token == null || !token.isNotExpired) return null;
+  final jwt = token.jwt.trim();
+  return jwt.isEmpty ? null : jwt;
+}
+
 class ClerkOheyAuth extends clerk.Auth {
   ClerkOheyAuth({required super.config, required this.onUpdated});
 
@@ -304,22 +326,26 @@ class ClerkOheyAuth extends clerk.Auth {
   }
 }
 
-class SharedPreferencesClerkPersistor implements clerk.Persistor {
-  SharedPreferences? _prefs;
+class SecureClerkPersistor implements clerk.Persistor {
+  SecureClerkPersistor({
+    FlutterSecureStorage storage = const FlutterSecureStorage(),
+  }) : _storage = storage;
+
+  final FlutterSecureStorage _storage;
 
   static const _prefix = 'clerk_auth:';
 
   @override
   Future<void> initialize() async {
-    _prefs ??= await SharedPreferences.getInstance();
+    await _migrateLegacySharedPreferencesKeys();
   }
 
   @override
   void terminate() {}
 
   @override
-  FutureOr<T?> read<T>(String key) {
-    final value = _prefs?.getString('$_prefix$key');
+  FutureOr<T?> read<T>(String key) async {
+    final value = await _storage.read(key: _storageKey(key));
     if (value == null) return null;
     if (T == String) return value as T;
     return null;
@@ -327,13 +353,32 @@ class SharedPreferencesClerkPersistor implements clerk.Persistor {
 
   @override
   FutureOr<void> write<T>(String key, T value) async {
-    final prefs = _prefs ??= await SharedPreferences.getInstance();
-    await prefs.setString('$_prefix$key', value.toString());
+    await _storage.write(key: _storageKey(key), value: value.toString());
   }
 
   @override
   FutureOr<void> delete(String key) async {
-    final prefs = _prefs ??= await SharedPreferences.getInstance();
-    await prefs.remove('$_prefix$key');
+    await _storage.delete(key: _storageKey(key));
+  }
+
+  String _storageKey(String key) => '$_prefix$key';
+
+  Future<void> _migrateLegacySharedPreferencesKeys() async {
+    final prefs = await SharedPreferences.getInstance();
+    final legacyKeys = prefs
+        .getKeys()
+        .where((key) => key.startsWith(_prefix))
+        .toList(growable: false);
+    for (final legacyKey in legacyKeys) {
+      final value = prefs.getString(legacyKey);
+      if (value != null) {
+        final secureKey = legacyKey.substring(_prefix.length);
+        final existing = await _storage.read(key: _storageKey(secureKey));
+        if (existing == null) {
+          await _storage.write(key: _storageKey(secureKey), value: value);
+        }
+      }
+      await prefs.remove(legacyKey);
+    }
   }
 }

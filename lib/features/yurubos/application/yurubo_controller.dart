@@ -93,7 +93,9 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
       final item = current[index];
       final nextCount = reacted
           ? item.reactionCount
-          : (item.reactionCount - 1).clamp(0, 1 << 30);
+          : item.myReactionType.isApprovedYuruboReaction
+          ? (item.reactionCount - 1).clamp(0, 1 << 30)
+          : item.reactionCount;
       state = AsyncData([
         for (var i = 0; i < current.length; i++)
           i == index

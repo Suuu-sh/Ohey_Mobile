@@ -53,5 +53,6 @@ config/firebase/dev.json
 config/firebase/prod.json
 ios/firebase/dev/GoogleService-Info.plist
 ios/firebase/prod/GoogleService-Info.plist
+ios/Flutter/OheyLocalOverrides.xcconfig
 android/app/src/dev/google-services.json
 android/app/src/prod/google-services.json

@@ -30,16 +30,13 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
           email: email,
           password: password,
         );
-        final loaded = await ref
+        await ref
             .read(oheyUserProvider.notifier)
-            .loadFromBackendProfile();
-        if (loaded && mounted) {
+            .ensureProfileForAuthenticatedUser();
+        if (mounted) {
           await _saveLastAccount(email);
           return;
         }
-        throw const AuthException(
-          'プロフィールが見つかりませんでした。別のログイン方法を試すか、サポートに連絡してください。',
-        );
       } else {
         _goToSignupProfileStep();
         return;
