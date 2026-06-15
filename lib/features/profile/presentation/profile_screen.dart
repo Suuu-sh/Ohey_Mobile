@@ -86,13 +86,10 @@ class ProfileScreen extends ConsumerWidget {
     const headerIsWhite = true;
     const bodyIsWhite = false;
     final isPlusActive = ref.watch(oheyPlusActiveProvider);
-    final hasAdminEmail = OheyAvatar.isAdminEmail(
-      ref.watch(authRepositoryProvider).currentEmail,
-    );
     final hasAdminAccess = ref
         .watch(adminAccessProvider)
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
-    final canOpenAdmin = hasAdminEmail || hasAdminAccess;
+    final canOpenAdmin = hasAdminAccess;
     const bodyBackground = AppColors.darkBackgroundBottom;
     final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 318;
 

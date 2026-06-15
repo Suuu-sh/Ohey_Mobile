@@ -401,9 +401,6 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
           await container
               .read(userSafetyRepositoryProvider)
               .unblockUser(widget.friend.id);
-          await container
-              .read(friendRepositoryProvider)
-              .addFriend(widget.friend.id);
           container.invalidate(blockedUsersProvider);
           container.invalidate(friendsProvider);
           container.invalidate(yuruboControllerProvider);

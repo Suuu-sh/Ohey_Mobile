@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ohey/core/data/backend_api_client.dart';
 import 'package:ohey/core/data/push_token_repository.dart';
 import 'package:ohey/core/data/user_repository.dart';
 import 'package:ohey/core/models/ohey_avatar.dart';
@@ -70,5 +71,20 @@ void main() {
       'token': 'device-token',
       'platform': currentPushPlatformKey(),
     });
+  });
+
+  test('backend row helpers reject response-shape drift', () {
+    expect(
+      () => BackendApiClient.rowsFrom(<String, dynamic>{'id': 'row'}),
+      throwsA(isA<BackendApiException>()),
+    );
+    expect(
+      () => BackendApiClient.rowsFrom(<dynamic>[<String, dynamic>{}, 'bad']),
+      throwsA(isA<BackendApiException>()),
+    );
+    expect(
+      () => BackendApiClient.mapFrom(<dynamic>[]),
+      throwsA(isA<BackendApiException>()),
+    );
   });
 }

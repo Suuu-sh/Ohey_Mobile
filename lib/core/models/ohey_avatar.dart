@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import '../config/admin_config.dart';
 import 'package:ohey/core/theme/app_colors.dart';
 
 class OheyAvatar {
@@ -50,8 +49,6 @@ class OheyAvatar {
     background: nightFriendsBackground,
     isAdmin: true,
   );
-
-  static bool isAdminEmail(String? email) => AdminConfig.isAdminEmail(email);
 
   static OheyAvatar random() {
     final random = Random();

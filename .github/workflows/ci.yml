@@ -8,8 +8,11 @@ on:
       - 'lib/**'
       - 'test/**'
       - 'assets/**'
+      - 'config/firebase/**'
       - 'android/**'
       - 'ios/**'
+      - 'scripts/**'
+      - '.env.example'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'analysis_options.yaml'
@@ -21,8 +24,11 @@ on:
       - 'lib/**'
       - 'test/**'
       - 'assets/**'
+      - 'config/firebase/**'
       - 'android/**'
       - 'ios/**'
+      - 'scripts/**'
+      - '.env.example'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'analysis_options.yaml'
@@ -43,10 +49,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
 
       - name: Run shared Flutter analyze action
-        uses: Suuu-sh/Shared/actions/flutter-analyze@main
+        uses: Suuu-sh/Shared/actions/flutter-analyze@7f6f9dc12a0b3e34bee54aaf7c60f45dadfb6ba4
         with:
           working-directory: .
           flutter-channel: stable
@@ -55,7 +61,6 @@ jobs:
             CLERK_PUBLISHABLE_KEY=test_clerk_publishable_key
             OHEY_AUTH_REDIRECT_URL=app.ohey.com.dev://login-callback/
             OHEY_BACKEND_URL=https://dev-ohey-backend.onrender.com
-            OHEY_ADMIN_EMAILS=
           analyze-command: flutter analyze --no-fatal-infos
 
   flutter_test:
@@ -64,10 +69,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
 
       - name: Run shared Flutter test action
-        uses: Suuu-sh/Shared/actions/flutter-test@main
+        uses: Suuu-sh/Shared/actions/flutter-test@7f6f9dc12a0b3e34bee54aaf7c60f45dadfb6ba4
         with:
           working-directory: .
           flutter-channel: stable
@@ -76,5 +81,4 @@ jobs:
             CLERK_PUBLISHABLE_KEY=test_clerk_publishable_key
             OHEY_AUTH_REDIRECT_URL=app.ohey.com.dev://login-callback/
             OHEY_BACKEND_URL=https://dev-ohey-backend.onrender.com
-            OHEY_ADMIN_EMAILS=
           test-command: flutter test

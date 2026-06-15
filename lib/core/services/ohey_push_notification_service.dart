@@ -49,7 +49,9 @@ class OheyPushNotificationService {
       );
       await _registerCurrentToken();
       _tokenRefreshSub ??= messaging.onTokenRefresh.listen((token) {
-        unawaited(_registerToken(token, retirePrevious: true));
+        unawaited(
+          _registerToken(token, retirePrevious: true).catchError((_) {}),
+        );
       });
     } on Object catch (error, stackTrace) {
       if (kDebugMode) {
@@ -65,6 +67,19 @@ class OheyPushNotificationService {
     await _registerToken(token, retirePrevious: false);
   }
 
+  Future<void> registerCurrentTokenForSignedInUser() async {
+    if (kIsWeb || !(Platform.isIOS || Platform.isAndroid)) return;
+    if (!_started) {
+      await start();
+      return;
+    }
+    try {
+      await _registerCurrentToken();
+    } catch (_) {
+      // Push token registration should not block profile activation.
+    }
+  }
+
   Future<void> _registerToken(
     String token, {
     required bool retirePrevious,
@@ -76,8 +91,10 @@ class OheyPushNotificationService {
     if (retirePrevious && previous != null && previous != normalized) {
       await repository.unregisterToken(previous);
     }
-    await repository.registerToken(normalized);
-    _lastRegisteredToken = normalized;
+    final registered = await repository.registerToken(normalized);
+    if (registered) {
+      _lastRegisteredToken = normalized;
+    }
   }
 
   Future<void> unregisterCurrentToken() async {

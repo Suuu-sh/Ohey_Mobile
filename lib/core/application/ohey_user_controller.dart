@@ -58,6 +58,9 @@ class OheyUserController extends Notifier<OheyUser?> {
     state = user;
     await ref.read(oheyPlusServiceProvider).configureForCurrentUser();
     ref.invalidate(oheyPlusCustomerInfoProvider);
+    await ref
+        .read(oheyPushNotificationServiceProvider)
+        .registerCurrentTokenForSignedInUser();
   }
 
   Future<String?> latestDisplayName(String? fallback) {

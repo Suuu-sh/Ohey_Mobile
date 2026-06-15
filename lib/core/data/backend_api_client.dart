@@ -26,7 +26,7 @@ class BackendApiClient {
     required this.userIdProvider,
     required this.tokenValidator,
     HttpClient? httpClient,
-  }) : _baseUri = Uri.parse(baseUrl),
+  }) : _baseUri = _normalizeBackendBaseUri(baseUrl),
        _httpClient = httpClient ?? HttpClient();
 
   final Uri _baseUri;
@@ -92,17 +92,25 @@ class BackendApiClient {
   }
 
   static List<Map<String, dynamic>> rowsFrom(dynamic value) {
-    return (value as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map((row) => Map<String, dynamic>.from(row))
-        .toList(growable: false);
+    if (value is! List) {
+      throw const BackendApiException('Backend response format is invalid.');
+    }
+    return [
+      for (final row in value)
+        if (row is Map)
+          Map<String, dynamic>.from(row)
+        else
+          throw const BackendApiException(
+            'Backend response format is invalid.',
+          ),
+    ];
   }
 
   static Map<String, dynamic> mapFrom(dynamic value) {
     if (value is Map) {
       return Map<String, dynamic>.from(value);
     }
-    throw const FormatException('Backend response format is invalid.');
+    throw const BackendApiException('Backend response format is invalid.');
   }
 
   Future<dynamic> _send(
@@ -127,6 +135,40 @@ class BackendApiClient {
       path: _joinPath(_baseUri.path, path),
       queryParameters: query,
     );
+    final first = await _sendOnce(
+      method,
+      uri,
+      token: token,
+      userId: userId,
+      body: body,
+    );
+    if (first.statusCode == HttpStatus.unauthorized &&
+        accessTokenRefreshProvider != null) {
+      final refreshed = await accessTokenRefreshProvider?.call();
+      if (refreshed != null &&
+          refreshed.isNotEmpty &&
+          refreshed != token &&
+          tokenValidator(refreshed)) {
+        final retry = await _sendOnce(
+          method,
+          uri,
+          token: refreshed,
+          userId: userId,
+          body: body,
+        );
+        return _decodeResponse(retry);
+      }
+    }
+    return _decodeResponse(first);
+  }
+
+  Future<_BackendResponse> _sendOnce(
+    String method,
+    Uri uri, {
+    required String token,
+    required String userId,
+    Map<String, dynamic>? body,
+  }) async {
     final request = await _httpClient
         .openUrl(method, uri)
         .timeout(const Duration(seconds: 12));
@@ -140,14 +182,22 @@ class BackendApiClient {
 
     final response = await request.close().timeout(const Duration(seconds: 20));
     final text = await utf8.decoder.bind(response).join();
+    return _BackendResponse(statusCode: response.statusCode, text: text);
+  }
+
+  dynamic _decodeResponse(_BackendResponse response) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw BackendApiException(
-        _friendlyError(text),
+        _friendlyError(response.text),
         statusCode: response.statusCode,
       );
     }
-    if (text.trim().isEmpty) return null;
-    return jsonDecode(text);
+    if (response.text.trim().isEmpty) return null;
+    try {
+      return jsonDecode(response.text);
+    } on FormatException {
+      throw const BackendApiException('Backend response format is invalid.');
+    }
   }
 
   String _joinPath(String basePath, String path) {
@@ -162,13 +212,30 @@ class BackendApiClient {
     try {
       final decoded = jsonDecode(text);
       if (decoded is Map && decoded['error'] is String) {
-        return decoded['error'] as String;
+        return _safeBackendErrorMessage(decoded['error'] as String);
       }
     } catch (_) {
-      // Use raw text below.
+      return 'Backend request failed.';
     }
-    return text.isEmpty ? 'Backend request failed.' : text;
+    return 'Backend request failed.';
   }
+
+  String _safeBackendErrorMessage(String message) {
+    final sanitized = message
+        .replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'), '')
+        .trim();
+    if (sanitized.isEmpty) return 'Backend request failed.';
+    const maxErrorLength = 160;
+    if (sanitized.length <= maxErrorLength) return sanitized;
+    return '${sanitized.substring(0, maxErrorLength)}…';
+  }
+}
+
+class _BackendResponse {
+  const _BackendResponse({required this.statusCode, required this.text});
+
+  final int statusCode;
+  final String text;
 }
 
 class BackendApiException implements Exception {
@@ -179,4 +246,16 @@ class BackendApiException implements Exception {
 
   @override
   String toString() => message;
+}
+
+Uri _normalizeBackendBaseUri(String value) {
+  final uri = Uri.parse(value.trim());
+  if (uri.scheme != 'https' || uri.host.trim().isEmpty) {
+    throw ArgumentError.value(
+      value,
+      'baseUrl',
+      'Ohey backend URL must be an HTTPS URL with a host.',
+    );
+  }
+  return uri;
 }

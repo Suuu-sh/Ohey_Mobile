@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/config/auth_provider_config.dart';
+import '../../../core/data/user_repository.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
 import '../../../core/widgets/ohey_avatar.dart';
@@ -29,7 +30,15 @@ String _normalizedFriendInput(String value) {
   if (uri != null && uri.pathSegments.isNotEmpty) {
     input = uri.pathSegments.last.trim();
   }
-  return Uri.decodeComponent(input);
+  return _safeDecodeComponent(input).trim();
+}
+
+String _safeDecodeComponent(String value) {
+  try {
+    return Uri.decodeComponent(value);
+  } on FormatException {
+    return value;
+  }
 }
 
 Future<void> showFriendAddSheet(BuildContext context, WidgetRef ref) {
@@ -117,6 +126,10 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
     _searchController.text = friendId;
     if (friendId.isEmpty) {
       setState(() => _searchError = 'IDを入力してください');
+      return;
+    }
+    if (!isValidOheyUserId(friendId)) {
+      setState(() => _searchError = 'IDは3〜24文字の英数字と_で入力してください');
       return;
     }
     setState(() {
@@ -207,6 +220,10 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
     );
     final friendId = scanned == null ? '' : _normalizedFriendInput(scanned);
     if (friendId.isEmpty || !context.mounted) return;
+    if (!isValidOheyUserId(friendId)) {
+      OheyToast.show(context, 'QRのID形式が正しくありません');
+      return;
+    }
     try {
       final repository = ref.read(friendRepositoryProvider);
       final profile = await repository.findProfileByUserId(friendId);

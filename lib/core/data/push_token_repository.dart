@@ -25,9 +25,10 @@ class PushTokenRepository {
     return userId != null && userId.isNotEmpty;
   }
 
-  Future<void> registerToken(String token) async {
-    if (!hasSignedInUser || token.trim().isEmpty) return;
+  Future<bool> registerToken(String token) async {
+    if (!hasSignedInUser || token.trim().isEmpty) return false;
     await _client.put(OheyApiPaths.mePushToken, pushTokenPayload(token));
+    return true;
   }
 
   Future<void> unregisterToken(String? token) async {

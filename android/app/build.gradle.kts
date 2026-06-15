@@ -6,6 +6,24 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+val oheyAndroidKeystorePath =
+    (project.findProperty("OHEY_ANDROID_KEYSTORE_PATH") as String?)
+        ?: System.getenv("OHEY_ANDROID_KEYSTORE_PATH")
+val oheyAndroidKeystorePassword =
+    (project.findProperty("OHEY_ANDROID_KEYSTORE_PASSWORD") as String?)
+        ?: System.getenv("OHEY_ANDROID_KEYSTORE_PASSWORD")
+val oheyAndroidKeyAlias =
+    (project.findProperty("OHEY_ANDROID_KEY_ALIAS") as String?)
+        ?: System.getenv("OHEY_ANDROID_KEY_ALIAS")
+val oheyAndroidKeyPassword =
+    (project.findProperty("OHEY_ANDROID_KEY_PASSWORD") as String?)
+        ?: System.getenv("OHEY_ANDROID_KEY_PASSWORD")
+val hasOheyAndroidReleaseSigning =
+    !oheyAndroidKeystorePath.isNullOrBlank() &&
+        !oheyAndroidKeystorePassword.isNullOrBlank() &&
+        !oheyAndroidKeyAlias.isNullOrBlank() &&
+        !oheyAndroidKeyPassword.isNullOrBlank()
+
 android {
     namespace = "app.ohey.com"
     compileSdk = flutter.compileSdkVersion
@@ -44,12 +62,37 @@ android {
         }
     }
 
+    signingConfigs {
+        if (hasOheyAndroidReleaseSigning) {
+            create("oheyRelease") {
+                storeFile = file(oheyAndroidKeystorePath!!)
+                storePassword = oheyAndroidKeystorePassword!!
+                keyAlias = oheyAndroidKeyAlias!!
+                keyPassword = oheyAndroidKeyPassword!!
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            if (hasOheyAndroidReleaseSigning) {
+                signingConfig = signingConfigs.getByName("oheyRelease")
+            }
         }
+    }
+}
+
+gradle.taskGraph.whenReady {
+    val buildsProdRelease = allTasks.any { task ->
+        task.name.equals("assembleProdRelease", ignoreCase = true) ||
+            task.name.equals("bundleProdRelease", ignoreCase = true)
+    }
+    if (buildsProdRelease && !hasOheyAndroidReleaseSigning) {
+        throw GradleException(
+            "Prod Android release builds require OHEY_ANDROID_KEYSTORE_PATH, " +
+                "OHEY_ANDROID_KEYSTORE_PASSWORD, OHEY_ANDROID_KEY_ALIAS, and " +
+                "OHEY_ANDROID_KEY_PASSWORD. Refusing to sign prod with debug keys."
+        )
     }
 }
 
