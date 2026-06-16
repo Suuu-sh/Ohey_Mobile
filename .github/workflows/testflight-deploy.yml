@@ -48,6 +48,7 @@ jobs:
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
         with:
           channel: stable
+          flutter-version: '3.41.4'
           cache: true
 
       - name: Validate Ohey production environment
@@ -185,7 +186,7 @@ jobs:
           echo "GOOGLE_IOS_REVERSED_CLIENT_ID=$google_ios_reversed_client_id" >> "$GITHUB_ENV"
 
       - name: Install Flutter dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       - name: Install CocoaPods dependencies
         working-directory: ios
