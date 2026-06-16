@@ -198,10 +198,83 @@ jobs:
       - name: Verify committed CocoaPods lockfile
         run: |
           set -euo pipefail
-          if ! git diff --exit-code -- ios/Podfile.lock; then
-            echo "::error::ios/Podfile.lock changed after pod install. Commit the lockfile update with the matching dependency change."
-            exit 1
-          fi
+          python3 <<'PY'
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          lockfile_path = Path("ios/Podfile.lock")
+          committed = subprocess.check_output(
+              ["git", "show", "HEAD:ios/Podfile.lock"],
+              text=True,
+          ).splitlines()
+          current = lockfile_path.read_text().splitlines()
+
+          def local_flutter_plugin_pods(lines):
+              pods = set()
+              in_external_sources = False
+              current_pod = None
+              for line in lines:
+                  if line == "EXTERNAL SOURCES:":
+                      in_external_sources = True
+                      current_pod = None
+                      continue
+                  if in_external_sources and line and not line.startswith(" "):
+                      break
+                  if not in_external_sources:
+                      continue
+                  if line.startswith("  ") and not line.startswith("    "):
+                      current_pod = line.strip().rstrip(":")
+                      continue
+                  if (
+                      current_pod
+                      and ":path:" in line
+                      and ".symlinks/plugins/" in line
+                  ):
+                      pods.add(current_pod)
+              return pods
+
+          checksum_only_pods = (
+              local_flutter_plugin_pods(committed)
+              | local_flutter_plugin_pods(current)
+          )
+
+          def normalize(lines):
+              normalized = []
+              in_spec_checksums = False
+              for line in lines:
+                  if line == "SPEC CHECKSUMS:":
+                      in_spec_checksums = True
+                      normalized.append(line)
+                      continue
+                  if in_spec_checksums:
+                      if line and not line.startswith(" "):
+                          in_spec_checksums = False
+                      else:
+                          stripped = line.strip()
+                          if stripped:
+                              pod_name = stripped.split(":", 1)[0]
+                              if pod_name in checksum_only_pods:
+                                  continue
+                  normalized.append(line)
+              return normalized
+
+          if normalize(committed) != normalize(current):
+              subprocess.run(["git", "diff", "--", str(lockfile_path)], check=False)
+              print(
+                  "::error::ios/Podfile.lock changed after pod install. "
+                  "Commit the lockfile update with the matching dependency change.",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          if committed != current:
+              print(
+                  "::notice::Ignoring CocoaPods checksum-only drift for local "
+                  "Flutter plugin podspecs; pubspec.lock is enforced separately."
+              )
+              subprocess.run(["git", "checkout", "--", str(lockfile_path)], check=True)
+          PY
 
       - name: Resolve TestFlight build number
         id: build-number
