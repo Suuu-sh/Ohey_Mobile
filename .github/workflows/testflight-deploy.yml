@@ -499,15 +499,16 @@ jobs:
             puts 'Enabled Sign in with Apple for app.ohey.com'
           end
 
-          existing_app_profile = first_data!(get_json('/v1/profiles', {
-            'filter[name]' => 'Ohey App Store CI Push 20260529095238',
-            'filter[profileState]' => 'ACTIVE',
-            'limit' => '1',
-          }), 'Existing app provisioning profile')
-          signing_certificates = get_json("/v1/profiles/#{existing_app_profile.fetch('id')}/certificates", {
-            'limit' => '200',
-          }).fetch('data')
-          abort('No signing certificates found on existing app provisioning profile') if signing_certificates.empty?
+          signing_certificates = []
+          ['DISTRIBUTION', 'IOS_DISTRIBUTION'].each do |certificate_type|
+            signing_certificates = get_json('/v1/certificates', {
+              'filter[certificateType]' => certificate_type,
+              'limit' => '200',
+            }).fetch('data')
+            break unless signing_certificates.empty?
+          end
+          abort('No active distribution signing certificates found') if signing_certificates.empty?
+          puts "Using #{signing_certificates.length} distribution signing certificate(s) for app provisioning"
 
           generated_app_profile_name = "Ohey App Store CI SignInWithApple #{Time.now.utc.strftime('%Y%m%d%H%M%S')}"
           created_app_profile = post_json('/v1/profiles', {
