@@ -433,35 +433,75 @@ jobs:
           }), 'App bundle ID app.ohey.com')
           app_bundle_id = app_bundle.fetch('id')
 
-          capability_body = {
-            data: {
-              type: 'bundleIdCapabilities',
-              attributes: {
-                capabilityType: 'APPLE_ID_AUTH',
-                settings: [],
-              },
-              relationships: {
-                bundleId: {
-                  data: {
-                    type: 'bundleIds',
-                    id: app_bundle_id,
+          apple_id_auth_settings = [
+            {
+              key: 'APPLE_ID_AUTH_APP_CONSENT',
+              options: [
+                {
+                  key: 'PRIMARY_APP_CONSENT',
+                },
+              ],
+            },
+          ]
+
+          def apple_id_auth_configured?(capability)
+            settings = capability.dig('attributes', 'settings') || []
+            settings.any? do |setting|
+              setting['key'] == 'APPLE_ID_AUTH_APP_CONSENT' &&
+                (setting['options'] || []).any? { |option| option['key'] == 'PRIMARY_APP_CONSENT' }
+            end
+          end
+
+          capabilities = get_json("/v1/bundleIds/#{app_bundle_id}/bundleIdCapabilities", {
+            'limit' => '200',
+          }).fetch('data')
+          apple_id_auth = capabilities.find { |item| item.dig('attributes', 'capabilityType') == 'APPLE_ID_AUTH' }
+
+          if apple_id_auth
+            if apple_id_auth_configured?(apple_id_auth)
+              puts 'Sign in with Apple capability is already enabled for app.ohey.com'
+            else
+              asc_request(Net::HTTP::Patch, "/v1/bundleIdCapabilities/#{apple_id_auth.fetch('id')}", body: {
+                data: {
+                  type: 'bundleIdCapabilities',
+                  id: apple_id_auth.fetch('id'),
+                  attributes: {
+                    capabilityType: 'APPLE_ID_AUTH',
+                    settings: apple_id_auth_settings,
+                  },
+                },
+              })
+              puts 'Updated Sign in with Apple primary app consent for app.ohey.com'
+            end
+          else
+            capability_body = {
+              data: {
+                type: 'bundleIdCapabilities',
+                attributes: {
+                  capabilityType: 'APPLE_ID_AUTH',
+                  settings: apple_id_auth_settings,
+                },
+                relationships: {
+                  bundleId: {
+                    data: {
+                      type: 'bundleIds',
+                      id: app_bundle_id,
+                    },
                   },
                 },
               },
-            },
-          }
-          capability_response, capability_result = try_post_json('/v1/bundleIdCapabilities', capability_body)
-          if capability_response.is_a?(Net::HTTPSuccess)
-            puts 'Enabled Sign in with Apple for app.ohey.com'
-          else
-            capability_error = capability_result.fetch('errors', []).first || {}
-            capability_detail = capability_error.fetch('detail', '')
-            capability_code = capability_error.fetch('code', '')
-            unless capability_response.code == '409' || capability_code.include?('DUPLICATE') || capability_detail.match?(/already|existing/i)
-              warn JSON.pretty_generate(capability_result)
-              exit 1
+            }
+            capability_response, capability_result = try_post_json('/v1/bundleIdCapabilities', capability_body)
+            unless capability_response.is_a?(Net::HTTPSuccess)
+              capability_error = capability_result.fetch('errors', []).first || {}
+              capability_detail = capability_error.fetch('detail', '')
+              capability_code = capability_error.fetch('code', '')
+              unless capability_response.code == '409' || capability_code.include?('DUPLICATE') || capability_detail.match?(/already|existing/i)
+                warn JSON.pretty_generate(capability_result)
+                exit 1
+              end
             end
-            puts 'Sign in with Apple capability is already enabled for app.ohey.com'
+            puts 'Enabled Sign in with Apple for app.ohey.com'
           end
 
           existing_app_profile = first_data!(get_json('/v1/profiles', {
