@@ -13,6 +13,10 @@ void main() {
     );
   });
 
+  test('Apple OAuth is enabled by default for configured builds', () {
+    expect(AuthProviderConfig.appleOAuthEnabled, isTrue);
+  });
+
   test('debug/test builds use dev Clerk redirect and dev Render backend', () {
     expect(
       AuthProviderConfig.redirectUrl,
