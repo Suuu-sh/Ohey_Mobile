@@ -449,9 +449,7 @@ jobs:
             end
           end
 
-          capabilities = get_json("/v1/bundleIds/#{app_bundle_id}/bundleIdCapabilities", {
-            'limit' => '200',
-          }).fetch('data')
+          capabilities = get_json("/v1/bundleIds/#{app_bundle_id}/bundleIdCapabilities").fetch('data')
           apple_id_auth = capabilities.find { |item| item.dig('attributes', 'capabilityType') == 'APPLE_ID_AUTH' }
 
           if apple_id_auth
