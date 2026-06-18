@@ -7,7 +7,7 @@ OHEY_DEV_ENV="dev"
 OHEY_PRODUCTION_ENV="production"
 
 OHEY_DEV_BACKEND_URL="https://dev-ohey-backend.onrender.com"
-OHEY_PRODUCTION_BACKEND_URL="https://ohey-backend.onrender.com"
+OHEY_PRODUCTION_BACKEND_URL="https://api.oheyapp.com"
 
 OHEY_DEV_AUTH_REDIRECT_URL="app.ohey.com.dev://login-callback/"
 OHEY_PRODUCTION_AUTH_REDIRECT_URL="app.ohey.com://login-callback/"

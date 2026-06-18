@@ -25,7 +25,7 @@ class OheyEnvironmentValues {
   );
 
   static const devBackendUrl = 'https://dev-ohey-backend.onrender.com';
-  static const productionBackendUrl = 'https://ohey-backend.onrender.com';
+  static const productionBackendUrl = 'https://api.oheyapp.com';
 
   static const devAuthRedirectUrl = 'app.ohey.com.dev://login-callback/';
   static const productionAuthRedirectUrl = 'app.ohey.com://login-callback/';
