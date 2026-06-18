@@ -78,7 +78,7 @@ jobs:
             echo "OHEY_REVENUECAT_OFFERING_ID=default"
             echo "OHEY_REVENUECAT_PRODUCT_ID=ohey_plus_monthly"
             echo "OHEY_BACKEND_URL=https://api.oheyapp.com"
-            echo "OHEY_ENABLE_APPLE_OAUTH=false"
+            echo "OHEY_ENABLE_APPLE_OAUTH=true"
             if [ -n "${OHEY_REVENUECAT_IOS_API_KEY:-}" ]; then
               echo "OHEY_REVENUECAT_IOS_API_KEY=$OHEY_REVENUECAT_IOS_API_KEY"
             fi
@@ -620,11 +620,10 @@ jobs:
           import plistlib
           from pathlib import Path
 
-          # The App Store provisioning profiles used by CI intentionally do not
-          # include App Groups or Sign in with Apple yet. Keep Release
-          # entitlements aligned with those profiles so TestFlight archives do
-          # not fail signing; Apple OAuth remains disabled for this CI build
-          # until the Developer Portal capability/profile is updated manually.
+          # Keep Release entitlements aligned with the CI provisioning
+          # profiles. The app profile is generated after enabling Sign in with
+          # Apple, so preserve the Runner Apple Sign-In entitlement while
+          # dropping unsupported widget-only entitlements.
           release_entitlements = [
               Path('ios/Runner/RunnerRelease.entitlements'),
               Path('ios/OheyWidgets/OheyWidgetsRelease.entitlements'),
@@ -635,9 +634,11 @@ jobs:
                   with path.open('rb') as handle:
                       data = plistlib.load(handle)
               data.pop('com.apple.security.application-groups', None)
-              data.pop('com.apple.developer.applesignin', None)
               if path.name == 'RunnerRelease.entitlements':
                   data['aps-environment'] = 'production'
+                  data['com.apple.developer.applesignin'] = ['Default']
+              else:
+                  data.pop('com.apple.developer.applesignin', None)
               with path.open('wb') as handle:
                   plistlib.dump(data, handle)
               print(f'Normalized {path}')
