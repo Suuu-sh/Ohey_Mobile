@@ -3,8 +3,16 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ohey/core/config/auth_provider_config.dart';
 import 'package:ohey/core/config/backend_config.dart';
+import 'package:ohey/core/config/ohey_environment.dart';
 
 void main() {
+  test('production backend default uses shared API proxy hostname', () {
+    expect(
+      OheyEnvironmentValues.productionBackendUrl,
+      'https://api.oheyapp.com',
+    );
+  });
+
   test('debug/test builds use dev Clerk redirect and dev Render backend', () {
     expect(
       AuthProviderConfig.redirectUrl,

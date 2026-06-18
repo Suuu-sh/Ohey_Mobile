@@ -47,7 +47,7 @@ Use the shared script so local values do not drift:
 
 `./scripts/run_dev_local.sh` is intentionally deprecated and delegates to the dev Render backend. Do not point Simulator verification at `localhost:8080`.
 
-For prod/TestFlight builds, set `OHEY_BACKEND_URL=https://ohey-backend.onrender.com`. Public non-secret environment defaults are centralized in `lib/core/config/ohey_environment.dart` and `scripts/ohey_env.sh`.
+For prod/TestFlight builds, set `OHEY_BACKEND_URL=https://api.oheyapp.com`; this hostname is served through the shared Cloudflare `shared-api-proxy` route and forwards to the production Render backend. Public non-secret environment defaults are centralized in `lib/core/config/ohey_environment.dart` and `scripts/ohey_env.sh`.
 
 ## Run
 
