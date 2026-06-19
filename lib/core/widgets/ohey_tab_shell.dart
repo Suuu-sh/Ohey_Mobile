@@ -538,96 +538,302 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
     }
 
     if (user == null && canRestoreStoredSession && !_didAttemptProfileRestore) {
-      return const OheyBackendBusyScreen();
+      return const _AuthSessionTransitionSwitcher(
+        loggedIn: false,
+        child: OheyBackendBusyScreen(),
+      );
     }
 
     if (user == null && !_onboardingPrefLoaded) {
-      return Scaffold(
-        resizeToAvoidBottomInset: false,
-        backgroundColor: isWhite
-            ? AppColors.white
-            : AppColors.darkBackgroundBottom,
-        body: const SizedBox.expand(),
+      return _AuthSessionTransitionSwitcher(
+        loggedIn: false,
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          backgroundColor: isWhite
+              ? AppColors.white
+              : AppColors.darkBackgroundBottom,
+          body: const SizedBox.expand(),
+        ),
       );
     }
 
     if (user == null) {
-      return CreateUserDialog(startAtLogin: _isOnboardingSeen);
+      return _AuthSessionTransitionSwitcher(
+        loggedIn: false,
+        child: CreateUserDialog(startAtLogin: _isOnboardingSeen),
+      );
     }
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      extendBody: true,
-      body: _AnimatedTabPageStack(
-        selectedIndex: _selectedIndex,
-        previousIndex: _previousSelectedIndex,
-        transitionTick: _tabTransitionTick,
-        children: _pages,
+    return _AuthSessionTransitionSwitcher(
+      loggedIn: true,
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        extendBody: true,
+        body: _AnimatedTabPageStack(
+          selectedIndex: _selectedIndex,
+          previousIndex: _previousSelectedIndex,
+          transitionTick: _tabTransitionTick,
+          children: _pages,
+        ),
+        bottomNavigationBar: Container(
+          padding: const EdgeInsets.only(top: 7),
+          decoration: BoxDecoration(
+            color: AppColors.darkBackgroundBottom,
+            border: Border(
+              top: BorderSide(
+                color: _selectedToastAccentColor.withValues(alpha: .72),
+                width: 1,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: _selectedToastAccentColor.withValues(alpha: .28),
+                blurRadius: 18,
+                spreadRadius: .5,
+                offset: const Offset(0, -5),
+              ),
+              BoxShadow(
+                color: _selectedToastAccentColor.withValues(alpha: .16),
+                blurRadius: 34,
+                offset: const Offset(0, -9),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            minimum: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+            child: SizedBox(
+              height: 82,
+              child: Row(
+                children: [
+                  _TabItem(
+                    customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
+                    label: 'ゆるぼ',
+                    selected: _selectedIndex == 0,
+                    activeColor: AppColors.cFF8A62FF,
+                    onTap: () => _selectTab(0),
+                  ),
+                  _TabItem(
+                    customIcon: _FriendsTabIcon(selected: _selectedIndex == 1),
+                    label: 'フレンズ',
+                    selected: _selectedIndex == 1,
+                    activeColor: AppColors.cFF9AF21A,
+                    badgeCount: incomingFriendRequestCount,
+                    onTap: () => _selectTab(1),
+                  ),
+                  _TabItem(
+                    customIcon: _CalendarTabIcon(selected: _selectedIndex == 2),
+                    label: 'カレンダー',
+                    selected: _selectedIndex == 2,
+                    activeColor: AppColors.cFF20B9FF,
+                    onTap: () => _selectTab(2),
+                  ),
+                  _TabItem(
+                    customIcon: _ProfileTabIcon(selected: _selectedIndex == 3),
+                    label: 'マイページ',
+                    selected: _selectedIndex == 3,
+                    activeColor: AppColors.cFFFF75B5,
+                    onTap: () => _selectTab(3),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.only(top: 7),
-        decoration: BoxDecoration(
-          color: AppColors.darkBackgroundBottom,
-          border: Border(
-            top: BorderSide(
-              color: _selectedToastAccentColor.withValues(alpha: .72),
-              width: 1,
+    );
+  }
+}
+
+class _AuthSessionTransitionSwitcher extends StatelessWidget {
+  const _AuthSessionTransitionSwitcher({
+    required this.loggedIn,
+    required this.child,
+  });
+
+  final bool loggedIn;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 680),
+      reverseDuration: const Duration(milliseconds: 280),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      layoutBuilder: (currentChild, previousChildren) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [...previousChildren, ?currentChild],
+        );
+      },
+      transitionBuilder: (transitionChild, animation) {
+        final isLoggedInShell =
+            transitionChild.key == const ValueKey('logged-in-shell');
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        final slide = Tween<Offset>(
+          begin: Offset(isLoggedInShell ? 0.06 : -0.02, 0),
+          end: Offset.zero,
+        ).animate(curved);
+        final scale = Tween<double>(
+          begin: isLoggedInShell ? .985 : 1,
+          end: 1,
+        ).animate(curved);
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: slide,
+            child: ScaleTransition(
+              scale: scale,
+              child: isLoggedInShell
+                  ? _AuthLoginArrivalTransition(
+                      animation: animation,
+                      child: transitionChild,
+                    )
+                  : transitionChild,
             ),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: _selectedToastAccentColor.withValues(alpha: .28),
-              blurRadius: 18,
-              spreadRadius: .5,
-              offset: const Offset(0, -5),
-            ),
-            BoxShadow(
-              color: _selectedToastAccentColor.withValues(alpha: .16),
-              blurRadius: 34,
-              offset: const Offset(0, -9),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          top: false,
-          minimum: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-          child: SizedBox(
-            height: 82,
-            child: Row(
-              children: [
-                _TabItem(
-                  customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
-                  label: 'ゆるぼ',
-                  selected: _selectedIndex == 0,
-                  activeColor: AppColors.cFF8A62FF,
-                  onTap: () => _selectTab(0),
+        );
+      },
+      child: KeyedSubtree(
+        key: ValueKey(loggedIn ? 'logged-in-shell' : 'logged-out-shell'),
+        child: child,
+      ),
+    );
+  }
+}
+
+class _AuthLoginArrivalTransition extends StatelessWidget {
+  const _AuthLoginArrivalTransition({
+    required this.animation,
+    required this.child,
+  });
+
+  final Animation<double> animation;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        child,
+        IgnorePointer(
+          child: AnimatedBuilder(
+            animation: animation,
+            builder: (context, _) {
+              final value = Curves.easeOutCubic.transform(animation.value);
+              final overlayOpacity = (1 - value).clamp(0.0, 1.0);
+              final cardOpacity = (1 - (value * 1.45)).clamp(0.0, 1.0);
+              final glowOffset = ui.lerpDouble(-.9, 1.15, value) ?? value;
+              return Opacity(
+                opacity: overlayOpacity,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.cFFFF75B5.withValues(alpha: .26),
+                        AppColors.cFFC08BFF.withValues(alpha: .20),
+                        AppColors.darkBackgroundBottom.withValues(alpha: .56),
+                      ],
+                    ),
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      FractionalTranslation(
+                        translation: Offset(glowOffset, 0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            width: 130,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.white.withValues(alpha: 0),
+                                  AppColors.white.withValues(alpha: .34),
+                                  AppColors.white.withValues(alpha: 0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: Opacity(
+                          opacity: cardOpacity,
+                          child: Transform.translate(
+                            offset: Offset(0, 18 * value),
+                            child: const _AuthLoginArrivalCard(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                _TabItem(
-                  customIcon: _FriendsTabIcon(selected: _selectedIndex == 1),
-                  label: 'フレンズ',
-                  selected: _selectedIndex == 1,
-                  activeColor: AppColors.cFF9AF21A,
-                  badgeCount: incomingFriendRequestCount,
-                  onTap: () => _selectTab(1),
-                ),
-                _TabItem(
-                  customIcon: _CalendarTabIcon(selected: _selectedIndex == 2),
-                  label: 'カレンダー',
-                  selected: _selectedIndex == 2,
-                  activeColor: AppColors.cFF20B9FF,
-                  onTap: () => _selectTab(2),
-                ),
-                _TabItem(
-                  customIcon: _ProfileTabIcon(selected: _selectedIndex == 3),
-                  label: 'マイページ',
-                  selected: _selectedIndex == 3,
-                  activeColor: AppColors.cFFFF75B5,
-                  onTap: () => _selectTab(3),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _AuthLoginArrivalCard extends StatelessWidget {
+  const _AuthLoginArrivalCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.darkBackgroundBottom.withValues(alpha: .86),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.cFFFF75B5.withValues(alpha: .42)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.cFFFF75B5.withValues(alpha: .30),
+            blurRadius: 32,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [AppColors.cFFFF75B5, AppColors.cFFC08BFF],
+              ),
+            ),
+            child: const Icon(
+              CupertinoIcons.checkmark_alt,
+              color: AppColors.white,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Text(
+            'ログインしました',
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.2,
+            ),
+          ),
+        ],
       ),
     );
   }
