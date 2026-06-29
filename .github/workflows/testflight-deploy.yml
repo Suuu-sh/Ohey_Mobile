@@ -535,7 +535,6 @@ jobs:
 
           profiles = {
             'APP_PROVISIONING_PROFILE_NAME' => generated_app_profile_name,
-            'WIDGET_PROVISIONING_PROFILE_NAME' => 'Ohey Widgets App Store CI 20260529095238',
           }
 
           profile_dir = File.expand_path('~/Library/MobileDevice/Provisioning Profiles')
@@ -580,8 +579,6 @@ jobs:
             <dict>
               <key>app.ohey.com</key>
               <string>$APP_PROVISIONING_PROFILE_NAME</string>
-              <key>app.ohey.com.widgets</key>
-              <string>$WIDGET_PROVISIONING_PROFILE_NAME</string>
             </dict>
             <key>signingCertificate</key>
             <string>Apple Distribution</string>
@@ -608,7 +605,6 @@ jobs:
           text = pbxproj.read_text(encoding='utf-8')
           profiles = {
               'app.ohey.com': os.environ['APP_PROVISIONING_PROFILE_NAME'],
-              'app.ohey.com.widgets': os.environ['WIDGET_PROVISIONING_PROFILE_NAME'],
           }
 
           def set_setting(block: str, key: str, value: str) -> str:
@@ -661,30 +657,21 @@ jobs:
           from pathlib import Path
 
           # Keep Release entitlements aligned with the CI provisioning
-          # profiles. The app profile is generated after enabling Sign in with
-          # Apple, so preserve the Runner Apple Sign-In entitlement while
-          # dropping unsupported widget-only entitlements.
-          release_entitlements = [
-              Path('ios/Runner/RunnerRelease.entitlements'),
-              Path('ios/OheyWidgets/OheyWidgetsRelease.entitlements'),
-          ]
-          for path in release_entitlements:
-              data = {}
-              if path.exists():
-                  with path.open('rb') as handle:
-                      data = plistlib.load(handle)
-              data.pop('com.apple.security.application-groups', None)
-              if path.name == 'RunnerRelease.entitlements':
-                  data['aps-environment'] = 'production'
-                  data['com.apple.developer.applesignin'] = ['Default']
-              else:
-                  data.pop('com.apple.developer.applesignin', None)
-              with path.open('wb') as handle:
-                  plistlib.dump(data, handle)
-              print(f'Normalized {path}')
+          # profile. The app profile is generated after enabling Sign in with
+          # Apple, so preserve the Runner Apple Sign-In entitlement.
+          path = Path('ios/Runner/RunnerRelease.entitlements')
+          data = {}
+          if path.exists():
+              with path.open('rb') as handle:
+                  data = plistlib.load(handle)
+          data.pop('com.apple.security.application-groups', None)
+          data['aps-environment'] = 'production'
+          data['com.apple.developer.applesignin'] = ['Default']
+          with path.open('wb') as handle:
+              plistlib.dump(data, handle)
+          print(f'Normalized {path}')
           PY
           plutil -p ios/Runner/RunnerRelease.entitlements
-          plutil -p ios/OheyWidgets/OheyWidgetsRelease.entitlements
 
       - name: Archive release build
         run: |
