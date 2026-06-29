@@ -65,14 +65,27 @@ class ClerkAuthService {
       config: clerk.AuthConfig(
         publishableKey: AuthProviderConfig.clerkPublishableKey,
         persistor: SecureClerkPersistor(),
+        defaultSessionTokenTemplate: AuthProviderConfig.clerkJwtTemplateName,
       ),
       onUpdated: _refreshCachedSessionToken,
     );
     _auth = auth;
     await auth.initialize();
     _tokenSubscription = auth.sessionTokenStream.listen((token) {
-      _sessionToken = token;
-      _authChanges.add(null);
+      if (_isConfiguredSessionToken(token)) {
+        _sessionToken = token;
+        _authChanges.add(null);
+        return;
+      }
+
+      // clerk_auth also emits/caches the default session token. The production
+      // backend requires the configured JWT template audience, so never replace
+      // a usable template token with the default token.
+      if (_sessionToken == null || !_isConfiguredSessionToken(_sessionToken!)) {
+        _sessionToken = null;
+        _authChanges.add(null);
+      }
+      unawaited(_refreshCachedSessionToken());
     });
     await _refreshCachedSessionToken();
   }
@@ -84,8 +97,13 @@ class ClerkAuthService {
       return;
     }
     try {
-      final token = await auth.sessionToken();
-      _sessionToken = _sessionSuspendedLocally ? null : token;
+      final token = await auth.sessionToken(
+        templateName: AuthProviderConfig.clerkJwtTemplateName,
+      );
+      _sessionToken =
+          _sessionSuspendedLocally || !_isConfiguredSessionToken(token)
+          ? null
+          : token;
     } catch (_) {
       _sessionToken = null;
     }
@@ -312,6 +330,12 @@ String? _validSessionTokenJWT(clerk.SessionToken? token) {
   if (token == null || !token.isNotExpired) return null;
   final jwt = token.jwt.trim();
   return jwt.isEmpty ? null : jwt;
+}
+
+bool _isConfiguredSessionToken(clerk.SessionToken token) {
+  final configuredTemplateName = AuthProviderConfig.clerkJwtTemplateName.trim();
+  if (configuredTemplateName.isEmpty) return true;
+  return token.templateName == configuredTemplateName;
 }
 
 class ClerkOheyAuth extends clerk.Auth {

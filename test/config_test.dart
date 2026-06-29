@@ -17,6 +17,10 @@ void main() {
     expect(AuthProviderConfig.appleOAuthEnabled, isTrue);
   });
 
+  test('Clerk session tokens use the backend audience JWT template', () {
+    expect(AuthProviderConfig.clerkJwtTemplateName, 'ohey-mobile');
+  });
+
   test('debug/test builds use dev Clerk redirect and dev Render backend', () {
     expect(
       AuthProviderConfig.redirectUrl,
