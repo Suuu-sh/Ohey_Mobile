@@ -21,12 +21,22 @@ class AuthProviderConfig {
     OheyEnvironmentValues.googleIosClientIdDefineKey,
   );
 
+  static const _definedClerkJwtTemplate = String.fromEnvironment(
+    OheyEnvironmentValues.clerkJwtTemplateDefineKey,
+  );
+
   static const appleOAuthEnabled = bool.fromEnvironment(
     'OHEY_ENABLE_APPLE_OAUTH',
     defaultValue: true,
   );
 
   static bool get isClerkEnabled => clerkPublishableKey.trim().isNotEmpty;
+
+  static String get clerkJwtTemplateName {
+    final configured = _definedClerkJwtTemplate.trim();
+    if (configured.isNotEmpty) return configured;
+    return OheyEnvironmentValues.productionClerkJwtTemplate;
+  }
 
   static String get redirectUrl {
     if (authRedirectUrl.trim().isNotEmpty) return authRedirectUrl;
