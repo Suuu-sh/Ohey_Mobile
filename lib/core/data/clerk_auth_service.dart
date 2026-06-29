@@ -13,6 +13,11 @@ final clerkAuthServiceProvider = Provider<ClerkAuthService>((ref) {
   return service;
 });
 
+enum ClerkPasswordSignInResult { completed, needsClientTrustEmailCode }
+
+const _clerkRequestTimeout = Duration(seconds: 30);
+const _clientTrustRequiredStatusName = 'needs_client_trust';
+
 class ClerkAuthService {
   ClerkAuthService();
 
@@ -174,20 +179,59 @@ class ClerkAuthService {
     _authChanges.add(null);
   }
 
-  Future<void> signInWithPassword({
+  Future<ClerkPasswordSignInResult> signInWithPassword({
     required String email,
     required String password,
   }) async {
     await initialize();
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.attemptSignIn(
-      strategy: clerk.Strategy.password,
-      identifier: email,
-      password: password,
+    await _withClerkTimeout(
+      auth.attemptSignIn(
+        strategy: clerk.Strategy.password,
+        identifier: email,
+        password: password,
+      ),
     );
+
+    if (_isClientTrustRequired(auth.signIn)) {
+      await _prepareClientTrustEmailCode(auth.signIn!);
+      _authChanges.add(null);
+      return ClerkPasswordSignInResult.needsClientTrustEmailCode;
+    }
+
     await _activateSessionForEmail(email);
     await _refreshCachedSessionTokenWithRetry();
+    _throwIfNoUsableSession();
+    _authChanges.add(null);
+    return ClerkPasswordSignInResult.completed;
+  }
+
+  Future<void> completeClientTrustEmailCode(String code) async {
+    await initialize();
+    final auth = _requireAuth();
+    final signIn = auth.signIn;
+    if (!_isClientTrustRequired(signIn)) {
+      throw const clerk.ClerkError(
+        code: clerk.ClerkErrorCode.clientAppError,
+        message: 'Client trust verification is not pending',
+      );
+    }
+
+    final response = await _withClerkTimeout(
+      auth.fetchApiResponse(
+        '/client/sign_ins/${signIn!.id}/attempt_second_factor',
+        params: {'strategy': clerk.Strategy.emailCode, 'code': code.trim()},
+      ),
+    );
+    _throwIfClerkResponseError(
+      response,
+      'Client trust verification code could not be verified',
+    );
+
+    await _activateSessionForEmail(signIn.identifier ?? currentUserEmail ?? '');
+    await _refreshCachedSessionTokenWithRetry();
+    _throwIfNoUsableSession();
     _authChanges.add(null);
   }
 
@@ -285,6 +329,60 @@ class ClerkAuthService {
     return _validSessionTokenJWT(_sessionToken) != null;
   }
 
+  Future<void> _prepareClientTrustEmailCode(clerk.SignIn signIn) async {
+    final factor = _clientTrustEmailFactor(signIn);
+    if (factor?.emailAddressId == null) {
+      throw const clerk.ClerkError(
+        code: clerk.ClerkErrorCode.clientAppError,
+        message: 'Client trust email factor is unavailable',
+      );
+    }
+
+    final response = await _withClerkTimeout(
+      _requireAuth().fetchApiResponse(
+        '/client/sign_ins/${signIn.id}/prepare_second_factor',
+        params: {
+          'strategy': clerk.Strategy.emailCode,
+          'email_address_id': factor!.emailAddressId,
+        },
+      ),
+    );
+    _throwIfClerkResponseError(
+      response,
+      'Client trust verification email could not be sent',
+    );
+  }
+
+  void _throwIfClerkResponseError(clerk.ApiResponse response, String fallback) {
+    if (!response.isError) return;
+    final errors = response.errorCollection.errors;
+    throw clerk.ClerkError(
+      code: clerk.ClerkErrorCode.clientAppError,
+      message: errors?.isNotEmpty == true ? errors!.first.message : fallback,
+    );
+  }
+
+  void _throwIfNoUsableSession() {
+    if (_validSessionTokenJWT(_sessionToken) != null &&
+        _rawCurrentUserId != null) {
+      return;
+    }
+    throw const clerk.ClerkError(
+      code: clerk.ClerkErrorCode.noSessionTokenRetrieved,
+      message: 'No session token retrieved',
+    );
+  }
+
+  Future<T> _withClerkTimeout<T>(Future<T> future) {
+    return future.timeout(
+      _clerkRequestTimeout,
+      onTimeout: () => throw const clerk.ClerkError(
+        code: clerk.ClerkErrorCode.clientAppError,
+        message: 'Authentication request timed out',
+      ),
+    );
+  }
+
   Future<void> suspendCurrentSessionLocally() async {
     await initialize();
     _sessionSuspendedLocally = true;
@@ -336,6 +434,19 @@ bool _isConfiguredSessionToken(clerk.SessionToken token) {
   final configuredTemplateName = AuthProviderConfig.clerkJwtTemplateName.trim();
   if (configuredTemplateName.isEmpty) return true;
   return token.templateName == configuredTemplateName;
+}
+
+bool _isClientTrustRequired(clerk.SignIn? signIn) =>
+    signIn?.status.name == _clientTrustRequiredStatusName;
+
+clerk.Factor? _clientTrustEmailFactor(clerk.SignIn signIn) {
+  for (final factor in signIn.supportedSecondFactors) {
+    if (factor.strategy == clerk.Strategy.emailCode &&
+        factor.emailAddressId?.trim().isNotEmpty == true) {
+      return factor;
+    }
+  }
+  return null;
 }
 
 class ClerkOheyAuth extends clerk.Auth {

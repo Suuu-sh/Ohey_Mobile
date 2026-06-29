@@ -197,6 +197,10 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
   }
 
   Widget _buildPlainLogin(BuildContext context) {
+    if (_clientTrustStep == _ClientTrustStep.code) {
+      return _buildClientTrustCodePage(context);
+    }
+
     if (_passwordResetStep == _PasswordResetStep.code) {
       return _buildPasswordResetCodePage(context);
     }
@@ -334,6 +338,97 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                 style: TextStyle(
                   color: AppColors.white.withValues(alpha: .82),
                   fontSize: compact ? 12 : 14,
+                  fontWeight: FontWeight.w800,
+                  height: 1.45,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildClientTrustCodePage(BuildContext context) {
+    final code = _clientTrustCodeController.text.trim();
+    final canSubmit = code.length == 6 && !_isBusy;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final hasMessage = _error != null || _notice != null;
+        final compact = constraints.maxHeight < 720 || hasMessage;
+        final fieldHeight = compact ? 56.0 : 64.0;
+        final buttonHeight = compact ? 56.0 : 64.0;
+        return _fixedAuthPage(
+          constraints: constraints,
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _SignupProgressHeader(
+                progress: .88,
+                onBack: _isBusy ? null : _handleLoginBack,
+              ),
+              SizedBox(height: compact ? 28 : 58),
+              Text(
+                'メールの確認コードを\n入力してください',
+                style: TextStyle(
+                  color: AppColors.white,
+                  fontSize: compact ? 26 : 28,
+                  fontWeight: FontWeight.w900,
+                  height: 1.18,
+                  letterSpacing: -.8,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                '${_emailController.text.trim()} に届いた6桁のコードで、この端末からのログインを確認します。',
+                style: TextStyle(
+                  color: AppColors.white.withValues(alpha: .82),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  height: 1.45,
+                ),
+              ),
+              SizedBox(height: compact ? 24 : 38),
+              _SignupInputBox(
+                child: _PlainLoginTextField(
+                  controller: _clientTrustCodeController,
+                  enabled: !_isBusy,
+                  hintText: '6桁のコード',
+                  height: fieldHeight,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.oneTimeCode],
+                  onChanged: (_) => setState(() {}),
+                  onSubmitted: (_) {
+                    if (canSubmit) _completeClientTrustEmailCode();
+                  },
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                _DarkMessageText(_error!, isError: true),
+              ],
+              if (_notice != null) ...[
+                const SizedBox(height: 10),
+                _DarkMessageText(_notice!),
+              ],
+              SizedBox(height: compact ? 24 : 42),
+              _SignupStepButton(
+                label: '確認してログイン',
+                height: buttonHeight,
+                busy: _isBusy,
+                enabled: canSubmit,
+                onTap: canSubmit ? _completeClientTrustEmailCode : null,
+              ),
+              const Spacer(),
+              Text(
+                'コードが届かない場合は、戻ってもう一度ログインしてください。',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.white.withValues(alpha: .72),
+                  fontSize: compact ? 12 : 13,
                   fontWeight: FontWeight.w800,
                   height: 1.45,
                 ),

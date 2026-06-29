@@ -13,6 +13,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _registrationStep = _RegistrationStep.email;
       _passwordConfirmationController.clear();
       _clearPasswordResetFields();
+      _clearClientTrustFields();
       _error = null;
       _notice = null;
     });
@@ -29,6 +30,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       _passwordController.clear();
       _passwordConfirmationController.clear();
       _clearPasswordResetFields();
+      _clearClientTrustFields();
       _userIdController.clear();
       _nameController.clear();
       _avatar = OheyAvatar.defaultAvatar;
@@ -56,6 +58,12 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
 
   void _handleLoginBack() {
     setState(() {
+      if (_clientTrustStep != _ClientTrustStep.none) {
+        _clearClientTrustFields();
+        _error = null;
+        _notice = null;
+        return;
+      }
       if (_passwordResetStep != _PasswordResetStep.none) {
         _passwordResetStep = _PasswordResetStep.none;
         _clearPasswordResetFields();
@@ -68,6 +76,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
         _passwordController.clear();
         _passwordConfirmationController.clear();
         _clearPasswordResetFields();
+        _clearClientTrustFields();
         _isAwaitingExternalAuth = false;
         _error = null;
         _notice = null;
@@ -101,6 +110,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     }
     setState(() {
       _loginStep = _RegistrationStep.password;
+      _clearClientTrustFields();
       _error = null;
       _notice = null;
     });
@@ -161,6 +171,40 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     _obscureResetPasswordConfirmation = true;
   }
 
+  void _clearClientTrustFields() {
+    _clientTrustStep = _ClientTrustStep.none;
+    _clientTrustCodeController.clear();
+  }
+
+  Future<void> _completeClientTrustEmailCode() async {
+    final code = _clientTrustCodeController.text.trim();
+    if (code.length != 6) {
+      setState(() => _error = 'メールに届いた6桁の確認コードを入力してください。');
+      return;
+    }
+
+    setState(() {
+      _isBusy = true;
+      _error = null;
+      _notice = null;
+    });
+
+    try {
+      await ref.read(authRepositoryProvider).completeClientTrustEmailCode(code);
+      if (!mounted) return;
+      _clearClientTrustFields();
+      await _completeAuthenticatedSession();
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = _friendlyAuthError(e.message));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = _friendlyUnexpectedAuthError(e));
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
+  }
+
   Future<void> _sendPasswordResetEmail() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
@@ -181,6 +225,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       await ref.read(authRepositoryProvider).resetPasswordForEmail(email);
       if (!mounted) return;
       setState(() {
+        _clearClientTrustFields();
         _passwordResetStep = _PasswordResetStep.code;
         _passwordResetCodeController.clear();
         _resetPasswordController.clear();
@@ -263,6 +308,7 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
           _loginStep = _RegistrationStep.password;
           _passwordController.clear();
           _passwordConfirmationController.clear();
+          _clearClientTrustFields();
           _notice = '保存済みログインを確認できませんでした。パスワード、Google、またはAppleで再ログインしてね。';
         });
         return;

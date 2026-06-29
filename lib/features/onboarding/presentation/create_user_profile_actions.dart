@@ -26,10 +26,20 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
         // that can advance the login flow.
         await authRepository.suspendCurrentSessionLocally();
         if (!mounted) return;
-        await authRepository.signInWithPassword(
+        final signInResult = await authRepository.signInWithPassword(
           email: email,
           password: password,
         );
+        if (signInResult == PasswordSignInResult.needsClientTrustEmailCode) {
+          if (!mounted) return;
+          setState(() {
+            _clientTrustStep = _ClientTrustStep.code;
+            _clientTrustCodeController.clear();
+            _error = null;
+            _notice = '確認コードをメールに送ったよ。6桁のコードを入力してね。';
+          });
+          return;
+        }
         await ref
             .read(oheyUserProvider.notifier)
             .ensureProfileForAuthenticatedUser();
