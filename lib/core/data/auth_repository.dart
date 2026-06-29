@@ -118,7 +118,7 @@ class AuthRepository {
     return _clerk.completeClientTrustEmailCode(code);
   }
 
-  Future<void> signUpWithProfileMetadata({
+  Future<PasswordSignInResult> signUpWithProfileMetadata({
     required String email,
     required String password,
     required String userId,
@@ -138,9 +138,11 @@ class AuthRepository {
       email: email,
       password: password,
     );
-    if (result == ClerkPasswordSignInResult.needsClientTrustEmailCode) {
-      throw const AuthException('メールに届いた確認コードを入力してからログインしてね。');
-    }
+    return switch (result) {
+      ClerkPasswordSignInResult.completed => PasswordSignInResult.completed,
+      ClerkPasswordSignInResult.needsClientTrustEmailCode =>
+        PasswordSignInResult.needsClientTrustEmailCode,
+    };
   }
 
   Future<void> _createBackendClerkUser({

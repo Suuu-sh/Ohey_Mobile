@@ -99,13 +99,27 @@ extension _CreateUserProfileActions on _CreateUserDialogState {
         )) {
           throw const AuthException(_passwordConfirmationRequirementMessage);
         }
-        await authRepository.signUpWithProfileMetadata(
+        final signupResult = await authRepository.signUpWithProfileMetadata(
           email: email,
           password: password,
           userId: userId,
           displayName: name,
           avatar: _avatar,
         );
+        if (signupResult == PasswordSignInResult.needsClientTrustEmailCode) {
+          if (!mounted) return;
+          setState(() {
+            _isLogin = true;
+            _showAuthForm = true;
+            _step = _OnboardingStep.auth;
+            _loginStep = _RegistrationStep.password;
+            _clientTrustStep = _ClientTrustStep.code;
+            _clientTrustCodeController.clear();
+            _error = null;
+            _notice = '確認コードをメールに送ったよ。6桁のコードを入力してね。';
+          });
+          return;
+        }
       }
       if (isBackendSignup) {
         await ref
