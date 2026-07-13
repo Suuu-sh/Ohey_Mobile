@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -59,7 +58,16 @@ final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
         .timeout(const Duration(seconds: 12));
 
     if (OheyAdsConfig.isEnabled) {
-      unawaited(OheyAdsConsentService.prepareToRequestAds());
+      try {
+        // Do not overlap UMP/ATT with the system notification prompt. Consent
+        // dialogs must complete before push setup can request permission.
+        await OheyAdsConsentService.prepareToRequestAds();
+      } catch (error, stackTrace) {
+        if (kDebugMode) {
+          debugPrint('Ohey ad consent setup skipped: $error');
+          debugPrintStack(stackTrace: stackTrace);
+        }
+      }
     }
 
     await _preloadBackendProfileIfSessionExists(ref);

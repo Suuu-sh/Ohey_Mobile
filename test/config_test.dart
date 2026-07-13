@@ -114,4 +114,17 @@ void main() {
     expect(adsConsentService, isNot(contains('getAdvertisingIdentifier')));
     expect(adsConsentService, isNot(contains('iOS IDFA')));
   });
+
+  test('ad consent completes before push permission can be requested', () {
+    final mainSource = File('lib/main.dart').readAsStringSync();
+    final adsConsent = mainSource.indexOf(
+      'await OheyAdsConsentService.prepareToRequestAds()',
+    );
+    final pushSetup = mainSource.indexOf(
+      'read(oheyPushNotificationServiceProvider)',
+    );
+
+    expect(adsConsent, greaterThanOrEqualTo(0));
+    expect(pushSetup, greaterThan(adsConsent));
+  });
 }
