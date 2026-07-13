@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,14 +10,18 @@ import 'auth_identity_provider.dart';
 
 final backendApiClientProvider = Provider<BackendApiClient>((ref) {
   final authIdentity = ref.watch(authIdentityProvider);
-  return BackendApiClient(
+  final client = BackendApiClient(
     baseUrl: BackendConfig.baseUrl,
     accessTokenProvider: () => authIdentity.currentAccessToken,
     accessTokenRefreshProvider: authIdentity.currentAccessTokenOrRefresh,
     userIdProvider: () => authIdentity.currentUserId,
     tokenValidator: authIdentity.isTokenValidForEnvironment,
   );
+  ref.onDispose(client.close);
+  return client;
 });
+
+const _maximumBackendResponseBytes = 4 * 1024 * 1024;
 
 class BackendApiClient {
   BackendApiClient({
@@ -27,7 +32,11 @@ class BackendApiClient {
     required this.tokenValidator,
     HttpClient? httpClient,
   }) : _baseUri = _normalizeBackendBaseUri(baseUrl),
-       _httpClient = httpClient ?? HttpClient();
+       _httpClient = httpClient ?? HttpClient() {
+    _httpClient.connectionTimeout = const Duration(seconds: 12);
+    _httpClient.idleTimeout = const Duration(seconds: 30);
+    _httpClient.maxConnectionsPerHost = 8;
+  }
 
   final Uri _baseUri;
   final HttpClient _httpClient;
@@ -37,6 +46,8 @@ class BackendApiClient {
   final bool Function(String token) tokenValidator;
 
   String? get currentUserId => userIdProvider();
+
+  void close() => _httpClient.close(force: true);
 
   Future<dynamic> get(String path, {Map<String, String>? query}) {
     return _send('GET', path, query: query);
@@ -181,8 +192,26 @@ class BackendApiClient {
     }
 
     final response = await request.close().timeout(const Duration(seconds: 20));
-    final text = await utf8.decoder.bind(response).join();
+    final text = await _readResponseText(response);
     return _BackendResponse(statusCode: response.statusCode, text: text);
+  }
+
+  Future<String> _readResponseText(HttpClientResponse response) async {
+    if (response.contentLength > _maximumBackendResponseBytes) {
+      throw const BackendApiException('Backend response is too large.');
+    }
+    final bytes = BytesBuilder(copy: false);
+    await for (final chunk in response) {
+      if (bytes.length + chunk.length > _maximumBackendResponseBytes) {
+        throw const BackendApiException('Backend response is too large.');
+      }
+      bytes.add(chunk);
+    }
+    try {
+      return utf8.decode(bytes.takeBytes());
+    } on FormatException {
+      throw const BackendApiException('Backend response format is invalid.');
+    }
   }
 
   dynamic _decodeResponse(_BackendResponse response) {

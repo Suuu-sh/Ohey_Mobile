@@ -115,7 +115,9 @@ class OheyPlusService {
       await rc.Purchases.logOut();
       _configuredAppUserId = null;
     } catch (error, stackTrace) {
-      debugPrint('RevenueCat logout skipped: $error\n$stackTrace');
+      if (kDebugMode) {
+        debugPrint('RevenueCat logout skipped: $error\n$stackTrace');
+      }
     }
   }
 

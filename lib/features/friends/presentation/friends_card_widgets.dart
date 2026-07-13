@@ -2,21 +2,6 @@ part of 'friends_screen.dart';
 
 enum _FriendProfileAction { remove, mute, block, report }
 
-enum _FriendProfileReportReason {
-  spam(OheyReportReasonKeys.spam, 'スパム・宣伝', '宣伝、詐欺、迷惑な勧誘'),
-  harassment(OheyReportReasonKeys.harassment, '不快・いやがらせ', '攻撃的、差別的、嫌がらせに感じる内容'),
-  inappropriate(OheyReportReasonKeys.inappropriate, '不適切な内容', '性的・過度に不快な表現'),
-  violence(OheyReportReasonKeys.violence, '暴力・危険行為', '暴力、危険行為、自傷を助長する内容'),
-  minorSafety(OheyReportReasonKeys.minorSafety, '未成年・危険', '未成年の安全に関わる懸念'),
-  other(OheyReportReasonKeys.other, 'その他', '上記に当てはまらない問題');
-
-  const _FriendProfileReportReason(this.value, this.label, this.description);
-
-  final String value;
-  final String label;
-  final String description;
-}
-
 class _FriendCard extends StatelessWidget {
   const _FriendCard({
     required this.friend,
@@ -638,10 +623,8 @@ class _FriendProfileCancelButton extends StatelessWidget {
   }
 }
 
-Future<_FriendProfileReportReason?> _selectFriendReportReason(
-  BuildContext context,
-) {
-  return showOheyBottomSheet<_FriendProfileReportReason>(
+Future<OheyReportReason?> _selectFriendReportReason(BuildContext context) {
+  return showOheyBottomSheet<OheyReportReason>(
     context: context,
     useSafeArea: true,
     barrierColor: AppColors.black.withValues(alpha: .58),
@@ -677,7 +660,7 @@ class _FriendReportReasonSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          for (final reason in _FriendProfileReportReason.values) ...[
+          for (final reason in OheyReportReason.values) ...[
             OheyActionTile(
               icon: CupertinoIcons.exclamationmark_triangle_fill,
               title: reason.label,
@@ -685,7 +668,7 @@ class _FriendReportReasonSheet extends StatelessWidget {
               accent: AppColors.cFFFFD166,
               onTap: () => Navigator.of(context).pop(reason),
             ),
-            if (reason != _FriendProfileReportReason.values.last)
+            if (reason != OheyReportReason.values.last)
               const SizedBox(height: 9),
           ],
           const SizedBox(height: 12),

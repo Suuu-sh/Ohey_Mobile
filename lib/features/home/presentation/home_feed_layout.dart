@@ -372,6 +372,27 @@ Future<void> _showFeedPostActions(
           OheyToast.show(context, 'ブロックできなかったよ。あとでもう一度試してね');
         }
       }
+    case _FeedPostAction.reportUser:
+      if (!item.canReport || item.ownerUserId.trim().isEmpty) return;
+      final reason = await _selectFeedReportReason(context);
+      if (!context.mounted || reason == null) return;
+      try {
+        await ref
+            .read(userSafetyRepositoryProvider)
+            .reportUser(item.ownerUserId, reason: reason.value);
+        if (context.mounted) {
+          OheyToast.show(
+            context,
+            '「${reason.label}」として通報しました',
+            icon: CupertinoIcons.exclamationmark_bubble_fill,
+            accentColor: AppColors.cFFFFD166,
+          );
+        }
+      } catch (_) {
+        if (context.mounted) {
+          OheyToast.show(context, '通報できませんでした。あとでもう一度試してね');
+        }
+      }
   }
 }
 

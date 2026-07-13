@@ -1,6 +1,6 @@
 part of 'home_screen.dart';
 
-enum _FeedPostAction { edit, delete, muteUser, blockUser }
+enum _FeedPostAction { edit, delete, muteUser, blockUser, reportUser }
 
 class _FeedPostActionsSheet extends StatelessWidget {
   const _FeedPostActionsSheet({required this.item, required this.body});
@@ -99,6 +99,69 @@ class _FeedPostActionsSheet extends StatelessWidget {
               showShadow: false,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.blockUser),
             ),
+            if (item.canReport) ...[
+              const SizedBox(height: 10),
+              OheyActionTile(
+                icon: CupertinoIcons.exclamationmark_bubble_fill,
+                title: 'このゆるぼの投稿者を通報',
+                subtitle: '理由を選んで運営に送信します',
+                accent: AppColors.cFFFFD166,
+                showShadow: false,
+                onTap: () =>
+                    Navigator.of(context).pop(_FeedPostAction.reportUser),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+Future<OheyReportReason?> _selectFeedReportReason(BuildContext context) {
+  return showOheyBottomSheet<OheyReportReason>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: AppColors.black.withValues(alpha: .58),
+    builder: (_) => const _FeedReportReasonSheet(),
+  );
+}
+
+class _FeedReportReasonSheet extends StatelessWidget {
+  const _FeedReportReasonSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final subtitleColor = isWhite
+        ? AppColors.cFF697684
+        : AppColors.white.withValues(alpha: .58);
+    return OheyBottomSheetShell(
+      title: '通報理由',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '近い理由を選ぶと、運営が確認しやすくなります。',
+            style: TextStyle(
+              color: subtitleColor,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 16),
+          for (final reason in OheyReportReason.values) ...[
+            OheyActionTile(
+              icon: CupertinoIcons.exclamationmark_triangle_fill,
+              title: reason.label,
+              subtitle: reason.description,
+              accent: AppColors.cFFFFD166,
+              onTap: () => Navigator.of(context).pop(reason),
+            ),
+            if (reason != OheyReportReason.values.last)
+              const SizedBox(height: 9),
           ],
         ],
       ),

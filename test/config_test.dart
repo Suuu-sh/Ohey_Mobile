@@ -64,4 +64,40 @@ void main() {
       );
     },
   );
+
+  test('iOS app privacy manifest is bundled in the Runner target', () {
+    final manifest = File(
+      'ios/Runner/PrivacyInfo.xcprivacy',
+    ).readAsStringSync();
+    final project = File(
+      'ios/Runner.xcodeproj/project.pbxproj',
+    ).readAsStringSync();
+
+    expect(manifest, contains('NSPrivacyCollectedDataTypeEmailAddress'));
+    expect(manifest, contains('NSPrivacyCollectedDataTypeOtherUserContent'));
+    expect(manifest, contains('NSPrivacyCollectedDataTypeContacts'));
+    expect(
+      manifest,
+      isNot(contains('NSPrivacyCollectedDataTypePreciseLocation')),
+    );
+    expect(project, contains('PrivacyInfo.xcprivacy in Resources'));
+  });
+
+  test('iOS declares only permissions used by the current release', () {
+    final info = File('ios/Runner/Info.plist').readAsStringSync();
+
+    expect(info, contains('NSCameraUsageDescription'));
+    expect(info, contains('NSUserTrackingUsageDescription'));
+    expect(info, isNot(contains('NSLocationWhenInUseUsageDescription')));
+    expect(info, isNot(contains('NSPhotoLibraryAddUsageDescription')));
+  });
+
+  test('release code never reads or logs the advertising identifier', () {
+    final adsConsentService = File(
+      'lib/core/services/ohey_ads_consent_service.dart',
+    ).readAsStringSync();
+
+    expect(adsConsentService, isNot(contains('getAdvertisingIdentifier')));
+    expect(adsConsentService, isNot(contains('iOS IDFA')));
+  });
 }

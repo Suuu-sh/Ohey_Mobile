@@ -34,10 +34,10 @@ class OheyAdsConsentService {
           .getPrivacyOptionsRequirementStatus();
       return status == PrivacyOptionsRequirementStatus.required;
     } catch (error, stackTrace) {
-      debugPrint(
+      _debugLog(
         'OheyAdsConsentService: failed to read privacy options status: $error',
+        stackTrace,
       );
-      debugPrintStack(stackTrace: stackTrace);
       return false;
     }
   }
@@ -62,7 +62,7 @@ class OheyAdsConsentService {
 
     final error = await _showPrivacyOptionsForm();
     if (error != null) {
-      debugPrint(
+      _debugLog(
         'OheyAdsConsentService: failed to show privacy options form '
         '(${error.errorCode}): ${error.message}',
       );
@@ -72,32 +72,35 @@ class OheyAdsConsentService {
   }
 
   static Future<bool> _prepareToRequestAds() async {
-    await _requestAppTrackingAuthorizationIfNeeded();
-
     try {
       await _requestConsentInfoUpdate();
     } catch (error, stackTrace) {
       // Google recommends checking canRequestAds() even after consent gathering
       // errors because the SDK may be able to use a previous session's state.
-      debugPrint('OheyAdsConsentService: consent info update failed: $error');
-      debugPrintStack(stackTrace: stackTrace);
+      _debugLog(
+        'OheyAdsConsentService: consent info update failed: $error',
+        stackTrace,
+      );
     }
 
     try {
       final formError = await _loadAndShowConsentFormIfRequired();
       if (formError != null) {
-        debugPrint(
+        _debugLog(
           'OheyAdsConsentService: consent form failed '
           '(${formError.errorCode}): ${formError.message}',
         );
       }
     } catch (error, stackTrace) {
-      debugPrint('OheyAdsConsentService: consent form error: $error');
-      debugPrintStack(stackTrace: stackTrace);
+      _debugLog(
+        'OheyAdsConsentService: consent form error: $error',
+        stackTrace,
+      );
     }
 
     final canRequestAds = await _canRequestAds();
     if (canRequestAds) {
+      await _requestAppTrackingAuthorizationIfNeeded();
       await _initializeMobileAds();
     }
     return canRequestAds;
@@ -129,8 +132,10 @@ class OheyAdsConsentService {
     try {
       return await ConsentInformation.instance.canRequestAds();
     } catch (error, stackTrace) {
-      debugPrint('OheyAdsConsentService: failed to read canRequestAds: $error');
-      debugPrintStack(stackTrace: stackTrace);
+      _debugLog(
+        'OheyAdsConsentService: failed to read canRequestAds: $error',
+        stackTrace,
+      );
       return false;
     }
   }
@@ -151,21 +156,24 @@ class OheyAdsConsentService {
         await Future<void>.delayed(const Duration(milliseconds: 600));
         final updatedStatus =
             await AppTrackingTransparency.requestTrackingAuthorization();
-        debugPrint(
+        _debugLog(
           'OheyAdsConsentService: ATT status after request: $updatedStatus',
         );
       } else {
-        debugPrint('OheyAdsConsentService: ATT status: $status');
+        _debugLog('OheyAdsConsentService: ATT status: $status');
       }
-
-      final advertisingIdentifier =
-          await AppTrackingTransparency.getAdvertisingIdentifier();
-      debugPrint(
-        'OheyAdsConsentService: iOS IDFA for AdMob test device registration: '
-        '$advertisingIdentifier',
-      );
     } catch (error, stackTrace) {
-      debugPrint('OheyAdsConsentService: ATT request failed: $error');
+      _debugLog(
+        'OheyAdsConsentService: ATT request failed: $error',
+        stackTrace,
+      );
+    }
+  }
+
+  static void _debugLog(String message, [StackTrace? stackTrace]) {
+    if (!kDebugMode) return;
+    debugPrint(message);
+    if (stackTrace != null) {
       debugPrintStack(stackTrace: stackTrace);
     }
   }
