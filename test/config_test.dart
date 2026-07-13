@@ -83,6 +83,17 @@ void main() {
     expect(project, contains('PrivacyInfo.xcprivacy in Resources'));
   });
 
+  test('iOS Debug configuration supports Simulator verification', () {
+    final project = File(
+      'ios/Runner.xcodeproj/project.pbxproj',
+    ).readAsStringSync();
+
+    expect(
+      project,
+      contains('SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";'),
+    );
+  });
+
   test('iOS declares only permissions used by the current release', () {
     final info = File('ios/Runner/Info.plist').readAsStringSync();
 
