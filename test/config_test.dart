@@ -96,11 +96,14 @@ void main() {
 
   test('iOS declares only permissions used by the current release', () {
     final info = File('ios/Runner/Info.plist').readAsStringSync();
+    final appDelegate = File('ios/Runner/AppDelegate.swift').readAsStringSync();
 
     expect(info, contains('NSCameraUsageDescription'));
     expect(info, contains('NSUserTrackingUsageDescription'));
     expect(info, isNot(contains('NSLocationWhenInUseUsageDescription')));
     expect(info, isNot(contains('NSPhotoLibraryAddUsageDescription')));
+    expect(appDelegate, isNot(contains('ohey/place_search')));
+    expect(appDelegate, isNot(contains('ohey/qr_saver')));
   });
 
   test('release code never reads or logs the advertising identifier', () {
