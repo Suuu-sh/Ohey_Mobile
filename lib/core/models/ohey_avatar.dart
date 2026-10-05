@@ -118,8 +118,8 @@ class OheyAvatar {
   static const backgroundStyles = ['Ohey pink', 'おへとも・もも'];
 
   static const backgroundGradients = [
-    [AppColors.cFFFF7BBC, AppColors.cFFFFD2E3],
-    [AppColors.cFFFF8FC8, AppColors.cFFFFDDEB],
+    [AppColors.cFFFF86C8, AppColors.cFFFFE5F3],
+    [AppColors.cFFFF86C8, AppColors.cFFFFE5F3],
   ];
 
   static bool usesMascotBackdrop(int background) =>
@@ -134,38 +134,38 @@ class OheyAvatar {
   };
 
   static const skinColors = [
-    AppColors.cFFFFD8C2,
-    AppColors.cFFE9A985,
-    AppColors.cFFB96B54,
-    AppColors.cFF7B3F36,
-    AppColors.cFF4A2824,
-    AppColors.cFFFFC08A,
+    AppColors.cFFFFF0D5,
+    AppColors.cFFFFC56B,
+    AppColors.cFFFF9600,
+    AppColors.cFF6E1515,
+    AppColors.cFF2B3A41,
+    AppColors.cFFFFC56B,
   ];
 
   static const hairColors = [
-    AppColors.cFF2A1715,
-    AppColors.cFF4E2A20,
-    AppColors.cFF8A4B2E,
-    AppColors.cFFD8A24C,
-    AppColors.cFF111820,
-    AppColors.cFFEFE8D8,
+    AppColors.cFF1A272D,
+    AppColors.cFF2B3A41,
+    AppColors.cFFCD7900,
+    AppColors.cFFFFAB33,
+    AppColors.cFF131F24,
+    AppColors.cFFE5E5E5,
   ];
 
   static const shirtColors = [
-    AppColors.cFFB777D9,
-    AppColors.cFF2EA8FF,
-    AppColors.cFF39C7D7,
-    AppColors.cFF65B96B,
-    AppColors.cFFFFD25B,
-    AppColors.cFFFF9B38,
-    AppColors.cFFFF6666,
-    AppColors.cFFFF9FC7,
-    AppColors.cFFF8F8F8,
-    AppColors.cFF3D4850,
-    AppColors.cFF7C5CFF,
-    AppColors.cFF00B894,
-    AppColors.cFFFF6B35,
-    AppColors.cFF2F80ED,
+    AppColors.cFFA568CC,
+    AppColors.cFF49C0F8,
+    AppColors.cFF1CB0F6,
+    AppColors.cFF89E219,
+    AppColors.cFFFFE066,
+    AppColors.cFFFFAB33,
+    AppColors.cFFFF7878,
+    AppColors.cFFFF9FD3,
+    AppColors.cFFF7F7F7,
+    AppColors.cFF37464F,
+    AppColors.cFFCE82FF,
+    AppColors.cFF00A47C,
+    AppColors.cFFFFAB33,
+    AppColors.cFF1CB0F6,
   ];
 
   static const hairStyles = [

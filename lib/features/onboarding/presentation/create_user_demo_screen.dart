@@ -78,15 +78,8 @@ class _OheyDemoScreenState extends State<OheyDemoScreen> {
                         width: 58,
                         height: 58,
                         decoration: const BoxDecoration(
-                          color: AppColors.cFF12C9A4,
+                          color: AppColors.cFF00CD9C,
                           shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.cFF079078,
-                              offset: Offset(0, 6),
-                              blurRadius: 0,
-                            ),
-                          ],
                         ),
                         child: Center(
                           child: OheyPopIcon(

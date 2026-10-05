@@ -16,7 +16,7 @@ class _FeedBackground extends ConsumerWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: isWhite
-              ? const [AppColors.white, AppColors.white, AppColors.cFFF7F9FB]
+              ? const [AppColors.white, AppColors.white, AppColors.cFFF7F7F7]
               : AppColors.darkBackgroundGradient,
         ),
       ),

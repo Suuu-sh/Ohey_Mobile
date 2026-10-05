@@ -7,7 +7,7 @@ class OheySceneHeaderBackdrop extends StatelessWidget {
     required this.assetPath,
     required this.fadeColor,
     required this.accentColor,
-    this.shadeColor = AppColors.cFF03101E,
+    this.shadeColor = AppColors.cFF131F24,
     this.alignment = Alignment.topCenter,
     this.imageTopOffset = 0,
     this.topShadeOpacity = .14,

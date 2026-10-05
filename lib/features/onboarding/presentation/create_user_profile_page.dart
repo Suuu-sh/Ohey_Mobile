@@ -80,15 +80,6 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                                     ),
                                     width: 2,
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(
-                                        0xFF12C9A4,
-                                      ).withValues(alpha: .16),
-                                      blurRadius: 28,
-                                      offset: const Offset(0, 16),
-                                    ),
-                                  ],
                                 ),
                                 child: OheyAvatarView(avatar: _avatar),
                               ),
@@ -106,13 +97,13 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                               onPressed: _isBusy ? null : _openAvatarBuilder,
                               icon: const OheyGeneratedIcon(
                                 CupertinoIcons.pencil,
-                                color: AppColors.cFF12C9A4,
+                                color: AppColors.cFF00CD9C,
                                 size: 20,
                               ),
                               label: const Text(
                                 'アバターを作る',
                                 style: TextStyle(
-                                  color: AppColors.cFF12C9A4,
+                                  color: AppColors.cFF00CD9C,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
                                 ),

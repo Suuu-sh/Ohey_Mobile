@@ -39,18 +39,11 @@ class _FriendsRefreshIndicator extends StatelessWidget {
               height: 34,
               padding: const EdgeInsets.symmetric(horizontal: 13),
               decoration: BoxDecoration(
-                color: AppColors.cFF101C2B.withValues(alpha: .82),
+                color: AppColors.cFF131F24.withValues(alpha: .82),
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(
                   color: _FriendsColors.lime.withValues(alpha: .24),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: _FriendsColors.lime.withValues(alpha: .18),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
               ),
               child: Center(
                 child: Text(
@@ -406,9 +399,6 @@ class _FriendNativeAdBlockState extends State<_FriendNativeAdBlock> {
             : AppColors.darkBackgroundBottom,
         borderRadius: 20,
         borderAlpha: isWhite ? .28 : .36,
-        glowAlpha: isWhite ? .08 : .14,
-        glowBlur: 22,
-        glowOffset: Offset.zero,
         child: SizedBox(
           height: 156,
           child: ClipRRect(
@@ -435,9 +425,6 @@ class _FriendAdPlaceholderBlock extends StatelessWidget {
           : AppColors.darkBackgroundBottom,
       borderRadius: 20,
       borderAlpha: isWhite ? .28 : .36,
-      glowAlpha: isWhite ? .08 : .14,
-      glowBlur: 22,
-      glowOffset: Offset.zero,
       child: Row(
         children: [
           Container(
@@ -573,7 +560,7 @@ class _TodayInviteSection extends StatelessWidget {
             width: double.infinity,
             height: 1.5,
             color: isWhite
-                ? AppColors.cFFE1E7DE
+                ? AppColors.cFFE5E5E5
                 : AppColors.white.withValues(alpha: .14),
           ),
         ],
@@ -669,9 +656,9 @@ class _FriendsSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final ink = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final sub = isWhite
-        ? AppColors.cFF667381
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .60);
 
     return SizedBox(
@@ -768,7 +755,7 @@ class _GroupScheduleSection extends StatelessWidget {
         : _FriendsColors.lime;
     final inviteButtonForeground = isGroupInvited
         ? _FriendsColors.invitedButtonForeground
-        : AppColors.cFF101820;
+        : AppColors.cFF3C3C3C;
     final inviteButtonShadow = isGroupInvited
         ? _FriendsColors.invitedButtonShadow
         : Color.lerp(_FriendsColors.lime, AppColors.black, .34);
@@ -780,7 +767,7 @@ class _GroupScheduleSection extends StatelessWidget {
         children: [
           _FriendsSectionHeader(
             icon: CupertinoIcons.calendar_badge_plus,
-            iconColor: AppColors.cFF5DEBD3,
+            iconColor: AppColors.cFF8BEBD3,
             title: '$groupNameで集まる日',
             subtitle: 'グループからまとめて誘えるよ。',
             trailing: SizedBox(
@@ -834,7 +821,7 @@ class _GroupScheduleSection extends StatelessWidget {
             width: double.infinity,
             height: 1.5,
             color: isWhite
-                ? AppColors.cFFE1E7DE
+                ? AppColors.cFFE5E5E5
                 : AppColors.white.withValues(alpha: .14),
           ),
         ],
@@ -904,9 +891,9 @@ class _GroupScheduleSuggestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final ink = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final sub = isWhite
-        ? AppColors.cFF667381
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .62);
     return OheyThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
@@ -916,7 +903,7 @@ class _GroupScheduleSuggestionCard extends StatelessWidget {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: isWhite
-            ? const [AppColors.cFFFFFFFF, AppColors.cFFF7FFE9]
+            ? const [AppColors.cFFFFFFFF, AppColors.cFFF7F7F7]
             : [
                 AppColors.white.withValues(alpha: .06),
                 suggestion.accent.withValues(alpha: .08),
@@ -924,9 +911,6 @@ class _GroupScheduleSuggestionCard extends StatelessWidget {
       ),
       borderRadius: 24,
       borderAlpha: isWhite ? .24 : .14,
-      glowAlpha: isWhite ? .04 : .07,
-      glowBlur: 18,
-      glowOffset: const Offset(0, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1018,8 +1002,8 @@ class _TodayInviteCandidateCard extends StatelessWidget {
         ? _FriendsColors.invitedButtonForeground
         : _friendInviteButtonForegroundColor(item.status);
     final ink = item.status.enabled
-        ? (isWhite ? AppColors.cFF101820 : AppColors.white)
-        : (isWhite ? AppColors.cFF667381 : _FriendsColors.muted);
+        ? (isWhite ? AppColors.cFF3C3C3C : AppColors.white)
+        : (isWhite ? AppColors.cFF777777 : _FriendsColors.muted);
     return OheyThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
       accentColor: frameAccent,
@@ -1029,12 +1013,6 @@ class _TodayInviteCandidateCard extends StatelessWidget {
         isWhite: isWhite,
         status: item.status,
       ),
-      glowAlpha: _friendInviteCardGlowAlpha(
-        isWhite: isWhite,
-        status: item.status,
-      ),
-      glowBlur: 18,
-      glowOffset: const Offset(0, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1187,7 +1165,7 @@ class _FriendMiniAvatarBubble extends StatelessWidget {
         border: Border.all(
           color: isWhite
               ? AppColors.white.withValues(alpha: .86)
-              : AppColors.cFF072130,
+              : AppColors.cFF131F24,
           width: 3,
         ),
       ),
@@ -1225,7 +1203,7 @@ class _TodayInviteBlockedChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: isWhite
-            ? AppColors.cFFF2F4F7
+            ? AppColors.cFFF7F7F7
             : AppColors.white.withValues(alpha: .05),
         borderRadius: BorderRadius.circular(999),
       ),
@@ -1233,7 +1211,7 @@ class _TodayInviteBlockedChip extends StatelessWidget {
         '${item.friend.name}: ${item.status.reason}',
         style: TextStyle(
           color: isWhite
-              ? AppColors.cFF667381
+              ? AppColors.cFF777777
               : AppColors.white.withValues(alpha: .56),
           fontSize: 11,
           fontWeight: FontWeight.w800,
@@ -1253,7 +1231,7 @@ class _TodayInviteEmpty extends StatelessWidget {
     '今日はまだ誘えそうなフレンズがいないみたい。',
     style: TextStyle(
       color: isWhite
-          ? AppColors.cFF667381
+          ? AppColors.cFF777777
           : AppColors.white.withValues(alpha: .58),
       fontSize: 12,
       fontWeight: FontWeight.w800,
@@ -1288,21 +1266,21 @@ List<_GroupScheduleSuggestion> _groupScheduleSuggestions(
         dayOffset: 0,
         title: '全員OK',
         subtitle: '全員いけそう。まずこの日を押さえよ。',
-        accent: AppColors.cFFFF5EA8,
+        accent: AppColors.cFFD9609F,
       ),
     if (stats.isAlmostOk)
       const _GroupScheduleTier(
         dayOffset: 1,
         title: 'ほぼOK',
         subtitle: '1人だけまだ決めてない。確認したらまとまりそう。',
-        accent: AppColors.cFF20B9FF,
+        accent: AppColors.cFF1CB0F6,
       ),
     if (stats.isMaybeOk)
       const _GroupScheduleTier(
         dayOffset: 2,
         title: '確認すればいけそう',
         subtitle: '予定ある人が少なめ。候補として聞いてみよ。',
-        accent: AppColors.cFF8A62FF,
+        accent: AppColors.cFFCE82FF,
       ),
   ];
 
@@ -1313,7 +1291,7 @@ List<_GroupScheduleSuggestion> _groupScheduleSuggestions(
           title: _groupScheduleDayLabel(now.add(Duration(days: i))),
           subtitle: i == 0 ? '予定を入れてもらってね。' : '予定を入れてもらってね。',
           badge: '${stats.okCount}/${stats.total}人OK',
-          accent: AppColors.cFFB8FF00,
+          accent: AppColors.cFF89E219,
         ),
     ];
   }
@@ -1324,7 +1302,7 @@ List<_GroupScheduleSuggestion> _groupScheduleSuggestions(
             dayOffset: 1,
             title: '確認してみよ',
             subtitle: 'まだ揃いきってないから、まず予定を聞いてみよ。',
-            accent: AppColors.cFF94A3B8,
+            accent: AppColors.cFF49C0F8,
           ),
         ]
       : tiers;
@@ -1459,7 +1437,7 @@ class _AddFriendsPromoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    const accent = AppColors.cFF37DFCF;
+    const accent = AppColors.cFF3DDCB6;
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 98),
       child: OheyThemedPanel(
@@ -1472,14 +1450,11 @@ class _AddFriendsPromoCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isWhite
-              ? const [AppColors.cFF123D4A, AppColors.cFF092334]
-              : const [AppColors.cFF0B3240, AppColors.cFF071A2B],
+              ? const [AppColors.cFF202F36, AppColors.cFF131F24]
+              : const [AppColors.cFF1A272D, AppColors.cFF131F24],
         ),
         borderRadius: 20,
         borderAlpha: .42,
-        glowAlpha: .18,
-        glowBlur: 24,
-        glowOffset: Offset.zero,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -1537,8 +1512,8 @@ class _AddFriendsPromoCard extends StatelessWidget {
                   height: 40,
                   radius: 20,
                   color: _FriendsColors.lime,
-                  foregroundColor: AppColors.cFF0B2A22,
-                  shadowColor: AppColors.cFF77A600,
+                  foregroundColor: AppColors.cFF131F24,
+                  shadowColor: AppColors.cFF58A700,
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   fontSize: 14,
                 ),
@@ -1566,7 +1541,7 @@ class _FriendPromoAvatarStack extends StatelessWidget {
             left: 24,
             top: 8,
             child: _PromoAvatarBubble(
-              color: AppColors.cFF7C5CFF,
+              color: AppColors.cFFCE82FF,
               avatar: const OheyAvatar(
                 skin: 0,
                 hair: 3,
@@ -1581,7 +1556,7 @@ class _FriendPromoAvatarStack extends StatelessWidget {
             left: 0,
             top: 0,
             child: _PromoAvatarBubble(
-              color: AppColors.cFF24D8B0,
+              color: AppColors.cFF3DDCB6,
               avatar: const OheyAvatar(
                 skin: 5,
                 hair: 1,
@@ -1602,12 +1577,12 @@ class _FriendPromoAvatarStack extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: _FriendsColors.lime,
-                border: Border.all(color: AppColors.cFF0B3240, width: 3),
+                border: Border.all(color: AppColors.cFF1A272D, width: 3),
               ),
               child: const Center(
                 child: OheyGeneratedIcon(
                   CupertinoIcons.plus,
-                  color: AppColors.cFF0B2A22,
+                  color: AppColors.cFF131F24,
                   size: 13,
                 ),
               ),
@@ -1639,7 +1614,7 @@ class _PromoAvatarBubble extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: color,
-        border: Border.all(color: AppColors.cFF072130, width: 4),
+        border: Border.all(color: AppColors.cFF131F24, width: 4),
       ),
       child: ClipOval(
         child: Container(
@@ -1728,9 +1703,9 @@ class _EmptyFriendsState extends StatelessWidget {
       message: message == 'フレンズがいません'
           ? '「誰か誘いたいな」の相手が、ここに並びます。まずはQRかIDでひとり追加してみよう。'
           : subtitle,
-      titleColor: isWhite ? AppColors.cFF1B2633 : AppColors.white,
+      titleColor: isWhite ? AppColors.cFF1A272D : AppColors.white,
       messageColor: isWhite
-          ? AppColors.cFF6D7784
+          ? AppColors.cFF777777
           : AppColors.white.withValues(alpha: .58),
       padding: EdgeInsets.zero,
       spacing: 14,
@@ -1811,13 +1786,6 @@ class _EmptyFriendsVisual extends StatelessWidget {
                 color: _FriendsColors.lime.withValues(alpha: .45),
                 width: 1.4,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: _FriendsColors.lime.withValues(alpha: .18),
-                  blurRadius: 26,
-                  offset: const Offset(0, 12),
-                ),
-              ],
             ),
             child: OheyAvatarView(avatar: avatar, size: 76),
           ),

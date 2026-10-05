@@ -55,6 +55,19 @@ For prod/TestFlight builds, set `OHEY_BACKEND_URL=https://api.oheyapp.com`; this
 ./scripts/run_dev_render.sh -d <simulator-id>
 ```
 
+### UI preview mode (no login)
+
+To review screens without signing in, run the debug-only preview mode. The app
+starts signed in as a fixture user and answers every backend call from memory
+(`lib/core/preview/`), so no Clerk account, backend, or network is used:
+
+```sh
+./scripts/run_ui_preview.sh -d <simulator-id>
+```
+
+The flag (`OHEY_UI_PREVIEW`) is ignored in release builds. Use the dev Render
+script above for anything that must hit the real API.
+
 Simulator builds must use Clerk dev, Neon dev, and the dev Render backend. Never
 point a Simulator build at localhost or production.
 

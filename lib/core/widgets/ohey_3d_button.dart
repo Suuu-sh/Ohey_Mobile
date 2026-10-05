@@ -1,26 +1,29 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Brightness, Theme;
 
 import '../theme/app_colors.dart';
 import 'ohey_pop_icon.dart';
 
+/// Darker "lip" color drawn under a chunky button face.
 Color ohey3DShadowColorFor(
   Color color, {
-  double lightnessScale = .62,
+  double lightnessScale = .80,
   double minLightness = .16,
 }) {
   final hsl = HSLColor.fromColor(color);
   if (hsl.saturation < .08) {
-    return Color.lerp(
-      color,
-      AppColors.cFF3F5266,
-      .58,
-    )!.withValues(alpha: color.a);
+    return hsl
+        .withLightness((hsl.lightness * .86).clamp(minLightness, .92))
+        .toColor()
+        .withValues(alpha: color.a);
   }
   return hsl
-      .withSaturation((hsl.saturation * 1.08).clamp(.24, 1.0))
-      .withLightness((hsl.lightness * lightnessScale).clamp(minLightness, .42))
+      .withLightness((hsl.lightness * lightnessScale).clamp(minLightness, .62))
       .toColor();
 }
+
+/// Depth of the solid lip under every chunky (Duolingo-style) surface.
+const double oheyChunkyLipDepth = 4;
 
 class Ohey3DButton extends StatelessWidget {
   const Ohey3DButton({
@@ -29,8 +32,8 @@ class Ohey3DButton extends StatelessWidget {
     required this.onTap,
     this.icon,
     this.customIcon,
-    this.height = 58,
-    this.radius = 24,
+    this.height = 54,
+    this.radius = 16,
     this.color = AppColors.primaryAction,
     this.foregroundColor = AppColors.white,
     this.shadowColor,
@@ -42,8 +45,6 @@ class Ohey3DButton extends StatelessWidget {
     this.forcePressed = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
-    this.useGradient = true,
-    this.outerShadows,
   });
 
   const Ohey3DButton.secondary({
@@ -52,11 +53,11 @@ class Ohey3DButton extends StatelessWidget {
     required this.onTap,
     this.icon,
     this.customIcon,
-    this.height = 58,
-    this.radius = 24,
-    this.color = AppColors.cFF52606B,
-    this.foregroundColor = AppColors.white,
-    this.shadowColor = AppColors.cFF35434D,
+    this.height = 54,
+    this.radius = 16,
+    this.color,
+    this.foregroundColor,
+    this.shadowColor,
     this.disabledColor,
     this.disabledOpacity = 1,
     this.trailing,
@@ -65,8 +66,6 @@ class Ohey3DButton extends StatelessWidget {
     this.forcePressed = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
-    this.useGradient = false,
-    this.outerShadows,
   });
 
   const Ohey3DButton.destructive({
@@ -75,8 +74,8 @@ class Ohey3DButton extends StatelessWidget {
     required this.onTap,
     this.icon,
     this.customIcon,
-    this.height = 58,
-    this.radius = 24,
+    this.height = 54,
+    this.radius = 16,
     this.color = AppColors.danger,
     this.foregroundColor = AppColors.white,
     this.shadowColor = AppColors.dangerShadow,
@@ -88,8 +87,6 @@ class Ohey3DButton extends StatelessWidget {
     this.forcePressed = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
     this.fontSize = 16,
-    this.useGradient = true,
-    this.outerShadows,
   });
 
   final String label;
@@ -98,8 +95,11 @@ class Ohey3DButton extends StatelessWidget {
   final Widget? customIcon;
   final double height;
   final double radius;
-  final Color color;
-  final Color foregroundColor;
+
+  /// Face color. `null` (the [Ohey3DButton.secondary] default) draws the
+  /// neutral outlined button: page-colored face with a grey edge and lip.
+  final Color? color;
+  final Color? foregroundColor;
   final Color? shadowColor;
   final Color? disabledColor;
   final double disabledOpacity;
@@ -109,25 +109,30 @@ class Ohey3DButton extends StatelessWidget {
   final bool forcePressed;
   final EdgeInsetsGeometry padding;
   final double fontSize;
-  final bool useGradient;
-  final List<BoxShadow>? outerShadows;
 
   @override
   Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final isNeutral = color == null;
+    final neutralEdge = isWhite
+        ? AppColors.chunkyBorderLight
+        : AppColors.chunkyBorderDark;
+    final foregroundColor =
+        this.foregroundColor ??
+        (isNeutral && isWhite ? AppColors.ink : AppColors.white);
     return Ohey3DButtonSurface(
       onTap: onTap,
       height: height,
       radius: radius,
-      color: color,
-      bottomColor: shadowColor,
+      color: color ?? (isWhite ? AppColors.white : AppColors.darkBackground),
+      bottomColor: shadowColor ?? (isNeutral ? neutralEdge : null),
+      borderColor: isNeutral ? neutralEdge : null,
       disabledColor: disabledColor,
       disabledOpacity: disabledOpacity,
       isLoading: isLoading,
       enabled: enabled,
       forcePressed: forcePressed,
       padding: padding,
-      useGradient: useGradient,
-      outerShadows: outerShadows,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
@@ -168,8 +173,8 @@ class Ohey3DButtonSurface extends StatefulWidget {
     super.key,
     required this.child,
     required this.onTap,
-    this.height = 58,
-    this.radius = 24,
+    this.height = 54,
+    this.radius = 16,
     this.color = AppColors.primaryAction,
     this.bottomColor,
     this.disabledColor,
@@ -178,11 +183,8 @@ class Ohey3DButtonSurface extends StatefulWidget {
     this.enabled = true,
     this.forcePressed = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 18),
-    this.useGradient = true,
     this.borderColor,
-    this.borderWidth = 1,
-    this.outerShadows,
-    this.innerShadows,
+    this.borderWidth = 2,
     this.alignment = Alignment.center,
   });
 
@@ -198,11 +200,8 @@ class Ohey3DButtonSurface extends StatefulWidget {
   final bool enabled;
   final bool forcePressed;
   final EdgeInsetsGeometry padding;
-  final bool useGradient;
   final Color? borderColor;
   final double borderWidth;
-  final List<BoxShadow>? outerShadows;
-  final List<BoxShadow>? innerShadows;
   final AlignmentGeometry alignment;
 
   @override
@@ -254,10 +253,12 @@ class _Ohey3DButtonSurfaceState extends State<Ohey3DButtonSurface> {
     final base = isUnavailable && widget.disabledColor != null
         ? widget.disabledColor!
         : widget.color;
-    final bottom = widget.bottomColor ?? ohey3DShadowColorFor(base);
+    final lip = widget.bottomColor ?? ohey3DShadowColorFor(base);
     final opacity = isUnavailable && widget.disabledColor != null
         ? widget.disabledOpacity
         : 1.0;
+    final borderColor = widget.borderColor;
+    final radius = BorderRadius.circular(widget.radius);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -268,78 +269,42 @@ class _Ohey3DButtonSurfaceState extends State<Ohey3DButtonSurface> {
           onTapUp: canTap ? (_) => _releasePressed() : null,
           onTapCancel: canTap ? _releasePressed : null,
           onTap: canTap ? widget.onTap : null,
-          child: AnimatedScale(
-            duration: const Duration(milliseconds: 120),
-            curve: isPressed ? Curves.easeOutBack : Curves.easeOutCubic,
-            scale: isPressed ? .985 : 1,
-            child: Opacity(
-              opacity: opacity,
-              child: Container(
-                width: expandsWidth ? double.infinity : null,
-                height: widget.height + 7,
-                decoration: BoxDecoration(
-                  color: isPressed ? AppColors.transparent : bottom,
-                  borderRadius: BorderRadius.circular(widget.radius + 1),
-                  boxShadow:
-                      widget.outerShadows ??
-                      [
-                        BoxShadow(
-                          color: base.withValues(alpha: .22),
-                          blurRadius: 22,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
+          child: Opacity(
+            opacity: opacity,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  top: oheyChunkyLipDepth,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(color: lip, borderRadius: radius),
+                  ),
                 ),
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 90),
-                    curve: Curves.easeOutCubic,
-                    transform: Matrix4.translationValues(
-                      0,
-                      isPressed ? 6 : 0,
-                      0,
-                    ),
+                AnimatedPadding(
+                  duration: const Duration(milliseconds: 80),
+                  curve: Curves.easeOutCubic,
+                  padding: EdgeInsets.only(
+                    top: isPressed ? oheyChunkyLipDepth : 0,
+                    bottom: isPressed ? 0 : oheyChunkyLipDepth,
+                  ),
+                  child: Container(
                     width: expandsWidth ? double.infinity : null,
                     height: widget.height,
                     alignment: widget.alignment,
                     padding: widget.padding,
                     decoration: BoxDecoration(
-                      color: widget.useGradient ? null : base,
-                      gradient: widget.useGradient
-                          ? LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Color.lerp(base, AppColors.white, .22)!,
-                                Color.lerp(base, AppColors.white, .10)!,
-                                base,
-                              ],
-                              stops: const [0, .55, 1],
-                            )
-                          : null,
-                      boxShadow:
-                          widget.innerShadows ??
-                          [
-                            BoxShadow(
-                              color: base.withValues(alpha: .22),
-                              blurRadius: 18,
-                              spreadRadius: 1,
-                              offset: const Offset(0, 0),
+                      color: base,
+                      borderRadius: radius,
+                      border: borderColor == null
+                          ? null
+                          : Border.all(
+                              color: borderColor,
+                              width: widget.borderWidth,
                             ),
-                          ],
-                      borderRadius: BorderRadius.circular(widget.radius),
-                      border: Border.all(
-                        color:
-                            widget.borderColor ??
-                            AppColors.white.withValues(alpha: .18),
-                        width: widget.borderWidth,
-                      ),
                     ),
                     child: widget.child,
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         );
@@ -417,12 +382,6 @@ class _LoadingDot extends StatelessWidget {
         decoration: BoxDecoration(
           color: color.withValues(alpha: .56 + .38 * wave),
           shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: .18 + .20 * wave),
-              blurRadius: 8 + 4 * wave,
-            ),
-          ],
         ),
       ),
     );

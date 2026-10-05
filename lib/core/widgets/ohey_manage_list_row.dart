@@ -38,19 +38,19 @@ class OheyManageListRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final resolvedTitleColor =
-        titleColor ?? (isWhite ? AppColors.cFF101820 : AppColors.white);
+        titleColor ?? (isWhite ? AppColors.cFF3C3C3C : AppColors.white);
     final resolvedSubtitleColor =
         subtitleColor ??
         (isWhite
-            ? AppColors.cFF697684
+            ? AppColors.cFF777777
             : AppColors.white.withValues(alpha: .55));
     final resolvedSurfaceColor =
         surfaceColor ??
         (isWhite
-            ? AppColors.cFFF7F9FC
+            ? AppColors.cFFF7F7F7
             : AppColors.white.withValues(alpha: .06));
     final resolvedBorderColor =
-        borderColor ?? (isWhite ? AppColors.cFFE2E8F0 : AppColors.white12);
+        borderColor ?? (isWhite ? AppColors.cFFE5E5E5 : AppColors.white12);
     final row = Container(
       constraints: const BoxConstraints(minHeight: 56),
       padding: padding,
@@ -191,7 +191,7 @@ class OheyManageAddTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final resolvedForegroundColor =
-        foregroundColor ?? (isWhite ? AppColors.cFF101820 : AppColors.white);
+        foregroundColor ?? (isWhite ? AppColors.cFF3C3C3C : AppColors.white);
     final resolvedSurfaceColor =
         surfaceColor ??
         Color.lerp(

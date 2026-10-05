@@ -592,7 +592,6 @@ class _UnsavedAvatarSheet extends StatelessWidget {
             height: 46,
             radius: 20,
             fontSize: 14,
-            useGradient: false,
             onTap: () => Navigator.of(context).pop(_UnsavedAvatarAction.cancel),
           ),
         ],
@@ -1150,12 +1149,12 @@ class _AvatarColors {
   const _AvatarColors._();
 
   static const background = AppColors.darkBackground;
-  static const panel = AppColors.cFF0D1A26;
-  static const card = AppColors.cFF132231;
-  static const selectedCard = AppColors.cFF1A2F42;
-  static const panelShadow = AppColors.cFF08111A;
+  static const panel = AppColors.cFF131F24;
+  static const card = AppColors.cFF1A272D;
+  static const selectedCard = AppColors.cFF202F36;
+  static const panelShadow = AppColors.cFF131F24;
   static const line = AppColors.c1EFFFFFF;
   static const ink = AppColors.white;
-  static const sub = AppColors.cFF8F9BAB;
+  static const sub = AppColors.cFFAFAFAF;
   static const accent = AppColors.primaryAction;
 }

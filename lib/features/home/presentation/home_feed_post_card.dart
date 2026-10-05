@@ -31,9 +31,6 @@ class _FeedPostCard extends StatelessWidget {
         border: OheyThemedPanelBorder.horizontal,
         borderWidth: 0,
         borderAlpha: 0,
-        glowAlpha: 0,
-        glowBlur: 24,
-        glowOffset: const Offset(0, 10),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -58,7 +55,7 @@ class _FeedPostCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (compactYurubo) const _YuruboBlockGlowUnderline(),
+            if (compactYurubo) _YuruboBlockDivider(isWhite: isWhite),
           ],
         ),
       ),
@@ -66,8 +63,10 @@ class _FeedPostCard extends StatelessWidget {
   }
 }
 
-class _YuruboBlockGlowUnderline extends StatelessWidget {
-  const _YuruboBlockGlowUnderline();
+class _YuruboBlockDivider extends StatelessWidget {
+  const _YuruboBlockDivider({required this.isWhite});
+
+  final bool isWhite;
 
   @override
   Widget build(BuildContext context) {
@@ -77,17 +76,10 @@ class _YuruboBlockGlowUnderline extends StatelessWidget {
       bottom: 0,
       child: IgnorePointer(
         child: Container(
-          height: 1,
-          decoration: BoxDecoration(
-            color: AppColors.cFFC08BFF.withValues(alpha: .82),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.cFFC08BFF.withValues(alpha: .58),
-                blurRadius: 9,
-                spreadRadius: .4,
-              ),
-            ],
-          ),
+          height: 2,
+          color: isWhite
+              ? AppColors.chunkyBorderLight
+              : AppColors.chunkyBorderDark,
         ),
       ),
     );
@@ -102,7 +94,7 @@ class _YuruboCardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryText = isWhite ? AppColors.cFF17202B : AppColors.white;
+    final primaryText = isWhite ? AppColors.cFF1A272D : AppColors.white;
     final body = _yuruboBody(item);
     final place = item.place.trim();
     final timeLabel = item.timeLabel.trim();
@@ -240,11 +232,11 @@ class _FeedCardAuthorBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryText = isWhite ? AppColors.cFF17202B : AppColors.white;
+    final primaryText = isWhite ? AppColors.cFF1A272D : AppColors.white;
     final secondaryText = isWhite
-        ? AppColors.cFF778393
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .62);
-    const menuAccent = AppColors.cFFC08BFF;
+    const menuAccent = AppColors.cFFCE82FF;
     final iconColor = isWhite
         ? Color.lerp(menuAccent, AppColors.black, .18)!
         : Color.lerp(menuAccent, AppColors.white, .18)!;
@@ -367,11 +359,11 @@ class _FeedCardFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryText = isWhite ? AppColors.cFF17202B : AppColors.white;
+    final primaryText = isWhite ? AppColors.cFF1A272D : AppColors.white;
     final secondaryText = isWhite
-        ? AppColors.cFF778393
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .62);
-    const feedActionPurple = AppColors.cFFC08BFF;
+    const feedActionPurple = AppColors.cFFCE82FF;
     final likeAccent = item.liked
         ? Color.lerp(AppColors.danger, feedActionPurple, .58)!
         : feedActionPurple;
@@ -576,9 +568,9 @@ class _OfficialVerifiedBadge extends StatelessWidget {
 class _VerifiedBadgeSeal extends CustomPainter {
   const _VerifiedBadgeSeal();
 
-  static const _pink = AppColors.cFFFF5EA8;
-  static const _pinkLight = AppColors.cFFFF83C0;
-  static const _rim = AppColors.cFFFFC1DC;
+  static const _pink = AppColors.cFFD9609F;
+  static const _pinkLight = AppColors.cFFFF86C8;
+  static const _rim = AppColors.cFFFFB8DD;
 
   @override
   void paint(Canvas canvas, Size size) {

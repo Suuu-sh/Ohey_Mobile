@@ -38,7 +38,7 @@ class _SignupProfileTextField extends StatelessWidget {
               fontSize: 18,
               fontWeight: FontWeight.w900,
             ),
-            cursorColor: AppColors.cFF12C9A4,
+            cursorColor: AppColors.cFF00CD9C,
             textInputAction: textInputAction,
             onChanged: onChanged,
             onSubmitted: onSubmitted,

@@ -13,16 +13,9 @@ class _SignupProgressHeader extends StatelessWidget {
         width: 62,
         height: 62,
         decoration: BoxDecoration(
-          color: AppColors.cFF12222C,
+          color: AppColors.cFF131F24,
           shape: BoxShape.circle,
           border: Border.all(color: AppColors.white.withValues(alpha: .08)),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black.withValues(alpha: .14),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
         ),
         child: IconButton(
           onPressed: onBack,
@@ -49,14 +42,6 @@ class _SignupProgressHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: _authPink,
                     borderRadius: BorderRadius.circular(99),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.white.withValues(alpha: .22),
-                        blurRadius: 0,
-                        spreadRadius: -5,
-                        offset: const Offset(0, -5),
-                      ),
-                    ],
                   ),
                 ),
               ),
@@ -77,7 +62,7 @@ class _SignupInputBox extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
-      color: AppColors.cFF132630.withValues(alpha: .74),
+      color: AppColors.cFF1A272D.withValues(alpha: .74),
       borderRadius: BorderRadius.circular(18),
       border: Border.all(
         color: AppColors.white.withValues(alpha: .18),

@@ -37,7 +37,7 @@ void main() {
                 ),
                 statusLabel: '空いてる',
                 statusReason: 'available',
-                statusColor: AppColors.cFFFF4FA3,
+                statusColor: AppColors.cFFD9609F,
                 statusEnabled: true,
                 fallbackAvatar: OheyAvatar.defaultAvatar,
                 showFavorite: true,

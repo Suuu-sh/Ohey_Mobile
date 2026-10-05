@@ -13,8 +13,8 @@ double _feedHeaderScrollInset(BuildContext context) {
 
 const _feedBottomPageInset = 124.0;
 const _feedHeaderContentGap = 4.0;
-const _feedPrimaryActionColor = AppColors.cFFC08BFF;
-const _feedPrimaryActionShadowColor = AppColors.cFF7F51C9;
+const _feedPrimaryActionColor = AppColors.cFFCE82FF;
+const _feedPrimaryActionShadowColor = AppColors.cFFA568CC;
 
 Widget _buildFeedPage({
   required double topPadding,
@@ -171,18 +171,11 @@ class _YuruboRefreshIndicator extends StatelessWidget {
                 height: 34,
                 padding: const EdgeInsets.symmetric(horizontal: 13),
                 decoration: BoxDecoration(
-                  color: AppColors.cFF101C2B.withValues(alpha: .82),
+                  color: AppColors.cFF131F24.withValues(alpha: .82),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
                     color: _feedPrimaryActionColor.withValues(alpha: .22),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _feedPrimaryActionColor.withValues(alpha: .18),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
                 ),
                 child: Center(
                   child: Text(
@@ -267,7 +260,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
             height: 50,
             radius: 22,
             color: _feedPrimaryActionColor,
-            foregroundColor: AppColors.cFF101820,
+            foregroundColor: AppColors.cFF3C3C3C,
             shadowColor: _feedPrimaryActionShadowColor,
             fontSize: 14,
           ),
@@ -342,7 +335,7 @@ Future<void> _showFeedPostActions(
         title: '${item.userName}さんをブロックしますか？',
         message: '相手のゆるぼやお誘いが表示されにくくなります。必要ならあとで解除できます。',
         actionLabel: 'ブロックする',
-        color: AppColors.cFFFF5F8F,
+        color: AppColors.cFFD9609F,
       );
       if (!confirmed || !context.mounted) return;
       try {
@@ -385,7 +378,7 @@ Future<void> _showFeedPostActions(
             context,
             '「${reason.label}」として通報しました',
             icon: CupertinoIcons.exclamationmark_bubble_fill,
-            accentColor: AppColors.cFFFFD166,
+            accentColor: AppColors.cFFFFE066,
           );
         }
       } catch (_) {
@@ -558,7 +551,7 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite
-        ? AppColors.cFF667381
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .62);
     final wishItems =
         widget.ref.watch(wishItemControllerProvider).asData?.value ??
@@ -837,9 +830,9 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF17212B : AppColors.white;
+    final ink = isWhite ? AppColors.cFF1A272D : AppColors.white;
     final sub = isWhite
-        ? AppColors.cFF667381
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .62);
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
@@ -904,7 +897,7 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
             height: 50,
             radius: 22,
             color: _feedPrimaryActionColor,
-            foregroundColor: AppColors.cFF101820,
+            foregroundColor: AppColors.cFF3C3C3C,
             shadowColor: _feedPrimaryActionShadowColor,
           ),
         ],
@@ -1047,9 +1040,9 @@ class _YuruboCalendarPicker extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: label == '日'
-                        ? AppColors.cFFFF75B5
+                        ? AppColors.cFFFF86C8
                         : label == '土'
-                        ? AppColors.cFF54D7FF
+                        ? AppColors.cFF49C0F8
                         : AppColors.white.withValues(alpha: .72),
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
@@ -1091,7 +1084,7 @@ class _YuruboCalendarPicker extends StatelessWidget {
           height: 48,
           radius: 22,
           color: _feedPrimaryActionColor,
-          foregroundColor: AppColors.cFF101820,
+          foregroundColor: AppColors.cFF3C3C3C,
           shadowColor: _feedPrimaryActionShadowColor,
         ),
       ],
@@ -1129,13 +1122,6 @@ class _YuruboCalendarArrow extends StatelessWidget {
         color: AppColors.white.withValues(alpha: enabled ? .12 : .05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.white.withValues(alpha: .11)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: .18),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
       ),
       child: Icon(
         icon,
@@ -1170,19 +1156,19 @@ class _YuruboCalendarDayCell extends StatelessWidget {
         : selected
         ? AppColors.white
         : isSunday
-        ? AppColors.cFFFF75B5
+        ? AppColors.cFFFF86C8
         : isSaturday
-        ? AppColors.cFF54D7FF
+        ? AppColors.cFF49C0F8
         : AppColors.white;
     final fillColor = selected
         ? const Color(0xFF0CA7DF).withValues(alpha: .74)
         : isSunday && inMonth && !disabled
-        ? AppColors.cFFFF75B5.withValues(alpha: .42)
+        ? AppColors.cFFFF86C8.withValues(alpha: .42)
         : const Color(0xFF061724);
     final borderColor = selected
-        ? AppColors.cFF54D7FF
+        ? AppColors.cFF49C0F8
         : isSunday && inMonth && !disabled
-        ? AppColors.cFFFF75B5.withValues(alpha: .72)
+        ? AppColors.cFFFF86C8.withValues(alpha: .72)
         : const Color(0xFF0A75A4).withValues(alpha: inMonth ? .62 : .28);
     return GestureDetector(
       onTap: onTap,
@@ -1192,15 +1178,6 @@ class _YuruboCalendarDayCell extends StatelessWidget {
           color: fillColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: borderColor, width: selected ? 2 : 1.2),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: AppColors.cFF54D7FF.withValues(alpha: .26),
-                    blurRadius: 14,
-                    offset: const Offset(0, 5),
-                  ),
-                ]
-              : null,
         ),
         child: Center(
           child: Text(
@@ -1314,14 +1291,14 @@ class _YuruboVisibilityChoice extends StatelessWidget {
     onTap: onTap,
     height: 46,
     radius: 20,
-    color: selected ? _feedPrimaryActionColor : AppColors.cFF263348,
-    bottomColor: selected ? _feedPrimaryActionShadowColor : AppColors.cFF151D2A,
+    color: selected ? _feedPrimaryActionColor : AppColors.cFF2B3A41,
+    bottomColor: selected ? _feedPrimaryActionShadowColor : AppColors.cFF1A272D,
     padding: const EdgeInsets.symmetric(horizontal: 12),
     child: Center(
       child: Text(
         label,
         style: TextStyle(
-          color: selected ? AppColors.cFF101820 : AppColors.white,
+          color: selected ? AppColors.cFF3C3C3C : AppColors.white,
           fontWeight: FontWeight.w900,
         ),
       ),

@@ -57,7 +57,7 @@ class _DemoSlide extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.cFF071038, AppColors.darkBackground],
+          colors: [AppColors.cFF1A272D, AppColors.darkBackground],
         ),
       ),
       child: SafeArea(
@@ -112,14 +112,14 @@ class _DemoStepBadge extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.cFFC08BFF.withValues(alpha: .18),
+        color: AppColors.cFFCE82FF.withValues(alpha: .18),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.cFFC08BFF.withValues(alpha: .38)),
+        border: Border.all(color: AppColors.cFFCE82FF.withValues(alpha: .38)),
       ),
       child: Text(
         label,
         style: const TextStyle(
-          color: AppColors.cFFC08BFF,
+          color: AppColors.cFFCE82FF,
           fontSize: 12,
           fontWeight: FontWeight.w900,
         ),
@@ -137,19 +137,12 @@ class _DemoPhoneStage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cFF02092B,
+        color: AppColors.cFF131F24,
         borderRadius: BorderRadius.circular(38),
         border: Border.all(
           color: AppColors.white.withValues(alpha: .10),
           width: 2,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: .36),
-            blurRadius: 28,
-            offset: const Offset(0, 16),
-          ),
-        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(36),
@@ -162,7 +155,7 @@ class _DemoPhoneStage extends StatelessWidget {
                     center: const Alignment(.2, -.9),
                     radius: 1.2,
                     colors: [
-                      AppColors.cFFC08BFF.withValues(alpha: .16),
+                      AppColors.cFFCE82FF.withValues(alpha: .16),
                       AppColors.darkBackground,
                     ],
                   ),
@@ -251,7 +244,7 @@ class _DemoRequestStep extends StatelessWidget {
         icon: CupertinoIcons.bell_fill,
         title: '押したら相手に通知',
         body: '承認されるまで「申請中」になります。',
-        color: AppColors.cFF9AF21A,
+        color: AppColors.cFF89E219,
       ),
     ],
   );
@@ -276,9 +269,9 @@ class _DemoCreateStep extends StatelessWidget {
         label: 'ゆるぼする',
         height: 46,
         radius: 22,
-        color: AppColors.cFFC08BFF,
-        foregroundColor: AppColors.cFF101820,
-        shadowColor: AppColors.cFF7F51C9,
+        color: AppColors.cFFCE82FF,
+        foregroundColor: AppColors.cFF3C3C3C,
+        shadowColor: AppColors.cFFA568CC,
         onTap: () {},
       ),
     ],
@@ -296,7 +289,7 @@ class _DemoNotifyStep extends StatelessWidget {
       const SizedBox(height: 18),
       OheyThemedPanel(
         backgroundColor: AppColors.darkBackgroundBottom,
-        accentColor: AppColors.cFF9AF21A,
+        accentColor: AppColors.cFF89E219,
         borderRadius: 24,
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
         child: Column(
@@ -306,7 +299,7 @@ class _DemoNotifyStep extends StatelessWidget {
               children: const [
                 OheyPopIcon(
                   icon: CupertinoIcons.person_2_fill,
-                  color: AppColors.cFFC08BFF,
+                  color: AppColors.cFFCE82FF,
                   size: 38,
                   iconSize: 20,
                 ),
@@ -334,7 +327,7 @@ class _DemoNotifyStep extends StatelessWidget {
         icon: CupertinoIcons.checkmark_alt,
         title: '承認すると参加者に追加',
         body: '見送っても、あとから別のゆるぼを確認できます。',
-        color: AppColors.cFF20B9FF,
+        color: AppColors.cFF1CB0F6,
       ),
     ],
   );
@@ -351,7 +344,7 @@ class _DemoMiniHeader extends StatelessWidget {
     children: [
       const OheyPopIcon(
         icon: CupertinoIcons.sparkles,
-        color: AppColors.cFFC08BFF,
+        color: AppColors.cFFCE82FF,
         size: 42,
         iconSize: 22,
       ),
@@ -405,14 +398,14 @@ class _DemoYuruboCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => OheyThemedPanel(
     backgroundColor: AppColors.darkBackgroundBottom,
-    accentColor: highlight ? AppColors.cFFC08BFF : AppColors.cFF20B9FF,
+    accentColor: highlight ? AppColors.cFFCE82FF : AppColors.cFF1CB0F6,
     borderRadius: 24,
     padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
     child: Row(
       children: [
         const OheyPopIcon(
           icon: CupertinoIcons.person_fill,
-          color: AppColors.cFFFF75B5,
+          color: AppColors.cFFFF86C8,
           size: 44,
           iconSize: 22,
         ),
@@ -464,9 +457,9 @@ class _DemoYuruboCard extends StatelessWidget {
             label: buttonLabel,
             height: 38,
             radius: 19,
-            color: highlight ? AppColors.cFFC08BFF : AppColors.cFF20B9FF,
-            foregroundColor: AppColors.cFF101820,
-            shadowColor: highlight ? AppColors.cFF7F51C9 : AppColors.cFF0B78B7,
+            color: highlight ? AppColors.cFFCE82FF : AppColors.cFF1CB0F6,
+            foregroundColor: AppColors.cFF3C3C3C,
+            shadowColor: highlight ? AppColors.cFFA568CC : AppColors.cFF1899D6,
             fontSize: 12,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             onTap: () {},
@@ -578,15 +571,15 @@ class _DemoRequestRow extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
     decoration: BoxDecoration(
-      color: AppColors.cFF20B9FF.withValues(alpha: .16),
+      color: AppColors.cFF1CB0F6.withValues(alpha: .16),
       borderRadius: BorderRadius.circular(19),
-      border: Border.all(color: AppColors.cFF20B9FF.withValues(alpha: .34)),
+      border: Border.all(color: AppColors.cFF1CB0F6.withValues(alpha: .34)),
     ),
     child: Row(
       children: [
         const OheyPopIcon(
           icon: CupertinoIcons.person_fill,
-          color: AppColors.cFFFF75B5,
+          color: AppColors.cFFFF86C8,
           size: 38,
           iconSize: 19,
         ),
@@ -611,7 +604,7 @@ class _DemoRequestRow extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: AppColors.cFFC08BFF.withValues(alpha: .95),
+                  color: AppColors.cFFCE82FF.withValues(alpha: .95),
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
@@ -625,9 +618,9 @@ class _DemoRequestRow extends StatelessWidget {
             label: '承認',
             height: 38,
             radius: 19,
-            color: AppColors.cFF9AF21A,
-            foregroundColor: AppColors.cFF101820,
-            shadowColor: AppColors.cFF079078,
+            color: AppColors.cFF89E219,
+            foregroundColor: AppColors.cFF3C3C3C,
+            shadowColor: AppColors.cFF00A47C,
             fontSize: 13,
             onTap: () {},
           ),
@@ -653,7 +646,7 @@ class _DemoDots extends StatelessWidget {
           height: 9,
           decoration: BoxDecoration(
             color: i == selectedIndex
-                ? AppColors.cFFC08BFF
+                ? AppColors.cFFCE82FF
                 : AppColors.white.withValues(alpha: .22),
             borderRadius: BorderRadius.circular(99),
           ),

@@ -15,7 +15,7 @@ class _PageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final headerColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final headerColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     return OheyPageHeader(
       title: 'マイページ',
       titleColor: headerColor,
@@ -55,7 +55,7 @@ class _ProfileAdminButton extends StatelessWidget {
           child: Center(
             child: OheyGeneratedIcon(
               CupertinoIcons.lock_shield_fill,
-              color: isWhite ? AppColors.cFF101820 : AppColors.white,
+              color: isWhite ? AppColors.cFF3C3C3C : AppColors.white,
               size: 36,
             ),
           ),
@@ -87,7 +87,7 @@ class _ProfileSettingsButton extends StatelessWidget {
           child: Center(
             child: OheyGeneratedIcon(
               CupertinoIcons.gear_alt,
-              color: isWhite ? AppColors.cFF101820 : AppColors.white,
+              color: isWhite ? AppColors.cFF3C3C3C : AppColors.white,
               size: 38,
             ),
           ),
@@ -188,16 +188,9 @@ class _ProfileReservationStrip extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 86),
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: isWhite ? AppColors.cFFF6FFF2 : AppColors.cFF102614,
+        color: isWhite ? AppColors.cFFF7F7F7 : AppColors.cFF131F24,
         borderRadius: BorderRadius.circular(26),
         border: Border.all(color: AppColors.success.withValues(alpha: .42)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.success.withValues(alpha: isWhite ? .16 : .22),
-            blurRadius: 22,
-            offset: const Offset(0, 12),
-          ),
-        ],
       ),
       child: Row(
         children: [
@@ -227,7 +220,7 @@ class _ProfileReservationStrip extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: isWhite ? AppColors.cFF27313B : AppColors.white,
+                    color: isWhite ? AppColors.cFF2B3A41 : AppColors.white,
                     fontWeight: FontWeight.w900,
                     fontSize: 14,
                   ),
@@ -286,20 +279,11 @@ class _IncomingInviteCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isWhite ? AppColors.cFFFFF5F1 : AppColors.cFF2B1714,
+        color: isWhite ? AppColors.cFFF7F7F7 : AppColors.cFF1A272D,
         borderRadius: BorderRadius.circular(26),
         border: Border.all(
           color: AppColors.primaryAction.withValues(alpha: .44),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryAction.withValues(
-              alpha: isWhite ? .16 : .24,
-            ),
-            blurRadius: 22,
-            offset: const Offset(0, 12),
-          ),
-        ],
       ),
       child: Row(
         children: [
@@ -330,7 +314,7 @@ class _IncomingInviteCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: isWhite ? AppColors.cFF27313B : AppColors.white,
+                    color: isWhite ? AppColors.cFF2B3A41 : AppColors.white,
                     fontWeight: FontWeight.w900,
                     fontSize: 14,
                   ),
@@ -342,7 +326,7 @@ class _IncomingInviteCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: isWhite
-                        ? AppColors.cFF6D7884
+                        ? AppColors.cFF777777
                         : AppColors.white.withValues(alpha: .62),
                     fontWeight: FontWeight.w700,
                     fontSize: 11,
@@ -364,7 +348,7 @@ class _IncomingInviteCard extends StatelessWidget {
                 ? AppColors.white.withValues(alpha: .86)
                 : AppColors.white.withValues(alpha: .10),
             textColor: isWhite
-                ? AppColors.cFF637181
+                ? AppColors.cFF1899D6
                 : AppColors.white.withValues(alpha: .70),
             onTap: onReject,
           ),
@@ -388,7 +372,7 @@ class _ReservedAvatar extends StatelessWidget {
       height: 52,
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: AppColors.cFF12283A,
+        color: AppColors.cFF1A272D,
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.white, width: 2),
       ),
@@ -404,7 +388,7 @@ class _InviteResponseButton extends StatelessWidget {
     required this.label,
     required this.color,
     required this.onTap,
-    this.textColor = AppColors.cFF06111D,
+    this.textColor = AppColors.cFF131F24,
   });
 
   final String label;
@@ -545,7 +529,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final event = joinedYurubos.isEmpty ? null : joinedYurubos.first;
-    const accent = AppColors.cFFFF75B5;
+    const accent = AppColors.cFFFF86C8;
     final showPlus = event == null && !isLoading && !isPlus;
     final title = event == null
         ? (isLoading ? '読み込み中' : (showPlus ? 'Ohey Plus' : '本日の予定はありません'))
@@ -694,9 +678,9 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                             : (showPlus ? onPlusTap : onFindTap),
                         height: 42,
                         radius: 21,
-                        color: AppColors.cFFFF75B5,
-                        foregroundColor: AppColors.cFF101820,
-                        shadowColor: AppColors.cFFE05F83,
+                        color: AppColors.cFFFF86C8,
+                        foregroundColor: AppColors.cFF3C3C3C,
+                        shadowColor: AppColors.cFFD9609F,
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         fontSize: 14,
                       ),
@@ -765,13 +749,6 @@ class _TodayScheduleParticipants extends StatelessWidget {
                     color: accent.withValues(alpha: .78),
                     width: 1.4,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: accent.withValues(alpha: .24),
-                      blurRadius: 14,
-                      spreadRadius: 1,
-                    ),
-                  ],
                 ),
                 child: OheyAvatarView(
                   avatar: visibleAvatars[index],
@@ -805,7 +782,7 @@ class _ProfileSummaryStats extends StatelessWidget {
           Expanded(
             child: _ProfileSummaryStat(
               icon: CupertinoIcons.house_fill,
-              iconColor: AppColors.cFFC08BFF,
+              iconColor: AppColors.cFFCE82FF,
               value: '$wishItemsCount',
               label: 'やりたいこと',
             ),
@@ -814,7 +791,7 @@ class _ProfileSummaryStats extends StatelessWidget {
           Expanded(
             child: _ProfileSummaryStat(
               icon: CupertinoIcons.person_2_fill,
-              iconColor: AppColors.cFFFF9BD5,
+              iconColor: AppColors.cFFFF9FD3,
               value: '$friendsCount',
               label: 'フレンズ',
             ),
@@ -929,17 +906,10 @@ class _ProfileYuruboActionRow extends StatelessWidget {
       onTap: onTap,
       height: 46,
       radius: 20,
-      color: AppColors.cFFC08BFF,
-      bottomColor: AppColors.cFF7F51C9,
+      color: AppColors.cFFCE82FF,
+      bottomColor: AppColors.cFFA568CC,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       borderColor: AppColors.white.withValues(alpha: .20),
-      outerShadows: [
-        BoxShadow(
-          color: AppColors.cFFC08BFF.withValues(alpha: .18),
-          blurRadius: 14,
-          offset: const Offset(0, 7),
-        ),
-      ],
       child: Row(
         children: [
           const Expanded(
@@ -948,7 +918,7 @@ class _ProfileYuruboActionRow extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: AppColors.cFF101820,
+                color: AppColors.cFF3C3C3C,
                 fontSize: 14,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.3,
@@ -957,7 +927,7 @@ class _ProfileYuruboActionRow extends StatelessWidget {
           ),
           OheyGeneratedIcon(
             CupertinoIcons.plus,
-            color: AppColors.cFF101820,
+            color: AppColors.cFF3C3C3C,
             size: 18,
           ),
         ],
@@ -977,17 +947,10 @@ class _ProfileStatusActionRow extends StatelessWidget {
       onTap: onTap,
       height: 46,
       radius: 20,
-      color: AppColors.cFFFF75B5,
-      bottomColor: AppColors.cFFD4147C,
+      color: AppColors.cFFFF86C8,
+      bottomColor: AppColors.cFFD9609F,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       borderColor: AppColors.white.withValues(alpha: .20),
-      outerShadows: [
-        BoxShadow(
-          color: AppColors.cFFFF75B5.withValues(alpha: .18),
-          blurRadius: 14,
-          offset: const Offset(0, 7),
-        ),
-      ],
       child: Row(
         children: [
           const Expanded(
@@ -996,7 +959,7 @@ class _ProfileStatusActionRow extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: AppColors.cFF101820,
+                color: AppColors.cFF3C3C3C,
                 fontSize: 13,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.4,
@@ -1005,7 +968,7 @@ class _ProfileStatusActionRow extends StatelessWidget {
           ),
           OheyGeneratedIcon(
             CupertinoIcons.chevron_right,
-            color: AppColors.cFF101820,
+            color: AppColors.cFF3C3C3C,
             size: 16,
           ),
         ],
@@ -1034,17 +997,10 @@ class _ProfileWishListActionRow extends StatelessWidget {
       onTap: onTap,
       height: 46,
       radius: 20,
-      color: AppColors.cFF39C7FF,
-      bottomColor: AppColors.cFF1699D6,
+      color: AppColors.cFF49C0F8,
+      bottomColor: AppColors.cFF1899D6,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       borderColor: AppColors.white.withValues(alpha: .20),
-      outerShadows: [
-        BoxShadow(
-          color: AppColors.cFF39C7FF.withValues(alpha: .16),
-          blurRadius: 14,
-          offset: const Offset(0, 7),
-        ),
-      ],
       child: Row(
         children: [
           Expanded(
@@ -1057,7 +1013,7 @@ class _ProfileWishListActionRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: AppColors.cFF101820,
+                    color: AppColors.cFF3C3C3C,
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
                     height: 1,
@@ -1070,7 +1026,7 @@ class _ProfileWishListActionRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: AppColors.cFF101820.withValues(alpha: .62),
+                    color: AppColors.cFF3C3C3C.withValues(alpha: .62),
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
                     height: 1,
@@ -1081,7 +1037,7 @@ class _ProfileWishListActionRow extends StatelessWidget {
           ),
           OheyGeneratedIcon(
             CupertinoIcons.chevron_right,
-            color: AppColors.cFF101820,
+            color: AppColors.cFF3C3C3C,
             size: 16,
           ),
         ],
@@ -1101,17 +1057,10 @@ class _ProfileFriendActionRow extends StatelessWidget {
       onTap: onAddFriendsTap,
       height: 46,
       radius: 20,
-      color: AppColors.cFF9AF21A,
-      bottomColor: AppColors.cFF5DC86C,
+      color: AppColors.cFF89E219,
+      bottomColor: AppColors.cFF89E219,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       borderColor: AppColors.white.withValues(alpha: .20),
-      outerShadows: [
-        BoxShadow(
-          color: AppColors.cFF9AF21A.withValues(alpha: .18),
-          blurRadius: 14,
-          offset: const Offset(0, 7),
-        ),
-      ],
       child: Row(
         children: [
           const Expanded(
@@ -1120,7 +1069,7 @@ class _ProfileFriendActionRow extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: AppColors.cFF101820,
+                color: AppColors.cFF3C3C3C,
                 fontSize: 14,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.3,
@@ -1129,7 +1078,7 @@ class _ProfileFriendActionRow extends StatelessWidget {
           ),
           OheyGeneratedIcon(
             CupertinoIcons.plus,
-            color: AppColors.cFF101820,
+            color: AppColors.cFF3C3C3C,
             size: 18,
           ),
         ],
@@ -1193,7 +1142,7 @@ class _ProfileOheyPlusPurchaseSheetState
           const SizedBox(height: 22),
           const OheyPopIcon(
             icon: CupertinoIcons.sparkles,
-            color: AppColors.cFFFF75B5,
+            color: AppColors.cFFFF86C8,
             size: 58,
             iconSize: 30,
           ),
@@ -1256,9 +1205,9 @@ class _ProfileOheyPlusPurchaseSheetState
                 : null,
             height: 54,
             radius: 24,
-            color: AppColors.cFFFF75B5,
-            foregroundColor: AppColors.cFF101820,
-            shadowColor: AppColors.cFFE05F83,
+            color: AppColors.cFFFF86C8,
+            foregroundColor: AppColors.cFF3C3C3C,
+            shadowColor: AppColors.cFFD9609F,
             fontSize: 15,
           ),
           const SizedBox(height: 12),
@@ -1374,7 +1323,7 @@ class _ProfileOheyPlusBenefitRow extends StatelessWidget {
         children: [
           OheyPopIcon(
             icon: icon,
-            color: AppColors.cFFFF75B5,
+            color: AppColors.cFFFF86C8,
             size: 42,
             iconSize: 22,
           ),

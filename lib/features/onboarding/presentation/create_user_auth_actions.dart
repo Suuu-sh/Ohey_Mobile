@@ -434,7 +434,7 @@ class _AccountManagementSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final subtitleColor = titleColor.withValues(alpha: .58);
     return OheyBottomSheetShell(
       title: 'アカウント管理',

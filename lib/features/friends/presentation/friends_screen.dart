@@ -539,7 +539,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: isWhite
-                ? const [AppColors.white, AppColors.white, AppColors.cFFF7F9FB]
+                ? const [AppColors.white, AppColors.white, AppColors.cFFF7F7F7]
                 : AppColors.darkBackgroundGradient,
           ),
         ),
@@ -756,9 +756,9 @@ class _IncomingFriendRequestBannerState
         ? 'ここからすぐ承認・見送りできます。'
         : '${profile.displayName}さんほか、未対応の申請があります。';
     final busy = _busyRequestId == request.id;
-    final ink = isWhite ? AppColors.cFF111820 : AppColors.white;
+    final ink = isWhite ? AppColors.cFF131F24 : AppColors.white;
     final sub = isWhite
-        ? AppColors.cFF6D7884
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .68);
 
     return Container(
@@ -771,13 +771,6 @@ class _IncomingFriendRequestBannerState
         border: Border.all(
           color: _FriendsColors.lime.withValues(alpha: isWhite ? .28 : .36),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: _FriendsColors.lime.withValues(alpha: isWhite ? .12 : .18),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -837,12 +830,7 @@ class _IncomingFriendRequestBannerState
                   onTap: busy ? null : () => _run(request, widget.onReject),
                   height: 42,
                   radius: 18,
-                  color: AppColors.white.withValues(alpha: .07),
-                  foregroundColor: AppColors.white.withValues(alpha: .72),
-                  shadowColor: AppColors.cFF573D7A.withValues(alpha: .72),
                   fontSize: 13,
-                  useGradient: false,
-                  outerShadows: const [],
                 ),
               ),
               const SizedBox(width: 10),
@@ -856,7 +844,6 @@ class _IncomingFriendRequestBannerState
                   color: AppColors.success,
                   shadowColor: AppColors.successShadow,
                   fontSize: 13,
-                  outerShadows: const [],
                 ),
               ),
             ],
@@ -879,7 +866,7 @@ class _IncomingFriendRequestCountBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.cFFFF4FA3,
+        color: AppColors.cFFD9609F,
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: AppColors.white, width: 2),
       ),
@@ -982,9 +969,9 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final ink = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final sub = isWhite
-        ? AppColors.cFF667381
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .66);
     return OheyBottomSheetShell(
       title: widget.title,
@@ -1114,7 +1101,7 @@ class _InviteWeeklyDatePickerState
               ),
               style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.light
-                    ? AppColors.cFF667381
+                    ? AppColors.cFF777777
                     : AppColors.white.withValues(alpha: .70),
                 fontSize: 12,
                 fontWeight: FontWeight.w900,
@@ -1217,12 +1204,12 @@ class _InviteWeekDateCell extends StatelessWidget {
         : date.weekday == DateTime.saturday
         ? const Color(0xFF25C7FF)
         : isWhite
-        ? AppColors.cFF667381
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .72);
     final hasDailyStatus = dailyStatus != OheyDailyStatus.unselected;
     final statusAccent = oheyDailyStatusBlockAccent(dailyStatus);
     final neutralBackground = isWhite
-        ? AppColors.cFFF1F5EF
+        ? AppColors.cFFF7F7F7
         : AppColors.white.withValues(alpha: .06);
     final background = selected
         ? neutralBackground
@@ -1238,12 +1225,12 @@ class _InviteWeekDateCell extends StatelessWidget {
         : hasDailyStatus
         ? statusAccent.withValues(alpha: .54)
         : isWhite
-        ? AppColors.cFFD7DEE7
+        ? AppColors.cFFE5E5E5
         : AppColors.white.withValues(alpha: .12);
     final foreground = hasDailyStatus
         ? oheyDailyStatusTileForeground(dailyStatus, isWhite: isWhite)
         : isWhite
-        ? AppColors.cFF17212B
+        ? AppColors.cFF1A272D
         : AppColors.white;
 
     return Semantics(
@@ -1265,25 +1252,6 @@ class _InviteWeekDateCell extends StatelessWidget {
               color: background,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: borderColor, width: selected ? 2.4 : 1),
-              boxShadow: selected
-                  ? [
-                      BoxShadow(
-                        color:
-                            (hasDailyStatus
-                                    ? statusAccent
-                                    : AppColors.primaryAction)
-                                .withValues(alpha: .34),
-                        blurRadius: 16,
-                        spreadRadius: 1.2,
-                        offset: const Offset(0, 0),
-                      ),
-                      BoxShadow(
-                        color: AppColors.black.withValues(alpha: .18),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ]
-                  : null,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1491,12 +1459,12 @@ class _InviteOptionPill extends StatelessWidget {
     final background = selected
         ? selectedColor
         : isWhite
-        ? AppColors.cFFF1F5EF
+        ? AppColors.cFFF7F7F7
         : AppColors.white.withValues(alpha: .08);
     final foreground = selected
-        ? AppColors.cFF101820
+        ? AppColors.cFF3C3C3C
         : isWhite
-        ? AppColors.cFF263340
+        ? AppColors.cFF2B3A41
         : AppColors.white.withValues(alpha: .82);
     return Semantics(
       button: true,
@@ -1520,15 +1488,6 @@ class _InviteOptionPill extends StatelessWidget {
                   ? selectedColor
                   : foreground.withValues(alpha: isWhite ? .10 : .16),
             ),
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: selectedColor.withValues(alpha: .20),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
-                    ),
-                  ]
-                : null,
           ),
           child: Row(
             mainAxisSize: compact ? MainAxisSize.min : MainAxisSize.max,

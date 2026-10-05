@@ -38,16 +38,16 @@ class _ReLoginMascotPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    final body = Paint()..color = AppColors.cFFFF4FA3;
-    final bodyDark = Paint()..color = AppColors.cFFE52B83;
-    final bodyLight = Paint()..color = AppColors.cFFFF86C7;
-    final eye = Paint()..color = AppColors.cFF101827;
+    final body = Paint()..color = AppColors.cFFD9609F;
+    final bodyDark = Paint()..color = AppColors.cFFD9609F;
+    final bodyLight = Paint()..color = AppColors.cFFFF86C8;
+    final eye = Paint()..color = AppColors.cFF131F24;
     final white = Paint()..color = AppColors.white;
-    final mouth = Paint()..color = AppColors.cFF251225;
-    final tongue = Paint()..color = AppColors.cFFFF6AAE;
-    final leaf = Paint()..color = AppColors.cFF84E817;
-    final leafDark = Paint()..color = AppColors.cFF58C80A;
-    final sparkle = Paint()..color = AppColors.cFFFF4FAB;
+    final mouth = Paint()..color = AppColors.cFF131F24;
+    final tongue = Paint()..color = AppColors.cFFFF86C8;
+    final leaf = Paint()..color = AppColors.cFF89E219;
+    final leafDark = Paint()..color = AppColors.cFF58CC02;
+    final sparkle = Paint()..color = AppColors.cFFD9609F;
 
     void rotatedOval(
       Offset center,
@@ -73,7 +73,7 @@ class _ReLoginMascotPainter extends CustomPainter {
         width: w * .48,
         height: h * .075,
       ),
-      Paint()..color = AppColors.cFFFF4FAB.withValues(alpha: .16),
+      Paint()..color = AppColors.cFFD9609F.withValues(alpha: .16),
     );
 
     rotatedOval(Offset(w * .34, h * .74), w * .22, h * .18, -.55, body);
@@ -93,7 +93,7 @@ class _ReLoginMascotPainter extends CustomPainter {
         width: w * .30,
         height: h * .13,
       ),
-      bodyLight..color = AppColors.cFFFF86C7.withValues(alpha: .36),
+      bodyLight..color = AppColors.cFFFF86C8.withValues(alpha: .36),
     );
     canvas.drawOval(
       Rect.fromCenter(
@@ -101,7 +101,7 @@ class _ReLoginMascotPainter extends CustomPainter {
         width: w * .30,
         height: h * .13,
       ),
-      bodyDark..color = AppColors.cFFE52B83.withValues(alpha: .18),
+      bodyDark..color = AppColors.cFFD9609F.withValues(alpha: .18),
     );
 
     final stem = Path()
@@ -165,7 +165,7 @@ class _ReLoginMascotPainter extends CustomPainter {
     canvas.drawPath(
       star,
       Paint()
-        ..color = AppColors.cFFFF9BD0
+        ..color = AppColors.cFFFF9FD3
         ..style = PaintingStyle.stroke
         ..strokeWidth = w * .012,
     );
@@ -201,7 +201,6 @@ class _ReLoginAccountCard extends StatelessWidget {
         borderRadius: 20,
         borderAlpha: .20,
         borderWidth: 2,
-        glowAlpha: 0,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

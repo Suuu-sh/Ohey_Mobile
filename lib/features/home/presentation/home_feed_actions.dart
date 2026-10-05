@@ -11,9 +11,9 @@ class _FeedPostActionsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final subtitleColor = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showHandle: true,
@@ -77,7 +77,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               icon: CupertinoIcons.trash_fill,
               title: 'ゆるぼを削除',
               subtitle: 'このゆるぼを一覧から消す',
-              accent: AppColors.cFFFF5F8F,
+              accent: AppColors.cFFD9609F,
               destructive: true,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.delete),
             )
@@ -86,7 +86,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               icon: CupertinoIcons.bell_slash_fill,
               title: '${item.userName}さんをミュート',
               subtitle: 'ゆるぼを一覧に出さない',
-              accent: AppColors.cFF88B8FF,
+              accent: AppColors.cFF84D8FF,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.muteUser),
             ),
             const SizedBox(height: 10),
@@ -94,7 +94,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               icon: CupertinoIcons.hand_raised_fill,
               title: '${item.userName}さんをブロック',
               subtitle: 'ゆるぼ・申請・お誘いを制限する',
-              accent: AppColors.cFFFF5F8F,
+              accent: AppColors.cFFD9609F,
               destructive: true,
               showShadow: false,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.blockUser),
@@ -105,7 +105,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
                 icon: CupertinoIcons.exclamationmark_bubble_fill,
                 title: 'このゆるぼの投稿者を通報',
                 subtitle: '理由を選んで運営に送信します',
-                accent: AppColors.cFFFFD166,
+                accent: AppColors.cFFFFE066,
                 showShadow: false,
                 onTap: () =>
                     Navigator.of(context).pop(_FeedPostAction.reportUser),
@@ -134,7 +134,7 @@ class _FeedReportReasonSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final subtitleColor = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       title: '通報理由',
@@ -157,7 +157,7 @@ class _FeedReportReasonSheet extends StatelessWidget {
               icon: CupertinoIcons.exclamationmark_triangle_fill,
               title: reason.label,
               subtitle: reason.description,
-              accent: AppColors.cFFFFD166,
+              accent: AppColors.cFFFFE066,
               onTap: () => Navigator.of(context).pop(reason),
             ),
             if (reason != OheyReportReason.values.last)
@@ -175,9 +175,9 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final subtitleColor = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showBottomCloseButton: false,
@@ -189,7 +189,7 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
           Center(
             child: OheyPopIcon(
               icon: CupertinoIcons.trash_fill,
-              color: AppColors.cFFFF5F8F,
+              color: AppColors.cFFD9609F,
               size: 64,
               iconSize: 34,
             ),
@@ -229,7 +229,7 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
               Expanded(
                 child: _FeedModalTextButton(
                   label: '削除する',
-                  color: AppColors.cFFFF5F8F,
+                  color: AppColors.cFFD9609F,
                   onTap: () => Navigator.of(context).pop(true),
                 ),
               ),
@@ -257,9 +257,9 @@ class _FeedUserSafetyConfirmSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final subtitleColor = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showBottomCloseButton: false,
@@ -356,13 +356,6 @@ class _FeedModalTextButton extends StatelessWidget {
                 ? color.withValues(alpha: .34)
                 : AppColors.white.withValues(alpha: .12),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: isWhite ? .10 : .16),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
         ),
         child: Text(
           label,

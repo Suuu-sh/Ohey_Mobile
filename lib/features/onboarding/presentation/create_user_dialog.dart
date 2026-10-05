@@ -49,8 +49,8 @@ enum _ClientTrustStep { none, code }
 enum _SocialAuthIntent { signup, login }
 
 const _authPink = AppColors.coral;
-const _authPinkShadow = AppColors.cFFE05F83;
-const _authPinkInk = AppColors.cFF2B1320;
+const _authPinkShadow = AppColors.cFFD9609F;
+const _authPinkInk = AppColors.cFF131F24;
 const _loginMinPasswordLength = 6;
 const _signupMinPasswordLength = 8;
 const _emailPasswordRequirementMessage =

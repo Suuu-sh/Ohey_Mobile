@@ -96,7 +96,7 @@ class _OheyBackendBusyScreenState extends State<OheyBackendBusyScreen>
                   children: [
                     const OheyGeneratedIcon(
                       CupertinoIcons.clock_fill,
-                      color: AppColors.cFF12C9A4,
+                      color: AppColors.cFF00CD9C,
                       size: 18,
                     ),
                     const SizedBox(width: 8),
@@ -155,14 +155,8 @@ class _Dot extends StatelessWidget {
       width: 12 + wave * 5,
       height: 12 + wave * 5,
       decoration: BoxDecoration(
-        color: Color.lerp(AppColors.cFF12C9A4, AppColors.cFF9AF21A, wave),
+        color: Color.lerp(AppColors.cFF00CD9C, AppColors.cFF89E219, wave),
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cFF12C9A4.withValues(alpha: .20 + wave * .25),
-            blurRadius: 14 + wave * 12,
-          ),
-        ],
       ),
     );
   }

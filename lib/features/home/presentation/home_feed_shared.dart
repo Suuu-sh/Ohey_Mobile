@@ -24,9 +24,9 @@ class _FeedEmptyState extends StatelessWidget {
     visual: OheyPopIcon(icon: icon, color: accent, size: 58),
     title: title,
     message: message,
-    titleColor: isWhite ? AppColors.cFF27313B : AppColors.white,
+    titleColor: isWhite ? AppColors.cFF2B3A41 : AppColors.white,
     messageColor: isWhite
-        ? AppColors.cFF6E7783
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .55),
     hints: hints,
     action: action,
@@ -65,13 +65,6 @@ BoxDecoration _feedCardDecoration({required double radius}) => BoxDecoration(
   color: _FeedColors.card.withValues(alpha: .74),
   borderRadius: BorderRadius.circular(radius),
   border: Border.all(color: AppColors.white.withValues(alpha: .11), width: 1.2),
-  boxShadow: [
-    BoxShadow(
-      color: AppColors.black.withValues(alpha: .18),
-      blurRadius: 26,
-      offset: const Offset(0, 14),
-    ),
-  ],
 );
 
 List<_FeedItem> _feedItemsFromYurubos(
@@ -258,7 +251,7 @@ IconData _companionStatusIcon(String? statusKey) {
 
 Color _companionStatusColor(String? statusKey) {
   if (statusKey.isPendingYuruboCompanion) {
-    return AppColors.cFFFFD84D;
+    return AppColors.cFFFFD43B;
   }
   final status = oheyDailyStatusFromKey(statusKey);
   if (status == OheyDailyStatus.unselected) return _FeedColors.sub;
@@ -303,13 +296,13 @@ class _FeedNotification {
         _ => CupertinoIcons.bell_fill,
       },
       accent: switch (notification.kind) {
-        OheyNotificationKindKeys.friendRequestReceived => AppColors.cFF58D6FF,
-        OheyNotificationKindKeys.friendRequestAccepted => AppColors.cFF9AF21A,
-        OheyNotificationKindKeys.inviteReceived => AppColors.cFFC08BFF,
+        OheyNotificationKindKeys.friendRequestReceived => AppColors.cFF49C0F8,
+        OheyNotificationKindKeys.friendRequestAccepted => AppColors.cFF89E219,
+        OheyNotificationKindKeys.inviteReceived => AppColors.cFFCE82FF,
         OheyNotificationKindKeys.inviteAccepted => _FeedColors.teal,
         OheyNotificationKindKeys.todayReservationReminder =>
-          AppColors.cFFFFD166,
-        OheyNotificationKindKeys.system => AppColors.cFFFFD166,
+          AppColors.cFFFFE066,
+        OheyNotificationKindKeys.system => AppColors.cFFFFE066,
         _ => _FeedColors.teal,
       },
       unread: notification.isUnread,
@@ -398,18 +391,18 @@ String _relativeTimeText(DateTime time) {
 
 class _FeedColors {
   const _FeedColors._();
-  static const teal = AppColors.cFFC08BFF;
-  static const card = AppColors.cFF112332;
-  static const sub = AppColors.cFF9AA7B7;
+  static const teal = AppColors.cFFCE82FF;
+  static const card = AppColors.cFF1A272D;
+  static const sub = AppColors.cFFAFAFAF;
 }
 
 Color _accentForId(String id) {
   const colors = [
-    AppColors.cFF12C9A4,
-    AppColors.cFFC08BFF,
-    AppColors.cFF9AF21A,
-    AppColors.cFFFF75B5,
-    AppColors.cFF58D6FF,
+    AppColors.cFF00CD9C,
+    AppColors.cFFCE82FF,
+    AppColors.cFF89E219,
+    AppColors.cFFFF86C8,
+    AppColors.cFF49C0F8,
   ];
   return colors[id.hashCode.abs() % colors.length];
 }

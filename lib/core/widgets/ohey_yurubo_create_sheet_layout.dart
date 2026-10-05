@@ -18,8 +18,8 @@ class OheyYuruboCreateSheetLayout extends StatelessWidget {
     this.title = 'ゆるぼする',
     this.submitIcon,
     this.submitEnabled = true,
-    this.buttonColor = AppColors.cFFC08BFF,
-    this.buttonShadowColor = AppColors.cFF7F51C9,
+    this.buttonColor = AppColors.cFFCE82FF,
+    this.buttonShadowColor = AppColors.cFFA568CC,
   });
 
   final String title;
@@ -39,7 +39,7 @@ class OheyYuruboCreateSheetLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF17212B : AppColors.white;
+    final ink = isWhite ? AppColors.cFF1A272D : AppColors.white;
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
@@ -76,7 +76,7 @@ class OheyYuruboCreateSheetLayout extends StatelessWidget {
             height: 50,
             radius: 22,
             color: buttonColor,
-            foregroundColor: AppColors.cFF101820,
+            foregroundColor: AppColors.cFF3C3C3C,
             shadowColor: buttonShadowColor,
           ),
         ],

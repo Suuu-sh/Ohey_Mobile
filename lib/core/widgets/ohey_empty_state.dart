@@ -42,7 +42,7 @@ class OheyEmptyState extends StatelessWidget {
               style: TextStyle(
                 color:
                     titleColor ??
-                    (isWhite ? AppColors.cFF27313B : AppColors.white),
+                    (isWhite ? AppColors.cFF2B3A41 : AppColors.white),
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
               ),
@@ -56,7 +56,7 @@ class OheyEmptyState extends StatelessWidget {
                   color:
                       messageColor ??
                       (isWhite
-                          ? AppColors.cFF6E7783
+                          ? AppColors.cFF777777
                           : AppColors.white.withValues(alpha: .55)),
                   fontWeight: FontWeight.w800,
                   height: 1.45,
@@ -109,7 +109,7 @@ class _OheyEmptyHintChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
           color: isWhite
-              ? AppColors.cFFE7EDF3
+              ? AppColors.cFFE5E5E5
               : AppColors.white.withValues(alpha: .10),
         ),
       ),
@@ -120,7 +120,7 @@ class _OheyEmptyHintChip extends StatelessWidget {
           color:
               foregroundColor ??
               (isWhite
-                  ? AppColors.cFF6E7783
+                  ? AppColors.cFF777777
                   : AppColors.white.withValues(alpha: .62)),
           fontSize: 12,
           fontWeight: FontWeight.w900,

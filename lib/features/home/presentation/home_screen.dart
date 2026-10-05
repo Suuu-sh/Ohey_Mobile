@@ -85,26 +85,17 @@ class _FeedCreateYuruboFab extends StatelessWidget {
       child: Semantics(
         button: true,
         label: 'ゆるぼする',
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: onTap,
-          child: Container(
-            width: 58,
+        child: SizedBox(
+          width: 58,
+          child: Ohey3DButtonSurface(
+            onTap: onTap,
             height: 58,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _FeedColors.teal,
-              boxShadow: [
-                BoxShadow(
-                  color: _FeedColors.teal.withValues(alpha: .30),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
+            radius: 29,
+            color: _FeedColors.teal,
+            padding: EdgeInsets.zero,
             child: const Icon(
               CupertinoIcons.plus,
-              color: AppColors.cFF101820,
+              color: AppColors.white,
               size: 31,
             ),
           ),

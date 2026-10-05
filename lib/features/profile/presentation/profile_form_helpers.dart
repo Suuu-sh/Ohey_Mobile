@@ -5,24 +5,24 @@ InputDecoration _profileInputDecoration(String hint, {required bool isWhite}) =>
       hintText: hint,
       hintStyle: TextStyle(
         color: isWhite
-            ? AppColors.cFF8B96A3
+            ? AppColors.cFFAFAFAF
             : AppColors.white.withValues(alpha: .45),
         fontWeight: FontWeight.w800,
       ),
       filled: true,
       fillColor: isWhite
-          ? AppColors.cFFF6F8FA
+          ? AppColors.cFFF7F7F7
           : AppColors.white.withValues(alpha: .06),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
         borderSide: BorderSide(
-          color: isWhite ? AppColors.cFFDDE4EA : _ProfileColors.line,
+          color: isWhite ? AppColors.cFFE5E5E5 : _ProfileColors.line,
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
         borderSide: BorderSide(
-          color: isWhite ? AppColors.cFFDDE4EA : _ProfileColors.line,
+          color: isWhite ? AppColors.cFFE5E5E5 : _ProfileColors.line,
         ),
       ),
       focusedBorder: OutlineInputBorder(

@@ -70,8 +70,8 @@ class OheyCalendarStatusSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final sub = isWhite ? AppColors.cFF777777 : AppColors.white70;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final isToday = _oheyIsSameDate(day, DateTime.now());
     final title = isToday ? '今日の予定' : '${day.month}/${day.day}の予定';
     return OheyBottomSheetShell(
@@ -183,7 +183,7 @@ class OheyCalendarStatusMethodSheetState
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
+    final sub = isWhite ? AppColors.cFF777777 : AppColors.white70;
     final accent = oheyDailyStatusColor(_selected);
     return OheyBottomSheetShell(
       title: '設定方法',
@@ -281,7 +281,7 @@ class OheyCalendarStatusMethodSheetState
                     child: Text(
                       _summaryText,
                       style: TextStyle(
-                        color: isWhite ? AppColors.cFF101820 : AppColors.white,
+                        color: isWhite ? AppColors.cFF3C3C3C : AppColors.white,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -318,9 +318,9 @@ class _OheyCalendarStatusCompactChoice extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final foreground = selected
-        ? AppColors.cFF06111D
+        ? AppColors.cFF131F24
         : isWhite
-        ? AppColors.cFF101820
+        ? AppColors.cFF3C3C3C
         : AppColors.white.withValues(alpha: .82);
     return InkWell(
       borderRadius: BorderRadius.circular(12),
@@ -371,7 +371,7 @@ class _OheyCalendarWeekdaySelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
+    final sub = isWhite ? AppColors.cFF777777 : AppColors.white70;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -415,9 +415,9 @@ class _OheyCalendarWeekdaySelector extends StatelessWidget {
                         _oheyCalendarWeekdayLabelByIndex(weekday),
                         style: TextStyle(
                           color: weekday == selectedWeekday
-                              ? AppColors.cFF06111D
+                              ? AppColors.cFF131F24
                               : isWhite
-                              ? AppColors.cFF101820
+                              ? AppColors.cFF3C3C3C
                               : AppColors.white,
                           fontWeight: FontWeight.w900,
                         ),
@@ -455,28 +455,13 @@ class _OheyCalendarStatusSubmit3DButton extends StatelessWidget {
       radius: 20,
       color: accent,
       bottomColor: Color.lerp(accent, AppColors.black, .28)!,
-      useGradient: true,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       borderColor: AppColors.white.withValues(alpha: .20),
-      outerShadows: [
-        BoxShadow(
-          color: accent.withValues(alpha: .32),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
-        ),
-      ],
-      innerShadows: [
-        BoxShadow(
-          color: AppColors.white.withValues(alpha: .14),
-          blurRadius: 10,
-          offset: const Offset(-2, -2),
-        ),
-      ],
       child: Row(
         children: [
           const Icon(
             CupertinoIcons.check_mark_circled_solid,
-            color: AppColors.cFF06111D,
+            color: AppColors.cFF131F24,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -487,7 +472,7 @@ class _OheyCalendarStatusSubmit3DButton extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: AppColors.cFF06111D,
+                    color: AppColors.cFF131F24,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -497,7 +482,7 @@ class _OheyCalendarStatusSubmit3DButton extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: AppColors.cFF06111D.withValues(alpha: .68),
+                    color: AppColors.cFF131F24.withValues(alpha: .68),
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                   ),
@@ -530,9 +515,9 @@ class _OheyCalendarStatusModeButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final foreground = selected
-        ? AppColors.cFF06111D
+        ? AppColors.cFF131F24
         : isWhite
-        ? AppColors.cFF101820
+        ? AppColors.cFF3C3C3C
         : AppColors.white;
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -597,7 +582,7 @@ class _OheyCalendarStatusStepper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
+    final sub = isWhite ? AppColors.cFF777777 : AppColors.white70;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -621,7 +606,7 @@ class _OheyCalendarStatusStepper extends StatelessWidget {
                 Text(
                   '$value$unit',
                   style: TextStyle(
-                    color: isWhite ? AppColors.cFF101820 : AppColors.white,
+                    color: isWhite ? AppColors.cFF3C3C3C : AppColors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
                   ),
@@ -674,7 +659,7 @@ class _OheyCalendarStatusRoundButton extends StatelessWidget {
           color: accent.withValues(alpha: enabled ? .95 : .22),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: AppColors.cFF06111D, size: 18),
+        child: Icon(icon, color: AppColors.cFF131F24, size: 18),
       ),
     );
   }
@@ -697,10 +682,10 @@ class _OheyCalendarStatusHeaderActionButton extends StatelessWidget {
         height: 36,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: AppColors.cFF54D7FF.withValues(alpha: isWhite ? .14 : .18),
+          color: AppColors.cFF49C0F8.withValues(alpha: isWhite ? .14 : .18),
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: AppColors.cFF54D7FF.withValues(alpha: isWhite ? .34 : .42),
+            color: AppColors.cFF49C0F8.withValues(alpha: isWhite ? .34 : .42),
           ),
         ),
         child: const Row(
@@ -708,14 +693,14 @@ class _OheyCalendarStatusHeaderActionButton extends StatelessWidget {
           children: [
             Icon(
               CupertinoIcons.rectangle_stack_badge_plus,
-              color: AppColors.cFF54D7FF,
+              color: AppColors.cFF49C0F8,
               size: 18,
             ),
             SizedBox(width: 6),
             Text(
               '一括',
               style: TextStyle(
-                color: AppColors.cFF54D7FF,
+                color: AppColors.cFF49C0F8,
                 fontSize: 13,
                 fontWeight: FontWeight.w900,
               ),

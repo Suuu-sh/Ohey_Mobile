@@ -11,6 +11,7 @@ import 'core/data/auth_identity_provider.dart';
 import 'core/data/auth_state_provider.dart';
 import 'core/data/clerk_auth_service.dart';
 import 'core/data/ohey_last_account_store.dart';
+import 'core/preview/ohey_ui_preview.dart';
 import 'core/services/ohey_ads_consent_service.dart';
 import 'core/services/ohey_plus_service.dart';
 import 'core/services/ohey_push_notification_service.dart';
@@ -37,7 +38,16 @@ Future<void> main() async {
     // If decoding ever fails, fall back to the regular asset image below.
   }
 
-  runApp(const ProviderScope(child: OheyApp()));
+  if (oheyUiPreviewEnabled) {
+    await OheyLastAccountStore.setSessionRestoreSuppressed(false);
+  }
+
+  runApp(
+    ProviderScope(
+      overrides: oheyUiPreviewEnabled ? oheyUiPreviewOverrides() : const [],
+      child: const OheyApp(),
+    ),
+  );
   binding.allowFirstFrame();
 }
 
@@ -56,6 +66,12 @@ final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
         .read(clerkAuthServiceProvider)
         .initialize()
         .timeout(const Duration(seconds: 12));
+
+    if (oheyUiPreviewEnabled) {
+      // Preview mode stays fully offline: no ads, purchases, or push setup.
+      await _preloadBackendProfileIfSessionExists(ref);
+      return;
+    }
 
     if (OheyAdsConfig.isEnabled) {
       try {
@@ -210,7 +226,7 @@ class _StartupScreen extends StatelessWidget {
     final hasError = message != null;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: AppColors.cFF02092B,
+      backgroundColor: AppColors.cFF131F24,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -233,10 +249,10 @@ class _StartupScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(28, 0, 28, 36),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: AppColors.cFF08091F.withValues(alpha: .78),
+                      color: AppColors.cFF131F24.withValues(alpha: .78),
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: AppColors.cFFFF5EA8.withValues(alpha: .28),
+                        color: AppColors.cFFD9609F.withValues(alpha: .28),
                       ),
                     ),
                     child: Padding(
@@ -246,7 +262,7 @@ class _StartupScreen extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.warning_rounded,
-                            color: AppColors.cFFFF5EA8,
+                            color: AppColors.cFFD9609F,
                             size: 32,
                           ),
                           const SizedBox(height: 10),
@@ -318,16 +334,9 @@ class _StartupWaitingMessage extends StatelessWidget {
         const SizedBox(height: 10),
         DecoratedBox(
           decoration: BoxDecoration(
-            color: AppColors.cFF08091F.withValues(alpha: .34),
+            color: AppColors.cFF131F24.withValues(alpha: .34),
             borderRadius: BorderRadius.circular(26),
             border: Border.all(color: AppColors.white.withValues(alpha: .18)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.black.withValues(alpha: .18),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -388,7 +397,7 @@ class _StartupWordmark extends StatelessWidget {
       foreground: ui.Paint()
         ..style = ui.PaintingStyle.stroke
         ..strokeWidth = 7
-        ..color = AppColors.cFF160C52.withValues(alpha: .50),
+        ..color = AppColors.cFF202F36.withValues(alpha: .50),
     );
 
     const fillStyle = TextStyle(
@@ -399,12 +408,12 @@ class _StartupWordmark extends StatelessWidget {
       letterSpacing: -1.2,
       shadows: [
         Shadow(
-          color: AppColors.c99060A35,
+          color: AppColors.c99131F24,
           blurRadius: 20,
           offset: Offset(0, 6),
         ),
         Shadow(
-          color: AppColors.c99FF5EA8,
+          color: AppColors.c99D9609F,
           blurRadius: 22,
           offset: Offset(0, 0),
         ),
@@ -425,8 +434,8 @@ class _StartupWordmark extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [
                   AppColors.white,
-                  AppColors.cFFFFF7B0,
-                  AppColors.cFFFFA3D4,
+                  AppColors.cFFFFF5D3,
+                  AppColors.cFFFF9FD3,
                 ],
               ).createShader(bounds),
               child: const Text(_appDisplayName, style: fillStyle),
@@ -447,14 +456,8 @@ class _StartupDot extends StatelessWidget {
       width: 8,
       height: 8,
       decoration: BoxDecoration(
-        color: AppColors.cFF9AF21A,
+        color: AppColors.cFF89E219,
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.white.withValues(alpha: .24),
-            blurRadius: 10,
-          ),
-        ],
       ),
     );
   }

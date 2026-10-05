@@ -160,14 +160,7 @@ class _YuruboAdPostSeparator extends StatelessWidget {
         child: Container(
           height: 1,
           decoration: BoxDecoration(
-            color: AppColors.cFFC08BFF.withValues(alpha: alpha),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.cFFC08BFF.withValues(alpha: alpha * .62),
-                blurRadius: 9,
-                spreadRadius: .35,
-              ),
-            ],
+            color: AppColors.cFFCE82FF.withValues(alpha: alpha),
           ),
         ),
       ),
@@ -189,23 +182,15 @@ class _YuruboAdCardFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaceColor = OheyThemedPanel.surfaceColor(isWhite: isWhite);
-    final radius = BorderRadius.circular(30);
-    final frameColor = _FeedColors.teal.withValues(alpha: isWhite ? .28 : .46);
+    final radius = BorderRadius.circular(20);
+    final frameColor = isWhite
+        ? AppColors.chunkyBorderLight
+        : AppColors.chunkyBorderDark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: surfaceColor,
-          borderRadius: radius,
-          boxShadow: [
-            BoxShadow(
-              color: _FeedColors.teal.withValues(alpha: isWhite ? .06 : .13),
-              blurRadius: 24,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
+        decoration: BoxDecoration(color: surfaceColor, borderRadius: radius),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -218,12 +203,16 @@ class _YuruboAdCardFrame extends StatelessWidget {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: radius,
-                    border: Border.all(color: frameColor, width: 1.2),
+                    border: Border(
+                      top: BorderSide(color: frameColor, width: 2),
+                      left: BorderSide(color: frameColor, width: 2),
+                      right: BorderSide(color: frameColor, width: 2),
+                      bottom: BorderSide(color: frameColor, width: 4),
+                    ),
                   ),
                 ),
               ),
             ),
-            const _YuruboBlockGlowUnderline(),
           ],
         ),
       ),

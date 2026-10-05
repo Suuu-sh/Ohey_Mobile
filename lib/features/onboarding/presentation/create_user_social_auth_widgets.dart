@@ -18,10 +18,9 @@ class _SocialLoginButton extends StatelessWidget {
     onTap: onTap,
     height: height,
     radius: 18,
-    topColor: AppColors.cFF52606B,
-    bottomColor: AppColors.cFF35434D,
-    borderColor: AppColors.white.withValues(alpha: .18),
-    glowColor: AppColors.cFF52606B.withValues(alpha: .18),
+    topColor: AppColors.darkBackground,
+    bottomColor: AppColors.chunkyBorderDark,
+    borderColor: AppColors.chunkyBorderDark,
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -30,7 +29,7 @@ class _SocialLoginButton extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: AppColors.white.withValues(alpha: .88),
+            color: AppColors.white,
             fontSize: 16,
             fontWeight: FontWeight.w900,
             letterSpacing: .6,
@@ -89,7 +88,6 @@ class _Auth3DPanelButton extends StatelessWidget {
     required this.topColor,
     required this.bottomColor,
     required this.borderColor,
-    required this.glowColor,
   });
 
   final Widget child;
@@ -99,7 +97,6 @@ class _Auth3DPanelButton extends StatelessWidget {
   final Color topColor;
   final Color bottomColor;
   final Color borderColor;
-  final Color glowColor;
 
   @override
   Widget build(BuildContext context) => Ohey3DButtonSurface(
@@ -108,25 +105,8 @@ class _Auth3DPanelButton extends StatelessWidget {
     radius: radius,
     color: topColor,
     bottomColor: bottomColor,
-    useGradient: false,
     borderColor: borderColor,
     borderWidth: 2,
-    outerShadows: [
-      BoxShadow(color: glowColor, blurRadius: 24, offset: const Offset(0, 12)),
-      BoxShadow(
-        color: AppColors.black.withValues(alpha: .16),
-        blurRadius: 18,
-        offset: const Offset(0, 9),
-      ),
-    ],
-    innerShadows: [
-      BoxShadow(
-        color: AppColors.white.withValues(alpha: .08),
-        blurRadius: 0,
-        spreadRadius: -4,
-        offset: const Offset(0, -5),
-      ),
-    ],
     child: child,
   );
 }
@@ -138,7 +118,7 @@ class _GoogleMark extends StatelessWidget {
   Widget build(BuildContext context) => const Text(
     'G',
     style: TextStyle(
-      color: AppColors.cFF4285F4,
+      color: AppColors.cFF49C0F8,
       fontSize: 27,
       fontWeight: FontWeight.w900,
     ),

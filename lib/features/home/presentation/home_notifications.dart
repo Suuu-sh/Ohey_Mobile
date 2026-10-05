@@ -67,12 +67,12 @@ class _FeedNotificationsScreenState
                               height: 44,
                               decoration: BoxDecoration(
                                 color: isWhite
-                                    ? AppColors.cFFF2F4F6
+                                    ? AppColors.cFFF7F7F7
                                     : AppColors.white.withValues(alpha: .06),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: isWhite
-                                      ? AppColors.cFFD7DEE7
+                                      ? AppColors.cFFE5E5E5
                                       : AppColors.white.withValues(alpha: .09),
                                 ),
                               ),
@@ -89,7 +89,7 @@ class _FeedNotificationsScreenState
                                     ),
                                     style: TextStyle(
                                       color: isWhite
-                                          ? AppColors.cFF27313B
+                                          ? AppColors.cFF2B3A41
                                           : AppColors.white,
                                       fontSize: 23,
                                       fontWeight: FontWeight.w900,
@@ -113,7 +113,7 @@ class _FeedNotificationsScreenState
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: isWhite
-                                        ? AppColors.cFF27313B
+                                        ? AppColors.cFF2B3A41
                                         : AppColors.white,
                                     fontSize: 23,
                                     fontWeight: FontWeight.w900,
@@ -141,7 +141,7 @@ class _FeedNotificationsScreenState
                           isWhite: isWhite,
                           title: 'お知らせを読み込めませんでした',
                           message: '時間をおいて再度お試しください。',
-                          accent: AppColors.cFFFF75B5,
+                          accent: AppColors.cFFFF86C8,
                         )
                       else if (notifications.isEmpty)
                         _NotificationEmptyState(isWhite: isWhite)
@@ -248,7 +248,7 @@ class _FeedNotificationsScreenState
                 message: '「${yurubo.title}」への参加申請が届いています。',
                 timeAgo: _relativeTimeText(yurubo.createdAt),
                 icon: CupertinoIcons.person_2_fill,
-                accent: AppColors.cFFC08BFF,
+                accent: AppColors.cFFCE82FF,
                 unread: true,
                 yurubo: yurubo,
                 yuruboParticipant: participant,
@@ -358,9 +358,9 @@ class _NotificationSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = isWhite ? AppColors.cFF27313B : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF2B3A41 : AppColors.white;
     final messageColor = isWhite
-        ? AppColors.cFF778393
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 8, 2, 10),
@@ -433,12 +433,12 @@ class _NotificationSectionEmptyNote extends StatelessWidget {
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
       color: isWhite
-          ? AppColors.cFFF3F7FA
+          ? AppColors.cFFF7F7F7
           : AppColors.white.withValues(alpha: .045),
       borderRadius: BorderRadius.circular(22),
       border: Border.all(
         color: isWhite
-            ? AppColors.cFFE1E8F1
+            ? AppColors.cFFE5E5E5
             : AppColors.white.withValues(alpha: .08),
       ),
     ),
@@ -446,7 +446,7 @@ class _NotificationSectionEmptyNote extends StatelessWidget {
       '現在、対応が必要なお知らせはありません。',
       style: TextStyle(
         color: isWhite
-            ? AppColors.cFF617281
+            ? AppColors.cFF1899D6
             : AppColors.white.withValues(alpha: .62),
         fontSize: 12,
         fontWeight: FontWeight.w800,
@@ -476,7 +476,7 @@ class _NotificationEmptyState extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: isWhite
-                ? AppColors.cFF778393
+                ? AppColors.cFF777777
                 : AppColors.white.withValues(alpha: .56),
             fontSize: 12,
             fontWeight: FontWeight.w800,
@@ -504,22 +504,22 @@ class _NotificationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final resolved = notification.isResolvedAction;
     final cardColor = priority
-        ? (isWhite ? AppColors.cFFFFF5F1 : AppColors.cFF2A1716)
+        ? (isWhite ? AppColors.cFFF7F7F7 : AppColors.cFF1A272D)
         : isWhite
-        ? (notification.unread ? AppColors.cFFEBF5F5 : AppColors.cFFEEF3FA)
+        ? (notification.unread ? AppColors.cFFF7F7F7 : AppColors.cFFF7F7F7)
         : notification.unread
         ? _FeedColors.card.withValues(alpha: .86)
         : _FeedColors.card.withValues(alpha: .52);
     final cardBorderColor = priority
         ? notification.accent.withValues(alpha: isWhite ? .36 : .30)
         : isWhite
-        ? AppColors.cFFE1E8F1
+        ? AppColors.cFFE5E5E5
         : AppColors.white.withValues(alpha: .11);
     final messageColor = isWhite
-        ? AppColors.cFF617281
+        ? AppColors.cFF1899D6
         : AppColors.white.withValues(alpha: .64);
-    final titleColor = isWhite ? AppColors.cFF27313B : AppColors.white;
-    final timeColor = isWhite ? AppColors.cFF8B96A3 : _FeedColors.sub;
+    final titleColor = isWhite ? AppColors.cFF2B3A41 : AppColors.white;
+    final timeColor = isWhite ? AppColors.cFFAFAFAF : _FeedColors.sub;
 
     final tile = Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -527,17 +527,6 @@ class _NotificationTile extends StatelessWidget {
       decoration: _feedCardDecoration(radius: 22).copyWith(
         color: cardColor,
         border: Border.all(color: cardBorderColor, width: priority ? 1.5 : 1.2),
-        boxShadow: priority
-            ? [
-                BoxShadow(
-                  color: notification.accent.withValues(
-                    alpha: isWhite ? .14 : .20,
-                  ),
-                  blurRadius: 24,
-                  offset: const Offset(0, 12),
-                ),
-              ]
-            : null,
       ),
       child: Opacity(
         opacity: resolved ? .62 : 1,
@@ -775,7 +764,6 @@ class _FriendRequestNotificationSheetState
               color: AppColors.success,
               shadowColor: AppColors.successShadow,
               fontSize: 15,
-              outerShadows: const [],
             ),
             const SizedBox(height: 10),
             Ohey3DButton.secondary(
@@ -787,10 +775,8 @@ class _FriendRequestNotificationSheetState
               radius: 21,
               color: AppColors.white.withValues(alpha: .07),
               foregroundColor: AppColors.white.withValues(alpha: .72),
-              shadowColor: AppColors.cFF573D7A.withValues(alpha: .72),
+              shadowColor: AppColors.cFF5E3A7A.withValues(alpha: .72),
               fontSize: 14,
-              useGradient: false,
-              outerShadows: const [],
             ),
           ] else
             Ohey3DButton(
@@ -917,7 +903,6 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
               color: AppColors.success,
               shadowColor: AppColors.successShadow,
               fontSize: 15,
-              outerShadows: const [],
             ),
             const SizedBox(height: 10),
             Ohey3DButton.secondary(
@@ -929,10 +914,8 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
               radius: 21,
               color: AppColors.white.withValues(alpha: .07),
               foregroundColor: AppColors.white.withValues(alpha: .72),
-              shadowColor: AppColors.cFF573D7A.withValues(alpha: .72),
+              shadowColor: AppColors.cFF5E3A7A.withValues(alpha: .72),
               fontSize: 14,
-              useGradient: false,
-              outerShadows: const [],
             ),
           ] else
             Ohey3DButton(

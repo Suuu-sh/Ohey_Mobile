@@ -67,16 +67,13 @@ class OheyFriendUserBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final accent = statusEnabled ? statusColor : AppColors.cFF2B3441;
+    final accent = statusEnabled ? statusColor : AppColors.cFF2B3A41;
     final borderAlpha = statusEnabled
         ? (isWhite ? .34 : .42)
         : (isWhite ? .34 : .58);
-    final glowAlpha = statusEnabled
-        ? (isWhite ? .09 : .18)
-        : (isWhite ? .055 : .11);
     final ink = statusEnabled
-        ? (isWhite ? AppColors.cFF101820 : AppColors.white)
-        : (isWhite ? AppColors.cFF667381 : AppColors.cFF8792A3);
+        ? (isWhite ? AppColors.cFF3C3C3C : AppColors.white)
+        : (isWhite ? AppColors.cFF777777 : AppColors.cFFAFAFAF);
     final avatarSize = compact ? 52.0 : 62.0;
     final displayName = friend.name.trim().isEmpty
         ? friend.name
@@ -95,15 +92,15 @@ class OheyFriendUserBlock extends StatelessWidget {
         statusEnabled && inviteAvailable && !inviteSent && onInvite != null;
     final activeInviteButtonColor = inviteButtonColor ?? accent;
     final effectiveInviteButtonColor = inviteSent || !inviteAvailable
-        ? AppColors.cFF3C4652
+        ? AppColors.cFF37464F
         : activeInviteButtonColor;
     final inviteForeground = inviteSent
-        ? AppColors.cFFC3CAD3
+        ? AppColors.cFFCDCDCD
         : !inviteAvailable
-        ? AppColors.cFF9AA4B2
+        ? AppColors.cFFAFAFAF
         : statusEnabled
-        ? inviteForegroundColor ?? AppColors.cFF071320
-        : AppColors.cFF738092;
+        ? inviteForegroundColor ?? AppColors.cFF131F24
+        : AppColors.cFF1CB0F6;
     final inviteButtonLabel = inviteSent
         ? inviteSentLabel
         : invitePressed && invitePressedLabel != null
@@ -127,9 +124,6 @@ class OheyFriendUserBlock extends StatelessWidget {
         borderRadius: 20,
         borderWidth: statusEnabled ? 1 : 1.25,
         borderAlpha: borderAlpha,
-        glowAlpha: glowAlpha,
-        glowBlur: 24,
-        glowOffset: Offset.zero,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -195,9 +189,9 @@ class OheyFriendUserBlock extends StatelessWidget {
                   color: effectiveInviteButtonColor,
                   foregroundColor: inviteForeground,
                   shadowColor: inviteSent
-                      ? AppColors.cFF1A222C
+                      ? AppColors.cFF1A272D
                       : !inviteAvailable
-                      ? AppColors.cFF1A222C
+                      ? AppColors.cFF1A272D
                       : statusEnabled
                       ? inviteShadowColor ??
                             Color.lerp(
@@ -205,15 +199,13 @@ class OheyFriendUserBlock extends StatelessWidget {
                               AppColors.black,
                               .32,
                             )
-                      : AppColors.cFF111923,
+                      : AppColors.cFF131F24,
                   disabledColor: inviteSent
-                      ? AppColors.cFF3C4652
-                      : AppColors.cFF2B3441,
+                      ? AppColors.cFF37464F
+                      : AppColors.cFF2B3A41,
                   disabledOpacity: 1,
                   padding: inviteButtonPadding,
                   fontSize: 14,
-                  outerShadowAlpha: 0,
-                  innerShadowAlpha: 0,
                   borderColor: null,
                   burstOnTap: true,
                   burstIcon: inviteBurstIcon,
@@ -259,16 +251,9 @@ class _FriendBlockAvatarBubble extends StatelessWidget {
         border: Border.all(
           color: isWhite
               ? AppColors.white.withValues(alpha: .86)
-              : AppColors.cFF072130,
+              : AppColors.cFF131F24,
           width: 4,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: isWhite ? .10 : .24),
-            blurRadius: 14,
-            offset: const Offset(0, 7),
-          ),
-        ],
       ),
       child: ClipOval(
         child: Stack(
@@ -335,7 +320,7 @@ class _StatusPill extends StatelessWidget {
     child: Text(
       label,
       style: TextStyle(
-        color: enabled ? accent : AppColors.cFF738092,
+        color: enabled ? accent : AppColors.cFF1CB0F6,
         fontWeight: FontWeight.w900,
         fontSize: 13,
       ),
@@ -372,8 +357,8 @@ class _FavoriteStarButton extends StatelessWidget {
           child: Icon(
             isFavorite ? CupertinoIcons.star_fill : CupertinoIcons.star,
             color: isFavorite
-                ? AppColors.cFFFFC700
-                : (isWhite ? AppColors.cFF8C9CAB : AppColors.cFF8792A3),
+                ? AppColors.cFFFFC800
+                : (isWhite ? AppColors.cFF49C0F8 : AppColors.cFFAFAFAF),
             size: iconSize,
           ),
         ),

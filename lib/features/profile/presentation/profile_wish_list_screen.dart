@@ -106,11 +106,11 @@ class _ProfileWishListAddButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ink = Theme.of(context).brightness == Brightness.light
-        ? AppColors.cFF101820
+        ? AppColors.cFF3C3C3C
         : AppColors.white;
     return OheyManageAddTile(
       label: 'やりたいことを追加',
-      accent: AppColors.cFF20B9FF,
+      accent: AppColors.cFF1CB0F6,
       foregroundColor: ink,
       onTap: () {
         HapticFeedback.selectionClick();
@@ -145,20 +145,20 @@ class _ProfileWishListCard extends StatelessWidget {
       semanticLabel: '${wish.title}からゆるぼを作る',
       leading: const OheyPopIcon(
         icon: CupertinoIcons.sparkles,
-        color: AppColors.cFF20B9FF,
+        color: AppColors.cFF1CB0F6,
         size: 36,
         iconSize: 18,
       ),
       actions: [
         OheyManageListIconButton(
           icon: CupertinoIcons.pencil,
-          color: AppColors.cFF20B9FF,
+          color: AppColors.cFF1CB0F6,
           semanticLabel: '${wish.title}を編集',
           onTap: onEdit,
         ),
         OheyManageListIconButton(
           icon: CupertinoIcons.trash_fill,
-          color: AppColors.cFFFF6B9A,
+          color: AppColors.cFFFF86C8,
           semanticLabel: '${wish.title}を削除',
           onTap: onDelete,
         ),
@@ -248,11 +248,11 @@ class _ProfileYuruboListAddButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ink = Theme.of(context).brightness == Brightness.light
-        ? AppColors.cFF101820
+        ? AppColors.cFF3C3C3C
         : AppColors.white;
     return OheyManageAddTile(
       label: 'ゆるぼする',
-      accent: AppColors.cFFC08BFF,
+      accent: AppColors.cFFCE82FF,
       foregroundColor: ink,
       onTap: () {
         HapticFeedback.selectionClick();
@@ -285,20 +285,20 @@ class _ProfileYuruboListCard extends StatelessWidget {
       semanticLabel: '$titleを管理',
       leading: const OheyPopIcon(
         icon: CupertinoIcons.bubble_left_bubble_right_fill,
-        color: AppColors.cFFC08BFF,
+        color: AppColors.cFFCE82FF,
         size: 36,
         iconSize: 18,
       ),
       actions: [
         OheyManageListIconButton(
           icon: CupertinoIcons.pencil,
-          color: AppColors.cFF20B9FF,
+          color: AppColors.cFF1CB0F6,
           semanticLabel: '$titleを編集',
           onTap: onEdit,
         ),
         OheyManageListIconButton(
           icon: CupertinoIcons.trash_fill,
-          color: AppColors.cFFFF6B9A,
+          color: AppColors.cFFFF86C8,
           semanticLabel: '$titleを削除',
           onTap: onDelete,
         ),
@@ -336,9 +336,9 @@ class _ProfileYuruboDeleteConfirmSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final subtitleColor = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showBottomCloseButton: false,
@@ -350,7 +350,7 @@ class _ProfileYuruboDeleteConfirmSheet extends StatelessWidget {
           const Center(
             child: OheyPopIcon(
               icon: CupertinoIcons.trash_fill,
-              color: AppColors.cFFFF5F8F,
+              color: AppColors.cFFD9609F,
               size: 64,
               iconSize: 34,
             ),
@@ -390,7 +390,7 @@ class _ProfileYuruboDeleteConfirmSheet extends StatelessWidget {
               Expanded(
                 child: _ProfileModalTextButton(
                   label: '削除する',
-                  color: AppColors.cFFFF5F8F,
+                  color: AppColors.cFFD9609F,
                   onTap: () => Navigator.of(context).pop(true),
                 ),
               ),
@@ -406,7 +406,7 @@ class _ProfileModalTextButton extends StatelessWidget {
   const _ProfileModalTextButton({
     required this.label,
     required this.onTap,
-    this.color = AppColors.cFFC08BFF,
+    this.color = AppColors.cFFCE82FF,
   });
 
   final String label;
@@ -435,13 +435,6 @@ class _ProfileModalTextButton extends StatelessWidget {
                 ? color.withValues(alpha: .34)
                 : AppColors.white.withValues(alpha: .12),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: isWhite ? .10 : .16),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
         ),
         child: Text(
           label,
@@ -535,7 +528,7 @@ class _ProfileEditYuruboSheetState extends State<_ProfileEditYuruboSheet> {
   @override
   Widget build(BuildContext context) {
     final ink = Theme.of(context).brightness == Brightness.light
-        ? AppColors.cFF17212B
+        ? AppColors.cFF1A272D
         : AppColors.white;
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
@@ -587,9 +580,9 @@ class _ProfileEditYuruboSheetState extends State<_ProfileEditYuruboSheet> {
             onTap: _saving ? null : _submit,
             height: 50,
             radius: 22,
-            color: AppColors.cFFC08BFF,
-            foregroundColor: AppColors.cFF101820,
-            shadowColor: AppColors.cFF7F51C9,
+            color: AppColors.cFFCE82FF,
+            foregroundColor: AppColors.cFF3C3C3C,
+            shadowColor: AppColors.cFFA568CC,
           ),
         ],
       ),

@@ -71,7 +71,7 @@ class _FilterBar extends StatelessWidget {
             ],
             _FilterChip(
               label: '編集',
-              accent: AppColors.cFF5DEBD3,
+              accent: AppColors.cFF8BEBD3,
               selected: false,
               icon: CupertinoIcons.pencil,
               onTap: onManageCustom,
@@ -85,7 +85,7 @@ class _FilterBar extends StatelessWidget {
 }
 
 const _filters = [
-  _FriendFilter('みんな', _FriendFilterType.all, AppColors.cFFB8FF00),
+  _FriendFilter('みんな', _FriendFilterType.all, AppColors.cFF89E219),
 ];
 
 class _FriendFilter {

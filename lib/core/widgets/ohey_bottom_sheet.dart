@@ -70,7 +70,7 @@ class OheyBottomSheetShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final ink = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final maxHeight = maxHeightFactor == null
         ? null
         : MediaQuery.sizeOf(context).height * maxHeightFactor!;
@@ -195,12 +195,12 @@ class _OheyBottomSheetFooterButton extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isWhite
-                ? AppColors.cFFF2F4F6
+                ? AppColors.cFFF7F7F7
                 : AppColors.darkBackgroundBottom,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
               color: isWhite
-                  ? AppColors.cFFD7DEE7
+                  ? AppColors.cFFE5E5E5
                   : AppColors.white.withValues(alpha: .10),
             ),
             boxShadow: [
@@ -214,7 +214,7 @@ class _OheyBottomSheetFooterButton extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-              color: isWhite ? AppColors.cFF27313B : AppColors.cFFC08BFF,
+              color: isWhite ? AppColors.cFF2B3A41 : AppColors.cFFCE82FF,
               fontSize: 16,
               fontWeight: FontWeight.w900,
               letterSpacing: -.35,
@@ -238,7 +238,7 @@ class OheyBottomSheetHandle extends StatelessWidget {
         height: 5,
         decoration: BoxDecoration(
           color: isWhite
-              ? AppColors.cFFD7E0EA
+              ? AppColors.cFFE5E5E5
               : AppColors.white.withValues(alpha: .20),
           borderRadius: BorderRadius.circular(999),
         ),

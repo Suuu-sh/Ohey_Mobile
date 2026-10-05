@@ -13,7 +13,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.cFF22D7C5,
+        seedColor: AppColors.cFF3DDCB6,
         brightness: Brightness.dark,
       ),
       scaffoldBackgroundColor: AppColors.darkBackground,
@@ -27,7 +27,7 @@ class AppTheme {
       ),
       cupertinoOverrideTheme: const CupertinoThemeData(
         brightness: Brightness.dark,
-        primaryColor: AppColors.cFF22D7C5,
+        primaryColor: AppColors.cFF3DDCB6,
         scaffoldBackgroundColor: AppColors.darkBackground,
         textTheme: CupertinoTextThemeData(
           primaryColor: AppColors.white,
@@ -104,7 +104,7 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         elevation: 0,
-        backgroundColor: AppColors.cFF102331.withValues(alpha: .96),
+        backgroundColor: AppColors.cFF1A272D.withValues(alpha: .96),
         contentTextStyle: const TextStyle(
           color: AppColors.white,
           fontSize: 14,

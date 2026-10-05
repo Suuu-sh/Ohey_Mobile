@@ -48,7 +48,7 @@ class OheyFriend {
   Color get ringColor => switch (palette) {
     OheyFriendPalette.peach => AppColors.orange,
     OheyFriendPalette.sky => AppColors.blue,
-    OheyFriendPalette.lemon => AppColors.cFFE4A63D,
+    OheyFriendPalette.lemon => AppColors.cFFFFAB33,
     OheyFriendPalette.lavender => AppColors.lilac,
     OheyFriendPalette.mint => AppColors.green,
     OheyFriendPalette.blush => AppColors.coral,

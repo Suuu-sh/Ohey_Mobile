@@ -62,10 +62,9 @@ class _AccountChoiceOutlineButton extends StatelessWidget {
     onTap: onTap,
     height: height,
     radius: 18,
-    topColor: AppColors.cFF10242F.withValues(alpha: .98),
-    bottomColor: AppColors.cFF384B55,
-    borderColor: AppColors.white.withValues(alpha: .22),
-    glowColor: _authPink.withValues(alpha: .12),
+    topColor: AppColors.darkBackground,
+    bottomColor: AppColors.chunkyBorderDark,
+    borderColor: AppColors.chunkyBorderDark,
     child: Text(
       label,
       style: const TextStyle(
