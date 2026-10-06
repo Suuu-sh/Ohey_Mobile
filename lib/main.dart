@@ -406,18 +406,6 @@ class _StartupWordmark extends StatelessWidget {
       fontSize: 48,
       fontWeight: FontWeight.w900,
       letterSpacing: -1.2,
-      shadows: [
-        Shadow(
-          color: AppColors.c99131F24,
-          blurRadius: 20,
-          offset: Offset(0, 6),
-        ),
-        Shadow(
-          color: AppColors.c99D9609F,
-          blurRadius: 22,
-          offset: Offset(0, 0),
-        ),
-      ],
     );
 
     return Semantics(

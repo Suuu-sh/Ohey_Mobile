@@ -380,12 +380,6 @@ class _OheySleepMarks extends StatelessWidget {
             fontSize: 10,
             fontWeight: FontWeight.w900,
             letterSpacing: -.4,
-            shadows: [
-              Shadow(
-                color: AppColors.cFF1A272D.withValues(alpha: .55),
-                blurRadius: 6,
-              ),
-            ],
           ),
         ),
       ),
@@ -703,12 +697,6 @@ class _WalkingOheyPainter extends CustomPainter {
           color: AppColors.white.withValues(alpha: zOpacity),
           fontSize: 9,
           fontWeight: FontWeight.w900,
-          shadows: [
-            Shadow(
-              color: AppColors.cFF1A272D.withValues(alpha: .40),
-              blurRadius: 5,
-            ),
-          ],
         ),
       ),
       textDirection: TextDirection.ltr,

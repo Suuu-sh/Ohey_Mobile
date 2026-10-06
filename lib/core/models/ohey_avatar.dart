@@ -1,3 +1,5 @@
+import 'dart:ui' show Color;
+
 import 'dart:math';
 
 import 'package:ohey/core/theme/app_colors.dart';
@@ -117,21 +119,11 @@ class OheyAvatar {
 
   static const backgroundStyles = ['Ohey pink', 'おへとも・もも'];
 
-  static const backgroundGradients = [
-    [AppColors.cFFFF86C8, AppColors.cFFFFE5F3],
-    [AppColors.cFFFF86C8, AppColors.cFFFFE5F3],
-  ];
+  /// Flat profile band color for each background style.
+  static const backgroundColors = [AppColors.brandTint, AppColors.cFFFFF0D5];
 
-  static bool usesMascotBackdrop(int background) =>
-      imageBackdropAsset(background) != null;
-
-  static String? imageBackdropAsset(int background) => switch (background) {
-    mascotBackdropBackground =>
-      'assets/images/profile_mascot_backdrop_scene.png',
-    ohetomoMomoBackdropBackground =>
-      'assets/images/profile_ohetomo_momo_backdrop_scene.png',
-    _ => null,
-  };
+  static Color backgroundColor(int background) =>
+      backgroundColors[background % backgroundColors.length];
 
   static const skinColors = [
     AppColors.cFFFFF0D5,

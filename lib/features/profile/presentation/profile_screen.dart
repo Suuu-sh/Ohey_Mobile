@@ -23,6 +23,7 @@ import '../../../core/services/ohey_plus_service.dart';
 import '../../../core/config/ohey_ads_config.dart';
 import '../../../core/config/ohey_revenuecat_config.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/ohey_theme_mode.dart';
 import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_action_tile.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
@@ -84,13 +85,15 @@ class ProfileScreen extends ConsumerWidget {
     final friends =
         ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
     const headerIsWhite = true;
-    const bodyIsWhite = false;
+    final bodyIsWhite = ref.watch(oheyThemeModeProvider).isWhite;
     final isPlusActive = ref.watch(oheyPlusActiveProvider);
     final hasAdminAccess = ref
         .watch(adminAccessProvider)
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
     final canOpenAdmin = hasAdminAccess;
-    const bodyBackground = AppColors.darkBackgroundBottom;
+    final bodyBackground = bodyIsWhite
+        ? AppColors.white
+        : AppColors.darkBackgroundBottom;
     final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 318;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -138,9 +141,7 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 0),
                   Expanded(
                     child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(34),
-                      ),
+                      borderRadius: BorderRadius.zero,
                       child: ColoredBox(
                         color: bodyBackground,
                         child: Column(

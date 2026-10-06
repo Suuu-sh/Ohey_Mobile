@@ -330,68 +330,11 @@ class _AvatarBackgroundPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageBackdropAsset = OheyAvatar.imageBackdropAsset(avatar.background);
-    if (imageBackdropAsset != null) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          ExcludeSemantics(
-            child: Image.asset(
-              imageBackdropAsset,
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-          ),
-          Center(
-            child: OheyAvatarView(avatar: avatar, size: large ? 190 : 96),
-          ),
-        ],
-      );
-    }
-
-    final colors =
-        OheyAvatar.backgroundGradients[avatar.background %
-            OheyAvatar.backgroundGradients.length];
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: colors,
-            ),
-          ),
-        ),
-        Opacity(
-          opacity: avatar.background == OheyAvatar.dreamRoomBackground
-              ? .18
-              : .10,
-          child: ExcludeSemantics(
-            child: Image.asset(
-              'assets/images/profile_header_scene.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-          ),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppColors.white.withValues(alpha: .18),
-                AppColors.white.withValues(alpha: .36),
-              ],
-            ),
-          ),
-        ),
-        Center(
-          child: OheyAvatarView(avatar: avatar, size: large ? 190 : 96),
-        ),
-      ],
+    return ColoredBox(
+      color: OheyAvatar.backgroundColor(avatar.background),
+      child: Center(
+        child: OheyAvatarView(avatar: avatar, size: large ? 190 : 96),
+      ),
     );
   }
 }

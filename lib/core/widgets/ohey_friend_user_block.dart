@@ -279,18 +279,7 @@ class _FriendAvatarBubbleBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors =
-        OheyAvatar.backgroundGradients[avatar.background %
-            OheyAvatar.backgroundGradients.length];
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: colors,
-        ),
-      ),
-    );
+    return ColoredBox(color: OheyAvatar.backgroundColor(avatar.background));
   }
 }
 
