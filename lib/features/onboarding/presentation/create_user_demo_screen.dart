@@ -22,7 +22,7 @@ class _OheyDemoScreenState extends State<OheyDemoScreen> {
     final slides = _demoSlides;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: AppColors.white,
       body: Stack(
         children: [
           Positioned.fill(
@@ -42,7 +42,7 @@ class _OheyDemoScreenState extends State<OheyDemoScreen> {
                   onPressed: () => Navigator.of(context).pop(),
                   icon: const OheyGeneratedIcon(
                     CupertinoIcons.xmark,
-                    color: AppColors.white,
+                    color: AppColors.cFF3C3C3C,
                     size: 28,
                   ),
                 ),
@@ -86,8 +86,8 @@ class _OheyDemoScreenState extends State<OheyDemoScreen> {
                             icon: _page == slides.length - 1
                                 ? CupertinoIcons.checkmark
                                 : CupertinoIcons.arrow_right,
-                            color: AppColors.white,
-                            foregroundColor: AppColors.white,
+                            color: AppColors.cFF3C3C3C,
+                            foregroundColor: AppColors.cFF3C3C3C,
                             showBubble: false,
                             size: 30,
                             iconSize: 28,

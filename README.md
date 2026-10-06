@@ -65,7 +65,8 @@ starts signed in as a fixture user and answers every backend call from memory
 ./scripts/run_ui_preview.sh -d <simulator-id>
 ```
 
-The flag (`OHEY_UI_PREVIEW`) is ignored in release builds. Use the dev Render
+Prefix it with `OHEY_UI_PREVIEW_SIGNED_OUT=true` to start signed out and review
+the login/onboarding flow. The flags are ignored in release builds. Use the dev Render
 script above for anything that must hit the real API.
 
 Simulator builds must use Clerk dev, Neon dev, and the dev Render backend. Never

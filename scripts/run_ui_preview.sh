@@ -8,4 +8,7 @@ cd "$SCRIPT_DIR/.."
 # fixture user and every backend call is answered in memory
 # (lib/core/preview/). No Clerk account, backend, or network is needed, so it
 # is meant for reviewing screens in the Simulator, not for testing the API.
-exec flutter run --dart-define=OHEY_UI_PREVIEW=true "$@"
+# Set OHEY_UI_PREVIEW_SIGNED_OUT=true to start on the login/onboarding flow.
+exec flutter run --dart-define=OHEY_UI_PREVIEW=true \
+  --dart-define=OHEY_UI_PREVIEW_SIGNED_OUT="${OHEY_UI_PREVIEW_SIGNED_OUT:-false}" \
+  "$@"

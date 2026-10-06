@@ -48,9 +48,9 @@ enum _ClientTrustStep { none, code }
 
 enum _SocialAuthIntent { signup, login }
 
-const _authPink = AppColors.coral;
-const _authPinkShadow = AppColors.cFFD9609F;
-const _authPinkInk = AppColors.cFF131F24;
+const _authPink = AppColors.brand;
+const _authPinkShadow = AppColors.brandLip;
+const _authPinkInk = AppColors.white;
 const _loginMinPasswordLength = 6;
 const _signupMinPasswordLength = 8;
 const _emailPasswordRequirementMessage =
@@ -150,7 +150,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       canPop: false,
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-        backgroundColor: AppColors.darkBackground,
+        backgroundColor: AppColors.white,
         body: SafeArea(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 240),

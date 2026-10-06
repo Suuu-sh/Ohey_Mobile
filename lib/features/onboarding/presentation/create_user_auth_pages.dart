@@ -56,7 +56,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
               Text(
                 isEmailStep ? 'メールアドレスを入力して\nください' : 'パスワードを入力してください',
                 style: TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: compact ? 27 : 28,
                   fontWeight: FontWeight.w900,
                   height: 1.18,
@@ -158,7 +158,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                   '登録するとOheyの利用規約とプライバシー\nポリシーに同意したことになります。',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppColors.white.withValues(alpha: .82),
+                    color: AppColors.cFF777777,
                     fontSize: compact ? 13 : 14,
                     fontWeight: FontWeight.w800,
                     height: 1.45,
@@ -236,7 +236,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
               Text(
                 isEmailStep ? 'メールアドレスを入力して\nください' : 'パスワードを入力してください',
                 style: TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: compact ? 26 : 28,
                   fontWeight: FontWeight.w900,
                   height: 1.18,
@@ -336,7 +336,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                 'ログインするとOheyの利用規約とプライバシー\nポリシーに同意したことになります。',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .82),
+                  color: AppColors.cFF777777,
                   fontSize: compact ? 12 : 14,
                   fontWeight: FontWeight.w800,
                   height: 1.45,
@@ -373,7 +373,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
               Text(
                 'メールの確認コードを\n入力してください',
                 style: TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: compact ? 26 : 28,
                   fontWeight: FontWeight.w900,
                   height: 1.18,
@@ -384,7 +384,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
               Text(
                 '${_emailController.text.trim()} に届いた6桁のコードで、この端末からのログインを確認します。',
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .82),
+                  color: AppColors.cFF777777,
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   height: 1.45,
@@ -427,7 +427,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                 'コードが届かない場合は、戻ってもう一度ログインしてください。',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .72),
+                  color: AppColors.cFF777777,
                   fontSize: compact ? 12 : 13,
                   fontWeight: FontWeight.w800,
                   height: 1.45,
@@ -478,7 +478,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
               Text(
                 'パスワードを再設定します',
                 style: TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: compact ? 26 : 28,
                   fontWeight: FontWeight.w900,
                   height: 1.18,
@@ -489,7 +489,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
               Text(
                 '${_emailController.text.trim()} に届いたコードと新しいパスワードを入力してね。',
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .82),
+                  color: AppColors.cFF777777,
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   height: 1.45,
@@ -617,7 +617,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
               Text(
                 '再ログイン',
                 style: TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: compact ? 28 : 32,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.8,
@@ -653,7 +653,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                   child: Text(
                     'アカウント管理',
                     style: TextStyle(
-                      color: AppColors.white.withValues(alpha: .42),
+                      color: AppColors.cFFAFAFAF,
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
                     ),

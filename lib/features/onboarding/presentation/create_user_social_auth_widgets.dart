@@ -18,9 +18,9 @@ class _SocialLoginButton extends StatelessWidget {
     onTap: onTap,
     height: height,
     radius: 18,
-    topColor: AppColors.darkBackground,
-    bottomColor: AppColors.chunkyBorderDark,
-    borderColor: AppColors.chunkyBorderDark,
+    topColor: AppColors.white,
+    bottomColor: AppColors.chunkyBorderLight,
+    borderColor: AppColors.chunkyBorderLight,
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -29,7 +29,7 @@ class _SocialLoginButton extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: AppColors.white,
+            color: AppColors.cFF3C3C3C,
             fontSize: 16,
             fontWeight: FontWeight.w900,
             letterSpacing: .6,
@@ -130,5 +130,5 @@ class _AppleMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      const Icon(Icons.apple, color: AppColors.white, size: 35);
+      const Icon(Icons.apple, color: AppColors.cFF3C3C3C, size: 35);
 }

@@ -57,7 +57,7 @@ class _DemoSlide extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.cFF1A272D, AppColors.darkBackground],
+          colors: [AppColors.brandTint, AppColors.white],
         ),
       ),
       child: SafeArea(
@@ -73,7 +73,7 @@ class _DemoSlide extends StatelessWidget {
                 slide.title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: 31,
                   height: 1.06,
                   fontWeight: FontWeight.w900,
@@ -85,7 +85,7 @@ class _DemoSlide extends StatelessWidget {
                 slide.subtitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .68),
+                  color: AppColors.cFF777777,
                   fontSize: 14,
                   height: 1.35,
                   fontWeight: FontWeight.w800,
@@ -137,12 +137,9 @@ class _DemoPhoneStage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cFF131F24,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(38),
-        border: Border.all(
-          color: AppColors.white.withValues(alpha: .10),
-          width: 2,
-        ),
+        border: Border.all(color: AppColors.cFFE5E5E5, width: 2),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(36),
@@ -156,7 +153,7 @@ class _DemoPhoneStage extends StatelessWidget {
                     radius: 1.2,
                     colors: [
                       AppColors.cFFCE82FF.withValues(alpha: .16),
-                      AppColors.darkBackground,
+                      AppColors.white,
                     ],
                   ),
                 ),
@@ -288,7 +285,7 @@ class _DemoNotifyStep extends StatelessWidget {
       const _DemoMiniHeader(title: '通知', subtitle: '未返信はアプリ起動時に表示'),
       const SizedBox(height: 18),
       OheyThemedPanel(
-        backgroundColor: AppColors.darkBackgroundBottom,
+        backgroundColor: AppColors.white,
         borderRadius: 24,
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
         child: Column(
@@ -307,7 +304,7 @@ class _DemoNotifyStep extends StatelessWidget {
                   child: Text(
                     '参加申請・参加者',
                     style: TextStyle(
-                      color: AppColors.white,
+                      color: AppColors.cFF3C3C3C,
                       fontSize: 19,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -.5,
@@ -355,7 +352,7 @@ class _DemoMiniHeader extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                color: AppColors.white,
+                color: AppColors.cFF3C3C3C,
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.6,
@@ -367,7 +364,7 @@ class _DemoMiniHeader extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: AppColors.white.withValues(alpha: .58),
+                color: AppColors.cFF777777,
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
               ),
@@ -396,7 +393,7 @@ class _DemoYuruboCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => OheyThemedPanel(
-    backgroundColor: AppColors.darkBackgroundBottom,
+    backgroundColor: AppColors.white,
     borderRadius: 24,
     padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
     child: Row(
@@ -417,7 +414,7 @@ class _DemoYuruboCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .84),
+                  color: AppColors.cFF777777,
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
@@ -428,7 +425,7 @@ class _DemoYuruboCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.4,
@@ -440,7 +437,7 @@ class _DemoYuruboCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .54),
+                  color: AppColors.cFF777777,
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
                 ),
@@ -500,7 +497,7 @@ class _DemoCallout extends StatelessWidget {
               Text(
                 title,
                 style: const TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
                 ),
@@ -509,7 +506,7 @@ class _DemoCallout extends StatelessWidget {
               Text(
                 body,
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .62),
+                  color: AppColors.cFF777777,
                   fontSize: 12,
                   height: 1.25,
                   fontWeight: FontWeight.w800,
@@ -533,9 +530,9 @@ class _DemoInput extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
     decoration: BoxDecoration(
-      color: AppColors.white.withValues(alpha: .06),
+      color: AppColors.cFFF7F7F7,
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: AppColors.white.withValues(alpha: .10)),
+      border: Border.all(color: AppColors.cFFE5E5E5),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -543,7 +540,7 @@ class _DemoInput extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: AppColors.white.withValues(alpha: .48),
+            color: AppColors.cFFAFAFAF,
             fontSize: 11,
             fontWeight: FontWeight.w900,
           ),
@@ -552,7 +549,7 @@ class _DemoInput extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            color: AppColors.white,
+            color: AppColors.cFF3C3C3C,
             fontSize: 17,
             fontWeight: FontWeight.w900,
           ),
@@ -591,7 +588,7 @@ class _DemoRequestRow extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
                 ),
@@ -645,7 +642,7 @@ class _DemoDots extends StatelessWidget {
           decoration: BoxDecoration(
             color: i == selectedIndex
                 ? AppColors.cFFCE82FF
-                : AppColors.white.withValues(alpha: .22),
+                : AppColors.cFFAFAFAF,
             borderRadius: BorderRadius.circular(99),
           ),
         ),

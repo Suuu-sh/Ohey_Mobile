@@ -32,7 +32,7 @@ extension _CreateUserAccountChoicePage on _CreateUserDialogState {
                 'まずはアカウントを作って\n今日を1枚残そう',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: compact ? 24 : 27,
                   fontWeight: FontWeight.w900,
                   height: 1.2,
@@ -46,17 +46,13 @@ extension _CreateUserAccountChoicePage on _CreateUserDialogState {
                 onTap: _showLoginForm,
               ),
               SizedBox(height: compact ? 30 : 54),
-              Divider(
-                height: 1,
-                thickness: 2,
-                color: AppColors.white.withValues(alpha: .18),
-              ),
+              Divider(height: 1, thickness: 2, color: AppColors.cFFE5E5E5),
               SizedBox(height: compact ? 30 : 54),
               Text(
                 '30秒で始められます',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: compact ? 23 : 25,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.6,

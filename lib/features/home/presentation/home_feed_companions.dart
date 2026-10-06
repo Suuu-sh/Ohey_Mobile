@@ -487,8 +487,8 @@ class _FeedCompanionProfileSheetState
       body: relationshipAsync.when(
         loading: () => const Center(child: CupertinoActivityIndicator()),
         error: (_, _) => _FeedCompanionRequestCard(
-          isWhite: false,
-          subtitleColor: AppColors.white.withValues(alpha: .58),
+          isWhite: Theme.of(context).brightness == Brightness.light,
+          subtitleColor: OheyTone.of(context).muted,
           message: 'プロフィール情報を確認できませんでした。',
           buttonLabel: '閉じる',
           onTap: () => Navigator.of(context).pop(),
@@ -500,8 +500,8 @@ class _FeedCompanionProfileSheetState
               child: SizedBox(
                 width: double.infinity,
                 child: _FeedCompanionRequestCard(
-                  isWhite: false,
-                  subtitleColor: AppColors.white.withValues(alpha: .58),
+                  isWhite: Theme.of(context).brightness == Brightness.light,
+                  subtitleColor: OheyTone.of(context).muted,
                   message: _requestError ?? 'フレンズになるとカレンダーを見られます。',
                   buttonLabel: switch (relationship.requestState) {
                     OheyFriendRequestState.outgoing => '申請済み',
@@ -526,9 +526,9 @@ class _FeedCompanionProfileSheetState
               height: 92,
               child: _FeedCompanionStatusCard(
                 friend: friend,
-                isWhite: false,
-                titleColor: AppColors.white,
-                subtitleColor: AppColors.white.withValues(alpha: .58),
+                isWhite: Theme.of(context).brightness == Brightness.light,
+                titleColor: OheyTone.of(context).ink,
+                subtitleColor: OheyTone.of(context).muted,
                 statusColor: statusColor,
               ),
             ),

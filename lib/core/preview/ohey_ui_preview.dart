@@ -14,6 +14,12 @@ import 'ohey_preview_backend.dart';
 const oheyUiPreviewEnabled =
     !kReleaseMode && bool.fromEnvironment('OHEY_UI_PREVIEW');
 
+/// With `--dart-define=OHEY_UI_PREVIEW_SIGNED_OUT=true` the preview starts
+/// signed out, so the login and onboarding screens can be reviewed.
+const oheyUiPreviewSignedOut = bool.fromEnvironment(
+  'OHEY_UI_PREVIEW_SIGNED_OUT',
+);
+
 /// Provider overrides that swap auth and the backend for preview fakes.
 List<Override> oheyUiPreviewOverrides() => [
   clerkAuthServiceProvider.overrideWith((ref) {
@@ -28,7 +34,8 @@ List<Override> oheyUiPreviewOverrides() => [
   }),
 ];
 
-/// Always-signed-in auth session for [oheyUiPreviewEnabled].
+/// Fixture auth session for [oheyUiPreviewEnabled]: signed in as the fixture
+/// user, or signed out when [oheyUiPreviewSignedOut] is set.
 class OheyPreviewAuthService extends ClerkAuthService {
   @override
   bool get isEnabled => true;
@@ -37,16 +44,16 @@ class OheyPreviewAuthService extends ClerkAuthService {
   bool get isInitialized => true;
 
   @override
-  bool get isSignedIn => true;
+  bool get isSignedIn => !oheyUiPreviewSignedOut;
 
   @override
-  String? get currentUserId => OheyPreviewFixtures.meId;
+  String? get currentUserId => isSignedIn ? OheyPreviewFixtures.meId : null;
 
   @override
-  String? get currentUserEmail => 'preview@ohey.invalid';
+  String? get currentUserEmail => isSignedIn ? 'preview@ohey.invalid' : null;
 
   @override
-  String? get currentAccessToken => 'ohey-ui-preview';
+  String? get currentAccessToken => isSignedIn ? 'ohey-ui-preview' : null;
 
   @override
   Future<String?> currentAccessTokenOrRefresh() async => currentAccessToken;

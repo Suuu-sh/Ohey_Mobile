@@ -273,7 +273,7 @@ class _FriendQrDialogState extends ConsumerState<_FriendQrDialog> {
                   userId: myUserId,
                   payload: qrPayload,
                   avatar: user?.avatar ?? OheyAvatar.defaultAvatar,
-                  isWhite: false,
+                  isWhite: Theme.of(context).brightness == Brightness.light,
                   onClose: () => Navigator.of(context).pop(),
                   onCopyId: () => _copyMyId(context, myUserId),
                   onCopyLink: qrPayload == null

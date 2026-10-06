@@ -1111,7 +1111,8 @@ class _YuruboParticipationRequestSheetState
                       padding: const EdgeInsets.only(top: 4),
                       child: _SheetInlineError(
                         message: _errorMessage!,
-                        isWhite: false,
+                        isWhite:
+                            Theme.of(context).brightness == Brightness.light,
                       ),
                     ),
             ),
@@ -1363,7 +1364,9 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                           padding: const EdgeInsets.only(top: 14),
                           child: _SheetInlineError(
                             message: _errorMessage!,
-                            isWhite: false,
+                            isWhite:
+                                Theme.of(context).brightness ==
+                                Brightness.light,
                           ),
                         ),
                 ),

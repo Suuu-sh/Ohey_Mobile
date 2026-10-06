@@ -13,15 +13,15 @@ class _SignupProgressHeader extends StatelessWidget {
         width: 62,
         height: 62,
         decoration: BoxDecoration(
-          color: AppColors.cFF131F24,
+          color: AppColors.white,
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.white.withValues(alpha: .08)),
+          border: Border.all(color: AppColors.cFFE5E5E5, width: 2),
         ),
         child: IconButton(
           onPressed: onBack,
           icon: Icon(
             CupertinoIcons.arrow_left,
-            color: AppColors.white.withValues(alpha: .76),
+            color: AppColors.cFF777777,
             size: 31,
           ),
         ),
@@ -32,7 +32,7 @@ class _SignupProgressHeader extends StatelessWidget {
           borderRadius: BorderRadius.circular(99),
           child: Container(
             height: 22,
-            color: AppColors.white.withValues(alpha: .18),
+            color: AppColors.cFFE5E5E5,
             child: Align(
               alignment: Alignment.centerLeft,
               child: FractionallySizedBox(
@@ -62,12 +62,9 @@ class _SignupInputBox extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
-      color: AppColors.cFF1A272D.withValues(alpha: .74),
+      color: AppColors.cFFF7F7F7,
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(
-        color: AppColors.white.withValues(alpha: .18),
-        width: 2,
-      ),
+      border: Border.all(color: AppColors.cFFE5E5E5, width: 2),
     ),
     child: child,
   );

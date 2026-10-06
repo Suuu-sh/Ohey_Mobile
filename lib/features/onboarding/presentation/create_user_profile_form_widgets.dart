@@ -27,14 +27,14 @@ class _SignupProfileTextField extends StatelessWidget {
     child: Row(
       children: [
         const SizedBox(width: 20),
-        OheyGeneratedIcon(icon, color: AppColors.white.withValues(alpha: .82)),
+        OheyGeneratedIcon(icon, color: AppColors.cFF777777),
         const SizedBox(width: 14),
         Expanded(
           child: TextField(
             controller: controller,
             enabled: enabled,
             style: const TextStyle(
-              color: AppColors.white,
+              color: AppColors.cFF3C3C3C,
               fontSize: 18,
               fontWeight: FontWeight.w900,
             ),
@@ -51,7 +51,7 @@ class _SignupProfileTextField extends StatelessWidget {
               disabledBorder: InputBorder.none,
               hintText: hintText,
               hintStyle: TextStyle(
-                color: AppColors.white.withValues(alpha: .34),
+                color: AppColors.cFFAFAFAF,
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),

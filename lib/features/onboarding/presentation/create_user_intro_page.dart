@@ -46,8 +46,8 @@ extension _CreateUserIntroPage on _CreateUserDialogState {
                       icon: _demoPage == slides.length - 1
                           ? CupertinoIcons.camera_fill
                           : CupertinoIcons.arrow_right,
-                      color: AppColors.white,
-                      foregroundColor: AppColors.white,
+                      color: AppColors.cFF3C3C3C,
+                      foregroundColor: AppColors.cFF3C3C3C,
                       showBubble: false,
                       size: 30,
                       iconSize: 28,
