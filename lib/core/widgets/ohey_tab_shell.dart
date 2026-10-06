@@ -596,36 +596,32 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
               child: Row(
                 children: [
                   _TabItem(
-                    icon: CupertinoIcons.house,
-                    selectedIcon: CupertinoIcons.house_fill,
+                    customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
                     label: 'ゆるぼ',
                     selected: _selectedIndex == 0,
-                    activeColor: AppColors.brand,
+                    activeColor: AppColors.cFFCE82FF,
                     onTap: () => _selectTab(0),
                   ),
                   _TabItem(
-                    icon: CupertinoIcons.person_2,
-                    selectedIcon: CupertinoIcons.person_2_fill,
+                    customIcon: _FriendsTabIcon(selected: _selectedIndex == 1),
                     label: 'フレンズ',
                     selected: _selectedIndex == 1,
-                    activeColor: AppColors.brand,
+                    activeColor: AppColors.cFF89E219,
                     badgeCount: incomingFriendRequestCount,
                     onTap: () => _selectTab(1),
                   ),
                   _TabItem(
-                    icon: CupertinoIcons.calendar,
-                    selectedIcon: CupertinoIcons.calendar_today,
+                    customIcon: _CalendarTabIcon(selected: _selectedIndex == 2),
                     label: 'カレンダー',
                     selected: _selectedIndex == 2,
-                    activeColor: AppColors.brand,
+                    activeColor: AppColors.cFF1CB0F6,
                     onTap: () => _selectTab(2),
                   ),
                   _TabItem(
-                    icon: CupertinoIcons.person_crop_circle,
-                    selectedIcon: CupertinoIcons.person_crop_circle_fill,
+                    customIcon: _ProfileTabIcon(selected: _selectedIndex == 3),
                     label: 'マイページ',
                     selected: _selectedIndex == 3,
-                    activeColor: AppColors.brand,
+                    activeColor: AppColors.cFFFF86C8,
                     onTap: () => _selectTab(3),
                   ),
                 ],
@@ -1500,8 +1496,7 @@ class _InviteCelebrationPainter extends CustomPainter {
 
 class _TabItem extends StatelessWidget {
   const _TabItem({
-    required this.icon,
-    required this.selectedIcon,
+    this.customIcon,
     required this.label,
     required this.selected,
     required this.activeColor,
@@ -1509,8 +1504,7 @@ class _TabItem extends StatelessWidget {
     this.badgeCount = 0,
   });
 
-  final IconData icon;
-  final IconData selectedIcon;
+  final Widget? customIcon;
   final String label;
   final bool selected;
   final Color activeColor;
@@ -1547,7 +1541,7 @@ class _TabItem extends StatelessWidget {
                         isWhite: isWhite,
                         child: IconTheme(
                           data: IconThemeData(color: labelColor),
-                          child: Icon(selected ? selectedIcon : icon, size: 28),
+                          child: customIcon ?? const SizedBox.shrink(),
                         ),
                       ),
                       if (hasBadge)
@@ -1658,4 +1652,427 @@ class _TabBadge extends StatelessWidget {
       ),
     );
   }
+}
+
+class _PopTabIcon extends StatelessWidget {
+  const _PopTabIcon({required this.selected, required this.painter});
+
+  final bool selected;
+  final CustomPainter painter;
+
+  @override
+  Widget build(BuildContext context) => AnimatedScale(
+    duration: const Duration(milliseconds: 180),
+    scale: selected ? 1 : .92,
+    child: CustomPaint(size: const Size(48, 42), painter: painter),
+  );
+}
+
+class _FeedTabIcon extends StatelessWidget {
+  const _FeedTabIcon({required this.selected});
+  final bool selected;
+  @override
+  Widget build(BuildContext context) => _PopTabIcon(
+    selected: selected,
+    painter: _FeedPainter(active: selected),
+  );
+}
+
+class _FriendsTabIcon extends StatelessWidget {
+  const _FriendsTabIcon({required this.selected});
+  final bool selected;
+  @override
+  Widget build(BuildContext context) => _PopTabIcon(
+    selected: selected,
+    painter: _FriendsPainter(active: selected),
+  );
+}
+
+class _CalendarTabIcon extends StatelessWidget {
+  const _CalendarTabIcon({required this.selected});
+  final bool selected;
+  @override
+  Widget build(BuildContext context) => _PopTabIcon(
+    selected: selected,
+    painter: _CalendarPainter(active: selected),
+  );
+}
+
+class _FeedPainter extends CustomPainter {
+  const _FeedPainter({required this.active});
+  final bool active;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final roof = Path()
+      ..moveTo(size.width * .14, size.height * .48)
+      ..lineTo(size.width * .50, size.height * .16)
+      ..lineTo(size.width * .86, size.height * .48)
+      ..quadraticBezierTo(
+        size.width * .91,
+        size.height * .54,
+        size.width * .84,
+        size.height * .58,
+      )
+      ..lineTo(size.width * .78, size.height * .58)
+      ..lineTo(size.width * .78, size.height * .82)
+      ..quadraticBezierTo(
+        size.width * .78,
+        size.height * .90,
+        size.width * .70,
+        size.height * .90,
+      )
+      ..lineTo(size.width * .30, size.height * .90)
+      ..quadraticBezierTo(
+        size.width * .22,
+        size.height * .90,
+        size.width * .22,
+        size.height * .82,
+      )
+      ..lineTo(size.width * .22, size.height * .58)
+      ..lineTo(size.width * .16, size.height * .58)
+      ..quadraticBezierTo(
+        size.width * .09,
+        size.height * .54,
+        size.width * .14,
+        size.height * .48,
+      )
+      ..close();
+    final baseColor = active ? AppColors.cFFCE82FF : AppColors.cFFAFAFAF;
+    canvas.drawShadow(
+      roof,
+      baseColor.withValues(alpha: active ? .55 : .18),
+      active ? 10 : 4,
+      true,
+    );
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: active
+            ? const [AppColors.cFFD99CFF, AppColors.cFFA568CC]
+            : const [AppColors.cFFAFAFAF, AppColors.cFF777777],
+      ).createShader(Offset.zero & size);
+    canvas.drawPath(roof, paint);
+    final door = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        size.width * .43,
+        size.height * .63,
+        size.width * .16,
+        size.height * .27,
+      ),
+      const Radius.circular(6),
+    );
+    canvas.drawRRect(
+      door,
+      Paint()..color = active ? AppColors.cFF89E219 : AppColors.cFFAFAFAF,
+    );
+    final dotPaint = Paint()
+      ..color = active ? AppColors.cFF89E219 : AppColors.cFFE5E5E5;
+    for (final offset in [
+      const Offset(.44, .43),
+      const Offset(.56, .43),
+      const Offset(.44, .54),
+      const Offset(.56, .54),
+    ]) {
+      canvas.drawCircle(
+        Offset(size.width * offset.dx, size.height * offset.dy),
+        2.2,
+        dotPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _FeedPainter oldDelegate) =>
+      oldDelegate.active != active;
+}
+
+class _FriendsPainter extends CustomPainter {
+  const _FriendsPainter({required this.active});
+  final bool active;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final colors = active
+        ? const [AppColors.cFF89E219, AppColors.cFF89E219]
+        : const [AppColors.cFFAFAFAF, AppColors.cFF777777];
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: colors,
+      ).createShader(Offset.zero & size);
+    void person(Offset center, double scale) {
+      canvas.drawCircle(
+        Offset(center.dx, center.dy - 9 * scale),
+        9 * scale,
+        paint,
+      );
+      final body = RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: Offset(center.dx, center.dy + 8 * scale),
+          width: 24 * scale,
+          height: 24 * scale,
+        ),
+        Radius.circular(12 * scale),
+      );
+      canvas.drawRRect(body, paint);
+      final eye = Paint()
+        ..color = AppColors.white.withValues(alpha: active ? .95 : .75);
+      canvas.drawCircle(
+        Offset(center.dx - 3 * scale, center.dy - 10 * scale),
+        1.8 * scale,
+        eye,
+      );
+      canvas.drawCircle(
+        Offset(center.dx + 3 * scale, center.dy - 10 * scale),
+        1.8 * scale,
+        eye,
+      );
+    }
+
+    person(Offset(size.width * .38, size.height * .52), 1.05);
+    person(Offset(size.width * .64, size.height * .58), .78);
+    if (active) {
+      final spark = Paint()..color = AppColors.cFF89E219;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(size.width * .78, 2, 5, 14),
+          const Radius.circular(3),
+        ),
+        spark,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(size.width * .90, 8, 4, 12),
+          const Radius.circular(3),
+        ),
+        spark,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _FriendsPainter oldDelegate) =>
+      oldDelegate.active != active;
+}
+
+class _CalendarPainter extends CustomPainter {
+  const _CalendarPainter({required this.active});
+  final bool active;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final colors = active
+        ? const [AppColors.cFF49C0F8, AppColors.cFF1899D6]
+        : const [AppColors.cFFAFAFAF, AppColors.cFF1CB0F6];
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(6, 8, size.width - 12, size.height - 10),
+      const Radius.circular(12),
+    );
+    canvas.drawShadow(
+      Path()..addRRect(rect),
+      colors.last.withValues(alpha: active ? .40 : .15),
+      active ? 10 : 4,
+      true,
+    );
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: colors,
+      ).createShader(Offset.zero & size);
+    canvas.drawRRect(rect, paint);
+    final cutout = RRect.fromRectAndRadius(
+      Rect.fromLTWH(13, 18, size.width - 26, size.height - 24),
+      const Radius.circular(7),
+    );
+    canvas.drawRRect(
+      cutout,
+      Paint()..color = AppColors.cFF131F24.withValues(alpha: .88),
+    );
+    final tabPaint = Paint()..color = colors.first;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(15, 2, 6, 13),
+        const Radius.circular(3),
+      ),
+      tabPaint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.width - 21, 2, 6, 13),
+        const Radius.circular(3),
+      ),
+      tabPaint,
+    );
+    final dotPaint = Paint()
+      ..color = active ? AppColors.cFF49C0F8 : AppColors.cFFAFAFAF;
+    for (final y in [25.0, 33.0]) {
+      for (final x in [19.0, 28.0, 37.0]) {
+        canvas.drawCircle(Offset(x, y), 2.4, dotPaint);
+      }
+    }
+    if (active) {
+      final spark = Paint()..color = AppColors.cFF49C0F8;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(size.width - 6, 0, 6, 14),
+          const Radius.circular(4),
+        ),
+        spark,
+      );
+      canvas.drawCircle(Offset(size.width - 2, 21), 3, spark);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CalendarPainter oldDelegate) =>
+      oldDelegate.active != active;
+}
+
+class _ProfileTabIcon extends StatelessWidget {
+  const _ProfileTabIcon({required this.selected});
+  final bool selected;
+  @override
+  Widget build(BuildContext context) => _PopTabIcon(
+    selected: selected,
+    painter: _ProfilePainter(active: selected),
+  );
+}
+
+class _ProfilePainter extends CustomPainter {
+  const _ProfilePainter({required this.active});
+  final bool active;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final colors = active
+        ? const [AppColors.cFFFF86C8, AppColors.cFFD9609F]
+        : const [AppColors.cFFAFAFAF, AppColors.cFF777777];
+    final bodyPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: colors,
+      ).createShader(Offset.zero & size);
+
+    final blob = Path()
+      ..moveTo(size.width * .23, size.height * .78)
+      ..cubicTo(
+        size.width * .14,
+        size.height * .48,
+        size.width * .24,
+        size.height * .24,
+        size.width * .50,
+        size.height * .22,
+      )
+      ..cubicTo(
+        size.width * .78,
+        size.height * .20,
+        size.width * .91,
+        size.height * .44,
+        size.width * .82,
+        size.height * .76,
+      )
+      ..quadraticBezierTo(
+        size.width * .52,
+        size.height * .92,
+        size.width * .23,
+        size.height * .78,
+      )
+      ..close();
+    canvas.drawShadow(
+      blob,
+      colors.last.withValues(alpha: active ? .42 : .16),
+      active ? 10 : 4,
+      true,
+    );
+    canvas.drawPath(blob, bodyPaint);
+
+    final capPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: active
+            ? const [AppColors.cFFA5ED6E, AppColors.cFF89E219]
+            : const [AppColors.cFFCDCDCD, AppColors.cFF777777],
+      ).createShader(Offset.zero & size);
+    final cap = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        size.width * .48,
+        size.height * .05,
+        size.width * .26,
+        size.height * .18,
+      ),
+      const Radius.circular(9),
+    );
+    canvas.drawRRect(cap, capPaint);
+
+    final eyePaint = Paint()
+      ..color = AppColors.cFF2B3A41.withValues(alpha: active ? .95 : .75);
+    final eyeHighlight = Paint()
+      ..color = AppColors.white.withValues(alpha: .92);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * .40, size.height * .48),
+        width: 9,
+        height: 13,
+      ),
+      eyePaint,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * .63, size.height * .48),
+        width: 9,
+        height: 13,
+      ),
+      eyePaint,
+    );
+    canvas.drawCircle(
+      Offset(size.width * .38, size.height * .45),
+      1.8,
+      eyeHighlight,
+    );
+    canvas.drawCircle(
+      Offset(size.width * .61, size.height * .45),
+      1.8,
+      eyeHighlight,
+    );
+
+    final smilePaint = Paint()
+      ..color = AppColors.cFF2B3A41.withValues(alpha: active ? .72 : .55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+    final smile = Path()
+      ..moveTo(size.width * .43, size.height * .64)
+      ..quadraticBezierTo(
+        size.width * .52,
+        size.height * .70,
+        size.width * .61,
+        size.height * .64,
+      );
+    canvas.drawPath(smile, smilePaint);
+
+    if (active) {
+      final sparkle = Paint()..color = AppColors.cFFFF86C8;
+      final star = Path()
+        ..moveTo(size.width * .90, size.height * .27)
+        ..lineTo(size.width * .94, size.height * .35)
+        ..lineTo(size.width * 1.02, size.height * .39)
+        ..lineTo(size.width * .94, size.height * .43)
+        ..lineTo(size.width * .90, size.height * .51)
+        ..lineTo(size.width * .86, size.height * .43)
+        ..lineTo(size.width * .78, size.height * .39)
+        ..lineTo(size.width * .86, size.height * .35)
+        ..close();
+      canvas.drawPath(star, sparkle);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ProfilePainter oldDelegate) =>
+      oldDelegate.active != active;
 }
