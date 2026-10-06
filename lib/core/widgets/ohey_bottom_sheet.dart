@@ -236,5 +236,44 @@ class OheyCloseButton extends StatelessWidget {
   final String semanticLabel;
 
   @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final isEnabled = enabled && onTap != null;
+    final foreground =
+        iconColor ?? (isWhite ? AppColors.cFF3C3C3C : AppColors.white);
+    return Semantics(
+      button: true,
+      enabled: isEnabled,
+      label: semanticLabel,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: isEnabled ? onTap : null,
+        child: Container(
+          width: size,
+          height: size,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color:
+                backgroundColor ??
+                (isWhite
+                    ? AppColors.black.withValues(alpha: .05)
+                    : AppColors.white.withValues(alpha: .08)),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color:
+                  borderColor ??
+                  (isWhite
+                      ? AppColors.black.withValues(alpha: .08)
+                      : AppColors.white.withValues(alpha: .10)),
+            ),
+          ),
+          child: Icon(
+            Icons.close,
+            size: iconSize,
+            color: isEnabled ? foreground : foreground.withValues(alpha: .4),
+          ),
+        ),
+      ),
+    );
+  }
 }

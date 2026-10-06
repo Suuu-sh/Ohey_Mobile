@@ -114,7 +114,7 @@ class _SettingsSheetShell extends StatelessWidget {
                   ),
                 ),
               ),
-              _SettingsCloseButton(onTap: onClose, color: ink),
+              OheyCloseButton(onTap: onClose, iconColor: ink),
             ],
           ),
           const SizedBox(height: 14),
@@ -123,16 +123,6 @@ class _SettingsSheetShell extends StatelessWidget {
       ),
     );
   }
-}
-
-class _SettingsCloseButton extends StatelessWidget {
-  const _SettingsCloseButton({required this.onTap, required this.color});
-
-  final VoidCallback onTap;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
 }
 
 class _SettingsTile extends StatelessWidget {
