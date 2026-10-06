@@ -432,14 +432,13 @@ class _NotificationSectionEmptyNote extends StatelessWidget {
     margin: const EdgeInsets.only(bottom: 12),
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: isWhite
-          ? AppColors.cFFF7F7F7
-          : AppColors.white.withValues(alpha: .045),
-      borderRadius: BorderRadius.circular(22),
+      color: isWhite ? AppColors.cFFF7F7F7 : AppColors.darkBackground,
+      borderRadius: BorderRadius.circular(20),
       border: Border.all(
         color: isWhite
-            ? AppColors.cFFE5E5E5
-            : AppColors.white.withValues(alpha: .08),
+            ? AppColors.chunkyBorderLight
+            : AppColors.chunkyBorderDark,
+        width: 2,
       ),
     ),
     child: Text(
@@ -511,10 +510,10 @@ class _NotificationTile extends StatelessWidget {
         ? _FeedColors.card.withValues(alpha: .86)
         : _FeedColors.card.withValues(alpha: .52);
     final cardBorderColor = priority
-        ? notification.accent.withValues(alpha: isWhite ? .36 : .30)
+        ? notification.accent
         : isWhite
-        ? AppColors.cFFE5E5E5
-        : AppColors.white.withValues(alpha: .11);
+        ? AppColors.chunkyBorderLight
+        : AppColors.chunkyBorderDark;
     final messageColor = isWhite
         ? AppColors.cFF1899D6
         : AppColors.white.withValues(alpha: .64);
@@ -526,7 +525,12 @@ class _NotificationTile extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: _feedCardDecoration(radius: 22).copyWith(
         color: cardColor,
-        border: Border.all(color: cardBorderColor, width: priority ? 1.5 : 1.2),
+        border: Border(
+          top: BorderSide(color: cardBorderColor, width: 2),
+          left: BorderSide(color: cardBorderColor, width: 2),
+          right: BorderSide(color: cardBorderColor, width: 2),
+          bottom: BorderSide(color: cardBorderColor, width: 4),
+        ),
       ),
       child: Opacity(
         opacity: resolved ? .62 : 1,
@@ -603,13 +607,14 @@ class _NotificationTile extends StatelessWidget {
                                 vertical: 5,
                               ),
                               decoration: BoxDecoration(
-                                color: notification.accent.withValues(
-                                  alpha: isWhite ? .14 : .18,
-                                ),
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(
-                                  color: notification.accent.withValues(
-                                    alpha: isWhite ? .24 : .30,
+                                color: notification.accent,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: ohey3DShadowColorFor(
+                                      notification.accent,
+                                    ),
+                                    width: 3,
                                   ),
                                 ),
                               ),
@@ -617,8 +622,8 @@ class _NotificationTile extends StatelessWidget {
                                 notification.actionLabel!,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: notification.accent,
+                                style: const TextStyle(
+                                  color: AppColors.white,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w900,
                                 ),

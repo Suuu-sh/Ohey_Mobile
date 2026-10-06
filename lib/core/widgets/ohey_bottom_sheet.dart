@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'ohey_3d_button.dart';
 
 Future<T?> showOheyBottomSheet<T>({
   required BuildContext context,
@@ -184,44 +185,9 @@ class _OheyBottomSheetFooterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Container(
-          height: 54,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: isWhite
-                ? AppColors.cFFF7F7F7
-                : AppColors.darkBackgroundBottom,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: isWhite
-                  ? AppColors.cFFE5E5E5
-                  : AppColors.white.withValues(alpha: .10),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.black.withValues(alpha: isWhite ? .08 : .22),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isWhite ? AppColors.cFF2B3A41 : AppColors.cFFCE82FF,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.35,
-            ),
-          ),
-        ),
-      ),
+      child: Ohey3DButton.secondary(label: label, onTap: onTap, height: 52),
     );
   }
 }

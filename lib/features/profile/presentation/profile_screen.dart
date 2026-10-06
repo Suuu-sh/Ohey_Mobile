@@ -1187,8 +1187,9 @@ class _ProfileYuruboChoice extends StatelessWidget {
     onTap: onTap,
     height: 46,
     radius: 20,
-    color: selected ? selectedColor : AppColors.cFF2B3A41,
-    bottomColor: selected ? selectedBottomColor : AppColors.cFF1A272D,
+    color: selected ? selectedColor : AppColors.darkBackground,
+    bottomColor: selected ? selectedBottomColor : AppColors.chunkyBorderDark,
+    borderColor: selected ? null : AppColors.chunkyBorderDark,
     padding: const EdgeInsets.symmetric(horizontal: 12),
     child: Center(
       child: Text(

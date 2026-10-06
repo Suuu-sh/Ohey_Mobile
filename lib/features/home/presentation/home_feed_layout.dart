@@ -1291,8 +1291,11 @@ class _YuruboVisibilityChoice extends StatelessWidget {
     onTap: onTap,
     height: 46,
     radius: 20,
-    color: selected ? _feedPrimaryActionColor : AppColors.cFF2B3A41,
-    bottomColor: selected ? _feedPrimaryActionShadowColor : AppColors.cFF1A272D,
+    color: selected ? _feedPrimaryActionColor : AppColors.darkBackground,
+    bottomColor: selected
+        ? _feedPrimaryActionShadowColor
+        : AppColors.chunkyBorderDark,
+    borderColor: selected ? null : AppColors.chunkyBorderDark,
     padding: const EdgeInsets.symmetric(horizontal: 12),
     child: Center(
       child: Text(
@@ -1350,9 +1353,9 @@ class _YuruboInput extends StatelessWidget {
     placeholder: placeholder,
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
     decoration: BoxDecoration(
-      color: AppColors.white.withValues(alpha: .08),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: AppColors.white.withValues(alpha: .13)),
+      color: AppColors.cFF202F36,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: AppColors.chunkyBorderDark, width: 2),
     ),
     style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.w800),
     placeholderStyle: TextStyle(

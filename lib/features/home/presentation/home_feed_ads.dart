@@ -153,15 +153,14 @@ class _YuruboAdPostSeparator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final alpha = isWhite ? .42 : .76;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: IgnorePointer(
         child: Container(
-          height: 1,
-          decoration: BoxDecoration(
-            color: AppColors.cFFCE82FF.withValues(alpha: alpha),
-          ),
+          height: 2,
+          color: isWhite
+              ? AppColors.chunkyBorderLight
+              : AppColors.chunkyBorderDark,
         ),
       ),
     );

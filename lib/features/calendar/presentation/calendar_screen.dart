@@ -471,7 +471,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             ],
                             if (_isIntroSeen) ...[
                               const SizedBox(height: 8),
-                              const _CalendarGlowDivider(),
+                              _CalendarDivider(isWhite: isWhite),
                               const SizedBox(height: 7),
                               Expanded(
                                 child: Padding(
@@ -508,17 +508,17 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 }
 
-class _CalendarGlowDivider extends StatelessWidget {
-  const _CalendarGlowDivider();
+class _CalendarDivider extends StatelessWidget {
+  const _CalendarDivider({required this.isWhite});
+
+  final bool isWhite;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 1,
+      height: 2,
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: _calendarPrimaryActionColor.withValues(alpha: .72),
-      ),
+      color: isWhite ? AppColors.chunkyBorderLight : AppColors.chunkyBorderDark,
     );
   }
 }
@@ -535,20 +535,15 @@ class _CalendarIntroCard extends StatelessWidget {
     final messageColor = isWhite
         ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .66);
-    final cardColor = isWhite
-        ? AppColors.white
-        : AppColors.cFF1A272D.withValues(alpha: .82);
-    final borderColor = isWhite
-        ? AppColors.cFFE5E5E5
-        : AppColors.white.withValues(alpha: .08);
+    final edge = isWhite
+        ? AppColors.chunkyBorderLight
+        : AppColors.chunkyBorderDark;
 
-    return Container(
+    return OheyThemedPanel(
+      accentColor: edge,
+      backgroundColor: isWhite ? AppColors.white : AppColors.darkBackground,
+      borderAlpha: 1,
       padding: const EdgeInsets.fromLTRB(16, 15, 14, 15),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: borderColor),
-      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -587,28 +582,14 @@ class _CalendarIntroCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          CupertinoButton(
-            minimumSize: const Size(34, 34),
-            padding: EdgeInsets.zero,
-            onPressed: onDismiss,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.cFF49C0F8.withValues(alpha: .16),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: AppColors.cFF49C0F8.withValues(alpha: .30),
-                ),
-              ),
-              child: const Text(
-                'OK',
-                style: TextStyle(
-                  color: AppColors.cFF49C0F8,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
+          Ohey3DButton(
+            label: 'OK',
+            onTap: onDismiss,
+            height: 36,
+            radius: 12,
+            color: AppColors.cFF1CB0F6,
+            fontSize: 13,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
           ),
         ],
       ),
@@ -2117,19 +2098,16 @@ class _DayTile extends StatelessWidget {
               ? (isSelected ? AppColors.cFFF7F7F7 : AppColors.white)
               : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(13),
+          // Plain numbers like a streak calendar; only state gets an outline.
           border: Border.all(
             color: !inMonth
                 ? AppColors.transparent
                 : hasPlan
                 ? _calendarPrimaryActionColor
-                : hasStatus
-                ? statusAccent.withValues(alpha: isSelected ? .90 : .52)
                 : isSelected
-                ? AppColors.cFF49C0F8
-                : _calendarPrimaryActionColor.withValues(
-                    alpha: isWhite ? .34 : .24,
-                  ),
-            width: isSelected || hasPlan ? 2 : 1,
+                ? (hasStatus ? statusAccent : AppColors.cFF49C0F8)
+                : AppColors.transparent,
+            width: 2,
           ),
         ),
         child: Stack(
