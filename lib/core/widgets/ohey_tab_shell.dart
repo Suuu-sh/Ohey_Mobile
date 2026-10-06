@@ -1866,7 +1866,7 @@ class _CalendarPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final colors = active
         ? const [AppColors.cFF49C0F8, AppColors.cFF1899D6]
-        : const [AppColors.cFFAFAFAF, AppColors.cFF1CB0F6];
+        : const [AppColors.cFFAFAFAF, AppColors.cFF777777];
     final rect = RRect.fromRectAndRadius(
       Rect.fromLTWH(6, 8, size.width - 12, size.height - 10),
       const Radius.circular(12),
