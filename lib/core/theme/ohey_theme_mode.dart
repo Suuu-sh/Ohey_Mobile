@@ -11,26 +11,27 @@ final oheyThemeModeProvider =
 /// Light is the default; the user's choice is remembered on the device.
 class OheyThemeModeController extends Notifier<OheyThemeMode> {
   static const _prefsKey = 'ohey_theme_mode';
+  static OheyThemeMode _saved = OheyThemeMode.white;
 
-  @override
-  OheyThemeMode build() {
-    _restore();
-    return OheyThemeMode.white;
-  }
-
-  Future<void> _restore() async {
+  /// Reads the saved mode before the first frame so dark-mode users never
+  /// see a white flash. Call once from `main`.
+  static Future<void> preload() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       if (prefs.getString(_prefsKey) == OheyThemeMode.dark.name) {
-        state = OheyThemeMode.dark;
+        _saved = OheyThemeMode.dark;
       }
     } catch (_) {
       // Keep the default when preferences are unavailable.
     }
   }
 
+  @override
+  OheyThemeMode build() => _saved;
+
   void setMode(OheyThemeMode mode) {
     state = mode;
+    _saved = mode;
     SharedPreferences.getInstance()
         .then((prefs) => prefs.setString(_prefsKey, mode.name))
         .catchError((_) => false);

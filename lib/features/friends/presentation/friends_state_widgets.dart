@@ -278,17 +278,25 @@ Color _friendBlockFrameColor(_FriendStatus status) =>
 
 Color _friendStatusPillColor(_FriendStatus status) => status.buttonColor;
 
-Color _friendInviteButtonColor(_FriendStatus status) =>
-    status.enabled ? _FriendsColors.lime : _FriendsColors.disabledButton;
+Color _friendInviteButtonColor(_FriendStatus status, {bool isWhite = true}) =>
+    status.enabled
+    ? _FriendsColors.lime
+    : _FriendsColors.disabledButton(isWhite);
 
-Color _friendInviteButtonShadowColor(_FriendStatus status) {
-  if (!status.enabled) return _FriendsColors.disabledButtonShadow;
+Color _friendInviteButtonShadowColor(
+  _FriendStatus status, {
+  bool isWhite = true,
+}) {
+  if (!status.enabled) return _FriendsColors.disabledButtonShadow(isWhite);
   return _FriendsColors.limeShadow;
 }
 
-Color _friendInviteButtonForegroundColor(_FriendStatus status) => status.enabled
+Color _friendInviteButtonForegroundColor(
+  _FriendStatus status, {
+  bool isWhite = true,
+}) => status.enabled
     ? _FriendsColors.limeForeground
-    : _FriendsColors.disabledButtonForeground;
+    : _FriendsColors.disabledButtonForeground(isWhite);
 
 _FriendStatus _statusForFriend(OheyFriend friend, int _) =>
     _friendStatusForDailyStatus(oheyDailyStatusFromKey(friend.statusKey));
@@ -317,15 +325,21 @@ OheyAvatar _fallbackAvatarForFriend(OheyFriend friend) {
 class _FriendsColors {
   const _FriendsColors._();
 
-  static const bg = AppColors.white;
+  static const bg = AppColors.darkBackgroundBottom;
   static const lime = AppColors.brand;
   static const limeShadow = AppColors.brandLip;
   static const limeForeground = AppColors.white;
   static const muted = AppColors.cFFAFAFAF;
-  static const disabledButton = AppColors.cFFE5E5E5;
-  static const disabledButtonShadow = AppColors.cFFCDCDCD;
-  static const disabledButtonForeground = AppColors.cFFAFAFAF;
-  static const invitedButton = AppColors.cFFF7F7F7;
-  static const invitedButtonShadow = AppColors.cFFE5E5E5;
-  static const invitedButtonForeground = AppColors.cFF777777;
+  static Color disabledButton(bool isWhite) =>
+      isWhite ? AppColors.cFFE5E5E5 : AppColors.cFF2B3A41;
+  static Color disabledButtonShadow(bool isWhite) =>
+      isWhite ? AppColors.cFFCDCDCD : AppColors.cFF131F24;
+  static Color disabledButtonForeground(bool isWhite) =>
+      isWhite ? AppColors.cFFAFAFAF : AppColors.cFF777777;
+  static Color invitedButton(bool isWhite) =>
+      isWhite ? AppColors.cFFF7F7F7 : AppColors.cFF37464F;
+  static Color invitedButtonShadow(bool isWhite) =>
+      isWhite ? AppColors.cFFE5E5E5 : AppColors.cFF1A272D;
+  static Color invitedButtonForeground(bool isWhite) =>
+      isWhite ? AppColors.cFF777777 : AppColors.cFFCDCDCD;
 }

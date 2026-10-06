@@ -50,20 +50,29 @@ class _YuruboNativeAdListItemState extends State<_YuruboNativeAdListItem> {
   bool _isLoaded = false;
   bool _didFail = false;
 
+  bool? _loadedDark;
+
   @override
-  void initState() {
-    super.initState();
-    _loadAd();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The native view bakes its palette in, so reload when the theme flips.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (_loadedDark == isDark) return;
+    _loadedDark = isDark;
+    _ad?.dispose();
+    _ad = null;
+    _isLoaded = false;
+    _didFail = false;
+    _loadAd(isDark: isDark);
   }
 
-  Future<void> _loadAd() async {
+  Future<void> _loadAd({required bool isDark}) async {
     final adUnitId = _oheyYuruboNativeAdUnitId;
     if (adUnitId.isEmpty) {
       _didFail = true;
       return;
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final canRequestAds = await OheyAdsConsentService.prepareToRequestAds();
     if (!mounted) return;
     if (!canRequestAds) {

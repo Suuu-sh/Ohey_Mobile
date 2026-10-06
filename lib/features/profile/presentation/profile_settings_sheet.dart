@@ -161,7 +161,7 @@ class _SettingsTile extends StatelessWidget {
     final sub = isWhite
         ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
-    final textColor = destructive ? _ProfileColors.pink : ink;
+    final textColor = destructive ? accent : ink;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),

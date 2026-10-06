@@ -172,7 +172,8 @@ Color oheyDailyStatusTileForeground(
   if (status == OheyDailyStatus.hasPlans) {
     return isWhite ? AppColors.cFF131F24 : AppColors.white;
   }
-  return oheyDailyStatusActionForeground;
+  // Tiles use a light status tint, so text must stay ink in white mode.
+  return isWhite ? AppColors.cFF3C3C3C : AppColors.white;
 }
 
 Color oheyDailyStatus3DSurfaceColor(

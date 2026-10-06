@@ -747,13 +747,13 @@ class _GroupScheduleSection extends StatelessWidget {
     final isGroupInvited = inviteTargets.isEmpty;
     final canInviteGroup = !isGroupInvited && !isSendingInvite;
     final inviteButtonColor = isGroupInvited
-        ? _FriendsColors.invitedButton
+        ? _FriendsColors.invitedButton(isWhite)
         : _FriendsColors.lime;
     final inviteButtonForeground = isGroupInvited
-        ? _FriendsColors.invitedButtonForeground
+        ? _FriendsColors.invitedButtonForeground(isWhite)
         : AppColors.cFF3C3C3C;
     final inviteButtonShadow = isGroupInvited
-        ? _FriendsColors.invitedButtonShadow
+        ? _FriendsColors.invitedButtonShadow(isWhite)
         : Color.lerp(_FriendsColors.lime, AppColors.black, .34);
 
     return Padding(
@@ -781,7 +781,7 @@ class _GroupScheduleSection extends StatelessWidget {
                 color: inviteButtonColor,
                 foregroundColor: inviteButtonForeground,
                 shadowColor: inviteButtonShadow,
-                disabledColor: _FriendsColors.invitedButton,
+                disabledColor: _FriendsColors.invitedButton(isWhite),
                 disabledOpacity: 1,
                 forcePressed: isGroupInvited,
                 padding: const EdgeInsets.symmetric(horizontal: 9),
@@ -990,11 +990,11 @@ class _TodayInviteCandidateCard extends StatelessWidget {
     final isInviteEnabled =
         hasIncomingInvite || (item.status.enabled && !isInvited);
     final buttonColor = isInvited
-        ? _FriendsColors.invitedButton
-        : _friendInviteButtonColor(item.status);
+        ? _FriendsColors.invitedButton(isWhite)
+        : _friendInviteButtonColor(item.status, isWhite: isWhite);
     final buttonForeground = isInvited
-        ? _FriendsColors.invitedButtonForeground
-        : _friendInviteButtonForegroundColor(item.status);
+        ? _FriendsColors.invitedButtonForeground(isWhite)
+        : _friendInviteButtonForegroundColor(item.status, isWhite: isWhite);
     final ink = item.status.enabled
         ? (isWhite ? AppColors.cFF3C3C3C : AppColors.white)
         : (isWhite ? AppColors.cFF777777 : _FriendsColors.muted);
@@ -1061,11 +1061,14 @@ class _TodayInviteCandidateCard extends StatelessWidget {
                 color: buttonColor,
                 foregroundColor: buttonForeground,
                 shadowColor: isInvited
-                    ? _FriendsColors.invitedButtonShadow
-                    : _friendInviteButtonShadowColor(item.status),
+                    ? _FriendsColors.invitedButtonShadow(isWhite)
+                    : _friendInviteButtonShadowColor(
+                        item.status,
+                        isWhite: isWhite,
+                      ),
                 disabledColor: isInvited
-                    ? _FriendsColors.invitedButton
-                    : _FriendsColors.disabledButton,
+                    ? _FriendsColors.invitedButton(isWhite)
+                    : _FriendsColors.disabledButton(isWhite),
                 disabledOpacity: 1,
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 fontSize: 14,
@@ -1099,7 +1102,10 @@ class _CompactStatusPill extends StatelessWidget {
         style: TextStyle(
           color: status.enabled
               ? accent
-              : _friendInviteButtonForegroundColor(status),
+              : _friendInviteButtonForegroundColor(
+                  status,
+                  isWhite: Theme.of(context).brightness == Brightness.light,
+                ),
           fontWeight: FontWeight.w900,
           fontSize: 11,
           letterSpacing: -.15,

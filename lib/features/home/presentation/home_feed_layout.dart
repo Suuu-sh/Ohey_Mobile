@@ -1112,6 +1112,8 @@ class _YuruboCalendarArrow extends StatelessWidget {
       icon: icon,
       onTap: enabled ? onTap : null,
       enabled: enabled,
+      disabledColor: OheyTone.of(context).page,
+      disabledOpacity: .35,
       height: 44,
       radius: 14,
       padding: EdgeInsets.zero,

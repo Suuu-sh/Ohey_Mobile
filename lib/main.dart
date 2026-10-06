@@ -38,6 +38,8 @@ Future<void> main() async {
     // If decoding ever fails, fall back to the regular asset image below.
   }
 
+  await OheyThemeModeController.preload();
+
   if (oheyUiPreviewEnabled) {
     await OheyLastAccountStore.setSessionRestoreSuppressed(false);
   }

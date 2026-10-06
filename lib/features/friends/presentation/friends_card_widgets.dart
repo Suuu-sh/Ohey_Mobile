@@ -27,7 +27,10 @@ class _FriendCard extends StatelessWidget {
     statusLabel: status.label,
     statusReason: status.reason,
     statusColor: status.buttonColor,
-    inviteButtonColor: _friendInviteButtonColor(status),
+    inviteButtonColor: _friendInviteButtonColor(
+      status,
+      isWhite: Theme.of(context).brightness == Brightness.light,
+    ),
     statusEnabled: status.enabled,
     inviteSent: isInvited,
     fallbackAvatar: _fallbackAvatarForFriend(friend),
@@ -436,7 +439,10 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
   Widget build(BuildContext context) {
     final avatar =
         widget.friend.avatar ?? _fallbackAvatarForFriend(widget.friend);
-    final statusColor = _friendInviteButtonColor(_selectedStatus);
+    final statusColor = _friendInviteButtonColor(
+      _selectedStatus,
+      isWhite: Theme.of(context).brightness == Brightness.light,
+    );
     final handle = widget.friend.vibe.trim().isEmpty
         ? widget.friend.id
         : '@${widget.friend.vibe}';
