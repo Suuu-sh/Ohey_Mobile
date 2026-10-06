@@ -209,9 +209,14 @@ jobs:
       - name: Install Flutter dependencies
         run: flutter pub get --enforce-lockfile
 
+      - name: Install pinned CocoaPods
+        run: |
+          sudo gem install cocoapods --version 1.16.2 --no-document
+          test "$(pod _1.16.2_ --version)" = "1.16.2"
+
       - name: Install CocoaPods dependencies
         working-directory: ios
-        run: pod install
+        run: pod _1.16.2_ install
 
       - name: Verify committed CocoaPods lockfile
         run: |
