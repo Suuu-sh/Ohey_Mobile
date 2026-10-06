@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'ohey_pop_icon.dart';
 import 'package:ohey/core/theme/app_colors.dart';
+import 'ohey_themed_panel.dart';
 
 enum OheyToastPlacement { top, bottom }
 
@@ -213,12 +214,7 @@ class _OheyToastOverlayState extends State<_OheyToastOverlay>
             decoration: BoxDecoration(
               color: AppColors.cFF202F36,
               borderRadius: BorderRadius.circular(18),
-              border: const Border(
-                top: BorderSide(color: AppColors.chunkyBorderDark, width: 2),
-                left: BorderSide(color: AppColors.chunkyBorderDark, width: 2),
-                right: BorderSide(color: AppColors.chunkyBorderDark, width: 2),
-                bottom: BorderSide(color: AppColors.chunkyBorderDark, width: 4),
-              ),
+              border: oheyChunkyBorder(AppColors.chunkyBorderDark),
             ),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(14, 12, 16, 12),

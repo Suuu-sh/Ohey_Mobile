@@ -4,6 +4,18 @@ import '../theme/app_colors.dart';
 
 enum OheyThemedPanelBorder { all, horizontal }
 
+/// Chunky card edge: a solid hairline with a thicker bottom that reads as the
+/// card's lip.
+Border oheyChunkyBorder(Color color, {double width = 2, double lip = 2}) {
+  final side = BorderSide(color: color, width: width);
+  return Border(
+    top: side,
+    left: side,
+    right: side,
+    bottom: side.copyWith(width: width + lip),
+  );
+}
+
 /// Shared themed surface used when a feature page needs the same panel body
 /// treatment with a page-specific accent around it.
 ///
@@ -57,11 +69,10 @@ class OheyThemedPanel extends StatelessWidget {
         border: !hasBorder
             ? null
             : switch (border) {
-                OheyThemedPanelBorder.all => Border(
-                  top: side,
-                  left: side,
-                  right: side,
-                  bottom: side.copyWith(width: borderWidth + lipDepth),
+                OheyThemedPanelBorder.all => oheyChunkyBorder(
+                  borderColor,
+                  width: borderWidth,
+                  lip: lipDepth,
                 ),
                 OheyThemedPanelBorder.horizontal => Border.symmetric(
                   horizontal: side,

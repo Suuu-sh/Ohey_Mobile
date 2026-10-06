@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import 'ohey_pop_icon.dart';
+import 'ohey_themed_panel.dart';
 
 class OheyActionTile extends StatelessWidget {
   const OheyActionTile({
@@ -46,15 +47,13 @@ class OheyActionTile extends StatelessWidget {
       padding: EdgeInsets.zero,
       borderRadius: BorderRadius.circular(22),
       child: Container(
-        height: 68,
+        height: 70,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: surfaceColor,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: isWhite
-                ? AppColors.cFFE5E5E5
-                : AppColors.white.withValues(alpha: .12),
+          border: oheyChunkyBorder(
+            isWhite ? AppColors.chunkyBorderLight : AppColors.chunkyBorderDark,
           ),
         ),
         child: Row(

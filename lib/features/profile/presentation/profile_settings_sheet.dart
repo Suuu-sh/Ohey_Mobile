@@ -176,12 +176,11 @@ class _SettingsTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: OheyThemedPanel.surfaceColor(isWhite: isWhite),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: isWhite
-                    ? AppColors.cFFE5E5E5
-                    : AppColors.white.withValues(alpha: .12),
-                width: 1.4,
+              borderRadius: BorderRadius.circular(20),
+              border: oheyChunkyBorder(
+                isWhite
+                    ? AppColors.chunkyBorderLight
+                    : AppColors.chunkyBorderDark,
               ),
             ),
             child: Row(

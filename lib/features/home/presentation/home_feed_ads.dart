@@ -202,12 +202,7 @@ class _YuruboAdCardFrame extends StatelessWidget {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: radius,
-                    border: Border(
-                      top: BorderSide(color: frameColor, width: 2),
-                      left: BorderSide(color: frameColor, width: 2),
-                      right: BorderSide(color: frameColor, width: 2),
-                      bottom: BorderSide(color: frameColor, width: 4),
-                    ),
+                    border: oheyChunkyBorder(frameColor),
                   ),
                 ),
               ),

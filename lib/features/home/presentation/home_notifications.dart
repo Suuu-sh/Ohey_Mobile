@@ -523,15 +523,9 @@ class _NotificationTile extends StatelessWidget {
     final tile = Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
-      decoration: _feedCardDecoration(radius: 22).copyWith(
-        color: cardColor,
-        border: Border(
-          top: BorderSide(color: cardBorderColor, width: 2),
-          left: BorderSide(color: cardBorderColor, width: 2),
-          right: BorderSide(color: cardBorderColor, width: 2),
-          bottom: BorderSide(color: cardBorderColor, width: 4),
-        ),
-      ),
+      decoration: _feedCardDecoration(
+        radius: 22,
+      ).copyWith(color: cardColor, border: oheyChunkyBorder(cardBorderColor)),
       child: Opacity(
         opacity: resolved ? .62 : 1,
         child: Row(

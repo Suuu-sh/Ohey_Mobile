@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import 'ohey_pop_icon.dart';
+import 'ohey_themed_panel.dart';
 
 class OheyManageListRow extends StatelessWidget {
   const OheyManageListRow({
@@ -46,18 +47,17 @@ class OheyManageListRow extends StatelessWidget {
             : AppColors.white.withValues(alpha: .55));
     final resolvedSurfaceColor =
         surfaceColor ??
-        (isWhite
-            ? AppColors.cFFF7F7F7
-            : AppColors.white.withValues(alpha: .06));
+        (isWhite ? AppColors.cFFF7F7F7 : AppColors.darkBackground);
     final resolvedBorderColor =
-        borderColor ?? (isWhite ? AppColors.cFFE5E5E5 : AppColors.white12);
+        borderColor ??
+        (isWhite ? AppColors.chunkyBorderLight : AppColors.chunkyBorderDark);
     final row = Container(
       constraints: const BoxConstraints(minHeight: 56),
       padding: padding,
       decoration: BoxDecoration(
         color: resolvedSurfaceColor,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: resolvedBorderColor),
+        border: oheyChunkyBorder(resolvedBorderColor),
       ),
       child: Row(
         children: [
