@@ -108,7 +108,7 @@ class _ProfileTopSheet extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(
         OheyPageHeader.horizontalPadding,
-        4,
+        OheyPageHeader.topPadding,
         OheyPageHeader.horizontalPadding,
         6,
       ),
