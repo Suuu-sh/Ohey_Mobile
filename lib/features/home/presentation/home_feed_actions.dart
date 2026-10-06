@@ -67,7 +67,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               icon: CupertinoIcons.pencil,
               title: 'ゆるぼを編集',
               subtitle: '内容・場所・いつを直す',
-              accent: _FeedColors.teal,
+              accent: _FeedColors.accent,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.edit),
             ),
             const SizedBox(height: 10),
@@ -327,7 +327,7 @@ class _FeedModalTextButton extends StatelessWidget {
   const _FeedModalTextButton({
     required this.label,
     required this.onTap,
-    this.color = _FeedColors.teal,
+    this.color = _FeedColors.accent,
   });
 
   final String label;

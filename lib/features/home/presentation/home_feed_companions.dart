@@ -26,7 +26,7 @@ class _FeedCompanionListSheet extends ConsumerWidget {
             children: [
               OheyPopIcon(
                 icon: CupertinoIcons.person_2_fill,
-                color: _FeedColors.teal,
+                color: _FeedColors.accent,
                 size: 46,
                 iconSize: 24,
               ),
@@ -200,7 +200,6 @@ class _FeedCompanionTile extends StatelessWidget {
                 color: subtitleColor,
                 size: 28,
                 iconSize: 15,
-                shadow: false,
               ),
           ],
         ),

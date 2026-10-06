@@ -1,20 +1,16 @@
 part of 'home_screen.dart';
 
 double _feedHeaderScrollInset(BuildContext context) {
-  // Match the latest reference feed capture: header scene ends at y≈505 on
-  // a 1200px-wide crop. Keeping this width ratio locks the visible image
-  // crop to the reference instead of depending on safe-area heuristics.
-  const referenceWidth = 1200.0;
-  const referenceHeaderBottom = 505.0;
-  return MediaQuery.sizeOf(context).width *
-      referenceHeaderBottom /
-      referenceWidth;
+  return MediaQuery.paddingOf(context).top +
+      OheyPageHeader.topPadding +
+      OheyPageHeader.height +
+      12;
 }
 
 const _feedBottomPageInset = 124.0;
 const _feedHeaderContentGap = 4.0;
-const _feedPrimaryActionColor = AppColors.cFFCE82FF;
-const _feedPrimaryActionShadowColor = AppColors.cFFA568CC;
+const _feedPrimaryActionColor = AppColors.brand;
+const _feedPrimaryActionShadowColor = AppColors.brandLip;
 
 Widget _buildFeedPage({
   required double topPadding,
@@ -103,7 +99,7 @@ Widget _buildFeedPage({
       ),
       sliver: SliverList.separated(
         itemCount: entries.length + (isLoading ? 1 : 0),
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
+        separatorBuilder: (context, index) => const SizedBox(height: 4),
         itemBuilder: (context, index) {
           if (index >= entries.length) {
             return const Padding(
@@ -171,11 +167,8 @@ class _YuruboRefreshIndicator extends StatelessWidget {
                 height: 34,
                 padding: const EdgeInsets.symmetric(horizontal: 13),
                 decoration: BoxDecoration(
-                  color: AppColors.cFF131F24.withValues(alpha: .82),
+                  color: _feedPrimaryActionColor,
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: _feedPrimaryActionColor.withValues(alpha: .22),
-                  ),
                 ),
                 child: Center(
                   child: Text(
@@ -220,7 +213,6 @@ class _YuruboPostListItem extends StatelessWidget {
       child: _FeedPostCard(
         item: item,
         isWhite: isWhite,
-        compactYurubo: true,
         onLike: onInterested,
         onShare: onInvite,
         onMore: onMore,
@@ -1324,12 +1316,12 @@ class _YuruboGroupChip extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: (selected ? _FeedColors.teal : AppColors.white).withValues(
+        color: (selected ? _FeedColors.accent : AppColors.white).withValues(
           alpha: selected ? .26 : .08,
         ),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
-          color: _FeedColors.teal.withValues(alpha: selected ? .7 : .25),
+          color: _FeedColors.accent.withValues(alpha: selected ? .7 : .25),
         ),
       ),
       child: Text(

@@ -289,7 +289,6 @@ class _DemoNotifyStep extends StatelessWidget {
       const SizedBox(height: 18),
       OheyThemedPanel(
         backgroundColor: AppColors.darkBackgroundBottom,
-        accentColor: AppColors.cFF89E219,
         borderRadius: 24,
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
         child: Column(
@@ -398,7 +397,6 @@ class _DemoYuruboCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => OheyThemedPanel(
     backgroundColor: AppColors.darkBackgroundBottom,
-    accentColor: highlight ? AppColors.cFFCE82FF : AppColors.cFF1CB0F6,
     borderRadius: 24,
     padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
     child: Row(

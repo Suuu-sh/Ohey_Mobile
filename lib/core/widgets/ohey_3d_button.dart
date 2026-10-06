@@ -147,19 +147,20 @@ class Ohey3DButton extends StatelessWidget {
                     color: foregroundColor,
                     size: fontSize + 7,
                   ),
-              const SizedBox(width: 10),
+              if (label.isNotEmpty) const SizedBox(width: 10),
             ],
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: foregroundColor,
-                fontSize: fontSize,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -.2,
+            if (label.isNotEmpty)
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: foregroundColor,
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.2,
+                ),
               ),
-            ),
             if (trailing != null) ...[const Spacer(), trailing!],
           ],
         ],

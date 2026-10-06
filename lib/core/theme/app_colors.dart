@@ -58,7 +58,10 @@ class AppColors {
   static const cFFEA2B2B = Color(0xFFEA2B2B);
   static const cFFF3E2FF = Color(0xFFF3E2FF);
   static const cFFF7F7F7 = Color(0xFFF7F7F7);
+  static const cFFD62F7E = Color(0xFFD62F7E);
   static const cFFFF4B4B = Color(0xFFFF4B4B);
+  static const cFFFF4B9E = Color(0xFFFF4B9E);
+  static const cFFFFE3F0 = Color(0xFFFFE3F0);
   static const cFFFF7878 = Color(0xFFFF7878);
   static const cFFFF86C8 = Color(0xFFFF86C8);
   static const cFFFF9600 = Color(0xFFFF9600);
@@ -106,10 +109,15 @@ class AppColors {
   static const chunkyBorderLight = cFFE5E5E5;
   static const chunkyBorderDark = cFF37464F;
 
-  // Semantic colors. Keep playful tab/accent colors, but use these for actions
-  // so users can learn what each color means across screens.
-  static const primaryAction = cFF58CC02;
-  static const primaryActionShadow = cFF58A700;
+  // Ohey brand pink: the one accent for primary actions, selection and
+  // navigation on every tab. Other hues are reserved for data (status).
+  static const brand = cFFFF4B9E;
+  static const brandLip = cFFD62F7E;
+  static const brandTint = cFFFFE3F0;
+
+  // Semantic colors.
+  static const primaryAction = brand;
+  static const primaryActionShadow = brandLip;
   static const success = cFF58CC02;
   static const successShadow = cFF58A700;
   static const invite = cFF00CD9C;

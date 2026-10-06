@@ -393,12 +393,10 @@ class _FriendNativeAdBlockState extends State<_FriendNativeAdBlock> {
       label: '広告',
       child: OheyThemedPanel(
         padding: EdgeInsets.zero,
-        accentColor: _FriendsColors.lime,
         backgroundColor: isWhite
             ? AppColors.white
             : AppColors.darkBackgroundBottom,
         borderRadius: 20,
-        borderAlpha: isWhite ? .28 : .36,
         child: SizedBox(
           height: 156,
           child: ClipRRect(
@@ -419,12 +417,10 @@ class _FriendAdPlaceholderBlock extends StatelessWidget {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     return OheyThemedPanel(
       padding: const EdgeInsets.all(14),
-      accentColor: _FriendsColors.lime,
       backgroundColor: isWhite
           ? AppColors.white
           : AppColors.darkBackgroundBottom,
       borderRadius: 20,
-      borderAlpha: isWhite ? .28 : .36,
       child: Row(
         children: [
           Container(
@@ -897,7 +893,6 @@ class _GroupScheduleSuggestionCard extends StatelessWidget {
         : AppColors.white.withValues(alpha: .62);
     return OheyThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
-      accentColor: suggestion.accent,
       backgroundColor: OheyThemedPanel.surfaceColor(isWhite: isWhite),
       gradient: LinearGradient(
         begin: Alignment.topLeft,
@@ -910,7 +905,6 @@ class _GroupScheduleSuggestionCard extends StatelessWidget {
               ],
       ),
       borderRadius: 24,
-      borderAlpha: isWhite ? .24 : .14,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1006,13 +1000,8 @@ class _TodayInviteCandidateCard extends StatelessWidget {
         : (isWhite ? AppColors.cFF777777 : _FriendsColors.muted);
     return OheyThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
-      accentColor: frameAccent,
       backgroundColor: _friendBlockSurfaceColor(isWhite: isWhite),
       borderRadius: 24,
-      borderAlpha: _friendBlockBorderAlpha(
-        isWhite: isWhite,
-        status: item.status,
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1437,12 +1426,10 @@ class _AddFriendsPromoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    const accent = AppColors.cFF3DDCB6;
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 98),
       child: OheyThemedPanel(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-        accentColor: accent,
         backgroundColor: isWhite
             ? AppColors.white
             : AppColors.darkBackgroundBottom,
@@ -1454,7 +1441,6 @@ class _AddFriendsPromoCard extends StatelessWidget {
               : const [AppColors.cFF1A272D, AppColors.cFF131F24],
         ),
         borderRadius: 20,
-        borderAlpha: .42,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

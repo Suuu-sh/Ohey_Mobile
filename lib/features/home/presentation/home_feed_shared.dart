@@ -6,7 +6,7 @@ class _FeedEmptyState extends StatelessWidget {
     required this.title,
     required this.message,
     this.isWhite = false,
-    this.accent = _FeedColors.teal,
+    this.accent = _FeedColors.accent,
     this.action,
     this.hints = const [],
   });
@@ -299,11 +299,11 @@ class _FeedNotification {
         OheyNotificationKindKeys.friendRequestReceived => AppColors.cFF49C0F8,
         OheyNotificationKindKeys.friendRequestAccepted => AppColors.cFF89E219,
         OheyNotificationKindKeys.inviteReceived => AppColors.cFFCE82FF,
-        OheyNotificationKindKeys.inviteAccepted => _FeedColors.teal,
+        OheyNotificationKindKeys.inviteAccepted => _FeedColors.accent,
         OheyNotificationKindKeys.todayReservationReminder =>
           AppColors.cFFFFE066,
         OheyNotificationKindKeys.system => AppColors.cFFFFE066,
-        _ => _FeedColors.teal,
+        _ => _FeedColors.accent,
       },
       unread: notification.isUnread,
       friendRequestId: notification.friendRequestId,
@@ -391,7 +391,7 @@ String _relativeTimeText(DateTime time) {
 
 class _FeedColors {
   const _FeedColors._();
-  static const teal = AppColors.cFFCE82FF;
+  static const accent = AppColors.brand;
   static const card = AppColors.cFF1A272D;
   static const sub = AppColors.cFFAFAFAF;
 }

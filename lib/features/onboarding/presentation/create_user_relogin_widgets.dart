@@ -196,10 +196,8 @@ class _ReLoginAccountCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: OheyThemedPanel(
-        accentColor: AppColors.white,
         backgroundColor: OheyThemedPanel.surfaceColor(isWhite: false),
         borderRadius: 20,
-        borderAlpha: .20,
         borderWidth: 2,
         child: Column(
           mainAxisSize: MainAxisSize.min,

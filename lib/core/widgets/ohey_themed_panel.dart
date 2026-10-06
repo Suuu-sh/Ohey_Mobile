@@ -16,8 +16,7 @@ Border oheyChunkyBorder(Color color, {double width = 2, double lip = 2}) {
   );
 }
 
-/// Shared themed surface used when a feature page needs the same panel body
-/// treatment with a page-specific accent around it.
+/// Shared card surface: a flat fill with the neutral chunky edge.
 ///
 /// Panels follow the chunky card style: a flat fill, a solid hairline, and a
 /// thicker bottom edge that reads as the card's lip.
@@ -25,14 +24,12 @@ class OheyThemedPanel extends StatelessWidget {
   const OheyThemedPanel({
     super.key,
     required this.child,
-    required this.accentColor,
     required this.backgroundColor,
     this.width,
     this.padding,
     this.gradient,
     this.borderRadius = 20,
     this.borderWidth = 2,
-    this.borderAlpha = .28,
     this.border = OheyThemedPanelBorder.all,
   });
 
@@ -43,22 +40,22 @@ class OheyThemedPanel extends StatelessWidget {
   static const double lipDepth = 2;
 
   final Widget child;
-  final Color accentColor;
   final Color backgroundColor;
   final double? width;
   final EdgeInsetsGeometry? padding;
   final Gradient? gradient;
   final double borderRadius;
   final double borderWidth;
-  final double borderAlpha;
   final OheyThemedPanelBorder border;
-
-  Color get borderColor => accentColor.withValues(alpha: borderAlpha);
 
   @override
   Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final borderColor = isWhite
+        ? AppColors.chunkyBorderLight
+        : AppColors.chunkyBorderDark;
     final side = BorderSide(color: borderColor, width: borderWidth);
-    final hasBorder = borderWidth > 0 && borderAlpha > 0;
+    final hasBorder = borderWidth > 0;
     return Container(
       width: width,
       padding: padding,

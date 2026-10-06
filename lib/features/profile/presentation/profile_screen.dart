@@ -217,8 +217,8 @@ class _ProfileColors {
   const _ProfileColors._();
   static const line = AppColors.c1EFFFFFF;
   static const sub = AppColors.cFFAFAFAF;
-  static const lime = AppColors.cFF89E219;
-  static const pink = AppColors.cFFD9609F;
+  static const lime = AppColors.brand;
+  static const pink = AppColors.brand;
 }
 
 Future<void> _showProfileOheyPlusSheet(BuildContext context) async {

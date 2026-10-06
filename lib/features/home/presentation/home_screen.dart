@@ -36,8 +36,7 @@ import '../../../core/widgets/ohey_bottom_sheet.dart';
 import '../../../core/widgets/ohey_action_tile.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
-import '../../../core/widgets/ohey_post_action_pill.dart';
-import '../../../core/widgets/ohey_scene_header_backdrop.dart';
+import '../../../core/widgets/ohey_header_bar.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../../core/widgets/ohey_user_profile_sheet.dart';
@@ -91,7 +90,7 @@ class _FeedCreateYuruboFab extends StatelessWidget {
             onTap: onTap,
             height: 58,
             radius: 29,
-            color: _FeedColors.teal,
+            color: _FeedColors.accent,
             padding: EdgeInsets.zero,
             child: const Icon(
               CupertinoIcons.plus,
@@ -161,7 +160,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return const _FeedBackground(child: SizedBox.expand()).copyWith(
       child: Stack(
         children: [
-          _FeedHeaderBackdropLayer(isWhite: isWhite),
           Positioned.fill(
             child: _buildFeedPage(
               topPadding: _feedHeaderScrollInset(context),
@@ -198,14 +196,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _FeedHeaderControlsLayer(
             child: OheyPageHeader(
               title: 'ゆるぼ',
-              titleColor: _FeedColors.teal,
-              titleOffset: const Offset(0, -54),
-              trailingOffset: const Offset(0, -54),
+
               trailing: OheyHeaderIconButton(
                 icon: CupertinoIcons.bell,
                 semanticLabel: 'お知らせを開く',
                 hasDot: hasUnreadNotifications,
-                color: _FeedColors.teal,
+                color: _FeedColors.accent,
                 onTap: () => Navigator.of(context).push(
                   CupertinoPageRoute<void>(
                     builder: (_) => const _FeedNotificationsScreen(),

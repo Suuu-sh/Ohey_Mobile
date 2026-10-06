@@ -35,7 +35,6 @@ import '../../../core/widgets/ohey_daily_status_3d_option.dart';
 import '../../../core/widgets/ohey_manage_list_row.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
-import '../../../core/widgets/ohey_scene_header_backdrop.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../../core/widgets/ohey_user_profile_sheet.dart';
@@ -526,13 +525,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       _selectedCustomFilterId,
       _customFilters,
     );
-    final headerBackgroundHeight =
-        OheyPageHeader.contentTopInset(context) + 100;
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: AppColors.transparent,
-      ),
+      value: (isWhite ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light)
+          .copyWith(statusBarColor: AppColors.transparent),
       child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -546,13 +541,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              height: headerBackgroundHeight,
-              child: _FriendsHeaderBackdrop(isWhite: isWhite),
-            ),
             SafeArea(
               bottom: false,
               child: Padding(
@@ -567,7 +555,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                   children: [
                     OheyPageHeader(
                       title: 'フレンズ',
-                      titleColor: _FriendsColors.lime,
                       trailing: OheyHeaderIconButton(
                         icon: CupertinoIcons.plus,
                         semanticLabel: 'フレンズを追加',
@@ -841,8 +828,8 @@ class _IncomingFriendRequestBannerState
                   isLoading: busy,
                   height: 42,
                   radius: 18,
-                  color: AppColors.success,
-                  shadowColor: AppColors.successShadow,
+                  color: AppColors.primaryAction,
+                  shadowColor: AppColors.primaryActionShadow,
                   fontSize: 13,
                 ),
               ),

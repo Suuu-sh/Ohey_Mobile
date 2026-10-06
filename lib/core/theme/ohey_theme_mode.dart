@@ -9,7 +9,7 @@ final oheyThemeModeProvider =
 
 class OheyThemeModeController extends Notifier<OheyThemeMode> {
   @override
-  OheyThemeMode build() => OheyThemeMode.dark;
+  OheyThemeMode build() => OheyThemeMode.white;
 
   void setMode(OheyThemeMode mode) => state = mode;
 

@@ -274,37 +274,21 @@ Color _friendBlockSurfaceColor({required bool isWhite}) =>
     isWhite ? AppColors.white : AppColors.darkBackgroundBottom;
 
 Color _friendBlockFrameColor(_FriendStatus status) =>
-    _friendInviteButtonColor(status);
+    AppColors.chunkyBorderLight;
 
-Color _friendStatusPillColor(_FriendStatus status) =>
-    _friendInviteButtonColor(status);
+Color _friendStatusPillColor(_FriendStatus status) => status.buttonColor;
 
-Color _friendInviteButtonColor(_FriendStatus status) {
-  if (!status.enabled) return _FriendsColors.disabledButton;
-  if (status.buttonColor == oheyDailyStatusGreen) {
-    return _FriendsColors.lime;
-  }
-  return status.buttonColor;
-}
+Color _friendInviteButtonColor(_FriendStatus status) =>
+    status.enabled ? _FriendsColors.lime : _FriendsColors.disabledButton;
 
 Color _friendInviteButtonShadowColor(_FriendStatus status) {
   if (!status.enabled) return _FriendsColors.disabledButtonShadow;
-  final color = _friendInviteButtonColor(status);
-  if (color == _FriendsColors.lime) return _FriendsColors.limeShadow;
-  return Color.lerp(color, AppColors.black, .32)!;
+  return _FriendsColors.limeShadow;
 }
 
 Color _friendInviteButtonForegroundColor(_FriendStatus status) => status.enabled
     ? _FriendsColors.limeForeground
     : _FriendsColors.disabledButtonForeground;
-
-double _friendBlockBorderAlpha({
-  required bool isWhite,
-  required _FriendStatus status,
-}) {
-  if (!status.enabled) return isWhite ? .34 : .58;
-  return isWhite ? .34 : .42;
-}
 
 _FriendStatus _statusForFriend(OheyFriend friend, int _) =>
     _friendStatusForDailyStatus(oheyDailyStatusFromKey(friend.statusKey));
@@ -333,15 +317,15 @@ OheyAvatar _fallbackAvatarForFriend(OheyFriend friend) {
 class _FriendsColors {
   const _FriendsColors._();
 
-  static const bg = AppColors.darkBackgroundBottom;
-  static const lime = AppColors.cFF89E219;
-  static const limeShadow = AppColors.cFF58A700;
-  static const limeForeground = AppColors.cFF131F24;
+  static const bg = AppColors.white;
+  static const lime = AppColors.brand;
+  static const limeShadow = AppColors.brandLip;
+  static const limeForeground = AppColors.white;
   static const muted = AppColors.cFFAFAFAF;
-  static const disabledButton = AppColors.cFF2B3A41;
-  static const disabledButtonShadow = AppColors.cFF131F24;
-  static const disabledButtonForeground = AppColors.cFF1CB0F6;
-  static const invitedButton = AppColors.cFF37464F;
-  static const invitedButtonShadow = AppColors.cFF1A272D;
-  static const invitedButtonForeground = AppColors.cFFCDCDCD;
+  static const disabledButton = AppColors.cFFE5E5E5;
+  static const disabledButtonShadow = AppColors.cFFCDCDCD;
+  static const disabledButtonForeground = AppColors.cFFAFAFAF;
+  static const invitedButton = AppColors.cFFF7F7F7;
+  static const invitedButtonShadow = AppColors.cFFE5E5E5;
+  static const invitedButtonForeground = AppColors.cFF777777;
 }

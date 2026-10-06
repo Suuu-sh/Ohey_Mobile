@@ -137,32 +137,7 @@ class _YuruboAdListBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        child,
-        const SizedBox(height: 16),
-        _YuruboAdPostSeparator(isWhite: isWhite),
-      ],
-    );
-  }
-}
-
-class _YuruboAdPostSeparator extends StatelessWidget {
-  const _YuruboAdPostSeparator({required this.isWhite});
-
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: IgnorePointer(
-        child: Container(
-          height: 2,
-          color: isWhite
-              ? AppColors.chunkyBorderLight
-              : AppColors.chunkyBorderDark,
-        ),
-      ),
+      children: [child, const SizedBox(height: 8)],
     );
   }
 }

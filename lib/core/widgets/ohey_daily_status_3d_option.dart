@@ -6,13 +6,14 @@ import '../theme/app_colors.dart';
 import 'ohey_3d_button.dart';
 import 'ohey_pop_icon.dart';
 
-const oheyDailyStatusPink = AppColors.cFFD9609F;
-const oheyDailyStatusBlue = AppColors.cFF1CB0F6;
-const oheyDailyStatusPurple = AppColors.cFFCE82FF;
-const oheyDailyStatusGreen = AppColors.cFF89E219;
+// Status reads like a traffic light so it never competes with the brand pink.
+const oheyStatusAvailableColor = AppColors.cFF58CC02;
+const oheyStatusMaybeColor = AppColors.cFF1CB0F6;
+const oheyStatusDependsColor = AppColors.cFFFF9600;
+const oheyStatusUnsetColor = AppColors.cFFAFAFAF;
 const oheyDailyStatusBlocked = AppColors.cFF2B3A41;
 const oheyDailyStatusBlockedForeground = AppColors.cFF1CB0F6;
-const oheyDailyStatusActionForeground = AppColors.cFF131F24;
+const oheyDailyStatusActionForeground = AppColors.white;
 
 class OheyDailyStatus3DOption extends StatelessWidget {
   const OheyDailyStatus3DOption({
@@ -130,11 +131,11 @@ class OheyDailyStatus3DOption extends StatelessWidget {
 }
 
 Color oheyDailyStatusColor(OheyDailyStatus status) => switch (status) {
-  OheyDailyStatus.available => oheyDailyStatusPink,
-  OheyDailyStatus.maybeAvailable => oheyDailyStatusBlue,
-  OheyDailyStatus.dependsOnTime => oheyDailyStatusPurple,
+  OheyDailyStatus.available => oheyStatusAvailableColor,
+  OheyDailyStatus.maybeAvailable => oheyStatusMaybeColor,
+  OheyDailyStatus.dependsOnTime => oheyStatusDependsColor,
   OheyDailyStatus.hasPlans => oheyDailyStatusBlockedForeground,
-  OheyDailyStatus.unselected => oheyDailyStatusGreen,
+  OheyDailyStatus.unselected => oheyStatusUnsetColor,
 };
 
 Color oheyDailyStatusBlockAccent(OheyDailyStatus status) => switch (status) {

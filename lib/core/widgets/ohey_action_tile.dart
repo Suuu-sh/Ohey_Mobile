@@ -91,7 +91,6 @@ class OheyActionTile extends StatelessWidget {
               color: destructive ? destructiveColor : subtitleColor,
               size: 30,
               iconSize: 16,
-              shadow: false,
             ),
           ],
         ),

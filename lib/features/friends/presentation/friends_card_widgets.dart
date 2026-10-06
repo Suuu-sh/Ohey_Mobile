@@ -26,7 +26,8 @@ class _FriendCard extends StatelessWidget {
     friend: friend,
     statusLabel: status.label,
     statusReason: status.reason,
-    statusColor: _friendInviteButtonColor(status),
+    statusColor: status.buttonColor,
+    inviteButtonColor: _friendInviteButtonColor(status),
     statusEnabled: status.enabled,
     inviteSent: isInvited,
     fallbackAvatar: _fallbackAvatarForFriend(friend),
@@ -789,10 +790,8 @@ class _FriendProfileWishItemsShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return OheyThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-      accentColor: AppColors.cFFCE82FF,
       borderRadius: 22,
       backgroundColor: AppColors.cFF202F36.withValues(alpha: .92),
-      borderAlpha: .42,
       child: child,
     );
   }
@@ -858,14 +857,12 @@ class _FriendProfileStatusPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return OheyThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-      accentColor: statusColor,
       borderRadius: 22,
       backgroundColor: Color.lerp(
         AppColors.darkBackgroundBottom,
         statusColor,
         .34,
       )!.withValues(alpha: .90),
-      borderAlpha: .56,
       child: Row(
         children: [
           OheyPopIcon(
