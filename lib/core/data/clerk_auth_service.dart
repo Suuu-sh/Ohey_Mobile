@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:clerk_auth/clerk_auth.dart' as clerk;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -138,14 +139,16 @@ class ClerkAuthService {
   }
 
   Future<void> signInWithAppleIdToken(String idToken) async {
-    await initialize();
+    await _withClerkTimeout(initialize());
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.idTokenSignIn(
-      provider: clerk.IdTokenProvider.apple,
-      token: idToken.trim(),
+    await _withClerkTimeout(
+      auth.idTokenSignIn(
+        provider: clerk.IdTokenProvider.apple,
+        token: idToken.trim(),
+      ),
     );
-    await _refreshCachedSessionTokenWithRetry();
+    await _withClerkTimeout(_refreshCachedSessionTokenWithRetry());
     _authChanges.add(null);
   }
 
@@ -374,13 +377,7 @@ class ClerkAuthService {
   }
 
   Future<T> _withClerkTimeout<T>(Future<T> future) {
-    return future.timeout(
-      _clerkRequestTimeout,
-      onTimeout: () => throw const clerk.ClerkError(
-        code: clerk.ClerkErrorCode.clientAppError,
-        message: 'Authentication request timed out',
-      ),
-    );
+    return withClerkRequestTimeout(future);
   }
 
   Future<void> suspendCurrentSessionLocally() async {
@@ -422,6 +419,20 @@ class ClerkAuthService {
       // clerk_auth can throw if the Auth instance did not finish initializing.
     }
   }
+}
+
+@visibleForTesting
+Future<T> withClerkRequestTimeout<T>(
+  Future<T> future, {
+  Duration timeout = _clerkRequestTimeout,
+}) {
+  return future.timeout(
+    timeout,
+    onTimeout: () => throw const clerk.ClerkError(
+      code: clerk.ClerkErrorCode.clientAppError,
+      message: 'Authentication request timed out',
+    ),
+  );
 }
 
 String? _validSessionTokenJWT(clerk.SessionToken? token) {
