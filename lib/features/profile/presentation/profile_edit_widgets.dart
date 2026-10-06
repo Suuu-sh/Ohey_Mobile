@@ -436,7 +436,7 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
               icon: CupertinoIcons.square_arrow_right,
               label: 'ログアウト',
               subtitle: 'この端末からログアウトします',
-              accent: _ProfileColors.pink,
+              accent: AppColors.danger,
               destructive: true,
               onTap: () async {
                 try {
