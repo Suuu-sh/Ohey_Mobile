@@ -24,6 +24,7 @@ import '../../../core/widgets/ohey_calendar_status_sheets.dart';
 import '../../../core/widgets/ohey_daily_status_3d_option.dart';
 import '../../../core/widgets/ohey_friend_user_block.dart';
 import '../../../core/widgets/ohey_page_header.dart';
+import '../../../core/widgets/ohey_header_bar.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../../core/widgets/ohey_toast.dart';
@@ -389,6 +390,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
+            Positioned(
+              top:
+                  OheyPageHeader.contentTopInset(context) -
+                  OheyHeaderDivider.height,
+              left: 0,
+              right: 0,
+              child: OheyHeaderDivider(isWhite: isWhite),
+            ),
             SafeArea(
               bottom: false,
               child: Column(

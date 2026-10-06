@@ -34,6 +34,7 @@ import '../../../core/widgets/ohey_confirm_sheet.dart';
 import '../../../core/widgets/ohey_daily_status_3d_option.dart';
 import '../../../core/widgets/ohey_manage_list_row.dart';
 import '../../../core/widgets/ohey_page_header.dart';
+import '../../../core/widgets/ohey_header_bar.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
@@ -541,6 +542,14 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
+            Positioned(
+              top:
+                  OheyPageHeader.contentTopInset(context) -
+                  OheyHeaderDivider.height,
+              left: 0,
+              right: 0,
+              child: OheyHeaderDivider(isWhite: isWhite),
+            ),
             SafeArea(
               bottom: false,
               child: Padding(

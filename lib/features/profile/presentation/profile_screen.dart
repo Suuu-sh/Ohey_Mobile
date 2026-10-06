@@ -33,6 +33,7 @@ import '../../../core/widgets/ohey_confirm_sheet.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
 import '../../../core/widgets/ohey_manage_list_row.dart';
 import '../../../core/widgets/ohey_page_header.dart';
+import '../../../core/widgets/ohey_header_bar.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../admin/application/admin_controller.dart';
@@ -207,6 +208,13 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+            ),
+            Positioned(
+              top:
+                  MediaQuery.paddingOf(context).top + 4 + OheyPageHeader.height,
+              left: 0,
+              right: 0,
+              child: OheyHeaderDivider(isWhite: bodyIsWhite),
             ),
           ],
         ),
