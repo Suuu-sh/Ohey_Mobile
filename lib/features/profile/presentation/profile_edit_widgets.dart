@@ -412,6 +412,21 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
                 await _showSettingsSheet(rootContext, ref);
               },
             ),
+            Consumer(
+              builder: (context, ref, _) {
+                final mode = ref.watch(oheyThemeModeProvider);
+                return _SettingsTile(
+                  icon: mode.isWhite
+                      ? CupertinoIcons.sun_max_fill
+                      : CupertinoIcons.moon_fill,
+                  label: '表示モード',
+                  subtitle: '${mode.label}（タップで切り替え）',
+                  accent: AppColors.cFF1CB0F6,
+                  onTap: () =>
+                      ref.read(oheyThemeModeProvider.notifier).toggle(),
+                );
+              },
+            ),
             _SettingsTile(
               icon: CupertinoIcons.question_circle_fill,
               label: 'サポート',

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/ohey_avatar.dart';
-import '../theme/app_colors.dart';
+import '../theme/ohey_tone.dart';
 import 'ohey_avatar.dart';
 import 'ohey_themed_panel.dart';
 
@@ -12,8 +12,16 @@ class OheyProfileHeaderBackdrop extends StatelessWidget {
   final OheyAvatar avatar;
 
   @override
-  Widget build(BuildContext context) =>
-      ColoredBox(color: OheyAvatar.backgroundColor(avatar.background));
+  Widget build(BuildContext context) {
+    final tint = OheyAvatar.backgroundColor(avatar.background);
+    final tone = OheyTone.of(context);
+    // In dark mode the tint is laid thinly over the page so it stays dim.
+    return ColoredBox(
+      color: tone.isWhite
+          ? tint
+          : Color.alphaBlend(tint.withValues(alpha: .16), tone.page),
+    );
+  }
 }
 
 class OheyProfileHeroBanner extends StatelessWidget {
@@ -46,9 +54,9 @@ class OheyProfileHeroBanner extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(18, 10, 18, 10),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: OheyTone.of(context).page,
             borderRadius: BorderRadius.circular(18),
-            border: oheyChunkyBorder(AppColors.chunkyBorderLight),
+            border: oheyChunkyBorder(OheyTone.of(context).edge),
           ),
           child: Text(
             label,
@@ -56,7 +64,7 @@ class OheyProfileHeroBanner extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppColors.cFF3C3C3C,
+              color: OheyTone.of(context).ink,
               fontWeight: FontWeight.w900,
               letterSpacing: -.2,
             ),

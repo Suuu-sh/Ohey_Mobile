@@ -10,17 +10,24 @@ final class OheyYuruboNativeAdFactory: NSObject, FLTNativeAdFactory {
   ) -> NativeAdView? {
     let style = customOptions?["style"] as? String
     let isFeedBlock = style == "feed_block"
+    let isDark = customOptions?["dark"] as? Bool ?? false
+    let ink = isDark ? UIColor.white : UIColor(white: 0.24, alpha: 1)
+    let muted = isDark ? UIColor(white: 0.69, alpha: 1) : UIColor(white: 0.47, alpha: 1)
 
     let adView = NativeAdView()
     // Matches the Flutter feed card: white surface, ink text, brand-pink CTA.
-    adView.backgroundColor = .white
+    adView.backgroundColor = isDark
+      ? UIColor(red: 0.075, green: 0.122, blue: 0.141, alpha: 1)
+      : .white
     adView.layer.cornerRadius = isFeedBlock ? 0 : 30
     adView.layer.masksToBounds = true
 
     let prLabel = UILabel()
     prLabel.text = "PR"
-    prLabel.textColor = UIColor(white: 0.47, alpha: 1)
-    prLabel.backgroundColor = UIColor(white: 0.97, alpha: 1)
+    prLabel.textColor = muted
+    prLabel.backgroundColor = isDark
+      ? UIColor(white: 1, alpha: 0.08)
+      : UIColor(white: 0.97, alpha: 1)
     prLabel.font = UIFont.systemFont(ofSize: 11, weight: .black)
     prLabel.textAlignment = .center
     prLabel.layer.cornerRadius = 10
@@ -34,13 +41,13 @@ final class OheyYuruboNativeAdFactory: NSObject, FLTNativeAdFactory {
     iconView.translatesAutoresizingMaskIntoConstraints = false
 
     let headlineLabel = UILabel()
-    headlineLabel.textColor = UIColor(white: 0.24, alpha: 1)
+    headlineLabel.textColor = ink
     headlineLabel.font = UIFont.systemFont(ofSize: 17, weight: .black)
     headlineLabel.numberOfLines = 1
     headlineLabel.translatesAutoresizingMaskIntoConstraints = false
 
     let bodyLabel = UILabel()
-    bodyLabel.textColor = UIColor(white: 0.47, alpha: 1)
+    bodyLabel.textColor = muted
     bodyLabel.font = UIFont.systemFont(ofSize: 12, weight: .bold)
     bodyLabel.numberOfLines = 1
     bodyLabel.lineBreakMode = .byTruncatingTail

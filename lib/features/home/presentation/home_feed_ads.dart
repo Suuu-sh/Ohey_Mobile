@@ -63,6 +63,7 @@ class _YuruboNativeAdListItemState extends State<_YuruboNativeAdListItem> {
       return;
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final canRequestAds = await OheyAdsConsentService.prepareToRequestAds();
     if (!mounted) return;
     if (!canRequestAds) {
@@ -74,7 +75,7 @@ class _YuruboNativeAdListItemState extends State<_YuruboNativeAdListItem> {
       adUnitId: adUnitId,
       factoryId: _oheyYuruboAdNativeFactoryId,
       request: const AdRequest(),
-      customOptions: const {'style': 'feed_block'},
+      customOptions: {'style': 'feed_block', 'dark': isDark},
       listener: NativeAdListener(
         onAdLoaded: (ad) {
           if (!mounted) {

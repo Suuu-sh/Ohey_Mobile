@@ -24,6 +24,7 @@ import '../../../core/config/ohey_ads_config.dart';
 import '../../../core/config/ohey_revenuecat_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/ohey_theme_mode.dart';
+import '../../../core/theme/ohey_tone.dart';
 import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_action_tile.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
@@ -84,8 +85,8 @@ class ProfileScreen extends ConsumerWidget {
         .toList(growable: false);
     final friends =
         ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
-    const headerIsWhite = true;
     final bodyIsWhite = ref.watch(oheyThemeModeProvider).isWhite;
+    final headerIsWhite = bodyIsWhite;
     final isPlusActive = ref.watch(oheyPlusActiveProvider);
     final hasAdminAccess = ref
         .watch(adminAccessProvider)
@@ -97,9 +98,9 @@ class ProfileScreen extends ConsumerWidget {
     final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 318;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: AppColors.transparent,
-      ),
+      value:
+          (bodyIsWhite ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light)
+              .copyWith(statusBarColor: AppColors.transparent),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: bodyBackground,

@@ -546,10 +546,14 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
       child: Container(
         // Plus promo sits on the brand tint; a joined plan is a plain card.
         decoration: BoxDecoration(
-          color: showPlus ? AppColors.brandTint : AppColors.white,
+          color: showPlus
+              ? (OheyTone.of(context).isWhite
+                    ? AppColors.brandTint
+                    : AppColors.brand.withValues(alpha: .14))
+              : OheyTone.of(context).page,
           borderRadius: BorderRadius.circular(20),
           border: oheyChunkyBorder(
-            showPlus ? AppColors.cFFFFB8DD : AppColors.chunkyBorderLight,
+            showPlus ? AppColors.cFFFFB8DD : OheyTone.of(context).edge,
           ),
         ),
         child: Stack(
@@ -579,8 +583,8 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                               showPlus ? '広告を非表示' : '本日の予定',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: AppColors.cFF3C3C3C,
+                              style: TextStyle(
+                                color: OheyTone.of(context).ink,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w900,
                                 height: 1.08,
@@ -594,8 +598,8 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                           title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.cFF777777,
+                          style: TextStyle(
+                            color: OheyTone.of(context).muted,
                             fontSize: 13,
                             fontWeight: FontWeight.w900,
                             height: 1.1,
@@ -609,7 +613,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                               vertical: 5,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.cFFF7F7F7,
+                              color: OheyTone.of(context).field,
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
@@ -739,9 +743,9 @@ class _ProfileSummaryStats extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(18, 13, 18, 11),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: OheyTone.of(context).page,
         borderRadius: BorderRadius.circular(20),
-        border: oheyChunkyBorder(AppColors.chunkyBorderLight),
+        border: oheyChunkyBorder(OheyTone.of(context).edge),
       ),
       child: Row(
         children: [
@@ -773,7 +777,7 @@ class _ProfileStatsDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      Container(width: 2, height: 48, color: AppColors.chunkyBorderLight);
+      Container(width: 2, height: 48, color: OheyTone.of(context).edge);
 }
 
 class _ProfileStatGlyph extends StatelessWidget {
@@ -815,8 +819,8 @@ class _ProfileSummaryStat extends StatelessWidget {
             Text(
               value,
               maxLines: 1,
-              style: const TextStyle(
-                color: AppColors.cFF3C3C3C,
+              style: TextStyle(
+                color: OheyTone.of(context).ink,
                 fontSize: 26,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.9,
@@ -831,7 +835,7 @@ class _ProfileSummaryStat extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: AppColors.cFF777777,
+            color: OheyTone.of(context).muted,
             fontSize: 12,
             fontWeight: FontWeight.w900,
             letterSpacing: -.35,
@@ -853,19 +857,19 @@ class _ProfileYuruboActionRow extends StatelessWidget {
       onTap: onTap,
       height: 46,
       radius: 20,
-      color: AppColors.white,
-      bottomColor: AppColors.chunkyBorderLight,
+      color: OheyTone.of(context).page,
+      bottomColor: OheyTone.of(context).edge,
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      borderColor: AppColors.chunkyBorderLight,
+      borderColor: OheyTone.of(context).edge,
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               'ゆるぼ',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: AppColors.cFF3C3C3C,
+                color: OheyTone.of(context).ink,
                 fontSize: 14,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.3,
@@ -894,19 +898,19 @@ class _ProfileStatusActionRow extends StatelessWidget {
       onTap: onTap,
       height: 46,
       radius: 20,
-      color: AppColors.white,
-      bottomColor: AppColors.chunkyBorderLight,
+      color: OheyTone.of(context).page,
+      bottomColor: OheyTone.of(context).edge,
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      borderColor: AppColors.chunkyBorderLight,
+      borderColor: OheyTone.of(context).edge,
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               '今日の予定',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: AppColors.cFF3C3C3C,
+                color: OheyTone.of(context).ink,
                 fontSize: 13,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.4,
@@ -944,10 +948,10 @@ class _ProfileWishListActionRow extends StatelessWidget {
       onTap: onTap,
       height: 46,
       radius: 20,
-      color: AppColors.white,
-      bottomColor: AppColors.chunkyBorderLight,
+      color: OheyTone.of(context).page,
+      bottomColor: OheyTone.of(context).edge,
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      borderColor: AppColors.chunkyBorderLight,
+      borderColor: OheyTone.of(context).edge,
       child: Row(
         children: [
           Expanded(
@@ -955,12 +959,12 @@ class _ProfileWishListActionRow extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'やりたいこと',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: AppColors.cFF3C3C3C,
+                    color: OheyTone.of(context).ink,
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
                     height: 1,
@@ -973,7 +977,7 @@ class _ProfileWishListActionRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: AppColors.cFF3C3C3C.withValues(alpha: .62),
+                    color: OheyTone.of(context).ink.withValues(alpha: .62),
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
                     height: 1,
@@ -1004,19 +1008,19 @@ class _ProfileFriendActionRow extends StatelessWidget {
       onTap: onAddFriendsTap,
       height: 46,
       radius: 20,
-      color: AppColors.white,
-      bottomColor: AppColors.chunkyBorderLight,
+      color: OheyTone.of(context).page,
+      bottomColor: OheyTone.of(context).edge,
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      borderColor: AppColors.chunkyBorderLight,
+      borderColor: OheyTone.of(context).edge,
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               'フレンズを追加',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: AppColors.cFF3C3C3C,
+                color: OheyTone.of(context).ink,
                 fontSize: 14,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.3,
