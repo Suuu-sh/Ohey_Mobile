@@ -1060,117 +1060,82 @@ class _ProfileOheyPlusPurchaseSheetState
     final package = service.preferredPackage(offering);
     final product = package?.storeProduct;
     final priceLabel = product?.priceString.trim();
-    final purchaseLabel = isPlusActive
-        ? 'Plus利用中'
-        : _isPurchasing
-        ? '購入中...'
-        : priceLabel == null || priceLabel.isEmpty
-        ? '購入する'
-        : '$priceLabelで購入';
     final isRevenueCatReady = OheyRevenueCatConfig.isConfigured;
     final canPurchase = isRevenueCatReady && !isPlusActive && package != null;
 
+    final tone = OheyTone.of(context);
+    final String? statusMessage;
+    if (!isRevenueCatReady) {
+      // The API-key hint is for developers only; users get a plain message.
+      statusMessage = kDebugMode
+          ? 'RevenueCat APIキー未設定（OHEY_REVENUECAT_IOS_API_KEY）'
+          : '現在購入を受け付けていません';
+    } else if (offeringAsync.isLoading) {
+      statusMessage = 'プランを読み込み中...';
+    } else if (offeringAsync.hasError || package == null) {
+      statusMessage = 'プランを取得できませんでした。時間をおいて試してください。';
+    } else {
+      statusMessage = null;
+    }
+
     return OheyBottomSheetShell(
-      padding: const EdgeInsets.fromLTRB(22, 14, 22, 22),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
       radius: 30,
       showHandle: false,
-      bottomCloseLabel: '戻る',
+      bottomCloseLabel: '閉じる',
       blurSigma: 0,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 42,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: .18),
-                borderRadius: BorderRadius.circular(999),
+          const _PlusHero(),
+          const SizedBox(height: 18),
+          _PlusPlanCard(
+            isActive: isPlusActive,
+            planTitle: product?.title.trim().isNotEmpty == true
+                ? product!.title
+                : 'Ohey Plus',
+            priceLabel: priceLabel,
+          ),
+          const SizedBox(height: 14),
+          _PlusCompareTable(tone: tone),
+          if (statusMessage != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              statusMessage,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: tone.muted,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
               ),
             ),
-          ),
-          const SizedBox(height: 22),
-          const OheyPopIcon(
-            icon: CupertinoIcons.sparkles,
-            color: AppColors.cFFFF86C8,
-            size: 58,
-            iconSize: 30,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Ohey Plus',
-            style: TextStyle(
-              color: AppColors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            isPlusActive
-                ? 'Ohey Plusが有効です。ゆるぼ一覧の広告は非表示になります。'
-                : '広告なしでOheyを使えるPlusプランです。まずは広告非表示から始めます。',
-            style: TextStyle(
-              color: AppColors.white.withValues(alpha: .68),
-              fontSize: 14,
-              height: 1.55,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 18),
-          _ProfileOheyPlusBenefitRow(
-            icon: CupertinoIcons.eye_slash_fill,
-            title: '広告を非表示',
-            message: 'ゆるぼ一覧の広告ブロックを消して、投稿だけに集中できます。',
-          ),
-          if (!isRevenueCatReady) ...[
-            const SizedBox(height: 14),
-            _ProfileOheyPlusStatusBox(
-              message:
-                  'RevenueCat APIキーが未設定です。本番ビルドでは OHEY_REVENUECAT_IOS_API_KEY を設定すると購入できます。',
-            ),
-          ] else if (offeringAsync.isLoading) ...[
-            const SizedBox(height: 14),
-            const _ProfileOheyPlusStatusBox(message: '購入プランを読み込み中...'),
-          ] else if (offeringAsync.hasError || package == null) ...[
-            const SizedBox(height: 14),
-            const _ProfileOheyPlusStatusBox(
-              message:
-                  '購入プランを取得できませんでした。RevenueCat / App Store Connect の商品設定を確認してください。',
-            ),
-          ] else if (product != null) ...[
-            const SizedBox(height: 14),
-            _ProfileOheyPlusStatusBox(
-              message: '${product.title} · ${product.priceString}',
-            ),
           ],
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Ohey3DButton(
-            label: purchaseLabel,
-            icon: isPlusActive
-                ? CupertinoIcons.checkmark_seal_fill
-                : CupertinoIcons.creditcard_fill,
+            label: isPlusActive
+                ? 'Plus利用中'
+                : _isPurchasing
+                ? '購入中...'
+                : 'Plusをはじめる',
+            icon: isPlusActive ? CupertinoIcons.checkmark_seal_fill : null,
             onTap: canPurchase && !_isPurchasing
                 ? () => _purchase(package)
                 : null,
+            disabledColor: tone.edge,
             height: 54,
-            radius: 24,
-            color: AppColors.cFFFF86C8,
-            foregroundColor: AppColors.cFF3C3C3C,
-            shadowColor: AppColors.cFFD9609F,
-            fontSize: 15,
+            fontSize: 16,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
           Center(
             child: CupertinoButton(
-              minimumSize: const Size(0, 28),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              minimumSize: const Size(44, 36),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               onPressed: _isRestoring ? null : _restore,
               child: Text(
                 _isRestoring ? '復元中...' : '購入を復元',
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .72),
+                  color: tone.muted,
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
                 ),
@@ -1222,88 +1187,226 @@ class _ProfileOheyPlusPurchaseSheetState
   }
 }
 
-class _ProfileOheyPlusStatusBox extends StatelessWidget {
-  const _ProfileOheyPlusStatusBox({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-      decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: .06),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.white.withValues(alpha: .08)),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(
-          color: AppColors.white.withValues(alpha: .62),
-          fontSize: 12,
-          height: 1.35,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileOheyPlusBenefitRow extends StatelessWidget {
-  const _ProfileOheyPlusBenefitRow({
-    required this.icon,
-    required this.title,
-    required this.message,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
+/// Brand-color band with the Plus mark, like a subscription page header.
+class _PlusHero extends StatelessWidget {
+  const _PlusHero();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
       decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: .07),
+        color: AppColors.brand,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.white.withValues(alpha: .10)),
+        border: const Border(
+          bottom: BorderSide(color: AppColors.brandLip, width: 4),
+        ),
       ),
       child: Row(
         children: [
-          OheyPopIcon(
-            icon: icon,
-            color: AppColors.cFFFF86C8,
-            size: 42,
-            iconSize: 22,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 14,
+                  'OHEY PLUS',
+                  style: TextStyle(
+                    color: AppColors.cFFFFE3F0,
+                    fontSize: 12,
                     fontWeight: FontWeight.w900,
+                    letterSpacing: 1.6,
                   ),
                 ),
-                const SizedBox(height: 3),
+                SizedBox(height: 6),
                 Text(
-                  message,
+                  '広告なしで、\nもっとゆるく。',
                   style: TextStyle(
-                    color: AppColors.white.withValues(alpha: .62),
-                    fontSize: 12,
-                    height: 1.35,
-                    fontWeight: FontWeight.w700,
+                    color: AppColors.white,
+                    fontSize: 24,
+                    height: 1.25,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ],
             ),
           ),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(22),
+              border: const Border(
+                bottom: BorderSide(color: AppColors.brandLip, width: 4),
+              ),
+            ),
+            child: const Icon(
+              CupertinoIcons.sparkles,
+              color: AppColors.brand,
+              size: 38,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The single plan, with a ribbon the way pricing cards mark a pick.
+class _PlusPlanCard extends StatelessWidget {
+  const _PlusPlanCard({
+    required this.isActive,
+    required this.planTitle,
+    required this.priceLabel,
+  });
+
+  final bool isActive;
+  final String planTitle;
+  final String? priceLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final tone = OheyTone.of(context);
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: tone.page,
+        borderRadius: BorderRadius.circular(20),
+        border: oheyChunkyBorder(AppColors.brand),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            color: AppColors.brand,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            child: Text(
+              isActive ? '利用中' : 'おすすめ',
+              style: const TextStyle(
+                color: AppColors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: .6,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        planTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: tone.ink,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'ゆるぼ一覧の広告をすべて非表示',
+                        style: TextStyle(
+                          color: tone.muted,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (priceLabel?.isNotEmpty == true)
+                  Text(
+                    priceLabel!,
+                    style: const TextStyle(
+                      color: AppColors.brand,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      fontFeatures: [FontFeature.tabularFigures()],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Free vs Plus, listing only what actually differs today.
+class _PlusCompareTable extends StatelessWidget {
+  const _PlusCompareTable({required this.tone});
+
+  final OheyTone tone;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget head(String label, {Color? color}) => SizedBox(
+      width: 60,
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: color ?? tone.muted,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+    Widget mark(bool on) => SizedBox(
+      width: 60,
+      child: Icon(
+        on ? CupertinoIcons.checkmark_alt : CupertinoIcons.minus,
+        color: on ? AppColors.brand : tone.faint,
+        size: 20,
+      ),
+    );
+    Widget row(String label, bool free, bool plus) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: tone.ink,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          mark(free),
+          mark(plus),
+        ],
+      ),
+    );
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 8, 6),
+      decoration: BoxDecoration(
+        color: tone.page,
+        borderRadius: BorderRadius.circular(20),
+        border: oheyChunkyBorder(tone.edge),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Expanded(child: SizedBox.shrink()),
+              head('無料'),
+              head('Plus', color: AppColors.brand),
+            ],
+          ),
+          row('ゆるぼ・フレンズ・カレンダー', true, true),
+          Divider(height: 1, thickness: 2, color: tone.edge),
+          row('広告なし', false, true),
         ],
       ),
     );
