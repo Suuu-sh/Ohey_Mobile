@@ -15,13 +15,14 @@ import 'core/services/ohey_push_notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/ohey_theme_mode.dart';
 import 'core/widgets/ohey_tab_shell.dart';
+import 'core/widgets/ohey_startup_splash.dart';
 import 'features/onboarding/application/ohey_auth_flow_policy.dart';
-import 'package:ohey/core/theme/app_colors.dart';
 
 const _appDisplayName = 'Ohey';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  OheyStartupClock.start();
 
   await OheyThemeModeController.preload();
 
@@ -113,117 +114,12 @@ class _BootstrapGateState extends ConsumerState<_BootstrapGate> {
         ref.watch(hasAuthSessionProvider);
         return const OheyTabShell();
       },
-      loading: () => const _StartupScreen(),
-      error: (error, stackTrace) => _StartupScreen(
+      loading: () => const OheyStartupSplash(),
+      error: (error, stackTrace) => OheyStartupSplash(
         message: '起動に失敗しました',
         detail: kDebugMode ? '$error' : null,
         onRetry: () => ref.invalidate(_oheyBootstrapProvider),
       ),
-    );
-  }
-}
-
-class _StartupScreen extends StatelessWidget {
-  const _StartupScreen({this.message, this.detail, this.onRetry});
-
-  final String? message;
-  final String? detail;
-  final VoidCallback? onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasError = message != null;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final wordmarkColor = isDark ? AppColors.white : const Color(0xFF3C1237);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: isDark ? AppColors.black : AppColors.white,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FractionallySizedBox(
-                  widthFactor: .72,
-                  child: Image.asset(
-                    'assets/images/mascot/ohey_mascot_fullbody.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _appDisplayName,
-                  style: TextStyle(
-                    color: wordmarkColor,
-                    fontFamily: 'MPLUSRounded1c',
-                    fontSize: 44,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1.2,
-                  ),
-                ),
-                if (hasError) ...[
-                  const SizedBox(height: 20),
-                  _StartupError(
-                    message: message!,
-                    detail: detail,
-                    onRetry: onRetry,
-                    isDark: isDark,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StartupError extends StatelessWidget {
-  const _StartupError({
-    required this.message,
-    required this.isDark,
-    this.detail,
-    this.onRetry,
-  });
-
-  final String message;
-  final String? detail;
-  final VoidCallback? onRetry;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final textColor = isDark ? AppColors.white : const Color(0xFF3C1237);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          message,
-          textAlign: TextAlign.center,
-          style: TextStyle(color: textColor, fontWeight: FontWeight.w800),
-        ),
-        if (detail != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            detail!,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: textColor.withValues(alpha: .72),
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-        if (onRetry != null) ...[
-          const SizedBox(height: 14),
-          FilledButton(onPressed: onRetry, child: const Text('もう一度試す')),
-        ],
-      ],
     );
   }
 }
