@@ -18,8 +18,11 @@
                             <imageView opaque="NO" clipsSubviews="NO" multipleTouchEnabled="YES" contentMode="scaleAspectFit" image="LaunchMascot" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4"/>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Ohey" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="launch-wordmark">
                                 <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="46" design="rounded"/>
-                                <color key="textColor" name="LaunchWordmark"/>
+                                <color key="textColor" red="0.235" green="0.071" blue="0.216" alpha="1.000" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
+                                <variation key="userInterfaceStyle" value="dark">
+                                    <color key="textColor" white="1.000" alpha="1.000" colorSpace="custom" customColorSpace="sRGB"/>
+                                </variation>
                             </label>
                         </subviews>
                         <color key="backgroundColor" name="LaunchBackground"/>
@@ -34,7 +37,6 @@
                             <constraint firstItem="launch-wordmark" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Ze5-6b-2t3" secondAttribute="leading" constant="24" id="wordmark-leading"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="launch-wordmark" secondAttribute="trailing" constant="24" id="wordmark-trailing"/>
                         </constraints>
-                        <color key="tintColor" name="LaunchWordmark"/>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
