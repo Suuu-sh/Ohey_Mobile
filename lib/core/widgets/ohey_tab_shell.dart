@@ -46,10 +46,10 @@ class OheyTabShell extends ConsumerStatefulWidget {
 
 class _OheyTabShellState extends ConsumerState<OheyTabShell>
     with WidgetsBindingObserver {
-  static const _feedAccentColor = AppColors.cFFC08BFF;
-  static const _friendsAccentColor = AppColors.cFF9AF21A;
-  static const _calendarAccentColor = AppColors.cFF20B9FF;
-  static const _profileAccentColor = AppColors.cFFFF75B5;
+  static const _feedAccentColor = AppColors.cFFCE82FF;
+  static const _friendsAccentColor = AppColors.cFF89E219;
+  static const _calendarAccentColor = AppColors.cFF1CB0F6;
+  static const _profileAccentColor = AppColors.cFFFF86C8;
 
   int _selectedIndex = 0;
   int _previousSelectedIndex = 0;
@@ -576,48 +576,37 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
           children: _pages,
         ),
         bottomNavigationBar: Container(
-          padding: const EdgeInsets.only(top: 7),
+          padding: const EdgeInsets.only(top: 8),
           decoration: BoxDecoration(
-            color: AppColors.darkBackgroundBottom,
+            color: isWhite ? AppColors.white : AppColors.darkBackgroundBottom,
             border: Border(
               top: BorderSide(
-                color: _selectedToastAccentColor.withValues(alpha: .72),
-                width: 1,
+                color: isWhite
+                    ? AppColors.chunkyBorderLight
+                    : AppColors.chunkyBorderDark,
+                width: 2,
               ),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: _selectedToastAccentColor.withValues(alpha: .28),
-                blurRadius: 18,
-                spreadRadius: .5,
-                offset: const Offset(0, -5),
-              ),
-              BoxShadow(
-                color: _selectedToastAccentColor.withValues(alpha: .16),
-                blurRadius: 34,
-                offset: const Offset(0, -9),
-              ),
-            ],
           ),
           child: SafeArea(
             top: false,
-            minimum: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+            minimum: const EdgeInsets.fromLTRB(16, 0, 16, 10),
             child: SizedBox(
-              height: 82,
+              height: 74,
               child: Row(
                 children: [
                   _TabItem(
                     customIcon: _FeedTabIcon(selected: _selectedIndex == 0),
                     label: 'ゆるぼ',
                     selected: _selectedIndex == 0,
-                    activeColor: AppColors.cFF8A62FF,
+                    activeColor: AppColors.cFFCE82FF,
                     onTap: () => _selectTab(0),
                   ),
                   _TabItem(
                     customIcon: _FriendsTabIcon(selected: _selectedIndex == 1),
                     label: 'フレンズ',
                     selected: _selectedIndex == 1,
-                    activeColor: AppColors.cFF9AF21A,
+                    activeColor: AppColors.cFF89E219,
                     badgeCount: incomingFriendRequestCount,
                     onTap: () => _selectTab(1),
                   ),
@@ -625,14 +614,14 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
                     customIcon: _CalendarTabIcon(selected: _selectedIndex == 2),
                     label: 'カレンダー',
                     selected: _selectedIndex == 2,
-                    activeColor: AppColors.cFF20B9FF,
+                    activeColor: AppColors.cFF1CB0F6,
                     onTap: () => _selectTab(2),
                   ),
                   _TabItem(
                     customIcon: _ProfileTabIcon(selected: _selectedIndex == 3),
                     label: 'マイページ',
                     selected: _selectedIndex == 3,
-                    activeColor: AppColors.cFFFF75B5,
+                    activeColor: AppColors.cFFFF86C8,
                     onTap: () => _selectTab(3),
                   ),
                 ],
@@ -738,8 +727,8 @@ class _AuthLoginArrivalTransition extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        AppColors.cFFFF75B5.withValues(alpha: .26),
-                        AppColors.cFFC08BFF.withValues(alpha: .20),
+                        AppColors.cFFFF86C8.withValues(alpha: .26),
+                        AppColors.cFFCE82FF.withValues(alpha: .20),
                         AppColors.darkBackgroundBottom.withValues(alpha: .56),
                       ],
                     ),
@@ -796,14 +785,7 @@ class _AuthLoginArrivalCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.darkBackgroundBottom.withValues(alpha: .86),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.cFFFF75B5.withValues(alpha: .42)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cFFFF75B5.withValues(alpha: .30),
-            blurRadius: 32,
-            offset: const Offset(0, 12),
-          ),
-        ],
+        border: Border.all(color: AppColors.cFFFF86C8.withValues(alpha: .42)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -814,7 +796,7 @@ class _AuthLoginArrivalCard extends StatelessWidget {
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [AppColors.cFFFF75B5, AppColors.cFFC08BFF],
+                colors: [AppColors.cFFFF86C8, AppColors.cFFCE82FF],
               ),
             ),
             child: const Icon(
@@ -957,7 +939,7 @@ class _SheetInlineError extends StatelessWidget {
         ? AppColors.danger.withValues(alpha: .10)
         : AppColors.danger.withValues(alpha: .14);
     final border = AppColors.danger.withValues(alpha: isWhite ? .26 : .34);
-    final textColor = isWhite ? AppColors.cFF8F254B : AppColors.white;
+    final textColor = isWhite ? AppColors.cFF6B2850 : AppColors.white;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
@@ -1057,7 +1039,7 @@ class _YuruboParticipationRequestSheetState
               children: [
                 const OheyPopIcon(
                   icon: CupertinoIcons.person_2_fill,
-                  color: AppColors.cFFC08BFF,
+                  color: AppColors.cFFCE82FF,
                   size: 54,
                   iconSize: 29,
                 ),
@@ -1125,7 +1107,8 @@ class _YuruboParticipationRequestSheetState
                       padding: const EdgeInsets.only(top: 4),
                       child: _SheetInlineError(
                         message: _errorMessage!,
-                        isWhite: false,
+                        isWhite:
+                            Theme.of(context).brightness == Brightness.light,
                       ),
                     ),
             ),
@@ -1158,7 +1141,7 @@ class _YuruboParticipationRequestRow extends StatelessWidget {
       friend: friend,
       statusLabel: '申請先: ${yuruboTitle.trim().isEmpty ? 'ゆるぼ' : yuruboTitle}',
       statusReason: '参加申請を承認すると参加者に追加されます。',
-      statusColor: AppColors.cFFC08BFF,
+      statusColor: AppColors.cFFCE82FF,
       statusEnabled: true,
       fallbackAvatar: participant.avatar,
       showInvite: true,
@@ -1166,11 +1149,11 @@ class _YuruboParticipationRequestRow extends StatelessWidget {
       invitePressed: isBusy,
       inviteLabel: '承認',
       invitePressedLabel: '承認中',
-      inviteButtonColor: AppColors.cFF9AF21A,
-      inviteForegroundColor: AppColors.cFF101820,
-      inviteShadowColor: Color.lerp(AppColors.cFF9AF21A, AppColors.black, .36)!,
+      inviteButtonColor: AppColors.cFF89E219,
+      inviteForegroundColor: AppColors.cFF3C3C3C,
+      inviteShadowColor: Color.lerp(AppColors.cFF89E219, AppColors.black, .36)!,
       inviteBurstIcon: CupertinoIcons.checkmark_circle_fill,
-      inviteBurstColor: AppColors.cFF9AF21A,
+      inviteBurstColor: AppColors.cFF89E219,
       compact: true,
       onInvite: disabled ? null : onApprove,
     );
@@ -1276,7 +1259,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                   children: [
                     const OheyPopIcon(
                       icon: CupertinoIcons.sparkles,
-                      color: AppColors.cFFFFD84D,
+                      color: AppColors.cFFFFD43B,
                       size: 54,
                       iconSize: 29,
                     ),
@@ -1290,7 +1273,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: AppColors.cFFFFF4B8,
+                              color: AppColors.cFFFFF5D3,
                               fontSize: 14,
                               fontWeight: FontWeight.w900,
                               letterSpacing: -.2,
@@ -1328,7 +1311,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                             child: const Text(
                               '返信待ち',
                               style: TextStyle(
-                                color: AppColors.cFFFFD84D,
+                                color: AppColors.cFFFFD43B,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w900,
                               ),
@@ -1377,7 +1360,9 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                           padding: const EdgeInsets.only(top: 14),
                           child: _SheetInlineError(
                             message: _errorMessage!,
-                            isWhite: false,
+                            isWhite:
+                                Theme.of(context).brightness ==
+                                Brightness.light,
                           ),
                         ),
                 ),
@@ -1392,7 +1377,6 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                   color: AppColors.primaryAction,
                   shadowColor: AppColors.primaryActionShadow,
                   fontSize: 15,
-                  outerShadows: const [],
                 ),
                 const SizedBox(height: 10),
                 Ohey3DButton.secondary(
@@ -1406,10 +1390,8 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                   radius: 21,
                   color: AppColors.white.withValues(alpha: .07),
                   foregroundColor: AppColors.white.withValues(alpha: .72),
-                  shadowColor: AppColors.cFF5B3A7A.withValues(alpha: .72),
+                  shadowColor: AppColors.cFF5E3A7A.withValues(alpha: .72),
                   fontSize: 14,
-                  useGradient: false,
-                  outerShadows: const [],
                 ),
               ],
             ),
@@ -1469,10 +1451,10 @@ class _InviteCelebrationPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width * .50, size.height * .16);
     final colors = [
-      AppColors.cFFFFD84D,
-      AppColors.cFFFF4FB5,
-      AppColors.cFFC08BFF,
-      AppColors.cFF9AF21A,
+      AppColors.cFFFFD43B,
+      AppColors.cFFD9609F,
+      AppColors.cFFCE82FF,
+      AppColors.cFF89E219,
       AppColors.white,
     ];
     for (var i = 0; i < 24; i++) {
@@ -1499,7 +1481,7 @@ class _InviteCelebrationPainter extends CustomPainter {
     final glowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          AppColors.cFFFF4FB5.withValues(alpha: .22 * (1 - progress * .4)),
+          AppColors.cFFD9609F.withValues(alpha: .22 * (1 - progress * .4)),
           AppColors.transparent,
         ],
       ).createShader(Rect.fromCircle(center: center, radius: 130));
@@ -1531,7 +1513,10 @@ class _TabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labelColor = selected ? activeColor : AppColors.cFFA5ADBC;
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final labelColor = selected
+        ? activeColor
+        : (isWhite ? AppColors.cFFAFAFAF : AppColors.cFF777777);
     final hasBadge = badgeCount > 0;
     return Expanded(
       child: GestureDetector(
@@ -1545,14 +1530,15 @@ class _TabItem extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(
-                height: 44,
+                height: 50,
                 child: Center(
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      _TabIconGlow(
+                      _TabIconFrame(
                         selected: selected,
                         color: activeColor,
+                        isWhite: isWhite,
                         child: IconTheme(
                           data: IconThemeData(color: labelColor),
                           child: customIcon ?? const SizedBox.shrink(),
@@ -1560,33 +1546,25 @@ class _TabItem extends StatelessWidget {
                       ),
                       if (hasBadge)
                         Positioned(
-                          right: 6,
-                          top: 1,
+                          right: 2,
+                          top: -2,
                           child: _TabBadge(count: badgeCount),
                         ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 1),
+              const SizedBox(height: 3),
               Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: labelColor,
-                  fontSize: 9.5,
+                  fontSize: 10,
                   height: 1,
-                  fontWeight: selected ? FontWeight.w900 : FontWeight.w800,
-                  letterSpacing: -.35,
-                  shadows: selected
-                      ? [
-                          Shadow(
-                            color: activeColor.withValues(alpha: .36),
-                            blurRadius: 10,
-                          ),
-                        ]
-                      : null,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: .2,
                 ),
               ),
             ],
@@ -1595,6 +1573,41 @@ class _TabItem extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Selected tabs sit in a tinted rounded frame with a solid outline.
+class _TabIconFrame extends StatelessWidget {
+  const _TabIconFrame({
+    required this.selected,
+    required this.color,
+    required this.isWhite,
+    required this.child,
+  });
+
+  final bool selected;
+  final Color color;
+  final bool isWhite;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => AnimatedContainer(
+    duration: const Duration(milliseconds: 140),
+    curve: Curves.easeOutCubic,
+    width: 62,
+    height: 50,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: selected
+          ? color.withValues(alpha: isWhite ? .14 : .16)
+          : AppColors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(
+        color: selected ? color.withValues(alpha: .9) : AppColors.transparent,
+        width: 2,
+      ),
+    ),
+    child: child,
+  );
 }
 
 class _TabBadge extends StatelessWidget {
@@ -1617,18 +1630,14 @@ class _TabBadge extends StatelessWidget {
         constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.cFFFF5F8F, AppColors.cFFFF335F],
-          ),
+          color: AppColors.danger,
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: AppColors.darkBackgroundBottom, width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.cFFFF4F7A.withValues(alpha: .42),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          border: Border.all(
+            color: Theme.of(context).brightness == Brightness.light
+                ? AppColors.white
+                : AppColors.darkBackgroundBottom,
+            width: 2,
+          ),
         ),
         child: Text(
           label,
@@ -1645,85 +1654,6 @@ class _TabBadge extends StatelessWidget {
   }
 }
 
-class _TabIconGlow extends StatelessWidget {
-  const _TabIconGlow({
-    required this.selected,
-    required this.color,
-    required this.child,
-  });
-
-  final bool selected;
-  final Color color;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => AnimatedContainer(
-    duration: const Duration(milliseconds: 220),
-    curve: Curves.easeOutCubic,
-    width: 64,
-    height: 50,
-    child: Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.center,
-      children: [
-        if (selected) ...[
-          _TabIconShapeGlow(
-            color: color,
-            blur: 12,
-            opacity: .24,
-            scale: 1.14,
-            child: child,
-          ),
-          _TabIconShapeGlow(
-            color: color,
-            blur: 6,
-            opacity: .36,
-            scale: 1.06,
-            child: child,
-          ),
-        ],
-        child,
-      ],
-    ),
-  );
-}
-
-class _TabIconShapeGlow extends StatelessWidget {
-  const _TabIconShapeGlow({
-    required this.color,
-    required this.blur,
-    required this.opacity,
-    required this.scale,
-    required this.child,
-  });
-
-  final Color color;
-  final double blur;
-  final double opacity;
-  final double scale;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => Positioned.fill(
-    child: IgnorePointer(
-      child: ExcludeSemantics(
-        child: ImageFiltered(
-          imageFilter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: Opacity(
-            opacity: opacity,
-            child: ColorFiltered(
-              colorFilter: ColorFilter.mode(color, BlendMode.srcATop),
-              child: Center(
-                child: Transform.scale(scale: scale, child: child),
-              ),
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
 class _PopTabIcon extends StatelessWidget {
   const _PopTabIcon({required this.selected, required this.painter});
 
@@ -1733,7 +1663,7 @@ class _PopTabIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AnimatedScale(
     duration: const Duration(milliseconds: 180),
-    scale: selected ? 1.08 : .95,
+    scale: selected ? 1 : .92,
     child: CustomPaint(size: const Size(48, 42), painter: painter),
   );
 }
@@ -1808,7 +1738,7 @@ class _FeedPainter extends CustomPainter {
         size.height * .48,
       )
       ..close();
-    final baseColor = active ? AppColors.cFF8A62FF : AppColors.cFF8F98A8;
+    final baseColor = active ? AppColors.cFFCE82FF : AppColors.cFFAFAFAF;
     canvas.drawShadow(
       roof,
       baseColor.withValues(alpha: active ? .55 : .18),
@@ -1820,8 +1750,8 @@ class _FeedPainter extends CustomPainter {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: active
-            ? const [AppColors.cFFB392FF, AppColors.cFF6D4DFF]
-            : const [AppColors.cFFB1BAC8, AppColors.cFF727C8D],
+            ? const [AppColors.cFFD99CFF, AppColors.cFFA568CC]
+            : const [AppColors.cFFAFAFAF, AppColors.cFF777777],
       ).createShader(Offset.zero & size);
     canvas.drawPath(roof, paint);
     final door = RRect.fromRectAndRadius(
@@ -1835,10 +1765,10 @@ class _FeedPainter extends CustomPainter {
     );
     canvas.drawRRect(
       door,
-      Paint()..color = active ? AppColors.cFFB8EA00 : AppColors.cFF8F98A8,
+      Paint()..color = active ? AppColors.cFF89E219 : AppColors.cFFAFAFAF,
     );
     final dotPaint = Paint()
-      ..color = active ? AppColors.cFFC8F400 : AppColors.cFFD5DBE5;
+      ..color = active ? AppColors.cFF89E219 : AppColors.cFFE5E5E5;
     for (final offset in [
       const Offset(.44, .43),
       const Offset(.56, .43),
@@ -1865,8 +1795,8 @@ class _FriendsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final colors = active
-        ? const [AppColors.cFF9AF21A, AppColors.cFF5DC86C]
-        : const [AppColors.cFFB1BAC8, AppColors.cFF798393];
+        ? const [AppColors.cFF89E219, AppColors.cFF89E219]
+        : const [AppColors.cFFAFAFAF, AppColors.cFF777777];
     final paint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
@@ -1905,7 +1835,7 @@ class _FriendsPainter extends CustomPainter {
     person(Offset(size.width * .38, size.height * .52), 1.05);
     person(Offset(size.width * .64, size.height * .58), .78);
     if (active) {
-      final spark = Paint()..color = AppColors.cFFC8F400;
+      final spark = Paint()..color = AppColors.cFF89E219;
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(size.width * .78, 2, 5, 14),
@@ -1935,8 +1865,8 @@ class _CalendarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final colors = active
-        ? const [AppColors.cFF36C8FF, AppColors.cFF0875E8]
-        : const [AppColors.cFFB1BAC8, AppColors.cFF738091];
+        ? const [AppColors.cFF49C0F8, AppColors.cFF1899D6]
+        : const [AppColors.cFFAFAFAF, AppColors.cFF777777];
     final rect = RRect.fromRectAndRadius(
       Rect.fromLTWH(6, 8, size.width - 12, size.height - 10),
       const Radius.circular(12),
@@ -1960,7 +1890,7 @@ class _CalendarPainter extends CustomPainter {
     );
     canvas.drawRRect(
       cutout,
-      Paint()..color = AppColors.cFF06111D.withValues(alpha: .88),
+      Paint()..color = AppColors.cFF131F24.withValues(alpha: .88),
     );
     final tabPaint = Paint()..color = colors.first;
     canvas.drawRRect(
@@ -1978,14 +1908,14 @@ class _CalendarPainter extends CustomPainter {
       tabPaint,
     );
     final dotPaint = Paint()
-      ..color = active ? AppColors.cFF36C8FF : AppColors.cFFB1BAC8;
+      ..color = active ? AppColors.cFF49C0F8 : AppColors.cFFAFAFAF;
     for (final y in [25.0, 33.0]) {
       for (final x in [19.0, 28.0, 37.0]) {
         canvas.drawCircle(Offset(x, y), 2.4, dotPaint);
       }
     }
     if (active) {
-      final spark = Paint()..color = AppColors.cFF36C8FF;
+      final spark = Paint()..color = AppColors.cFF49C0F8;
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(size.width - 6, 0, 6, 14),
@@ -2019,8 +1949,8 @@ class _ProfilePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final colors = active
-        ? const [AppColors.cFFFF78C2, AppColors.cFFFF3E9D]
-        : const [AppColors.cFFB1BAC8, AppColors.cFF778293];
+        ? const [AppColors.cFFFF86C8, AppColors.cFFD9609F]
+        : const [AppColors.cFFAFAFAF, AppColors.cFF777777];
     final bodyPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
@@ -2066,8 +1996,8 @@ class _ProfilePainter extends CustomPainter {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: active
-            ? const [AppColors.cFF8FE978, AppColors.cFF44BC55]
-            : const [AppColors.cFFB9C1CF, AppColors.cFF858FA0],
+            ? const [AppColors.cFFA5ED6E, AppColors.cFF89E219]
+            : const [AppColors.cFFCDCDCD, AppColors.cFF777777],
       ).createShader(Offset.zero & size);
     final cap = RRect.fromRectAndRadius(
       Rect.fromLTWH(
@@ -2081,7 +2011,7 @@ class _ProfilePainter extends CustomPainter {
     canvas.drawRRect(cap, capPaint);
 
     final eyePaint = Paint()
-      ..color = AppColors.cFF243041.withValues(alpha: active ? .95 : .75);
+      ..color = AppColors.cFF2B3A41.withValues(alpha: active ? .95 : .75);
     final eyeHighlight = Paint()
       ..color = AppColors.white.withValues(alpha: .92);
     canvas.drawOval(
@@ -2112,7 +2042,7 @@ class _ProfilePainter extends CustomPainter {
     );
 
     final smilePaint = Paint()
-      ..color = AppColors.cFF243041.withValues(alpha: active ? .72 : .55)
+      ..color = AppColors.cFF2B3A41.withValues(alpha: active ? .72 : .55)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
@@ -2127,7 +2057,7 @@ class _ProfilePainter extends CustomPainter {
     canvas.drawPath(smile, smilePaint);
 
     if (active) {
-      final sparkle = Paint()..color = AppColors.cFFFF78C2;
+      final sparkle = Paint()..color = AppColors.cFFFF86C8;
       final star = Path()
         ..moveTo(size.width * .90, size.height * .27)
         ..lineTo(size.width * .94, size.height * .35)

@@ -11,13 +11,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/config/ohey_ads_config.dart';
 import '../../../core/services/ohey_ads_consent_service.dart';
-import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/auth_identity_provider.dart';
 import '../../../core/data/ohey_ad_entry_builder.dart';
 import '../../../core/data/user_repository.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/ohey_report_reason.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_user.dart';
 import '../../../core/models/wish_item.dart';
@@ -35,7 +35,6 @@ import '../../../core/widgets/ohey_daily_status_3d_option.dart';
 import '../../../core/widgets/ohey_manage_list_row.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
-import '../../../core/widgets/ohey_scene_header_backdrop.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../../core/widgets/ohey_user_profile_sheet.dart';
@@ -526,33 +525,22 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       _selectedCustomFilterId,
       _customFilters,
     );
-    final headerBackgroundHeight =
-        OheyPageHeader.contentTopInset(context) + 100;
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: AppColors.transparent,
-      ),
+      value: (isWhite ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light)
+          .copyWith(statusBarColor: AppColors.transparent),
       child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: isWhite
-                ? const [AppColors.white, AppColors.white, AppColors.cFFF7F9FB]
+                ? const [AppColors.white, AppColors.white, AppColors.cFFF7F7F7]
                 : AppColors.darkBackgroundGradient,
           ),
         ),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              height: headerBackgroundHeight,
-              child: _FriendsHeaderBackdrop(isWhite: isWhite),
-            ),
             SafeArea(
               bottom: false,
               child: Padding(
@@ -567,7 +555,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                   children: [
                     OheyPageHeader(
                       title: 'フレンズ',
-                      titleColor: _FriendsColors.lime,
                       trailing: OheyHeaderIconButton(
                         icon: CupertinoIcons.plus,
                         semanticLabel: 'フレンズを追加',
@@ -756,9 +743,9 @@ class _IncomingFriendRequestBannerState
         ? 'ここからすぐ承認・見送りできます。'
         : '${profile.displayName}さんほか、未対応の申請があります。';
     final busy = _busyRequestId == request.id;
-    final ink = isWhite ? AppColors.cFF111820 : AppColors.white;
+    final ink = isWhite ? AppColors.cFF131F24 : AppColors.white;
     final sub = isWhite
-        ? AppColors.cFF6D7884
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .68);
 
     return Container(
@@ -771,13 +758,6 @@ class _IncomingFriendRequestBannerState
         border: Border.all(
           color: _FriendsColors.lime.withValues(alpha: isWhite ? .28 : .36),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: _FriendsColors.lime.withValues(alpha: isWhite ? .12 : .18),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -837,12 +817,7 @@ class _IncomingFriendRequestBannerState
                   onTap: busy ? null : () => _run(request, widget.onReject),
                   height: 42,
                   radius: 18,
-                  color: AppColors.white.withValues(alpha: .07),
-                  foregroundColor: AppColors.white.withValues(alpha: .72),
-                  shadowColor: AppColors.cFF573D7A.withValues(alpha: .72),
                   fontSize: 13,
-                  useGradient: false,
-                  outerShadows: const [],
                 ),
               ),
               const SizedBox(width: 10),
@@ -853,10 +828,9 @@ class _IncomingFriendRequestBannerState
                   isLoading: busy,
                   height: 42,
                   radius: 18,
-                  color: AppColors.success,
-                  shadowColor: AppColors.successShadow,
+                  color: AppColors.primaryAction,
+                  shadowColor: AppColors.primaryActionShadow,
                   fontSize: 13,
-                  outerShadows: const [],
                 ),
               ),
             ],
@@ -879,7 +853,7 @@ class _IncomingFriendRequestCountBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.cFFFF4FA3,
+        color: AppColors.cFFD9609F,
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: AppColors.white, width: 2),
       ),
@@ -982,9 +956,9 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final ink = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final sub = isWhite
-        ? AppColors.cFF667381
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .66);
     return OheyBottomSheetShell(
       title: widget.title,
@@ -1114,7 +1088,7 @@ class _InviteWeeklyDatePickerState
               ),
               style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.light
-                    ? AppColors.cFF667381
+                    ? AppColors.cFF777777
                     : AppColors.white.withValues(alpha: .70),
                 fontSize: 12,
                 fontWeight: FontWeight.w900,
@@ -1217,12 +1191,12 @@ class _InviteWeekDateCell extends StatelessWidget {
         : date.weekday == DateTime.saturday
         ? const Color(0xFF25C7FF)
         : isWhite
-        ? AppColors.cFF667381
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .72);
     final hasDailyStatus = dailyStatus != OheyDailyStatus.unselected;
     final statusAccent = oheyDailyStatusBlockAccent(dailyStatus);
     final neutralBackground = isWhite
-        ? AppColors.cFFF1F5EF
+        ? AppColors.cFFF7F7F7
         : AppColors.white.withValues(alpha: .06);
     final background = selected
         ? neutralBackground
@@ -1238,12 +1212,12 @@ class _InviteWeekDateCell extends StatelessWidget {
         : hasDailyStatus
         ? statusAccent.withValues(alpha: .54)
         : isWhite
-        ? AppColors.cFFD7DEE7
+        ? AppColors.cFFE5E5E5
         : AppColors.white.withValues(alpha: .12);
     final foreground = hasDailyStatus
         ? oheyDailyStatusTileForeground(dailyStatus, isWhite: isWhite)
         : isWhite
-        ? AppColors.cFF17212B
+        ? AppColors.cFF1A272D
         : AppColors.white;
 
     return Semantics(
@@ -1265,25 +1239,6 @@ class _InviteWeekDateCell extends StatelessWidget {
               color: background,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: borderColor, width: selected ? 2.4 : 1),
-              boxShadow: selected
-                  ? [
-                      BoxShadow(
-                        color:
-                            (hasDailyStatus
-                                    ? statusAccent
-                                    : AppColors.primaryAction)
-                                .withValues(alpha: .34),
-                        blurRadius: 16,
-                        spreadRadius: 1.2,
-                        offset: const Offset(0, 0),
-                      ),
-                      BoxShadow(
-                        color: AppColors.black.withValues(alpha: .18),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ]
-                  : null,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1491,12 +1446,12 @@ class _InviteOptionPill extends StatelessWidget {
     final background = selected
         ? selectedColor
         : isWhite
-        ? AppColors.cFFF1F5EF
+        ? AppColors.cFFF7F7F7
         : AppColors.white.withValues(alpha: .08);
     final foreground = selected
-        ? AppColors.cFF101820
+        ? AppColors.cFF3C3C3C
         : isWhite
-        ? AppColors.cFF263340
+        ? AppColors.cFF2B3A41
         : AppColors.white.withValues(alpha: .82);
     return Semantics(
       button: true,
@@ -1520,15 +1475,6 @@ class _InviteOptionPill extends StatelessWidget {
                   ? selectedColor
                   : foreground.withValues(alpha: isWhite ? .10 : .16),
             ),
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: selectedColor.withValues(alpha: .20),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
-                    ),
-                  ]
-                : null,
           ),
           child: Row(
             mainAxisSize: compact ? MainAxisSize.min : MainAxisSize.max,

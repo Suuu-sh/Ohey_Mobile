@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../models/ohey_avatar.dart';
-import '../theme/app_colors.dart';
+import '../theme/ohey_tone.dart';
 import 'ohey_avatar.dart';
+import 'ohey_themed_panel.dart';
 
+/// Flat band behind a profile avatar, tinted by the user's background style.
 class OheyProfileHeaderBackdrop extends StatelessWidget {
   const OheyProfileHeaderBackdrop({super.key, required this.avatar});
 
@@ -11,57 +13,13 @@ class OheyProfileHeaderBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageBackdropAsset = OheyAvatar.imageBackdropAsset(avatar.background);
-    if (imageBackdropAsset != null) {
-      return ExcludeSemantics(
-        child: Image.asset(
-          imageBackdropAsset,
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
-        ),
-      );
-    }
-
-    final backgroundColors =
-        OheyAvatar.backgroundGradients[avatar.background %
-            OheyAvatar.backgroundGradients.length];
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: backgroundColors,
-            ),
-          ),
-        ),
-        Opacity(
-          opacity: avatar.background == OheyAvatar.dreamRoomBackground
-              ? .18
-              : .10,
-          child: ExcludeSemantics(
-            child: Image.asset(
-              'assets/images/profile_header_scene.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-          ),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppColors.white.withValues(alpha: .18),
-                AppColors.white.withValues(alpha: .36),
-              ],
-            ),
-          ),
-        ),
-      ],
+    final tint = OheyAvatar.backgroundColor(avatar.background);
+    final tone = OheyTone.of(context);
+    // In dark mode the tint is laid thinly over the page so it stays dim.
+    return ColoredBox(
+      color: tone.isWhite
+          ? tint
+          : Color.alphaBlend(tint.withValues(alpha: .16), tone.page),
     );
   }
 }
@@ -82,39 +40,37 @@ class OheyProfileHeroBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
-      child: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: avatarStageHeight,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: OheyAvatarView(avatar: avatar, size: avatarSize),
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: avatarStageHeight,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: OheyAvatarView(avatar: avatar, size: avatarSize),
+          ),
+        ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(18, 10, 18, 10),
+          decoration: BoxDecoration(
+            color: OheyTone.of(context).page,
+            borderRadius: BorderRadius.circular(18),
+            border: oheyChunkyBorder(OheyTone.of(context).edge),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: OheyTone.of(context).ink,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.2,
             ),
           ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(18, 8, 18, 9),
-            color: AppColors.darkBackgroundBottom,
-            child: Center(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.white.withValues(alpha: .72),
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.4,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

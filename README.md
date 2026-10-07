@@ -1,7 +1,7 @@
 # Ohey
 
-Ohey（オーヘイ）is a Flutter prototype for a cozy, overseas-app-inspired social planning app.
-It focuses on cute friend availability, invites, and lightweight photo sharing.
+Ohey（オーヘイ）is a Flutter social-planning app for sharing availability,
+invites, yurubo posts, and wish lists with friends.
 
 ## Highlights
 
@@ -49,19 +49,36 @@ Use the shared script so local values do not drift:
 
 For prod/TestFlight builds, set `OHEY_BACKEND_URL=https://api.oheyapp.com`; this hostname is served through the shared Cloudflare `shared-api-proxy` route and forwards to the production Render backend. Public non-secret environment defaults are centralized in `lib/core/config/ohey_environment.dart` and `scripts/ohey_env.sh`.
 
-## Run
+## Run on iOS Simulator
 
 ```sh
-flutter pub get
-flutter run
+./scripts/run_dev_render.sh -d <simulator-id>
 ```
+
+### UI preview mode (no login)
+
+To review screens without signing in, run the debug-only preview mode. The app
+starts signed in as a fixture user and answers every backend call from memory
+(`lib/core/preview/`), so no Clerk account, backend, or network is used:
+
+```sh
+./scripts/run_ui_preview.sh -d <simulator-id>
+```
+
+Prefix it with `OHEY_UI_PREVIEW_SIGNED_OUT=true` to start signed out and review
+the login/onboarding flow. The flags are ignored in release builds. Use the dev Render
+script above for anything that must hit the real API.
+
+Simulator builds must use Clerk dev, Neon dev, and the dev Render backend. Never
+point a Simulator build at localhost or production.
 
 ## Verify
 
 ```sh
-dart format lib test
-flutter analyze
+dart format --output=none --set-exit-if-changed lib test
+flutter analyze --no-fatal-infos
 flutter test
+plutil -lint ios/Runner/Info.plist ios/Runner/PrivacyInfo.xcprivacy
 ```
 ## Firebase/FCM dev and prod setup
 
@@ -104,3 +121,9 @@ If you prefer native Firebase config files instead of dart-defines, place them a
 - `android/app/src/prod/google-services.json`
 
 The backend also needs matching environment-specific `FCM_SERVICE_ACCOUNT_JSON` values. Store operational copies under `/Users/yota/Projects/Secrets/Ohey` and set them in the dev/prod backend environments.
+
+Before distribution, reconcile Xcode's archived privacy report with
+[`docs/release/app_privacy.md`](docs/release/app_privacy.md), run the Backend
+production release runbook, and review [`SECURITY.md`](SECURITY.md). Signed
+TestFlight builds must come from the protected GitHub environment rather than a
+developer-local archive.

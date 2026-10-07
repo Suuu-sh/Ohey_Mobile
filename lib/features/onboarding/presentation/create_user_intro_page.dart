@@ -38,23 +38,16 @@ extension _CreateUserIntroPage on _CreateUserDialogState {
                   width: 58,
                   height: 58,
                   decoration: BoxDecoration(
-                    color: AppColors.cFF12C9A4,
+                    color: AppColors.cFF00CD9C,
                     shape: BoxShape.circle,
-                    boxShadow: const [
-                      BoxShadow(
-                        color: AppColors.cFF079078,
-                        offset: Offset(0, 6),
-                        blurRadius: 0,
-                      ),
-                    ],
                   ),
                   child: Center(
                     child: OheyPopIcon(
                       icon: _demoPage == slides.length - 1
                           ? CupertinoIcons.camera_fill
                           : CupertinoIcons.arrow_right,
-                      color: AppColors.white,
-                      foregroundColor: AppColors.white,
+                      color: AppColors.cFF3C3C3C,
+                      foregroundColor: AppColors.cFF3C3C3C,
                       showBubble: false,
                       size: 30,
                       iconSize: 28,

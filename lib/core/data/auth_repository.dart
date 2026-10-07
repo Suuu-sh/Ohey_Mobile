@@ -28,6 +28,8 @@ enum OAuthProvider { google, apple }
 
 enum OAuthSignInResult { completed, pendingExternal, cancelled }
 
+enum PasswordSignInResult { completed, needsClientTrustEmailCode }
+
 class AuthRepository {
   AuthRepository(
     this._clerk, {
@@ -97,14 +99,26 @@ class AuthRepository {
     return OAuthSignInResult.pendingExternal;
   }
 
-  Future<void> signInWithPassword({
+  Future<PasswordSignInResult> signInWithPassword({
     required String email,
     required String password,
-  }) {
-    return _clerk.signInWithPassword(email: email, password: password);
+  }) async {
+    final result = await _clerk.signInWithPassword(
+      email: email,
+      password: password,
+    );
+    return switch (result) {
+      ClerkPasswordSignInResult.completed => PasswordSignInResult.completed,
+      ClerkPasswordSignInResult.needsClientTrustEmailCode =>
+        PasswordSignInResult.needsClientTrustEmailCode,
+    };
   }
 
-  Future<void> signUpWithProfileMetadata({
+  Future<void> completeClientTrustEmailCode(String code) {
+    return _clerk.completeClientTrustEmailCode(code);
+  }
+
+  Future<PasswordSignInResult> signUpWithProfileMetadata({
     required String email,
     required String password,
     required String userId,
@@ -120,7 +134,15 @@ class AuthRepository {
       displayName: displayName,
       avatarUrl: avatar.encode(),
     );
-    await _clerk.signInWithPassword(email: email, password: password);
+    final result = await _clerk.signInWithPassword(
+      email: email,
+      password: password,
+    );
+    return switch (result) {
+      ClerkPasswordSignInResult.completed => PasswordSignInResult.completed,
+      ClerkPasswordSignInResult.needsClientTrustEmailCode =>
+        PasswordSignInResult.needsClientTrustEmailCode,
+    };
   }
 
   Future<void> _createBackendClerkUser({

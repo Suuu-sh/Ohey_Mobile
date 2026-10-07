@@ -6,13 +6,14 @@ import '../theme/app_colors.dart';
 import 'ohey_3d_button.dart';
 import 'ohey_pop_icon.dart';
 
-const oheyDailyStatusPink = AppColors.cFFFF5EA8;
-const oheyDailyStatusBlue = AppColors.cFF20B9FF;
-const oheyDailyStatusPurple = AppColors.cFF8A62FF;
-const oheyDailyStatusGreen = AppColors.cFF9AF21A;
-const oheyDailyStatusBlocked = AppColors.cFF2B3644;
-const oheyDailyStatusBlockedForeground = AppColors.cFF738092;
-const oheyDailyStatusActionForeground = AppColors.cFF06111D;
+// Status reads like a traffic light so it never competes with the brand pink.
+const oheyStatusAvailableColor = AppColors.cFF58CC02;
+const oheyStatusMaybeColor = AppColors.cFF1CB0F6;
+const oheyStatusDependsColor = AppColors.cFFFF9600;
+const oheyStatusUnsetColor = AppColors.cFFAFAFAF;
+const oheyDailyStatusBlocked = AppColors.cFF2B3A41;
+const oheyDailyStatusBlockedForeground = AppColors.cFF1CB0F6;
+const oheyDailyStatusActionForeground = AppColors.white;
 
 class OheyDailyStatus3DOption extends StatelessWidget {
   const OheyDailyStatus3DOption({
@@ -43,7 +44,6 @@ class OheyDailyStatus3DOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final accent = oheyDailyStatusBlockAccent(status);
     final foreground = oheyDailyStatus3DForegroundColor(
       status,
       isWhite: isWhite,
@@ -68,16 +68,7 @@ class OheyDailyStatus3DOption extends StatelessWidget {
           isWhite: isWhite,
           selected: selected,
         ),
-        borderColor: oheyDailyStatus3DBorderColor(status, selected: selected),
-        borderWidth: 1.2,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        useGradient: true,
-        outerShadows: oheyDailyStatus3DOuterShadows(
-          status,
-          accent: accent,
-          selected: selected,
-        ),
-        innerShadows: oheyDailyStatus3DInnerShadows(status, selected: selected),
         child: Row(
           children: [
             OheyPopIcon(
@@ -140,11 +131,11 @@ class OheyDailyStatus3DOption extends StatelessWidget {
 }
 
 Color oheyDailyStatusColor(OheyDailyStatus status) => switch (status) {
-  OheyDailyStatus.available => oheyDailyStatusPink,
-  OheyDailyStatus.maybeAvailable => oheyDailyStatusBlue,
-  OheyDailyStatus.dependsOnTime => oheyDailyStatusPurple,
+  OheyDailyStatus.available => oheyStatusAvailableColor,
+  OheyDailyStatus.maybeAvailable => oheyStatusMaybeColor,
+  OheyDailyStatus.dependsOnTime => oheyStatusDependsColor,
   OheyDailyStatus.hasPlans => oheyDailyStatusBlockedForeground,
-  OheyDailyStatus.unselected => oheyDailyStatusGreen,
+  OheyDailyStatus.unselected => oheyStatusUnsetColor,
 };
 
 Color oheyDailyStatusBlockAccent(OheyDailyStatus status) => switch (status) {
@@ -166,7 +157,7 @@ Color oheyDailyStatusTileBackground(
 }) {
   if (status == OheyDailyStatus.hasPlans) {
     return isWhite
-        ? AppColors.cFFE2E8F0
+        ? AppColors.cFFE5E5E5
         : oheyDailyStatusBlocked.withValues(alpha: selected ? .92 : .76);
   }
   return oheyDailyStatusColor(status).withValues(
@@ -179,9 +170,10 @@ Color oheyDailyStatusTileForeground(
   required bool isWhite,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? AppColors.cFF111827 : AppColors.white;
+    return isWhite ? AppColors.cFF131F24 : AppColors.white;
   }
-  return oheyDailyStatusActionForeground;
+  // Tiles use a light status tint, so text must stay ink in white mode.
+  return isWhite ? AppColors.cFF3C3C3C : AppColors.white;
 }
 
 Color oheyDailyStatus3DSurfaceColor(
@@ -190,7 +182,7 @@ Color oheyDailyStatus3DSurfaceColor(
   required bool selected,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? AppColors.cFFE8EEF5 : AppColors.cFF33404E;
+    return isWhite ? AppColors.cFFF7F7F7 : AppColors.cFF37464F;
   }
   return oheyDailyStatusColor(status);
 }
@@ -201,13 +193,11 @@ Color oheyDailyStatus3DShadowColor(
   required bool selected,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? AppColors.cFFC2CCD8 : AppColors.cFF16202B;
+    return isWhite ? AppColors.cFFCDCDCD : AppColors.cFF1A272D;
   }
-  return Color.lerp(
+  return ohey3DShadowColorFor(
     oheyDailyStatus3DSurfaceColor(status, isWhite: isWhite, selected: selected),
-    AppColors.black,
-    .32,
-  )!;
+  );
 }
 
 Color oheyDailyStatus3DForegroundColor(
@@ -215,68 +205,9 @@ Color oheyDailyStatus3DForegroundColor(
   required bool isWhite,
 }) {
   if (status == OheyDailyStatus.hasPlans) {
-    return isWhite ? AppColors.cFF111827 : AppColors.cFFE8EEF5;
+    return isWhite ? AppColors.cFF131F24 : AppColors.cFFF7F7F7;
   }
   return oheyDailyStatusActionForeground;
-}
-
-Color oheyDailyStatus3DBorderColor(
-  OheyDailyStatus status, {
-  required bool selected,
-}) {
-  if (status == OheyDailyStatus.hasPlans) {
-    return AppColors.white.withValues(alpha: selected ? .24 : .18);
-  }
-  return AppColors.white.withValues(alpha: selected ? .30 : .20);
-}
-
-List<BoxShadow> oheyDailyStatus3DOuterShadows(
-  OheyDailyStatus status, {
-  required Color accent,
-  required bool selected,
-}) {
-  if (status == OheyDailyStatus.hasPlans) {
-    return [
-      BoxShadow(
-        color: AppColors.black.withValues(alpha: selected ? .34 : .28),
-        blurRadius: selected ? 28 : 22,
-        offset: const Offset(0, 12),
-      ),
-      BoxShadow(
-        color: AppColors.white.withValues(alpha: selected ? .08 : .05),
-        blurRadius: 10,
-        offset: const Offset(0, -2),
-      ),
-    ];
-  }
-  return [
-    BoxShadow(
-      color: accent.withValues(alpha: selected ? .34 : .18),
-      blurRadius: selected ? 28 : 18,
-      offset: const Offset(0, 10),
-    ),
-  ];
-}
-
-List<BoxShadow> oheyDailyStatus3DInnerShadows(
-  OheyDailyStatus status, {
-  required bool selected,
-}) {
-  if (status == OheyDailyStatus.hasPlans) {
-    return [
-      BoxShadow(
-        color: AppColors.white.withValues(alpha: selected ? .20 : .15),
-        blurRadius: selected ? 18 : 14,
-        offset: const Offset(0, -1),
-      ),
-    ];
-  }
-  return [
-    BoxShadow(
-      color: AppColors.white.withValues(alpha: selected ? .16 : .10),
-      blurRadius: selected ? 18 : 12,
-    ),
-  ];
 }
 
 IconData oheyDailyStatusIcon(OheyDailyStatus status) => switch (status) {

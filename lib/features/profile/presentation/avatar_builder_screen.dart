@@ -330,68 +330,11 @@ class _AvatarBackgroundPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageBackdropAsset = OheyAvatar.imageBackdropAsset(avatar.background);
-    if (imageBackdropAsset != null) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          ExcludeSemantics(
-            child: Image.asset(
-              imageBackdropAsset,
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-          ),
-          Center(
-            child: OheyAvatarView(avatar: avatar, size: large ? 190 : 96),
-          ),
-        ],
-      );
-    }
-
-    final colors =
-        OheyAvatar.backgroundGradients[avatar.background %
-            OheyAvatar.backgroundGradients.length];
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: colors,
-            ),
-          ),
-        ),
-        Opacity(
-          opacity: avatar.background == OheyAvatar.dreamRoomBackground
-              ? .18
-              : .10,
-          child: ExcludeSemantics(
-            child: Image.asset(
-              'assets/images/profile_header_scene.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-          ),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppColors.white.withValues(alpha: .18),
-                AppColors.white.withValues(alpha: .36),
-              ],
-            ),
-          ),
-        ),
-        Center(
-          child: OheyAvatarView(avatar: avatar, size: large ? 190 : 96),
-        ),
-      ],
+    return ColoredBox(
+      color: OheyAvatar.backgroundColor(avatar.background),
+      child: Center(
+        child: OheyAvatarView(avatar: avatar, size: large ? 190 : 96),
+      ),
     );
   }
 }
@@ -592,7 +535,6 @@ class _UnsavedAvatarSheet extends StatelessWidget {
             height: 46,
             radius: 20,
             fontSize: 14,
-            useGradient: false,
             onTap: () => Navigator.of(context).pop(_UnsavedAvatarAction.cancel),
           ),
         ],
@@ -1150,12 +1092,12 @@ class _AvatarColors {
   const _AvatarColors._();
 
   static const background = AppColors.darkBackground;
-  static const panel = AppColors.cFF0D1A26;
-  static const card = AppColors.cFF132231;
-  static const selectedCard = AppColors.cFF1A2F42;
-  static const panelShadow = AppColors.cFF08111A;
+  static const panel = AppColors.cFF131F24;
+  static const card = AppColors.cFF1A272D;
+  static const selectedCard = AppColors.cFF202F36;
+  static const panelShadow = AppColors.cFF131F24;
   static const line = AppColors.c1EFFFFFF;
   static const ink = AppColors.white;
-  static const sub = AppColors.cFF8F9BAB;
+  static const sub = AppColors.cFFAFAFAF;
   static const accent = AppColors.primaryAction;
 }

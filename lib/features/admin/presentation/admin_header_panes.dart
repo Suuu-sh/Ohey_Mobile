@@ -157,7 +157,7 @@ class _AdminSegmentButton extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-              color: selected ? AppColors.cFF101820 : _AdminColors.sub,
+              color: selected ? AppColors.cFF3C3C3C : _AdminColors.sub,
               fontWeight: FontWeight.w900,
             ),
           ),

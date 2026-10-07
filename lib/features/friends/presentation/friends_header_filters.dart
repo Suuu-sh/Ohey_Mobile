@@ -1,22 +1,5 @@
 part of 'friends_screen.dart';
 
-class _FriendsHeaderBackdrop extends StatelessWidget {
-  const _FriendsHeaderBackdrop({required this.isWhite});
-
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    return OheySceneHeaderBackdrop(
-      assetPath: 'assets/images/friends_header_scene.png',
-      fadeColor: isWhite ? AppColors.white : AppColors.darkBackgroundBottom,
-      accentColor: _FriendsColors.lime,
-      topShadeOpacity: .12,
-      fadeStartOpacity: .84,
-    );
-  }
-}
-
 enum _FriendFilterType { all }
 
 class _FilterBar extends StatelessWidget {
@@ -71,7 +54,7 @@ class _FilterBar extends StatelessWidget {
             ],
             _FilterChip(
               label: '編集',
-              accent: AppColors.cFF5DEBD3,
+              accent: AppColors.cFF8BEBD3,
               selected: false,
               icon: CupertinoIcons.pencil,
               onTap: onManageCustom,
@@ -84,9 +67,7 @@ class _FilterBar extends StatelessWidget {
   }
 }
 
-const _filters = [
-  _FriendFilter('みんな', _FriendFilterType.all, AppColors.cFFB8FF00),
-];
+const _filters = [_FriendFilter('みんな', _FriendFilterType.all, AppColors.brand)];
 
 class _FriendFilter {
   const _FriendFilter(this.label, this.type, this.accent);

@@ -42,7 +42,7 @@ class OheyPageHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final color =
-        titleColor ?? (isWhite ? AppColors.cFF27313B : AppColors.white);
+        titleColor ?? (isWhite ? AppColors.cFF2B3A41 : AppColors.white);
     return SizedBox(
       height: height,
       width: double.infinity,
@@ -88,7 +88,7 @@ class OheyHeaderIconButton extends StatelessWidget {
     required this.icon,
     required this.onTap,
     this.semanticLabel,
-    this.color = AppColors.cFF2DE3D2,
+    this.color = AppColors.cFF3DDCB6,
     this.hasDot = false,
   });
 
@@ -133,7 +133,7 @@ class OheyHeaderIconButton extends StatelessWidget {
                       color: color,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isWhite ? AppColors.white : AppColors.cFF0C1724,
+                        color: isWhite ? AppColors.white : AppColors.cFF131F24,
                         width: 2,
                       ),
                     ),

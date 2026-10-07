@@ -72,11 +72,11 @@ _CustomFriendFilter? _findCustomFilter(
 }
 
 const _customFilterAccents = [
-  AppColors.cFFC08BFF,
-  AppColors.cFF18AFFF,
-  AppColors.cFFFF5AA6,
-  AppColors.cFFFFA700,
-  AppColors.cFF46E68A,
+  AppColors.cFFCE82FF,
+  AppColors.cFF1CB0F6,
+  AppColors.cFFD9609F,
+  AppColors.cFFFF9600,
+  AppColors.cFFA5ED6E,
 ];
 
 Color _customFilterAccent(int index) =>
@@ -102,16 +102,15 @@ class _FilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
+    final neutralEdge = isWhite
+        ? AppColors.chunkyBorderLight
+        : AppColors.chunkyBorderDark;
     final topColor = selected
         ? accent
         : isWhite
         ? AppColors.white
-        : AppColors.cFF243344;
-    final bottomColor = selected
-        ? Color.lerp(accent, _FriendsColors.bg, .36)!
-        : isWhite
-        ? AppColors.cFFE7EDF3
-        : AppColors.cFF152536;
+        : AppColors.darkBackground;
+    final bottomColor = selected ? ohey3DShadowColorFor(accent) : neutralEdge;
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
@@ -119,42 +118,19 @@ class _FilterChip extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOutCubic,
         height: 52,
-        padding: const EdgeInsets.only(bottom: 5),
+        padding: const EdgeInsets.only(bottom: oheyChunkyLipDepth),
         decoration: BoxDecoration(
           color: bottomColor,
-          borderRadius: BorderRadius.circular(19),
-          boxShadow: [
-            BoxShadow(
-              color: selected
-                  ? accent.withValues(alpha: .30)
-                  : AppColors.black.withValues(alpha: isWhite ? .08 : .22),
-              blurRadius: selected ? 20 : 14,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(16),
         ),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color.lerp(topColor, AppColors.white, selected ? .22 : .06)!,
-                topColor,
-              ],
-            ),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: selected
-                  ? AppColors.white.withValues(alpha: .18)
-                  : isWhite
-                  ? AppColors.cFFDCE4EC
-                  : AppColors.white.withValues(alpha: .10),
-              width: 1.2,
-            ),
+            color: topColor,
+            borderRadius: BorderRadius.circular(16),
+            border: selected ? null : Border.all(color: neutralEdge, width: 2),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -165,7 +141,7 @@ class _FilterChip extends StatelessWidget {
                   color: selected
                       ? _FriendsColors.bg
                       : isWhite
-                      ? AppColors.cFF101820
+                      ? AppColors.cFF3C3C3C
                       : AppColors.white,
                   size: 15,
                 ),
@@ -177,7 +153,7 @@ class _FilterChip extends StatelessWidget {
                   color: selected
                       ? _FriendsColors.bg
                       : isWhite
-                      ? AppColors.cFF101820
+                      ? AppColors.cFF3C3C3C
                       : AppColors.white,
                   fontWeight: FontWeight.w900,
                   fontSize: 14,
@@ -217,8 +193,8 @@ class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
-    final sub = isWhite ? AppColors.cFF657282 : AppColors.white70;
+    final ink = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
+    final sub = isWhite ? AppColors.cFF777777 : AppColors.white70;
     return OheyBottomSheetShell(
       title: 'グループ編集',
       showHandle: true,
@@ -260,13 +236,6 @@ class _CustomFilterManageSheetState extends State<_CustomFilterManageSheet> {
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(22),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.black.withValues(alpha: .34),
-                              blurRadius: 28,
-                              offset: const Offset(0, 16),
-                            ),
-                          ],
                         ),
                         child: child,
                       ),
@@ -311,7 +280,7 @@ class _CustomFilterManageAddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final ink = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     return OheyManageAddTile(
       label: 'グループを追加',
       accent: _FriendsColors.lime,
@@ -365,7 +334,7 @@ class _CustomFilterManageRow extends StatelessWidget {
             ),
             OheyManageListIconButton(
               icon: CupertinoIcons.trash_fill,
-              color: AppColors.cFFFF6B9A,
+              color: AppColors.cFFFF86C8,
               semanticLabel: '${filter.name}を削除',
               onTap: onDelete,
             ),
@@ -473,12 +442,12 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = widget.isWhite;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final ink = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final sub = isWhite
-        ? AppColors.cFF687481
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .62);
     final fieldBg = isWhite
-        ? AppColors.cFFF2F6FA
+        ? AppColors.cFFF7F7F7
         : AppColors.white.withValues(alpha: .07);
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
@@ -495,7 +464,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
               height: 5,
               decoration: BoxDecoration(
                 color: isWhite
-                    ? AppColors.cFFD5DEE8
+                    ? AppColors.cFFE5E5E5
                     : AppColors.white.withValues(alpha: .22),
                 borderRadius: BorderRadius.circular(999),
               ),
@@ -603,7 +572,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
             Text(
               _errorText!,
               style: const TextStyle(
-                color: AppColors.cFFFF6B8A,
+                color: AppColors.cFFFF86C8,
                 fontSize: 12,
                 fontWeight: FontWeight.w900,
               ),
@@ -619,7 +588,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
             radius: 20,
             color: _FriendsColors.lime,
             foregroundColor: _FriendsColors.bg,
-            shadowColor: AppColors.cFF77A600,
+            shadowColor: AppColors.cFF58A700,
             fontSize: 14,
           ),
           if (_isEditing) ...[
@@ -630,8 +599,8 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
               onTap: _delete,
               height: 46,
               radius: 20,
-              color: AppColors.cFFFF6B8A,
-              shadowColor: AppColors.cFFB9365A,
+              color: AppColors.cFFFF86C8,
+              shadowColor: AppColors.cFFD9609F,
               fontSize: 13,
             ),
           ],
@@ -686,20 +655,20 @@ class _CustomFilterFriendRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final ink = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final sub = isWhite
-        ? AppColors.cFF687481
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .62);
     final surface = selected
         ? _FriendsColors.lime.withValues(alpha: isWhite ? .24 : .18)
         : isWhite
-        ? AppColors.cFFF7F9FB
+        ? AppColors.cFFF7F7F7
         : AppColors.darkBackground;
     final bottom = selected
         ? ohey3DShadowColorFor(_FriendsColors.lime, lightnessScale: .60)
         : isWhite
-        ? AppColors.cFFD9E2EB
-        : AppColors.cFF09131D;
+        ? AppColors.cFFE5E5E5
+        : AppColors.cFF131F24;
     return Ohey3DButtonSurface(
       onTap: onTap,
       height: 58,
@@ -710,17 +679,8 @@ class _CustomFilterFriendRow extends StatelessWidget {
       borderColor: selected
           ? _FriendsColors.lime.withValues(alpha: .62)
           : isWhite
-          ? AppColors.cFFDCE4EC
+          ? AppColors.cFFE5E5E5
           : AppColors.white.withValues(alpha: .10),
-      outerShadows: [
-        BoxShadow(
-          color: _FriendsColors.lime.withValues(
-            alpha: selected ? (isWhite ? .14 : .22) : .07,
-          ),
-          blurRadius: selected ? 18 : 12,
-          offset: const Offset(0, 6),
-        ),
-      ],
       child: Row(
         children: [
           OheyAvatarView(
@@ -766,7 +726,7 @@ class _CustomFilterFriendRow extends StatelessWidget {
                 color: selected
                     ? _FriendsColors.lime
                     : isWhite
-                    ? AppColors.cFFB8C4D0
+                    ? AppColors.cFFCDCDCD
                     : AppColors.white.withValues(alpha: .24),
                 width: 1.5,
               ),

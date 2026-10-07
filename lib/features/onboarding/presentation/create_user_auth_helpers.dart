@@ -44,6 +44,12 @@ String _friendlyAuthError(String message) {
   if (lower.contains('email not confirmed')) {
     return '確認メールのリンクを開いてね。';
   }
+  if (lower.contains('authentication request timed out')) {
+    return 'ログインの通信がタイムアウトしました。もう一度試してね。';
+  }
+  if (lower.contains('no session token retrieved')) {
+    return 'ログインを完了できませんでした。もう一度試してね。';
+  }
   return message;
 }
 
@@ -60,7 +66,8 @@ bool _isNetworkAuthError(String lowerMessage) {
       lowerMessage.contains('clientexception') ||
       lowerMessage.contains('connection refused') ||
       lowerMessage.contains('failed host lookup') ||
-      lowerMessage.contains('connection timed out');
+      lowerMessage.contains('connection timed out') ||
+      lowerMessage.contains('authentication request timed out');
 }
 
 Widget _fixedAuthPage({

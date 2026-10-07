@@ -156,15 +156,12 @@ jobs:
           admob_ios_app_id="$(grep -E '^OHEY_ADMOB_IOS_APP_ID=' .env.production | tail -1 | cut -d= -f2- || true)"
           admob_ios_native_ad_unit_id="$(grep -E '^OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID=' .env.production | tail -1 | cut -d= -f2- || true)"
           if [ -z "$admob_ios_app_id" ] || [[ "$admob_ios_app_id" == ca-app-pub-3940256099942544~* ]]; then
-            echo "::warning::OHEY_ADMOB_IOS_APP_ID is not a production AdMob app ID. Using Google's sample app ID for SDK metadata and disabling ad requests for this TestFlight build."
-            admob_ios_app_id="ca-app-pub-3940256099942544~1458002511"
+            echo "::error::OHEY_ADMOB_IOS_APP_ID must be a production AdMob app ID for TestFlight builds."
+            exit 1
           fi
           if [ -z "$admob_ios_native_ad_unit_id" ] || [[ "$admob_ios_native_ad_unit_id" == ca-app-pub-3940256099942544/* ]]; then
-            echo "::warning::OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID is not a production AdMob ad unit ID. Ads will be disabled for this TestFlight build."
-            # Keep this after DOTENV_PRODUCTION so release code sees an empty ad
-            # unit and skips Google Mobile Ads initialization/ad requests.
-            echo "OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID=" >> .env.production
-            echo "--dart-define=OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID=" >> "$RUNNER_TEMP/ohey_dart_defines.args"
+            echo "::error::OHEY_ADMOB_IOS_NATIVE_AD_UNIT_ID must be a production AdMob native ad unit ID for TestFlight builds."
+            exit 1
           fi
           clerk_publishable_key="$(grep -E '^CLERK_PUBLISHABLE_KEY=' .env.production | tail -1 | cut -d= -f2- || true)"
           if [ -z "$clerk_publishable_key" ]; then
@@ -182,6 +179,26 @@ jobs:
             echo "::error::GOOGLE_WEB_CLIENT_ID, GOOGLE_IOS_CLIENT_ID and GOOGLE_IOS_REVERSED_CLIENT_ID are required for native Google Sign-In."
             exit 1
           fi
+          required_ios_keys=(
+            FIREBASE_IOS_API_KEY
+            FIREBASE_IOS_APP_ID
+            FIREBASE_IOS_BUNDLE_ID
+            FIREBASE_MESSAGING_SENDER_ID
+            FIREBASE_PROJECT_ID
+            OHEY_REVENUECAT_IOS_API_KEY
+          )
+          for key in "${required_ios_keys[@]}"; do
+            value="$(grep -E "^${key}=" .env.production | tail -1 | cut -d= -f2- || true)"
+            if [ -z "$value" ]; then
+              echo "::error::$key is required for TestFlight builds."
+              exit 1
+            fi
+          done
+          firebase_ios_bundle_id="$(grep -E '^FIREBASE_IOS_BUNDLE_ID=' .env.production | tail -1 | cut -d= -f2-)"
+          if [ "$firebase_ios_bundle_id" != "app.ohey.com" ]; then
+            echo "::error::FIREBASE_IOS_BUNDLE_ID must equal the production bundle ID app.ohey.com."
+            exit 1
+          fi
           cat > ios/Flutter/OheyLocalOverrides.xcconfig <<EOF
           GAD_APPLICATION_IDENTIFIER=$admob_ios_app_id
           GOOGLE_IOS_REVERSED_CLIENT_ID=$google_ios_reversed_client_id
@@ -192,9 +209,14 @@ jobs:
       - name: Install Flutter dependencies
         run: flutter pub get --enforce-lockfile
 
+      - name: Install pinned CocoaPods
+        run: |
+          sudo gem install cocoapods --version 1.16.2 --no-document
+          test "$(pod _1.16.2_ --version)" = "1.16.2"
+
       - name: Install CocoaPods dependencies
         working-directory: ios
-        run: pod install
+        run: pod _1.16.2_ install
 
       - name: Verify committed CocoaPods lockfile
         run: |
@@ -538,7 +560,6 @@ jobs:
 
           profiles = {
             'APP_PROVISIONING_PROFILE_NAME' => generated_app_profile_name,
-            'WIDGET_PROVISIONING_PROFILE_NAME' => 'Ohey Widgets App Store CI 20260529095238',
           }
 
           profile_dir = File.expand_path('~/Library/MobileDevice/Provisioning Profiles')
@@ -661,35 +682,21 @@ jobs:
           from pathlib import Path
 
           # Keep Release entitlements aligned with the CI provisioning
-          # profiles. The app profile is generated after enabling Sign in with
-          # Apple, so preserve the Runner Apple Sign-In entitlement while
-          # dropping unsupported widget-only entitlements.
-          release_entitlements = [
-              Path('ios/Runner/RunnerRelease.entitlements'),
-              Path('ios/OheyWidgets/OheyWidgetsRelease.entitlements'),
-          ]
-          for path in release_entitlements:
-              if not path.exists() and path.parent.name == 'OheyWidgets':
-                  print(f'Skipped missing {path}')
-                  continue
-              data = {}
-              if path.exists():
-                  with path.open('rb') as handle:
-                      data = plistlib.load(handle)
-              data.pop('com.apple.security.application-groups', None)
-              if path.name == 'RunnerRelease.entitlements':
-                  data['aps-environment'] = 'production'
-                  data['com.apple.developer.applesignin'] = ['Default']
-              else:
-                  data.pop('com.apple.developer.applesignin', None)
-              with path.open('wb') as handle:
-                  plistlib.dump(data, handle)
-              print(f'Normalized {path}')
+          # profile. The app profile is generated after enabling Sign in with
+          # Apple, so preserve the Runner Apple Sign-In entitlement.
+          path = Path('ios/Runner/RunnerRelease.entitlements')
+          data = {}
+          if path.exists():
+              with path.open('rb') as handle:
+                  data = plistlib.load(handle)
+          data.pop('com.apple.security.application-groups', None)
+          data['aps-environment'] = 'production'
+          data['com.apple.developer.applesignin'] = ['Default']
+          with path.open('wb') as handle:
+              plistlib.dump(data, handle)
+          print(f'Normalized {path}')
           PY
           plutil -p ios/Runner/RunnerRelease.entitlements
-          if [ -f ios/OheyWidgets/OheyWidgetsRelease.entitlements ]; then
-            plutil -p ios/OheyWidgets/OheyWidgetsRelease.entitlements
-          fi
 
       - name: Archive release build
         run: |

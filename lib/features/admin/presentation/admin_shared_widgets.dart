@@ -12,7 +12,7 @@ class _AdminSheet extends StatelessWidget {
       margin: const EdgeInsets.all(14),
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
       decoration: BoxDecoration(
-        color: AppColors.cFF071622,
+        color: AppColors.cFF131F24,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(color: _AdminColors.line),
       ),
@@ -140,7 +140,7 @@ class _AdminDropdown extends StatelessWidget {
             child: DropdownButton<String>(
               value: selectedValue,
               isExpanded: true,
-              dropdownColor: AppColors.cFF101B28,
+              dropdownColor: AppColors.cFF131F24,
               iconEnabledColor: _AdminColors.lime,
               hint: const Text(
                 '投稿者を選択',
@@ -308,7 +308,7 @@ class _AdminStatusChip extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-              color: selected ? AppColors.cFF101820 : AppColors.white,
+              color: selected ? AppColors.cFF3C3C3C : AppColors.white,
               fontWeight: FontWeight.w900,
               fontSize: 12,
             ),
@@ -630,13 +630,13 @@ class _AdminSmallButton extends StatelessWidget {
       height: 36,
       radius: 16,
       color: _AdminColors.lime,
-      bottomColor: AppColors.cFF5D8B00,
+      bottomColor: AppColors.cFF58A700,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       borderColor: AppColors.white.withValues(alpha: .14),
       child: Text(
         label,
         style: const TextStyle(
-          color: AppColors.cFF101820,
+          color: AppColors.cFF3C3C3C,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -668,13 +668,6 @@ class _AdminIconButton extends StatelessWidget {
         bottomColor: ohey3DShadowColorFor(color, lightnessScale: .56),
         padding: EdgeInsets.zero,
         borderColor: color.withValues(alpha: .28),
-        outerShadows: [
-          BoxShadow(
-            color: color.withValues(alpha: .12),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
         child: OheyGeneratedIcon(icon, color: color, size: 22),
       ),
     );
@@ -701,8 +694,8 @@ class _AdminPrimaryButton extends StatelessWidget {
     height: 54,
     radius: 22,
     color: _AdminColors.lime,
-    foregroundColor: AppColors.cFF101820,
-    shadowColor: AppColors.cFF5D8B00,
+    foregroundColor: AppColors.cFF3C3C3C,
+    shadowColor: AppColors.cFF58A700,
     fontSize: 16,
   );
 }
@@ -759,9 +752,9 @@ class _AdminColors {
   const _AdminColors._();
 
   static const bg = AppColors.darkBackground;
-  static const panel = AppColors.cFF101B28;
+  static const panel = AppColors.cFF131F24;
   static const line = AppColors.c1EFFFFFF;
-  static const sub = AppColors.cFF8F9BAB;
-  static const lime = AppColors.cFFB8FF00;
-  static const pink = AppColors.cFFFF5EA8;
+  static const sub = AppColors.cFFAFAFAF;
+  static const lime = AppColors.cFF89E219;
+  static const pink = AppColors.cFFD9609F;
 }

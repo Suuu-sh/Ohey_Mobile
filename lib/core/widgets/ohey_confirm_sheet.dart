@@ -57,16 +57,10 @@ class OheyConfirmSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final subtitleColor = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .62);
-    final secondarySurface = isWhite
-        ? AppColors.cFFF2F6FA
-        : AppColors.white.withValues(alpha: .07);
-    final secondaryForeground = isWhite
-        ? AppColors.cFF667381
-        : AppColors.white.withValues(alpha: .72);
 
     return OheyBottomSheetShell(
       showBottomCloseButton: false,
@@ -122,14 +116,8 @@ class OheyConfirmSheet extends StatelessWidget {
                   onTap: () => Navigator.of(context).pop(false),
                   height: 50,
                   radius: 21,
-                  color: secondarySurface,
-                  foregroundColor: secondaryForeground,
-                  shadowColor: isWhite
-                      ? AppColors.cFFD3DBE3
-                      : AppColors.cFF243240.withValues(alpha: .88),
                   fontSize: 13,
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  useGradient: false,
                 ),
               ),
               const SizedBox(width: 10),

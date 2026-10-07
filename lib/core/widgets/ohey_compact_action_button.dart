@@ -25,13 +25,7 @@ class OheyCompactActionButton extends StatelessWidget {
     this.enabled = true,
     this.forcePressed = false,
     this.fontSize = 13,
-    this.useGradient = true,
     this.borderColor,
-    this.outerShadowColor,
-    this.outerShadowAlpha = .30,
-    this.outerShadowBlur = 20,
-    this.outerShadowOffset = const Offset(0, 9),
-    this.innerShadowAlpha = .14,
     this.burstOnTap = false,
     this.burstIcon = CupertinoIcons.sparkles,
     this.burstColor,
@@ -55,13 +49,7 @@ class OheyCompactActionButton extends StatelessWidget {
   final bool forcePressed;
   final EdgeInsetsGeometry padding;
   final double fontSize;
-  final bool useGradient;
   final Color? borderColor;
-  final Color? outerShadowColor;
-  final double outerShadowAlpha;
-  final double outerShadowBlur;
-  final Offset outerShadowOffset;
-  final double innerShadowAlpha;
   final bool burstOnTap;
   final IconData burstIcon;
   final Color? burstColor;
@@ -81,7 +69,7 @@ class OheyCompactActionButton extends StatelessWidget {
     final effectiveRadius = radius ?? height / 2;
     final effectiveShadowColor =
         shadowColor ??
-        Color.lerp(color, AppColors.black, .34) ??
+        Color.lerp(color, AppColors.black, .20) ??
         AppColors.black;
     final content =
         child ??
@@ -109,23 +97,7 @@ class OheyCompactActionButton extends StatelessWidget {
       enabled: enabled,
       forcePressed: forcePressed,
       padding: padding,
-      useGradient: useGradient,
-      borderColor: borderColor ?? AppColors.white.withValues(alpha: .18),
-      outerShadows: [
-        BoxShadow(
-          color: (outerShadowColor ?? color).withValues(
-            alpha: outerShadowAlpha,
-          ),
-          blurRadius: outerShadowBlur,
-          offset: outerShadowOffset,
-        ),
-      ],
-      innerShadows: [
-        BoxShadow(
-          color: AppColors.white.withValues(alpha: innerShadowAlpha),
-          blurRadius: 14,
-        ),
-      ],
+      borderColor: borderColor,
       child: content,
     );
 
@@ -137,9 +109,9 @@ class OheyCompactActionButton extends StatelessWidget {
                 confettiColors ??
                 [
                   color,
-                  AppColors.cFFFF75B5,
-                  AppColors.cFFC08BFF,
-                  AppColors.cFFFFD166,
+                  AppColors.cFFFF86C8,
+                  AppColors.cFFCE82FF,
+                  AppColors.cFFFFE066,
                   AppColors.white,
                 ],
             builder: (context, runWithBurst, flightAnimation) => buildSurface(

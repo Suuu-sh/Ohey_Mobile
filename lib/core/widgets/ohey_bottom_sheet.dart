@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'ohey_3d_button.dart';
 
 Future<T?> showOheyBottomSheet<T>({
   required BuildContext context,
@@ -70,7 +71,7 @@ class OheyBottomSheetShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final ink = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final maxHeight = maxHeightFactor == null
         ? null
         : MediaQuery.sizeOf(context).height * maxHeightFactor!;
@@ -184,44 +185,9 @@ class _OheyBottomSheetFooterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWhite = Theme.of(context).brightness == Brightness.light;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Container(
-          height: 54,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: isWhite
-                ? AppColors.cFFF2F4F6
-                : AppColors.darkBackgroundBottom,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: isWhite
-                  ? AppColors.cFFD7DEE7
-                  : AppColors.white.withValues(alpha: .10),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.black.withValues(alpha: isWhite ? .08 : .22),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isWhite ? AppColors.cFF27313B : AppColors.cFFC08BFF,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.35,
-            ),
-          ),
-        ),
-      ),
+      child: Ohey3DButton.secondary(label: label, onTap: onTap, height: 52),
     );
   }
 }
@@ -238,7 +204,7 @@ class OheyBottomSheetHandle extends StatelessWidget {
         height: 5,
         decoration: BoxDecoration(
           color: isWhite
-              ? AppColors.cFFD7E0EA
+              ? AppColors.cFFE5E5E5
               : AppColors.white.withValues(alpha: .20),
           borderRadius: BorderRadius.circular(999),
         ),
@@ -270,5 +236,44 @@ class OheyCloseButton extends StatelessWidget {
   final String semanticLabel;
 
   @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final isEnabled = enabled && onTap != null;
+    final foreground =
+        iconColor ?? (isWhite ? AppColors.cFF3C3C3C : AppColors.white);
+    return Semantics(
+      button: true,
+      enabled: isEnabled,
+      label: semanticLabel,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: isEnabled ? onTap : null,
+        child: Container(
+          width: size,
+          height: size,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color:
+                backgroundColor ??
+                (isWhite
+                    ? AppColors.black.withValues(alpha: .05)
+                    : AppColors.white.withValues(alpha: .08)),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color:
+                  borderColor ??
+                  (isWhite
+                      ? AppColors.black.withValues(alpha: .08)
+                      : AppColors.white.withValues(alpha: .10)),
+            ),
+          ),
+          child: Icon(
+            Icons.close,
+            size: iconSize,
+            color: isEnabled ? foreground : foreground.withValues(alpha: .4),
+          ),
+        ),
+      ),
+    );
+  }
 }

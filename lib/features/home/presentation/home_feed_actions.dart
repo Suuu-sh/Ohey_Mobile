@@ -1,6 +1,6 @@
 part of 'home_screen.dart';
 
-enum _FeedPostAction { edit, delete, muteUser, blockUser }
+enum _FeedPostAction { edit, delete, muteUser, blockUser, reportUser }
 
 class _FeedPostActionsSheet extends StatelessWidget {
   const _FeedPostActionsSheet({required this.item, required this.body});
@@ -11,9 +11,9 @@ class _FeedPostActionsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final subtitleColor = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showHandle: true,
@@ -67,7 +67,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               icon: CupertinoIcons.pencil,
               title: 'ゆるぼを編集',
               subtitle: '内容・場所・いつを直す',
-              accent: _FeedColors.teal,
+              accent: _FeedColors.accent,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.edit),
             ),
             const SizedBox(height: 10),
@@ -77,7 +77,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               icon: CupertinoIcons.trash_fill,
               title: 'ゆるぼを削除',
               subtitle: 'このゆるぼを一覧から消す',
-              accent: AppColors.cFFFF5F8F,
+              accent: AppColors.cFFD9609F,
               destructive: true,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.delete),
             )
@@ -86,7 +86,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
               icon: CupertinoIcons.bell_slash_fill,
               title: '${item.userName}さんをミュート',
               subtitle: 'ゆるぼを一覧に出さない',
-              accent: AppColors.cFF88B8FF,
+              accent: AppColors.cFF84D8FF,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.muteUser),
             ),
             const SizedBox(height: 10),
@@ -94,11 +94,74 @@ class _FeedPostActionsSheet extends StatelessWidget {
               icon: CupertinoIcons.hand_raised_fill,
               title: '${item.userName}さんをブロック',
               subtitle: 'ゆるぼ・申請・お誘いを制限する',
-              accent: AppColors.cFFFF5F8F,
+              accent: AppColors.cFFD9609F,
               destructive: true,
               showShadow: false,
               onTap: () => Navigator.of(context).pop(_FeedPostAction.blockUser),
             ),
+            if (item.canReport) ...[
+              const SizedBox(height: 10),
+              OheyActionTile(
+                icon: CupertinoIcons.exclamationmark_bubble_fill,
+                title: 'このゆるぼの投稿者を通報',
+                subtitle: '理由を選んで運営に送信します',
+                accent: AppColors.cFFFFE066,
+                showShadow: false,
+                onTap: () =>
+                    Navigator.of(context).pop(_FeedPostAction.reportUser),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+Future<OheyReportReason?> _selectFeedReportReason(BuildContext context) {
+  return showOheyBottomSheet<OheyReportReason>(
+    context: context,
+    useSafeArea: true,
+    barrierColor: AppColors.black.withValues(alpha: .58),
+    builder: (_) => const _FeedReportReasonSheet(),
+  );
+}
+
+class _FeedReportReasonSheet extends StatelessWidget {
+  const _FeedReportReasonSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = Theme.of(context).brightness == Brightness.light;
+    final subtitleColor = isWhite
+        ? AppColors.cFF777777
+        : AppColors.white.withValues(alpha: .58);
+    return OheyBottomSheetShell(
+      title: '通報理由',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '近い理由を選ぶと、運営が確認しやすくなります。',
+            style: TextStyle(
+              color: subtitleColor,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 16),
+          for (final reason in OheyReportReason.values) ...[
+            OheyActionTile(
+              icon: CupertinoIcons.exclamationmark_triangle_fill,
+              title: reason.label,
+              subtitle: reason.description,
+              accent: AppColors.cFFFFE066,
+              onTap: () => Navigator.of(context).pop(reason),
+            ),
+            if (reason != OheyReportReason.values.last)
+              const SizedBox(height: 9),
           ],
         ],
       ),
@@ -112,9 +175,9 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final subtitleColor = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showBottomCloseButton: false,
@@ -126,7 +189,7 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
           Center(
             child: OheyPopIcon(
               icon: CupertinoIcons.trash_fill,
-              color: AppColors.cFFFF5F8F,
+              color: AppColors.cFFD9609F,
               size: 64,
               iconSize: 34,
             ),
@@ -166,7 +229,7 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
               Expanded(
                 child: _FeedModalTextButton(
                   label: '削除する',
-                  color: AppColors.cFFFF5F8F,
+                  color: AppColors.cFFD9609F,
                   onTap: () => Navigator.of(context).pop(true),
                 ),
               ),
@@ -194,9 +257,9 @@ class _FeedUserSafetyConfirmSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final subtitleColor = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showBottomCloseButton: false,
@@ -264,7 +327,7 @@ class _FeedModalTextButton extends StatelessWidget {
   const _FeedModalTextButton({
     required this.label,
     required this.onTap,
-    this.color = _FeedColors.teal,
+    this.color = _FeedColors.accent,
   });
 
   final String label;
@@ -293,13 +356,6 @@ class _FeedModalTextButton extends StatelessWidget {
                 ? color.withValues(alpha: .34)
                 : AppColors.white.withValues(alpha: .12),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: isWhite ? .10 : .16),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
         ),
         child: Text(
           label,

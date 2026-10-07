@@ -2,21 +2,6 @@ part of 'friends_screen.dart';
 
 enum _FriendProfileAction { remove, mute, block, report }
 
-enum _FriendProfileReportReason {
-  spam(OheyReportReasonKeys.spam, 'スパム・宣伝', '宣伝、詐欺、迷惑な勧誘'),
-  harassment(OheyReportReasonKeys.harassment, '不快・いやがらせ', '攻撃的、差別的、嫌がらせに感じる内容'),
-  inappropriate(OheyReportReasonKeys.inappropriate, '不適切な内容', '性的・過度に不快な表現'),
-  violence(OheyReportReasonKeys.violence, '暴力・危険行為', '暴力、危険行為、自傷を助長する内容'),
-  minorSafety(OheyReportReasonKeys.minorSafety, '未成年・危険', '未成年の安全に関わる懸念'),
-  other(OheyReportReasonKeys.other, 'その他', '上記に当てはまらない問題');
-
-  const _FriendProfileReportReason(this.value, this.label, this.description);
-
-  final String value;
-  final String label;
-  final String description;
-}
-
 class _FriendCard extends StatelessWidget {
   const _FriendCard({
     required this.friend,
@@ -41,7 +26,11 @@ class _FriendCard extends StatelessWidget {
     friend: friend,
     statusLabel: status.label,
     statusReason: status.reason,
-    statusColor: _friendInviteButtonColor(status),
+    statusColor: status.buttonColor,
+    inviteButtonColor: _friendInviteButtonColor(
+      status,
+      isWhite: Theme.of(context).brightness == Brightness.light,
+    ),
     statusEnabled: status.enabled,
     inviteSent: isInvited,
     fallbackAvatar: _fallbackAvatarForFriend(friend),
@@ -126,9 +115,9 @@ class _FriendProfileConfirmSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final subtitleColor = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       showBottomCloseButton: false,
@@ -196,7 +185,7 @@ class _FriendProfileConfirmButton extends StatelessWidget {
   const _FriendProfileConfirmButton({
     required this.label,
     required this.onTap,
-    this.color = AppColors.cFFC08BFF,
+    this.color = AppColors.cFFCE82FF,
   });
 
   final String label;
@@ -214,7 +203,7 @@ class _FriendProfileConfirmButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.darkBackgroundBottom,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: AppColors.cFF2B3441),
+          border: Border.all(color: AppColors.cFF2B3A41),
         ),
         child: Text(
           label,
@@ -266,7 +255,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
     final confirmed = await _showFriendProfileConfirmSheet(
       context,
       icon: CupertinoIcons.person_badge_minus_fill,
-      color: AppColors.cFFFF5F8F,
+      color: AppColors.cFFD9609F,
       title: 'フレンズ解除しますか？',
       message: '${widget.friend.name}さんとのフレンズ関係を解除します。あとでまた申請できます。',
       actionLabel: '解除する',
@@ -323,7 +312,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
     final confirmed = await _showFriendProfileConfirmSheet(
       context,
       icon: CupertinoIcons.bell_slash_fill,
-      color: AppColors.cFF88B8FF,
+      color: AppColors.cFF84D8FF,
       title: 'ミュートしますか？',
       message: '${widget.friend.name}さんのゆるぼを一覧に表示しにくくします。あとで解除できます。',
       actionLabel: 'ミュートする',
@@ -372,7 +361,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
     final confirmed = await _showFriendProfileConfirmSheet(
       context,
       icon: CupertinoIcons.hand_raised_fill,
-      color: AppColors.cFFFF5F8F,
+      color: AppColors.cFFD9609F,
       title: 'ブロックしますか？',
       message: '${widget.friend.name}さんとのフレンズ関係を解除し、ゆるぼ・申請・お誘いを制限します。',
       actionLabel: 'ブロックする',
@@ -432,7 +421,7 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
         context,
         '「${reason.label}」として通報しました',
         icon: CupertinoIcons.exclamationmark_bubble_fill,
-        accentColor: AppColors.cFFFFD166,
+        accentColor: AppColors.cFFFFE066,
       );
     } catch (_) {
       if (!mounted) return;
@@ -450,7 +439,10 @@ class _FriendProfileSheetState extends ConsumerState<_FriendProfileSheet> {
   Widget build(BuildContext context) {
     final avatar =
         widget.friend.avatar ?? _fallbackAvatarForFriend(widget.friend);
-    final statusColor = _friendInviteButtonColor(_selectedStatus);
+    final statusColor = _friendInviteButtonColor(
+      _selectedStatus,
+      isWhite: Theme.of(context).brightness == Brightness.light,
+    );
     final handle = widget.friend.vibe.trim().isEmpty
         ? widget.friend.id
         : '@${widget.friend.vibe}';
@@ -527,7 +519,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
 
     return OheyBottomSheetShell(
@@ -554,7 +546,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             icon: CupertinoIcons.person_badge_minus,
             title: 'フレンズ解除',
             subtitle: '関係を解除して、あとで再申請できます',
-            accent: AppColors.cFFFF8AA8,
+            accent: AppColors.cFFFF86C8,
             destructive: true,
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.remove),
           ),
@@ -563,7 +555,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             icon: CupertinoIcons.bell_slash_fill,
             title: 'ミュート',
             subtitle: 'ゆるぼ一覧に出しません',
-            accent: AppColors.cFF88B8FF,
+            accent: AppColors.cFF84D8FF,
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.mute),
           ),
           const SizedBox(height: 10),
@@ -571,7 +563,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             icon: CupertinoIcons.hand_raised_fill,
             title: 'ブロック',
             subtitle: 'ゆるぼ・申請・お誘いを制限します',
-            accent: AppColors.cFFFF5F8F,
+            accent: AppColors.cFFD9609F,
             destructive: true,
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.block),
           ),
@@ -580,7 +572,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             icon: CupertinoIcons.exclamationmark_bubble_fill,
             title: '通報',
             subtitle: '理由を選んで運営に送信します',
-            accent: AppColors.cFFFFD166,
+            accent: AppColors.cFFFFE066,
             onTap: () => Navigator.of(context).pop(_FriendProfileAction.report),
           ),
           const SizedBox(height: 12),
@@ -606,10 +598,10 @@ class _FriendProfileCancelButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final background = isWhite
-        ? AppColors.cFFF2F6FA
+        ? AppColors.cFFF7F7F7
         : AppColors.white.withValues(alpha: .06);
     final foreground = isWhite
-        ? AppColors.cFF101820
+        ? AppColors.cFF3C3C3C
         : AppColors.white.withValues(alpha: .82);
     return CupertinoButton(
       onPressed: onTap,
@@ -638,10 +630,8 @@ class _FriendProfileCancelButton extends StatelessWidget {
   }
 }
 
-Future<_FriendProfileReportReason?> _selectFriendReportReason(
-  BuildContext context,
-) {
-  return showOheyBottomSheet<_FriendProfileReportReason>(
+Future<OheyReportReason?> _selectFriendReportReason(BuildContext context) {
+  return showOheyBottomSheet<OheyReportReason>(
     context: context,
     useSafeArea: true,
     barrierColor: AppColors.black.withValues(alpha: .58),
@@ -656,7 +646,7 @@ class _FriendReportReasonSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
     return OheyBottomSheetShell(
       title: '通報理由',
@@ -677,15 +667,15 @@ class _FriendReportReasonSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          for (final reason in _FriendProfileReportReason.values) ...[
+          for (final reason in OheyReportReason.values) ...[
             OheyActionTile(
               icon: CupertinoIcons.exclamationmark_triangle_fill,
               title: reason.label,
               subtitle: reason.description,
-              accent: AppColors.cFFFFD166,
+              accent: AppColors.cFFFFE066,
               onTap: () => Navigator.of(context).pop(reason),
             ),
-            if (reason != _FriendProfileReportReason.values.last)
+            if (reason != OheyReportReason.values.last)
               const SizedBox(height: 9),
           ],
           const SizedBox(height: 12),
@@ -720,7 +710,7 @@ class _FriendProfileActionIconButton extends StatelessWidget {
           child: Center(
             child: OheyGeneratedIcon(
               CupertinoIcons.gear_alt,
-              color: AppColors.cFF101820,
+              color: AppColors.cFF3C3C3C,
               size: 38,
             ),
           ),
@@ -756,7 +746,7 @@ class _FriendProfileWishItemsPanel extends ConsumerWidget {
                 children: [
                   const Icon(
                     CupertinoIcons.sparkles,
-                    color: AppColors.cFFC08BFF,
+                    color: AppColors.cFFCE82FF,
                     size: 18,
                   ),
                   const SizedBox(width: 7),
@@ -806,13 +796,8 @@ class _FriendProfileWishItemsShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return OheyThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-      accentColor: AppColors.cFFC08BFF,
       borderRadius: 22,
-      backgroundColor: AppColors.cFF231A38.withValues(alpha: .92),
-      borderAlpha: .42,
-      glowAlpha: .10,
-      glowBlur: 18,
-      glowOffset: const Offset(0, 8),
+      backgroundColor: AppColors.cFF202F36.withValues(alpha: .92),
       child: child,
     );
   }
@@ -830,9 +815,9 @@ class _FriendProfileWishChip extends StatelessWidget {
       width: 168,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.cFFC08BFF.withValues(alpha: .18),
+        color: AppColors.cFFCE82FF.withValues(alpha: .18),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.cFFC08BFF.withValues(alpha: .34)),
+        border: Border.all(color: AppColors.cFFCE82FF.withValues(alpha: .34)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -878,17 +863,12 @@ class _FriendProfileStatusPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return OheyThemedPanel(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-      accentColor: statusColor,
       borderRadius: 22,
       backgroundColor: Color.lerp(
         AppColors.darkBackgroundBottom,
         statusColor,
         .34,
       )!.withValues(alpha: .90),
-      borderAlpha: .56,
-      glowAlpha: .16,
-      glowBlur: 22,
-      glowOffset: const Offset(0, 8),
       child: Row(
         children: [
           OheyPopIcon(
@@ -1054,7 +1034,7 @@ class _FriendProfileCalendarState
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final ink = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
 
     return GestureDetector(
       onHorizontalDragEnd: _handleMonthSwipe,
@@ -1193,10 +1173,10 @@ class _FriendProfileMonthGrid extends StatelessWidget {
                       entry.value,
                       style: TextStyle(
                         color: entry.key == 0
-                            ? AppColors.cFFFF6FA6
+                            ? AppColors.cFFFF86C8
                             : entry.key == 6
-                            ? AppColors.cFF46C8FF
-                            : AppColors.cFFB7C0CA,
+                            ? AppColors.cFF49C0F8
+                            : AppColors.cFFCDCDCD,
                         fontWeight: FontWeight.w900,
                         fontSize: 16,
                       ),
@@ -1310,11 +1290,11 @@ class _FriendProfileDayTile extends StatelessWidget {
               ? AppColors.black.withValues(alpha: .20)
               : AppColors.white.withValues(alpha: .20))
         : column == 0
-        ? AppColors.cFFFF6FA6
+        ? AppColors.cFFFF86C8
         : column == 6
-        ? AppColors.cFF46C8FF
+        ? AppColors.cFF49C0F8
         : isWhite
-        ? AppColors.cFF101820
+        ? AppColors.cFF3C3C3C
         : AppColors.white;
 
     return GestureDetector(
@@ -1330,28 +1310,19 @@ class _FriendProfileDayTile extends StatelessWidget {
                   selected: isSelected,
                 )
               : isWhite
-              ? (isSelected ? AppColors.cFFEAF8FF : AppColors.white)
+              ? (isSelected ? AppColors.cFFF7F7F7 : AppColors.white)
               : AppColors.darkBackground,
           borderRadius: BorderRadius.circular(13),
           border: Border.all(
             color: hasStatus
                 ? statusAccent.withValues(alpha: isSelected ? .90 : .52)
                 : isSelected
-                ? AppColors.cFF54D7FF
+                ? AppColors.cFF49C0F8
                 : const Color(
                     0xFF20B9FF,
                   ).withValues(alpha: isWhite ? .34 : .24),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: hasStatus
-                  ? statusAccent.withValues(alpha: isWhite ? .16 : .24)
-                  : AppColors.black.withValues(alpha: isWhite ? .05 : .20),
-              blurRadius: hasStatus ? 16 : 12,
-              offset: const Offset(0, 8),
-            ),
-          ],
         ),
         child: Center(
           child: Text(

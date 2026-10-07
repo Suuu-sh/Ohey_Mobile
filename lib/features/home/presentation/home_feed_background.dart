@@ -16,7 +16,7 @@ class _FeedBackground extends ConsumerWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: isWhite
-              ? const [AppColors.white, AppColors.white, AppColors.cFFF7F9FB]
+              ? const [AppColors.white, AppColors.white, AppColors.cFFF7F7F7]
               : AppColors.darkBackgroundGradient,
         ),
       ),
@@ -38,21 +38,7 @@ class _FeedHeaderBackdropLayer extends StatelessWidget {
       right: 0,
       top: 0,
       height: height,
-      child: IgnorePointer(
-        child: ClipRect(
-          child: OheySceneHeaderBackdrop(
-            assetPath: 'assets/images/feed_header_scene_clear.png',
-            fadeColor: isWhite
-                ? AppColors.white
-                : AppColors.darkBackgroundBottom,
-            accentColor: _FeedColors.teal,
-            imageTopOffset: 0,
-            topShadeOpacity: 0,
-            midShadeOpacity: 0,
-            fadeStartOpacity: .18,
-          ),
-        ),
-      ),
+      child: OheyHeaderBar(isWhite: isWhite),
     );
   }
 }
@@ -64,7 +50,7 @@ class _FeedHeaderControlsLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = OheyPageHeader.sceneBackdropHeight(context);
+    final height = _feedHeaderScrollInset(context);
     return Positioned(
       left: 0,
       right: 0,

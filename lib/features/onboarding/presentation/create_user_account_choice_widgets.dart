@@ -14,7 +14,7 @@ class _AccountChoiceHeader extends StatelessWidget {
         onPressed: onBack,
         icon: Icon(
           CupertinoIcons.arrow_left,
-          color: AppColors.white.withValues(alpha: .72),
+          color: AppColors.cFF777777,
           size: 31,
         ),
       ),
@@ -62,10 +62,9 @@ class _AccountChoiceOutlineButton extends StatelessWidget {
     onTap: onTap,
     height: height,
     radius: 18,
-    topColor: AppColors.cFF10242F.withValues(alpha: .98),
-    bottomColor: AppColors.cFF384B55,
-    borderColor: AppColors.white.withValues(alpha: .22),
-    glowColor: _authPink.withValues(alpha: .12),
+    topColor: AppColors.white,
+    bottomColor: AppColors.chunkyBorderLight,
+    borderColor: AppColors.chunkyBorderLight,
     child: Text(
       label,
       style: const TextStyle(

@@ -1,9 +1,6 @@
-import 'dart:async';
-import 'dart:ui' as ui;
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
 
 import 'core/config/ohey_ads_config.dart';
 import 'core/application/ohey_user_controller.dart';
@@ -11,6 +8,7 @@ import 'core/data/auth_identity_provider.dart';
 import 'core/data/auth_state_provider.dart';
 import 'core/data/clerk_auth_service.dart';
 import 'core/data/ohey_last_account_store.dart';
+import 'core/preview/ohey_ui_preview.dart';
 import 'core/services/ohey_ads_consent_service.dart';
 import 'core/services/ohey_plus_service.dart';
 import 'core/services/ohey_push_notification_service.dart';
@@ -20,61 +18,61 @@ import 'core/widgets/ohey_tab_shell.dart';
 import 'features/onboarding/application/ohey_auth_flow_policy.dart';
 import 'package:ohey/core/theme/app_colors.dart';
 
-const _openingOheyAsset = 'assets/images/opening_ohey.png';
 const _appDisplayName = 'Ohey';
-const _minimumOpeningDuration = Duration(seconds: 1);
-const _openingExitDurationMs = 520;
-
-ui.Image? _openingOheyImage;
 
 Future<void> main() async {
-  final binding = WidgetsFlutterBinding.ensureInitialized();
-  binding.deferFirstFrame();
+  WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    await _loadOpeningOheyImage().timeout(const Duration(seconds: 3));
-  } on Object {
-    // If decoding ever fails, fall back to the regular asset image below.
+  await OheyThemeModeController.preload();
+
+  if (oheyUiPreviewEnabled) {
+    await OheyLastAccountStore.setSessionRestoreSuppressed(false);
   }
 
-  runApp(const ProviderScope(child: OheyApp()));
-  binding.allowFirstFrame();
-}
-
-Future<void> _loadOpeningOheyImage() async {
-  final data = await rootBundle.load(_openingOheyAsset);
-  final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-  final codec = await ui.instantiateImageCodec(bytes);
-  final frame = await codec.getNextFrame();
-  _openingOheyImage = frame.image;
+  runApp(
+    ProviderScope(
+      overrides: oheyUiPreviewEnabled ? oheyUiPreviewOverrides() : const [],
+      child: const OheyApp(),
+    ),
+  );
 }
 
 final _oheyBootstrapProvider = FutureProvider<void>((ref) async {
-  final minimumOpening = Future<void>.delayed(_minimumOpeningDuration);
-  try {
-    await ref
-        .read(clerkAuthServiceProvider)
-        .initialize()
-        .timeout(const Duration(seconds: 12));
+  await ref
+      .read(clerkAuthServiceProvider)
+      .initialize()
+      .timeout(const Duration(seconds: 12));
 
-    if (OheyAdsConfig.isEnabled) {
-      unawaited(OheyAdsConsentService.prepareToRequestAds());
-    }
-
+  if (oheyUiPreviewEnabled) {
+    // Preview mode stays fully offline: no ads, purchases, or push setup.
     await _preloadBackendProfileIfSessionExists(ref);
-    await ref
-        .read(oheyPlusServiceProvider)
-        .configureForCurrentUser()
-        .timeout(const Duration(seconds: 4), onTimeout: () => false);
-    ref.invalidate(oheyPlusCustomerInfoProvider);
-
-    await ref
-        .read(oheyPushNotificationServiceProvider)
-        .start()
-        .timeout(const Duration(seconds: 8), onTimeout: () {});
-  } finally {
-    await minimumOpening;
+    return;
   }
+
+  if (OheyAdsConfig.isEnabled) {
+    try {
+      // Do not overlap UMP/ATT with the system notification prompt. Consent
+      // dialogs must complete before push setup can request permission.
+      await OheyAdsConsentService.prepareToRequestAds();
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('Ohey ad consent setup skipped: $error');
+        debugPrintStack(stackTrace: stackTrace);
+      }
+    }
+  }
+
+  await _preloadBackendProfileIfSessionExists(ref);
+  await ref
+      .read(oheyPlusServiceProvider)
+      .configureForCurrentUser()
+      .timeout(const Duration(seconds: 4), onTimeout: () => false);
+  ref.invalidate(oheyPlusCustomerInfoProvider);
+
+  await ref
+      .read(oheyPushNotificationServiceProvider)
+      .start()
+      .timeout(const Duration(seconds: 8), onTimeout: () {});
 });
 
 Future<void> _preloadBackendProfileIfSessionExists(Ref ref) async {
@@ -105,84 +103,20 @@ class _BootstrapGate extends ConsumerStatefulWidget {
   ConsumerState<_BootstrapGate> createState() => _BootstrapGateState();
 }
 
-class _BootstrapGateState extends ConsumerState<_BootstrapGate>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _openingExitController;
-  late final Animation<double> _openingExitFade;
-  bool _openingExitCompleted = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _openingExitController =
-        AnimationController(
-          vsync: this,
-          duration: const Duration(milliseconds: _openingExitDurationMs),
-        )..addStatusListener((status) {
-          if (status == AnimationStatus.completed && mounted) {
-            setState(() => _openingExitCompleted = true);
-          }
-        });
-    _openingExitFade = Tween<double>(begin: 1, end: 0).animate(
-      CurvedAnimation(parent: _openingExitController, curve: Curves.easeOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _openingExitController.dispose();
-    super.dispose();
-  }
-
-  void _startOpeningExit() {
-    if (_openingExitCompleted ||
-        _openingExitController.isAnimating ||
-        _openingExitController.value > 0) {
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted ||
-          _openingExitCompleted ||
-          _openingExitController.isAnimating ||
-          _openingExitController.value > 0) {
-        return;
-      }
-      _openingExitController.forward();
-    });
-  }
-
+class _BootstrapGateState extends ConsumerState<_BootstrapGate> {
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<void>>(_oheyBootstrapProvider, (previous, next) {
-      if (next.isLoading) {
-        _openingExitCompleted = false;
-        _openingExitController.reset();
-      }
-    });
-
     final bootstrap = ref.watch(_oheyBootstrapProvider);
     return bootstrap.when(
       data: (_) {
         ref.watch(authStateProvider);
         ref.watch(hasAuthSessionProvider);
-        _startOpeningExit();
-
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            const OheyTabShell(),
-            if (!_openingExitCompleted)
-              FadeTransition(
-                opacity: _openingExitFade,
-                child: const _StartupScreen(),
-              ),
-          ],
-        );
+        return const OheyTabShell();
       },
       loading: () => const _StartupScreen(),
       error: (error, stackTrace) => _StartupScreen(
         message: '起動に失敗しました',
-        detail: '$error',
+        detail: kDebugMode ? '$error' : null,
         onRetry: () => ref.invalidate(_oheyBootstrapProvider),
       ),
     );
@@ -199,254 +133,97 @@ class _StartupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasError = message != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final wordmarkColor = isDark ? AppColors.white : const Color(0xFF3C1237);
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: AppColors.cFF02092B,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          const _OpeningOheyArtwork(),
-          if (!hasError)
-            SafeArea(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 42),
-                  child: const _StartupWaitingMessage(),
-                ),
-              ),
-            ),
-          if (hasError)
-            SafeArea(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 36),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: AppColors.cFF08091F.withValues(alpha: .78),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: AppColors.cFFFF5EA8.withValues(alpha: .28),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.warning_rounded,
-                            color: AppColors.cFFFF5EA8,
-                            size: 32,
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            message!,
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: AppColors.white,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                          ),
-                          if (detail != null) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              detail!,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: AppColors.white.withValues(alpha: .64),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                          if (onRetry != null) ...[
-                            const SizedBox(height: 14),
-                            FilledButton(
-                              onPressed: onRetry,
-                              child: const Text('もう一度試す'),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _OpeningOheyArtwork extends StatelessWidget {
-  const _OpeningOheyArtwork();
-
-  @override
-  Widget build(BuildContext context) {
-    final image = _openingOheyImage;
-    if (image == null) {
-      return Image.asset(_openingOheyAsset, fit: BoxFit.cover);
-    }
-    return RawImage(image: image, fit: BoxFit.cover);
-  }
-}
-
-class _StartupWaitingMessage extends StatelessWidget {
-  const _StartupWaitingMessage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const _StartupWordmark(),
-        const SizedBox(height: 10),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: AppColors.cFF08091F.withValues(alpha: .34),
-            borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: AppColors.white.withValues(alpha: .18)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.black.withValues(alpha: .18),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      backgroundColor: isDark ? AppColors.black : AppColors.white,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  '$_appDisplayNameを準備してるよ',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.3,
+                FractionallySizedBox(
+                  widthFactor: .72,
+                  child: Image.asset(
+                    'assets/images/mascot/ohey_mascot_fullbody.png',
+                    fit: BoxFit.contain,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
-                  'もうすぐ開きます',
-                  textAlign: TextAlign.center,
+                  _appDisplayName,
                   style: TextStyle(
-                    color: AppColors.white.withValues(alpha: .76),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -.1,
+                    color: wordmarkColor,
+                    fontFamily: 'MPLUSRounded1c',
+                    fontSize: 44,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1.2,
                   ),
                 ),
-                const SizedBox(height: 12),
-                const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _StartupDot(),
-                    SizedBox(width: 8),
-                    _StartupDot(),
-                    SizedBox(width: 8),
-                    _StartupDot(),
-                  ],
-                ),
+                if (hasError) ...[
+                  const SizedBox(height: 20),
+                  _StartupError(
+                    message: message!,
+                    detail: detail,
+                    onRetry: onRetry,
+                    isDark: isDark,
+                  ),
+                ],
               ],
             ),
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _StartupWordmark extends StatelessWidget {
-  const _StartupWordmark();
-
-  @override
-  Widget build(BuildContext context) {
-    final strokeStyle = TextStyle(
-      fontFamily: 'MPLUSRounded1c',
-      fontSize: 48,
-      fontWeight: FontWeight.w900,
-      letterSpacing: -1.2,
-      foreground: ui.Paint()
-        ..style = ui.PaintingStyle.stroke
-        ..strokeWidth = 7
-        ..color = AppColors.cFF160C52.withValues(alpha: .50),
-    );
-
-    const fillStyle = TextStyle(
-      color: AppColors.white,
-      fontFamily: 'MPLUSRounded1c',
-      fontSize: 48,
-      fontWeight: FontWeight.w900,
-      letterSpacing: -1.2,
-      shadows: [
-        Shadow(
-          color: AppColors.c99060A35,
-          blurRadius: 20,
-          offset: Offset(0, 6),
-        ),
-        Shadow(
-          color: AppColors.c99FF5EA8,
-          blurRadius: 22,
-          offset: Offset(0, 0),
-        ),
-      ],
-    );
-
-    return Semantics(
-      label: _appDisplayName,
-      child: ExcludeSemantics(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Text(_appDisplayName, style: strokeStyle),
-            ShaderMask(
-              blendMode: ui.BlendMode.srcIn,
-              shaderCallback: (bounds) => const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.white,
-                  AppColors.cFFFFF7B0,
-                  AppColors.cFFFFA3D4,
-                ],
-              ).createShader(bounds),
-              child: const Text(_appDisplayName, style: fillStyle),
-            ),
-          ],
-        ),
       ),
     );
   }
 }
 
-class _StartupDot extends StatelessWidget {
-  const _StartupDot();
+class _StartupError extends StatelessWidget {
+  const _StartupError({
+    required this.message,
+    required this.isDark,
+    this.detail,
+    this.onRetry,
+  });
+
+  final String message;
+  final String? detail;
+  final VoidCallback? onRetry;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: BoxDecoration(
-        color: AppColors.cFF9AF21A,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.white.withValues(alpha: .24),
-            blurRadius: 10,
+    final textColor = isDark ? AppColors.white : const Color(0xFF3C1237);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style: TextStyle(color: textColor, fontWeight: FontWeight.w800),
+        ),
+        if (detail != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            detail!,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: textColor.withValues(alpha: .72),
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
-      ),
+        if (onRetry != null) ...[
+          const SizedBox(height: 14),
+          FilledButton(onPressed: onRetry, child: const Text('もう一度試す')),
+        ],
+      ],
     );
   }
 }

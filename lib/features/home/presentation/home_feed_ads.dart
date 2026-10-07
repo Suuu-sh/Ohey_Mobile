@@ -50,13 +50,23 @@ class _YuruboNativeAdListItemState extends State<_YuruboNativeAdListItem> {
   bool _isLoaded = false;
   bool _didFail = false;
 
+  bool? _loadedDark;
+
   @override
-  void initState() {
-    super.initState();
-    _loadAd();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The native view bakes its palette in, so reload when the theme flips.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (_loadedDark == isDark) return;
+    _loadedDark = isDark;
+    _ad?.dispose();
+    _ad = null;
+    _isLoaded = false;
+    _didFail = false;
+    _loadAd(isDark: isDark);
   }
 
-  Future<void> _loadAd() async {
+  Future<void> _loadAd({required bool isDark}) async {
     final adUnitId = _oheyYuruboNativeAdUnitId;
     if (adUnitId.isEmpty) {
       _didFail = true;
@@ -74,7 +84,7 @@ class _YuruboNativeAdListItemState extends State<_YuruboNativeAdListItem> {
       adUnitId: adUnitId,
       factoryId: _oheyYuruboAdNativeFactoryId,
       request: const AdRequest(),
-      customOptions: const {'style': 'feed_block'},
+      customOptions: {'style': 'feed_block', 'dark': isDark},
       listener: NativeAdListener(
         onAdLoaded: (ad) {
           if (!mounted) {
@@ -137,40 +147,7 @@ class _YuruboAdListBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        child,
-        const SizedBox(height: 16),
-        _YuruboAdPostSeparator(isWhite: isWhite),
-      ],
-    );
-  }
-}
-
-class _YuruboAdPostSeparator extends StatelessWidget {
-  const _YuruboAdPostSeparator({required this.isWhite});
-
-  final bool isWhite;
-
-  @override
-  Widget build(BuildContext context) {
-    final alpha = isWhite ? .42 : .76;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: IgnorePointer(
-        child: Container(
-          height: 1,
-          decoration: BoxDecoration(
-            color: AppColors.cFFC08BFF.withValues(alpha: alpha),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.cFFC08BFF.withValues(alpha: alpha * .62),
-                blurRadius: 9,
-                spreadRadius: .35,
-              ),
-            ],
-          ),
-        ),
-      ),
+      children: [child, const SizedBox(height: 8)],
     );
   }
 }
@@ -189,23 +166,15 @@ class _YuruboAdCardFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaceColor = OheyThemedPanel.surfaceColor(isWhite: isWhite);
-    final radius = BorderRadius.circular(30);
-    final frameColor = _FeedColors.teal.withValues(alpha: isWhite ? .28 : .46);
+    final radius = BorderRadius.circular(20);
+    final frameColor = isWhite
+        ? AppColors.chunkyBorderLight
+        : AppColors.chunkyBorderDark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: surfaceColor,
-          borderRadius: radius,
-          boxShadow: [
-            BoxShadow(
-              color: _FeedColors.teal.withValues(alpha: isWhite ? .06 : .13),
-              blurRadius: 24,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
+        decoration: BoxDecoration(color: surfaceColor, borderRadius: radius),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -218,12 +187,11 @@ class _YuruboAdCardFrame extends StatelessWidget {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: radius,
-                    border: Border.all(color: frameColor, width: 1.2),
+                    border: oheyChunkyBorder(frameColor),
                   ),
                 ),
               ),
             ),
-            const _YuruboBlockGlowUnderline(),
           ],
         ),
       ),

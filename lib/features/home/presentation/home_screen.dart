@@ -20,12 +20,14 @@ import '../../../core/data/ohey_ad_entry_builder.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_invite.dart';
+import '../../../core/models/ohey_report_reason.dart';
 import '../../../core/models/ohey_visibility.dart';
 import '../../../core/models/wish_item.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 import '../../../core/models/ohey_user.dart';
 import '../../../core/models/yurubo.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/ohey_tone.dart';
 import '../../../core/theme/ohey_theme_mode.dart';
 import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_3d_button.dart';
@@ -35,8 +37,7 @@ import '../../../core/widgets/ohey_bottom_sheet.dart';
 import '../../../core/widgets/ohey_action_tile.dart';
 import '../../../core/widgets/ohey_page_header.dart';
 import '../../../core/widgets/ohey_pop_icon.dart';
-import '../../../core/widgets/ohey_post_action_pill.dart';
-import '../../../core/widgets/ohey_scene_header_backdrop.dart';
+import '../../../core/widgets/ohey_header_bar.dart';
 import '../../../core/widgets/ohey_toast.dart';
 import '../../../core/widgets/ohey_themed_panel.dart';
 import '../../../core/widgets/ohey_user_profile_sheet.dart';
@@ -84,26 +85,17 @@ class _FeedCreateYuruboFab extends StatelessWidget {
       child: Semantics(
         button: true,
         label: 'ゆるぼする',
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: onTap,
-          child: Container(
-            width: 58,
+        child: SizedBox(
+          width: 58,
+          child: Ohey3DButtonSurface(
+            onTap: onTap,
             height: 58,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _FeedColors.teal,
-              boxShadow: [
-                BoxShadow(
-                  color: _FeedColors.teal.withValues(alpha: .30),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
+            radius: 29,
+            color: _FeedColors.accent,
+            padding: EdgeInsets.zero,
             child: const Icon(
               CupertinoIcons.plus,
-              color: AppColors.cFF101820,
+              color: AppColors.white,
               size: 31,
             ),
           ),
@@ -169,7 +161,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return const _FeedBackground(child: SizedBox.expand()).copyWith(
       child: Stack(
         children: [
-          _FeedHeaderBackdropLayer(isWhite: isWhite),
           Positioned.fill(
             child: _buildFeedPage(
               topPadding: _feedHeaderScrollInset(context),
@@ -206,14 +197,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _FeedHeaderControlsLayer(
             child: OheyPageHeader(
               title: 'ゆるぼ',
-              titleColor: _FeedColors.teal,
-              titleOffset: const Offset(0, -54),
-              trailingOffset: const Offset(0, -54),
+
               trailing: OheyHeaderIconButton(
                 icon: CupertinoIcons.bell,
                 semanticLabel: 'お知らせを開く',
                 hasDot: hasUnreadNotifications,
-                color: _FeedColors.teal,
+                color: _FeedColors.accent,
                 onTap: () => Navigator.of(context).push(
                   CupertinoPageRoute<void>(
                     builder: (_) => const _FeedNotificationsScreen(),

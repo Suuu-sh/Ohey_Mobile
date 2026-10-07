@@ -1,5 +1,6 @@
 // ignore_for_file: unused_import
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +24,8 @@ import '../../../core/services/ohey_plus_service.dart';
 import '../../../core/config/ohey_ads_config.dart';
 import '../../../core/config/ohey_revenuecat_config.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/ohey_theme_mode.dart';
+import '../../../core/theme/ohey_tone.dart';
 import '../../../core/widgets/ohey_avatar.dart';
 import '../../../core/widgets/ohey_action_tile.dart';
 import '../../../core/widgets/ohey_bottom_sheet.dart';
@@ -83,20 +86,22 @@ class ProfileScreen extends ConsumerWidget {
         .toList(growable: false);
     final friends =
         ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
-    const headerIsWhite = true;
-    const bodyIsWhite = false;
+    final bodyIsWhite = ref.watch(oheyThemeModeProvider).isWhite;
+    final headerIsWhite = bodyIsWhite;
     final isPlusActive = ref.watch(oheyPlusActiveProvider);
     final hasAdminAccess = ref
         .watch(adminAccessProvider)
         .maybeWhen(data: (allowed) => allowed, orElse: () => false);
     final canOpenAdmin = hasAdminAccess;
-    const bodyBackground = AppColors.darkBackgroundBottom;
+    final bodyBackground = bodyIsWhite
+        ? AppColors.white
+        : AppColors.darkBackgroundBottom;
     final headerBackgroundHeight = MediaQuery.paddingOf(context).top + 318;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: AppColors.transparent,
-      ),
+      value:
+          (bodyIsWhite ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light)
+              .copyWith(statusBarColor: AppColors.transparent),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: bodyBackground,
@@ -138,9 +143,7 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 0),
                   Expanded(
                     child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(34),
-                      ),
+                      borderRadius: BorderRadius.zero,
                       child: ColoredBox(
                         color: bodyBackground,
                         child: Column(
@@ -216,9 +219,9 @@ class ProfileScreen extends ConsumerWidget {
 class _ProfileColors {
   const _ProfileColors._();
   static const line = AppColors.c1EFFFFFF;
-  static const sub = AppColors.cFF8F9BAB;
-  static const lime = AppColors.cFF9AF21A;
-  static const pink = AppColors.cFFFF5EA8;
+  static const sub = AppColors.cFFAFAFAF;
+  static const lime = AppColors.brand;
+  static const pink = AppColors.brand;
 }
 
 Future<void> _showProfileOheyPlusSheet(BuildContext context) async {
@@ -432,7 +435,7 @@ class _ProfileCreateWishItemSheetState
   @override
   Widget build(BuildContext context) {
     final ink = Theme.of(context).brightness == Brightness.light
-        ? AppColors.cFF17212B
+        ? AppColors.cFF1A272D
         : AppColors.white;
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
@@ -471,8 +474,8 @@ class _ProfileCreateWishItemSheetState
                   selected: _visibility == OheyVisibility.private.key,
                   onTap: () =>
                       setState(() => _visibility = OheyVisibility.private.key),
-                  selectedColor: AppColors.cFF20B9FF,
-                  selectedBottomColor: AppColors.cFF0B78B7,
+                  selectedColor: AppColors.cFF1CB0F6,
+                  selectedBottomColor: AppColors.cFF1899D6,
                 ),
               ),
               const SizedBox(width: 10),
@@ -482,8 +485,8 @@ class _ProfileCreateWishItemSheetState
                   selected: _visibility == OheyVisibility.friends.key,
                   onTap: () =>
                       setState(() => _visibility = OheyVisibility.friends.key),
-                  selectedColor: AppColors.cFF20B9FF,
-                  selectedBottomColor: AppColors.cFF0B78B7,
+                  selectedColor: AppColors.cFF1CB0F6,
+                  selectedBottomColor: AppColors.cFF1899D6,
                 ),
               ),
             ],
@@ -496,9 +499,9 @@ class _ProfileCreateWishItemSheetState
             onTap: _saving ? null : _submit,
             height: 50,
             radius: 22,
-            color: AppColors.cFF20B9FF,
-            foregroundColor: AppColors.cFF06111D,
-            shadowColor: AppColors.cFF0B78B7,
+            color: AppColors.cFF1CB0F6,
+            foregroundColor: AppColors.cFF131F24,
+            shadowColor: AppColors.cFF1899D6,
           ),
         ],
       ),
@@ -601,7 +604,7 @@ class _ProfileCreateYuruboSheetState extends State<_ProfileCreateYuruboSheet> {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite
-        ? AppColors.cFF667381
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .62);
     final wishItems =
         widget.ref.watch(wishItemControllerProvider).asData?.value ??
@@ -932,9 +935,9 @@ class _ProfileYuruboCalendarPicker extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: label == '日'
-                        ? AppColors.cFFFF75B5
+                        ? AppColors.cFFFF86C8
                         : label == '土'
-                        ? AppColors.cFF54D7FF
+                        ? AppColors.cFF49C0F8
                         : AppColors.white.withValues(alpha: .72),
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
@@ -975,9 +978,9 @@ class _ProfileYuruboCalendarPicker extends StatelessWidget {
           onTap: onConfirm,
           height: 48,
           radius: 22,
-          color: AppColors.cFFC08BFF,
-          foregroundColor: AppColors.cFF101820,
-          shadowColor: AppColors.cFF7F51C9,
+          color: AppColors.cFFCE82FF,
+          foregroundColor: AppColors.cFF3C3C3C,
+          shadowColor: AppColors.cFFA568CC,
         ),
       ],
     );
@@ -1014,13 +1017,6 @@ class _ProfileYuruboCalendarArrow extends StatelessWidget {
         color: AppColors.white.withValues(alpha: enabled ? .12 : .05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.white.withValues(alpha: .11)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: .18),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
       ),
       child: Icon(
         icon,
@@ -1055,19 +1051,19 @@ class _ProfileYuruboCalendarDayCell extends StatelessWidget {
         : selected
         ? AppColors.white
         : isSunday
-        ? AppColors.cFFFF75B5
+        ? AppColors.cFFFF86C8
         : isSaturday
-        ? AppColors.cFF54D7FF
+        ? AppColors.cFF49C0F8
         : AppColors.white;
     final fillColor = selected
         ? const Color(0xFF0CA7DF).withValues(alpha: .74)
         : isSunday && inMonth && !disabled
-        ? AppColors.cFFFF75B5.withValues(alpha: .42)
+        ? AppColors.cFFFF86C8.withValues(alpha: .42)
         : const Color(0xFF061724);
     final borderColor = selected
-        ? AppColors.cFF54D7FF
+        ? AppColors.cFF49C0F8
         : isSunday && inMonth && !disabled
-        ? AppColors.cFFFF75B5.withValues(alpha: .72)
+        ? AppColors.cFFFF86C8.withValues(alpha: .72)
         : const Color(0xFF0A75A4).withValues(alpha: inMonth ? .62 : .28);
     return GestureDetector(
       onTap: onTap,
@@ -1077,15 +1073,6 @@ class _ProfileYuruboCalendarDayCell extends StatelessWidget {
           color: fillColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: borderColor, width: selected ? 2 : 1.2),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: AppColors.cFF54D7FF.withValues(alpha: .26),
-                    blurRadius: 14,
-                    offset: const Offset(0, 5),
-                  ),
-                ]
-              : null,
         ),
         child: Center(
           child: Text(
@@ -1190,8 +1177,8 @@ class _ProfileYuruboChoice extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
-    this.selectedColor = AppColors.cFFC08BFF,
-    this.selectedBottomColor = AppColors.cFF7F51C9,
+    this.selectedColor = AppColors.cFFCE82FF,
+    this.selectedBottomColor = AppColors.cFFA568CC,
   });
   final String label;
   final bool selected;
@@ -1203,14 +1190,15 @@ class _ProfileYuruboChoice extends StatelessWidget {
     onTap: onTap,
     height: 46,
     radius: 20,
-    color: selected ? selectedColor : AppColors.cFF263348,
-    bottomColor: selected ? selectedBottomColor : AppColors.cFF151D2A,
+    color: selected ? selectedColor : AppColors.darkBackground,
+    bottomColor: selected ? selectedBottomColor : AppColors.chunkyBorderDark,
+    borderColor: selected ? null : AppColors.chunkyBorderDark,
     padding: const EdgeInsets.symmetric(horizontal: 12),
     child: Center(
       child: Text(
         label,
         style: TextStyle(
-          color: selected ? AppColors.cFF101820 : AppColors.white,
+          color: selected ? AppColors.cFF3C3C3C : AppColors.white,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -1239,12 +1227,12 @@ class _ProfileYuruboGroupChip extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: (selected ? AppColors.cFFC08BFF : AppColors.white).withValues(
+        color: (selected ? AppColors.cFFCE82FF : AppColors.white).withValues(
           alpha: selected ? .26 : .08,
         ),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
-          color: AppColors.cFFC08BFF.withValues(alpha: selected ? .7 : .25),
+          color: AppColors.cFFCE82FF.withValues(alpha: selected ? .7 : .25),
         ),
       ),
       child: Text(

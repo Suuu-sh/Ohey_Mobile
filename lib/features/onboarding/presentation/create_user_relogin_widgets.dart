@@ -12,7 +12,7 @@ class _ReLoginLoading extends StatelessWidget {
         const SizedBox(height: 24),
         CircularProgressIndicator(
           color: _authPink,
-          backgroundColor: AppColors.white.withValues(alpha: .10),
+          backgroundColor: AppColors.cFFE5E5E5,
         ),
       ],
     ),
@@ -38,16 +38,16 @@ class _ReLoginMascotPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    final body = Paint()..color = AppColors.cFFFF4FA3;
-    final bodyDark = Paint()..color = AppColors.cFFE52B83;
-    final bodyLight = Paint()..color = AppColors.cFFFF86C7;
-    final eye = Paint()..color = AppColors.cFF101827;
+    final body = Paint()..color = AppColors.cFFD9609F;
+    final bodyDark = Paint()..color = AppColors.cFFD9609F;
+    final bodyLight = Paint()..color = AppColors.cFFFF86C8;
+    final eye = Paint()..color = AppColors.cFF131F24;
     final white = Paint()..color = AppColors.white;
-    final mouth = Paint()..color = AppColors.cFF251225;
-    final tongue = Paint()..color = AppColors.cFFFF6AAE;
-    final leaf = Paint()..color = AppColors.cFF84E817;
-    final leafDark = Paint()..color = AppColors.cFF58C80A;
-    final sparkle = Paint()..color = AppColors.cFFFF4FAB;
+    final mouth = Paint()..color = AppColors.cFF131F24;
+    final tongue = Paint()..color = AppColors.cFFFF86C8;
+    final leaf = Paint()..color = AppColors.cFF89E219;
+    final leafDark = Paint()..color = AppColors.cFF58CC02;
+    final sparkle = Paint()..color = AppColors.cFFD9609F;
 
     void rotatedOval(
       Offset center,
@@ -73,7 +73,7 @@ class _ReLoginMascotPainter extends CustomPainter {
         width: w * .48,
         height: h * .075,
       ),
-      Paint()..color = AppColors.cFFFF4FAB.withValues(alpha: .16),
+      Paint()..color = AppColors.cFFD9609F.withValues(alpha: .16),
     );
 
     rotatedOval(Offset(w * .34, h * .74), w * .22, h * .18, -.55, body);
@@ -93,7 +93,7 @@ class _ReLoginMascotPainter extends CustomPainter {
         width: w * .30,
         height: h * .13,
       ),
-      bodyLight..color = AppColors.cFFFF86C7.withValues(alpha: .36),
+      bodyLight..color = AppColors.cFFFF86C8.withValues(alpha: .36),
     );
     canvas.drawOval(
       Rect.fromCenter(
@@ -101,7 +101,7 @@ class _ReLoginMascotPainter extends CustomPainter {
         width: w * .30,
         height: h * .13,
       ),
-      bodyDark..color = AppColors.cFFE52B83.withValues(alpha: .18),
+      bodyDark..color = AppColors.cFFD9609F.withValues(alpha: .18),
     );
 
     final stem = Path()
@@ -120,7 +120,7 @@ class _ReLoginMascotPainter extends CustomPainter {
     canvas.drawPath(
       leafPath,
       Paint()
-        ..color = AppColors.white.withValues(alpha: .28)
+        ..color = AppColors.cFFAFAFAF
         ..style = PaintingStyle.stroke
         ..strokeWidth = w * .012,
     );
@@ -165,7 +165,7 @@ class _ReLoginMascotPainter extends CustomPainter {
     canvas.drawPath(
       star,
       Paint()
-        ..color = AppColors.cFFFF9BD0
+        ..color = AppColors.cFFFF9FD3
         ..style = PaintingStyle.stroke
         ..strokeWidth = w * .012,
     );
@@ -196,12 +196,9 @@ class _ReLoginAccountCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: OheyThemedPanel(
-        accentColor: AppColors.white,
-        backgroundColor: OheyThemedPanel.surfaceColor(isWhite: false),
+        backgroundColor: OheyThemedPanel.surfaceColor(isWhite: true),
         borderRadius: 20,
-        borderAlpha: .20,
         borderWidth: 2,
-        glowAlpha: 0,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -211,7 +208,7 @@ class _ReLoginAccountCard extends StatelessWidget {
                 compact: compact,
                 onTap: () => onAccountTap(visibleAccounts[index]),
               ),
-              Divider(height: 1, color: AppColors.white.withValues(alpha: .16)),
+              Divider(height: 1, color: AppColors.cFFE5E5E5),
             ],
             InkWell(
               onTap: onAddAccount,
@@ -227,14 +224,14 @@ class _ReLoginAccountCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppColors.white.withValues(alpha: .34),
+                          color: AppColors.cFFCDCDCD,
                           width: 2,
                         ),
                       ),
                       child: Center(
                         child: OheyGeneratedIcon(
                           CupertinoIcons.plus,
-                          color: AppColors.white.withValues(alpha: .44),
+                          color: AppColors.cFFAFAFAF,
                           size: compact ? 24 : 26,
                         ),
                       ),
@@ -243,7 +240,7 @@ class _ReLoginAccountCard extends StatelessWidget {
                     Text(
                       '別のアカウントを追加',
                       style: TextStyle(
-                        color: AppColors.white.withValues(alpha: .44),
+                        color: AppColors.cFFAFAFAF,
                         fontSize: compact ? 16 : 17,
                         fontWeight: FontWeight.w900,
                       ),
@@ -304,7 +301,7 @@ class _ReLoginAccountRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: AppColors.white,
+                    color: AppColors.cFF3C3C3C,
                     fontSize: compact ? 17 : 19,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -.2,
@@ -316,7 +313,7 @@ class _ReLoginAccountRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: AppColors.white.withValues(alpha: .36),
+                    color: AppColors.cFFAFAFAF,
                     fontSize: compact ? 12 : 14,
                     fontWeight: FontWeight.w800,
                   ),
@@ -326,7 +323,7 @@ class _ReLoginAccountRow extends StatelessWidget {
           ),
           OheyGeneratedIcon(
             CupertinoIcons.chevron_right,
-            color: AppColors.white.withValues(alpha: .68),
+            color: AppColors.cFF777777,
             size: compact ? 25 : 28,
           ),
         ],

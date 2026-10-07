@@ -26,23 +26,40 @@ class AppleAuthTokens {
 
 class AppleAuthService {
   static const _interactiveTimeout = Duration(seconds: 90);
+  static const _defaultAvailabilityTimeout = Duration(seconds: 10);
+
+  AppleAuthService({
+    Future<bool> Function()? availabilityChecker,
+    bool Function()? platformSupportChecker,
+    Duration availabilityTimeout = _defaultAvailabilityTimeout,
+  }) : _availabilityChecker =
+           availabilityChecker ?? SignInWithApple.isAvailable,
+       _platformSupportChecker = platformSupportChecker,
+       _availabilityTimeout = availabilityTimeout;
+
+  final Future<bool> Function() _availabilityChecker;
+  final bool Function()? _platformSupportChecker;
+  final Duration _availabilityTimeout;
 
   static bool get _isSupportedPlatform =>
       !kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.iOS ||
           defaultTargetPlatform == TargetPlatform.macOS);
 
+  bool get _supportsPlatform =>
+      _platformSupportChecker?.call() ?? _isSupportedPlatform;
+
   Future<bool> isSupportedAndAvailable() async {
-    if (!_isSupportedPlatform) return false;
+    if (!_supportsPlatform) return false;
     try {
-      return await SignInWithApple.isAvailable();
+      return await _availabilityChecker().timeout(_availabilityTimeout);
     } catch (_) {
       return false;
     }
   }
 
   Future<AppleAuthTokens?> signIn() async {
-    if (!_isSupportedPlatform) {
+    if (!_supportsPlatform) {
       throw const AppleAuthException('AppleログインはApple端末でのみ利用できます。');
     }
     if (!await isSupportedAndAvailable()) {

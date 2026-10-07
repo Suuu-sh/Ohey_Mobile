@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'ohey_pop_icon.dart';
 import 'package:ohey/core/theme/app_colors.dart';
+import 'ohey_themed_panel.dart';
 
 enum OheyToastPlacement { top, bottom }
 
@@ -34,9 +35,9 @@ class OheyToast {
   const OheyToast._();
 
   static const defaultPlacement = OheyToastPlacement.bottom;
-  static const defaultAccentColor = AppColors.cFF7DDCFF;
-  static const successAccentColor = AppColors.cFF74E6A4;
-  static const dangerAccentColor = AppColors.cFFFF8BA8;
+  static const defaultAccentColor = AppColors.cFF84D8FF;
+  static const successAccentColor = AppColors.cFFA5ED6E;
+  static const dangerAccentColor = AppColors.cFFFF86C8;
   static OverlayEntry? _currentEntry;
   static Timer? _timer;
 
@@ -211,25 +212,9 @@ class _OheyToastOverlayState extends State<_OheyToastOverlay>
           opacity: _fade,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColors.cFF122335, AppColors.cFF0A1724],
-              ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.white.withValues(alpha: .13)),
-              boxShadow: [
-                BoxShadow(
-                  color: accentColor.withValues(alpha: .10),
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
-                ),
-                BoxShadow(
-                  color: AppColors.black.withValues(alpha: .32),
-                  blurRadius: 28,
-                  offset: const Offset(0, 16),
-                ),
-              ],
+              color: AppColors.cFF202F36,
+              borderRadius: BorderRadius.circular(18),
+              border: oheyChunkyBorder(AppColors.chunkyBorderDark),
             ),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(14, 12, 16, 12),

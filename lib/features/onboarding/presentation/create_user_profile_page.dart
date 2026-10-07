@@ -41,7 +41,7 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                       Text(
                         'プロフィールを作成して\nください',
                         style: TextStyle(
-                          color: AppColors.white,
+                          color: AppColors.cFF3C3C3C,
                           fontSize: compact ? 24 : 28,
                           fontWeight: FontWeight.w900,
                           height: 1.18,
@@ -52,7 +52,7 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                       Text(
                         '名前とアバターを作ってね。',
                         style: TextStyle(
-                          color: AppColors.white.withValues(alpha: .66),
+                          color: AppColors.cFF777777,
                           fontSize: compact ? 12 : 15,
                           fontWeight: FontWeight.w800,
                           height: 1.45,
@@ -75,20 +75,9 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                                     colors: [AppColors.peach, AppColors.sky],
                                   ),
                                   border: Border.all(
-                                    color: AppColors.white.withValues(
-                                      alpha: .20,
-                                    ),
+                                    color: AppColors.cFFE5E5E5,
                                     width: 2,
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(
-                                        0xFF12C9A4,
-                                      ).withValues(alpha: .16),
-                                      blurRadius: 28,
-                                      offset: const Offset(0, 16),
-                                    ),
-                                  ],
                                 ),
                                 child: OheyAvatarView(avatar: _avatar),
                               ),
@@ -106,13 +95,13 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                               onPressed: _isBusy ? null : _openAvatarBuilder,
                               icon: const OheyGeneratedIcon(
                                 CupertinoIcons.pencil,
-                                color: AppColors.cFF12C9A4,
+                                color: AppColors.cFF00CD9C,
                                 size: 20,
                               ),
                               label: const Text(
                                 'アバターを作る',
                                 style: TextStyle(
-                                  color: AppColors.cFF12C9A4,
+                                  color: AppColors.cFF00CD9C,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
                                 ),

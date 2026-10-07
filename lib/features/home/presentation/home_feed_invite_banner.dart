@@ -43,16 +43,9 @@ class _FeedInviteBanner extends StatelessWidget {
           decoration: BoxDecoration(
             color: isWhite
                 ? AppColors.white.withValues(alpha: .96)
-                : AppColors.cFF0D1C2B.withValues(alpha: .96),
+                : AppColors.cFF131F24.withValues(alpha: .96),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: accent.withValues(alpha: .42)),
-            boxShadow: [
-              BoxShadow(
-                color: accent.withValues(alpha: .20),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
-              ),
-            ],
           ),
           child: Row(
             children: [
@@ -85,7 +78,7 @@ class _FeedInviteBanner extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: isWhite ? AppColors.cFF17212B : AppColors.white,
+                        color: isWhite ? AppColors.cFF1A272D : AppColors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                       ),
@@ -97,7 +90,7 @@ class _FeedInviteBanner extends StatelessWidget {
               Text(
                 hasInvite ? '確認' : '見る',
                 style: TextStyle(
-                  color: isWhite ? AppColors.cFF17212B : AppColors.white,
+                  color: isWhite ? AppColors.cFF1A272D : AppColors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
@@ -105,7 +98,7 @@ class _FeedInviteBanner extends StatelessWidget {
               OheyGeneratedIcon(
                 CupertinoIcons.chevron_right,
                 color: isWhite
-                    ? AppColors.cFF98A3AF
+                    ? AppColors.cFFAFAFAF
                     : AppColors.white.withValues(alpha: .54),
                 size: 18,
               ),

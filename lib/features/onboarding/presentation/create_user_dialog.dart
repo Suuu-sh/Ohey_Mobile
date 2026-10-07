@@ -44,11 +44,13 @@ enum _RegistrationStep { email, password }
 
 enum _PasswordResetStep { none, code }
 
+enum _ClientTrustStep { none, code }
+
 enum _SocialAuthIntent { signup, login }
 
-const _authPink = AppColors.coral;
-const _authPinkShadow = AppColors.cFFE05F83;
-const _authPinkInk = AppColors.cFF2B1320;
+const _authPink = AppColors.brand;
+const _authPinkShadow = AppColors.brandLip;
+const _authPinkInk = AppColors.white;
 const _loginMinPasswordLength = 6;
 const _signupMinPasswordLength = 8;
 const _emailPasswordRequirementMessage =
@@ -86,7 +88,9 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
   _RegistrationStep _loginStep = _RegistrationStep.email;
   _RegistrationStep _registrationStep = _RegistrationStep.email;
   _PasswordResetStep _passwordResetStep = _PasswordResetStep.none;
+  _ClientTrustStep _clientTrustStep = _ClientTrustStep.none;
   final _passwordResetCodeController = TextEditingController();
+  final _clientTrustCodeController = TextEditingController();
   final _resetPasswordController = TextEditingController();
   final _resetPasswordConfirmationController = TextEditingController();
   List<OheyLastAccount> _lastAccounts = const <OheyLastAccount>[];
@@ -130,6 +134,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
     _passwordController.dispose();
     _passwordConfirmationController.dispose();
     _passwordResetCodeController.dispose();
+    _clientTrustCodeController.dispose();
     _resetPasswordController.dispose();
     _resetPasswordConfirmationController.dispose();
     _userIdController.dispose();
@@ -145,7 +150,7 @@ class _CreateUserDialogState extends ConsumerState<CreateUserDialog> {
       canPop: false,
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-        backgroundColor: AppColors.darkBackground,
+        backgroundColor: AppColors.white,
         body: SafeArea(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 240),

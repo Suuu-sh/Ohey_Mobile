@@ -115,7 +115,27 @@ class YuruboController extends AsyncNotifier<List<Yurubo>> {
           .setReaction(yuruboId, reacted: reacted);
       ref.invalidateSelf();
     } catch (_) {
-      if (index >= 0) state = AsyncData(current);
+      // Roll back only the item touched by this request. Replacing the whole
+      // captured list can erase a newer reaction or a completed refresh for a
+      // different yurubo while this request was in flight.
+      final latest = state.asData?.value;
+      if (index >= 0 && latest != null) {
+        final previousItem = current[index];
+        state = AsyncData([
+          for (final item in latest)
+            if (item.id == yuruboId)
+              item.copyWith(
+                reactionCount: previousItem.reactionCount,
+                reactedByMe: previousItem.reactedByMe,
+                myReactionType: previousItem.myReactionType,
+              )
+            else
+              item,
+        ]);
+      }
+      // Reconcile with server truth as a failed mutation may have raced with
+      // another successful operation or its refresh.
+      ref.invalidateSelf();
       rethrow;
     }
   }

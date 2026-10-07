@@ -8,9 +8,9 @@ class _FeedCompanionListSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final subtitleColor = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .58);
     final friends = item.friends;
     final listHeight = (friends.length * 82.0).clamp(
@@ -26,7 +26,7 @@ class _FeedCompanionListSheet extends ConsumerWidget {
             children: [
               OheyPopIcon(
                 icon: CupertinoIcons.person_2_fill,
-                color: _FeedColors.teal,
+                color: _FeedColors.accent,
                 size: 46,
                 iconSize: 24,
               ),
@@ -111,16 +111,16 @@ class _FeedCompanionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final titleColor = isWhite ? AppColors.cFF101820 : AppColors.white;
+    final titleColor = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
     final subtitleColor = isWhite
-        ? AppColors.cFF697684
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .56);
     final statusColor = _companionStatusColor(friend.statusKey);
     final tileColor = isWhite
-        ? AppColors.cFFF7FAFC
+        ? AppColors.cFFF7F7F7
         : Color.lerp(AppColors.darkBackground, friend.accent, .20)!;
     final tileBorderColor = isWhite
-        ? AppColors.cFFE1E8F1
+        ? AppColors.cFFE5E5E5
         : Color.lerp(
             friend.accent,
             AppColors.white,
@@ -173,7 +173,7 @@ class _FeedCompanionTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: friend.statusKey.isPendingYuruboCompanion
-                          ? AppColors.cFFC08BFF
+                          ? AppColors.cFFCE82FF
                           : subtitleColor,
                       fontSize: friend.statusKey.isPendingYuruboCompanion
                           ? 12.5
@@ -200,7 +200,6 @@ class _FeedCompanionTile extends StatelessWidget {
                 color: subtitleColor,
                 size: 28,
                 iconSize: 15,
-                shadow: false,
               ),
           ],
         ),
@@ -253,9 +252,9 @@ class _FeedCompanionApproveButton extends StatelessWidget {
       onTap: onTap,
       height: 32,
       radius: 16,
-      color: AppColors.cFF9AF21A,
-      foregroundColor: AppColors.cFF101820,
-      shadowColor: Color.lerp(AppColors.cFF9AF21A, AppColors.black, .36)!,
+      color: AppColors.cFF89E219,
+      foregroundColor: AppColors.cFF3C3C3C,
+      shadowColor: Color.lerp(AppColors.cFF89E219, AppColors.black, .36)!,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       fontSize: 12,
     );
@@ -288,12 +287,12 @@ class _FeedCompanionStatusCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isWhite
-            ? AppColors.cFFF7FAFC
+            ? AppColors.cFFF7F7F7
             : AppColors.white.withValues(alpha: .045),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: isWhite
-              ? AppColors.cFFE1E8F1
+              ? AppColors.cFFE5E5E5
               : AppColors.white.withValues(alpha: .08),
         ),
       ),
@@ -362,12 +361,12 @@ class _FeedCompanionRequestCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isWhite
-            ? AppColors.cFFF7FAFC
+            ? AppColors.cFFF7F7F7
             : AppColors.white.withValues(alpha: .045),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: isWhite
-              ? AppColors.cFFE1E8F1
+              ? AppColors.cFFE5E5E5
               : AppColors.white.withValues(alpha: .08),
         ),
       ),
@@ -378,7 +377,7 @@ class _FeedCompanionRequestCard extends StatelessWidget {
             children: [
               const OheyPopIcon(
                 icon: CupertinoIcons.lock_fill,
-                color: AppColors.cFFC08BFF,
+                color: AppColors.cFFCE82FF,
                 size: 40,
                 iconSize: 20,
                 showBubble: false,
@@ -405,9 +404,9 @@ class _FeedCompanionRequestCard extends StatelessWidget {
             enabled: enabled,
             height: 46,
             radius: 20,
-            color: AppColors.cFFC08BFF,
+            color: AppColors.cFFCE82FF,
             foregroundColor: AppColors.white,
-            shadowColor: AppColors.cFF7F51C9,
+            shadowColor: AppColors.cFFA568CC,
           ),
         ],
       ),
@@ -488,8 +487,8 @@ class _FeedCompanionProfileSheetState
       body: relationshipAsync.when(
         loading: () => const Center(child: CupertinoActivityIndicator()),
         error: (_, _) => _FeedCompanionRequestCard(
-          isWhite: false,
-          subtitleColor: AppColors.white.withValues(alpha: .58),
+          isWhite: Theme.of(context).brightness == Brightness.light,
+          subtitleColor: OheyTone.of(context).muted,
           message: 'プロフィール情報を確認できませんでした。',
           buttonLabel: '閉じる',
           onTap: () => Navigator.of(context).pop(),
@@ -501,8 +500,8 @@ class _FeedCompanionProfileSheetState
               child: SizedBox(
                 width: double.infinity,
                 child: _FeedCompanionRequestCard(
-                  isWhite: false,
-                  subtitleColor: AppColors.white.withValues(alpha: .58),
+                  isWhite: Theme.of(context).brightness == Brightness.light,
+                  subtitleColor: OheyTone.of(context).muted,
                   message: _requestError ?? 'フレンズになるとカレンダーを見られます。',
                   buttonLabel: switch (relationship.requestState) {
                     OheyFriendRequestState.outgoing => '申請済み',
@@ -527,9 +526,9 @@ class _FeedCompanionProfileSheetState
               height: 92,
               child: _FeedCompanionStatusCard(
                 friend: friend,
-                isWhite: false,
-                titleColor: AppColors.white,
-                subtitleColor: AppColors.white.withValues(alpha: .58),
+                isWhite: Theme.of(context).brightness == Brightness.light,
+                titleColor: OheyTone.of(context).ink,
+                subtitleColor: OheyTone.of(context).muted,
                 statusColor: statusColor,
               ),
             ),

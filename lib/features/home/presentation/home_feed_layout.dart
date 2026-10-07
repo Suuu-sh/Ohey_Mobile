@@ -1,20 +1,16 @@
 part of 'home_screen.dart';
 
 double _feedHeaderScrollInset(BuildContext context) {
-  // Match the latest reference feed capture: header scene ends at y≈505 on
-  // a 1200px-wide crop. Keeping this width ratio locks the visible image
-  // crop to the reference instead of depending on safe-area heuristics.
-  const referenceWidth = 1200.0;
-  const referenceHeaderBottom = 505.0;
-  return MediaQuery.sizeOf(context).width *
-      referenceHeaderBottom /
-      referenceWidth;
+  return MediaQuery.paddingOf(context).top +
+      OheyPageHeader.topPadding +
+      OheyPageHeader.height +
+      12;
 }
 
 const _feedBottomPageInset = 124.0;
 const _feedHeaderContentGap = 4.0;
-const _feedPrimaryActionColor = AppColors.cFFC08BFF;
-const _feedPrimaryActionShadowColor = AppColors.cFF7F51C9;
+const _feedPrimaryActionColor = AppColors.brand;
+const _feedPrimaryActionShadowColor = AppColors.brandLip;
 
 Widget _buildFeedPage({
   required double topPadding,
@@ -103,7 +99,7 @@ Widget _buildFeedPage({
       ),
       sliver: SliverList.separated(
         itemCount: entries.length + (isLoading ? 1 : 0),
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
+        separatorBuilder: (context, index) => const SizedBox(height: 4),
         itemBuilder: (context, index) {
           if (index >= entries.length) {
             return const Padding(
@@ -171,18 +167,8 @@ class _YuruboRefreshIndicator extends StatelessWidget {
                 height: 34,
                 padding: const EdgeInsets.symmetric(horizontal: 13),
                 decoration: BoxDecoration(
-                  color: AppColors.cFF101C2B.withValues(alpha: .82),
+                  color: _feedPrimaryActionColor,
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: _feedPrimaryActionColor.withValues(alpha: .22),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _feedPrimaryActionColor.withValues(alpha: .18),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
                 ),
                 child: Center(
                   child: Text(
@@ -227,7 +213,6 @@ class _YuruboPostListItem extends StatelessWidget {
       child: _FeedPostCard(
         item: item,
         isWhite: isWhite,
-        compactYurubo: true,
         onLike: onInterested,
         onShare: onInvite,
         onMore: onMore,
@@ -267,7 +252,7 @@ class _FeedSectionEmptyState extends StatelessWidget {
             height: 50,
             radius: 22,
             color: _feedPrimaryActionColor,
-            foregroundColor: AppColors.cFF101820,
+            foregroundColor: AppColors.white,
             shadowColor: _feedPrimaryActionShadowColor,
             fontSize: 14,
           ),
@@ -342,7 +327,7 @@ Future<void> _showFeedPostActions(
         title: '${item.userName}さんをブロックしますか？',
         message: '相手のゆるぼやお誘いが表示されにくくなります。必要ならあとで解除できます。',
         actionLabel: 'ブロックする',
-        color: AppColors.cFFFF5F8F,
+        color: AppColors.cFFD9609F,
       );
       if (!confirmed || !context.mounted) return;
       try {
@@ -370,6 +355,27 @@ Future<void> _showFeedPostActions(
       } catch (_) {
         if (context.mounted) {
           OheyToast.show(context, 'ブロックできなかったよ。あとでもう一度試してね');
+        }
+      }
+    case _FeedPostAction.reportUser:
+      if (!item.canReport || item.ownerUserId.trim().isEmpty) return;
+      final reason = await _selectFeedReportReason(context);
+      if (!context.mounted || reason == null) return;
+      try {
+        await ref
+            .read(userSafetyRepositoryProvider)
+            .reportUser(item.ownerUserId, reason: reason.value);
+        if (context.mounted) {
+          OheyToast.show(
+            context,
+            '「${reason.label}」として通報しました',
+            icon: CupertinoIcons.exclamationmark_bubble_fill,
+            accentColor: AppColors.cFFFFE066,
+          );
+        }
+      } catch (_) {
+        if (context.mounted) {
+          OheyToast.show(context, '通報できませんでした。あとでもう一度試してね');
         }
       }
   }
@@ -537,7 +543,7 @@ class _CreateYuruboSheetState extends State<_CreateYuruboSheet> {
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
     final sub = isWhite
-        ? AppColors.cFF667381
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .62);
     final wishItems =
         widget.ref.watch(wishItemControllerProvider).asData?.value ??
@@ -816,9 +822,9 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF17212B : AppColors.white;
+    final ink = isWhite ? AppColors.cFF1A272D : AppColors.white;
     final sub = isWhite
-        ? AppColors.cFF667381
+        ? AppColors.cFF777777
         : AppColors.white.withValues(alpha: .62);
     return OheyBottomSheetShell(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
@@ -883,7 +889,7 @@ class _EditYuruboSheetState extends State<_EditYuruboSheet> {
             height: 50,
             radius: 22,
             color: _feedPrimaryActionColor,
-            foregroundColor: AppColors.cFF101820,
+            foregroundColor: AppColors.white,
             shadowColor: _feedPrimaryActionShadowColor,
           ),
         ],
@@ -987,6 +993,7 @@ class _YuruboCalendarPicker extends StatelessWidget {
       firstDate,
     );
     final days = _calendarDays(visibleMonth);
+    final tone = OheyTone.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1001,8 +1008,8 @@ class _YuruboCalendarPicker extends StatelessWidget {
               child: Text(
                 '${visibleMonth.year}/${visibleMonth.month.toString().padLeft(2, '0')}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.white,
+                style: TextStyle(
+                  color: tone.ink,
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
                   letterSpacing: .2,
@@ -1026,10 +1033,10 @@ class _YuruboCalendarPicker extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: label == '日'
-                        ? AppColors.cFFFF75B5
+                        ? AppColors.cFFFF4B4B
                         : label == '土'
-                        ? AppColors.cFF54D7FF
-                        : AppColors.white.withValues(alpha: .72),
+                        ? AppColors.cFF49C0F8
+                        : tone.muted,
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                   ),
@@ -1070,7 +1077,6 @@ class _YuruboCalendarPicker extends StatelessWidget {
           height: 48,
           radius: 22,
           color: _feedPrimaryActionColor,
-          foregroundColor: AppColors.cFF101820,
           shadowColor: _feedPrimaryActionShadowColor,
         ),
       ],
@@ -1099,32 +1105,24 @@ class _YuruboCalendarArrow extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: enabled ? onTap : null,
-    child: Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: enabled ? .12 : .05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.white.withValues(alpha: .11)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: .18),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Icon(
-        icon,
-        color: AppColors.white.withValues(alpha: enabled ? .92 : .22),
-        size: 26,
-      ),
+  Widget build(BuildContext context) => SizedBox(
+    width: 48,
+    child: Ohey3DButton.secondary(
+      label: '',
+      icon: icon,
+      onTap: enabled ? onTap : null,
+      enabled: enabled,
+      disabledColor: OheyTone.of(context).page,
+      disabledOpacity: .35,
+      height: 44,
+      radius: 14,
+      padding: EdgeInsets.zero,
     ),
   );
 }
 
+/// One day in the create-sheet picker: plain number, a tinted fill when
+/// selected, faded outside the month or before today.
 class _YuruboCalendarDayCell extends StatelessWidget {
   const _YuruboCalendarDayCell({
     required this.date,
@@ -1142,43 +1140,32 @@ class _YuruboCalendarDayCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tone = OheyTone.of(context);
     final isSunday = date.weekday == DateTime.sunday;
     final isSaturday = date.weekday == DateTime.saturday;
     final textColor = disabled || !inMonth
-        ? AppColors.white.withValues(alpha: .18)
+        ? tone.faint.withValues(alpha: .5)
         : selected
         ? AppColors.white
         : isSunday
-        ? AppColors.cFFFF75B5
+        ? AppColors.cFFFF4B4B
         : isSaturday
-        ? AppColors.cFF54D7FF
-        : AppColors.white;
-    final fillColor = selected
-        ? const Color(0xFF0CA7DF).withValues(alpha: .74)
-        : isSunday && inMonth && !disabled
-        ? AppColors.cFFFF75B5.withValues(alpha: .42)
-        : const Color(0xFF061724);
-    final borderColor = selected
-        ? AppColors.cFF54D7FF
-        : isSunday && inMonth && !disabled
-        ? AppColors.cFFFF75B5.withValues(alpha: .72)
-        : const Color(0xFF0A75A4).withValues(alpha: inMonth ? .62 : .28);
+        ? AppColors.cFF1CB0F6
+        : tone.ink;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 140),
         decoration: BoxDecoration(
-          color: fillColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: borderColor, width: selected ? 2 : 1.2),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: AppColors.cFF54D7FF.withValues(alpha: .26),
-                    blurRadius: 14,
-                    offset: const Offset(0, 5),
+          color: selected ? _feedPrimaryActionColor : AppColors.transparent,
+          borderRadius: BorderRadius.circular(14),
+          border: selected
+              ? Border(
+                  bottom: BorderSide(
+                    color: _feedPrimaryActionShadowColor,
+                    width: 3,
                   ),
-                ]
+                )
               : null,
         ),
         child: Center(
@@ -1186,7 +1173,7 @@ class _YuruboCalendarDayCell extends StatelessWidget {
             '${date.day}',
             style: TextStyle(
               color: textColor,
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.w900,
               height: 1,
             ),
@@ -1210,6 +1197,7 @@ class _YuruboDateOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tone = OheyTone.of(context);
     final label = selectedDate == null
         ? 'いつ（任意）'
         : _yuruboTimeLabel(selectedDate);
@@ -1219,17 +1207,13 @@ class _YuruboDateOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.white.withValues(alpha: .08),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.white.withValues(alpha: .13)),
+          color: tone.field,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: tone.edge, width: 2),
         ),
         child: Row(
           children: [
-            const Icon(
-              CupertinoIcons.calendar,
-              color: AppColors.white,
-              size: 20,
-            ),
+            Icon(CupertinoIcons.calendar, color: tone.muted, size: 20),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -1238,8 +1222,8 @@ class _YuruboDateOption extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
-                      color: AppColors.white,
+                    style: TextStyle(
+                      color: tone.ink,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -1247,7 +1231,7 @@ class _YuruboDateOption extends StatelessWidget {
                   Text(
                     subLabel,
                     style: TextStyle(
-                      color: AppColors.white.withValues(alpha: .5),
+                      color: tone.muted,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1262,16 +1246,12 @@ class _YuruboDateOption extends StatelessWidget {
                 onPressed: onClear,
                 child: Icon(
                   CupertinoIcons.xmark_circle_fill,
-                  color: AppColors.white.withValues(alpha: .58),
+                  color: tone.faint,
                   size: 21,
                 ),
               )
             else
-              Icon(
-                CupertinoIcons.chevron_down,
-                color: AppColors.white.withValues(alpha: .58),
-                size: 18,
-              ),
+              Icon(CupertinoIcons.chevron_down, color: tone.faint, size: 18),
           ],
         ),
       ),
@@ -1289,23 +1269,27 @@ class _YuruboVisibilityChoice extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => Ohey3DButtonSurface(
-    onTap: onTap,
-    height: 46,
-    radius: 20,
-    color: selected ? _feedPrimaryActionColor : AppColors.cFF263348,
-    bottomColor: selected ? _feedPrimaryActionShadowColor : AppColors.cFF151D2A,
-    padding: const EdgeInsets.symmetric(horizontal: 12),
-    child: Center(
-      child: Text(
-        label,
-        style: TextStyle(
-          color: selected ? AppColors.cFF101820 : AppColors.white,
-          fontWeight: FontWeight.w900,
+  Widget build(BuildContext context) {
+    final tone = OheyTone.of(context);
+    return Ohey3DButtonSurface(
+      onTap: onTap,
+      height: 46,
+      radius: 16,
+      color: selected ? _feedPrimaryActionColor : tone.page,
+      bottomColor: selected ? _feedPrimaryActionShadowColor : tone.edge,
+      borderColor: selected ? null : tone.edge,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? AppColors.white : tone.ink,
+            fontWeight: FontWeight.w900,
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _YuruboGroupChip extends StatelessWidget {
@@ -1318,28 +1302,30 @@ class _YuruboGroupChip extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: (selected ? _FeedColors.teal : AppColors.white).withValues(
-          alpha: selected ? .26 : .08,
+  Widget build(BuildContext context) {
+    final tone = OheyTone.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.brandTint : tone.page,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected ? _FeedColors.accent : tone.edge,
+            width: 2,
+          ),
         ),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: _FeedColors.teal.withValues(alpha: selected ? .7 : .25),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? _FeedColors.accent : tone.ink,
+            fontWeight: FontWeight.w900,
+          ),
         ),
       ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: AppColors.white,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-    ),
-  );
+    );
+  }
 }
 
 class _YuruboInput extends StatelessWidget {
@@ -1347,19 +1333,22 @@ class _YuruboInput extends StatelessWidget {
   final TextEditingController controller;
   final String placeholder;
   @override
-  Widget build(BuildContext context) => CupertinoTextField(
-    controller: controller,
-    placeholder: placeholder,
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-    decoration: BoxDecoration(
-      color: AppColors.white.withValues(alpha: .08),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: AppColors.white.withValues(alpha: .13)),
-    ),
-    style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.w800),
-    placeholderStyle: TextStyle(
-      color: AppColors.white.withValues(alpha: .42),
-      fontWeight: FontWeight.w700,
-    ),
-  );
+  Widget build(BuildContext context) {
+    final tone = OheyTone.of(context);
+    return CupertinoTextField(
+      controller: controller,
+      placeholder: placeholder,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      decoration: BoxDecoration(
+        color: tone.field,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: tone.edge, width: 2),
+      ),
+      style: TextStyle(color: tone.ink, fontWeight: FontWeight.w800),
+      placeholderStyle: TextStyle(
+        color: tone.faint,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
 }

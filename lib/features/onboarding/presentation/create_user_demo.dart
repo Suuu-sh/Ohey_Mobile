@@ -57,7 +57,7 @@ class _DemoSlide extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.cFF071038, AppColors.darkBackground],
+          colors: [AppColors.brandTint, AppColors.white],
         ),
       ),
       child: SafeArea(
@@ -73,7 +73,7 @@ class _DemoSlide extends StatelessWidget {
                 slide.title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: 31,
                   height: 1.06,
                   fontWeight: FontWeight.w900,
@@ -85,7 +85,7 @@ class _DemoSlide extends StatelessWidget {
                 slide.subtitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .68),
+                  color: AppColors.cFF777777,
                   fontSize: 14,
                   height: 1.35,
                   fontWeight: FontWeight.w800,
@@ -112,14 +112,14 @@ class _DemoStepBadge extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.cFFC08BFF.withValues(alpha: .18),
+        color: AppColors.cFFCE82FF.withValues(alpha: .18),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.cFFC08BFF.withValues(alpha: .38)),
+        border: Border.all(color: AppColors.cFFCE82FF.withValues(alpha: .38)),
       ),
       child: Text(
         label,
         style: const TextStyle(
-          color: AppColors.cFFC08BFF,
+          color: AppColors.cFFCE82FF,
           fontSize: 12,
           fontWeight: FontWeight.w900,
         ),
@@ -137,19 +137,9 @@ class _DemoPhoneStage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cFF02092B,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(38),
-        border: Border.all(
-          color: AppColors.white.withValues(alpha: .10),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: .36),
-            blurRadius: 28,
-            offset: const Offset(0, 16),
-          ),
-        ],
+        border: Border.all(color: AppColors.cFFE5E5E5, width: 2),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(36),
@@ -162,8 +152,8 @@ class _DemoPhoneStage extends StatelessWidget {
                     center: const Alignment(.2, -.9),
                     radius: 1.2,
                     colors: [
-                      AppColors.cFFC08BFF.withValues(alpha: .16),
-                      AppColors.darkBackground,
+                      AppColors.cFFCE82FF.withValues(alpha: .16),
+                      AppColors.white,
                     ],
                   ),
                 ),
@@ -251,7 +241,7 @@ class _DemoRequestStep extends StatelessWidget {
         icon: CupertinoIcons.bell_fill,
         title: '押したら相手に通知',
         body: '承認されるまで「申請中」になります。',
-        color: AppColors.cFF9AF21A,
+        color: AppColors.cFF89E219,
       ),
     ],
   );
@@ -276,9 +266,9 @@ class _DemoCreateStep extends StatelessWidget {
         label: 'ゆるぼする',
         height: 46,
         radius: 22,
-        color: AppColors.cFFC08BFF,
-        foregroundColor: AppColors.cFF101820,
-        shadowColor: AppColors.cFF7F51C9,
+        color: AppColors.cFFCE82FF,
+        foregroundColor: AppColors.cFF3C3C3C,
+        shadowColor: AppColors.cFFA568CC,
         onTap: () {},
       ),
     ],
@@ -295,8 +285,7 @@ class _DemoNotifyStep extends StatelessWidget {
       const _DemoMiniHeader(title: '通知', subtitle: '未返信はアプリ起動時に表示'),
       const SizedBox(height: 18),
       OheyThemedPanel(
-        backgroundColor: AppColors.darkBackgroundBottom,
-        accentColor: AppColors.cFF9AF21A,
+        backgroundColor: AppColors.white,
         borderRadius: 24,
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
         child: Column(
@@ -306,7 +295,7 @@ class _DemoNotifyStep extends StatelessWidget {
               children: const [
                 OheyPopIcon(
                   icon: CupertinoIcons.person_2_fill,
-                  color: AppColors.cFFC08BFF,
+                  color: AppColors.cFFCE82FF,
                   size: 38,
                   iconSize: 20,
                 ),
@@ -315,7 +304,7 @@ class _DemoNotifyStep extends StatelessWidget {
                   child: Text(
                     '参加申請・参加者',
                     style: TextStyle(
-                      color: AppColors.white,
+                      color: AppColors.cFF3C3C3C,
                       fontSize: 19,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -.5,
@@ -334,7 +323,7 @@ class _DemoNotifyStep extends StatelessWidget {
         icon: CupertinoIcons.checkmark_alt,
         title: '承認すると参加者に追加',
         body: '見送っても、あとから別のゆるぼを確認できます。',
-        color: AppColors.cFF20B9FF,
+        color: AppColors.cFF1CB0F6,
       ),
     ],
   );
@@ -351,7 +340,7 @@ class _DemoMiniHeader extends StatelessWidget {
     children: [
       const OheyPopIcon(
         icon: CupertinoIcons.sparkles,
-        color: AppColors.cFFC08BFF,
+        color: AppColors.cFFCE82FF,
         size: 42,
         iconSize: 22,
       ),
@@ -363,7 +352,7 @@ class _DemoMiniHeader extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                color: AppColors.white,
+                color: AppColors.cFF3C3C3C,
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -.6,
@@ -375,7 +364,7 @@ class _DemoMiniHeader extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: AppColors.white.withValues(alpha: .58),
+                color: AppColors.cFF777777,
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
               ),
@@ -404,15 +393,14 @@ class _DemoYuruboCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => OheyThemedPanel(
-    backgroundColor: AppColors.darkBackgroundBottom,
-    accentColor: highlight ? AppColors.cFFC08BFF : AppColors.cFF20B9FF,
+    backgroundColor: AppColors.white,
     borderRadius: 24,
     padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
     child: Row(
       children: [
         const OheyPopIcon(
           icon: CupertinoIcons.person_fill,
-          color: AppColors.cFFFF75B5,
+          color: AppColors.cFFFF86C8,
           size: 44,
           iconSize: 22,
         ),
@@ -426,7 +414,7 @@ class _DemoYuruboCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .84),
+                  color: AppColors.cFF777777,
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
@@ -437,7 +425,7 @@ class _DemoYuruboCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.4,
@@ -449,7 +437,7 @@ class _DemoYuruboCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .54),
+                  color: AppColors.cFF777777,
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
                 ),
@@ -464,9 +452,9 @@ class _DemoYuruboCard extends StatelessWidget {
             label: buttonLabel,
             height: 38,
             radius: 19,
-            color: highlight ? AppColors.cFFC08BFF : AppColors.cFF20B9FF,
-            foregroundColor: AppColors.cFF101820,
-            shadowColor: highlight ? AppColors.cFF7F51C9 : AppColors.cFF0B78B7,
+            color: highlight ? AppColors.cFFCE82FF : AppColors.cFF1CB0F6,
+            foregroundColor: AppColors.cFF3C3C3C,
+            shadowColor: highlight ? AppColors.cFFA568CC : AppColors.cFF1899D6,
             fontSize: 12,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             onTap: () {},
@@ -509,7 +497,7 @@ class _DemoCallout extends StatelessWidget {
               Text(
                 title,
                 style: const TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
                 ),
@@ -518,7 +506,7 @@ class _DemoCallout extends StatelessWidget {
               Text(
                 body,
                 style: TextStyle(
-                  color: AppColors.white.withValues(alpha: .62),
+                  color: AppColors.cFF777777,
                   fontSize: 12,
                   height: 1.25,
                   fontWeight: FontWeight.w800,
@@ -542,9 +530,9 @@ class _DemoInput extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
     decoration: BoxDecoration(
-      color: AppColors.white.withValues(alpha: .06),
+      color: AppColors.cFFF7F7F7,
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: AppColors.white.withValues(alpha: .10)),
+      border: Border.all(color: AppColors.cFFE5E5E5),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -552,7 +540,7 @@ class _DemoInput extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: AppColors.white.withValues(alpha: .48),
+            color: AppColors.cFFAFAFAF,
             fontSize: 11,
             fontWeight: FontWeight.w900,
           ),
@@ -561,7 +549,7 @@ class _DemoInput extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            color: AppColors.white,
+            color: AppColors.cFF3C3C3C,
             fontSize: 17,
             fontWeight: FontWeight.w900,
           ),
@@ -578,15 +566,15 @@ class _DemoRequestRow extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
     decoration: BoxDecoration(
-      color: AppColors.cFF20B9FF.withValues(alpha: .16),
+      color: AppColors.cFF1CB0F6.withValues(alpha: .16),
       borderRadius: BorderRadius.circular(19),
-      border: Border.all(color: AppColors.cFF20B9FF.withValues(alpha: .34)),
+      border: Border.all(color: AppColors.cFF1CB0F6.withValues(alpha: .34)),
     ),
     child: Row(
       children: [
         const OheyPopIcon(
           icon: CupertinoIcons.person_fill,
-          color: AppColors.cFFFF75B5,
+          color: AppColors.cFFFF86C8,
           size: 38,
           iconSize: 19,
         ),
@@ -600,7 +588,7 @@ class _DemoRequestRow extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: AppColors.white,
+                  color: AppColors.cFF3C3C3C,
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
                 ),
@@ -611,7 +599,7 @@ class _DemoRequestRow extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: AppColors.cFFC08BFF.withValues(alpha: .95),
+                  color: AppColors.cFFCE82FF.withValues(alpha: .95),
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
@@ -625,9 +613,9 @@ class _DemoRequestRow extends StatelessWidget {
             label: '承認',
             height: 38,
             radius: 19,
-            color: AppColors.cFF9AF21A,
-            foregroundColor: AppColors.cFF101820,
-            shadowColor: AppColors.cFF079078,
+            color: AppColors.cFF89E219,
+            foregroundColor: AppColors.cFF3C3C3C,
+            shadowColor: AppColors.cFF00A47C,
             fontSize: 13,
             onTap: () {},
           ),
@@ -653,8 +641,8 @@ class _DemoDots extends StatelessWidget {
           height: 9,
           decoration: BoxDecoration(
             color: i == selectedIndex
-                ? AppColors.cFFC08BFF
-                : AppColors.white.withValues(alpha: .22),
+                ? AppColors.cFFCE82FF
+                : AppColors.cFFAFAFAF,
             borderRadius: BorderRadius.circular(99),
           ),
         ),
