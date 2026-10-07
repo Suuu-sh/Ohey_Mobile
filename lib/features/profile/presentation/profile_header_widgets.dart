@@ -450,7 +450,7 @@ class _ProfileActivityHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 112),
+      padding: const EdgeInsets.fromLTRB(0, 16, 0, 112),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
