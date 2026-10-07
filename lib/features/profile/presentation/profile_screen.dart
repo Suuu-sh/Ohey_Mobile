@@ -698,7 +698,7 @@ class _ProfileYuruboCreateWishSection extends StatelessWidget {
             style: TextStyle(
               color: subtitleColor,
               fontSize: 12,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),

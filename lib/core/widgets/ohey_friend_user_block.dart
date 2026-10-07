@@ -8,7 +8,6 @@ import '../models/ohey_friend.dart';
 import '../theme/app_colors.dart';
 import 'ohey_avatar.dart';
 import 'ohey_compact_action_button.dart';
-import 'ohey_themed_panel.dart';
 
 class OheyFriendUserBlock extends StatelessWidget {
   const OheyFriendUserBlock({
@@ -71,33 +70,35 @@ class OheyFriendUserBlock extends StatelessWidget {
     final ink = statusEnabled
         ? (isWhite ? AppColors.cFF3C3C3C : AppColors.white)
         : (isWhite ? AppColors.cFF777777 : AppColors.cFFAFAFAF);
-    final avatarSize = compact ? 52.0 : 62.0;
+    final avatarSize = compact ? 48.0 : 52.0;
     final displayName = friend.name.trim().isEmpty
         ? friend.name
         : friend.name.trim();
     final nameLength = displayName.characters.length;
     final longName = nameLength > 10;
     final nameFontSize = compact
-        ? (longName ? 16.5 : 18.0)
-        : (longName ? 18.0 : 20.0);
-    final nameLetterSpacing = longName ? -.9 : -.4;
+        ? (longName ? 15.0 : 16.0)
+        : (longName ? 16.0 : 17.0);
+    final nameLetterSpacing = longName ? -.6 : -.2;
     final avatarNameGap = longName ? 9.0 : 12.0;
     final favoriteGap = longName ? 5.0 : 9.0;
     final favoriteVisualSize = longName ? 28.0 : 34.0;
     final favoriteIconSize = longName ? 20.0 : 22.0;
     final inviteEnabled =
         statusEnabled && inviteAvailable && !inviteSent && onInvite != null;
-    final activeInviteButtonColor = inviteButtonColor ?? accent;
-    final effectiveInviteButtonColor = inviteSent || !inviteAvailable
-        ? AppColors.cFF37464F
-        : activeInviteButtonColor;
-    final inviteForeground = inviteSent
-        ? AppColors.cFFCDCDCD
-        : !inviteAvailable
-        ? AppColors.cFFAFAFAF
-        : statusEnabled
-        ? inviteForegroundColor ?? AppColors.cFF131F24
-        : AppColors.cFF1CB0F6;
+    // Rows stay quiet: the invite is an outlined button whose label carries
+    // the brand color, so a list of friends isn't a wall of filled buttons.
+    final edge = isWhite
+        ? AppColors.chunkyBorderLight
+        : AppColors.chunkyBorderDark;
+    final page = isWhite ? AppColors.white : AppColors.darkBackground;
+    final activeInviteButtonColor = inviteButtonColor ?? AppColors.brand;
+    final inviteForeground = inviteEnabled
+        ? inviteForegroundColor == AppColors.white ||
+                  inviteForegroundColor == null
+              ? activeInviteButtonColor
+              : inviteForegroundColor!
+        : (isWhite ? AppColors.cFFAFAFAF : AppColors.cFF777777);
     final inviteButtonLabel = inviteSent
         ? inviteSentLabel
         : invitePressed && invitePressedLabel != null
@@ -107,18 +108,16 @@ class OheyFriendUserBlock extends StatelessWidget {
 
     final block = ConstrainedBox(
       constraints: BoxConstraints(minHeight: compact ? 88 : 98),
-      child: OheyThemedPanel(
+      child: Container(
         padding: EdgeInsets.fromLTRB(
-          14,
-          compact ? 9 : 10,
-          14,
-          compact ? 9 : 10,
+          4,
+          compact ? 10 : 12,
+          0,
+          compact ? 10 : 12,
         ),
-        backgroundColor: isWhite
-            ? AppColors.white
-            : AppColors.darkBackgroundBottom,
-        borderRadius: 20,
-        borderWidth: statusEnabled ? 1 : 1.25,
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: edge, width: 2)),
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -142,7 +141,7 @@ class OheyFriendUserBlock extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: ink,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             fontSize: nameFontSize,
                             letterSpacing: nameLetterSpacing,
                           ),
@@ -180,28 +179,15 @@ class OheyFriendUserBlock extends StatelessWidget {
                   enabled: inviteEnabled,
                   forcePressed: inviteSent || invitePressed,
                   height: 40,
-                  radius: 20,
-                  color: effectiveInviteButtonColor,
+                  radius: 14,
+                  color: page,
                   foregroundColor: inviteForeground,
-                  shadowColor: inviteSent
-                      ? AppColors.cFF1A272D
-                      : !inviteAvailable
-                      ? AppColors.cFF1A272D
-                      : statusEnabled
-                      ? inviteShadowColor ??
-                            Color.lerp(
-                              activeInviteButtonColor,
-                              AppColors.black,
-                              .32,
-                            )
-                      : AppColors.cFF131F24,
-                  disabledColor: inviteSent
-                      ? AppColors.cFF37464F
-                      : AppColors.cFF2B3A41,
+                  shadowColor: edge,
+                  borderColor: edge,
+                  disabledColor: page,
                   disabledOpacity: 1,
                   padding: inviteButtonPadding,
                   fontSize: 14,
-                  borderColor: null,
                   burstOnTap: true,
                   burstIcon: inviteBurstIcon,
                   burstColor: inviteBurstColor ?? activeInviteButtonColor,
@@ -305,7 +291,7 @@ class _StatusPill extends StatelessWidget {
       label,
       style: TextStyle(
         color: enabled ? accent : AppColors.cFF1CB0F6,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w700,
         fontSize: 13,
       ),
     ),

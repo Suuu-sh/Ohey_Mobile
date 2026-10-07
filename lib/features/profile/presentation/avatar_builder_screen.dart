@@ -189,7 +189,7 @@ class _AvatarBackgroundPickerScreenState
                   style: TextStyle(
                     color: _AvatarColors.sub,
                     fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                     height: 1.4,
                   ),
                 ),
@@ -299,7 +299,7 @@ class _AvatarBackgroundOption extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.white,
                     fontSize: 11,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -412,7 +412,7 @@ class _StageChip extends StatelessWidget {
           style: const TextStyle(
             color: _AvatarColors.sub,
             fontSize: 11,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             letterSpacing: .2,
           ),
         ),
@@ -464,7 +464,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
                       style: TextStyle(
                         color: _AvatarColors.sub,
                         fontSize: 12,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                         height: 1.35,
                       ),
                     ),
@@ -495,7 +495,7 @@ class _UnsavedAvatarSheet extends StatelessWidget {
                     style: TextStyle(
                       color: _AvatarColors.ink,
                       fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w500,
                       height: 1.35,
                     ),
                   ),
@@ -600,7 +600,7 @@ class _BackAvatarButton extends StatelessWidget {
             style: TextStyle(
               color: _AvatarColors.ink,
               fontSize: 15,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -627,7 +627,7 @@ class _SaveAvatarButton extends StatelessWidget {
       style: TextStyle(
         color: AppColors.white,
         fontSize: 14,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w700,
         letterSpacing: .1,
       ),
     ),
@@ -673,7 +673,7 @@ class _RoundTool extends StatelessWidget {
             style: const TextStyle(
               color: _AvatarColors.ink,
               fontSize: 11,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -1060,7 +1060,7 @@ class _ChoiceTile extends StatelessWidget {
               style: const TextStyle(
                 color: _AvatarColors.ink,
                 fontSize: 13,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],

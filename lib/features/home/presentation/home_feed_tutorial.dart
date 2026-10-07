@@ -212,7 +212,7 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: subColor,
                           fontSize: 12,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w500,
                           height: 1.45,
                           letterSpacing: -.15,
                         ),
@@ -224,7 +224,7 @@ class _FeedSwipeTutorialOverlayState extends State<_FeedSwipeTutorialOverlay>
                           foregroundColor: AppColors.cFF3DDCB6,
                           textStyle: const TextStyle(
                             fontSize: 13,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         child: const Text('わかった'),
@@ -378,7 +378,7 @@ class _OheySleepMarks extends StatelessWidget {
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
             color: AppColors.white,
             fontSize: 10,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             letterSpacing: -.4,
           ),
         ),
@@ -447,7 +447,7 @@ class _OheySpeechBubble extends StatelessWidget {
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   color: textColor,
                   fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   height: 1,
                   letterSpacing: -.18,
                 ),
@@ -696,7 +696,7 @@ class _WalkingOheyPainter extends CustomPainter {
         style: TextStyle(
           color: AppColors.white.withValues(alpha: zOpacity),
           fontSize: 9,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
       textDirection: TextDirection.ltr,

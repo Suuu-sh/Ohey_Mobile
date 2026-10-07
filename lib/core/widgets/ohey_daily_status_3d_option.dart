@@ -88,7 +88,7 @@ class OheyDailyStatus3DOption extends StatelessWidget {
                     style: TextStyle(
                       color: foreground,
                       fontSize: 15.5,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   if (subtitle?.trim().isNotEmpty == true) ...[
@@ -102,7 +102,7 @@ class OheyDailyStatus3DOption extends StatelessWidget {
                           alpha: status == OheyDailyStatus.hasPlans ? .70 : .72,
                         ),
                         fontSize: 11.5,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],

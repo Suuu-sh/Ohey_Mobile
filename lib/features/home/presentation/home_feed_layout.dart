@@ -78,6 +78,10 @@ Widget _buildFeedPage({
         ),
         sliver: SliverList.list(
           children: [
+            _FeedTopSection(
+              isWhite: isWhite,
+              onCreateYuruboPressed: onCreateYuruboPressed,
+            ),
             _FeedSectionEmptyState(
               isWhite: isWhite,
               onCreateYuruboPressed: onCreateYuruboPressed,
@@ -98,9 +102,18 @@ Widget _buildFeedPage({
         _feedBottomPageInset,
       ),
       sliver: SliverList.separated(
-        itemCount: entries.length + (isLoading ? 1 : 0),
-        separatorBuilder: (context, index) => const SizedBox(height: 4),
+        itemCount: entries.length + 1 + (isLoading ? 1 : 0),
+        separatorBuilder: (context, index) => index == 0
+            ? const SizedBox.shrink()
+            : _FeedDivider(isWhite: isWhite),
         itemBuilder: (context, index) {
+          if (index == 0) {
+            return _FeedTopSection(
+              isWhite: isWhite,
+              onCreateYuruboPressed: onCreateYuruboPressed,
+            );
+          }
+          index -= 1;
           if (index >= entries.length) {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 18),
@@ -176,7 +189,7 @@ class _YuruboRefreshIndicator extends StatelessWidget {
                     style: const TextStyle(
                       color: AppColors.white,
                       fontSize: 12,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -208,16 +221,13 @@ class _YuruboPostListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: _FeedPostCard(
-        item: item,
-        isWhite: isWhite,
-        onLike: onInterested,
-        onShare: onInvite,
-        onMore: onMore,
-        onAuthorTap: onAuthorTap,
-      ),
+    return _FeedPostCard(
+      item: item,
+      isWhite: isWhite,
+      onLike: onInterested,
+      onShare: onInvite,
+      onMore: onMore,
+      onAuthorTap: onAuthorTap,
     );
   }
 }
@@ -640,7 +650,7 @@ class _YuruboCreateWishSection extends StatelessWidget {
             style: TextStyle(
               color: subtitleColor,
               fontSize: 12,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -1348,6 +1358,181 @@ class _YuruboInput extends StatelessWidget {
       placeholderStyle: TextStyle(
         color: tone.faint,
         fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+}
+
+class _FeedDivider extends StatelessWidget {
+  const _FeedDivider({required this.isWhite});
+
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 2,
+    margin: const EdgeInsets.symmetric(horizontal: 20),
+    color: isWhite ? AppColors.chunkyBorderLight : AppColors.chunkyBorderDark,
+  );
+}
+
+/// Top of the feed: a colored "today" card that gives the screen one focal
+/// point, then a quiet section label before the posts.
+class _FeedTopSection extends StatelessWidget {
+  const _FeedTopSection({
+    required this.isWhite,
+    required this.onCreateYuruboPressed,
+  });
+
+  final bool isWhite;
+  final VoidCallback onCreateYuruboPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _FeedTodayHero(onCreateYuruboPressed: onCreateYuruboPressed),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              'フレンズのゆるぼ',
+              style: TextStyle(
+                color: isWhite ? AppColors.cFFAFAFAF : AppColors.cFF777777,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                letterSpacing: .6,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeedTodayHero extends ConsumerWidget {
+  const _FeedTodayHero({required this.onCreateYuruboPressed});
+
+  final VoidCallback onCreateYuruboPressed;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final friends =
+        ref.watch(friendsProvider).asData?.value ?? const <OheyFriend>[];
+    final free = friends
+        .where(
+          (friend) => const {
+            OheyDailyStatus.available,
+            OheyDailyStatus.maybeAvailable,
+            OheyDailyStatus.dependsOnTime,
+          }.contains(oheyDailyStatusFromKey(friend.statusKey)),
+        )
+        .toList(growable: false);
+    final title = free.isEmpty ? '今日、だれか誘ってみる？' : '今日ひまなフレンズ ${free.length}人';
+    final subtitle = free.isEmpty ? 'ゆるぼを出すと、空いてる人が集まります' : 'ゆるぼを出して、気軽に誘おう';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+      decoration: BoxDecoration(
+        color: AppColors.cFF1CB0F6,
+        borderRadius: BorderRadius.circular(20),
+        border: const Border(
+          bottom: BorderSide(color: AppColors.cFF1899D6, width: 4),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: AppColors.white.withValues(alpha: .85),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (free.isNotEmpty) ...[
+                const SizedBox(width: 10),
+                _FeedHeroAvatars(friends: free),
+              ],
+            ],
+          ),
+          const SizedBox(height: 16),
+          Ohey3DButton(
+            label: 'ゆるぼする',
+            icon: CupertinoIcons.plus_bubble_fill,
+            onTap: onCreateYuruboPressed,
+            color: AppColors.white,
+            foregroundColor: AppColors.cFF1CB0F6,
+            shadowColor: AppColors.cFF84D8FF,
+            height: 46,
+            radius: 14,
+            fontSize: 15,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeedHeroAvatars extends StatelessWidget {
+  const _FeedHeroAvatars({required this.friends});
+
+  final List<OheyFriend> friends;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = friends.take(3).toList(growable: false);
+    const size = 40.0;
+    const step = 26.0;
+    return SizedBox(
+      width: size + (visible.length - 1) * step,
+      height: size,
+      child: Stack(
+        children: [
+          for (var index = 0; index < visible.length; index++)
+            Positioned(
+              left: index * step,
+              child: Container(
+                width: size,
+                height: size,
+                decoration: BoxDecoration(
+                  color: visible[index].accentColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.white, width: 2.5),
+                ),
+                child: ClipOval(
+                  child: OheyAvatarView(
+                    avatar: visible[index].avatar ?? OheyAvatar.defaultAvatar,
+                    size: size,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

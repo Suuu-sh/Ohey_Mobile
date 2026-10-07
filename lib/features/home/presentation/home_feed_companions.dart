@@ -52,7 +52,7 @@ class _FeedCompanionListSheet extends ConsumerWidget {
                       style: TextStyle(
                         color: subtitleColor,
                         fontSize: 13,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -160,7 +160,7 @@ class _FeedCompanionTile extends StatelessWidget {
                     style: TextStyle(
                       color: titleColor,
                       fontSize: 15,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: -.3,
                     ),
                   ),
@@ -232,7 +232,7 @@ class _CompanionStatusBadge extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 11,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -314,7 +314,7 @@ class _FeedCompanionStatusCard extends StatelessWidget {
                   _companionStatusLabel(friend.statusKey),
                   style: TextStyle(
                     color: titleColor,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
                 ),

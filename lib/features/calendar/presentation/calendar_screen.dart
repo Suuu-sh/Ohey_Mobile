@@ -532,7 +532,7 @@ class _CalendarIntroCard extends StatelessWidget {
                   style: TextStyle(
                     color: titleColor,
                     fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     height: 1.25,
                     letterSpacing: -.2,
                   ),
@@ -543,7 +543,7 @@ class _CalendarIntroCard extends StatelessWidget {
                   style: TextStyle(
                     color: messageColor,
                     fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                     height: 1.45,
                   ),
                 ),
@@ -797,7 +797,7 @@ class _CalendarStatusChangeButton extends StatelessWidget {
             style: TextStyle(
               color: foreground,
               fontSize: 11,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               height: 1,
             ),
           ),
@@ -983,7 +983,7 @@ class _CalendarFriendStatusList extends StatelessWidget {
                   ? AppColors.cFF777777
                   : AppColors.white.withValues(alpha: .62),
               fontSize: 12,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
@@ -1111,7 +1111,7 @@ class _CalendarSectionSurface extends StatelessWidget {
                     style: TextStyle(
                       color: accent,
                       fontSize: 11,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       height: 1,
                     ),
                   ),
@@ -1191,7 +1191,7 @@ class _CalendarFriendStatusCountChip extends StatelessWidget {
         style: TextStyle(
           color: isWhite ? AppColors.cFF1A272D : AppColors.white,
           fontSize: 10,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -1345,7 +1345,7 @@ class _CalendarFriendStatusSheetState
                     ? AppColors.cFF777777
                     : AppColors.white.withValues(alpha: .62),
                 fontSize: 12,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
                 height: 1.35,
               ),
             ),
@@ -1474,7 +1474,7 @@ class _CalendarFriendGroupChip extends StatelessWidget {
         style: TextStyle(
           color: foreground,
           fontSize: 12,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           height: 1,
         ),
       ),
@@ -1525,7 +1525,7 @@ class _CalendarFriendStatusModalOverview extends StatelessWidget {
                   style: TextStyle(
                     color: isWhite ? AppColors.cFF3C3C3C : AppColors.white,
                     fontSize: 16,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: -.2,
                   ),
                 ),
@@ -1539,7 +1539,7 @@ class _CalendarFriendStatusModalOverview extends StatelessWidget {
                         ? AppColors.cFF777777
                         : AppColors.white.withValues(alpha: .62),
                     fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -1579,7 +1579,7 @@ class _CalendarFriendStatusBlockList extends StatelessWidget {
                 ? AppColors.cFF777777
                 : AppColors.white.withValues(alpha: .62),
             fontSize: 12,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w500,
           ),
         ),
       );
@@ -1795,7 +1795,7 @@ class _CalendarFriendStatusAdPlaceholderBlock extends StatelessWidget {
                 style: TextStyle(
                   color: _calendarPrimaryActionColor,
                   fontSize: 16,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -1943,7 +1943,7 @@ class _PlayfulMonthGrid extends StatelessWidget {
                             : entry.key == 6
                             ? AppColors.cFF49C0F8
                             : AppColors.cFFCDCDCD,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         fontSize: 16,
                       ),
                     ),

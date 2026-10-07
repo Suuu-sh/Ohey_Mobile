@@ -72,7 +72,7 @@ class OheyManageListRow extends StatelessWidget {
                     style: TextStyle(
                       color: resolvedTitleColor,
                       fontSize: 15,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   )
                 : Column(
@@ -86,7 +86,7 @@ class OheyManageListRow extends StatelessWidget {
                         style: TextStyle(
                           color: resolvedTitleColor,
                           fontSize: 15,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -98,7 +98,7 @@ class OheyManageListRow extends StatelessWidget {
                           color: resolvedSubtitleColor,
                           fontSize: 12,
                           height: 1.15,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -229,7 +229,7 @@ class OheyManageAddTile extends StatelessWidget {
                   style: TextStyle(
                     color: resolvedForegroundColor,
                     fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),

@@ -318,7 +318,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                       style: TextStyle(
                         color: _authPink,
                         fontSize: 17,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -386,7 +386,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                 style: TextStyle(
                   color: AppColors.cFF777777,
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                   height: 1.45,
                 ),
               ),
@@ -491,7 +491,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                 style: TextStyle(
                   color: AppColors.cFF777777,
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                   height: 1.45,
                 ),
               ),
@@ -587,7 +587,7 @@ extension _CreateUserAuthPages on _CreateUserDialogState {
                     style: TextStyle(
                       color: _authPink,
                       fontSize: 16,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),

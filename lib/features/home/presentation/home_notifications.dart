@@ -377,7 +377,7 @@ class _NotificationSectionHeader extends StatelessWidget {
                       style: TextStyle(
                         color: titleColor,
                         fontSize: 16,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         letterSpacing: -.35,
                       ),
                     ),
@@ -396,7 +396,7 @@ class _NotificationSectionHeader extends StatelessWidget {
                         style: TextStyle(
                           color: accent,
                           fontSize: 11,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -410,7 +410,7 @@ class _NotificationSectionHeader extends StatelessWidget {
                   style: TextStyle(
                     color: messageColor,
                     fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -448,7 +448,7 @@ class _NotificationSectionEmptyNote extends StatelessWidget {
             ? AppColors.cFF1899D6
             : AppColors.white.withValues(alpha: .62),
         fontSize: 12,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w500,
         height: 1.35,
       ),
     ),
@@ -478,7 +478,7 @@ class _NotificationEmptyState extends StatelessWidget {
                 ? AppColors.cFF777777
                 : AppColors.white.withValues(alpha: .56),
             fontSize: 12,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -552,7 +552,7 @@ class _NotificationTile extends StatelessWidget {
                           style: TextStyle(
                             color: titleColor,
                             fontSize: 13,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -575,7 +575,7 @@ class _NotificationTile extends StatelessWidget {
                     style: TextStyle(
                       color: messageColor,
                       fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w500,
                       height: 1.35,
                     ),
                   ),
@@ -587,7 +587,7 @@ class _NotificationTile extends StatelessWidget {
                         style: TextStyle(
                           color: timeColor,
                           fontSize: 11,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       if (notification.actionLabel != null) ...[
@@ -619,7 +619,7 @@ class _NotificationTile extends StatelessWidget {
                                 style: const TextStyle(
                                   color: AppColors.white,
                                   fontSize: 10,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
@@ -728,7 +728,7 @@ class _FriendRequestNotificationSheetState
                 style: const TextStyle(
                   color: AppColors.primaryAction,
                   fontSize: 11,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -746,7 +746,7 @@ class _FriendRequestNotificationSheetState
               style: TextStyle(
                 color: AppColors.white.withValues(alpha: .78),
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
                 height: 1.45,
               ),
             ),
@@ -867,7 +867,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
                 style: const TextStyle(
                   color: AppColors.primaryAction,
                   fontSize: 11,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -885,7 +885,7 @@ class _InviteNotificationSheetState extends State<_InviteNotificationSheet> {
               style: TextStyle(
                 color: AppColors.white.withValues(alpha: .78),
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
                 height: 1.45,
               ),
             ),

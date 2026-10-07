@@ -545,7 +545,7 @@ class _FriendAddSheetState extends State<_FriendAddSheet> {
                         style: TextStyle(
                           color: sub,
                           fontSize: 13,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -767,7 +767,7 @@ class _CuteQrCard extends StatelessWidget {
                 style: const TextStyle(
                   color: softInk,
                   fontSize: 14,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   height: 1.1,
                 ),
               ),
@@ -888,7 +888,7 @@ class _QrActionButton extends StatelessWidget {
                     style: TextStyle(
                       color: ink.withValues(alpha: .72),
                       fontSize: 11.5,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -958,12 +958,12 @@ class _QrIdSearchChip extends StatelessWidget {
                         style: TextStyle(
                           color: ink.withValues(alpha: .86),
                           fontSize: 13,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                         ),
                         placeholderStyle: TextStyle(
                           color: ink.withValues(alpha: .36),
                           fontSize: 13,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                         ),
                         decoration: const BoxDecoration(),
                       ),
@@ -1007,7 +1007,7 @@ class _QrIdSearchChip extends StatelessWidget {
                         style: TextStyle(
                           color: ink.withValues(alpha: .62),
                           fontSize: 12,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -1138,7 +1138,7 @@ class _CuteMessageBox extends StatelessWidget {
               message,
               style: TextStyle(
                 color: color,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 fontSize: 12,
               ),
             ),
@@ -1211,7 +1211,7 @@ class _FriendQrScannerSheetState extends State<_FriendQrScannerSheet> {
             style: TextStyle(
               color: sub,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 14),
@@ -1314,7 +1314,7 @@ class _FriendSearchResultCard extends StatelessWidget {
                   style: TextStyle(
                     color: ink,
                     fontSize: 17,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 Text(

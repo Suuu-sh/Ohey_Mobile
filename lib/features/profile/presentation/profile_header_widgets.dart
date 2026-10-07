@@ -210,7 +210,7 @@ class _ProfileReservationStrip extends StatelessWidget {
                   '今日の予定あり',
                   style: TextStyle(
                     color: AppColors.success,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
                 ),
@@ -221,7 +221,7 @@ class _ProfileReservationStrip extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: isWhite ? AppColors.cFF2B3A41 : AppColors.white,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
                 ),
@@ -304,7 +304,7 @@ class _IncomingInviteCard extends StatelessWidget {
                   '返信待ち',
                   style: TextStyle(
                     color: AppColors.primaryAction,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
                 ),
@@ -315,7 +315,7 @@ class _IncomingInviteCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: isWhite ? AppColors.cFF2B3A41 : AppColors.white,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
                 ),
@@ -409,7 +409,7 @@ class _InviteResponseButton extends StatelessWidget {
         label,
         style: TextStyle(
           color: textColor,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           fontSize: 12,
         ),
       ),
@@ -586,7 +586,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                               style: TextStyle(
                                 color: OheyTone.of(context).ink,
                                 fontSize: 15,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                                 height: 1.08,
                                 letterSpacing: .2,
                               ),
@@ -601,7 +601,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                           style: TextStyle(
                             color: OheyTone.of(context).muted,
                             fontSize: 13,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             height: 1.1,
                           ),
                         ),
@@ -625,7 +625,7 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
                                   alpha: .82,
                                 ),
                                 fontSize: 11,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w500,
                                 height: 1,
                               ),
                             ),
@@ -837,7 +837,7 @@ class _ProfileSummaryStat extends StatelessWidget {
           style: TextStyle(
             color: OheyTone.of(context).muted,
             fontSize: 12,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             letterSpacing: -.35,
           ),
         ),
@@ -871,7 +871,7 @@ class _ProfileYuruboActionRow extends StatelessWidget {
               style: TextStyle(
                 color: OheyTone.of(context).ink,
                 fontSize: 14,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 letterSpacing: -.3,
               ),
             ),
@@ -912,7 +912,7 @@ class _ProfileStatusActionRow extends StatelessWidget {
               style: TextStyle(
                 color: OheyTone.of(context).ink,
                 fontSize: 13,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 letterSpacing: -.4,
               ),
             ),
@@ -966,7 +966,7 @@ class _ProfileWishListActionRow extends StatelessWidget {
                   style: TextStyle(
                     color: OheyTone.of(context).ink,
                     fontSize: 13,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     height: 1,
                     letterSpacing: -.35,
                   ),
@@ -979,7 +979,7 @@ class _ProfileWishListActionRow extends StatelessWidget {
                   style: TextStyle(
                     color: OheyTone.of(context).ink.withValues(alpha: .62),
                     fontSize: 10,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     height: 1,
                   ),
                 ),
@@ -1022,7 +1022,7 @@ class _ProfileFriendActionRow extends StatelessWidget {
               style: TextStyle(
                 color: OheyTone.of(context).ink,
                 fontSize: 14,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 letterSpacing: -.3,
               ),
             ),
@@ -1107,7 +1107,7 @@ class _ProfileOheyPlusPurchaseSheetState
               style: TextStyle(
                 color: tone.muted,
                 fontSize: 12,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -1137,7 +1137,7 @@ class _ProfileOheyPlusPurchaseSheetState
                 style: TextStyle(
                   color: tone.muted,
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -1214,7 +1214,7 @@ class _PlusHero extends StatelessWidget {
                   style: TextStyle(
                     color: AppColors.cFFFFE3F0,
                     fontSize: 12,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 1.6,
                   ),
                 ),
@@ -1286,7 +1286,7 @@ class _PlusPlanCard extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.white,
                 fontSize: 12,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 letterSpacing: .6,
               ),
             ),
@@ -1316,7 +1316,7 @@ class _PlusPlanCard extends StatelessWidget {
                         style: TextStyle(
                           color: tone.muted,
                           fontSize: 13,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -1357,7 +1357,7 @@ class _PlusCompareTable extends StatelessWidget {
         style: TextStyle(
           color: color ?? tone.muted,
           fontSize: 12,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -1379,7 +1379,7 @@ class _PlusCompareTable extends StatelessWidget {
               style: TextStyle(
                 color: tone.ink,
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),

@@ -103,7 +103,7 @@ extension _CreateUserProfilePage on _CreateUserDialogState {
                                 style: TextStyle(
                                   color: AppColors.cFF00CD9C,
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),

@@ -88,7 +88,7 @@ class _DemoSlide extends StatelessWidget {
                   color: AppColors.cFF777777,
                   fontSize: 14,
                   height: 1.35,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 22),
@@ -121,7 +121,7 @@ class _DemoStepBadge extends StatelessWidget {
         style: const TextStyle(
           color: AppColors.cFFCE82FF,
           fontSize: 12,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     ),
@@ -366,7 +366,7 @@ class _DemoMiniHeader extends StatelessWidget {
               style: TextStyle(
                 color: AppColors.cFF777777,
                 fontSize: 12,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -416,7 +416,7 @@ class _DemoYuruboCard extends StatelessWidget {
                 style: TextStyle(
                   color: AppColors.cFF777777,
                   fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 3),
@@ -439,7 +439,7 @@ class _DemoYuruboCard extends StatelessWidget {
                 style: TextStyle(
                   color: AppColors.cFF777777,
                   fontSize: 11,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -499,7 +499,7 @@ class _DemoCallout extends StatelessWidget {
                 style: const TextStyle(
                   color: AppColors.cFF3C3C3C,
                   fontSize: 15,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 3),
@@ -509,7 +509,7 @@ class _DemoCallout extends StatelessWidget {
                   color: AppColors.cFF777777,
                   fontSize: 12,
                   height: 1.25,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -542,7 +542,7 @@ class _DemoInput extends StatelessWidget {
           style: TextStyle(
             color: AppColors.cFFAFAFAF,
             fontSize: 11,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 4),
@@ -551,7 +551,7 @@ class _DemoInput extends StatelessWidget {
           style: const TextStyle(
             color: AppColors.cFF3C3C3C,
             fontSize: 17,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -590,7 +590,7 @@ class _DemoRequestRow extends StatelessWidget {
                 style: TextStyle(
                   color: AppColors.cFF3C3C3C,
                   fontSize: 16,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 3),
@@ -601,7 +601,7 @@ class _DemoRequestRow extends StatelessWidget {
                 style: TextStyle(
                   color: AppColors.cFFCE82FF.withValues(alpha: .95),
                   fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],

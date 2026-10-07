@@ -48,7 +48,7 @@ class _AvatarEditCard extends StatelessWidget {
                     '自分のアバター',
                     style: TextStyle(
                       color: ink,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       fontSize: 16,
                     ),
                   ),
@@ -59,7 +59,7 @@ class _AvatarEditCard extends StatelessWidget {
                       color: isWhite
                           ? AppColors.cFF777777
                           : AppColors.white.withValues(alpha: .58),
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w500,
                       fontSize: 12,
                     ),
                   ),
@@ -214,7 +214,7 @@ class _SettingsTile extends StatelessWidget {
                               style: TextStyle(
                                 color: textColor,
                                 fontSize: 15,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                                 letterSpacing: -.2,
                               ),
                             ),
@@ -238,7 +238,7 @@ class _SettingsTile extends StatelessWidget {
                               ? accent.withValues(alpha: .76)
                               : sub,
                           fontSize: 11,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -293,7 +293,7 @@ class _SettingsTileBadge extends StatelessWidget {
           color: AppColors.white,
           fontSize: 10,
           height: 1,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

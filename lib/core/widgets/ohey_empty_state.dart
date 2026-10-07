@@ -123,7 +123,7 @@ class _OheyEmptyHintChip extends StatelessWidget {
                   ? AppColors.cFF777777
                   : AppColors.white.withValues(alpha: .62)),
           fontSize: 12,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           height: 1,
         ),
       ),

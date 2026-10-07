@@ -15,7 +15,7 @@ class OheyPageHeader extends StatelessWidget {
   });
 
   static const double height = 52;
-  static const double titleSize = 34;
+  static const double titleSize = 28;
   static const double topPadding = 16;
   static const double horizontalPadding = 22;
   static const double bottomSpacing = 18;
@@ -66,8 +66,8 @@ class OheyPageHeader extends StatelessWidget {
                   color: color,
                   fontSize: titleSize,
                   height: 1,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -1.2,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -.6,
                 ),
               ),
             ),

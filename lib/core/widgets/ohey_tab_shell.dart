@@ -811,7 +811,7 @@ class _AuthLoginArrivalCard extends StatelessWidget {
             style: TextStyle(
               color: AppColors.white,
               fontSize: 15,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               letterSpacing: -.2,
             ),
           ),
@@ -955,7 +955,7 @@ class _SheetInlineError extends StatelessWidget {
         style: TextStyle(
           color: textColor,
           fontSize: 13,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           height: 1.25,
         ),
       ),
@@ -1067,7 +1067,7 @@ class _YuruboParticipationRequestSheetState
                         style: TextStyle(
                           color: AppColors.white.withValues(alpha: .62),
                           fontSize: 14,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           height: 1.25,
                         ),
                       ),
@@ -1275,7 +1275,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                             style: TextStyle(
                               color: AppColors.cFFFFF5D3,
                               fontSize: 14,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w700,
                               letterSpacing: -.2,
                             ),
                           ),
@@ -1313,7 +1313,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                               style: TextStyle(
                                 color: AppColors.cFFFFD43B,
                                 fontSize: 11,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -1344,7 +1344,7 @@ class _IncomingInviteSheetState extends State<_IncomingInviteSheet> {
                     style: TextStyle(
                       color: AppColors.white.withValues(alpha: .82),
                       fontSize: 14,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w500,
                       height: 1.45,
                     ),
                   ),
@@ -1563,7 +1563,7 @@ class _TabItem extends StatelessWidget {
                   color: labelColor,
                   fontSize: 10,
                   height: 1,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: .2,
                 ),
               ),
@@ -1646,7 +1646,7 @@ class _TabBadge extends StatelessWidget {
             color: AppColors.white,
             fontSize: 9.5,
             height: 1,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),

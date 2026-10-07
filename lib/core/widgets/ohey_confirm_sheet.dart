@@ -102,7 +102,7 @@ class OheyConfirmSheet extends StatelessWidget {
             style: TextStyle(
               color: subtitleColor,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.45,
             ),
           ),

@@ -155,7 +155,7 @@ class _FilterChip extends StatelessWidget {
                       : isWhite
                       ? AppColors.cFF3C3C3C
                       : AppColors.white,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   fontSize: 14,
                 ),
               ),
@@ -501,7 +501,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                       style: TextStyle(
                         color: sub,
                         fontSize: 12,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -528,7 +528,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
                     style: TextStyle(
                       color: ink,
                       fontSize: 16,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                     decoration: InputDecoration(
                       hintText: 'グループ名（例：いつメン）',
@@ -574,7 +574,7 @@ class _CustomFilterSheetState extends State<_CustomFilterSheet> {
               style: const TextStyle(
                 color: AppColors.cFFFF86C8,
                 fontSize: 12,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -633,7 +633,7 @@ class _FilterSectionTitle extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 14,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     ],
@@ -700,7 +700,7 @@ class _CustomFilterFriendRow extends StatelessWidget {
                   style: TextStyle(
                     color: ink,
                     fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -709,7 +709,7 @@ class _CustomFilterFriendRow extends StatelessWidget {
                   style: TextStyle(
                     color: sub,
                     fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],

@@ -373,7 +373,7 @@ class _ProfileYuruboDeleteConfirmSheet extends StatelessWidget {
             style: TextStyle(
               color: subtitleColor,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.4,
             ),
           ),
@@ -441,7 +441,7 @@ class _ProfileModalTextButton extends StatelessWidget {
           style: TextStyle(
             color: color,
             fontSize: 16,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             letterSpacing: -.35,
           ),
         ),

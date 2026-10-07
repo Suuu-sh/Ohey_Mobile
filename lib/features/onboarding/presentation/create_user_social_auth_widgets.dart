@@ -31,7 +31,7 @@ class _SocialLoginButton extends StatelessWidget {
           style: TextStyle(
             color: AppColors.cFF3C3C3C,
             fontSize: 16,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             letterSpacing: .6,
           ),
         ),

@@ -224,7 +224,7 @@ class _YuruboAdPlaceholder extends StatelessWidget {
               style: TextStyle(
                 color: AppColors.white.withValues(alpha: .76),
                 fontSize: 11,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),

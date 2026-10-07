@@ -23,7 +23,7 @@ class _DarkMessageText extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 12,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           height: 1.45,
         ),
       ),

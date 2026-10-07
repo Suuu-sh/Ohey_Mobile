@@ -70,7 +70,7 @@ class OheyActionTile extends StatelessWidget {
                     style: TextStyle(
                       color: titleColor,
                       fontSize: 15,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: -.3,
                     ),
                   ),
@@ -80,7 +80,7 @@ class OheyActionTile extends StatelessWidget {
                     style: TextStyle(
                       color: subtitleColor,
                       fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],

@@ -1,7 +1,8 @@
 part of 'home_screen.dart';
 
-/// A yurubo rendered like an invite card: who and when on top, the plan as
-/// the headline, quiet meta lines, attendees, then one primary action.
+/// A yurubo in the feed: unboxed like a social post (items are separated by
+/// dividers in the list), with the plan as the headline and one compact
+/// action row.
 class _FeedPostCard extends StatelessWidget {
   const _FeedPostCard({
     required this.item,
@@ -21,41 +22,63 @@ class _FeedPostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final edge = isWhite
-        ? AppColors.chunkyBorderLight
-        : AppColors.chunkyBorderDark;
     return Semantics(
       label: '${item.userName}のゆるぼ',
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-        decoration: BoxDecoration(
-          color: OheyThemedPanel.surfaceColor(isWhite: isWhite),
-          borderRadius: BorderRadius.circular(20),
-          border: oheyChunkyBorder(edge),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 18, 16, 20),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _FeedCardAuthorBar(
-              item: item,
-              isWhite: isWhite,
-              onMore: onMore,
-              onAuthorTap: onAuthorTap,
+            GestureDetector(
+              onTap: onAuthorTap,
+              child: _FeedAvatarDisc(item: item, isWhite: isWhite),
             ),
-            const SizedBox(height: 12),
-            _YuruboCardBody(item: item, isWhite: isWhite),
-            const SizedBox(height: 16),
-            _FeedCardFooter(
-              item: item,
-              isWhite: isWhite,
-              onLike: onLike,
-              onShare: onShare,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _FeedCardAuthorBar(
+                    item: item,
+                    isWhite: isWhite,
+                    onMore: onMore,
+                    onAuthorTap: onAuthorTap,
+                  ),
+                  const SizedBox(height: 2),
+                  _YuruboCardBody(item: item, isWhite: isWhite),
+                  const SizedBox(height: 14),
+                  _FeedCardFooter(
+                    item: item,
+                    isWhite: isWhite,
+                    onLike: onLike,
+                    onShare: onShare,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Avatar on a soft tinted disc so each post has a solid left anchor.
+class _FeedAvatarDisc extends StatelessWidget {
+  const _FeedAvatarDisc({required this.item, required this.isWhite});
+
+  final _FeedItem item;
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = item.accent.withValues(alpha: isWhite ? .22 : .28);
+    return Container(
+      width: 46,
+      height: 46,
+      decoration: BoxDecoration(color: tint, shape: BoxShape.circle),
+      child: ClipOval(child: OheyAvatarView(avatar: item.avatar, size: 46)),
     );
   }
 }
@@ -80,16 +103,16 @@ class _YuruboCardBody extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: isWhite ? AppColors.cFF3C3C3C : AppColors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            height: 1.25,
-            letterSpacing: -.4,
+            fontSize: 19,
+            fontWeight: FontWeight.w800,
+            height: 1.3,
+            letterSpacing: -.2,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         Wrap(
-          spacing: 14,
-          runSpacing: 6,
+          spacing: 12,
+          runSpacing: 4,
           children: [
             _YuruboMetaLine(
               icon: CupertinoIcons.clock_fill,
@@ -132,10 +155,10 @@ class _YuruboMetaLine extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 15, color: isWhite ? AppColors.cFFAFAFAF : color),
-        const SizedBox(width: 5),
+        Icon(icon, size: 14, color: isWhite ? AppColors.cFFAFAFAF : color),
+        const SizedBox(width: 4),
         ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 160),
+          constraints: const BoxConstraints(maxWidth: 150),
           child: Text(
             label,
             maxLines: 1,
@@ -143,7 +166,7 @@ class _YuruboMetaLine extends StatelessWidget {
             style: TextStyle(
               color: color,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.1,
             ),
           ),
@@ -181,8 +204,6 @@ class _FeedCardAuthorBar extends StatelessWidget {
               onTap: onAuthorTap,
               child: Row(
                 children: [
-                  OheyAvatarView(avatar: item.avatar, size: 34),
-                  const SizedBox(width: 9),
                   Flexible(
                     child: Text(
                       item.userName,
@@ -191,7 +212,7 @@ class _FeedCardAuthorBar extends StatelessWidget {
                       style: TextStyle(
                         color: primaryText,
                         fontSize: 15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         height: 1.1,
                       ),
                     ),
@@ -203,8 +224,8 @@ class _FeedCardAuthorBar extends StatelessWidget {
                     maxLines: 1,
                     style: TextStyle(
                       color: mutedText,
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
                       height: 1.1,
                     ),
                   ),
@@ -221,8 +242,8 @@ class _FeedCardAuthorBar extends StatelessWidget {
             onTap: onMore,
             child: SizedBox(
               width: 40,
-              height: 40,
-              child: Icon(CupertinoIcons.ellipsis, color: mutedText, size: 24),
+              height: 32,
+              child: Icon(CupertinoIcons.ellipsis, color: mutedText, size: 22),
             ),
           ),
         ),
@@ -251,81 +272,82 @@ class _FeedCardFooter extends StatelessWidget {
     final avatars = item.friends
         .map((friend) => friend.avatar)
         .toList(growable: false);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
+    final likeButton = isPrimary
+        ? Ohey3DButton(
+            label: _feedLikeActionLabel(item),
+            icon: CupertinoIcons.hand_raised_fill,
+            onTap: onLike,
+            height: 40,
+            radius: 14,
+            fontSize: 14,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+          )
+        : Ohey3DButton.secondary(
+            label: _feedLikeActionLabel(item),
+            icon: item.ownedByMe
+                ? CupertinoIcons.person_crop_circle_fill
+                : CupertinoIcons.checkmark_alt,
+            foregroundColor: item.ownedByMe ? null : AppColors.brand,
+            onTap: item.ownedByMe ? null : onLike,
+            height: 40,
+            radius: 14,
+            fontSize: 14,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+          );
+    return Row(
       children: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: avatars.isEmpty
-              ? null
-              : () => _showFeedCompanionList(context, item),
-          child: Row(
-            children: [
-              if (avatars.isNotEmpty) ...[
-                _FeedAttendeeStack(avatars: avatars, isWhite: isWhite),
-                const SizedBox(width: 8),
-              ],
-              Expanded(
-                child: Text(
-                  _feedReactionSummary(item),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: mutedText,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
+        Semantics(
+          label: item.liked ? '参加申請を取り消す' : 'このゆるぼに参加申請する',
+          child: likeButton,
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 44,
+          child: Semantics(
+            label: item.isOfficial ? '公式ゆるぼを詳しく見る' : 'ゆるぼを共有',
+            child: Ohey3DButton.secondary(
+              label: '',
+              icon: item.isOfficial
+                  ? CupertinoIcons.doc_text_fill
+                  : CupertinoIcons.share,
+              onTap: onShare,
+              height: 40,
+              radius: 14,
+              fontSize: 13,
+              padding: EdgeInsets.zero,
+            ),
           ),
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: Semantics(
-                label: item.liked ? '参加申請を取り消す' : 'このゆるぼに参加申請する',
-                child: isPrimary
-                    ? Ohey3DButton(
-                        label: _feedLikeActionLabel(item),
-                        icon: CupertinoIcons.hand_raised_fill,
-                        onTap: onLike,
-                        height: 48,
-                        fontSize: 15,
-                      )
-                    : Ohey3DButton.secondary(
-                        label: _feedLikeActionLabel(item),
-                        icon: item.ownedByMe
-                            ? CupertinoIcons.person_crop_circle_fill
-                            : CupertinoIcons.checkmark_alt,
-                        foregroundColor: item.ownedByMe
-                            ? null
-                            : AppColors.brand,
-                        onTap: item.ownedByMe ? null : onLike,
-                        height: 48,
-                        fontSize: 15,
-                      ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            SizedBox(
-              width: 56,
-              child: Semantics(
-                label: item.isOfficial ? '公式ゆるぼを詳しく見る' : 'ゆるぼを共有',
-                child: Ohey3DButton.secondary(
-                  label: '',
-                  icon: item.isOfficial
-                      ? CupertinoIcons.doc_text_fill
-                      : CupertinoIcons.share,
-                  onTap: onShare,
-                  height: 48,
-                  padding: EdgeInsets.zero,
+        const SizedBox(width: 10),
+        Expanded(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: avatars.isEmpty
+                ? null
+                : () => _showFeedCompanionList(context, item),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (avatars.isNotEmpty) ...[
+                  _FeedAttendeeStack(avatars: avatars, isWhite: isWhite),
+                  const SizedBox(width: 6),
+                ],
+                Flexible(
+                  child: Text(
+                    _feedReactionSummary(item),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      color: mutedText,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ],
     );
@@ -341,8 +363,8 @@ class _FeedAttendeeStack extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final visible = avatars.take(3).toList(growable: false);
-    const size = 26.0;
-    const step = 17.0;
+    const size = 24.0;
+    const step = 15.0;
     return SizedBox(
       width: size + (visible.length - 1) * step,
       height: size,
@@ -385,9 +407,9 @@ String _feedReactionSummary(_FeedItem item) {
     return item.likes > 0 ? '${item.likes}人がチェックしました' : 'Oheyからのお知らせです';
   }
   if (item.likes <= 0) {
-    return item.ownedByMe ? 'フレンズの申請を待とう' : '参加申請を送ろう';
+    return item.ownedByMe ? '申請を待とう' : '';
   }
-  return '${item.likes}人が参加確定';
+  return '${item.likes}人参加';
 }
 
 class _OfficialVerifiedBadge extends StatelessWidget {

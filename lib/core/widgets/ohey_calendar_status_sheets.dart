@@ -484,7 +484,7 @@ class _OheyCalendarStatusSubmit3DButton extends StatelessWidget {
                   style: TextStyle(
                     color: AppColors.cFF131F24.withValues(alpha: .68),
                     fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -702,7 +702,7 @@ class _OheyCalendarStatusHeaderActionButton extends StatelessWidget {
               style: TextStyle(
                 color: AppColors.cFF49C0F8,
                 fontSize: 13,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],

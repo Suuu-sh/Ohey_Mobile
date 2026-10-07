@@ -750,13 +750,16 @@ class _IncomingFriendRequestBannerState
 
     return Container(
       padding: const EdgeInsets.all(14),
+      // Action-needed card: tinted with the brand so it reads as a moment.
       decoration: BoxDecoration(
         color: isWhite
-            ? AppColors.white
-            : AppColors.darkBackgroundBottom.withValues(alpha: .92),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: _FriendsColors.lime.withValues(alpha: isWhite ? .28 : .36),
+            ? AppColors.brandTint
+            : AppColors.brand.withValues(alpha: .14),
+        borderRadius: BorderRadius.circular(20),
+        border: oheyChunkyBorder(
+          isWhite
+              ? AppColors.cFFFFB8DD
+              : AppColors.brand.withValues(alpha: .45),
         ),
       ),
       child: Column(
@@ -788,7 +791,7 @@ class _IncomingFriendRequestBannerState
                       style: TextStyle(
                         color: ink,
                         fontSize: 16,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -799,7 +802,7 @@ class _IncomingFriendRequestBannerState
                       style: TextStyle(
                         color: sub,
                         fontSize: 12,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                         height: 1.25,
                       ),
                     ),
@@ -862,7 +865,7 @@ class _IncomingFriendRequestCountBadge extends StatelessWidget {
         style: const TextStyle(
           color: AppColors.white,
           fontSize: 12,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           height: 1,
         ),
       ),
@@ -975,7 +978,7 @@ class _InviteOptionsSheetState extends ConsumerState<_InviteOptionsSheet> {
               style: TextStyle(
                 color: sub,
                 fontSize: 13,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
                 height: 1.35,
               ),
             ),
@@ -1091,7 +1094,7 @@ class _InviteWeeklyDatePickerState
                     ? AppColors.cFF777777
                     : AppColors.white.withValues(alpha: .70),
                 fontSize: 12,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const Spacer(),
@@ -1106,7 +1109,7 @@ class _InviteWeeklyDatePickerState
               style: TextStyle(
                 color: widget.emptyColor.withValues(alpha: .72),
                 fontSize: 11,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -1250,7 +1253,7 @@ class _InviteWeekDateCell extends StatelessWidget {
                         ? foreground.withValues(alpha: .82)
                         : weekdayColor,
                     fontSize: 11,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -1363,7 +1366,7 @@ class _InviteWishListOptions extends ConsumerWidget {
             style: TextStyle(
               color: emptyColor,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.35,
             ),
           )
@@ -1373,7 +1376,7 @@ class _InviteWishListOptions extends ConsumerWidget {
             style: TextStyle(
               color: emptyColor,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.35,
             ),
           )
@@ -1420,7 +1423,7 @@ class _InviteSectionLabel extends StatelessWidget {
     style: TextStyle(
       color: color,
       fontSize: 14,
-      fontWeight: FontWeight.w900,
+      fontWeight: FontWeight.w700,
       letterSpacing: -.2,
     ),
   );

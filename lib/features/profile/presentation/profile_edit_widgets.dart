@@ -318,7 +318,7 @@ class _UnsavedProfileCancelButton extends StatelessWidget {
           style: const TextStyle(
             color: AppColors.cFFD99CFF,
             fontSize: 17,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             letterSpacing: -.3,
           ),
         ),
@@ -697,7 +697,7 @@ class _SupportLegalSheet extends StatelessWidget {
             style: TextStyle(
               color: sub,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.35,
             ),
           ),
@@ -827,7 +827,7 @@ class _SupportLegalRow extends StatelessWidget {
                     style: TextStyle(
                       color: ink,
                       fontSize: 15,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -836,7 +836,7 @@ class _SupportLegalRow extends StatelessWidget {
                     style: TextStyle(
                       color: sub,
                       fontSize: 11.5,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -847,7 +847,7 @@ class _SupportLegalRow extends StatelessWidget {
                     style: TextStyle(
                       color: accent,
                       fontSize: 12,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -1057,7 +1057,7 @@ class _FriendRequestManagementSheetState
                 style: TextStyle(
                   color: sub,
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                   height: 1.35,
                 ),
               ),
@@ -1129,7 +1129,7 @@ class _FriendRequestManagementSheetState
                     style: TextStyle(
                       color: _ProfileColors.pink,
                       fontSize: 13,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -1200,7 +1200,7 @@ class _FriendRequestSection extends StatelessWidget {
                   style: TextStyle(
                     color: ink,
                     fontSize: 16,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1217,7 +1217,7 @@ class _FriendRequestSection extends StatelessWidget {
                     style: TextStyle(
                       color: accent,
                       fontSize: 12,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -1232,7 +1232,7 @@ class _FriendRequestSection extends StatelessWidget {
                 style: TextStyle(
                   color: sub,
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             )
@@ -1306,7 +1306,7 @@ class _FriendRequestRow extends StatelessWidget {
                   style: TextStyle(
                     color: ink,
                     fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -1317,7 +1317,7 @@ class _FriendRequestRow extends StatelessWidget {
                   style: TextStyle(
                     color: sub,
                     fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -1496,7 +1496,7 @@ class _SafetyCenterSheetState extends ConsumerState<_SafetyCenterSheet> {
                 style: TextStyle(
                   color: sub,
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                   height: 1.35,
                 ),
               ),
@@ -1582,7 +1582,7 @@ class _SafetyUserSection extends StatelessWidget {
                 style: TextStyle(
                   color: ink,
                   fontSize: 16,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -1598,7 +1598,7 @@ class _SafetyUserSection extends StatelessWidget {
                     style: TextStyle(
                       color: sub,
                       fontSize: 13,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 );
@@ -1629,7 +1629,7 @@ class _SafetyUserSection extends StatelessWidget {
                 style: TextStyle(
                   color: _ProfileColors.pink,
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -1690,7 +1690,7 @@ class _SafetyUserRow extends StatelessWidget {
                   style: TextStyle(
                     color: ink,
                     fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -1701,7 +1701,7 @@ class _SafetyUserRow extends StatelessWidget {
                   style: TextStyle(
                     color: sub,
                     fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -1849,7 +1849,7 @@ class _NotificationToggleRow extends StatelessWidget {
                     style: TextStyle(
                       color: ink,
                       fontSize: 15,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -1860,7 +1860,7 @@ class _NotificationToggleRow extends StatelessWidget {
                           ? AppColors.cFF777777
                           : AppColors.white.withValues(alpha: .58),
                       fontSize: 11,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],

@@ -52,7 +52,7 @@ class _FeedPostActionsSheet extends StatelessWidget {
                       style: TextStyle(
                         color: subtitleColor,
                         fontSize: 13,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -147,7 +147,7 @@ class _FeedReportReasonSheet extends StatelessWidget {
             style: TextStyle(
               color: subtitleColor,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.35,
             ),
           ),
@@ -212,7 +212,7 @@ class _FeedDeleteConfirmSheet extends StatelessWidget {
             style: TextStyle(
               color: subtitleColor,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.4,
             ),
           ),
@@ -294,7 +294,7 @@ class _FeedUserSafetyConfirmSheet extends StatelessWidget {
             style: TextStyle(
               color: subtitleColor,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.4,
             ),
           ),
@@ -362,7 +362,7 @@ class _FeedModalTextButton extends StatelessWidget {
           style: TextStyle(
             color: color,
             fontSize: 16,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             letterSpacing: -.35,
           ),
         ),

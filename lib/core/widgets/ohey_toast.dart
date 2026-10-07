@@ -245,7 +245,7 @@ class _OheyToastOverlayState extends State<_OheyToastOverlay>
                       style: const TextStyle(
                         color: AppColors.white,
                         fontSize: 14,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         height: 1.35,
                         decoration: TextDecoration.none,
                       ),
@@ -273,7 +273,7 @@ class _OheyToastOverlayState extends State<_OheyToastOverlay>
                           style: TextStyle(
                             color: accentColor,
                             fontSize: 12,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             height: 1,
                             decoration: TextDecoration.none,
                           ),

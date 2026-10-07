@@ -67,7 +67,7 @@ class _FeedInviteBanner extends StatelessWidget {
                       style: TextStyle(
                         color: accent,
                         fontSize: 12,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -80,7 +80,7 @@ class _FeedInviteBanner extends StatelessWidget {
                       style: TextStyle(
                         color: isWhite ? AppColors.cFF1A272D : AppColors.white,
                         fontSize: 14,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -92,7 +92,7 @@ class _FeedInviteBanner extends StatelessWidget {
                 style: TextStyle(
                   color: isWhite ? AppColors.cFF1A272D : AppColors.white,
                   fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               OheyGeneratedIcon(

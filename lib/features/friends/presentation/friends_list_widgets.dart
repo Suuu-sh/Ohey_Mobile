@@ -51,7 +51,7 @@ class _FriendsRefreshIndicator extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.white,
                     fontSize: 12,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -436,7 +436,7 @@ class _FriendAdPlaceholderBlock extends StatelessWidget {
                 style: TextStyle(
                   color: _FriendsColors.lime,
                   fontSize: 16,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -509,13 +509,8 @@ class _TodayInviteSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _FriendsSectionHeader(
-            icon: CupertinoIcons.sparkles,
-            iconColor: _FriendsColors.lime,
-            title: 'おすすめ',
-            subtitle: 'あなたにおすすめのフレンズを表示しています。',
-          ),
-          const SizedBox(height: 14),
+          const _FriendsSectionHeader(title: '今日さそえそうなフレンズ'),
+          const SizedBox(height: 12),
           if (candidates.isEmpty)
             _TodayInviteEmpty(isWhite: isWhite)
           else
@@ -634,63 +629,34 @@ class _TodayInviteCardsStrip extends StatelessWidget {
   }
 }
 
+/// Quiet section label, like a list header: small, muted, no icon.
 class _FriendsSectionHeader extends StatelessWidget {
-  const _FriendsSectionHeader({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.subtitle,
-    this.trailing,
-  });
+  const _FriendsSectionHeader({required this.title, this.trailing});
 
-  final IconData icon;
-  final Color iconColor;
   final String title;
-  final String subtitle;
   final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
     final isWhite = Theme.of(context).brightness == Brightness.light;
-    final ink = isWhite ? AppColors.cFF3C3C3C : AppColors.white;
-    final sub = isWhite
-        ? AppColors.cFF777777
-        : AppColors.white.withValues(alpha: .60);
-
     return SizedBox(
-      height: 47,
+      height: trailing == null ? 22 : 42,
       child: Row(
         children: [
-          OheyPopIcon(icon: icon, color: iconColor, size: 38, iconSize: 20),
-          const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: ink,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -.4,
-                  ),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isWhite ? AppColors.cFFAFAFAF : AppColors.cFF777777,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: .6,
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: sub,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    height: 1.35,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
           if (trailing != null) ...[const SizedBox(width: 10), trailing!],
@@ -762,10 +728,7 @@ class _GroupScheduleSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _FriendsSectionHeader(
-            icon: CupertinoIcons.calendar_badge_plus,
-            iconColor: AppColors.cFF8BEBD3,
             title: '$groupNameで集まる日',
-            subtitle: 'グループからまとめて誘えるよ。',
             trailing: SizedBox(
               width: 104,
               child: Ohey3DButton(
@@ -928,7 +891,7 @@ class _GroupScheduleSuggestionCard extends StatelessWidget {
                   style: TextStyle(
                     color: suggestion.accent,
                     fontSize: 11,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -942,7 +905,7 @@ class _GroupScheduleSuggestionCard extends StatelessWidget {
             style: TextStyle(
               color: ink,
               fontSize: 16,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               letterSpacing: -.25,
             ),
           ),
@@ -954,7 +917,7 @@ class _GroupScheduleSuggestionCard extends StatelessWidget {
             style: TextStyle(
               color: sub,
               fontSize: 12,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.35,
             ),
           ),
@@ -1025,7 +988,7 @@ class _TodayInviteCandidateCard extends StatelessWidget {
                       style: TextStyle(
                         color: ink,
                         fontSize: 15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         letterSpacing: -.25,
                       ),
                     ),
@@ -1106,7 +1069,7 @@ class _CompactStatusPill extends StatelessWidget {
                   status,
                   isWhite: Theme.of(context).brightness == Brightness.light,
                 ),
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           fontSize: 11,
           letterSpacing: -.15,
         ),
@@ -1198,7 +1161,7 @@ class _TodayInviteBlockedChip extends StatelessWidget {
               ? AppColors.cFF777777
               : AppColors.white.withValues(alpha: .56),
           fontSize: 11,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -1218,7 +1181,7 @@ class _TodayInviteEmpty extends StatelessWidget {
           ? AppColors.cFF777777
           : AppColors.white.withValues(alpha: .58),
       fontSize: 12,
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w500,
       height: 1.4,
     ),
   );
@@ -1470,7 +1433,7 @@ class _AddFriendsPromoCard extends StatelessWidget {
                       style: TextStyle(
                         color: AppColors.white.withValues(alpha: 0.68),
                         fontSize: 13,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                         letterSpacing: -0.1,
                       ),
                     ),

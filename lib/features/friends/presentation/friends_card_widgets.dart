@@ -152,7 +152,7 @@ class _FriendProfileConfirmSheet extends StatelessWidget {
             style: TextStyle(
               color: subtitleColor,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.4,
             ),
           ),
@@ -210,7 +210,7 @@ class _FriendProfileConfirmButton extends StatelessWidget {
           style: TextStyle(
             color: color,
             fontSize: 16,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             letterSpacing: -.35,
           ),
         ),
@@ -537,7 +537,7 @@ class _FriendProfileActionSheet extends StatelessWidget {
             style: TextStyle(
               color: sub,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.35,
             ),
           ),
@@ -621,7 +621,7 @@ class _FriendProfileCancelButton extends StatelessWidget {
           style: TextStyle(
             color: foreground,
             fontSize: 16,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             letterSpacing: -.2,
           ),
         ),
@@ -662,7 +662,7 @@ class _FriendReportReasonSheet extends StatelessWidget {
             style: TextStyle(
               color: sub,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.35,
             ),
           ),
@@ -758,7 +758,7 @@ class _FriendProfileWishItemsPanel extends ConsumerWidget {
                       style: const TextStyle(
                         color: AppColors.white,
                         fontSize: 14,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -829,7 +829,7 @@ class _FriendProfileWishChip extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.white,
               fontSize: 13,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               height: 1.12,
             ),
           ),
@@ -841,7 +841,7 @@ class _FriendProfileWishChip extends StatelessWidget {
             style: TextStyle(
               color: AppColors.white.withValues(alpha: .56),
               fontSize: 11,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -887,7 +887,7 @@ class _FriendProfileStatusPanel extends StatelessWidget {
                   status.label,
                   style: const TextStyle(
                     color: AppColors.white,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
                 ),
@@ -1177,7 +1177,7 @@ class _FriendProfileMonthGrid extends StatelessWidget {
                             : entry.key == 6
                             ? AppColors.cFF49C0F8
                             : AppColors.cFFCDCDCD,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         fontSize: 16,
                       ),
                     ),
