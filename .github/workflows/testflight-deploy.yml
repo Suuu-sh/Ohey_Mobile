@@ -699,6 +699,7 @@ jobs:
           plutil -p ios/Runner/RunnerRelease.entitlements
 
       - name: Archive release build
+        id: archive
         run: |
           set -euo pipefail
           rm -rf "$ARCHIVE_PATH" "$EXPORT_PATH"
@@ -714,6 +715,33 @@ jobs:
             GAD_APPLICATION_IDENTIFIER="$GAD_APPLICATION_IDENTIFIER" \
             GOOGLE_IOS_REVERSED_CLIENT_ID="$GOOGLE_IOS_REVERSED_CLIENT_ID" \
             archive
+
+      - name: Verify archived privacy manifest
+        if: steps.archive.outcome == 'success'
+        run: |
+          set -euo pipefail
+          app_path="$ARCHIVE_PATH/Products/Applications/Runner.app"
+          manifest_path="$app_path/PrivacyInfo.xcprivacy"
+          if [ ! -f "$manifest_path" ]; then
+            echo "::error::The archived Runner.app is missing PrivacyInfo.xcprivacy."
+            exit 1
+          fi
+          plutil -lint "$manifest_path"
+          echo "Archived privacy manifests:"
+          find "$app_path" -name PrivacyInfo.xcprivacy -print | sort
+
+      # Keep the signed archive briefly so the release owner can use Xcode's
+      # Organizer to generate and reconcile Apple's aggregated privacy report.
+      # Do not let artifact storage availability block TestFlight delivery.
+      - name: Retain archive for privacy report review
+        if: steps.archive.outcome == 'success'
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ohey-testflight-archive-${{ steps.build-number.outputs.build-number }}
+          path: ${{ env.ARCHIVE_PATH }}
+          retention-days: 1
+          if-no-files-found: error
 
       - name: Upload to TestFlight
         env:
