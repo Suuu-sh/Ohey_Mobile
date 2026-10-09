@@ -727,21 +727,63 @@ jobs:
             exit 1
           fi
           plutil -lint "$manifest_path"
-          echo "Archived privacy manifests:"
-          find "$app_path" -name PrivacyInfo.xcprivacy -print | sort
+          python3 - "$app_path" <<'PY'
+          import json
+          import os
+          import plistlib
+          import sys
+          from pathlib import Path
 
-      # Keep the signed archive briefly so the release owner can use Xcode's
-      # Organizer to generate and reconcile Apple's aggregated privacy report.
-      # Do not let artifact storage availability block TestFlight delivery.
-      - name: Retain archive for privacy report review
-        if: steps.archive.outcome == 'success'
-        continue-on-error: true
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: ohey-testflight-archive-${{ steps.build-number.outputs.build-number }}
-          path: ${{ env.ARCHIVE_PATH }}
-          retention-days: 1
-          if-no-files-found: error
+          app_path = Path(sys.argv[1])
+          manifests = sorted(app_path.rglob("PrivacyInfo.xcprivacy"))
+          if not manifests:
+              raise SystemExit("No privacy manifests were found in the archived app.")
+
+          rows = []
+          for path in manifests:
+              with path.open("rb") as manifest_file:
+                  data = plistlib.load(manifest_file)
+              accessed_apis = []
+              for entry in data.get("NSPrivacyAccessedAPITypes", []):
+                  api_type = entry.get("NSPrivacyAccessedAPIType", "unknown")
+                  reasons = ", ".join(sorted(entry.get("NSPrivacyAccessedAPITypeReasons", [])))
+                  accessed_apis.append(f"{api_type}: {reasons or 'no reason listed'}")
+              collected_data = []
+              for entry in data.get("NSPrivacyCollectedDataTypes", []):
+                  data_type = entry.get("NSPrivacyCollectedDataType", "unknown")
+                  purposes = ", ".join(sorted(entry.get("NSPrivacyCollectedDataTypePurposes", [])))
+                  linked = bool(entry.get("NSPrivacyCollectedDataTypeLinked", False))
+                  tracking = bool(entry.get("NSPrivacyCollectedDataTypeTracking", False))
+                  collected_data.append(
+                      f"{data_type} (linked={linked}, tracking={tracking}, "
+                      f"purposes={purposes or 'none listed'})"
+                  )
+              rows.append({
+                  "manifest": str(path.relative_to(app_path)),
+                  "tracking": bool(data.get("NSPrivacyTracking", False)),
+                  "tracking_domains": sorted(data.get("NSPrivacyTrackingDomains", [])),
+                  "accessed_api_types": sorted(accessed_apis),
+                  "collected_data_types": sorted(collected_data),
+              })
+
+          print(json.dumps(rows, indent=2))
+          summary = Path(os.environ["GITHUB_STEP_SUMMARY"])
+          with summary.open("a", encoding="utf-8") as output:
+              output.write("## Archived privacy manifest inventory\n\n")
+              output.write("Per-manifest declarations found in the signed archive; this is not Apple's aggregated privacy report.\n\n")
+              output.write("| Manifest | Tracking | Domains | Required-reason APIs | Collected data types |\n")
+              output.write("| --- | --- | --- | --- | --- |\n")
+              for row in rows:
+                  output.write(
+                      "| `{manifest}` | {tracking} | {domains} | {apis} | {data} |\n".format(
+                          manifest=row["manifest"],
+                          tracking=row["tracking"],
+                          domains=", ".join(row["tracking_domains"]) or "—",
+                          apis="<br>".join(row["accessed_api_types"]) or "—",
+                          data=", ".join(row["collected_data_types"]) or "—",
+                      )
+                  )
+          PY
 
       - name: Upload to TestFlight
         env:
@@ -769,16 +811,6 @@ jobs:
           testflight-internal-group-name: ${{ vars.TESTFLIGHT_INTERNAL_GROUP_NAME }}
           testflight-internal-tester-emails: ${{ secrets.TESTFLIGHT_INTERNAL_TESTER_EMAILS }}
           testflight-notify-assigned-testers: 'true'
-
-      - name: Upload export artifacts on failure
-        if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: testflight-deploy-logs
-          path: |
-            ${{ env.EXPORT_PATH }}
-            ${{ env.ARCHIVE_PATH }}
-          if-no-files-found: ignore
 
       - name: Clean up signing assets
         if: always()
