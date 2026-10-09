@@ -7,12 +7,11 @@ App Review submission was performed or authorized.
 
 ## Verified in this follow-up
 
-- The Mobile app-code baseline was `c08e1a5` on `development`; workflow and
-  readiness-document updates from this follow-up have been pushed to
-  `origin/development`. Backend is on `development` at `c7838fd`
-  (`origin/development`). Both repositories were fetched before work; neither
-  had incoming commits.
-- `flutter analyze` passed and `flutter test` passed (50 tests).
+- Mobile is on `development` at `8a76c70` (`origin/development`), and Backend is
+  on `development` at `c7838fd` (`origin/development`). Both were fetched and
+  synced before this follow-up's changes.
+- On current `development`, full `flutter analyze` passed and all 51 tests in
+  `flutter test` passed.
 - Added and passed `flutter test test/create_user_dialog_apple_oauth_recovery_test.dart`.
   It verifies the onboarding UI shows an Apple OAuth timeout error and allows
   a retry; it does not exercise native Apple Sign-In or certify the iPad fix.
@@ -54,6 +53,13 @@ App Review submission was performed or authorized.
   unused Mobile `/v1/home/feed` path constant, which has now been removed; no
   Mobile callers or retired-feature UI labels remain in the app source. This
   does not count as runtime UI, admin-console, or multi-user QA.
+- The current `development` app was built and launched in an iPad Air 11-inch
+  (M3) Simulator on iOS 26.3 with the configured dev Render backend. The
+  first-run UMP message and native ATT prompt appeared; the Simulator chose
+  “Ask App Not to Track,” then showed Ohey's startup splash. This did not reach
+  an authenticated session or exercise Apple Sign-In. The Mac locked before
+  further UI inspection. `devicectl` lists the physical iPhone 14 as
+  unavailable, so neither approved hardware device was tested.
 
 ## Current blockers
 
@@ -61,8 +67,10 @@ App Review submission was performed or authorized.
   for workflow commit `573023c` (with app source at `c08e1a5`) was blocked before
   a runner or workflow step started. GitHub reports an account payment failure
   or spending limit. No archive, upload, or new TestFlight build was produced.
-  After GitHub Actions billing is restored, rerun this workflow to build the
-  current application source; subsequent pushes only changed readiness docs.
+  After GitHub Actions billing is restored, dispatch this workflow from the
+  current `development` head to build the current application source. Later
+  commits added the OAuth recovery regression test and removed the unused
+  retired `/v1/home/feed` path constant.
 - The Apple Sign In timeout change from `a8ea58b` is present and its timeout
   service and UI recovery regression tests pass. The actual native white-screen
   report has not been reproduced or cleared on iPad Air 11-inch (M3); a
