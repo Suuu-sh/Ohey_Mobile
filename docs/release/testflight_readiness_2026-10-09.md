@@ -2,112 +2,103 @@
 
 As of: 2026-10-09
 
-Scope: internal TestFlight verification only. No public App Store submission or
-App Review submission was performed or authorized.
+Scope: internal TestFlight verification only. The repository is public by user
+request; no public App Store submission or App Review submission was performed
+or authorized.
 
 ## Verified in this follow-up
 
-- Mobile is on `development` at `8a76c70` (`origin/development`), and Backend is
-  on `development` at `c7838fd` (`origin/development`). Both were fetched and
-  synced before this follow-up's changes.
-- On current `development`, full `flutter analyze` passed and all 51 tests in
-  `flutter test` passed.
-- Added and passed `flutter test test/create_user_dialog_apple_oauth_recovery_test.dart`.
-  It verifies the onboarding UI shows an Apple OAuth timeout error and allows
-  a retry; it does not exercise native Apple Sign-In or certify the iPad fix.
-- Backend `go test ./...` passed on `c7838fd`. Read-only `/health` requests to
-  both the dev and production Render backends returned HTTP 200; these are
-  liveness checks, not authenticated end-to-end verification.
-- `plutil -lint ios/Runner/PrivacyInfo.xcprivacy` passed.
-- The dev launch script built and launched Ohey in iPhone 17 Simulator
-  (iOS 26.3), using the configured dev Render backend. The app reached its
-  re-login UI. No account was selected and no authentication was attempted.
-- The Render Production dashboard reports `ohey-backend` as Live at commit
-  `c7838fd0ba14fb4bded3736ac9bc6ea1e0dc293e` (deployed about two days before
-  this check). A read-only GET to
-  `https://ohey-backend.onrender.com/health` returned HTTP 200 (`status: ok`).
-  The dashboard shows the production service connected to the `development`
-  branch; confirm this is intentional before future production promotions.
-- Earlier TestFlight run
-  [37570161335](https://github.com/Suuu-sh/Ohey_Mobile/actions/runs/37570161335)
-  completed its archive, upload, and internal tester-assignment steps for
-  `c388411`. That commit includes the Apple authentication timeout fix, but it
-  is older than current `development` (`c08e1a5` at the time of that run).
-  The workflow success does not prove the reported iPad symptom is fixed or
-  that a tester installed the build.
-- The current TestFlight workflow now validates that the archived app contains
-  a valid `PrivacyInfo.xcprivacy`, and briefly retains the archive as a
-  one-day GitHub Actions artifact so Xcode Organizer can generate the
-  aggregated privacy report.
-- A local review of the lockfile-pinned iOS Pods found Google-Mobile-Ads-SDK
-  13.2.0's privacy manifest declares Device ID as collected for tracking,
-  alongside advertising and analytics purposes. This is consistent with the
-  Device ID tracking disclosure in `app_privacy.md`; the Runner manifest's
-  `tracking = false` declaration applies to Ohey's first-party collection. The
-  SDK manifest also declares required-reason API categories for system boot
-  time, user defaults, and disk space. This source-level review narrows the
-  discrepancy but is not a substitute for the actual archive's Xcode privacy
-  report.
-- A source-only QA sweep found no Backend Go routes for the retired
+- `Suuu-sh/Ohey_Mobile` is public. Its TestFlight workflow uses the standard
+  `macos-15` GitHub-hosted runner. [GitHub's billing documentation](https://docs.github.com/en/billing/concepts/product-billing/github-actions)
+  says standard-runner use is free for public repositories; storage remains
+  subject to quotas. Current Actions caches use 6,110,673,569 bytes (about
+  5.7 GiB, below the published 10 GB per-repository cache allowance), and this
+  run retained no artifacts.
+- Mobile is on `development` at `7227958`; the app source used for the build is
+  `280346d` (the later commit changes workflow artifact handling only). Backend
+  remains on `development` at `c7838fd`. Existing uncommitted release notes and
+  preview assets were not included in the workflow change.
+- On app source `280346d`, full `flutter analyze` passed and all 51 tests in
+  `flutter test` passed. The Apple OAuth recovery widget test also passed; it
+  confirms retry UI behavior, not native Apple Sign-In or the reported iPad
+  white-screen fix.
+- TestFlight run
+  [37889445468](https://github.com/Suuu-sh/Ohey_Mobile/actions/runs/37889445468)
+  succeeded for build `20261009143943`: archive, archived-manifest validation,
+  upload, and internal-group assignment steps passed. App Store Connect reported
+  `processing_state: VALID`. One internal tester was in the `Ohey Internal
+  Testers` group, which has access to all builds. Installation of this specific
+  build on a device has not been verified.
+- The group already has automatic TestFlight notifications enabled. The explicit
+  notification request returned `409 Auto-notify already enabled`; this was not
+  an upload or assignment failure.
+- The TestFlight workflow no longer uploads `.xcarchive` or exported app files
+  as GitHub artifacts. In a public repository those artifacts are readable by
+  repository readers; the workflow now emits a per-manifest inventory in the
+  public run summary instead. This inventory is not Apple's generated privacy
+  report. The successful run retained zero artifacts.
+- The archived app contained 29 `PrivacyInfo.xcprivacy` files. No manifest set
+  `NSPrivacyTracking` to `true` or listed tracking domains. The first-party
+  `Runner.app/PrivacyInfo.xcprivacy` declares its listed data types as not used
+  for tracking. The embedded `GoogleMobileAdsResources` manifest declares
+  Device ID as linked and used for tracking, plus advertising/analytics data;
+  it also declares required-reason API categories. [Apple's privacy-manifest
+  guidance](https://developer.apple.com/documentation/bundleresources/describing-data-use-in-privacy-manifests)
+  says the first-party manifest does not need to repeat third-party SDK
+  collection, so the first-party/SDK distinction alone is not an error. The
+  exact Xcode Organizer privacy report and current App Store Connect answers
+  still need to be compared before public App Store submission.
+- A source-only QA sweep found no Backend Go routes for retired
   `/v1/memories`, `/v1/home/feed`, or `/v1/memory-hides` endpoints. It found an
-  unused Mobile `/v1/home/feed` path constant, which has now been removed; no
-  Mobile callers or retired-feature UI labels remain in the app source. This
-  does not count as runtime UI, admin-console, or multi-user QA.
-- The current `development` app was built and launched in an iPad Air 11-inch
-  (M3) Simulator on iOS 26.3 with the configured dev Render backend. The
-  first-run UMP message and native ATT prompt appeared; the Simulator chose
-  “Ask App Not to Track,” then showed Ohey's startup splash. This did not reach
-  an authenticated session or exercise Apple Sign-In. The Mac locked before
-  further UI inspection. `devicectl` lists the physical iPhone 14 as
-  unavailable, so neither approved hardware device was tested.
+  unused Mobile `/v1/home/feed` path constant, which was removed; no Mobile
+  callers or retired-feature UI labels remain. This does not count as runtime,
+  admin-console, or multi-user QA.
+- The current `development` app was launched in iPad Air 11-inch (M3) Simulator
+  on iOS 26.3 with the dev Render backend. UMP and ATT prompts appeared, then
+  the app reached its startup splash. No account login or Apple Sign-In was
+  attempted. The physical iPhone 14 is still `unavailable` to `devicectl`.
+- A read-only GET to
+  `https://ohey-backend.onrender.com/health` returned HTTP 200 (`status: ok`),
+  but the endpoint does not report a deployed SHA. An earlier Render dashboard
+  snapshot recorded `c7838fd0ba14fb4bded3736ac9bc6ea1e0dc293e`; the current
+  production SHA and the service's `development` branch setting still need
+  confirmation.
 
-## Current blockers
+## Remaining blockers
 
-- Dispatch [37883462509](https://github.com/Suuu-sh/Ohey_Mobile/actions/runs/37883462509)
-  for workflow commit `573023c` (with app source at `c08e1a5`) was blocked before
-  a runner or workflow step started. GitHub reports an account payment failure
-  or spending limit. No archive, upload, or new TestFlight build was produced.
-  After GitHub Actions billing is restored, dispatch this workflow from the
-  current `development` head to build the current application source. Later
-  commits added the OAuth recovery regression test and removed the unused
-  retired `/v1/home/feed` path constant.
-- The Apple Sign In timeout change from `a8ea58b` is present and its timeout
-  service and UI recovery regression tests pass. The actual native white-screen
-  report has not been reproduced or cleared on iPad Air 11-inch (M3); a
-  simulator/unit test is not equivalent to testing that device and iPadOS
-  version.
-- `app_privacy.md` was last verified against source on 2026-07-14. Its App
-  Store Connect answer says Device ID is used for tracking, while the
-  first-party manifest declares Device ID as not used for tracking and
-  `NSPrivacyTracking = false`. The lockfile-pinned Google Mobile Ads 13.2.0
-  manifest also declares Device ID tracking, which likely explains this
-  difference; confirm it in the candidate archive's aggregated Xcode privacy
-  report and revalidate the App Store Connect answers before public submission.
+- The Apple Sign-In timeout fix from `a8ea58b` is present, but the native
+  white-screen report has not been reproduced or cleared on the affected iPad
+  Air 11-inch (M3). A Simulator or unit test is not equivalent to that device
+  and iPadOS configuration.
+- Build `20261009143943` is processed and assigned to the internal group, but
+  installation and sign-in on the approved iPhone 14 have not been verified.
+- The archived manifest inventory does not replace Xcode Organizer's generated
+  privacy report. Reconcile that report with `app_privacy.md` and the current
+  App Store Connect privacy answers; do not change tracking declarations based
+  only on the first-party manifest.
 - App Store Connect app `6774577603` has a recorded v1.0 rejection on June 9,
-  but the rejection reason / guideline is not in the repository. App Store
-  Connect currently requires an authenticated session to read the resolution
-  details.
-- The approved iPhone 14 has not been verified with the candidate build. The
-  affected iPad Apple Sign In flow, user consent/ATT paths, and end-to-end
-  account scenarios remain device/account-dependent.
-- `QA.md` contains 169 checklist items; 18 are checked. The multi-user,
-  failure/retry, invitation, delete, advertising-consent, and purchase flows
-  still need their stated dev/test-account verification.
+  but its guideline and resolution details are absent from the repository. An
+  authenticated App Store Connect session is required to retrieve them.
+- `QA.md` has 169 checklist items; 18 are checked. Multi-user, failure/retry,
+  invitation, delete, consent/ATT, advertising, and purchase flows still need
+  their stated dev/test-account verification.
+- The current production Render SHA and whether the service's `development`
+  branch setting is intentional remain unconfirmed.
 
 ## Next actions
 
-1. Restore GitHub Actions billing / spending capacity, then rerun TestFlight
-   run `37883462509` (or dispatch the workflow on the current `development`).
-2. Download the short-retention archive artifact, generate its Xcode Organizer
-   privacy report, and reconcile first-party + SDK declarations with
+1. Install build `20261009143943` from TestFlight on the approved iPhone 14 and
+   verify Apple sign-in, cancellation/retry, consent/ATT, and the priority QA
+   flows. Retest the reported iPad Air 11-inch (M3) configuration if available.
+2. Generate Apple's Xcode Organizer privacy report from an archive of the exact
+   candidate/dependency set in a trusted local environment (do not upload the
+   signed archive to the public repository), then reconcile it with
    `app_privacy.md` and App Store Connect.
-3. Sign in to App Store Connect in the browser and record the v1.0 rejection
-   guideline and resolution details. Do not submit a new public review yet.
-4. Install the resulting internal build on the approved iPhone 14 and test
-   Apple sign-in, cancellation/retry, consent/ATT, and the priority QA flows.
-   Also retest the reported iPad Air 11-inch (M3) configuration if available.
-5. Confirm the Render Production service's use of the `development` branch is
-   intentional; the current deployed SHA is recorded above. Do not paste
-   Render tokens into chat.
+3. Read and record the June 9 App Store rejection guideline and resolution
+   details in App Store Connect. Do not submit a new public review yet.
+4. Complete and record the priority `QA.md` scenarios using approved dev/test
+   accounts.
+5. Confirm the current Render Production commit and whether its `development`
+   branch target is intentional. Do not paste Render tokens into chat.
 
-Public App Store release remains a separate, not-yet-authorized action.
+Public App Store release remains separate and not authorized.
