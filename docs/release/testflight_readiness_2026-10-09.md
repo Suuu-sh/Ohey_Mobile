@@ -14,10 +14,10 @@ or authorized.
   subject to quotas. Current Actions caches use 6,110,673,569 bytes (about
   5.7 GiB, below the published 10 GB per-repository cache allowance), and this
   run retained no artifacts.
-- Mobile is on `development` at `7227958`; the app source used for the build is
-  `280346d` (the later commit changes workflow artifact handling only). Backend
-  remains on `development` at `c7838fd`. Existing uncommitted release notes and
-  preview assets were not included in the workflow change.
+- TestFlight run `37889445468` used the `development` workflow at `7227958` and
+  app source `280346d`; `7227958` changes workflow artifact handling only.
+  Backend remains on `development` at `c7838fd`. Existing uncommitted release
+  notes and preview assets were not included in the workflow change.
 - On app source `280346d`, full `flutter analyze` passed and all 51 tests in
   `flutter test` passed. The Apple OAuth recovery widget test also passed; it
   confirms retry UI behavior, not native Apple Sign-In or the reported iPad
