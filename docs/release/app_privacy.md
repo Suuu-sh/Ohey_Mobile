@@ -3,10 +3,21 @@
 Last verified against the Ohey codebase: 2026-07-14
 App Store Connect App Privacy published: 2026-06-07 JST
 
-This file is the source-of-truth checklist for App Store Connect's **App
-Privacy** screen for the current v1 production build.
+This file records the App Store Connect **App Privacy** answers last documented
+as published on 2026-06-07. It does not prove that the current App Store Connect
+answers are unchanged.
 
-## Current v1 production state
+## Validation hold — 2026-10-09
+
+Do not reuse the table below for a new submission until it has been reconciled
+with the Xcode Organizer privacy report and the live App Store Connect answers.
+The report generated for build `1.0.0 (20261009143943)` exposed SDK-specific
+data types, purposes, and linked-data differences from this checklist. The
+current App Store Connect session was signed out during the audit, and no
+privacy answers were changed. See the [release-readiness audit](testflight_readiness_2026-10-09.md)
+for details.
+
+## Previously documented v1 production state (pending live verification)
 
 - Production AdMob IDs are configured through the production CI/TestFlight
   environment. Release builds can display AdMob native ads.
