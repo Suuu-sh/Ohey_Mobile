@@ -7,9 +7,11 @@ App Review submission was performed or authorized.
 
 ## Verified in this follow-up
 
-- Mobile is on `development` at `573023c` (`origin/development`). Backend is
-  on `development` at `c7838fd` (`origin/development`). Both repositories were
-  fetched before work; neither had incoming commits.
+- The Mobile app-code baseline was `c08e1a5` on `development`; workflow and
+  readiness-document updates from this follow-up have been pushed to
+  `origin/development`. Backend is on `development` at `c7838fd`
+  (`origin/development`). Both repositories were fetched before work; neither
+  had incoming commits.
 - `flutter analyze` passed and `flutter test` passed (50 tests).
 - `plutil -lint ios/Runner/PrivacyInfo.xcprivacy` passed.
 - The dev launch script built and launched Ohey in iPhone 17 Simulator
