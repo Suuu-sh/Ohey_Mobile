@@ -49,6 +49,11 @@ App Review submission was performed or authorized.
   time, user defaults, and disk space. This source-level review narrows the
   discrepancy but is not a substitute for the actual archive's Xcode privacy
   report.
+- A source-only QA sweep found no Backend Go routes for the retired
+  `/v1/memories`, `/v1/home/feed`, or `/v1/memory-hides` endpoints. It found an
+  unused Mobile `/v1/home/feed` path constant, which has now been removed; no
+  Mobile callers or retired-feature UI labels remain in the app source. This
+  does not count as runtime UI, admin-console, or multi-user QA.
 
 ## Current blockers
 

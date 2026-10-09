@@ -32,8 +32,6 @@ class OheyApiPaths {
   static String friendRequest(String requestId) =>
       '$friendRequests/${Uri.encodeComponent(requestId)}';
 
-  static const homeFeed = '/v1/home/feed';
-
   static const wishItems = '/v1/wish-items';
   static String wishItem(String wishItemId) =>
       '$wishItems/${Uri.encodeComponent(wishItemId)}';
