@@ -79,6 +79,11 @@ or authorized.
   privacy report. Reconcile that report with `app_privacy.md` and the current
   App Store Connect privacy answers; do not change tracking declarations based
   only on the first-party manifest.
+- The artifact-safe workflow change is on `development` only. The default
+  `main` branch has not been promoted; its current workflow still uploads the
+  archive/export on failure and a push to `main` starts TestFlight distribution.
+  Do not promote or trigger it until the internal candidate is cleared and that
+  workflow version is made artifact-safe.
 - App Store Connect app `6774577603` has a recorded v1.0 rejection on June 9,
   but its guideline and resolution details are absent from the repository. An
   authenticated App Store Connect session is required to retrieve them.
