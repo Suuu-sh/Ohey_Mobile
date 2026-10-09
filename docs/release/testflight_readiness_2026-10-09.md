@@ -15,9 +15,12 @@ App Review submission was performed or authorized.
 - The dev launch script built and launched Ohey in iPhone 17 Simulator
   (iOS 26.3), using the configured dev Render backend. The app reached its
   re-login UI. No account was selected and no authentication was attempted.
-- A read-only GET to `https://ohey-backend.onrender.com/health` returned HTTP
-  200 (`status: ok`). This endpoint is liveness-only and does not identify the
-  deployed commit.
+- The Render Production dashboard reports `ohey-backend` as Live at commit
+  `c7838fd0ba14fb4bded3736ac9bc6ea1e0dc293e` (deployed about two days before
+  this check). A read-only GET to
+  `https://ohey-backend.onrender.com/health` returned HTTP 200 (`status: ok`).
+  The dashboard shows the production service connected to the `development`
+  branch; confirm this is intentional before future production promotions.
 - Earlier TestFlight run
   [37570161335](https://github.com/Suuu-sh/Ohey_Mobile/actions/runs/37570161335)
   completed its archive, upload, and internal tester-assignment steps for
@@ -55,8 +58,6 @@ App Review submission was performed or authorized.
 - The approved iPhone 14 has not been verified with the candidate build. The
   affected iPad Apple Sign In flow, user consent/ATT paths, and end-to-end
   account scenarios remain device/account-dependent.
-- Render's access token is expired. Production `/health` is responding, but
-  the production deployment SHA remains unverified.
 - `QA.md` contains 169 checklist items; 18 are checked. The multi-user,
   failure/retry, invitation, delete, advertising-consent, and purchase flows
   still need their stated dev/test-account verification.
@@ -73,7 +74,8 @@ App Review submission was performed or authorized.
 4. Install the resulting internal build on the approved iPhone 14 and test
    Apple sign-in, cancellation/retry, consent/ATT, and the priority QA flows.
    Also retest the reported iPad Air 11-inch (M3) configuration if available.
-5. Restore Render dashboard/API access through its secure login flow and record
-   the production deployment SHA; do not paste tokens into chat.
+5. Confirm the Render Production service's use of the `development` branch is
+   intentional; the current deployed SHA is recorded above. Do not paste
+   Render tokens into chat.
 
 Public App Store release remains a separate, not-yet-authorized action.
