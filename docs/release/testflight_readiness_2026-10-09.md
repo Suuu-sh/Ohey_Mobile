@@ -13,6 +13,9 @@ App Review submission was performed or authorized.
   (`origin/development`). Both repositories were fetched before work; neither
   had incoming commits.
 - `flutter analyze` passed and `flutter test` passed (50 tests).
+- Added and passed `flutter test test/create_user_dialog_apple_oauth_recovery_test.dart`.
+  It verifies the onboarding UI shows an Apple OAuth timeout error and allows
+  a retry; it does not exercise native Apple Sign-In or certify the iPad fix.
 - Backend `go test ./...` passed on `c7838fd`. Read-only `/health` requests to
   both the dev and production Render backends returned HTTP 200; these are
   liveness checks, not authenticated end-to-end verification.
@@ -37,6 +40,15 @@ App Review submission was performed or authorized.
   a valid `PrivacyInfo.xcprivacy`, and briefly retains the archive as a
   one-day GitHub Actions artifact so Xcode Organizer can generate the
   aggregated privacy report.
+- A local review of the lockfile-pinned iOS Pods found Google-Mobile-Ads-SDK
+  13.2.0's privacy manifest declares Device ID as collected for tracking,
+  alongside advertising and analytics purposes. This is consistent with the
+  Device ID tracking disclosure in `app_privacy.md`; the Runner manifest's
+  `tracking = false` declaration applies to Ohey's first-party collection. The
+  SDK manifest also declares required-reason API categories for system boot
+  time, user defaults, and disk space. This source-level review narrows the
+  discrepancy but is not a substitute for the actual archive's Xcode privacy
+  report.
 
 ## Current blockers
 
@@ -47,16 +59,17 @@ App Review submission was performed or authorized.
   After GitHub Actions billing is restored, rerun this workflow to build the
   current application source; subsequent pushes only changed readiness docs.
 - The Apple Sign In timeout change from `a8ea58b` is present and its timeout
-  regression tests pass. The actual native white-screen report has not been
-  reproduced or cleared on iPad Air 11-inch (M3); a simulator/unit test is not
-  equivalent to testing that device and iPadOS version.
+  service and UI recovery regression tests pass. The actual native white-screen
+  report has not been reproduced or cleared on iPad Air 11-inch (M3); a
+  simulator/unit test is not equivalent to testing that device and iPadOS
+  version.
 - `app_privacy.md` was last verified against source on 2026-07-14. Its App
   Store Connect answer says Device ID is used for tracking, while the
   first-party manifest declares Device ID as not used for tracking and
-  `NSPrivacyTracking = false`. Third-party SDK manifests may explain part of
-  this difference, so do not change the declaration based on the first-party
-  manifest alone. Reconcile the actual archived Xcode privacy report with the
-  App Store Connect answers before public submission.
+  `NSPrivacyTracking = false`. The lockfile-pinned Google Mobile Ads 13.2.0
+  manifest also declares Device ID tracking, which likely explains this
+  difference; confirm it in the candidate archive's aggregated Xcode privacy
+  report and revalidate the App Store Connect answers before public submission.
 - App Store Connect app `6774577603` has a recorded v1.0 rejection on June 9,
   but the rejection reason / guideline is not in the repository. App Store
   Connect currently requires an authenticated session to read the resolution
