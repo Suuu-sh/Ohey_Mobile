@@ -11,9 +11,9 @@ or authorized.
 - `Suuu-sh/Ohey_Mobile` is public. Its TestFlight workflow uses the standard
   `macos-15` GitHub-hosted runner. [GitHub's billing documentation](https://docs.github.com/en/billing/concepts/product-billing/github-actions)
   says standard-runner use is free for public repositories; storage remains
-  subject to quotas. Current Actions caches use 6,110,673,569 bytes (about
-  5.7 GiB, below the published 10 GB per-repository cache allowance), and this
-  run retained no artifacts.
+  subject to quotas. Four stale cache entries were pruned; the four remaining
+  Actions caches use 3,948,405,008 bytes (about 3.7 GiB, below the published
+  10 GB per-repository cache allowance). This run retained no artifacts.
 - TestFlight run `37889445468` used the `development` workflow at `7227958` and
   app source `280346d`; `7227958` changes workflow artifact handling only.
   Backend remains on `development` at `c7838fd`. Existing uncommitted release
