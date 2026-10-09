@@ -84,6 +84,9 @@ or authorized.
   unused Mobile `/v1/home/feed` path constant, which was removed; no Mobile
   callers or retired-feature UI labels remain. This does not count as runtime,
   admin-console, or multi-user QA.
+- Backend `go test ./...` passed on the fetched `development` branch. This was
+  a local source-test result (cached by Go), not proof of the production
+  Render deployment SHA.
 - The current `development` app was launched in iPad Air 11-inch (M3) Simulator
   on iOS 26.3 with the dev Render backend. UMP and ATT prompts appeared, then
   the app reached its startup splash. No account login or Apple Sign-In was
