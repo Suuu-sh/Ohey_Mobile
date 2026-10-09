@@ -21,7 +21,10 @@ or authorized.
 - On app source `280346d`, full `flutter analyze` passed and all 51 tests in
   `flutter test` passed. The Apple OAuth recovery widget test also passed; it
   confirms retry UI behavior, not native Apple Sign-In or the reported iPad
-  white-screen fix.
+  white-screen fix. Public CI run
+  [37891134176](https://github.com/Suuu-sh/Ohey_Mobile/actions/runs/37891134176)
+  also passed both `Flutter test` and `Flutter analyze` on `b9902d8` (docs-only
+  changes after the TestFlight app source).
 - TestFlight run
   [37889445468](https://github.com/Suuu-sh/Ohey_Mobile/actions/runs/37889445468)
   succeeded for build `20261009143943`: archive, archived-manifest validation,
