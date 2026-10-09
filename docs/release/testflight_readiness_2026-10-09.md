@@ -13,6 +13,9 @@ App Review submission was performed or authorized.
   (`origin/development`). Both repositories were fetched before work; neither
   had incoming commits.
 - `flutter analyze` passed and `flutter test` passed (50 tests).
+- Backend `go test ./...` passed on `c7838fd`. Read-only `/health` requests to
+  both the dev and production Render backends returned HTTP 200; these are
+  liveness checks, not authenticated end-to-end verification.
 - `plutil -lint ios/Runner/PrivacyInfo.xcprivacy` passed.
 - The dev launch script built and launched Ohey in iPhone 17 Simulator
   (iOS 26.3), using the configured dev Render backend. The app reached its
@@ -38,10 +41,11 @@ App Review submission was performed or authorized.
 ## Current blockers
 
 - Dispatch [37883462509](https://github.com/Suuu-sh/Ohey_Mobile/actions/runs/37883462509)
-  for current `development` commit `573023c` was blocked before a runner or
-  workflow step started. GitHub reports an account payment failure or spending
-  limit. No archive, upload, or new TestFlight build was produced. After GitHub
-  Actions billing is restored, rerun this workflow to build the current code.
+  for workflow commit `573023c` (with app source at `c08e1a5`) was blocked before
+  a runner or workflow step started. GitHub reports an account payment failure
+  or spending limit. No archive, upload, or new TestFlight build was produced.
+  After GitHub Actions billing is restored, rerun this workflow to build the
+  current application source; subsequent pushes only changed readiness docs.
 - The Apple Sign In timeout change from `a8ea58b` is present and its timeout
   regression tests pass. The actual native white-screen report has not been
   reproduced or cleared on iPad Air 11-inch (M3); a simulator/unit test is not
