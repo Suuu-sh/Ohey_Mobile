@@ -51,6 +51,34 @@ or authorized.
   collection, so the first-party/SDK distinction alone is not an error. The
   exact Xcode Organizer privacy report and current App Store Connect answers
   still need to be compared before public App Store submission.
+- Xcode 26.6 Organizer generated a one-page privacy report from an unsigned
+  local `1.0.0 (20261009143943)` archive. The app source and lockfiles for
+  `lib/`, `ios/`, `pubspec.yaml`, and `pubspec.lock` match the candidate source
+  commit `280346d`; this was not the original signed CI archive, which was not
+  retained. The local archive also contained 29 manifests. The report was kept
+  outside the repository at `/tmp/OheyPrivacyReport` and was neither committed
+  nor uploaded.
+- Reconciliation found material differences from
+  [`app_privacy.md`](app_privacy.md): the report additionally lists Phone
+  Number (Google Sign-In), Other Usage Data, Other Diagnostic Data, and Other
+  Data Types (Google Sign-In / Firebase Messaging), while the checklist omits
+  these and explicitly says not to select Other Data Types. The report lists
+  Coarse Location, Product Interaction, and Advertising Data with SDK-specific
+  linkage and purposes, including Developer's Advertising or Marketing, that
+  do not exactly match the checklist. It reports RevenueCat Purchase History as
+  not linked, while the checklist says linked. Crash and Performance Data also
+  have SDK-specific linkage/purpose entries that differ from the summarized
+  checklist. These are questions to validate against the exact SDK versions,
+  actual app behavior, and App Store Connect answers—not automatic corrections
+  to make based on the report alone. Apple's guidance requires accounting for
+  third-party partners and using the report to inform App Privacy; Google's
+  Mobile Ads disclosure guide likewise says developers are responsible for
+  checking the SDK manifest and keeping disclosures current.
+- No App Store Connect privacy answers were changed: its browser session is
+  signed out, and the SDK-specific differences need validation before changing
+  a public privacy label. See [Apple's App Privacy details](https://developer.apple.com/app-store/app-privacy-details/),
+  [Apple's Xcode privacy-report guidance](https://developer.apple.com/documentation/bundleresources/describing-data-use-in-privacy-manifests),
+  and [Google's iOS Mobile Ads data disclosure](https://developers.google.com/admob/ios/privacy/data-disclosure?hl=en).
 - A source-only QA sweep found no Backend Go routes for retired
   `/v1/memories`, `/v1/home/feed`, or `/v1/memory-hides` endpoints. It found an
   unused Mobile `/v1/home/feed` path constant, which was removed; no Mobile
