@@ -206,6 +206,9 @@ jobs:
           echo "GAD_APPLICATION_IDENTIFIER=$admob_ios_app_id" >> "$GITHUB_ENV"
           echo "GOOGLE_IOS_REVERSED_CLIENT_ID=$google_ios_reversed_client_id" >> "$GITHUB_ENV"
 
+      - name: Verify production Clerk native sign-in settings
+        run: python3 scripts/check_clerk_production_auth.py
+
       - name: Install Flutter dependencies
         run: flutter pub get --enforce-lockfile
 

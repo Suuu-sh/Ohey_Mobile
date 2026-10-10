@@ -51,6 +51,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
 
+      - name: Check Python release-preflight syntax
+        run: python3 -m py_compile scripts/check_clerk_production_auth.py
+
       - name: Run shared Flutter analyze action
         uses: Suuu-sh/Shared/actions/flutter-analyze@7f6f9dc12a0b3e34bee54aaf7c60f45dadfb6ba4
         with:
