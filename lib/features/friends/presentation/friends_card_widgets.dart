@@ -956,8 +956,9 @@ class _FriendProfileCalendarState
   }
 
   Future<void> _loadStatusesForMonth(DateTime month) async {
-    final authUserId = ref.read(authIdentityProvider).currentUserId;
-    if (authUserId != null && authUserId == widget.friend.id) {
+    final currentUser = ref.read(oheyUserProvider);
+    if (currentUser?.profileId.isNotEmpty == true &&
+        currentUser!.profileId == widget.friend.id) {
       try {
         final statuses = await ref
             .read(userRepositoryProvider)

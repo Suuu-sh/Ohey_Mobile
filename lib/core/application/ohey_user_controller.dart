@@ -37,20 +37,28 @@ class OheyUserController extends Notifier<OheyUser?> {
     final name = _defaultDisplayName();
     final userId = defaultOheyUserId(authUserId);
 
+    OheyUser? createdProfile;
     try {
-      await repository.createProfile(name: name, userId: userId);
+      createdProfile = await repository.createProfile(
+        name: name,
+        userId: userId,
+      );
     } on BackendApiException catch (error) {
       if (error.statusCode != 409) rethrow;
     }
 
     try {
       final created = await repository.fetchCurrentUserProfile();
-      await _activateUser(created ?? OheyUser(name: name, userId: userId));
+      await _activateUser(
+        created ?? createdProfile ?? OheyUser(name: name, userId: userId),
+      );
     } catch (_) {
       // The authenticated session is valid and profile creation was attempted.
       // Do not send OAuth users back to the login page because a follow-up
       // profile read or optional data fetch is temporarily unavailable.
-      await _activateUser(OheyUser(name: name, userId: userId));
+      await _activateUser(
+        createdProfile ?? OheyUser(name: name, userId: userId),
+      );
     }
   }
 
@@ -84,8 +92,18 @@ class OheyUserController extends Notifier<OheyUser?> {
         'User ID must be 3-24 letters, numbers, or underscores.',
       );
     }
+    OheyUser? backendProfile;
+    try {
+      backendProfile = await ref
+          .read(userRepositoryProvider)
+          .fetchCurrentUserProfile();
+    } catch (_) {
+      // Auth signup already succeeded; keep local onboarding usable if this
+      // follow-up profile read is temporarily unavailable.
+    }
     await _activateUser(
-      OheyUser(name: trimmed, avatar: avatar, userId: normalizedUserId),
+      backendProfile ??
+          OheyUser(name: trimmed, avatar: avatar, userId: normalizedUserId),
     );
   }
 
@@ -113,15 +131,13 @@ class OheyUserController extends Notifier<OheyUser?> {
       );
     }
     final profileAvatar = avatar;
-    await repository.createProfile(
+    final createdProfile = await repository.createProfile(
       name: trimmed,
       userId: normalizedUserId,
       avatar: profileAvatar,
     );
 
-    await _activateUser(
-      OheyUser(name: trimmed, avatar: profileAvatar, userId: normalizedUserId),
-    );
+    await _activateUser(createdProfile);
   }
 
   Future<void> updateProfile({

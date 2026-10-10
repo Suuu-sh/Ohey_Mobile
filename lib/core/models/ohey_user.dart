@@ -109,6 +109,7 @@ class OheyUser {
   const OheyUser({
     required this.name,
     required this.userId,
+    this.profileId = '',
     this.dailyStatus = OheyDailyStatus.unselected,
     this.isPlus = false,
     this.avatar,
@@ -116,6 +117,10 @@ class OheyUser {
 
   final String name;
   final String userId;
+
+  /// Internal `profiles.id` used by backend-owned resources.
+  /// This is distinct from the Clerk identity used for API authentication.
+  final String profileId;
   final OheyDailyStatus dailyStatus;
   final bool isPlus;
   final OheyAvatar? avatar;
@@ -123,6 +128,7 @@ class OheyUser {
   OheyUser copyWith({
     String? name,
     String? userId,
+    String? profileId,
     OheyDailyStatus? dailyStatus,
     bool? isPlus,
     OheyAvatar? avatar,
@@ -130,6 +136,7 @@ class OheyUser {
     return OheyUser(
       name: name ?? this.name,
       userId: userId ?? this.userId,
+      profileId: profileId ?? this.profileId,
       dailyStatus: dailyStatus ?? this.dailyStatus,
       isPlus: isPlus ?? this.isPlus,
       avatar: avatar ?? this.avatar,

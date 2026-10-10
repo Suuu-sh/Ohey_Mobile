@@ -16,13 +16,18 @@ void main() {
   test('preview fixtures parse through the real repositories', () async {
     final user = await UserRepository(client).fetchCurrentUserProfile();
     expect(user?.name, 'みーむ');
+    expect(user?.profileId, OheyPreviewFixtures.meId);
 
-    final friends = await FriendRepository(client).fetchFriends();
+    final friends = await FriendRepository(
+      client,
+      currentProfileId: user?.profileId,
+    ).fetchFriends();
     expect(friends, hasLength(5));
     expect(friends.where((friend) => friend.isFavorite), hasLength(1));
 
     final requests = await FriendRepository(
       client,
+      currentProfileId: user?.profileId,
     ).fetchPendingFriendRequests();
     expect(requests.single.isIncoming, isTrue);
 

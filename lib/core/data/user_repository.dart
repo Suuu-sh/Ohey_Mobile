@@ -57,14 +57,18 @@ class UserRepository {
     return fallback;
   }
 
-  Future<void> createProfile({
+  Future<OheyUser> createProfile({
     required String name,
     required String userId,
     OheyAvatar? avatar,
   }) async {
-    await _client.put(
+    final response = await _client.put(
       OheyApiPaths.meProfile,
       createProfilePayload(name: name, userId: userId, avatar: avatar),
+    );
+    return _userFromProfileRow(
+      BackendApiClient.mapFrom(response),
+      currentUserId ?? '',
     );
   }
 
@@ -141,6 +145,7 @@ class UserRepository {
     Map<String, dynamic>? statusRow,
   }) {
     return OheyUser(
+      profileId: ((row['id'] as String?) ?? '').trim(),
       name: (row['display_name'] as String?)?.trim().isNotEmpty == true
           ? row['display_name'] as String
           : 'mi-mu',

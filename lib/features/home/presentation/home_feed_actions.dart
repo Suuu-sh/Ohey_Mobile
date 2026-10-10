@@ -390,16 +390,17 @@ Future<void> _showFeedCompanionList(
   HapticFeedback.selectionClick();
   final container = ProviderScope.containerOf(context, listen: false);
   final repository = container.read(friendRepositoryProvider);
-  final currentUserId = repository.currentUserId?.trim();
-  if (currentUserId != null &&
-      currentUserId.isNotEmpty &&
-      selected.userId.trim() == currentUserId) {
+  final currentUser = container.read(oheyUserProvider);
+  final currentProfileId = currentUser?.profileId.trim();
+  if (currentProfileId != null &&
+      currentProfileId.isNotEmpty &&
+      selected.userId.trim() == currentProfileId) {
     await showOheyFriendProfileSheet(
       context,
       friend: _companionFriendForCurrentUser(
         selected,
-        container.read(oheyUserProvider),
-        currentUserId,
+        currentUser,
+        currentProfileId,
       ),
       showActionMenu: false,
     );
@@ -436,12 +437,12 @@ Future<void> _showFeedCompanionList(
 OheyFriend _companionFriendForCurrentUser(
   _Companion companion,
   OheyUser? currentUser,
-  String currentUserId,
+  String currentProfileId,
 ) {
   final name = currentUser?.name.trim();
   final handle = currentUser?.userId.trim();
   return OheyFriend(
-    id: currentUserId,
+    id: currentProfileId,
     name: name?.isNotEmpty == true ? name! : companion.name,
     avatarEmoji: '👤',
     vibe: handle?.isNotEmpty == true

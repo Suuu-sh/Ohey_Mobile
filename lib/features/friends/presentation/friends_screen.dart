@@ -11,7 +11,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/config/ohey_ads_config.dart';
 import '../../../core/services/ohey_ads_consent_service.dart';
-import '../../../core/data/auth_identity_provider.dart';
 import '../../../core/data/ohey_ad_entry_builder.dart';
 import '../../../core/data/user_repository.dart';
 import '../../../core/models/ohey_avatar.dart';

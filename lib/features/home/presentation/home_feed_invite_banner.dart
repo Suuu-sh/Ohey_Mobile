@@ -5,28 +5,28 @@ class _FeedInviteBanner extends StatelessWidget {
     required this.isWhite,
     required this.invite,
     required this.reservation,
-    required this.currentUserId,
+    required this.currentProfileId,
     required this.onOpenNotifications,
   });
 
   final bool isWhite;
   final OheyInvite? invite;
   final OheyInvite? reservation;
-  final String? currentUserId;
+  final String? currentProfileId;
   final VoidCallback onOpenNotifications;
 
   @override
   Widget build(BuildContext context) {
     final hasInvite = invite != null;
     final target = hasInvite
-        ? (currentUserId == null
+        ? (currentProfileId == null
               ? invite!.inviter
-              : invite!.otherUser(currentUserId!))
+              : invite!.otherUser(currentProfileId!))
         : reservation == null
         ? null
-        : (currentUserId == null
+        : (currentProfileId == null
               ? reservation!.inviter
-              : reservation!.otherUser(currentUserId!));
+              : reservation!.otherUser(currentProfileId!));
     if (target == null) return const SizedBox.shrink();
 
     final accent = hasInvite ? AppColors.primaryAction : AppColors.success;

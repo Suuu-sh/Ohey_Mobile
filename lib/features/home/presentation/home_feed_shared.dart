@@ -69,9 +69,12 @@ BoxDecoration _feedCardDecoration({required double radius}) => BoxDecoration(
 
 List<_FeedItem> _feedItemsFromYurubos(
   List<Yurubo> yurubos, {
-  String? currentUserId,
+  String? currentProfileId,
 }) => yurubos
-    .map((yurubo) => _FeedItem.fromYurubo(yurubo, currentUserId: currentUserId))
+    .map(
+      (yurubo) =>
+          _FeedItem.fromYurubo(yurubo, currentProfileId: currentProfileId),
+    )
     .toList(growable: false);
 
 class _FeedItem {
@@ -103,10 +106,8 @@ class _FeedItem {
     this.canDelete = false,
   });
 
-  factory _FeedItem.fromYurubo(Yurubo yurubo, {String? currentUserId}) {
-    final isOwnedByCurrentUser =
-        currentUserId?.isNotEmpty == true &&
-        yurubo.ownerUserId == currentUserId;
+  factory _FeedItem.fromYurubo(Yurubo yurubo, {String? currentProfileId}) {
+    final isOwnedByCurrentUser = yurubo.isOwnedByProfile(currentProfileId);
     final body = yurubo.title.trim().isNotEmpty
         ? yurubo.title.trim()
         : yurubo.body.trim();

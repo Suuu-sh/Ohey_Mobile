@@ -147,7 +147,7 @@ class _ProfileReservationStrip extends StatelessWidget {
   const _ProfileReservationStrip({
     required this.isWhite,
     required this.userAvatar,
-    required this.currentUserId,
+    required this.currentProfileId,
     required this.reservations,
     required this.incomingInvites,
     required this.onAccept,
@@ -156,7 +156,7 @@ class _ProfileReservationStrip extends StatelessWidget {
 
   final bool isWhite;
   final OheyAvatar? userAvatar;
-  final String? currentUserId;
+  final String? currentProfileId;
   final List<OheyInvite> reservations;
   final List<OheyInvite> incomingInvites;
   final ValueChanged<OheyInvite> onAccept;
@@ -169,17 +169,17 @@ class _ProfileReservationStrip extends StatelessWidget {
       return _IncomingInviteCard(
         isWhite: isWhite,
         invite: invite,
-        currentUserId: currentUserId,
+        currentProfileId: currentProfileId,
         onAccept: () => onAccept(invite),
         onReject: () => onReject(invite),
       );
     }
-    if (reservations.isEmpty || currentUserId == null) {
+    if (reservations.isEmpty || currentProfileId == null) {
       return const SizedBox.shrink();
     }
 
     final reservedFriends = reservations
-        .map((invite) => invite.otherUser(currentUserId!))
+        .map((invite) => invite.otherUser(currentProfileId!))
         .toList(growable: false);
     final friendText = reservedFriends.isEmpty
         ? '予定が成立しています'
@@ -260,22 +260,22 @@ class _IncomingInviteCard extends StatelessWidget {
   const _IncomingInviteCard({
     required this.isWhite,
     required this.invite,
-    required this.currentUserId,
+    required this.currentProfileId,
     required this.onAccept,
     required this.onReject,
   });
 
   final bool isWhite;
   final OheyInvite invite;
-  final String? currentUserId;
+  final String? currentProfileId;
   final VoidCallback onAccept;
   final VoidCallback onReject;
 
   @override
   Widget build(BuildContext context) {
-    final from = currentUserId == null
+    final from = currentProfileId == null
         ? invite.inviter
-        : invite.otherUser(currentUserId!);
+        : invite.otherUser(currentProfileId!);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(

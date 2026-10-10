@@ -15,7 +15,6 @@ import '../../../core/services/ohey_ads_consent_service.dart';
 import '../../../core/services/ohey_plus_service.dart';
 import '../../../core/config/backend_config.dart';
 import '../../../core/contracts/ohey_api_values.dart';
-import '../../../core/data/auth_identity_provider.dart';
 import '../../../core/data/ohey_ad_entry_builder.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend.dart';
@@ -151,11 +150,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const <OheyInvite>[];
     final isWhite = ref.watch(oheyThemeModeProvider).isWhite;
     final isPlusActive = ref.watch(oheyPlusActiveProvider);
-    final currentUserId = ref.watch(authIdentityProvider).currentUserId;
+    final currentProfileId = ref.watch(oheyUserProvider)?.profileId;
     final yurubos = yurubosAsync.value ?? const <Yurubo>[];
     final feedItems = _feedItemsFromYurubos(
       yurubos,
-      currentUserId: currentUserId,
+      currentProfileId: currentProfileId,
     );
 
     return const _FeedBackground(child: SizedBox.expand()).copyWith(
@@ -222,7 +221,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   incomingInvites.isEmpty && todayReservations.isNotEmpty
                   ? todayReservations.first
                   : null,
-              currentUserId: currentUserId,
+              currentProfileId: currentProfileId,
               onOpenNotifications: () => Navigator.of(context).push(
                 CupertinoPageRoute<void>(
                   builder: (_) => const _FeedNotificationsScreen(),

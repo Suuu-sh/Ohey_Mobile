@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/optimistic_update.dart';
+import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/contracts/ohey_api_paths.dart';
 import '../../../core/contracts/ohey_api_values.dart';
 import '../../../core/data/backend_api_client.dart';
@@ -9,7 +10,10 @@ import '../../../core/models/ohey_friend.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
 
 final friendRepositoryProvider = Provider<FriendRepository>((ref) {
-  return FriendRepository(ref.watch(backendApiClientProvider));
+  return FriendRepository(
+    ref.watch(backendApiClientProvider),
+    currentProfileId: ref.watch(oheyUserProvider)?.profileId,
+  );
 });
 
 final pendingFriendRequestsProvider =
@@ -51,9 +55,10 @@ class FriendsController {
 }
 
 class FriendRepository {
-  const FriendRepository(this._client);
+  const FriendRepository(this._client, {this.currentProfileId});
 
   final BackendApiClient _client;
+  final String? currentProfileId;
 
   String? get currentUserId => _client.currentUserId;
 
@@ -109,9 +114,10 @@ class FriendRepository {
       OheyApiPaths.friendRequests,
       query: {'direction': direction},
     );
-    final currentUserId = _client.currentUserId ?? '';
+    final profileId = currentProfileId?.trim() ?? '';
+    if (profileId.isEmpty) return const <OheyFriendRequestItem>[];
     return rows
-        .map((row) => OheyFriendRequestItem.fromRow(row, currentUserId))
+        .map((row) => OheyFriendRequestItem.fromRow(row, profileId))
         .toList(growable: false);
   }
 
@@ -133,6 +139,8 @@ class FriendRepository {
     if (userId == null || userId.isEmpty) {
       throw StateError('フレンズを読み込むにはログインが必要です。');
     }
+    final profileId = currentProfileId?.trim() ?? '';
+    if (profileId.isEmpty) return const <OheyFriend>[];
 
     final rows = await _client.getRows(
       OheyApiPaths.friends,
@@ -141,7 +149,7 @@ class FriendRepository {
 
     return rows
         .map<OheyFriend>((row) {
-          final other = row['user_a_id'] == userId
+          final other = row['user_a_id'] == profileId
               ? row['user_b']
               : row['user_a'];
           if (other is! Map) {
@@ -272,11 +280,11 @@ class OheyFriendRequestItem {
 
   factory OheyFriendRequestItem.fromRow(
     Map<String, dynamic> row,
-    String currentUserId,
+    String currentProfileId,
   ) {
     final fromUserId = (row['from_user_id'] as String?)?.trim() ?? '';
     final toUserId = (row['to_user_id'] as String?)?.trim() ?? '';
-    final isOutgoing = fromUserId == currentUserId;
+    final isOutgoing = fromUserId == currentProfileId;
     final rawOther = isOutgoing ? row['invitee'] : row['inviter'];
     final fallbackOtherId = isOutgoing ? toUserId : fromUserId;
     final otherRow = rawOther is Map

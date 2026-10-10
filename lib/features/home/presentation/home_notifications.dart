@@ -235,11 +235,11 @@ class _FeedNotificationsScreenState
     List<Yurubo>? yurubos,
   ) {
     if (yurubos == null) return null;
-    final authUserId = ref.read(authIdentityProvider).currentUserId;
-    if (authUserId == null || authUserId.isEmpty) return const [];
+    final currentProfileId = ref.read(oheyUserProvider)?.profileId;
+    if (currentProfileId == null || currentProfileId.isEmpty) return const [];
     return [
       for (final yurubo in yurubos)
-        if (yurubo.ownerUserId == authUserId)
+        if (yurubo.isOwnedByProfile(currentProfileId))
           for (final participant in yurubo.participants)
             if (participant.isPending)
               _FeedNotification(
@@ -272,7 +272,7 @@ class _FeedNotificationsScreenState
       builder: (context) => _FeedCompanionListSheet(
         item: _FeedItem.fromYurubo(
           yurubo,
-          currentUserId: ref.read(authIdentityProvider).currentUserId,
+          currentProfileId: ref.read(oheyUserProvider)?.profileId,
         ),
       ),
     );

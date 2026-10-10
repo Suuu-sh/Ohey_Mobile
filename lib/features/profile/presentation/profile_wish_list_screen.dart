@@ -185,9 +185,9 @@ class _ProfileYuruboListSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final yurubosAsync = ref.watch(yuruboControllerProvider);
-    final currentUserId = ref.watch(authIdentityProvider).currentUserId;
+    final currentProfileId = ref.watch(oheyUserProvider)?.profileId;
     final yurubos = (yurubosAsync.asData?.value ?? const <Yurubo>[])
-        .where((item) => item.ownerUserId == currentUserId)
+        .where((item) => item.ownerUserId == currentProfileId)
         .toList(growable: false);
     final listMaxHeight = MediaQuery.sizeOf(context).height * .42;
 

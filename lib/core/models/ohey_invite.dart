@@ -29,8 +29,8 @@ class OheyInvite {
   final OheyFriend inviter;
   final OheyFriend invitee;
 
-  OheyFriend otherUser(String currentUserId) =>
-      inviterUserId == currentUserId ? invitee : inviter;
+  OheyFriend otherUser(String currentProfileId) =>
+      inviterUserId == currentProfileId ? invitee : inviter;
 
   String dateLabel({DateTime? now}) {
     final base = now ?? DateTime.now();

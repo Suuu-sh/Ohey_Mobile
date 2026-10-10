@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/contracts/ohey_api_paths.dart';
 import '../../../core/data/backend_api_client.dart';
 import '../../../core/models/ohey_avatar.dart';
@@ -7,13 +8,17 @@ import '../../../core/models/ohey_invite.dart';
 import '../../../core/models/ohey_friend.dart';
 
 final inviteRepositoryProvider = Provider<InviteRepository>((ref) {
-  return InviteRepository(ref.watch(backendApiClientProvider));
+  return InviteRepository(
+    ref.watch(backendApiClientProvider),
+    currentProfileId: ref.watch(oheyUserProvider)?.profileId,
+  );
 });
 
 class InviteRepository {
-  InviteRepository(this._client);
+  InviteRepository(this._client, {this.currentProfileId});
 
   final BackendApiClient _client;
+  final String? currentProfileId;
 
   String? get _userId => _client.currentUserId;
 
@@ -43,9 +48,12 @@ class InviteRepository {
   }) async {
     final userId = _userId;
     if (userId == null) throw StateError('誘うにはログインが必要です。');
+    final profileId = currentProfileId?.trim() ?? '';
+    if (profileId.isEmpty) throw StateError('プロフィールを読み込んでから誘ってね。');
     final ids = {
       for (final friendId in friendIds)
-        if (friendId.trim().isNotEmpty && friendId != userId) friendId.trim(),
+        if (friendId.trim().isNotEmpty && friendId.trim() != profileId)
+          friendId.trim(),
     }.toList(growable: false);
     if (ids.isEmpty) throw StateError('誘えるフレンズがいません。');
 

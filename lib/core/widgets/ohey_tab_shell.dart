@@ -295,7 +295,7 @@ class _OheyTabShellState extends ConsumerState<OheyTabShell>
       return;
     }
     for (final yurubo in yurubos) {
-      if (yurubo.ownerUserId != ref.read(authIdentityProvider).currentUserId) {
+      if (!yurubo.isOwnedByProfile(currentUser.profileId)) {
         continue;
       }
       final pending = yurubo.participants

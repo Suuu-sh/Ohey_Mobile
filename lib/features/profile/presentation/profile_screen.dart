@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/config/backend_config.dart';
-import '../../../core/data/auth_identity_provider.dart';
 import '../../../core/data/auth_repository.dart';
 import '../../../core/models/ohey_avatar.dart';
 import '../../../core/models/ohey_friend_request_status.dart';
@@ -68,7 +67,7 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(oheyUserProvider);
-    final currentAuthUserId = ref.watch(authIdentityProvider).currentUserId;
+    final currentProfileId = user?.profileId;
     final reservationsAsync = ref.watch(todayReservationsProvider);
     final incomingInvitesAsync = ref.watch(incomingInvitesProvider);
     final reservations =
@@ -162,7 +161,7 @@ class ProfileScreen extends ConsumerWidget {
                                   child: _ProfileReservationStrip(
                                     isWhite: bodyIsWhite,
                                     userAvatar: user?.avatar,
-                                    currentUserId: currentAuthUserId,
+                                    currentProfileId: currentProfileId,
                                     reservations: reservations,
                                     incomingInvites: incomingInvites,
                                     onAccept: (invite) => _respondInvite(

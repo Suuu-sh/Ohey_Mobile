@@ -86,6 +86,14 @@ class Yurubo {
   final String myReactionType;
   final List<YuruboParticipant> participants;
 
+  bool isOwnedByProfile(String? profileId) {
+    final currentProfileId = profileId?.trim() ?? '';
+    final ownerProfileId = ownerUserId.trim();
+    return currentProfileId.isNotEmpty &&
+        ownerProfileId.isNotEmpty &&
+        ownerProfileId == currentProfileId;
+  }
+
   Yurubo copyWith({
     int? reactionCount,
     bool? reactedByMe,
