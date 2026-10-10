@@ -58,8 +58,9 @@ or authorized.
 - On the dev Simulator, login survived hot restart; the own-post menu then
   showed edit / delete. Editing the test post's title and place saved and
   refreshed the home card; a second hot restart restored the edited values.
-  The dev-only test post is still present because its delete action awaits
-  action-time confirmation; no production data was touched.
+  The user approved deleting the dev-only test post, but the follow-up delete
+  could not be performed because the host Mac was locked and Simulator input
+  was unavailable. The post remains present; no production data was touched.
 - The latest recorded TestFlight build `20261009143943` predates Mobile fix
   `469fcba` (its app source was `280346d`). A fresh internal build is needed to
   verify the fix on a physical device. The TestFlight workflow uploads a
@@ -75,6 +76,18 @@ or authorized.
   `main` branch still has its existing automatic TestFlight-on-push workflow;
   do not promote or dispatch until the candidate and artifact-safe workflow
   are deliberately reconciled.
+
+## Update 2026-10-10 — public repository history check
+
+- GitHub currently reports `Suuu-sh/Ohey_Mobile` as `PUBLIC` and
+  `Suuu-sh/Ohey_Backend` as `PRIVATE`. The Mobile repository's GitHub secret
+  scanning alerts are disabled. A local, value-redacted pattern scan covered
+  Mobile's refs (15,443 unique reachable Git objects; 4,537 blobs up to 2 MB).
+  It found no high-confidence private-key, GitHub, AWS, Slack, Stripe, Render,
+  or OpenAI-token patterns in the examined text blobs; binary-looking blobs and
+  files over 2 MB were not inspected. `.env.example` is the only tracked
+  env-named file. This bounded pattern scan is not a complete secret audit and
+  does not inspect GitHub Actions secret storage or untracked local files.
 
 ## Verified in this follow-up
 
@@ -135,13 +148,18 @@ or authorized.
   these and explicitly says not to select Other Data Types. The report lists
   Coarse Location, Product Interaction, and Advertising Data with SDK-specific
   linkage and purposes, including Developer's Advertising or Marketing, that
-  do not exactly match the checklist. It reports RevenueCat Purchase History as
-  not linked, while the checklist says linked. Crash and Performance Data also
-  have SDK-specific linkage/purpose entries that differ from the summarized
-  checklist. These are questions to validate against the exact SDK versions,
-  actual app behavior, and App Store Connect answers—not automatic corrections
-  to make based on the report alone. Apple's guidance requires accounting for
-  third-party partners and using the report to inform App Privacy; Google's
+  do not exactly match the checklist. The report's RevenueCat manifest marks
+  Purchase History unlinked, but Ohey supplies the authenticated Clerk user ID
+  as RevenueCat's custom App User ID; RevenueCat's guidance says data is linked
+  when that ID can be tied to a user through the app or its backend ([RevenueCat
+  App Privacy guidance](https://www.revenuecat.com/docs/platform-resources/apple-platform-resources/apple-app-privacy)).
+  Keep Purchase History linked in the draft; this resolves that source-level
+  discrepancy, not the live App Store Connect answer. Crash and Performance
+  Data also have SDK-specific linkage/purpose entries that differ from the
+  summarized checklist. Remaining differences must be validated against the
+  exact SDK versions, actual app behavior, and App Store Connect answers—not
+  copied mechanically from the report. Apple's guidance requires accounting
+  for third-party partners and using the report to inform App Privacy; Google's
   Mobile Ads disclosure guide likewise says developers are responsible for
   checking the SDK manifest and keeping disclosures current.
 - No App Store Connect privacy answers were changed: its browser session is
@@ -191,8 +209,9 @@ or authorized.
   but its guideline and resolution details are absent from the repository. An
   authenticated App Store Connect session is required to retrieve them.
 - `QA.md` now includes the 2026-10-10 dev Simulator create/edit evidence.
-  Deletion of the temporary test post and multi-user, failure/retry, invite,
-  consent/ATT, advertising, and purchase flows still need verification.
+  The temporary test post is still present: deletion was approved but blocked
+  by the locked Mac. Multi-user, failure/retry, invite, consent/ATT,
+  advertising, and purchase flows still need verification.
 - The production Render SHA is confirmed as `c7838fd0ba14fb4bded3736ac9bc6ea1e0dc293e`;
   whether the service should auto-deploy from `development` remains unconfirmed.
 
