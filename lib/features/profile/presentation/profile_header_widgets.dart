@@ -1060,8 +1060,17 @@ class _ProfileOheyPlusPurchaseSheetState
     final package = service.preferredPackage(offering);
     final product = package?.storeProduct;
     final priceLabel = product?.priceString.trim();
+    final subscriptionPeriodLabel = oheySubscriptionPeriodLabel(
+      product?.subscriptionPeriod,
+    );
     final isRevenueCatReady = OheyRevenueCatConfig.isConfigured;
-    final canPurchase = isRevenueCatReady && !isPlusActive && package != null;
+    final hasPrice = priceLabel?.isNotEmpty == true;
+    final canPurchase =
+        isRevenueCatReady &&
+        !isPlusActive &&
+        package != null &&
+        hasPrice &&
+        subscriptionPeriodLabel != null;
 
     final tone = OheyTone.of(context);
     final String? statusMessage;
@@ -1074,6 +1083,8 @@ class _ProfileOheyPlusPurchaseSheetState
       statusMessage = 'プランを読み込み中...';
     } else if (offeringAsync.hasError || package == null) {
       statusMessage = 'プランを取得できませんでした。時間をおいて試してください。';
+    } else if (!hasPrice || subscriptionPeriodLabel == null) {
+      statusMessage = 'プランの価格・契約期間を確認できませんでした。時間をおいて試してください。';
     } else {
       statusMessage = null;
     }
@@ -1084,65 +1095,117 @@ class _ProfileOheyPlusPurchaseSheetState
       showHandle: false,
       bottomCloseLabel: '閉じる',
       blurSigma: 0,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _PlusHero(),
-          const SizedBox(height: 18),
-          _PlusPlanCard(
-            isActive: isPlusActive,
-            planTitle: product?.title.trim().isNotEmpty == true
-                ? product!.title
-                : 'Ohey Plus',
-            priceLabel: priceLabel,
-          ),
-          const SizedBox(height: 14),
-          _PlusCompareTable(tone: tone),
-          if (statusMessage != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              statusMessage,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: tone.muted,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const _PlusHero(),
+            const SizedBox(height: 18),
+            _PlusPlanCard(
+              isActive: isPlusActive,
+              planTitle: product?.title.trim().isNotEmpty == true
+                  ? product!.title
+                  : 'Ohey Plus',
+              priceLabel: priceLabel,
+              subscriptionPeriodLabel: subscriptionPeriodLabel,
             ),
-          ],
-          const SizedBox(height: 16),
-          Ohey3DButton(
-            label: isPlusActive
-                ? 'Plus利用中'
-                : _isPurchasing
-                ? '購入中...'
-                : 'Plusをはじめる',
-            icon: isPlusActive ? CupertinoIcons.checkmark_seal_fill : null,
-            onTap: canPurchase && !_isPurchasing
-                ? () => _purchase(package)
-                : null,
-            disabledColor: tone.edge,
-            height: 54,
-            fontSize: 16,
-          ),
-          const SizedBox(height: 6),
-          Center(
-            child: CupertinoButton(
-              minimumSize: const Size(44, 36),
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              onPressed: _isRestoring ? null : _restore,
-              child: Text(
-                _isRestoring ? '復元中...' : '購入を復元',
+            const SizedBox(height: 14),
+            _PlusCompareTable(tone: tone),
+            if (priceLabel?.isNotEmpty == true &&
+                subscriptionPeriodLabel != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                '購入確認時にApple Accountへ請求され、$subscriptionPeriodLabelに${priceLabel}で自動更新されます。解約はApple Accountのサブスクリプション設定から行えます。',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: tone.muted,
-                  fontSize: 13,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  height: 1.45,
+                ),
+              ),
+            ],
+            if (statusMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                statusMessage,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: tone.muted,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
               ),
+            ],
+            const SizedBox(height: 16),
+            Ohey3DButton(
+              label: isPlusActive
+                  ? 'Plus利用中'
+                  : _isPurchasing
+                  ? '購入中...'
+                  : 'Plusをはじめる',
+              icon: isPlusActive ? CupertinoIcons.checkmark_seal_fill : null,
+              onTap: canPurchase && !_isPurchasing
+                  ? () => _purchase(package)
+                  : null,
+              disabledColor: tone.edge,
+              height: 54,
+              fontSize: 16,
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Center(
+              child: CupertinoButton(
+                minimumSize: const Size(44, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                onPressed: _isRestoring ? null : _restore,
+                child: Text(
+                  _isRestoring ? '復元中...' : '購入を復元',
+                  style: TextStyle(
+                    color: tone.muted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+            Wrap(
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                CupertinoButton(
+                  minimumSize: const Size(44, 44),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  onPressed: () =>
+                      _openOheyPlusLegalUrl(context, _oheyTermsUrl),
+                  child: Text(
+                    '利用規約',
+                    style: TextStyle(
+                      color: tone.muted,
+                      fontSize: 12,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+                Text('・', style: TextStyle(color: tone.muted, fontSize: 12)),
+                CupertinoButton(
+                  minimumSize: const Size(44, 44),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  onPressed: () =>
+                      _openOheyPlusLegalUrl(context, _oheyPrivacyUrl),
+                  child: Text(
+                    'プライバシーポリシー',
+                    style: TextStyle(
+                      color: tone.muted,
+                      fontSize: 12,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1185,6 +1248,19 @@ class _ProfileOheyPlusPurchaseSheetState
       if (mounted) setState(() => _isRestoring = false);
     }
   }
+}
+
+Future<void> _openOheyPlusLegalUrl(BuildContext context, String url) async {
+  try {
+    final opened = await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.inAppBrowserView,
+    );
+    if (opened || !context.mounted) return;
+  } catch (_) {
+    if (!context.mounted) return;
+  }
+  OheyToast.show(context, 'ページを開けませんでした。時間をおいて試してください。');
 }
 
 /// Brand-color band with the Plus mark, like a subscription page header.
@@ -1259,11 +1335,13 @@ class _PlusPlanCard extends StatelessWidget {
     required this.isActive,
     required this.planTitle,
     required this.priceLabel,
+    required this.subscriptionPeriodLabel,
   });
 
   final bool isActive;
   final String planTitle;
   final String? priceLabel;
+  final String? subscriptionPeriodLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -1323,14 +1401,28 @@ class _PlusPlanCard extends StatelessWidget {
                   ),
                 ),
                 if (priceLabel?.isNotEmpty == true)
-                  Text(
-                    priceLabel!,
-                    style: const TextStyle(
-                      color: AppColors.brand,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      fontFeatures: [FontFeature.tabularFigures()],
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        priceLabel!,
+                        style: const TextStyle(
+                          color: AppColors.brand,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      if (subscriptionPeriodLabel != null)
+                        Text(
+                          '/ $subscriptionPeriodLabel',
+                          style: TextStyle(
+                            color: tone.muted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                    ],
                   ),
               ],
             ),
