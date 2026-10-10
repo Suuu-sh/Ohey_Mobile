@@ -6,6 +6,26 @@ Scope: internal TestFlight verification only. The repository is public by user
 request; no public App Store submission or App Review submission was performed
 or authorized.
 
+## Update 2026-10-10 — Ohey Plus purchase disclosure
+
+- Mobile commit `1483142` adds the StoreKit product price and renewal period to
+  the Ohey Plus sheet, states that the subscription auto-renews and how to stop
+  the next renewal, and links to Ohey's Terms, Apple's standard EULA, and the
+  Privacy Policy. Purchase is disabled if the StoreKit price or period is
+  unavailable. Follow-up commit `1d4a595` clarifies the cancellation deadline.
+- Local checks passed: targeted `flutter analyze` and period-format tests,
+  iOS Simulator debug build, iOS device Release build with code signing disabled,
+  and public GitHub Actions CI run
+  [38054223149](https://github.com/Suuu-sh/Ohey_Mobile/actions/runs/38054223149).
+  These checks do not confirm the layout, legal link behavior, a signed archive,
+  App Store processing, or a TestFlight installation.
+- The Mac locked again before Simulator inspection. No new archive was signed,
+  uploaded, assigned, or submitted. The latest TestFlight build remains
+  `20261009143943` from source `280346d`.
+- `Backend/docs/legal/terms.txt` still contains no Plus subscription-specific
+  terms. Do not infer or publish contract language until the operator reviews
+  the applicable subscription and cancellation terms.
+
 ## Update 2026-10-10 — development Apple sign-in
 
 - Apple sign-in succeeded in the iPad Air 11-inch (M3) Simulator on iOS 26.5
