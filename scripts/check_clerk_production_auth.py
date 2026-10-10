@@ -13,6 +13,8 @@ from pathlib import Path
 
 EXPECTED_HOST = "clerk.oheyapp.com"
 ENVIRONMENT_URL_SUFFIX = "/v1/environment?_is_native=true&_clerk_js_version=4.70.0"
+GOOGLE_CLIENT_ID_SUFFIX = ".apps.googleusercontent.com"
+GOOGLE_REVERSED_CLIENT_ID_PREFIX = "com.googleusercontent.apps."
 
 
 def read_env(path: Path) -> dict[str, str]:
@@ -91,6 +93,40 @@ def verify_environment(environment: dict[str, object]) -> list[str]:
     return failures
 
 
+def verify_google_client_ids(values: dict[str, str]) -> list[str]:
+    failures: list[str] = []
+    web_client_id = values.get("GOOGLE_WEB_CLIENT_ID", "")
+    ios_client_id = values.get("GOOGLE_IOS_CLIENT_ID", "")
+    reversed_client_id = values.get("GOOGLE_IOS_REVERSED_CLIENT_ID", "")
+
+    if not any((web_client_id, ios_client_id, reversed_client_id)):
+        return failures
+
+    if not web_client_id.endswith(GOOGLE_CLIENT_ID_SUFFIX):
+        failures.append(
+            "GOOGLE_WEB_CLIENT_ID is missing or is not a Google OAuth client ID"
+        )
+    if not ios_client_id.endswith(GOOGLE_CLIENT_ID_SUFFIX):
+        failures.append(
+            "GOOGLE_IOS_CLIENT_ID is missing or is not a Google OAuth client ID"
+        )
+    if ios_client_id.endswith(GOOGLE_CLIENT_ID_SUFFIX):
+        expected_reversed = (
+            GOOGLE_REVERSED_CLIENT_ID_PREFIX
+            + ios_client_id.removesuffix(GOOGLE_CLIENT_ID_SUFFIX)
+        )
+        if reversed_client_id != expected_reversed:
+            failures.append(
+                "GOOGLE_IOS_REVERSED_CLIENT_ID does not match GOOGLE_IOS_CLIENT_ID"
+            )
+    elif not reversed_client_id.startswith(GOOGLE_REVERSED_CLIENT_ID_PREFIX):
+        failures.append(
+            "GOOGLE_IOS_REVERSED_CLIENT_ID is missing or is not a Google callback scheme"
+        )
+
+    return failures
+
+
 def main() -> int:
     env_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".env.production")
     try:
@@ -107,6 +143,16 @@ def main() -> int:
     if not publishable_key:
         print(
             "::error::CLERK_PUBLISHABLE_KEY is missing from the production build environment.",
+            file=sys.stderr,
+        )
+        return 1
+
+    google_failures = verify_google_client_ids(values)
+    if google_failures:
+        print(
+            "::error::Production Google Sign-In config preflight failed: "
+            + "; ".join(google_failures)
+            + ".",
             file=sys.stderr,
         )
         return 1
