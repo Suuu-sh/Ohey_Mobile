@@ -128,14 +128,16 @@ class ClerkAuthService {
   }
 
   Future<void> signInWithGoogleIdToken(String idToken) async {
-    await initialize();
+    await _withClerkTimeout(initialize());
     final auth = _requireAuth();
     _sessionSuspendedLocally = false;
-    await auth.idTokenSignIn(
-      provider: clerk.IdTokenProvider.google,
-      token: idToken.trim(),
+    await _withClerkTimeout(
+      auth.idTokenSignIn(
+        provider: clerk.IdTokenProvider.google,
+        token: idToken.trim(),
+      ),
     );
-    await _refreshCachedSessionTokenWithRetry();
+    await _withClerkTimeout(_refreshCachedSessionTokenWithRetry());
     _throwIfNoUsableSession();
     _authChanges.add(null);
   }
