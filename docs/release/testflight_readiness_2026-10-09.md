@@ -42,6 +42,35 @@ or authorized.
   Ohey is or is not installed. Real-device TestFlight verification remains
   pending.
 
+## Update 2026-10-10 — dev Simulator owner-identity regression
+
+- A dev Render-backed iPad Air 11-inch (M3) Simulator QA run reproduced a
+  release-blocking issue: Ohey compared Clerk's auth user ID with backend
+  resource `owner_user_id` values, which are internal `profiles.id` UUIDs. The
+  user's own newly created yurubo was consequently shown with mute / block /
+  report actions instead of edit / delete.
+- Mobile commit `469fcba` adds `OheyUser.profileId` from profile reads and
+  profile creation, and uses it for ownership and related profile-ID
+  comparisons. Clerk IDs remain in API-authentication headers. Focused Flutter
+  tests, targeted analyze, and CI run
+  [38052361568](https://github.com/Suuu-sh/Ohey_Mobile/actions/runs/38052361568)
+  passed.
+- On the dev Simulator, login survived hot restart; the own-post menu then
+  showed edit / delete. Editing the test post's title and place saved and
+  refreshed the home card. The dev-only test post is still present because its
+  delete action awaits action-time confirmation; no production data was
+  touched.
+- The account has zero friends, so visibility to other users, invite delivery,
+  and acceptance / rejection remain unverified. The QA checklist has the
+  create/edit evidence; the physical TestFlight and public App Store gates below
+  remain open.
+- Current branch comparison after fetching both repos: Mobile `origin/main`
+  has 49 main-only commits and `origin/development` has 24 development-only
+  commits; Backend has 30 main-only and 6 development-only commits. The Mobile
+  `main` branch still has its existing automatic TestFlight-on-push workflow;
+  do not promote or dispatch until the candidate and artifact-safe workflow
+  are deliberately reconciled.
+
 ## Verified in this follow-up
 
 - `Suuu-sh/Ohey_Mobile` is public. Its TestFlight workflow uses the standard
@@ -154,9 +183,9 @@ or authorized.
 - App Store Connect app `6774577603` has a recorded v1.0 rejection on June 9,
   but its guideline and resolution details are absent from the repository. An
   authenticated App Store Connect session is required to retrieve them.
-- `QA.md` has 169 checklist items; 18 are checked. Multi-user, failure/retry,
-  invitation, delete, consent/ATT, advertising, and purchase flows still need
-  their stated dev/test-account verification.
+- `QA.md` now includes the 2026-10-10 dev Simulator create/edit evidence.
+  Deletion of the temporary test post and multi-user, failure/retry, invite,
+  consent/ATT, advertising, and purchase flows still need verification.
 - The current production Render SHA and whether the service's `development`
   branch setting is intentional remain unconfirmed.
 
