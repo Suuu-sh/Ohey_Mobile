@@ -1116,7 +1116,7 @@ class _ProfileOheyPlusPurchaseSheetState
                 subscriptionPeriodLabel != null) ...[
               const SizedBox(height: 12),
               Text(
-                '購入確認時にApple Accountへ請求され、$subscriptionPeriodLabelに${priceLabel}で自動更新されます。解約はApple Accountのサブスクリプション設定から行えます。',
+                '購入確認時にApple Accountへ請求され、$subscriptionPeriodLabelに${priceLabel}で自動更新されます。次回の請求を止めるには、更新日前にApple Accountのサブスクリプション設定から解約してください。',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: tone.muted,
@@ -1179,7 +1179,21 @@ class _ProfileOheyPlusPurchaseSheetState
                   onPressed: () =>
                       _openOheyPlusLegalUrl(context, _oheyTermsUrl),
                   child: Text(
-                    '利用規約',
+                    'Ohey利用規約',
+                    style: TextStyle(
+                      color: tone.muted,
+                      fontSize: 12,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+                CupertinoButton(
+                  minimumSize: const Size(44, 44),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  onPressed: () =>
+                      _openOheyPlusLegalUrl(context, _appleStandardEulaUrl),
+                  child: Text(
+                    'Apple標準EULA',
                     style: TextStyle(
                       color: tone.muted,
                       fontSize: 12,
@@ -1262,6 +1276,9 @@ Future<void> _openOheyPlusLegalUrl(BuildContext context, String url) async {
   }
   OheyToast.show(context, 'ページを開けませんでした。時間をおいて試してください。');
 }
+
+const _appleStandardEulaUrl =
+    'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 
 /// Brand-color band with the Plus mark, like a subscription page header.
 class _PlusHero extends StatelessWidget {
