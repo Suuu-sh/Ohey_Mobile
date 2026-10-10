@@ -6,6 +6,20 @@ Scope: internal TestFlight verification only. The repository is public by user
 request; no public App Store submission or App Review submission was performed
 or authorized.
 
+## Update 2026-10-10 — development Apple sign-in
+
+- Apple sign-in succeeded in the iPad Air 11-inch (M3) Simulator on iOS 26.5
+  and reached the authenticated Friends screen. This supersedes the earlier
+  note below that no account login was attempted.
+- The development Clerk instance has Apple sign-in enabled, the iOS app
+  registered (`83J5SB3ZPX` / `app.ohey.com`), and the `ohey-mobile` JWT
+  template. This confirms the development Simulator path only; it does not
+  verify production Clerk, a TestFlight-installed build, or the reported
+  physical-device white-screen symptom.
+- The internal TestFlight build `20261009143943` remains the latest recorded
+  processed and assigned build. No new upload or public App Store submission
+  was performed.
+
 ## Verified in this follow-up
 
 - `Suuu-sh/Ohey_Mobile` is public. Its TestFlight workflow uses the standard

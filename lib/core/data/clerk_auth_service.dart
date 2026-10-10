@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/auth_provider_config.dart';
+import 'apple_auth_diagnostics.dart';
 
 final clerkAuthServiceProvider = Provider<ClerkAuthService>((ref) {
   final service = ClerkAuthService();
@@ -139,16 +140,51 @@ class ClerkAuthService {
   }
 
   Future<void> signInWithAppleIdToken(String idToken) async {
-    await _withClerkTimeout(initialize());
-    final auth = _requireAuth();
+    late final ClerkOheyAuth auth;
+    try {
+      await _withClerkTimeout(initialize());
+      auth = _requireAuth();
+    } catch (error) {
+      logAppleAuthFailure(
+        stage: AppleAuthDiagnosticStage.clerkInitialization,
+        error: error,
+      );
+      rethrow;
+    }
     _sessionSuspendedLocally = false;
-    await _withClerkTimeout(
-      auth.idTokenSignIn(
-        provider: clerk.IdTokenProvider.apple,
-        token: idToken.trim(),
-      ),
-    );
-    await _withClerkTimeout(_refreshCachedSessionTokenWithRetry());
+    try {
+      await _withClerkTimeout(
+        auth.idTokenSignIn(
+          provider: clerk.IdTokenProvider.apple,
+          token: idToken.trim(),
+        ),
+      );
+    } catch (error) {
+      logAppleAuthFailure(
+        stage: AppleAuthDiagnosticStage.clerkIdTokenExchange,
+        error: error,
+      );
+      rethrow;
+    }
+    try {
+      await _withClerkTimeout(_refreshCachedSessionTokenWithRetry());
+    } catch (error) {
+      logAppleAuthFailure(
+        stage: AppleAuthDiagnosticStage.clerkSessionCompletion,
+        error: error,
+      );
+      rethrow;
+    }
+    if (!isSignedIn) {
+      logAppleAuthFailure(
+        stage: AppleAuthDiagnosticStage.clerkSessionCompletion,
+        error: const clerk.ClerkError(
+          code: clerk.ClerkErrorCode.noSessionTokenRetrieved,
+          message: 'Session token unavailable after Apple sign-in',
+        ),
+        safeReason: 'session_token_unavailable',
+      );
+    }
     _authChanges.add(null);
   }
 

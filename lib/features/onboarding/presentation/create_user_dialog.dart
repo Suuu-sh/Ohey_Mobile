@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/ohey_user_controller.dart';
 import '../../../core/config/auth_provider_config.dart';
+import '../../../core/data/apple_auth_diagnostics.dart';
 import '../../../core/data/clerk_auth_service.dart';
 import '../../../core/data/ohey_last_account_store.dart';
 import '../../../core/data/auth_repository.dart';

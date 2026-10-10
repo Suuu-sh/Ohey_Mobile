@@ -344,7 +344,9 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       if (!mounted) return;
       if (result == OAuthSignInResult.completed ||
           ref.read(authRepositoryProvider).isSignedIn) {
-        await _completeAuthenticatedSession();
+        await _completeAuthenticatedSession(
+          isAppleOAuth: provider == OAuthProvider.apple,
+        );
         return;
       }
       if (result == OAuthSignInResult.cancelled) {
@@ -384,7 +386,9 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
     await _completeAuthenticatedSession();
   }
 
-  Future<void> _completeAuthenticatedSession() async {
+  Future<void> _completeAuthenticatedSession({
+    bool isAppleOAuth = false,
+  }) async {
     setState(() {
       _isBusy = true;
       _error = null;
@@ -399,6 +403,12 @@ extension _CreateUserAuthActions on _CreateUserDialogState {
       );
       if (mounted) setState(() => _isAwaitingExternalAuth = false);
     } catch (e) {
+      if (isAppleOAuth) {
+        logAppleAuthFailure(
+          stage: AppleAuthDiagnosticStage.profileSessionCompletion,
+          error: e,
+        );
+      }
       if (mounted) setState(() => _error = _friendlyUnexpectedAuthError(e));
     } finally {
       if (mounted) setState(() => _isBusy = false);

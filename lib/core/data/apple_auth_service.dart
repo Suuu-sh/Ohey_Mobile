@@ -6,6 +6,8 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+import 'apple_auth_diagnostics.dart';
+
 class AppleAuthTokens {
   const AppleAuthTokens({
     required this.idToken,
@@ -53,51 +55,90 @@ class AppleAuthService {
     if (!_supportsPlatform) return false;
     try {
       return await _availabilityChecker().timeout(_availabilityTimeout);
-    } catch (_) {
+    } catch (error) {
+      logAppleAuthFailure(
+        stage: AppleAuthDiagnosticStage.availabilityProbe,
+        error: error,
+      );
       return false;
     }
   }
 
   Future<AppleAuthTokens?> signIn() async {
     if (!_supportsPlatform) {
-      throw const AppleAuthException('AppleログインはApple端末でのみ利用できます。');
+      const error = AppleAuthException('AppleログインはApple端末でのみ利用できます。');
+      logAppleAuthFailure(
+        stage: AppleAuthDiagnosticStage.credential,
+        error: error,
+        safeReason: 'unsupported_platform',
+      );
+      throw error;
     }
     if (!await isSupportedAndAvailable()) {
-      throw const AppleAuthException('この端末ではAppleログインを利用できません。');
+      const error = AppleAuthException('この端末ではAppleログインを利用できません。');
+      logAppleAuthFailure(
+        stage: AppleAuthDiagnosticStage.credential,
+        error: error,
+        safeReason: 'unavailable',
+      );
+      throw error;
     }
 
     final rawNonce = _generateNonce();
     final hashedNonce = _sha256OfString(rawNonce);
 
+    final AuthorizationCredentialAppleID credential;
     try {
-      final credential = await SignInWithApple.getAppleIDCredential(
+      credential = await SignInWithApple.getAppleIDCredential(
         scopes: const [
           AppleIDAuthorizationScopes.email,
           AppleIDAuthorizationScopes.fullName,
         ],
         nonce: hashedNonce,
       ).timeout(_interactiveTimeout);
-
-      final idToken = credential.identityToken?.trim();
-      if (idToken == null || idToken.isEmpty) {
-        throw const AppleAuthException('Apple認証トークンを取得できませんでした。');
-      }
-
-      final code = credential.authorizationCode.trim();
-      return AppleAuthTokens(
-        idToken: idToken,
-        nonce: rawNonce,
-        authorizationCode: code.isEmpty ? null : code,
-        email: _trimOrNull(credential.email),
-        givenName: _trimOrNull(credential.givenName),
-        familyName: _trimOrNull(credential.familyName),
+    } on TimeoutException catch (error) {
+      logAppleAuthFailure(
+        stage: AppleAuthDiagnosticStage.credential,
+        error: error,
+        safeReason: 'timeout',
       );
-    } on TimeoutException {
       throw const AppleAuthException('Apple認証がタイムアウトしました。もう一度試してね。');
-    } on SignInWithAppleAuthorizationException catch (e) {
-      if (e.code == AuthorizationErrorCode.canceled) return null;
-      throw AppleAuthException(_mapAuthorizationError(e));
+    } on SignInWithAppleAuthorizationException catch (error) {
+      if (error.code == AuthorizationErrorCode.canceled) return null;
+      logAppleAuthFailure(
+        stage: AppleAuthDiagnosticStage.credential,
+        error: error,
+        safeReason: error.code.name,
+      );
+      throw AppleAuthException(_mapAuthorizationError(error));
+    } catch (error) {
+      logAppleAuthFailure(
+        stage: AppleAuthDiagnosticStage.credential,
+        error: error,
+      );
+      rethrow;
     }
+
+    final idToken = credential.identityToken?.trim();
+    if (idToken == null || idToken.isEmpty) {
+      const error = AppleAuthException('Apple認証トークンを取得できませんでした。');
+      logAppleAuthFailure(
+        stage: AppleAuthDiagnosticStage.credential,
+        error: error,
+        safeReason: 'missing_identity_token',
+      );
+      throw error;
+    }
+
+    final code = credential.authorizationCode.trim();
+    return AppleAuthTokens(
+      idToken: idToken,
+      nonce: rawNonce,
+      authorizationCode: code.isEmpty ? null : code,
+      email: _trimOrNull(credential.email),
+      givenName: _trimOrNull(credential.givenName),
+      familyName: _trimOrNull(credential.familyName),
+    );
   }
 
   static String _generateNonce([int length = 32]) {
