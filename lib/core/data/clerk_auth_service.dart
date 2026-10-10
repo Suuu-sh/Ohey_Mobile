@@ -136,6 +136,7 @@ class ClerkAuthService {
       token: idToken.trim(),
     );
     await _refreshCachedSessionTokenWithRetry();
+    _throwIfNoUsableSession();
     _authChanges.add(null);
   }
 
@@ -168,22 +169,13 @@ class ClerkAuthService {
     }
     try {
       await _withClerkTimeout(_refreshCachedSessionTokenWithRetry());
+      _throwIfNoUsableSession();
     } catch (error) {
       logAppleAuthFailure(
         stage: AppleAuthDiagnosticStage.clerkSessionCompletion,
         error: error,
       );
       rethrow;
-    }
-    if (!isSignedIn) {
-      logAppleAuthFailure(
-        stage: AppleAuthDiagnosticStage.clerkSessionCompletion,
-        error: const clerk.ClerkError(
-          code: clerk.ClerkErrorCode.noSessionTokenRetrieved,
-          message: 'Session token unavailable after Apple sign-in',
-        ),
-        safeReason: 'session_token_unavailable',
-      );
     }
     _authChanges.add(null);
   }
