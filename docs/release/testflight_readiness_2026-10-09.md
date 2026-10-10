@@ -20,6 +20,28 @@ or authorized.
   processed and assigned build. No new upload or public App Store submission
   was performed.
 
+## Update 2026-10-10 — CI, production backend, and remaining access gates
+
+- Safe Apple-auth diagnostics and this readiness update were committed to
+  `development` as `0cdd700` and pushed. GitHub Actions run
+  [38050634734](https://github.com/Suuu-sh/Ohey_Mobile/actions/runs/38050634734)
+  passed both Flutter analyze and Flutter test. These diagnostics are
+  debug-only; no TestFlight upload was triggered.
+- Read-only Render CLI verification found production service `ohey-backend`
+  configured to track `development` with auto-deploy enabled. Its latest live
+  deploy is `c7838fd0ba14fb4bded3736ac9bc6ea1e0dc293e`, matching local and
+  remote `development`. `origin/main` does not contain this commit; branch
+  comparison shows 30 main-only and 6 development-only commits. The Render
+  branch setting was not changed because changing it could alter production
+  deploys; confirm the intended production source before promoting code.
+- App Store Connect currently redirects to sign-in, so the June 9 rejection
+  details and live App Privacy answers remain unverified. No credentials were
+  entered and no App Store Connect changes were made.
+- The paired iPhone 14 is currently locked. `devicectl` could not mount its
+  developer disk image to inspect installed apps; this is not evidence that
+  Ohey is or is not installed. Real-device TestFlight verification remains
+  pending.
+
 ## Verified in this follow-up
 
 - `Suuu-sh/Ohey_Mobile` is public. Its TestFlight workflow uses the standard
