@@ -62,46 +62,68 @@ verification of the live App Store Connect answers.
 
 Answer: **Yes, we collect data from this app.**
 
-## Data Types to select for the current AdMob-enabled v1 build
+## Archive-derived candidate data inventory (not final ASC answers)
 
-| Category | Data type | Linked to user | Tracking | Purposes |
-| --- | --- | --- | --- | --- |
-| Contact Info | Name | Yes | No | App Functionality |
-| Contact Info | Email Address | Yes | No | App Functionality |
-| Location | Coarse Location | Yes | No | Third-Party Advertising, Analytics |
-| Contacts | Contacts | Yes | No | App Functionality |
-| User Content | Other User Content | Yes | No | App Functionality |
-| Identifiers | User ID | Yes | No | App Functionality |
-| Identifiers | Device ID | Yes | Yes | Third-Party Advertising, Analytics, App Functionality |
-| Purchases | Purchase History | Yes | No | App Functionality, Analytics |
-| Usage Data | Product Interaction | Yes | No | Third-Party Advertising, Analytics |
-| Usage Data | Advertising Data | Yes | No | Third-Party Advertising, Analytics |
-| Diagnostics | Crash Data | No | No | Third-Party Advertising, Analytics |
-| Diagnostics | Performance Data | Yes | No | Third-Party Advertising, Analytics |
+Xcode Organizer's report aggregates 29 manifests from an unsigned archive of
+source `280346d` (build `20261009143943`). `pubspec.yaml`, `pubspec.lock`, and
+`ios/Podfile.lock` match source `469fcba`; the latter changed app code, not SDK
+versions. The report is still not proof that every manifest-listed item is
+collected in Ohey's runtime configuration. The matrix below records each
+SDK's declared values and known app-level linkage; use it to reconcile the live
+questionnaire, not as a ready-to-submit answer. Apple says to account for
+third-party partners and use the report as an input to App Privacy.
 
-## Why these are selected
+| Data type | Archive / app evidence (linked; tracking; purposes) | Status |
+| --- | --- | --- |
+| Name | Runner + Google Sign-In: Yes; No; App Functionality | Keep in draft; profile/auth use |
+| Email Address | Runner + Google Sign-In: Yes; No; App Functionality | Keep in draft; auth/profile use |
+| Phone Number | Google Sign-In: Yes; No; App Functionality | Open: app requests only `email` and `profile`; vendor manifest conflicts with its public disclosure |
+| Coarse Location | Google Mobile Ads / Google Sign-In: Yes; No; third-party advertising, analytics, developer advertising, app functionality. UMP: No; No; app functionality | Open: verify actual SDK collection and purposes |
+| Contacts | Runner: Yes; No; App Functionality | Keep in draft for the in-app social graph; no address-book permission |
+| Other User Content | Runner: Yes; No; App Functionality | Keep in draft for profile text, posts, invitations, wish items, and reports |
+| User ID | Runner + Google Sign-In: Yes; No; App Functionality, Analytics | Keep in draft; auth and account IDs are used |
+| Device ID | Runner / Google Sign-In / Google Mobile Ads: Yes; Firebase Messaging / ATT SDK: No. Google Mobile Ads: Tracking Yes; other declarations: No. Purposes include app functionality, third-party advertising, developer advertising, analytics | Open for final purpose/linkage review; Ohey also sends the FCM token to its authenticated backend |
+| Purchase History | RevenueCat manifest: No; No; App Functionality. Ohey code: authenticated Clerk ID is RevenueCat App User ID; RevenueCat guidance: Yes; No; App Functionality + Analytics | Source-level resolution: use Yes for linked in draft; live ASC remains unverified |
+| Product Interaction | Google Mobile Ads: Yes; No; analytics, developer advertising, third-party advertising. UMP: No; No; App Functionality | Open: verify actual collection/configuration |
+| Advertising Data | Google Mobile Ads: Yes; No; third-party advertising, developer advertising, analytics | Open: verify exact SDK behavior |
+| Other Usage Data | Google Sign-In: Yes; No; Analytics | Open: manifest-only item; confirm runtime collection |
+| Crash Data | Google Mobile Ads: No; No; Analytics | Candidate from SDK manifest; verify current SDK behavior |
+| Performance Data | Google Mobile Ads: No; No; third-party advertising, developer advertising, analytics. UMP: No; No; App Functionality | Candidate from SDK manifests; do not use the old linked=Yes answer |
+| Other Diagnostic Data | Firebase Messaging / Firebase Installations / Google Data Transport / Google Mobile Ads: No; No; purposes include App Functionality, Analytics, third-party advertising, developer advertising | Candidate from SDK manifests; verify current SDK behavior |
+| Other Data Types | Google Sign-In: Yes; No; App Functionality + Analytics. Firebase Messaging: No; No; Analytics | Open: conflicting linkage and unclear mapping to actual collected fields |
 
-- **Name / Email Address**: Clerk Auth, OAuth login, profile display, and
-  support/account operations.
-- **Do not select Precise Location**: the current app accepts user-entered place
-  text but does not request device location or send latitude/longitude.
-- **Coarse Location**: Google documents that the Mobile Ads SDK may derive or
-  process coarse location, for example from IP address, for ads and analytics.
-- **Contacts**: Apple's data-type definition includes an in-app social graph.
-  Ohey collects friend requests, friendships, groups, blocks, and mutes even
-  though it never reads the device address book.
-- **Other User Content**: profile text, status, invitations, yurubo posts,
-  wish items, comments/memos, reports, and moderation signals.
-- **User ID**: Clerk/Neon auth UUID, Ohey ID, and related account identifiers.
-- **Device ID**: APNs/FCM push token associated with the account for
-  notifications, plus identifiers the AdMob SDK may process for advertising.
-- **Purchase History**: RevenueCat associates subscription entitlement and
-  purchase state with the authenticated Ohey user ID. RevenueCat's guidance
-  says App Functionality and Analytics are the minimum purposes to disclose.
-- **Product Interaction / Advertising Data / Diagnostics**: Google documents
-  that the Mobile Ads SDK may process ad interactions, advertising data, crash
-  logs, and performance data. App Store disclosures must include third-party
-  partner practices, not only Ohey's first-party backend.
+### App behavior used in the matrix
+
+- `GoogleAuthService` requests only the `email` and `profile` OAuth scopes.
+  Google's disclosure describes user identifier and IP address; the exact
+  Google Sign-In 8.0.0 manifest additionally declares Phone Number, Other Data
+  Types, and Other Usage Data. Do not treat the unused phone scope as proof of
+  collection, but do not silently ignore the SDK declaration either.
+- `OheyPushNotificationService` obtains an FCM token and
+  `PushTokenRepository` registers it through an authenticated API call. This
+  makes the push identifier account-linked in Ohey even though Firebase's
+  manifest labels its Device ID unlinked. Firebase documents APNs/FCM
+  installation identifiers and device/app metadata; Ohey does not use topic
+  subscription APIs or Firebase Analytics.
+- `OheyPlusService` configures RevenueCat with the authenticated Clerk user ID
+  and uses `Purchases.logIn` when an existing SDK configuration is active.
+  RevenueCat says Purchase History is linked when the custom App User ID can be
+  tied to a user through the app or backend; this resolves the manifest-versus-
+  app linkage question for the draft.
+- The first-party manifest's `NSPrivacyTracking=false` does not override the
+  Google Mobile Ads manifest's Device ID `NSPrivacyCollectedDataTypeTracking=true`.
+  The archived report declares Device ID as tracking data for the SDK, while
+  it does not set top-level `NSPrivacyTracking=true` for any of the 29
+  manifests. Reconcile both the SDK's behavior and the live ATT/ASC answers.
+
+## No current app-code evidence found
+
+- Precise Location: the app accepts user-entered place text and does not
+  request device location or send latitude/longitude.
+- Health & Fitness, Sensitive Info, Photos or Videos, Audio Data, Browsing
+  History, and Search History.
+- Contacts means the in-app social graph under Apple's definition; Ohey does
+  not request access to the device address book.
 
 ## Do not select for the current AdMob-enabled v1 build
 
@@ -114,9 +136,12 @@ Answer: **Yes, we collect data from this app.**
 
 ## Unresolved SDK data types
 
-- **Other Data Types:** intentionally not marked included or excluded in this
-  draft until the SDK-manifest discrepancy in the validation hold above has
-  been resolved.
+- Phone Number, Other Usage Data, Other Data Types, Coarse Location, and the
+  SDK-specific linkage / purpose values need version-specific validation
+  against runtime behavior and the live App Store Connect questionnaire.
+- Do not exclude a data type solely because it is absent from Ohey's
+  first-party `PrivacyInfo.xcprivacy`; linked third-party SDKs have their own
+  manifests and disclosures.
 
 ## AdMob / ATT release checklist
 
