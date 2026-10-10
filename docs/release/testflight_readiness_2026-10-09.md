@@ -88,6 +88,10 @@ or authorized.
   files over 2 MB were not inspected. `.env.example` is the only tracked
   env-named file. This bounded pattern scan is not a complete secret audit and
   does not inspect GitHub Actions secret storage or untracked local files.
+- A live GitHub Actions API recheck found zero repository artifacts and four
+  caches totaling 3,948,405,008 bytes (about 3.7 GiB), below the documented
+  per-repository cache allowance. No Actions settings, cache, or artifact
+  records were changed.
 
 ## Verified in this follow-up
 
