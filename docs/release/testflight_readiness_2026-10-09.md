@@ -57,9 +57,9 @@ or authorized.
   passed.
 - On the dev Simulator, login survived hot restart; the own-post menu then
   showed edit / delete. Editing the test post's title and place saved and
-  refreshed the home card. The dev-only test post is still present because its
-  delete action awaits action-time confirmation; no production data was
-  touched.
+  refreshed the home card; a second hot restart restored the edited values.
+  The dev-only test post is still present because its delete action awaits
+  action-time confirmation; no production data was touched.
 - The account has zero friends, so visibility to other users, invite delivery,
   and acceptance / rejection remain unverified. The QA checklist has the
   create/edit evidence; the physical TestFlight and public App Store gates below
