@@ -47,6 +47,21 @@ or authorized.
   12 and later. The archive completed; these warnings were not changed in this
   release-readiness update.
 
+## Update 2026-10-10 — current development Simulator launch
+
+- `scripts/run_dev_render.sh -d 07682F92-906D-4F4C-A6D4-9AD72DC86782` rebuilt
+  and launched the current `development` checkout on the iPad Air 11-inch (M3)
+  Simulator. The Xcode build completed in 169.2 seconds. It uses Clerk dev and
+  the Render dev backend, not production.
+- After launch, the screen showed the authenticated Home view and the existing
+  dev QA post `Codex QA 1010 edited`. The launch log reported ATT status
+  `authorized`. The app reused its existing session; this is not a fresh
+  Apple Sign-In or production-auth test.
+- `simctl` confirmed the app remained running at bundle version `1.0.0 (1)`.
+  CUA could not provide tap input because the Mac was locked, so no menu, Plus
+  sheet, or deletion action was verified. The user-approved QA post deletion
+  remains pending; no production data was touched.
+
 ## Update 2026-10-10 — development Apple sign-in
 
 - Apple sign-in succeeded in the iPad Air 11-inch (M3) Simulator on iOS 26.5
