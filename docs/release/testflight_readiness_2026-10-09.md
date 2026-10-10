@@ -70,12 +70,15 @@ or authorized.
   and acceptance / rejection remain unverified. The QA checklist has the
   create/edit evidence; the physical TestFlight and public App Store gates below
   remain open.
-- Current branch comparison after fetching both repos: Mobile `origin/main`
-  has 49 main-only commits and `origin/development` has 24 development-only
-  commits; Backend has 30 main-only and 6 development-only commits. The Mobile
-  `main` branch still has its existing automatic TestFlight-on-push workflow;
-  do not promote or dispatch until the candidate and artifact-safe workflow
-  are deliberately reconciled.
+- Current branch comparison after fetching both repos and running a read-only
+  merge preflight: Mobile `origin/main` has 49 main-only commits and
+  `origin/development` has 30 development-only commits; the merge tree has no
+  content conflicts. Backend has 30 main-only and 6 development-only commits,
+  with conflicts in `.github/workflows/ci.yml`, `Dockerfile`, and `go.mod`.
+  The Mobile `main` branch still has its existing automatic TestFlight-on-push
+  workflow, so a conflict-free merge would still dispatch the production
+  workflow. Do not promote until the candidate is cleared and that workflow is
+  deliberately reconciled.
 
 ## Update 2026-10-10 — public repository history check
 
