@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ohey/core/config/auth_provider_config.dart';
 import 'package:ohey/core/config/backend_config.dart';
 import 'package:ohey/core/config/ohey_environment.dart';
+import 'package:ohey/core/config/ohey_revenuecat_config.dart';
 
 void main() {
   test('production backend default uses shared API proxy hostname', () {
@@ -19,6 +20,25 @@ void main() {
 
   test('Clerk session tokens use the backend audience JWT template', () {
     expect(AuthProviderConfig.clerkJwtTemplateName, 'ohey-mobile');
+  });
+
+  test('Ohey Plus is disabled by default until the release is ready', () {
+    expect(OheyRevenueCatConfig.isEnabled, isFalse);
+    expect(OheyRevenueCatConfig.isConfigured, isFalse);
+  });
+
+  test('TestFlight production builds explicitly disable Ohey Plus', () {
+    final workflow = File(
+      '.github/workflows/testflight-deploy.yml',
+    ).readAsStringSync();
+
+    expect(workflow, contains('--dart-define=OHEY_PLUS_ENABLED=false'));
+    expect(
+      workflow.indexOf('--dart-define=OHEY_PLUS_ENABLED=false'),
+      greaterThan(
+        workflow.indexOf('done < "\$RUNNER_TEMP/ohey_dart_defines.args"'),
+      ),
+    );
   });
 
   test('debug/test builds use dev Clerk redirect and dev Render backend', () {

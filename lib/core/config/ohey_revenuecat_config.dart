@@ -9,6 +9,7 @@ class OheyRevenueCatConfig {
   static const entitlementIdDefineKey = 'OHEY_REVENUECAT_ENTITLEMENT_ID';
   static const offeringIdDefineKey = 'OHEY_REVENUECAT_OFFERING_ID';
   static const productIdDefineKey = 'OHEY_REVENUECAT_PRODUCT_ID';
+  static const enabledDefineKey = 'OHEY_PLUS_ENABLED';
 
   static const defaultEntitlementId = 'plus';
   static const defaultOfferingId = 'default';
@@ -27,6 +28,10 @@ class OheyRevenueCatConfig {
     productIdDefineKey,
     defaultValue: defaultProductId,
   );
+  static const isEnabled = bool.fromEnvironment(
+    enabledDefineKey,
+    defaultValue: false,
+  );
 
   static const environment = String.fromEnvironment(
     OheyEnvironmentValues.environmentDefineKey,
@@ -37,7 +42,7 @@ class OheyRevenueCatConfig {
       !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 
   static bool get isConfigured =>
-      isSupportedPlatform && iosApiKey.trim().isNotEmpty;
+      isEnabled && isSupportedPlatform && iosApiKey.trim().isNotEmpty;
 
   static bool get isProduction =>
       environment == OheyEnvironmentValues.productionEnvironment;

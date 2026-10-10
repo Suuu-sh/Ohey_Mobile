@@ -530,7 +530,11 @@ class _ProfileTodayScheduleSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final event = joinedYurubos.isEmpty ? null : joinedYurubos.first;
     const accent = AppColors.cFFFF86C8;
-    final showPlus = event == null && !isLoading && !isPlus;
+    final showPlus =
+        OheyRevenueCatConfig.isEnabled &&
+        event == null &&
+        !isLoading &&
+        !isPlus;
     final title = event == null
         ? (isLoading ? '読み込み中' : (showPlus ? 'Ohey Plus' : '本日の予定はありません'))
         : event.title;

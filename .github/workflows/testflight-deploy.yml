@@ -320,10 +320,17 @@ jobs:
           set -euo pipefail
           build_number="${{ steps.build-number.outputs.build-number }}"
 
-          args=(--release --config-only --dart-define=OHEY_ENV=production --build-number "$build_number")
+          args=(
+            --release
+            --config-only
+            --dart-define=OHEY_ENV=production
+            --build-number "$build_number"
+          )
           while IFS= read -r define_arg || [ -n "$define_arg" ]; do
             args+=("$define_arg")
           done < "$RUNNER_TEMP/ohey_dart_defines.args"
+          # Force Plus off after any generated/secret dart-defines.
+          args+=(--dart-define=OHEY_PLUS_ENABLED=false)
 
           flutter build ios "${args[@]}"
 

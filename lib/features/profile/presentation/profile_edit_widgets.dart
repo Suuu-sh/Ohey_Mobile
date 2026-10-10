@@ -358,7 +358,9 @@ Future<void> _showSettingsSheet(BuildContext context, WidgetRef ref) async {
             _SettingsTile(
               icon: CupertinoIcons.person_crop_circle_fill,
               label: 'ユーザー設定',
-              subtitle: 'プロフィール編集・Ohey Plus',
+              subtitle: OheyRevenueCatConfig.isEnabled
+                  ? 'プロフィール編集・Ohey Plus'
+                  : 'プロフィール編集',
               accent: AppColors.primaryAction,
               onTap: () async {
                 if (sheetContext.mounted) {
@@ -515,29 +517,30 @@ Future<bool?> _showUserSettingsSheet(BuildContext context, WidgetRef ref) {
               await _showSettingsSheet(rootContext, ref);
             },
           ),
-          _SettingsTile(
-            icon: CupertinoIcons.sparkles,
-            label: 'Ohey Plus',
-            subtitle: '広告なしで使えるPlus設定',
-            accent: AppColors.cFFA5ED6E,
-            onTap: () async {
-              if (sheetContext.mounted) {
-                Navigator.of(sheetContext).pop(false);
-              }
-              await Future<void>.delayed(const Duration(milliseconds: 180));
-              if (!rootContext.mounted) return;
-              await _showProfileOheyPlusSheet(rootContext);
-              if (!rootContext.mounted) return;
-              final shouldReopenSettings = await _showUserSettingsSheet(
-                rootContext,
-                ref,
-              );
-              if (!rootContext.mounted || shouldReopenSettings == false) {
-                return;
-              }
-              await _showSettingsSheet(rootContext, ref);
-            },
-          ),
+          if (OheyRevenueCatConfig.isEnabled)
+            _SettingsTile(
+              icon: CupertinoIcons.sparkles,
+              label: 'Ohey Plus',
+              subtitle: '広告なしで使えるPlus設定',
+              accent: AppColors.cFFA5ED6E,
+              onTap: () async {
+                if (sheetContext.mounted) {
+                  Navigator.of(sheetContext).pop(false);
+                }
+                await Future<void>.delayed(const Duration(milliseconds: 180));
+                if (!rootContext.mounted) return;
+                await _showProfileOheyPlusSheet(rootContext);
+                if (!rootContext.mounted) return;
+                final shouldReopenSettings = await _showUserSettingsSheet(
+                  rootContext,
+                  ref,
+                );
+                if (!rootContext.mounted || shouldReopenSettings == false) {
+                  return;
+                }
+                await _showSettingsSheet(rootContext, ref);
+              },
+            ),
           _SettingsTile(
             icon: CupertinoIcons.delete_solid,
             label: 'アカウント削除',
