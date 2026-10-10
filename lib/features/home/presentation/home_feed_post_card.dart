@@ -297,7 +297,12 @@ class _FeedCardFooter extends StatelessWidget {
     return Row(
       children: [
         Semantics(
-          label: item.liked ? '参加申請を取り消す' : 'このゆるぼに参加申請する',
+          label: item.ownedByMe
+              ? '募集主'
+              : item.liked
+              ? '参加申請を取り消す'
+              : 'このゆるぼに参加申請する',
+          excludeSemantics: item.ownedByMe,
           child: likeButton,
         ),
         const SizedBox(width: 8),
