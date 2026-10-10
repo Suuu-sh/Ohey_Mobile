@@ -18,6 +18,12 @@ changed. See the [release-readiness audit](testflight_readiness_2026-10-09.md)
 for details. The 2026-10-10 review below is repository evidence only, not a
 verification of the live App Store Connect answers.
 
+An additional unsigned `xcodebuild archive` was produced from current Mobile
+`development` HEAD `56a3d95` with Xcode 26.6 on 2026-10-10. It contains 29
+privacy manifests, all of which pass `plutil -lint`. This confirms the
+current-source manifest inventory only; no Xcode Organizer aggregated report
+was generated from this unsigned, non-production-configured archive.
+
 ## Repository evidence review — 2026-10-10 (draft only)
 
 - **Purchase History:** Ohey configures RevenueCat with the authenticated

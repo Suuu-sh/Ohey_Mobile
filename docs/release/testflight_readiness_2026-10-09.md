@@ -26,6 +26,27 @@ or authorized.
   terms. Do not infer or publish contract language until the operator reviews
   the applicable subscription and cancellation terms.
 
+## Update 2026-10-10 — current-source unsigned archive
+
+- Xcode 26.6 `xcodebuild archive` succeeded from current Mobile `development`
+  HEAD `56a3d95` with `CODE_SIGNING_ALLOWED=NO`. The archive is local at
+  a temporary path outside the repository and reports bundle ID `app.ohey.com`,
+  version `1.0.0 (1)`, and no signing identity/team.
+- The archived app contains 29 `PrivacyInfo.xcprivacy` files; all 29 parsed and
+  passed `plutil -lint`. The declarations include the previously identified
+  Google Sign-In, Firebase Messaging, Google Mobile Ads, UMP, and RevenueCat
+  entries. This is a manifest inventory, **not** Apple's Xcode Organizer
+  aggregated privacy report.
+- This command-line archive did not run the TestFlight workflow's production
+  environment preparation or signing/export steps. It is not a TestFlight or
+  App Store candidate. The live App Store Connect answers still need
+  reconciliation against an Organizer report generated from the final signed
+  candidate.
+- Xcode archive emitted existing CocoaPods deployment-target warnings for
+  several pods declaring iOS 9/10 while the installed Xcode SDK supports iOS
+  12 and later. The archive completed; these warnings were not changed in this
+  release-readiness update.
+
 ## Update 2026-10-10 — development Apple sign-in
 
 - Apple sign-in succeeded in the iPad Air 11-inch (M3) Simulator on iOS 26.5
