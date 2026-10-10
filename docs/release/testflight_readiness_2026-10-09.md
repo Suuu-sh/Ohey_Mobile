@@ -60,6 +60,11 @@ or authorized.
   refreshed the home card; a second hot restart restored the edited values.
   The dev-only test post is still present because its delete action awaits
   action-time confirmation; no production data was touched.
+- The latest recorded TestFlight build `20261009143943` predates Mobile fix
+  `469fcba` (its app source was `280346d`). A fresh internal build is needed to
+  verify the fix on a physical device. The TestFlight workflow uploads a
+  production-configured binary and assigns it to the auto-notify internal
+  group, so it was not dispatched without action-time confirmation.
 - The account has zero friends, so visibility to other users, invite delivery,
   and acceptance / rejection remain unverified. The QA checklist has the
   create/edit evidence; the physical TestFlight and public App Store gates below
@@ -158,10 +163,12 @@ or authorized.
   attempted. The physical iPhone 14 is still `unavailable` to `devicectl`.
 - A read-only GET to
   `https://ohey-backend.onrender.com/health` returned HTTP 200 (`status: ok`),
-  but the endpoint does not report a deployed SHA. An earlier Render dashboard
-  snapshot recorded `c7838fd0ba14fb4bded3736ac9bc6ea1e0dc293e`; the current
-  production SHA and the service's `development` branch setting still need
-  confirmation.
+  but the endpoint does not report a deployed SHA. A read-only Render CLI
+  recheck on 2026-10-10 confirmed the live production deploy is
+  `c7838fd0ba14fb4bded3736ac9bc6ea1e0dc293e`, matching
+  `origin/development`. The service still tracks `development` with
+  auto-deploy enabled; whether that branch target is intentional remains
+  unconfirmed, and no Render settings were changed.
 
 ## Remaining blockers
 
@@ -186,14 +193,16 @@ or authorized.
 - `QA.md` now includes the 2026-10-10 dev Simulator create/edit evidence.
   Deletion of the temporary test post and multi-user, failure/retry, invite,
   consent/ATT, advertising, and purchase flows still need verification.
-- The current production Render SHA and whether the service's `development`
-  branch setting is intentional remain unconfirmed.
+- The production Render SHA is confirmed as `c7838fd0ba14fb4bded3736ac9bc6ea1e0dc293e`;
+  whether the service should auto-deploy from `development` remains unconfirmed.
 
 ## Next actions
 
-1. Install build `20261009143943` from TestFlight on the approved iPhone 14 and
-   verify Apple sign-in, cancellation/retry, consent/ATT, and the priority QA
-   flows. Retest the reported iPad Air 11-inch (M3) configuration if available.
+1. Build a new internal TestFlight candidate from `development` including
+   `469fcba`, then install it on the approved iPhone 14 to verify Apple sign-in,
+   cancellation/retry, consent/ATT, and the priority QA flows. Retest the
+   reported iPad Air 11-inch (M3) configuration if available. The existing
+   `20261009143943` build is older than this fix.
 2. Generate Apple's Xcode Organizer privacy report from an archive of the exact
    candidate/dependency set in a trusted local environment (do not upload the
    signed archive to the public repository), then reconcile it with
